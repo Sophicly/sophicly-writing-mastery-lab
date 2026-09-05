@@ -28,6 +28,14 @@ if (checkin) {
   if (btn) { await btn.click(); await page.waitForTimeout(9000); }
   else { await page.evaluate(() => { document.querySelectorAll('[class*="checkin"], [class*="sck"]').forEach(e => e.remove()); }); await page.waitForTimeout(3000); }
 }
+// Typing probe: a read-only viewer must not be able to change the document, whatever the DOM attribute says.
+let typed = 'n/a';
+try {
+  const focused = await page.evaluate(() => { const pm = document.querySelector('.swml-canvas-content .ProseMirror'); if (!pm) return false; const p = pm.querySelector('p') || pm; p.scrollIntoView(); pm.focus(); const r = document.createRange(); r.selectNodeContents(p); r.collapse(false); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); return true; });
+  if (focused) { await page.keyboard.type('ZZQXTYPEPROBE'); await page.waitForTimeout(800);
+    typed = await page.evaluate(() => (document.querySelector('.swml-canvas-content .ProseMirror') || {}).textContent?.includes('ZZQXTYPEPROBE') ? 'TEXT CHANGED' : 'blocked'); }
+} catch (e) { typed = 'probe error: ' + String(e.message).slice(0, 60); }
+console.log(`[${label}] typing probe: ${typed}`);
 const info = await page.evaluate(() => {
   const labels = [...document.querySelectorAll('[data-section-label]')].map(e => e.getAttribute('data-section-label'));
   const heads = [...document.querySelectorAll('.swml-section-block h3, .swml-section-block h2, .swml-section-title')].map(e => e.textContent.trim()).filter(Boolean);
@@ -45,7 +53,7 @@ const info = await page.evaluate(() => {
     pill: (document.querySelector('.swml-tutor-view-pill') || {}).textContent || '',
     readonlyNote: (document.querySelector('.swml-chat-readonly-note') || {}).textContent || '',
     chatInput: !!document.querySelector('.swml-chat-input, textarea.swml-chat-textarea, .swml-canvas-chat textarea'),
-    editable: (document.querySelector('.ProseMirror') || {}).getAttribute ? document.querySelector('.ProseMirror').getAttribute('contenteditable') : 'n/a',
+    editable: [...document.querySelectorAll('.ProseMirror')].map(e => (e.closest('.swml-canvas-content') ? 'doc' : 'other') + ':' + e.getAttribute('contenteditable')).join(','),
   };
 });
 console.log(`[${label}] title="${info.title}"`);
