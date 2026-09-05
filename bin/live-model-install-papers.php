@@ -71,9 +71,13 @@ foreach ($files as $md) {
     wp_cache_delete($key, 'options'); wp_cache_delete('alloptions', 'options');
     $back = null;
     foreach (get_option($key, []) as $t) { if ((int) ($t['topic_number'] ?? 0) === $n) $back = $t; }
+    // Round-trip against what THIS paper declares (the sidecar), never a fixed shape: Cambridge P1 has 3
+    // questions, Eduqas C2 eight, and the unseen format keeps its poems in part_a/part_b, not extract_text.
     $bm = $back['metadata'] ?? null; $bq = is_string($bm) ? (json_decode($bm, true)['questions'] ?? []) : [];
-    $rt = $back && is_string($bm) && count($bq) === 5 && $back['extract_text'] === $parsed['extract_text'];
-    echo "   " . ($rt ? "✓ WRITTEN + round-trip verified" : "⛔ ROUND-TRIP FAILED") . " — metadata " . gettype($bm) . ", " . count($bq) . " questions, extract " . strlen((string) ($back['extract_text'] ?? '')) . " bytes\n";
+    $want_q = ($side['format'] ?? 'multi_question') === 'unseen' ? 0 : count($side['questions']);
+    $ex_field = ($side['format'] ?? 'multi_question') === 'unseen' ? 'part_a_extract' : 'extract_text';
+    $rt = $back && is_string($bm) && count($bq) === $want_q && ($back[$ex_field] ?? null) === ($parsed[$ex_field] ?? null) && strlen((string) ($back[$ex_field] ?? '')) > 0;
+    echo "   " . ($rt ? "✓ WRITTEN + round-trip verified" : "⛔ ROUND-TRIP FAILED") . " — metadata " . gettype($bm) . ", " . count($bq) . " questions (sidecar $want_q), $ex_field " . strlen((string) ($back[$ex_field] ?? '')) . " bytes\n";
     if ($rt) $written++; else $refused++;
     $via = SWML_Topic_Questions::get_topic($side['board'], $side['text'], $n);
     echo "   " . ($via ? "✓" : "⛔") . " resolves through get_topic('{$side['board']}', '{$side['text']}', $n)\n";
