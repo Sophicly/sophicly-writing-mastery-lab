@@ -1971,6 +1971,19 @@ so no lane re-asks:
    method"* — there, with the boards' real level counts). Direction recorded, NOT built: trials
    are the proving ground first; the lit/lang adaptation is a roadmap item, not part of the CW
    slices.
+   ⭐⭐ **BUILT for AQA Language P1 / P2 and unseen poetry at v7.20.604–.605 (Neil's brief,
+   2026-09-06: *"we're not forcing them to really engage with the mark scheme and try and determine
+   what level they think they are and why"*).** Before marking, the student walks the board's own
+   verbatim descriptors for every assessed question × AO — bottom-up, every level read — in the
+   **BEST-FIT regime of §35** (rung question *"is your writing still better than this
+   description?"*, never a hurdle), then names the criteria met, places the mark inside the level
+   (arithmetic, never typed), and justifies it against the descriptor and their own evidence. Level ·
+   band · met · mark · reason file into the document section *Mark-Scheme Self-Assessment*; one
+   confidence tap follows (kept — it never replaces the ladder); Sophia is handed the student's own
+   marks and the Calibration Check compares against THEM. The CW trials keep §33.10's taught-element
+   regime — different job, deliberate. Data: `bin/markscheme-sources.js` (a new paper is a registry
+   row). Open: whether the blind 19-skill walk stays alongside it (FIXLIST #465), and the AQA
+   Literature dataset rows (#466).
 14. ⭐⭐ **TRIAL 1 CARRIES A SECOND DIMENSION — TECHNICAL ACCURACY, OUT OF 2 (Neil, ruled
    2026-08-25, testing .558; he acknowledged it overrules rulings 1, 6 and 11 above for the
    trials).** *"With the real GCSE for creative writing there's actually two sets of criteria —
