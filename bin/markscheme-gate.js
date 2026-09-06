@@ -4,7 +4,8 @@
  * markscheme-gate.js — slice 1 of the CW trials plan (v7.20.544)
  *
  * The examiner-ladder dataset (frontend/wml-markscheme-data.js) is GENERATED
- * from the one mark-scheme source (knowledge-mark-scheme-lang1.md, Q5 sections).
+ * from the mark-scheme sections registered in bin/markscheme-sources.js (every AQA
+ * Lang P1 + P2 question × AO since v7.20.603).
  * This gate fails the ship when the two diverge — the tariff-gate discipline:
  * every descriptor a student reads must be the board's own verbatim text.
  *
@@ -28,8 +29,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const ROOT = path.join(__dirname, '..');
-const SOURCE = path.join(ROOT, 'protocols', 'aqa', 'language1', 'modules',
-    'knowledge-mark-scheme-lang1.md');
+const { SOURCES } = require('./markscheme-sources');
 const DATASET = path.join(ROOT, 'frontend', 'wml-markscheme-data.js');
 
 let fails = 0, checks = 0;
@@ -42,40 +42,61 @@ if (!fs.existsSync(DATASET)) {
     console.log('markscheme-gate: ❌ dataset missing — run node bin/build-markscheme-dataset.js');
     process.exit(1);
 }
-const md = fs.readFileSync(SOURCE, 'utf8');
 const data = require(DATASET);
+const mdCache = {};
+const readSource = (rel) => {
+    if (!mdCache[rel]) mdCache[rel] = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    return mdCache[rel];
+};
 
-// ── 1 · freshness ───────────────────────────────────────────────────────────
-const sha1 = crypto.createHash('sha1').update(md).digest('hex');
-ok(data.__sourceSha1 === sha1,
-    'STALE DATASET: the source md changed since the last build — run node bin/build-markscheme-dataset.js');
+// ── 1 · freshness — PER SOURCE FILE, so the stale one is named ──────────────
+const sourceFiles = [...new Set(SOURCES.map((e) => e.source))];
+ok(!!data.__sources, 'dataset carries no __sources map — rebuild with the registry-driven builder');
+sourceFiles.forEach((rel) => {
+    const sha1 = crypto.createHash('sha1').update(readSource(rel)).digest('hex');
+    ok(!!data.__sources && data.__sources[rel] === sha1,
+        'STALE DATASET: ' + rel + ' changed since the last build — run node bin/build-markscheme-dataset.js');
+});
 
-// ── slice each AO's section out of the source, independently of the builder ──
-function section(aoLabel) {
-    const at = md.search(new RegExp('^## QUESTION 5 — ' + aoLabel + ' ', 'm'));
-    if (at < 0) return null;
-    const rest = md.slice(at).split('\n').slice(1).join('\n');
+// ── slice each registered section out of its source, independently of the builder ──
+// The registry's header regex is the ONLY thing shared with the builder (which sections exist);
+// how the section is read is deliberately re-derived here from the raw lines.
+function section(entry) {
+    const md = readSource(entry.source);
+    const head = md.match(entry.header);
+    if (!head) return null;
+    const rest = md.slice(head.index + head[0].length);
     const end = rest.search(/^(## |---)/m);
     return end < 0 ? rest : rest.slice(0, end);
 }
 
-const AOS = [
-    ['aqa_lang1_q5_ao5', 'AO5'],
-    ['aqa_lang1_q5_ao6', 'AO6'],
-];
-
-for (const [key, aoLabel] of AOS) {
+for (const entry of SOURCES) {
+    const key = entry.key, aoLabel = entry.question + ' ' + entry.ao;
     const scheme = data[key];
-    const sec = section(aoLabel);
+    const sec = section(entry);
     ok(!!scheme, key + ' missing from the dataset');
-    ok(!!sec, 'Q5 ' + aoLabel + ' section missing from the source');
+    ok(!!sec, key + ': section missing from ' + entry.source);
     if (!scheme || !sec) continue;
 
     // ── 2 · verbatim: every descriptor is a real "- …" line in this section ──
-    const bulletLines = sec.split('\n')
+    // Level 0 closes the levels. A bullet printed AFTER it is a board note (AQA P2 Q2: "If the
+    // quality of the response is Level 1 but only deals with one text, the mark must be 1 not
+    // 2.") — it must survive verbatim as a NOTE and must never be counted as a criterion.
+    const _l0At = sec.search(/^\*\*Level 0 — No marks:\*\*/m);
+    const _descRegion = _l0At < 0 ? sec : sec.slice(0, _l0At);
+    const _noteRegion = _l0At < 0 ? '' : sec.slice(_l0At);
+    const bulletLines = _descRegion.split('\n')
         .map(l => l.trim())
         .filter(l => l.startsWith('- '))
         .map(l => l.slice(2).trim());
+    const noteBullets = _noteRegion.split('\n')
+        .map(l => l.trim())
+        .filter(l => l.startsWith('- '))
+        .map(l => l.slice(2).trim());
+    noteBullets.forEach(nb => {
+        ok(Array.isArray(scheme.notes) && scheme.notes.indexOf(nb) !== -1,
+            aoLabel + ' post-Level-0 bullet is NOT carried as a note: "' + nb + '"');
+    });
     const bulletSet = new Map();
     bulletLines.forEach(b => bulletSet.set(b, (bulletSet.get(b) || 0) + 1));
 
