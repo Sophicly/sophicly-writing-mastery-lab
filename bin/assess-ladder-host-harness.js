@@ -51,13 +51,19 @@ ok(data.aqa_unseen_q271 && data.aqa_unseen_q271.levels.every((l) => l.bands.leng
 // The host's key builder, executed against a fake state/window — the real function, sliced whole.
 const kbSrc = JS.slice(JS.indexOf('    function _ladderSchemeKeysFor(topicData) {'), JS.indexOf('    function _ladderFids(key) {'));
 ok(kbSrc.length > 200 && /return keys\.map/.test(kbSrc), 'sliced the real _ladderSchemeKeysFor whole');
-function keysUnder(board, subject, topicData) {
-    const ctx = { window: { WML_MARK_SCHEMES: data }, state: { board, subject }, console };
+function keysUnder(board, subject, topicData, text) {
+    const ctx = { window: { WML_MARK_SCHEMES: data }, state: { board, subject, text: text || '' }, console };
     vm.createContext(ctx);
     vm.runInContext(kbSrc + '\nthis.__out = _ladderSchemeKeysFor(' + JSON.stringify(topicData || null) + ');', ctx);
     return ctx.__out;
 }
 ok(keysUnder('aqa', 'language1').length === 5, 'derives 5 keys for aqa/language1');
+// The REAL shortcode shape on the staging AQA P1 assessment lesson (measured 2026-09-07):
+// subject="language" text="aqa_lang_paper_1" — the paper is in the TEXT slug.
+ok(keysUnder('aqa', 'language', null, 'aqa_lang_paper_1').length === 5, 'derives 5 keys for subject=language + text=aqa_lang_paper_1 (the real lesson shape)');
+ok(keysUnder('aqa', 'language', null, 'aqa_lang_paper_2').length === 5, 'derives 5 keys for subject=language + text=aqa_lang_paper_2');
+ok(keysUnder('aqa', 'language', null, 'aqa-lang-paper-1').length === 5, 'dash form of the text slug resolves too');
+ok(keysUnder('aqa', 'language', null, '').length === 0, 'subject=language with NO text → nothing (never guess a paper)');
 ok(keysUnder('aqa', 'language_p2').length === 5, 'derives 5 keys for aqa/language_p2 (spec-key spelling)');
 ok(keysUnder('aqa', 'unseen_poetry').length === 1 && keysUnder('aqa', 'unseen_poetry')[0].key === 'aqa_unseen_q271',
     'unseen with NO Q27.2 in the topic → Q27.1 only (the course\'s own topics)');

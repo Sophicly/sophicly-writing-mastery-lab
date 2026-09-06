@@ -7677,9 +7677,17 @@
             if (board !== 'aqa') return [];
             const all = (typeof window !== 'undefined' && window.WML_MARK_SCHEMES) || null;
             if (!all) return [];
+            // ⭐ §5d KEY-TRACE (measured on staging, 2026-09-07): the real AQA P1 assessment lesson
+            // carries subject="language" and text="aqa_lang_paper_1" — the PAPER lives in the text
+            // slug, not the subject. Read the text first (dash/underscore tolerant), the subject only
+            // as the fallback for legacy shortcodes that spell the paper into it.
+            const text = String((state && state.text) || '').toLowerCase().replace(/-/g, '_');
             const subj = String((state && state.subject) || '').toLowerCase().replace(/[^a-z0-9_]/g, '');
             let paper = null;
-            if (/^lang(uage)?_?p?(aper_?)?1$/.test(subj) || subj === 'language_p1') paper = 'lang1';
+            if (/aqa_lang_paper_1$|^language_p1$/.test(text)) paper = 'lang1';
+            else if (/aqa_lang_paper_2$|^language_p2$/.test(text)) paper = 'lang2';
+            else if (/unseen/.test(text)) paper = 'unseen';
+            else if (/^lang(uage)?_?p?(aper_?)?1$/.test(subj) || subj === 'language_p1') paper = 'lang1';
             else if (/^lang(uage)?_?p?(aper_?)?2$/.test(subj) || subj === 'language_p2') paper = 'lang2';
             else if (/unseen/.test(subj)) paper = 'unseen';
             if (!paper) return [];
