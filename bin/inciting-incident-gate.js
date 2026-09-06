@@ -21,6 +21,13 @@
  *   C. a sentence that DEFINES the inciting incident purely by WHERE IT SITS, with no mention of
  *      the general goal anywhere in the surrounding block (the addendum's failure mode: swapping
  *      one wrong definition for another).
+ *   E. a sentence saying the inciting incident HANDS OVER a goal and calling that goal the
+ *      SPECIFIC / picturable one (PEDAGOGY §22 rule 6, Neil 2026-09-06 / #458d — the general want
+ *      is the inciting incident's output; the picturable finish line is Stunning Surprise #1's).
+ *   F. structural twin of E: the CW Step-3 goal ask must not DEMAND the picturable finish line in
+ *      its criteria, and must say both that the goal is general here and where the specific plan
+ *      arrives. E alone could not see it — the demand sat in a bullet two paragraphs from the
+ *      sentence that handed the goal over, and each half read correctly on its own.
  *
  * SCOPE: frontend/wml-assessment.js (the CW walk + its documents) and every protocols/**\/*.md.
  * The source stores em-dashes and quotes as — / “ escapes and newlines as \n, so the
@@ -73,6 +80,12 @@ const RE_DEFINES = /inciting\s+incident\b[^.?!]{0,24}?(?:\bis\b|\bmeans\b|\s[-:]
 const RE_POSITION = /(?:near|at)\s+the\s+(?:very\s+)?(?:start|beginning|opening)|first\s+(?:one\s+to\s+)?(?:few\s+)?(?:seven\s+)?(?:minutes|pages|scene|chapter)|opening\s+(?:minutes|pages|scene|image)|act[- ]one\s+curtain|end\s+of\s+act\s+one|in\s+the\s+first\s+\d+\s+(?:minutes|pages)/i;
 // The job — what a correct definition must name somewhere in the same block.
 const RE_GENERAL_GOAL = /general(?:,)?\s+(?:visible\s+)?goal|general\s+want|get\s+out,\s*get\s+even,\s*get\s+home|something\s+to\s+want|begins?\s+this\s+story\s+and\s+no\s+other/i;
+// RULE E — the goal the inciting incident hands over, described at the WRONG GRADE.
+// "hands / gives / produces … a goal" in the same sentence as a specificity marker. Deliberately
+// NOT matching "given" or "granted": "a plan the character has not been given yet" is the correct
+// teaching and must stay quiet.
+const RE_HANDS_GOAL = /(?:inciting\s+incident|that\s+event|this\s+event)\b[^.!?]{0,60}?\b(?:hands?|handed|gives?|gave|produces?|yields?)\b[^.!?]{0,40}?\bgoal\b/i;
+const RE_SPECIFIC_GOAL = /picturable|photograph|\bone\s+specific\b|\ba\s+single,?\s+physical\b|single,?\s+physical,?\s+visible/i;
 
 function scanText(text, label, findings) {
     const push = (rule, why, sentence) =>
@@ -94,6 +107,13 @@ function scanText(text, label, findings) {
             // B — the Stunning Surprise's "shatters the normal life" wording, used anywhere.
             if (incidentCtx && RE_SHATTER.test(s)) {
                 push('B', 'uses the Stunning Surprise\'s "shatters the normal life" wording', s);
+            }
+            // E — the inciting incident's goal called the SPECIFIC one. Hauge's picturable test is
+            //     not withdrawn, it is RELOCATED to Stunning Surprise #1 (PEDAGOGY §22 rule 6).
+            if (RE_HANDS_GOAL.test(s) && RE_SPECIFIC_GOAL.test(s)) {
+                push('E', 'calls the goal the inciting incident hands over the SPECIFIC/picturable one — '
+                    + 'that grade of goal is Stunning Surprise #1\'s output, and demanding it here asks '
+                    + 'the student to invent the plan a later step exists to produce', s);
             }
         });
 
@@ -243,16 +263,87 @@ function selfTestD() {
     return bad;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// RULE F — the CW Step-3 goal ask, structurally. The twin of E, and it exists because E CANNOT
+// see this defect: the demand sat in an "A strong goal:" bullet two paragraphs below the sentence
+// that handed the goal over, so no single sentence was wrong. Block 4 (the inciting incident) was
+// corrected at .596/.597 to hand over a GENERAL goal and say the specific plan comes later; block
+// 5, the very next bubble, still required "one physical, picturable finish line". Two consecutive
+// asks contradicted each other and the sweep passed over both.
+//
+// The criteria[] array is the right thing to police: bin/cw-keymatch-harness.js already proves
+// every criterion is lifted verbatim from that ask's own bullets, so a clean criteria list is a
+// clean bullet list, transitively. Neil ruled the staging on 2026-09-06 (FIXLIST #458d): general
+// want at Step 3, specific plan at Stunning Surprise #1 — "both, in two stages".
+function ruleF(src, label, findings) {
+    const push = (why, sentence) => findings.push({ label, rule: 'F', why, sentence: String(sentence).slice(0, 190), line: 0 });
+    // The fid appears more than once — the sidebar model lists it as a bare { fid, label } row.
+    // The ASK is the occurrence that carries a criteria[] with it; anchoring on the first hit
+    // policed the sidebar row and reported "no criteria" for ever.
+    let at = -1;
+    for (let i = src.indexOf("fid: 'cw-step-3-goal'"); i >= 0; i = src.indexOf("fid: 'cw-step-3-goal'", i + 10)) {
+        if (/criteria:\s*\[/.test(src.slice(i, i + 400))) { at = i; break; }
+    }
+    if (at < 0) {
+        push("the CW Step-3 goal ASK (fid 'cw-step-3-goal' with a criteria[]) was not found — rule F "
+            + 'cannot run, so it fails loud', label);
+        return;
+    }
+    const next = src.indexOf("{ fid: '", at + 10);
+    const block = src.slice(at, next > at ? next : at + 6000);
+
+    const cm = /criteria:\s*\[([\s\S]*?)\]/.exec(block);
+    if (!cm) { push('the Step-3 goal ask carries no criteria[] — its self-assessment tick list cannot be checked', block); return; }
+    if (RE_SPECIFIC_GOAL.test(cm[1])) {
+        push('the Step-3 goal criteria DEMAND the specific/picturable finish line — that is Stunning '
+            + "Surprise #1's output (PEDAGOGY §22 rule 6), and Step 3 sits before it", cm[1].replace(/\s+/g, ' ').trim());
+    }
+
+    const askM = /ask:\s*\n?\s*'((?:[^'\\]|\\.)*)'/.exec(block);
+    const ask = askM ? decode(askM[1]) : '';
+    if (!ask) { push('the Step-3 goal ask string could not be read — rule F fails loud rather than passing blind', block); return; }
+    if (!/\bgeneral\b/i.test(ask)) {
+        push('the Step-3 goal ask never says the goal is GENERAL at this stage, so a student reads it as '
+            + 'the final, specific one', ask);
+    }
+    if (!RE_STUNNING.test(ask)) {
+        push('the Step-3 goal ask never says where the SPECIFIC plan arrives (the stunning surprise), so '
+            + 'the two stages are never connected for the student', ask);
+    }
+}
+
+// Rule F's own self-test: the pre-fix shape must fail on all three counts, the shipped shape pass.
+function selfTestF() {
+    const mk = (criteria, ask) => "{ fid: 'cw-step-3-goal', label: 'Goal', criteria: [" + criteria
+        + "], ask:\n                    '" + ask + "' },\n                { fid: 'cw-step-3-obstacle', label: 'Obstacle', criteria: [], ask: 'x' },";
+    const OLD = mk("\n 'is one physical, picturable finish line',\n 'stands for a deeper need',\n",
+        '**5 of 7 - The goal**\\n\\nThat event hands your protagonist a **goal** - something they now desperately want.');
+    const NEW = mk("\n 'is a want you can say in a few plain words',\n 'stands for a deeper need',\n",
+        '**5 of 7 - The goal**\\n\\nThat event hands your protagonist a **goal**. At this stage it is usually still **general**: get out, get even, get home. The one specific plan arrives at the **stunning surprise**.');
+    const cases = [[OLD, 3], [NEW, 0], ["{ fid: 'cw-step-3-flaw' }", 1]];
+    let bad = 0;
+    cases.forEach(([src, want], i) => {
+        const f = [];
+        ruleF(src, 'selftestF#' + i, f);
+        if (f.length !== want) {
+            bad++;
+            console.error(`  ✗ rule-F self-test ${i}: expected ${want} finding(s), got ${f.length}`
+                + (f.length ? ' — ' + f.map((x) => x.why.slice(0, 60)).join(' | ') : ''));
+        }
+    });
+    return bad;
+}
+
 // ── run ──────────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
 console.log('inciting-incident gate (PEDAGOGY.md §22 + 2026-09-05 addendum)');
 
-const selfBad = selfTest() + selfTestD();
+const selfBad = selfTest() + selfTestD() + selfTestF();
 if (selfBad) {
     console.error(`\n❌ inciting-incident gate: ${selfBad} SELF-TEST(S) FAILED — the gate itself is broken (a check that cannot fire is worse than none).`);
     process.exit(1);
 }
-console.log('  self-test: 8/8 text + 4/4 placement ok (each rule proven to fire and to stay quiet)');
+console.log('  self-test: 10/10 text + 4/4 placement + 3/3 goal-staging ok (each rule proven to fire and to stay quiet)');
 
 const files = targets(argv);
 const findings = [];
@@ -266,7 +357,7 @@ files.forEach((f) => {
         for (let k = before; k < findings.length; k++) findings[k].line = i + 1;
     });
     // D runs on whichever file carries the templates — so `--file <a copy>` checks that copy.
-    if (/wml-assessment\.js$/.test(f)) ruleD(raw, rel, findings);
+    if (/wml-assessment\.js$/.test(f)) { ruleD(raw, rel, findings); ruleF(raw, rel, findings); }
 });
 
 console.log(`  scanned ${files.length} file(s)`);
@@ -282,6 +373,9 @@ if (findings.length) {
     console.error('hands the protagonist a GENERAL goal (get out, get even, get home); it usually comes');
     console.error('early but can land anywhere in the opening act. Stunning Surprise = turns a general');
     console.error('want into ONE specific plan (#1) or destroys the plan (#2). One event can do both.');
+    console.error('And ask for each grade at its own step: the GENERAL want at CW Step 3, the picturable');
+    console.error('finish line at Stunning Surprise #1 in Step 6 (PEDAGOGY §22 rule 6). Welcome a specific');
+    console.error('plan early — one event can do both jobs — but never DEMAND it at Step 3.');
     process.exit(1);
 }
 

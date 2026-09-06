@@ -394,9 +394,15 @@ It can be huge or tiny, chosen or accidental — but for your main plot it must 
 
 #### 5. The goal
 
-The inciting incident hands the protagonist a **goal** — a single, physical, visible thing they are now trying to achieve. Two rules make a goal strong:
+The inciting incident hands the protagonist a **goal** — something they now want badly enough to act on. It arrives in two stages, and mixing them up is the commonest way a plan stalls at this point.
 
-- **Make it one clear, picturable finish line.** Michael Hauge's test: not "get rich" but "a bank balance of £100,000"; not "be happy" but a specific image the reader can see the character reaching. A vague want gives the reader nothing to anticipate. State it early, and cut anything that doesn't serve it.
+**Stage one — the general want.** What the inciting incident gives them is a *direction*: get out, get even, get home. It points somewhere without yet naming a finish line, and that is enough to start a story moving.
+
+**Stage two — the specific plan.** Turning that general want into one plan we can watch them chase is the **stunning surprise**'s job (see *The Stunning Surprises*, below), and it usually closes the opening act. One event can do both at once — and then the two land in the same moment.
+
+Two rules make a goal strong:
+
+- **By stage two, make it one clear, picturable finish line.** Michael Hauge's test: not "get rich" but "a bank balance of £100,000"; not "be happy" but a specific image the reader can see the character reaching. A vague want gives the reader nothing to anticipate. Note *when* this test applies: asking for the photographable finish line at the inciting incident demands a plan the character has not been given yet. Marlin's want is his son back from the moment Nemo is taken; *cross the ocean to Sydney* only becomes the plan once a dropped diving mask hands him an address.
 - **Give it a hidden second layer — the internal need.** The richest goals stand for a deeper need the character doesn't yet understand. Luke Skywalker's external goal is to rescue the princess; his internal need is to discover who he is meant to become. The visible goal drives the *plot*; the invisible need drives the *meaning* — and, in the best stories, chasing the outer goal is exactly what forces the inner need into the open. The same double layer runs through *Finding Nemo*: Marlin's outer goal is to cross the ocean and bring his son home, while his inner need is to stop letting fear rule him and learn to let go. In *Moana*, the outer goal is to return a stolen relic and heal a dying island; the inner need is to discover who she is beneath everyone's expectations.
 
 #### 6. The obstacle

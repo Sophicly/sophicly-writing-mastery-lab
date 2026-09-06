@@ -138,26 +138,27 @@ The inciting incident is not the **stunning surprise**, which does a different j
 
 **5 of 7 — The goal**
 
-That event hands your protagonist a **goal** — something they now desperately want.
+That event hands your protagonist a **goal** — something they now desperately want. At this stage it is usually still **general**: get out, get even, get home. The one specific plan — the finish line we could photograph them reaching — arrives at the **stunning surprise**, and you'll build that in Step 6. If your story hands over both in the same moment, write both here.
 
 **A strong goal:**
 
-- is **one physical, picturable finish line** — we could photograph the moment they achieve it
+- is **a want you can say in a few plain words** — get out, get even, get home
+- **points somewhere** — a direction the story can travel in, not a mood
 - **stands for a deeper need** the protagonist doesn't fully understand yet — the visible goal drives the plot; the hidden need drives the meaning
 
 Examples:
 
-- Luke's external goal is to rescue Princess Leia; his internal need is to discover who he's meant to become.
-- Scrooge's external goal is to protect his wealth; his internal need is human connection.
-- Marlin's external goal is to find Nemo; his internal need is to learn to let go.
+- Marlin wants his son back; his internal need is to learn to let go. (*Cross the ocean to Sydney* only becomes the plan once a diver's dropped mask gives him an address.)
+- Scrooge wants to escape the chains Marley shows him; his internal need is human connection.
+- Luke wants off Tatooine and into the fight; his internal need is to discover who he's meant to become. (*Rescue the princess* is the specific plan the story hands him later.)
 
-Watch out: "be happy" or "get rich" can't be photographed. "Win the county final" can.
+Watch out: "be happy" or "be a better person" is a mood — it points nowhere. "Get away from this town" is a want: we can see which way they're facing.
 
 [HELP_LINE]
 
 **Two parts, then:**
 
-- What is the one visible thing your protagonist is trying to achieve?
+- What does your protagonist now want — in a few plain words?
 - What deeper need is hiding underneath it?
 
 ## COMPONENT: obstacle

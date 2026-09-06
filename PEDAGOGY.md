@@ -1364,6 +1364,33 @@ not represented at all. The item was unanswerable by inspection. That is the sam
 5. **The beats must cross-link as "not the same thing"**, both directions, wherever a student can
    meet one from the other.
 
+6. ⭐⭐ **THE GOAL IS ASKED FOR IN TWO STAGES, AND THE COURSE MUST ASK FOR THE RIGHT GRADE AT THE
+   RIGHT STEP (Neil, ruled 2026-09-06 — FIXLIST #458d, "both, in two stages").**
+   Rules 2 and 3 say what each beat DOES to the goal. This rule says what we may therefore DEMAND
+   of a student, and when:
+
+   | stage | where the course asks for it | what it is | test |
+   |---|---|---|---|
+   | **general want** | CW **Step 3**, block "5 of 7 — The goal" | a direction: get out, get even, get home | can you say it in a few plain words, and does it point somewhere? |
+   | **specific plan** | CW **Step 6**, Stunning Surprise #1 at the Act One curtain | one finish line we could photograph them reaching | Hauge's test: not "get rich" but "a bank balance of £100,000" |
+
+   **The defect this fixes, and why it was invisible.** Step 3's block 4 (the inciting incident) was
+   corrected at v7.20.596/.597 to hand over a **general** goal and to say the specific plan comes
+   later. Block 5 — the very next bubble — still opened *"That event hands your protagonist a goal"*
+   and then demanded *"one physical, picturable finish line — we could photograph the moment they
+   achieve it."* **Two consecutive asks contradicted each other**, and the student was required to
+   invent, at Step 3, the plan that Step 6 exists to produce. Neither ask was wrong on its own; only
+   the ORDER made the fault visible, which is why the .596/.597 sweep passed over it.
+   ⭐ **Hauge's picturable-finish-line test is not withdrawn — it is RELOCATED.** It is the correct
+   test for stage two and the wrong test for stage one. A craft rule that is right in general can
+   still be asked at the wrong moment; check WHEN a test applies, not only whether it is true.
+   ⚠️ **And the §22 addendum still governs:** because one event can do both jobs at once, the
+   specific plan is **welcomed** at Step 3, never **demanded** — a student whose story hands over
+   both in the same moment writes both, and is not marked down for having a plan early.
+   **Enforced mechanically:** `bin/inciting-incident-gate.js` **rule E** fails any student-facing
+   sentence that attaches picturable/photographable/"one specific" finish-line wording to what the
+   inciting incident hands over. Prose alone had already failed here once.
+
 **Where this lands** (all four carried the conflation; each is its own lane's work):
 the CW walk in `wml-assessment.js` ("inciting incident" ×26, taught with Stunning Surprise wording) ·
 the eight plot templates' beat rows · the Table of Techniques (`Ii` = Inciting Incident, `Tw` covers
