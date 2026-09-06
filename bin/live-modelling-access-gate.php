@@ -10,11 +10,17 @@
  */
 if (!defined('ABSPATH')) { fwrite(STDERR, "run with wp eval-file\n"); exit(1); }
 
-$opt = ['author' => 0, 'student' => 0, 'parent' => 0, 'child' => 0];
-foreach ((array) $args as $a) { if (preg_match('/^(author|student|parent|child)=(\d+)$/', $a, $m)) $opt[$m[1]] = (int) $m[2]; }
-if (!$opt['author'] || !$opt['student']) { echo "usage: author=<uid> student=<uid> [parent=<uid> child=<uid>]\n"; exit(1); }
+$opt = ['author' => 0, 'student' => 0, 'parent' => 0, 'child' => 0, 'admin' => 0];
+foreach ((array) $args as $a) { if (preg_match('/^(author|student|parent|child|admin)=(\d+)$/', $a, $m)) $opt[$m[1]] = (int) $m[2]; }
+if (!$opt['author'] || !$opt['student']) { echo "usage: author=<uid> student=<uid> [parent=<uid> child=<uid> admin=<uid>]\n"; exit(1); }
 $A = $opt['author']; $S = $opt['student']; $P = $opt['parent']; $C = $opt['child'];
-$admin = (int) get_users(['role' => 'administrator', 'number' => 1, 'fields' => 'ID'])[0];
+// v7.20.599: the "admin" fixture must not BE the author. On prod the author is user 1 — the first
+// administrator — so `get_users(number=1)` picked him, and "admin→author is 'comment'" failed on the
+// correct answer (an author editing their own document is 'edit'). Pick an admin who is not the
+// author; `admin=<uid>` overrides.
+$admin = $opt['admin'] ?: (int) (get_users(['role' => 'administrator', 'exclude' => [$A], 'number' => 1, 'fields' => 'ID'])[0] ?? 0);
+if (!$admin) { echo "⛔ no administrator other than the author exists here — pass admin=<uid>\n"; exit(1); }
+echo "fixtures: author=$A student=$S admin=$admin" . ($P ? " parent=$P child=$C" : '') . "\n";
 
 $GLOBALS['swml_lm_fails'] = 0; $GLOBALS['swml_lm_n'] = 0;
 function ok($cond, $label) { $GLOBALS['swml_lm_n']++; echo ($cond ? '  ✓ ' : '  ✗ ') . $label . "\n"; if (!$cond) $GLOBALS['swml_lm_fails']++; }
