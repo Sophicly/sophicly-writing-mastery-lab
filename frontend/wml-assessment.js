@@ -38709,12 +38709,13 @@
             }
 
             // v7.20.594 (#447m): live modelling replaces the six diagnostic cards with ONE that says what
-            // this lesson is — for the author it is a reminder of what the class sees; for a student it is
-            // the whole instruction. Plain words, no insider terms (root §5c-ii), no orphan references.
+            // this lesson is. Plain words, no insider terms (root §5c-ii), no orphan references.
+            // v7.20.598: the card addresses the STUDENTS in BOTH views. The author variant is gone —
+            // Neil, 2026-09-06: "the information should be for the students because I know what I'm
+            // doing… it needs to be for them." Seeing their exact wording is also how he checks what
+            // the class is reading. RULED — do not re-introduce an author-facing variant.
             if (_isLiveModel) {
-                tips = [{ icon: SVG_GUIDE_BRAIN, colour: '#5333ed', text: (state.reviewRole === 'live_modelling')
-                    ? 'Your tutor is writing this answer live. Watch how it takes shape, and select any words you want to keep to add them to your own notes. You can download the finished document afterwards.'
-                    : 'You are writing this paper live. Students see this document read-only, can file any words to their own notes, and can download it afterwards. No timer, no deadline, no word target.' }];
+                tips = [{ icon: SVG_GUIDE_BRAIN, colour: '#5333ed', text: 'Your tutor is writing this answer live. Watch how it takes shape, and select any words you want to keep to add them to your own notes. You can download the finished document afterwards.' }];
             }
             tips.forEach(t => {
                 const tip = el('div', { className: 'swml-canvas-plan-section' });
@@ -38902,7 +38903,15 @@
                 diagWcLabel = wcLabel;
                 progressWrap.appendChild(wcLabel);
                 rightPanel.appendChild(progressWrap);
-            } else {
+            } else if (state.task === 'mastery_codex') {
+                // v7.20.598: the Codex panel belongs to the Mastery Codex and NOWHERE else.
+                // .594 suppressed the essay word target on live modelling by negating the FIRST
+                // branch of a two-branch if/else — which dropped the lesson into THIS one, so a
+                // Live Modelling lesson rendered "Codex Word Count · Aim for 650 this week"
+                // directly under guidance that says there is no word target (Neil, 2026-09-06:
+                // "you can get rid of the codex word count as well. We don't need that on the
+                // live modelling."). Naming the branch's own task means live modelling now
+                // matches NEITHER arm and gets no word panel at all.
                 const codexWcWrap = el('div', { className: 'swml-canvas-plan-section', id: 'swml-codex-wc-progress' });
                 codexWcWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#4D76FD">' + SVG_GUIDE_GRAPH + '</span> Codex Word Count' }));
                 const codexBar = el('div', { className: 'swml-canvas-progress-bar' });
