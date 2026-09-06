@@ -59,7 +59,8 @@ const info = await page.evaluate(() => {
   };
 });
 console.log(`[${label}] title="${info.title}"`);
-console.log(`[${label}] sections(${info.sections.length}): ${info.sections.slice(0, 16).join(' | ')}`);
+// v7.20.606: never cap the section list — a probe that prints 16 of 57 labels reports a present section as absent (root §14c / §17c).
+console.log(`[${label}] sections(${info.sections.length}): ${info.sections.join(' | ')}`);
 console.log(`[${label}] outline(${info.tocCount}): ${info.toc.join(' | ')}`);
 console.log(`[${label}] extract=${info.hasExtract} Q1=${info.hasQ1} Q2scope=${info.hasQ2} Q4scope=${info.hasQ4} multiQ=${info.hasMultiQ} essayShell=${info.hasEssayShell}`);
 console.log(`[${label}] cfg=${JSON.stringify(info.cfg)} pill="${info.pill.trim()}" readonlyNote="${info.readonlyNote.trim()}" chatInput=${info.chatInput} contenteditable=${info.editable}`);
