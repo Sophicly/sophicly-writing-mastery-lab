@@ -447,6 +447,14 @@ Then `@FB_END` on its own line.
   `C) Body Paragraph 2` `D) Body Paragraph 3` `E) Conclusion` — each on its own line. NEVER let
   Priority Improvements double as the choice list. **When the student answers a lettered option,
   restate THEIR letter + label verbatim from their message before commenting.**
+- **The student's own marks (v7.20.604, #462):** where the pre-marking setup ends with a SYSTEM line headed
+  *THE STUDENT'S OWN MARKS*, the student has already marked their own response against the board's level
+  descriptors — a level, a mark, the criteria they judged met, and their reason, per question. **Those ARE
+  the predictions the Calibration Check compares against** (they supersede any predicted mark from the
+  reflection panel for the same question). Name their level and mark beside yours, name the ONE criterion
+  where your judgement and theirs differ most, then ask the direction-adaptive question. Never re-ask them
+  to mark themselves, never dispute their reason before you have marked, and never let their mark move
+  yours — the gap between the two is the teaching.
 
 **STEP 4 — Q-GATE** (next: the following section; after the Conclusion, next is **Question 27.2**).
 

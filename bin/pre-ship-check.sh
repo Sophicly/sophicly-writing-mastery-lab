@@ -555,6 +555,8 @@ node bin/marking-payload-harness.js || fail=1
 # AQA's own printed ranges rather than typed by student or model. Proven RED against a top-down
 # climb, a lenient rounding direction, and an invented AO6 Upper/Lower split.
 node bin/examiner-ladder-harness.js || fail=1
+# v7.20.604 (#462): the mark-scheme self-assessment host — data, doc, both pipelines, §35 copy bans, Sophia feed, §4d.
+node bin/assess-ladder-host-harness.js || fail=1
 # v7.20.547 (CW trials slice 2b): the examiner-ladder WALK, driven on the real rig with the real
 # engine and the real generated mark scheme under it. Liveness is checked automatically inside
 # say()/tap() (§4d, no opt-out). Proven RED against a top-down climb, an accumulate cycle on the

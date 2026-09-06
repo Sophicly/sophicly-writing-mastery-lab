@@ -7638,6 +7638,185 @@
     // the pad is ephemeral: it exists only while an element is being judged.
     let _openLadderPadHook = null;
     let _closeLadderPadHook = null;
+    // ⭐ v7.20.604 (#462): the examiner ladder is closure-local; the assessment host below is
+    // module-scope (the SA-walk shape). Same hook pattern as the pads above — the .898 lesson:
+    // closure-locals are never referenced across scopes.
+    let _ladderOpenHook = null;
+    let _ladderActiveHook = null;
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.604 (#462, Neil 2026-09-06) — THE MARK-SCHEME SELF-ASSESSMENT for assessments.
+    // *"we need to implement something like that for the assessments… we get the students to rate
+    // how confident they are, which is okay, but we're not forcing them to really engage with the
+    // mark scheme and try and determine what level they think they are and why."*
+    //
+    // WHAT IT IS: for every assessed question of the paper that has board-verbatim level data
+    // (window.WML_MARK_SCHEMES, generated + gated), the student walks the real mark scheme
+    // BEFORE marking — one ladder per question × AO, serially — and files level · band · met
+    // criteria · mark · justification into the document. Then ONE confidence tap. Then marking,
+    // with the student's own marks handed to Sophia (the CW trial's §1.6 pattern) and fed into
+    // the existing calibration path (_setPredicted → the Calibration Check).
+    //
+    // THE REGIME IS BEST FIT, NOT HURDLES (PEDAGOGY §35, Neil 2026-08-24, correcting his own
+    // sketch against Cambridge's own words: level descriptors "should not be interpreted as
+    // hurdle statements"). The walk stays bottom-up — every level read, every criterion seen —
+    // but the rung question is "is your writing still better than this?", never "have you met
+    // all of these?". The ladder controller runs that as cfg.regime === 'bestfit'; the CW trial
+    // keeps its own regime untouched (§33.10 governs it).
+    //
+    // DOCUMENT-DRIVEN, like the blind SA walk: the rows ARE the state, so a reload lands on the
+    // exact ladder the student was in (§4c.8b) and a fossil can never form (§4c.7).
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    const LADDER_SA_LABEL = 'Mark-Scheme Self-Assessment';
+    const LADDER_SA_WALK = 'assess-ladder';
+    // §5d KEY-MATCH: the ONE builder of scheme keys for the current paper. Reads the generated
+    // dataset (never re-derives ids) and filters by the paper the document actually poses.
+    function _ladderSchemeKeysFor(topicData) {
+        try {
+            const board = String((typeof state !== 'undefined' && state && state.board) || '').toLowerCase().replace(/-/g, '');
+            if (board !== 'aqa') return [];
+            const all = (typeof window !== 'undefined' && window.WML_MARK_SCHEMES) || null;
+            if (!all) return [];
+            const subj = String((state && state.subject) || '').toLowerCase().replace(/[^a-z0-9_]/g, '');
+            let paper = null;
+            if (/^lang(uage)?_?p?(aper_?)?1$/.test(subj) || subj === 'language_p1') paper = 'lang1';
+            else if (/^lang(uage)?_?p?(aper_?)?2$/.test(subj) || subj === 'language_p2') paper = 'lang2';
+            else if (/unseen/.test(subj)) paper = 'unseen';
+            if (!paper) return [];
+            const prefix = 'aqa_' + paper + '_';
+            let keys = Object.keys(all).filter(k => k.indexOf(prefix) === 0 && all[k] && Array.isArray(all[k].levels));
+            if (paper === 'unseen') {
+                // The course's own unseen topics pose ONE poem, ONE question (no Q27.2). Only a
+                // sitting whose topic data carries a second question gets the Q27.2 ladder.
+                const qs = (topicData && Array.isArray(topicData.questions)) ? topicData.questions : [];
+                const hasQ272 = qs.some(q => /27\.2/.test(String((q && (q.id || q.number || q.label)) || '')));
+                if (!hasQ272) keys = keys.filter(k => k !== 'aqa_unseen_q272');
+            }
+            return keys.map(k => ({ key: k, q: all[k].question, ao: all[k].ao, max: all[k].maxMarks, title: all[k].title || '' }));
+        } catch (e) { return []; }
+    }
+    function _ladderFids(key) {
+        return { level: 'sa-ms-' + key + '-level', band: 'sa-ms-' + key + '-band', met: 'sa-ms-' + key + '-met',
+                 mark: 'sa-ms-' + key + '-mark', reason: 'sa-ms-' + key + '-reason' };
+    }
+    // The document section — ONE producer, used by the template AND the on-load heal.
+    function buildMarkSchemeSelfAssessSection(topicData) {
+        const keys = _ladderSchemeKeysFor(topicData);
+        if (!keys.length) return '';
+        let inner = '<p><em>Before Sophia marks, you mark — against the exam board’s own level descriptors, one question at a time. '
+            + 'Your level, the criteria you judged met, your mark and your reason are filed here, and Sophia sees them before she gives you hers.</em></p>';
+        keys.forEach(k => {
+            const f = _ladderFids(k.key);
+            inner += '<h3>' + escapeHTML(k.q + ' — ' + k.ao + ' (/' + k.max + ')') + '</h3>';
+            inner += inputHTML('Your level (and band / placement)', f.level);
+            inner += inputHTML('Criteria you judged met', f.met);
+            inner += inputHTML('Your mark', f.mark);
+            inner += inputHTML('Why — the evidence in your own response', f.reason);
+            inner += inputHTML('Band (where the board prints one)', f.band);
+        });
+        inner += '<h3>Confidence</h3>';
+        inner += inputHTML('How confident are you in your own marks? (1 = not at all · 5 = very)', 'sa-ms-confidence');
+        return sectionHTML('action', LADDER_SA_LABEL, true, null, inner);
+    }
+    function _ladderRowText(fid) {
+        try {
+            const elx = document.querySelector('#swml-tiptap-editor [data-field-id="' + fid + '"]');
+            return elx ? String(elx.textContent || '').trim() : '';
+        } catch (e) { return ''; }
+    }
+    function _ladderHostEligible() {
+        if (!state || state.task !== 'assessment' || state.reviewMode) return false;
+        if (!document.querySelector('#swml-tiptap-editor [data-section-label="' + LADDER_SA_LABEL + '"]')) return false;
+        return _ladderSchemeKeysFor().length > 0;
+    }
+    function _ladderHostGroups() {
+        return _ladderSchemeKeysFor().map(k => Object.assign({}, k, { fids: _ladderFids(k.key), done: !!_ladderRowText(_ladderFids(k.key).mark) }));
+    }
+    function _ladderHostConfidence() { return _ladderRowText('sa-ms-confidence'); }
+    function _ladderHostComplete() {
+        const g = _ladderHostGroups();
+        return g.length > 0 && g.every(x => x.done) && !!_ladderHostConfidence();
+    }
+    function _ladderHostActive() { try { return !!(_ladderActiveHook && _ladderActiveHook()); } catch (e) { return false; } }
+    // The student's own marks, compact — what Sophia is handed (the CW trial's §1.6 shape).
+    function _ladderHostSummary() {
+        return _ladderHostGroups().map(g => {
+            const lvl = _ladderRowText(g.fids.level), mark = _ladderRowText(g.fids.mark), why = _ladderRowText(g.fids.reason);
+            const met = _ladderRowText(g.fids.met);
+            return '- ' + g.q + ' ' + g.ao + ': ' + (lvl || '—') + ' · ' + (mark || '—') + (met ? ' · met: ' + met.replace(/\n+/g, '; ') : '') + (why ? ' — "' + why + '"' : '');
+        }).join('\n');
+    }
+    function _ladderHostRenderCurrent() {
+        if (!_chatShell || !_chatShell.addMsg) return;
+        if (_ladderHostActive()) return;                       // the ladder owns the screen already
+        const groups = _ladderHostGroups();
+        const next = groups.find(g => !g.done);
+        if (next) {
+            if (typeof _ladderOpenHook !== 'function') { console.warn('WML ladder-host: no open hook — ladder not mounted'); return; }
+            const qNum = parseInt(String(next.q).replace(/^Q/i, ''), 10);
+            _ladderOpenHook({
+                schemeKey: next.key, aoName: next.q + ' — ' + next.ao, walkId: LADDER_SA_WALK, regime: 'bestfit',
+                fids: next.fids,
+                onDone: function (res) {
+                    // Feed the EXISTING calibration path: the student's own mark IS their prediction.
+                    try { if (res && qNum && typeof _setPredicted === 'function') _setPredicted(qNum, res.mark); } catch (e) {}
+                    try { if (typeof _refreshLangSidebar === 'function') _refreshLangSidebar(); } catch (e) {}
+                    setTimeout(function () { _ladderHostRenderCurrent(); }, 300);
+                },
+            });
+            return;
+        }
+        if (!_ladderHostConfidence()) { _ladderHostAskConfidence(); return; }
+        _ladderHostHandBack();
+    }
+    function _ladderHostAskConfidence() {
+        const plain = 'That is every question marked by you. **One last tap — how confident are you in your own marks?**\n\n1 = not at all · 5 = very';
+        _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
+        WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain }, { durable: false, why: 'a present-state ask — re-derived from the document on entry, never stored' });
+        try {
+            const bar = el('div', { className: 'swml-quick-actions swml-sa-walk-bar' });
+            for (let v = 1; v <= 5; v++) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn swml-sa-walk-btn', textContent: String(v), onClick: function () {
+                    bar.remove();
+                    WML.recordTurn(_chatShell.history, { role: 'user', content: 'Confidence: ' + v + '/5' }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
+                    _chatShell.addMsg('Confidence: ' + v + '/5', 'user');
+                    try { _writeOutlineRowField('sa-ms-confidence', v + ' / 5', { replace: true }); } catch (e) {}
+                    try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) {}
+                    try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (e) {}
+                    _ladderHostRenderCurrent();
+                } }));
+            }
+            const bubble = _chatShell.messages && _chatShell.messages.lastElementChild;
+            if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(bar);
+        } catch (e) { /* the typed fallback below still files a bare digit */ }
+    }
+    function _ladderHostConsumeTyped(msg) {
+        const m = String(msg || '').trim().match(/^([1-5])(?:\s*\/\s*5)?$/);
+        if (!m || _ladderHostConfidence()) return false;
+        if (!_ladderHostGroups().every(g => g.done)) return false;
+        try { _chatShell.addMsg(String(m[1]), 'user'); } catch (e) {}
+        WML.recordTurn(_chatShell.history, { role: 'user', content: m[1] }, { durable: true, why: 'the student typed it — it happened, it stays' });
+        try { _writeOutlineRowField('sa-ms-confidence', m[1] + ' / 5', { replace: true }); } catch (e) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) {}
+        _ladderHostRenderCurrent();
+        return true;
+    }
+    function _ladderHostHandBack() {
+        if (_ladderHostHandBack._fired) return;   // once per doc load
+        _ladderHostHandBack._fired = true;
+        const done = 'Your own marks are filed. Now let us see how they compare with mine — beginning marking…';
+        try {
+            _chatShell.addMsg(formatAI(done), 'ai', done, { suppressActions: true });
+            WML.recordTurn(_chatShell.history, { role: 'assistant', content: done }, { durable: true, why: 'a past-event report — the marks were filed' });
+            try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (e) {}
+        } catch (e) {}
+        _silentSystemSend('SYSTEM (not from the student): the student has completed the pre-marking setup and marked their OWN response against the board\'s level descriptors. '
+            + 'THE STUDENT\'S OWN MARKS (their level, their mark, the criteria they judged met, their reason):\n' + _ladderHostSummary()
+            + '\nTheir confidence in those marks: ' + (_ladderHostConfidence() || '—') + '.\n'
+            + 'Use these in every Calibration Check: compare THEIR level and mark for each question with the level and mark you award, name the criterion where you differ most, and ask the direction-adaptive question the protocol specifies. '
+            + 'Open with brief FEEDBACK on their earlier key-aspects recall answer (2–3 lines), then begin marking exactly per the protocol\'s first marking step. Do not re-ask the grade, goal, or key-aspects questions.');
+    }
+
     function _saWalkEligible() {
         if (state.task !== 'assessment' || state.reviewMode) return false;
         return String(state.board || '').toLowerCase() === 'aqa';   // AQA P1 / P2 / Literature = the 3 anchors
@@ -8613,7 +8792,7 @@
         try {
             const editorEl = document.getElementById('swml-tiptap-editor');
             if (!editorEl) return null;
-            const SKIP = /^(Overall Feedback|Analytics|Self-Assessment|Action Plan|Score Summary)/i;
+            const SKIP = /^(Overall Feedback|Analytics|Self-Assessment|Mark-Scheme Self-Assessment|Action Plan|Score Summary)/i;
             const penRe = /^([A-Z]{1,3}\d(?:-[A-Z]+)?).{0,80}?\((?:−|-|–)\s*([\d.]+)\)(.*)$/;
             const headRe = /^Mark\s+Breakdown\s*[—–-]+\s*((?:Body\s+Paragraph|Paragraph)\s*\d+|Introduction|Conclusion|.{1,40})$/i;
             const cards = {};
@@ -11354,7 +11533,7 @@
         if (!window.WML || WML.state?.task !== 'exam_crib') return 0;
         const STRIP_TYPES = new Set(['scores', 'improvement']);
         // Specific label-matched action / feedback sections (don't catch valid Q feedback).
-        const STRIP_LABELS = new Set(['Analytics', 'Self-Assessment', 'Action Plan']);
+        const STRIP_LABELS = new Set(['Analytics', 'Self-Assessment', 'Mark-Scheme Self-Assessment', 'Action Plan']);
         // Trailing divider labels that introduce the stripped sections — drop them too
         // so we don't leave orphan section-break headers.
         const STRIP_DIVIDER_LABELS = new Set(['FEEDBACK', 'RESULTS', 'SCORES', 'Feedback', 'Results']);
@@ -16443,12 +16622,16 @@
             if (!askedBy(/what grade are you aiming for/i)) return null;
             if (!askedBy(/headline goal/i)) return 'headline';
             if (!askedBy(/key aspects/i)) return 'keyword';
+            // v7.20.604 (#462): the mark-scheme ladder — the student marks their own response
+            // against the board's level descriptors BEFORE the blind skill walk and before marking.
+            if (_ladderHostEligible() && !_ladderHostComplete()) return 'ladder';
             // v7.19.879: blind self-assessment walk — the final pre-marking stage (AQA anchors).
             if (_saWalkEligible() && !_saWalkComplete()) return 'selfassess';
             return null;
         }
         function _renderPreChainQuestion(stage) {
             let plain, html;
+            if (stage === 'ladder') { _ladderHostRenderCurrent(); return; }
             if (stage === 'selfassess') { _saWalkRenderCurrent(); return; }
             const _pcLang = _preChainIsLang();
             if (stage === 'headline') {
@@ -16937,6 +17120,7 @@
             // injection [CONTEXT] path + structure preflight).
             const _pcStage = _assessPreChainStage();
             // v7.19.879: typed "1"–"5" during the self-assessment walk rates the current row.
+            if (_pcStage === 'ladder' && _ladderHostConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
             if (_pcStage === 'selfassess' && _saWalkConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
             if (_pcStage) {
                 // v7.19.810: respect silent sends (mirrors the main path below) — a
@@ -28123,6 +28307,13 @@
             // ── the copy. Procedural only — every WORD of criteria is the board's own ──────
             const YES = 'Yes — all of them';
             const NO = 'Not all of them';
+            // v7.20.604 (#462) — the BEST-FIT regime (PEDAGOGY §35). Same climb, different rung
+            // question: "is your writing still better than this?" Stop where the description
+            // starts to match. Copy may never say hurdle / unlock / pass this level / before you
+            // can move up.
+            const BF_BETTER = 'Mine is better than this';
+            const BF_HERE = 'This is where mine sits';
+            const isBestFit = function () { return !!(cfg && cfg.regime === 'bestfit'); };
             const MET = 'Yes, I met this one';
             const UNMET = 'Not this one';
             const PLACE = [{ label: 'Top of this level' }, { label: 'Middle of this level' }, { label: 'Bottom of this level' }];
@@ -28133,6 +28324,17 @@
             function orientationChunks() {
                 const s = scheme();
                 const n = s ? engine().rungs(s).length : 4;
+                if (isBestFit()) {
+                    return [
+                        'Now you mark your own writing for **' + aoName() + '**, the way a real examiner does — against the exam board’s own words.',
+                        'An examiner reads from **Level 1** upwards. At each level they ask one question: *is this response still better than this description?* '
+                            + 'If it is, they read the next level. They stop at the level whose description **fits** the writing — and then decide where inside it the mark sits.\n\n'
+                            + 'There are ' + n + ' levels. You will read them from the bottom, so you see the same qualities at rising standards — that is how you learn what is actually being judged.',
+                        'Two things to hold on to. First, every criterion below is **word for word from the exam board** — nothing is reworded and nothing is added. '
+                            + 'Second, **you** decide; I mark the same writing afterwards, and where we disagree is the most useful part of this.\n\n'
+                            + 'Be honest rather than kind. An honest Level 2 tells you what to do next; a hopeful Level 4 tells you nothing.',
+                    ];
+                }
                 return [
                     'Now you mark your own writing for **' + aoName() + '**, the way a real examiner does.',
                     'An examiner does not start at the top and work down. They start at **Level 1** and check '
@@ -28165,10 +28367,15 @@
             function serveClimb(step, opts) {
                 const level = step.level;
                 _walkSlot.clear(WALK);   // a chip is a TAP — nothing typed may file here
-                const text = levelHeading(level) + '\n\n' + descriptorList(step.descriptors)
-                    + '\n\n**Have you met every one of these in your writing?**';
+                const lead = (level && level.lead) ? '*' + level.lead + ':*\n\n' : '';
+                const text = isBestFit()
+                    ? levelHeading(level) + '\n\n' + lead + descriptorList(step.descriptors)
+                        + '\n\n**Is your writing still better than this description?**'
+                    : levelHeading(level) + '\n\n' + descriptorList(step.descriptors)
+                        + '\n\n**Have you met every one of these in your writing?**';
                 const attach = function () {
-                    chipBarOrRetry([YES, NO], onClimb, '**Have you met every one of these?**');
+                    if (isBestFit()) chipBarOrRetry([BF_BETTER, BF_HERE], onClimb, '**Is your writing still better than this description?**');
+                    else chipBarOrRetry([YES, NO], onClimb, '**Have you met every one of these?**');
                     resetSend();
                 };
                 if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
@@ -28183,8 +28390,10 @@
                 if (critIdx >= list.length) { advance(); return; }
                 const d = list[critIdx];
                 _walkSlot.clear(WALK);
-                const text = 'You stopped at **Level ' + step.level.level + '**. Let us find out which parts you '
-                    + 'did meet — one at a time.\n\n*(' + (critIdx + 1) + ' of ' + list.length + ')*\n\n'
+                const text = (isBestFit()
+                    ? 'You have placed your writing at **Level ' + step.level.level + '**. Now say which of its criteria your writing actually meets — one at a time. This is what you will point to in your reason.'
+                    : 'You stopped at **Level ' + step.level.level + '**. Let us find out which parts you did meet — one at a time.')
+                    + '\n\n*(' + (critIdx + 1) + ' of ' + list.length + ')*\n\n'
                     + '> ' + d.text + '\n\n**Did your writing do that?**';
                 const attach = function () {
                     chipBarOrRetry([MET, UNMET], onWhich, '**Did your writing do that?**');
@@ -28237,7 +28446,11 @@
                 const markLine = res
                     ? 'That gives you **' + res.mark + ' out of ' + res.outOf + '** for ' + aoName() + '.'
                     : '';
-                const text = markLine + '\n\n**Now say why, in one sentence** — what in your own writing put you '
+                const text = isBestFit()
+                    ? markLine + '\n\n**Now justify it, in one or two sentences.** Name the descriptor your writing fits and point at the evidence '
+                        + 'in your own response — the paragraph, the sentence, the word — that earns it. Then say what stopped it being the level above.\n\n'
+                        + 'This is the part your tutor reads first.'
+                    : markLine + '\n\n**Now say why, in one sentence** — what in your own writing put you '
                     + 'there rather than a level higher? Point at something real: a paragraph, a sentence, a '
                     + 'word you chose.\n\nThis is the part your tutor reads first.';
                 _walkSlot.arm(WALK, fid('reason'), { cycle: 'rewrite' });
@@ -28262,6 +28475,15 @@
                     try { cfg.onDone(res, JSON.parse(JSON.stringify(st))); } catch (e) {
                         console.warn('WML ladder: host onDone threw —', e && e.message);
                     }
+                } else if (cfg && cfg.walkId === LADDER_SA_WALK) {
+                    // v7.20.604: resumed from the sidecar — the function did not survive JSON, but
+                    // the assessment host is document-driven, so it simply looks again (§4d: the
+                    // student must never be left on a wrap with nothing to do next).
+                    try {
+                        const qNum = parseInt(String((scheme() && scheme().question) || '').replace(/^Q/i, ''), 10);
+                        if (res && qNum && typeof _setPredicted === 'function') _setPredicted(qNum, res.mark);
+                    } catch (e) {}
+                    setTimeout(function () { try { _ladderHostRenderCurrent(); } catch (e) {} }, 300);
                 }
             }
 
@@ -28271,7 +28493,7 @@
                 const step = engine().next(scheme(), st);
                 if (!step || !step.level) { serveCurrent(); return; }
                 st.metAll = st.metAll || {};
-                if (pick === YES) {
+                if (pick === YES || pick === BF_BETTER) {
                     st.metAll[step.level.level] = true;
                     // Climbing past the top level is a real outcome, not an error — the student
                     // who meets everything is placed in the top level rather than left nowhere.
@@ -28463,6 +28685,9 @@
                 get pending() { return pending; },
             };
         })();
+        // v7.20.604 (#462): the module-scope assessment host reaches the ladder through these.
+        _ladderOpenHook = function (o) { return _examinerLadderCtl.open(o); };
+        _ladderActiveHook = function () { return !!_examinerLadderCtl.active; };
 
         // ══════════════════════════════════════════════════════════════════════════════════════
         // ⭐⭐ v7.20.563 (#428, Neil 2026-08-24) — STEP 11: CHARACTER PROFILE, a code-served WALK.
@@ -39925,12 +40150,15 @@
                             if (!askedBy(/what grade are you aiming for/i)) return null;
                             if (!askedBy(/headline goal/i)) return 'headline';
                             if (!askedBy(/key aspects/i)) return 'keyword';
+                            // v7.20.604 (#462): the mark-scheme ladder precedes the blind walk (twin pipeline).
+                            if (_ladderHostEligible() && !_ladderHostComplete()) return 'ladder';
                             // v7.19.879: blind self-assessment walk — final pre-marking stage (AQA anchors).
                             if (_saWalkEligible() && !_saWalkComplete()) return 'selfassess';
                             return null;
                         }
                         function _renderPreChainQuestion(stage) {
                             let plain, html;
+                            if (stage === 'ladder') { _ladderHostRenderCurrent(); return; }
                             if (stage === 'selfassess') { _saWalkRenderCurrent(); return; }
                             const _pcLang = _preChainIsLang();
                             if (stage === 'headline') {
@@ -40143,6 +40371,7 @@
                             // incomplete, code owns the turn (no AI round-trip).
                             const _pcStage = _assessPreChainStage();
                             // v7.19.879: typed "1"–"5" during the self-assessment walk rates the current row.
+                            if (_pcStage === 'ladder' && _ladderHostConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
                             if (_pcStage === 'selfassess' && _saWalkConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
                             if (_pcStage) {
                                 // v7.19.810: respect silent sends (mirrors primary pipeline).
@@ -58171,6 +58400,7 @@
             html += buildFeedbackSection(getMarkSplit(marks));
             html += dividerHTML('RESULTS');
             html += buildScoresSection(marks);
+            html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#462) — exam-prep template: no topic data in scope; the key builder reads state
             html += buildSelfAssessmentSection(false);
             html += buildAnalyticsSection();
             html += buildActionPlanSection('diagnostic');
@@ -58204,6 +58434,7 @@
             html += buildFeedbackSection(getMarkSplit(marks));
             html += dividerHTML('RESULTS');
             html += buildScoresSection(marks);
+            html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#462) — exam-prep template: no topic data in scope; the key builder reads state
             html += buildSelfAssessmentSection(false);
             html += buildActionPlanSection('diagnostic');
         } else if (exerciseType === 'verbal_rehearsal' || exerciseType === 'quote_analysis') {
@@ -58682,6 +58913,7 @@
             const questions = meta.questions || [];
             let totalMarks = 0;
             html += dividerHTML('FEEDBACK');
+            html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#462)
             html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             questions.forEach(function(q) {
                 const qMarks = parseInt(q.marks) || 0;
@@ -58696,6 +58928,7 @@
             const marksA = parseInt(topicData.part_a_marks) || 15;
             const marksB = parseInt(topicData.part_b_marks) || 25;
             html += dividerHTML('FEEDBACK — PART A');
+            html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#462)
             html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(marksA), 'Part A');
             html += dividerHTML('FEEDBACK — PART B');
@@ -58706,6 +58939,7 @@
             // Single format
             const feedbackMarks = parseInt(topicData.marks) || getDefaultMarks(state.board, state.subject);
             html += dividerHTML('FEEDBACK');
+            html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#462)
             html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(feedbackMarks));
             html += dividerHTML('RESULTS');
@@ -59371,6 +59605,21 @@
                 score_percentage: state.lastQuizScore.percentage,
                 grade_equivalent: state.lastQuizScore.grade,
             } : {}),
+            // v7.20.604 (#462): the mark-scheme self-assessment rides the save as STRUCTURED data
+            // (level · band · met · mark · reason per question × AO, plus confidence), derived from
+            // the document rows — the one source — so the dashboard / progress report can show
+            // how the student reached their level and mark (their handoff carries the shape).
+            ...((snap.task === 'assessment' && typeof _ladderHostGroups === 'function' && _ladderSchemeKeysFor().length) ? (function () {
+                try {
+                    const items = _ladderHostGroups().map(g => ({
+                        key: g.key, question: g.q, ao: g.ao, out_of: g.max,
+                        level: _ladderRowText(g.fids.level) || null, band: _ladderRowText(g.fids.band) || null,
+                        met: _ladderRowText(g.fids.met) || null, mark: _ladderRowText(g.fids.mark) || null,
+                        reason: _ladderRowText(g.fids.reason) || null,
+                    }));
+                    return items.some(i => i.mark) ? { self_assessment: { regime: 'bestfit', confidence: _ladderHostConfidence() || null, items: items } } : {};
+                } catch (e) { return {}; }
+            })() : {}),
             // v7.20.561 (#435): a CW trial's mark rides the same piggyback, gated to THIS task
             // and THIS project so a score can never leak onto a sibling lesson's row.
             ...((snap.task && snap.task.startsWith('cw_trial_') && state.cwTrialScore
@@ -62291,6 +62540,7 @@
         // Post-assessment sections that should exist (in order)
         const requiredSections = [
             { label: 'Score Summary', build: () => buildScoresSection(getDefaultMarks(state.board, state.subject)) },
+            ...(_ladderSchemeKeysFor().length ? [{ label: LADDER_SA_LABEL, build: () => buildMarkSchemeSelfAssessSection() }] : []),   // v7.20.604 (#462): healed into existing docs where scheme data exists
             { label: 'Self-Assessment', build: () => buildSelfAssessmentSection() },
             { label: 'Analytics', build: () => buildAnalyticsSection() },
             { label: 'Action Plan', build: () => buildActionPlanSection(state.draftType?.includes('redraft') ? 'redraft' : 'diagnostic') },
