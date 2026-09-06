@@ -11,6 +11,81 @@
     {
       "section": "Fiction reading — Language Paper 1 family",
       "unit": "AQA Language Paper 1",
+      "lesson_title": "November 2024 · The Glass House (Chase)",
+      "sitting": "November 2024",
+      "board": "aqa",
+      "text": "aqa_lang_paper_1",
+      "topic_number": 202411,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"202411\" board=\"aqa\" text=\"aqa_lang_paper_1\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 202411,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87001-INS-NOV24.PDF",
+        "ins_sha1": "402ce9c0b4494b922c35007881828cf414cebf77",
+        "qp": "AQA-87001-QP-NOV24.PDF",
+        "qp_sha1": "4338249239bfccd5decf4f5738bb9c1005f65922",
+        "ms": "AQA-87001-MS-NOV24.PDF"
+      },
+      "notes": []
+    },
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "AQA Language Paper 1",
+      "lesson_title": "June 2024 · The Grass is Singing (Lessing)",
+      "sitting": "June 2024",
+      "board": "aqa",
+      "text": "aqa_lang_paper_1",
+      "topic_number": 202406,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"202406\" board=\"aqa\" text=\"aqa_lang_paper_1\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 202406,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87001-INS-JUN24.PDF",
+        "ins_sha1": "8232a9bd61946143edf4e5fa3bf0e4a73eeadf3c",
+        "qp": "AQA-87001-QP-JUN24.PDF",
+        "qp_sha1": "a7419ceb94891d2002c66740a8fc9aee3c885015",
+        "ms": "AQA-87001-MS-JUN24.PDF"
+      },
+      "notes": []
+    },
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "AQA Language Paper 1",
+      "lesson_title": "June 2023 · The Life of Pi (Martel)",
+      "sitting": "June 2023",
+      "board": "aqa",
+      "text": "aqa_lang_paper_1",
+      "topic_number": 202306,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"202306\" board=\"aqa\" text=\"aqa_lang_paper_1\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 202306,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87001-INS-JUN23.PDF",
+        "ins_sha1": "6ff85b5ce863c73d11022613dd5fcb37d8bac90d",
+        "qp": "AQA-87001-QP-JUN23.PDF",
+        "qp_sha1": "f0c5d584686536cc4e80ec6b3f02e8ae18655695",
+        "ms": "AQA-87001-MS-JUN23.PDF"
+      },
+      "notes": []
+    },
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "AQA Language Paper 1",
       "lesson_title": "November 2021 · Half of a Yellow Sun (Adichie)",
       "sitting": "November 2021",
       "board": "aqa",
@@ -55,6 +130,81 @@
         "qp": "AQA-87001-QP-NOV20.PDF",
         "qp_sha1": "5a83435e98a5c21dce4ae7ae6caab03614734eac",
         "ms": null
+      },
+      "notes": []
+    },
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "AQA Language Paper 1",
+      "lesson_title": "November 2019 · The Silent Land (Joyce)",
+      "sitting": "November 2019",
+      "board": "aqa",
+      "text": "aqa_lang_paper_1",
+      "topic_number": 201911,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"201911\" board=\"aqa\" text=\"aqa_lang_paper_1\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 201911,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87001-INS-NOV19.PDF",
+        "ins_sha1": "734cee1f2aeadb8f8dcd7aaf65009d36daf50b0c",
+        "qp": "AQA-87001-QP-NOV19.PDF",
+        "qp_sha1": "8eb911e5b8f495782ef7faea608ca700b0a169ad",
+        "ms": "AQA-87001-MS-NOV19.PDF"
+      },
+      "notes": []
+    },
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "AQA Language Paper 1",
+      "lesson_title": "November 2018 · A Sound of Thunder (Bradbury)",
+      "sitting": "November 2018",
+      "board": "aqa",
+      "text": "aqa_lang_paper_1",
+      "topic_number": 201811,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"201811\" board=\"aqa\" text=\"aqa_lang_paper_1\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 201811,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87001-INS-NOV18.PDF",
+        "ins_sha1": "75562cfbcafe643c6ed4ac36e6ea995803796799",
+        "qp": "AQA-87001-QP-NOV18.PDF",
+        "qp_sha1": "f8fc07c9aa8e11156370ea1c8018c44596dd2c9f",
+        "ms": "AQA-87001-MS-NOV18.PDF"
+      },
+      "notes": []
+    },
+    {
+      "section": "Fiction reading — Language Paper 1 family",
+      "unit": "AQA Language Paper 1",
+      "lesson_title": "June 2018 · Jigs and Reels (Harris)",
+      "sitting": "June 2018",
+      "board": "aqa",
+      "text": "aqa_lang_paper_1",
+      "topic_number": 201806,
+      "subject": "language",
+      "shortcode": "[writing_mastery_lab task=\"diagnostic\" phase=\"initial\" topic=\"201806\" board=\"aqa\" text=\"aqa_lang_paper_1\" subject=\"language\" author=\"{{AUTHOR_UID}}\"]",
+      "bridge": {
+        "wml_task": "diagnostic",
+        "wml_phase": "initial",
+        "wml_topic": 201806,
+        "wml_author": "{{AUTHOR_UID}}"
+      },
+      "source_pdfs": {
+        "ins": "AQA-87001-INS-JUN18.PDF",
+        "ins_sha1": "b3e4be7b5c463002ef705e7c46f01cfa8ed5c1e8",
+        "qp": "AQA-87001-QP-JUN18.PDF",
+        "qp_sha1": "bf2b7a8bb7909ce11987040a726a4433928f7af5",
+        "ms": "AQA-87001-MS-JUN18.PDF"
       },
       "notes": []
     },

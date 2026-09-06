@@ -1,0 +1,49 @@
+{
+  "topic_number": 202406,
+  "board": "aqa",
+  "text": "aqa_lang_paper_1",
+  "store": "swml_topics_aqa_aqa_lang_paper_1",
+  "label": "AQA Language Paper 1 — June 2024 · The Grass is Singing (Doris Lessing)",
+  "sources": {
+    "A": {
+      "line_count": 52,
+      "line_checks": {
+        "1": "And then, suddenly, the heat bec",
+        "5": "she would wander on to the veran",
+        "6": "had to go back to the house to g",
+        "7": "As time passed, the heat became ",
+        "10": "flames. Inside, she could not be",
+        "15": "having made sure he was out of t",
+        "17": "dryness.",
+        "18": "‘When is it going to rain?’ she ",
+        "20": "question. Surely she knew when t",
+        "25": "were subservient to the slow mov",
+        "30": "It was fetched twice a week from",
+        "35": "looked at her in incredulous hor",
+        "40": "never before used to her. ‘Liste",
+        "45": "She was furious. This seemed the",
+        "50": "blaming himself, and she forgivi"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 8,
+    "Q4": 20,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87001-INS-JUN24.PDF",
+    "ins_sha1": "8232a9bd61946143edf4e5fa3bf0e4a73eeadf3c",
+    "qp": "AQA-87001-QP-JUN24.PDF",
+    "qp_sha1": "a7419ceb94891d2002c66740a8fc9aee3c885015",
+    "ms": "AQA-87001-MS-JUN24.PDF"
+  },
+  "bank_check": {
+    "skipped": "no bank entry for June 2024"
+  },
+  "needs_human": [],
+  "notes": []
+}

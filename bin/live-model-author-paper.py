@@ -21,7 +21,7 @@ SITTING_WORDS = {'06': 'June', '11': 'November'}
 AQA_P1_AOS = {1: 'AO1', 2: 'AO2', 3: 'AO2', 4: 'AO4', 5: 'AO5, AO6'}
 AQA_P1_MARKS = {1: 4, 2: 8, 3: 8, 4: 20, 5: 40}
 
-FURNITURE = re.compile(r'^\s*(IB/G/|\*\d+\*|Turn over|END OF QUESTIONS|Do not write|outside the|box\s*$|For Examiner|Question\s+Mark|TOTAL\s*$|\d{1,2}\s*$|Please write clearly|Centre number|Surname|Forename|Candidate signature|I declare)', re.I)
+FURNITURE = re.compile(r'^\s*(IB/[GM]/|\*\d+\*|Turn over|END OF QUESTIONS|Do not write|outside the|box\s*$|For Examiner|Question\s+Mark|TOTAL\s*$|\d{1,2}\s*$|Please write clearly|Centre number|Surname|Forename|Candidate signature|I declare)', re.I)
 GUTTER = re.compile(r'\s{3,}(Do not write|outside the|b|bo|box|Turn over\s*►?|\d{1,2})\s*$', re.I)
 
 def pdftext(path, first=None, last=None):
@@ -84,7 +84,11 @@ def parse_insert(path, letter='A'):
     block = []
     for ln in lines[start:]:
         if re.search(r'END OF SOURCE', ln) or re.match(r'^\s*Source [AB]\s*$', ln): break
-        if re.match(r'^\s*(IB/G/|\*\d+\*)', ln) or re.match(r'^\s*\d{1,2}\s*$', ln): continue
+        # `PMT\s*$` — Physics & Maths Tutor stamps its name on every page of the copies it
+        # mirrors. It survives into the body column, so each page break added a phantom body
+        # line and the printed marker drifted (JUN24/NOV24 both refused at marker 40). The
+        # QUESTION-PAPER parser below already filtered it; the insert parser did not.
+        if re.match(r'^\s*(IB/[GM]/|\*\d+\*|PMT\s*$)', ln) or re.match(r'^\s*\d{1,2}\s*$', ln): continue
         # right-margin furniture ("Turn over ►", often truncated to "Tur" by the layout)
         if re.match(r'^\s{30,}(Tur\w*(\s+over)?\s*►?|►)\s*$', ln) or re.match(r'^\s*Turn over', ln): continue
         block.append(ln)
@@ -309,7 +313,7 @@ def parse_unseen_aqa(qp_path):
     seg = []
     for ln in lines[start + 1:]:
         if re.search(r'END OF QUESTIONS', ln): break
-        if re.match(r'^\s*(IB/G/|\*\d+\*|PMT\s*$)', ln) or re.match(r'^\s*\d{1,2}\s*$', ln) or re.search(r'Answer both questions', ln): continue
+        if re.match(r'^\s*(IB/[GM]/|\*\d+\*|PMT\s*$)', ln) or re.match(r'^\s*\d{1,2}\s*$', ln) or re.search(r'Answer both questions', ln): continue
         seg.append(clean(ln))
     # split at the two question cells
     qidx = [i for i, ln in enumerate(seg) if re.match(r'^\s*2\s+7\s*\.\s*[12]\b', ln)]

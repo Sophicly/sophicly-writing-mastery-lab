@@ -1,0 +1,48 @@
+{
+  "topic_number": 202411,
+  "board": "aqa",
+  "text": "aqa_lang_paper_1",
+  "store": "swml_topics_aqa_aqa_lang_paper_1",
+  "label": "AQA Language Paper 1 — November 2024 · The Glass House (Eve Chase)",
+  "sources": {
+    "A": {
+      "line_count": 50,
+      "line_checks": {
+        "1": "The forest looks like it’ll eat ",
+        "4": "it’s around the next corner, she",
+        "5": "Rita sucks in her breath, her ey",
+        "8": "Behind a tall, rusting gate, Fox",
+        "10": "blink drunkenly in the evening s",
+        "14": "townhouse as Rita could possibly",
+        "15": "For a moment no one in the car s",
+        "18": "Although she’s done her best to ",
+        "20": "London. It’s not just the worry ",
+        "25": "It was meant to be a London nann",
+        "30": "like Nan’s bungalow did. She’d g",
+        "35": "On the morning of the interview,",
+        "40": "she could salvage after the fire",
+        "45": "powder-blue cashmere twinset, an"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 8,
+    "Q4": 20,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87001-INS-NOV24.PDF",
+    "ins_sha1": "402ce9c0b4494b922c35007881828cf414cebf77",
+    "qp": "AQA-87001-QP-NOV24.PDF",
+    "qp_sha1": "4338249239bfccd5decf4f5738bb9c1005f65922",
+    "ms": "AQA-87001-MS-NOV24.PDF"
+  },
+  "bank_check": {
+    "skipped": "no bank entry for November 2024"
+  },
+  "needs_human": [],
+  "notes": []
+}

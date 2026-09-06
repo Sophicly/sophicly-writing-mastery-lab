@@ -1,0 +1,51 @@
+{
+  "topic_number": 201911,
+  "board": "aqa",
+  "text": "aqa_lang_paper_1",
+  "store": "swml_topics_aqa_aqa_lang_paper_1",
+  "label": "AQA Language Paper 1 — November 2019 · The Silent Land (Graham Joyce)",
+  "sources": {
+    "A": {
+      "line_count": 57,
+      "line_checks": {
+        "1": "It was snowing again. Gentle six",
+        "5": "range.",
+        "9": "If there are few moments in life",
+        "10": "mountain breathed back at her, Z",
+        "14": "in the powder snow as she waited",
+        "15": "The sun was up now; in a few min",
+        "20": "‘This is perfection.’",
+        "25": "feeling of proximity to an eagle",
+        "28": "But at the edge of the slope, ne",
+        "30": "recover her balance. Before she’",
+        "35": "husband.",
+        "40": "rubberised and he mouthed someth",
+        "45": "pushed herself down the fall-lin",
+        "50": "she too was punched off her feet",
+        "55": "a million termites chewing on wo"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 8,
+    "Q4": 20,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87001-INS-NOV19.PDF",
+    "ins_sha1": "734cee1f2aeadb8f8dcd7aaf65009d36daf50b0c",
+    "qp": "AQA-87001-QP-NOV19.PDF",
+    "qp_sha1": "8eb911e5b8f495782ef7faea608ca700b0a169ad",
+    "ms": "AQA-87001-MS-NOV19.PDF"
+  },
+  "bank_check": {
+    "Q2": 0.89,
+    "Q3": 1.0,
+    "Q4": 0.99
+  },
+  "needs_human": [],
+  "notes": []
+}

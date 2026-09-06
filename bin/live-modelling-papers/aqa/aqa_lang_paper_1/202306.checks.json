@@ -1,0 +1,49 @@
+{
+  "topic_number": 202306,
+  "board": "aqa",
+  "text": "aqa_lang_paper_1",
+  "store": "swml_topics_aqa_aqa_lang_paper_1",
+  "label": "AQA Language Paper 1 — June 2023 · The Life of Pi (Yann Martel)",
+  "sources": {
+    "A": {
+      "line_count": 50,
+      "line_checks": {
+        "1": "It was the hyena that worried me",
+        "5": "never giving up for simple lack ",
+        "6": "distracted from its mother is go",
+        "10": "I am not one to hold a prejudice",
+        "15": "bear, but suffering from a reced",
+        "19": "want as a pet.",
+        "20": "I was hoping the hyena would sta",
+        "25": "beyond the tarpaulin into a twen",
+        "30": "legs against the benches made th",
+        "35": "its gaze downwards, to the space",
+        "40": "morning the hyena ran in circles",
+        "45": "producing deep groans interrupte",
+        "50": "did not move from the restricted"
+      }
+    }
+  },
+  "questions": {
+    "Q1": 4,
+    "Q2": 8,
+    "Q3": 8,
+    "Q4": 20,
+    "Q5": 40
+  },
+  "total_marks": 80,
+  "provenance": {
+    "ins": "AQA-87001-INS-JUN23.PDF",
+    "ins_sha1": "6ff85b5ce863c73d11022613dd5fcb37d8bac90d",
+    "qp": "AQA-87001-QP-JUN23.PDF",
+    "qp_sha1": "f0c5d584686536cc4e80ec6b3f02e8ae18655695",
+    "ms": "AQA-87001-MS-JUN23.PDF"
+  },
+  "bank_check": {
+    "Q2": 0.92,
+    "Q3": 0.95,
+    "Q4": 0.99
+  },
+  "needs_human": [],
+  "notes": []
+}
