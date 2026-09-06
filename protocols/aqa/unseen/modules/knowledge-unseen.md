@@ -108,55 +108,40 @@ Instead of "This makes the reader feel sad," guide students toward:
 
 ## **2. AQA Mark Scheme Descriptors**
 
-### **2.A. Q27.1 Mark Scheme (24 marks — AO1=12, AO2=12)**
+### **2.A. THE MARK SCHEME LIVES IN ONE FILE — quote it, never this one**
 
-**Question format:** "In '[Poem Title]', how does the poet present ideas about [theme]?"
+**\[AI\_INTERNAL\]** Every AQA level descriptor for Section C is held VERBATIM, with its source PDF
+and sitting named, in **`knowledge-mark-scheme-unseen.md`** (manifest-loaded alongside this file).
+That file is the ONLY place a descriptor may be quoted from (PROTOCOL-STANDARD A4). The
+paraphrased grids that used to sit here have been removed: a paraphrase is not a descriptor, and
+quoting one to a student is a fabricated mark-scheme claim.
 
-| Level | Mark Range | Descriptor | AO1 Features | AO2 Features |
-|-------|-----------|------------|-------------|-------------|
-| Level 6 | 21-24 | Convincing, critical analysis and exploration | Critical, exploratory conceptualised response. Judicious use of precise references. | Analysis of writer's methods with subject terminology used judiciously. Exploration of effects. |
-| Level 5 | 17-20 | Thoughtful, developed consideration | Thoughtful, developed response. Apt references integrated into interpretation(s). | Examination of writer's methods with subject terminology used effectively. Examination of effects. |
-| Level 4 | 13-16 | Clear understanding | Clear, explained response. Effective use of references to support explanation. | Clear explanation of writer's methods with appropriate subject terminology. Understanding of effects. |
-| Level 3 | 9-12 | Explained, structured comments | Some explained response. References used to support a range of relevant comments. | Explained/relevant comments on methods with some relevant subject terminology. Identification of effects. |
-| Level 2 | 5-8 | Supported, relevant comments | Supported response. Comments on references. | Identification of writers' methods. Some reference to subject terminology. |
-| Level 1 | 1-4 | Simple, explicit comments | Simple comments relevant to task and text. Reference to relevant details. | Awareness of writer making choices. Possible reference to subject terminology. |
-| 0 | 0 | Nothing worthy of credit | — | — |
+- **Q27.1 — 24 marks, AO1 = 12 + AO2 = 12, SIX levels**, banded by the board on the 24 total.
+  Question format: *"In '[Poem Title]', how does the poet present ideas about [theme]?"*
+- **Q27.2 — 8 marks, AO2 ONLY, FOUR levels.** Question format: *"In both '[Poem 1]' and
+  '[Poem 2]', the poets present ideas about [shared theme]. What are the similarities and/or
+  differences between the methods the poets use to present these ideas?"*
+- **Section C total: 32 marks. No AO3 (context) and no AO4 (SPaG) anywhere in Section C** — the
+  mark scheme states AO4 is assessed on Section A only.
+- Neither question prints Upper/Lower sub-bands. Q27.1 prints a "How to arrive at a mark" column;
+  Q27.2 does not.
 
-**Scoring Presentation:**
+### **2.B. NEVER PRESENT AN AO SUB-TOTAL AS A MARK**
 
-* **AO1: [X]/12, AO2: [Y]/12 → Combined Total: [X+Y]/24**
+The board does not print an AO1 mark and an AO2 mark for Q27.1 — it bands the WHOLE 24 against a
+single level, with AO1 and AO2 typical features inside it. The 12/12 split states AO WEIGHT.
+Never output "AO1: [X]/12, AO2: [Y]/12" as if they were two scores to be added: the section
+criteria in the assessment protocol carry the AO labels, and the question total is their sum.
 
-### **2.B. Q27.2 Mark Scheme (8 marks — AO2 only)**
+### **2.C. NO GRADE BOUNDARIES — the canonical ladder is the ONLY scale**
 
-**Question format:** "In both '[Poem 1]' and '[Poem 2]', the poets present ideas about [shared theme]. What are the similarities and/or differences between the methods the poets use to present these ideas?"
-
-| Level | Mark Range | AO2 Features |
-|-------|-----------|-------------|
-| Level 4 | 7-8 | Critical, insightful comparison. Analytical comparison of effects of writers' methods. |
-| Level 3 | 5-6 | Thoughtful comparison. Clear comparison of effects of writers' methods. |
-| Level 2 | 3-4 | Clear comparison. Comments on similarities/differences between effects of methods. |
-| Level 1 | 1-2 | Simple comment on one or both poems and/or simple connection. Identification of method(s). |
-| 0 | 0 | Nothing worthy of credit. |
-
-**Scoring Presentation:**
-
-* **AO2: [X]/8**
-
-### **2.C. Grade Boundaries Reference (Approximate — Section C only)**
-
-| Grade | Q27.1 (out of 24) | Q27.2 (out of 8) | Section C Total (out of 32) |
-|-------|-------------------|-------------------|---------------------------|
-| 9 | 21-24 | 7-8 | 28-32 |
-| 8 | 19-20 | 6-7 | 25-27 |
-| 7 | 17-18 | 5-6 | 22-24 |
-| 6 | 14-16 | 4-5 | 18-21 |
-| 5 | 11-13 | 3-4 | 14-17 |
-| 4 | 8-10 | 2-3 | 10-13 |
-| 3 | 5-7 | 1-2 | 6-9 |
-| 2 | 3-4 | 1 | 4-5 |
-| 1 | 1-2 | 0-1 | 1-3 |
-
-**[AI_INTERNAL]:** These are approximate boundaries. Use for guidance only; emphasise Level descriptors over grade numbers.
+**\[AI\_INTERNAL\]** The approximate real-exam grade-boundary table that used to sit here was
+invented and has been deleted (PROTOCOL-STANDARD A6: one ladder everywhere, never real-exam
+boundaries). Every percentage and grade — per section, per question and final — bands on the
+**CANONICAL GRADE LADDER** stated in `protocol-a-assessment-unseen.md`: Grade 9 ≥ 85% · 8 ≥ 75% ·
+7 ≥ 65% · 6 ≥ 55% · 5 ≥ 45% · 4 ≥ 35% · 3 ≥ 25% · 2 ≥ 15% · else 1. The AQA levels are used for
+LEVEL ALIGNMENT only — quote the descriptor, name the level and its mark range, name the path to
+the next level in the next level's own wording. Never convert an AQA level into a grade.
 
 ---
 
@@ -342,14 +327,31 @@ Thomas's use of personification and metaphor in 'A Day in Autumn' creates a vivi
 2. Building sentence exploring the poem's theme or central idea, demonstrating understanding of the text (AO1) — Worth: 0.5 marks
 3. Clear, precise three-point thesis with powerful argument about the poet's methods (AO1) — Worth: 1.0 mark
 
-**Body Paragraphs (6 marks each):**
-1. Concept-led topic sentence with clear argumentative claim (AO1) — Worth: 1.0 mark
-2. Precise subject terminology identifying the technique (AO2) — Worth: 0.5 marks
-3. Strategic quote selection with smooth integration (AO1/AO2) — Worth: 0.5 marks
-4. Close analysis zooming in on specific words/sounds/punctuation (AO2) — Worth: 1.0 mark
-5. Effect on reader — first sentence: emotional/intellectual impact (AO2) — Worth: 0.75 marks
-6. Effect on reader — second sentence: deeper/alternative effect (AO2) — Worth: 0.75 marks
-7. Perceptive insight into the poet's purpose/what the technique achieves (AO1/AO2) — Worth: 1.5 marks
+**Body Paragraphs (6 marks each) — SIX criteria, one per taught element:**
+1. Concept-led topic sentence with a clear argumentative claim — **no technique words in it** (AO1) — Worth: 1.0 mark
+2. Method named with precise subject terminology + embedded quotation + inference, in one movement (AO2) — Worth: 1.5 marks
+3. Close analysis zooming in on specific words, sounds or punctuation (AO2) — Worth: 1.0 mark
+4. Effect on reader — first detailed sentence: the immediate response (AO2) — Worth: 0.75 marks
+5. Effect on reader — second detailed sentence: a distinct, deeper response (AO2) — Worth: 0.75 marks
+6. Perceptive evaluation of the poet's purpose — what the choices are FOR (AO1) — Worth: 1.0 mark
+7. **BONUS** — the paragraph's analysis is threaded explicitly back to the thesis (AO1) — Worth: **+0.5**
+
+**\[AI\_INTERNAL\] WHY SIX AND NOT SEVEN (v7.20.600 port — the change from the March monolith,
+stated so it is not silently reverted):** the six criteria are the SAME six elements the planning
+outline files (`outline-body-N-topic · -evidence · -analysis · -effects · -effects2 · -purpose`,
+built by the code-owned outline registry for an AO1+AO2 paper). The old seven-criterion split
+(separate "terminology" 0.5 and "quote integration" 0.5, and a 1.5-mark purpose) had NO
+counterpart in the outline, so a student planned six boxes and was marked against seven bands — the
+key-granularity class. They are now 1:1, verified against the AQA Language Paper 1 anchor's TTECEA
+table (six criteria summing exactly to the paragraph's full value, plus a +0.5 bonus capped at that
+value). **The six criteria sum to exactly 6.0.** The BONUS rides on top, is capped at 6.0, is
+OMITTED entirely when absent, and is never a deduction and never listed as a weakness.
+
+**\[AI\_INTERNAL\] NO CONTEXT ELEMENT — this is the unseen difference, not an omission.** A
+literature body paragraph ends TTECEA**+C**; an unseen body paragraph ends at purpose. **AO3 is not
+assessed in Section C**, so there is no context element, no context criterion, no context row in the
+outline, and context is never a Priority Improvement. Never carry the +C over from a studied-text
+protocol.
 
 **Note on Body Paragraph Focus:**
 - **Body Paragraph 1 (Form/Beginning):** Terminology should focus on FORM (e.g., narrative poem, lyric, elegy, dramatic monologue, free verse, blank verse) if the student chose the Form pathway, OR on opening techniques (e.g., opening image, establishing tone, setting scene, in medias res) if the student chose the Beginning pathway.
@@ -369,11 +371,25 @@ Thomas's use of personification and metaphor in 'A Day in Autumn' creates a vivi
 * **Paragraph 1 (Poem 1 → compare to Poem 2):** 4 marks
 * **Paragraph 2 (Poem 2 → compare to Poem 1):** 4 marks
 
-**Paragraph Mark Allocation (4 marks each):**
-1. Clear identification of a specific method with evidence (AO2) — Worth: 1.0 mark
-2. Analysis of effect of method (AO2) — Worth: 1.0 mark
-3. Explicit comparison to the other poem's method (AO2) — Worth: 1.0 mark
-4. Insight into what the comparison reveals about different approaches (AO2) — Worth: 1.0 mark
+**Paragraph Mark Allocation (4 marks each) — FOUR criteria, one per taught element:**
+1. Method named with precise subject terminology + embedded quotation from the FIRST poem (AO2) — Worth: 0.75 marks
+2. Comparative pivot — the corresponding method in the SECOND poem, its own embedded quotation, opened by a comparative discourse marker (AO2) — Worth: 0.75 marks
+3. **Comparison of the EFFECTS the two methods create** — one sentence holding both poems at once (AO2) — Worth: 1.5 marks
+4. Evaluative insight — what the similarity or difference in method reveals about the two poets' approaches (AO2) — Worth: 1.0 mark
+
+**\[AI\_INTERNAL\] WHY CRITERION 3 CARRIES THE MOST (derived, not chosen):** the board's own Level 4
+descriptor for 27.2 is *"Analytical comparison of the effects of writers' methods to create
+meanings"* — comparing EFFECTS, not listing methods, is what separates the top level from Level 2's
+*"Comments on the similarities/differences between the effects of methods used to create
+meanings."* The worths follow the descriptor ladder. **The four criteria sum to exactly 4.0**; two
+paragraphs = 8. There is no bonus row on Q27.2.
+
+**\[AI\_INTERNAL\] Q27.2 IS AO2-ONLY — the hardest thing to get right on this question.** AO1 is not
+assessed. A brilliant interpretation of what the poems MEAN earns nothing here unless it is
+anchored to a METHOD and its EFFECT. Never award a criterion for ideas alone, and never write a
+Priority Improvement that asks for more interpretation — ask for the method, the quotation, and the
+comparison of effect. Equally: never PENALISE a student for thin interpretation on 27.2. It is not
+being marked.
 
 ---
 

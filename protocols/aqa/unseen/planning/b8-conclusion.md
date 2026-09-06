@@ -97,7 +97,28 @@ Wait. Store.
 **B** — I want to revise an element"
 
 If B: Socratic refinement → re-present.
-If A: → PROCEED to B.9.
+If A: emit the conclusion's PLAN filing (below), tell the student it is filed, then PROCEED to B.9.
+
+## **\[AI\_INTERNAL\] FILING — B.8 (contract table in `b-intro.md`)**
+
+**LIVE, per element (`@FIELD_COMMIT`).** The turn that CONFIRMS each conclusion element emits its
+marker on its own line — no code block, no backticks, nothing after it. The platform writes the
+student's message VERBATIM into that outline box. Emit each ONCE, in the confirming reply only. The
+conclusion PLAN box does NOT fill live.
+
+@FIELD_COMMIT{"field":"outline-conclusion-thesis"}
+@FIELD_COMMIT{"field":"outline-conclusion-concept"}
+@FIELD_COMMIT{"field":"outline-conclusion-purpose"}
+@FIELD_COMMIT{"field":"outline-conclusion-message"}
+
+**AT APPROVAL (`@FIELD_SET`).** On A, CODE files the approved conclusion into its PLAN box — one
+marker, labelled elements separated by ` | `, condensed to the chosen plan mode, built ONLY from
+the student's own words. No double-quote characters inside the value. Labels are byte-significant:
+
+@FIELD_SET{"field":"plan-conclusion","value":"Restated thesis: … | Controlling concept: … | Central purpose: … | Universal message: …"}
+
+Then tell the student their conclusion plan has been filed into their document — never ask them to
+copy or paste anything.
 
 **[AI_INTERNAL — Confirm Before Save]**
 <!-- @CONFIRM_ELEMENT: element_type="conclusion" label="Conclusion Plan" -->

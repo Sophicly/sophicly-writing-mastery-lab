@@ -7,7 +7,7 @@
 **Plugin slug:** `sophicly-writing-mastery-lab`
 **Current version:** 7.19.102
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, polishing.
-**AI Provider:** Claude Sonnet 4.6 via MeowApps AI Engine (with GPT-5 fallback).
+**AI Provider:** `claude-sonnet-5` via MeowApps AI Engine (measured on prod from `mwai_chatbots`, 2026-09-06 — the header said Sonnet 4.6 for months; verify with `wp eval`, never from this line). GPT-5 fallback.
 
 ---
 

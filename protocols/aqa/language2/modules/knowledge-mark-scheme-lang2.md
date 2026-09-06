@@ -127,9 +127,7 @@ Shows simple awareness of language:
 **Level 0 — No marks:** Nothing to reward.
 
 **Marking rules (verbatim):**
-- If a student writes about language outside of the given lines or from the wrong source (but with
-  the correct focus), the response should be placed in the appropriate level according to the
-  quality of what is written, but placed at the bottom of the level.
+- If a student writes about language outside of the given lines or from the wrong source (but with the correct focus), the response should be placed in the appropriate level according to the quality of what is written, but placed at the bottom of the level.
 - A student has to address the correct focus of the question to achieve Level 3 or above.
 
 ---
@@ -208,8 +206,7 @@ and use of rhetorical devices · subtle variation of pace.
 Content
 - Communication is consistently clear and consistently relevant to focus/task.
 - Tone, style and register are consistently matched to purpose and audience.
-- Increasingly sophisticated vocabulary and phrasing, chosen for effect with a range of successful
-  linguistic devices.
+- Increasingly sophisticated vocabulary and phrasing, chosen for effect with a range of successful linguistic devices.
 Organisation
 - Effective use of structural features.
 - Writing is engaging, using a range of clear, connected ideas.
@@ -283,8 +280,7 @@ Typical features (rhetorical) at Level 1: simple or limited point of view · lim
 limited scope/ideas · simple sequence of ideas · simple register · simple tone · simple/limited
 vocabulary · simple use of devices · limited sense of pace.
 
-**Level 0 — No marks:** Students will not have offered any meaningful writing to assess. Nothing
-to reward.
+**Level 0 — No marks:** Students will not have offered any meaningful writing to assess. Nothing to reward.
 
 **NB (verbatim):** If a candidate does not directly address the focus of the task, their
 communication cannot be clear or convincing and therefore the mark for AO5 is capped at the top of
@@ -326,5 +322,4 @@ Level 2 — 12 marks.
 - Accurate basic spelling.
 - Simple use of vocabulary.
 
-**Level 0 — No marks:** Students' spelling, punctuation etc. is sufficiently poor to prevent
-understanding or meaning.
+**Level 0 — No marks:** Students' spelling, punctuation etc. is sufficiently poor to prevent understanding or meaning.

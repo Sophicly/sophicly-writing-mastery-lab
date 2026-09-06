@@ -318,9 +318,11 @@ to keep the horror honest. Reach for today's reader, never a summary. Now yours:
 poems pull on — then what it still says now."
 
 ### Acceptance (grep-able, this file)
-- The three C-LADDER contract literals appear above: the precedence line
-  (`WRONG → FAILED → WEAK/RESOLVED`), the weak-never-climbs law, and the wrong=falsifiable
-  discriminator.
+- The three C-LADDER contract literals appear above, inside the four-verdicts block only: the
+  verdict-precedence line (WRONG, then FAILED, then WEAK/RESOLVED, arrow-joined), the
+  weak-never-enters-the-ladder law, and the wrong=falsifiable discriminator. **This check names
+  the three lines without quoting them**, so each literal's grep count stays exactly 1 — the
+  C-CHECKS rows are counts, not presence tests (AQA P2 planning §10 precedent).
 - Every L3 lens cell names a DIRECTION — never CONTENT: no lens quotes or describes today's poems, any
   set text, a completed reading, or a candidate concept the student could adopt wholesale.
 - Every L4 script models on the Owen/Hughes pair only; no quotation from the student's live poems

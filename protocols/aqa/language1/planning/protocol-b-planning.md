@@ -459,13 +459,20 @@ Context (AO3) is NOT assessed anywhere on this paper — never ask for it. Compa
 assessed — there is only one source. Q2 analyses ONLY the question's given lines; Q3
 analyses the WHOLE extract's shape; Q4 evaluates against the printed statement.
 
-**Gold traceability:** this paper has no per-question gold FILES — the golds live inside
-the assessment cards. Each question stage below reverses its card in
-`protocols/aqa/language1/modules/protocol-a-assessment.md`: Q2 = the mark-breakdown table
-(2 × TTECEA ¶ × 4.0, six criteria summing exactly); Q3 = the same template with the
-structural-feature swap + the structure-scale triad; Q4 = Intro(1) + 3×BP(6) +
-Conclusion(1) = 20, KEYWORD-VERBATIM rule; Q5 = the CW golds. A change to those card
-shapes and this file must ride the same commit.
+**Gold traceability (D7 — one line per question section).** This paper has no per-question gold
+FILES: P1's golds are authored INLINE in the assessment cards, so each citation below names the
+card it reverses in `protocols/aqa/language1/modules/protocol-a-assessment.md`. There is no
+`@GOLD_SHAPE:` header to byte-copy — `bin/check-gold-shapes.sh` diffs only citations that carry
+one, so a gold with no header must never be given a claimed shape here. **A change to a card's
+shape and a change to this block ride the SAME commit.**
+
+@GOLD_REF: modules/protocol-a-assessment.md — QUESTION 2 card (both gold models per paragraph). Shape reversed by Stage S3: 2 × TTECEA body paragraph, each out of 4.0 from six criteria that sum exactly to 4.0 — conceptual-ONLY topic sentence, then technique + integrated quote + inference, then word-level close analysis, then effect on reader 1, then effect on reader 2, then author's purpose; the +0.5 interplay BONUS rides on top, capped at 4.0. The two Model 2s analyse DIFFERENT quotations.
+
+@GOLD_REF: modules/protocol-a-assessment.md — QUESTION 3 card (both gold models per paragraph). Same TTECEA template as Q2 with the structural swap: criterion 2 becomes structural feature named + located evidence + inference, criterion 3 becomes analysis of the reader's journey; across the two paragraphs at least one whole-text and one paragraph-level feature (the structure-scale triad).
+
+@GOLD_REF: modules/protocol-a-assessment.md — QUESTION 4 card (intro, 3 body, conclusion golds). Shape reversed by Stage S5: Intro (1) + 3 × evaluative TTECEA body (6 each) + Conclusion (1) = exactly 20; every element stamped AO4; the evaluative keywords are taken VERBATIM from the printed statement (KEYWORD-VERBATIM rule) and stay in view in every gold.
+
+@GOLD_REF: modules/protocol-a-assessment.md — QUESTION 5 card (the ONE labelled holistic creative-writing gold). Shape reversed by Stage S6: a single flowing piece at the target length, the taught 7-element scene structure labelled inline, AO5 + AO6 judged whole-piece — never per-paragraph, never two golds, never shortened.
 
 ---
 

@@ -8,6 +8,8 @@
             "modules/foundation-unseen.md",
             "modules/knowledge-unseen.md",
             "modules/workflow-entry.md",
+            "planning/b-intro.md",
+            "planning/b-ladder-unseen.md",
             "literature/modules/theme-check.md",
             "literature/modules/socratic-literature.md",
             "literature/modules/conclusion-scaffolding.md"
@@ -16,7 +18,6 @@
             "1": {
                 "label": "Setup & Goals",
                 "files": [
-                    "planning/b-intro.md",
                     "planning/b1-setup.md",
                     "planning/b2-goals.md"
                 ]
@@ -72,6 +73,7 @@
         "always": [
             "modules/foundation-unseen.md",
             "modules/knowledge-unseen.md",
+            "modules/knowledge-mark-scheme-unseen.md",
             "modules/workflow-entry.md",
             "modules/protocol-a-assessment-unseen.md",
             "literature/modules/theme-check.md",

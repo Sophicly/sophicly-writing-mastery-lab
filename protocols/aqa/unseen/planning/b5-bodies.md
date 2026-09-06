@@ -73,6 +73,60 @@ The actual workflow for B.5 Body Paragraph Planning is:
 
 ---
 
+## **\[AI\_INTERNAL\] FILING — B.5 (the two content grades; contract table in `b-intro.md`)**
+
+**LIVE, per element (`@FIELD_COMMIT`).** The turn that CONFIRMS an element emits its marker on its
+own line, no code block, no backticks, nothing after it. The platform writes the student's message
+VERBATIM into that outline box — the words never round-trip through you, so never restate them as
+the value. Emit each marker ONCE, in the confirming reply only. **The paragraph PLAN box does NOT
+fill live** — it fills once, at the approval below. The Technique question (Step 2) and the Evidence
+confirmation (Step 3) file NOTHING on their own: both are absorbed into the Technique + Evidence +
+Inference sentence, which files the `evidence` box. Effects file as TWO separate turns. **There is
+no Context element and no Context box — AO3 is not assessed in Section C.** Use exactly these
+literal fieldIds:
+
+**Body Paragraph 1** (Form or the opening — beginning anchor):
+@FIELD_COMMIT{"field":"outline-body-1-topic"}
+@FIELD_COMMIT{"field":"outline-body-1-evidence"}
+@FIELD_COMMIT{"field":"outline-body-1-analysis"}
+@FIELD_COMMIT{"field":"outline-body-1-effects"}
+@FIELD_COMMIT{"field":"outline-body-1-effects2"}
+@FIELD_COMMIT{"field":"outline-body-1-purpose"}
+
+**Body Paragraph 2** (Language — middle anchor):
+@FIELD_COMMIT{"field":"outline-body-2-topic"}
+@FIELD_COMMIT{"field":"outline-body-2-evidence"}
+@FIELD_COMMIT{"field":"outline-body-2-analysis"}
+@FIELD_COMMIT{"field":"outline-body-2-effects"}
+@FIELD_COMMIT{"field":"outline-body-2-effects2"}
+@FIELD_COMMIT{"field":"outline-body-2-purpose"}
+
+**Body Paragraph 3** (the Ending — end anchor):
+@FIELD_COMMIT{"field":"outline-body-3-topic"}
+@FIELD_COMMIT{"field":"outline-body-3-evidence"}
+@FIELD_COMMIT{"field":"outline-body-3-analysis"}
+@FIELD_COMMIT{"field":"outline-body-3-effects"}
+@FIELD_COMMIT{"field":"outline-body-3-effects2"}
+@FIELD_COMMIT{"field":"outline-body-3-purpose"}
+
+**AT APPROVAL, per paragraph (`@FIELD_SET`).** When the student accepts the mirror-back at Step 7,
+CODE files the plan for them — never tell them to copy it. Emit ONE marker filing the approved
+structure into that paragraph's PLAN box: labelled elements on one line, separated by ` | `,
+condensed to the paragraph's chosen plan mode (Advanced = keywords only; Standard = key phrases),
+built **ONLY from the student's own words** — the approval click is the ownership checkpoint. No
+double-quote characters inside the value. The labels are byte-significant: use exactly these.
+
+@FIELD_SET{"field":"plan-body-1","value":"Topic: … | Technique + evidence + inference: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
+@FIELD_SET{"field":"plan-body-2","value":"Topic: … | Technique + evidence + inference: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
+@FIELD_SET{"field":"plan-body-3","value":"Topic: … | Technique + evidence + inference: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
+
+If the student refines an element after approval, the refined element re-files its OUTLINE box and
+the fresh approval re-emits that paragraph's `@FIELD_SET`, which supersedes the earlier fill. Then
+tell the student their plan has been filed into the Body Paragraph 1 / 2 / 3 plan section of their
+document — never ask them to copy or paste anything.
+
+---
+
 ### **B.5.1 BODY PARAGRAPH 1: FORM or BEGINNING**
 
 ---
@@ -344,7 +398,7 @@ ASK: "Review this plan. Are you happy with it?
 
 **If the student chooses N:** Ask "Which part would you like to refine?" Then use Socratic dialogue to help them revise. Repeat until they confirm satisfaction.
 
-**If the student chooses Y:** SAY: "Excellent! Copy this plan into the 'Body Paragraph 1' section of your workbook.
+**If the student chooses Y:** emit the `plan-body-1` `@FIELD_SET` marker per the FILING block above (the platform writes it into the document — never ask the student to copy anything), then SAY: "Excellent — your Body Paragraph 1 plan is now filed in your document.
 
 Type '**ready**' when you're ready to plan Body Paragraph 2 (Language)."
 
@@ -685,7 +739,7 @@ ASK: "Review this plan. Are you happy with it?
 **Y** — Yes, I'm satisfied **N** — No, I'd like to refine something"
 
 **If N:** Engage in Socratic refinement, then re-present.
-**If Y:** SAY: "Copy this plan into the 'Body Paragraph 2' section of your workbook.
+**If Y:** emit the `plan-body-2` `@FIELD_SET` marker per the FILING block above, then SAY: "Your Body Paragraph 2 plan is now filed in your document.
 
 Type '**ready**' when you're ready to plan Body Paragraph 3 (Ending)."
 
@@ -910,7 +964,7 @@ ASK: "Review this plan. Are you happy with it?
 **Y** — Yes, I'm satisfied **N** — No, I'd like to refine something"
 
 **If N:** Engage in Socratic refinement, then re-present.
-**If Y:** SAY: "Copy this plan into the 'Body Paragraph 3' section of your workbook."
+**If Y:** emit the `plan-body-3` `@FIELD_SET` marker per the FILING block above, then SAY: "Your Body Paragraph 3 plan is now filed in your document."
 
 **Proceed to B.5.4.**
 

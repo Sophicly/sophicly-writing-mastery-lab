@@ -90,8 +90,8 @@ below) and code routes.
   that does not engage the question. Failed means non-engagement, never "incorrect". On
   failed: climb exactly ONE rung and play it, and offer the struggle menu.
 - **WEAK-but-OWNED — something of their own, just surface-level:** ONE Socratic push for depth
-  (the beat's own push where it defines one), then accept and file their choice. A
-  weak-but-owned answer NEVER enters the ladder.
+  (the beat's own push where it defines one), then accept and file their choice.
+  A weak-but-owned answer NEVER enters the ladder.
 - **RESOLVED:** accept, file their words verbatim (`@FIELD_COMMIT` where the element has an
   outline box), name what landed, and ask the next element's question in the same turn.
 
@@ -314,9 +314,11 @@ still forgets to wind them. Reach for today's reader, never a summary. Now yours
 your three anchors all pull on — then what it still says now."
 
 ### Acceptance (grep-able, this file)
-- The three C-LADDER contract literals appear above: the precedence line
-  (`WRONG → FAILED → WEAK/RESOLVED`), the weak-never-climbs law, and the wrong=falsifiable
-  discriminator.
+- The three C-LADDER contract literals appear above, inside the four-verdicts block only: the
+  verdict-precedence line (WRONG, then FAILED, then WEAK/RESOLVED, arrow-joined), the
+  weak-never-enters-the-ladder law, and the wrong=falsifiable discriminator. **This check names
+  the three lines without quoting them**, so each literal's grep count stays exactly 1 — the
+  C-CHECKS rows are counts, not presence tests (AQA P2 planning §10 precedent).
 - Every L3 lens cell names a DIRECTION — never CONTENT: no lens quotes or describes this
   text, any set text, a completed reading, or a candidate concept the student could adopt
   wholesale.
