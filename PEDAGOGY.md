@@ -1840,12 +1840,13 @@ prevent, and it still happened.
 He named the concept himself, unprompted: **assessment literacy**, placed under metacognition, and
 attributed to **Hattie**.
 
-**THE ORDER, all six steps:**
+**THE ORDER, now SEVEN steps — a new FIRST rung was ruled 2026-09-07 (see the amendment below):**
 
 | # | step | note |
 |---|---|---|
+| **0** | ⭐⭐ **Understand what the subject IS: it is about humanity** | *"That's what literature is about. English language and literature. It's about humanity"* — reading a text = working out which human problem the writer is exploring and what they say about it. *"That's where a lot of the marks lie."* |
 | 1 | **Understand the criteria / mark scheme** — assessment literacy | *"they'll need to just keep on coming back to it"* — RECURRING, not a one-off |
-| 2 | **Practise the structure** (five-paragraph essay, 20+ mark questions) | *"once they've done that, then they'll understand WHY a five-paragraph structure is really important"* |
+| 2 | **Practise the structure** (five-paragraph essay, 20+ mark questions), **MACRO → MICRO** | *"once they've done that, then they'll understand WHY a five-paragraph structure is really important"* — and the work inside it is ordered whole-answer → paragraph → sentence (amendment below) |
 | 3 | **Identify strengths and weaknesses** | |
 | 4 | **Redraft**, targeting a 7, 8 or 9 each time | |
 | 5 | **Portfolio** — every draft/redraft reaching 7/8/9 is stored | *"when the exam comes, you then use those for revision"* |
@@ -1880,6 +1881,51 @@ there is a separate `Context` element in the BODY set — so a model authoring a
 "Context" intro line from the prose would name an element that does not exist. Verified against the
 code and corrected in `CLAUDE.md` the same day. Conclusion elements are as documented: Restated
 Thesis · Controlling Concept · Author's Central Purpose · Universal Message.
+
+### §32a. ⭐⭐ AMENDMENT (Neil, ruled 2026-09-07) — a FIRST rung before the criteria, and structure work runs MACRO → MICRO
+
+**His words, verbatim** (forms-assessment FIXLIST FA-038, recorded into WML on 2026-09-07 from
+`forms-assessment-to-wml-THE-TEACHING-ORDER-GAINS-A-FIRST-RUNG-2026-09-07.md`):
+
+> *"Actually try and get them to understand what the subject is about. It's about humanity. That's
+> what literature is about. English language and literature. It's about humanity. And so when
+> they're reading these texts, all they're doing is trying to evaluate what human issues the author
+> is responding to and talking about and exploring. That's where a lot of the marks lie. Then we
+> need to try and understand what exactly we're actually being assessed on…"*
+
+> *"Now when it comes to essays, we actually get them to fix their essay structure first. So like
+> the overall structure. So five paragraphs… Once they've worked on that, we then get them to refine
+> each paragraph. So if you see what we're trying to do, we're basically going from the macro to the
+> micro… And then once they've sorted that out, then we'll get down to things like sentence length,
+> vocabulary."*
+
+**TWO RULINGS.**
+
+1. **STEP 0 — the subject is about humanity, and it comes BEFORE assessment literacy.** A student who
+   does not know that a text is an argument about people has nothing for the criteria to attach to.
+   The reading job is: *which human problem is the writer exploring, and what are they saying about
+   it?* This is the same chain root `CLAUDE.md` §5c-ii.2 already demands of every explanation
+   (**deficit → arc → argument**) — §32 step 0 is that chain stated as the teaching order's first
+   rung, not a new idea.
+2. **MACRO → MICRO inside step 2, in this order and no other:** whole answer (how many paragraphs and
+   what belongs in each) → each paragraph's elements → **last** sentence length and vocabulary.
+   ⛔ Sentence-level and vocabulary work before the whole-answer shape is polishing a structure the
+   student cannot yet build — the same failure §32 names for structure-before-criteria, one level down.
+
+**⚠️ THIS DOES NOT REOPEN "DO NOT ADD A SEVENTH STEP" (Neil, 2026-08-15).** That prohibition was aimed
+at making `analysis` a step of its own, and it still holds. This adds a rung at the TOP and orders the
+work INSIDE step 2; it does not promote analysis.
+
+**WHAT IT BINDS.** Anything that sequences teaching or targets: the planning protocols' opening moves,
+any "start here" ranking, redraft targeting (fix the shape before the sentences), the polishing
+protocols when they get a standard (§6 Q1 of the 2026-09-07 START-HERE), and any student-facing
+explanation of why we teach in this order. Shipped in the assessment report at v1.2.20 (`b9cfb2ff`)
+with seven rungs, humanity first, and the three shapes named — TTECEA+C (analysis) · IUMVCC
+(persuasive) · story spine (narrative).
+
+⚠️ **A COVERAGE GAP THE SAME HANDOFF SURFACED, not a ruling:** Neil described OCR as Language Paper 1,
+and `protocols/ocr/` holds only `literature` and `poetry` — **no OCR Language protocols exist.** That
+is a hole in the port roadmap (§4.8 of the START-HERE, "24 unported cells"), not an error of his.
 
 ## §33. ⭐⭐ THE CW TRIALS + EXAMINER-LADDER SELF-ASSESSMENT — the rulings the build stands on (Neil, ruled 2026-08-21; placements delegated and settled 2026-08-22)
 
@@ -2175,3 +2221,42 @@ on Cambridge because that is where the student is. **Built by the COMPONENTS lan
 `~/.claude/handoffs/open/wml-CAMBRIDGE-to-components-BUILD-THE-EXAMINER-MARKING-COMPONENT-best-fit-not-hurdles-2026-08-24.md`.
 Board-agnostic by construction: descriptors, answers and question are DATA, so a second board is
 a data file and never a fork.
+
+## §36. ⭐⭐ THE CHANGE LAW — the protagonist goes through complete and utter change; a static protagonist is extremely unusual (Neil, ruled 2026-09-03)
+
+**His words, verbatim:** *"the fundamental rule is that the protagonist goes through complete and
+utter change. It will be extremely unusual that they do not change."* He ruled it after catching a
+live library document asserting the opposite about a set text.
+
+**Recorded here because PEDAGOGY.md is the register.** The full failure analysis, the sweep of the 220
+library documents (41 matches, all legitimate) and the gates live in
+`sophicly-plugins/sophicly_library_cpts_v1_9_0/LIBRARY-RESOURCE-FORMATS.md` §THE CHANGE LAW — read it
+rather than restating it. Filed from `library-to-wml-THE-CHANGE-LAW-ruling-for-PEDAGOGY-md-2026-09-03.md`.
+
+**WHAT IT BINDS IN WML.** Anything that states or elicits a character's development: the CW
+plot-structure and character-arc walks (`Cr Character Arc`, `Gh The Ghost / Wound`, `Sr
+Self-Revelation`); Step 6's eight plot templates (every one is an arc — 865 beat rows describe
+change); literature planning where the student states a thesis about a protagonist; and any model
+answer or exemplar asserting what a protagonist does or does not learn.
+
+**THE THREE GATES, and they generalise past literature:**
+1. **A claim about change requires evidence from the MIDDLE** — one piece per structural division
+   (month / act / stave / chapter block) before asserting any arc. **Endpoint sampling yields *same*
+   or *different*, never *how*** — measured on the failure: 76 lines surfaced from the novel's first
+   month, **8 from the longest month (27% of the book)**, and the two ends were exactly where the
+   character looked alike.
+2. **Default to change.** State every protagonist as `begins X → ends Y`. An honest-looking "no
+   change" is a signal the middle is unread, not a finding. A genuinely static figure is nearly always
+   a FOIL or ANTAGONIST (Mr Birling refuses to learn — *that is the point*, because Sheila and Eric do).
+3. **Separate the PERSON from the VOICE.** In the failing case the register genuinely never changed
+   while the character did; conflating the two produced the error.
+
+⭐⭐ **AND THE METHOD LESSON, which is why this is not only a literature rule: SAMPLING BY MOTIF CANNOT
+FIND AN ARC.** Every search run before the bad claim was for a STATIC thing (an image, a character
+name). A motif search returns where an image RECURS; **an arc is a difference between two times**, so
+the method could not have found the answer whatever it returned. Twin of
+`reference_a_sweep_keyed_on_a_known_phrase_cannot_find_the_population`.
+
+⛔ **WML CONTENT IS NOT AUDITED FOR THIS.** The library swept its own 220 documents; **nobody has swept
+the WML protocols, the 865 Step-6 beat rows, or the technique cards.** That sweep is open work, and it
+must not be done by grepping for "does not change" — see the method lesson above.
