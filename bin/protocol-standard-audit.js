@@ -5,7 +5,7 @@
  *
  * WHY. The standard has carried grep-able acceptance tables since v7.19.852 ("run on any protocol
  * before ship"), but nothing ever ran them across the whole tree — so "what have we done?" (Neil,
- * 2026-09-06, FIXLIST #460) was answered from a July memory ("3 of 27 ported"). This prints the
+ * 2026-09-06, FIXLIST #467) was answered from a July memory ("3 of 27 ported"). This prints the
  * matrix from the files, board × subject × {assessment, planning, polishing}, and nothing else.
  *
  * It is a MEASUREMENT, not a judgement: each cell is the raw count the standard asks for, and a

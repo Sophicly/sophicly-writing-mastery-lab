@@ -131,7 +131,7 @@ Paragraph 2` `D) Body Paragraph 3` `E) Conclusion`; Q5: `A) AO5 — content & or
 feedback bullets (e.g. the 3 Priority Improvements) double as the choice list — those are advice,
 not answers to the question you just asked.
 
-**Internal AI Note — THE STUDENT'S OWN MARKS (v7.20.604, #462).** Where the pre-marking setup ends with a
+**Internal AI Note — THE STUDENT'S OWN MARKS (v7.20.604, #469).** Where the pre-marking setup ends with a
 SYSTEM line headed *THE STUDENT'S OWN MARKS*, the student has already marked their own response against
 the board's level descriptors — a level, a mark, the criteria they judged met, and their reason, per
 question. **Those ARE the predictions the Calibration Check compares against** (they supersede any

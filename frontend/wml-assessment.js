@@ -7638,7 +7638,7 @@
     // the pad is ephemeral: it exists only while an element is being judged.
     let _openLadderPadHook = null;
     let _closeLadderPadHook = null;
-    // ⭐ v7.20.604 (#462): the examiner ladder is closure-local; the assessment host below is
+    // ⭐ v7.20.604 (#469): the examiner ladder is closure-local; the assessment host below is
     // module-scope (the SA-walk shape). Same hook pattern as the pads above — the .898 lesson:
     // closure-locals are never referenced across scopes.
     let _ladderOpenHook = null;
@@ -16630,7 +16630,7 @@
             if (!askedBy(/what grade are you aiming for/i)) return null;
             if (!askedBy(/headline goal/i)) return 'headline';
             if (!askedBy(/key aspects/i)) return 'keyword';
-            // v7.20.604 (#462): the mark-scheme ladder — the student marks their own response
+            // v7.20.604 (#469): the mark-scheme ladder — the student marks their own response
             // against the board's level descriptors BEFORE the blind skill walk and before marking.
             if (_ladderHostEligible() && !_ladderHostComplete()) return 'ladder';
             // v7.19.879: blind self-assessment walk — the final pre-marking stage (AQA anchors).
@@ -28315,7 +28315,7 @@
             // ── the copy. Procedural only — every WORD of criteria is the board's own ──────
             const YES = 'Yes — all of them';
             const NO = 'Not all of them';
-            // v7.20.604 (#462) — the BEST-FIT regime (PEDAGOGY §35). Same climb, different rung
+            // v7.20.604 (#469) — the BEST-FIT regime (PEDAGOGY §35). Same climb, different rung
             // question: "is your writing still better than this?" Stop where the description
             // starts to match. Copy may never say hurdle / unlock / pass this level / before you
             // can move up.
@@ -28693,7 +28693,7 @@
                 get pending() { return pending; },
             };
         })();
-        // v7.20.604 (#462): the module-scope assessment host reaches the ladder through these.
+        // v7.20.604 (#469): the module-scope assessment host reaches the ladder through these.
         _ladderOpenHook = function (o) { return _examinerLadderCtl.open(o); };
         _ladderActiveHook = function () { return !!_examinerLadderCtl.active; };
 
@@ -40158,7 +40158,7 @@
                             if (!askedBy(/what grade are you aiming for/i)) return null;
                             if (!askedBy(/headline goal/i)) return 'headline';
                             if (!askedBy(/key aspects/i)) return 'keyword';
-                            // v7.20.604 (#462): the mark-scheme ladder precedes the blind walk (twin pipeline).
+                            // v7.20.604 (#469): the mark-scheme ladder precedes the blind walk (twin pipeline).
                             if (_ladderHostEligible() && !_ladderHostComplete()) return 'ladder';
                             // v7.19.879: blind self-assessment walk — final pre-marking stage (AQA anchors).
                             if (_saWalkEligible() && !_saWalkComplete()) return 'selfassess';
@@ -58408,7 +58408,7 @@
             html += buildFeedbackSection(getMarkSplit(marks));
             html += dividerHTML('RESULTS');
             html += buildScoresSection(marks);
-            html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#462) — exam-prep template: no topic data in scope; the key builder reads state
+            html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#469) — exam-prep template: no topic data in scope; the key builder reads state
             html += buildSelfAssessmentSection(false);
             html += buildAnalyticsSection();
             html += buildActionPlanSection('diagnostic');
@@ -58442,7 +58442,7 @@
             html += buildFeedbackSection(getMarkSplit(marks));
             html += dividerHTML('RESULTS');
             html += buildScoresSection(marks);
-            html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#462) — exam-prep template: no topic data in scope; the key builder reads state
+            html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#469) — exam-prep template: no topic data in scope; the key builder reads state
             html += buildSelfAssessmentSection(false);
             html += buildActionPlanSection('diagnostic');
         } else if (exerciseType === 'verbal_rehearsal' || exerciseType === 'quote_analysis') {
@@ -58921,7 +58921,7 @@
             const questions = meta.questions || [];
             let totalMarks = 0;
             html += dividerHTML('FEEDBACK');
-            html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#462)
+            html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#469)
             html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             questions.forEach(function(q) {
                 const qMarks = parseInt(q.marks) || 0;
@@ -58936,7 +58936,7 @@
             const marksA = parseInt(topicData.part_a_marks) || 15;
             const marksB = parseInt(topicData.part_b_marks) || 25;
             html += dividerHTML('FEEDBACK — PART A');
-            html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#462)
+            html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#469)
             html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(marksA), 'Part A');
             html += dividerHTML('FEEDBACK — PART B');
@@ -58947,7 +58947,7 @@
             // Single format
             const feedbackMarks = parseInt(topicData.marks) || getDefaultMarks(state.board, state.subject);
             html += dividerHTML('FEEDBACK');
-            html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#462)
+            html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#469)
             html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(feedbackMarks));
             html += dividerHTML('RESULTS');
@@ -59613,7 +59613,7 @@
                 score_percentage: state.lastQuizScore.percentage,
                 grade_equivalent: state.lastQuizScore.grade,
             } : {}),
-            // v7.20.604 (#462): the mark-scheme self-assessment rides the save as STRUCTURED data
+            // v7.20.604 (#469): the mark-scheme self-assessment rides the save as STRUCTURED data
             // (level · band · met · mark · reason per question × AO, plus confidence), derived from
             // the document rows — the one source — so the dashboard / progress report can show
             // how the student reached their level and mark (their handoff carries the shape).
@@ -62548,7 +62548,7 @@
         // Post-assessment sections that should exist (in order)
         const requiredSections = [
             { label: 'Score Summary', build: () => buildScoresSection(getDefaultMarks(state.board, state.subject)) },
-            ...(_ladderSchemeKeysFor().length ? [{ label: LADDER_SA_LABEL, build: () => buildMarkSchemeSelfAssessSection() }] : []),   // v7.20.604 (#462): healed into existing docs where scheme data exists
+            ...(_ladderSchemeKeysFor().length ? [{ label: LADDER_SA_LABEL, build: () => buildMarkSchemeSelfAssessSection() }] : []),   // v7.20.604 (#469): healed into existing docs where scheme data exists
             { label: 'Self-Assessment', build: () => buildSelfAssessmentSection() },
             { label: 'Analytics', build: () => buildAnalyticsSection() },
             { label: 'Action Plan', build: () => buildActionPlanSection(state.draftType?.includes('redraft') ? 'redraft' : 'diagnostic') },

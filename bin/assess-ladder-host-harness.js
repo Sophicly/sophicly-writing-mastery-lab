@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint-env node */
 /**
- * assess-ladder-host-harness.js — v7.20.604 (#462): the mark-scheme self-assessment for assessments.
+ * assess-ladder-host-harness.js — v7.20.604 (#469): the mark-scheme self-assessment for assessments.
  *
  * What it proves, from the SHIPPED code (never a summary of it):
  *   A. DATA   — every scheme key the host can derive for AQA Lang P1 / P2 / unseen exists in the

@@ -1982,8 +1982,8 @@ so no lane re-asks:
    confidence tap follows (kept — it never replaces the ladder); Sophia is handed the student's own
    marks and the Calibration Check compares against THEM. The CW trials keep §33.10's taught-element
    regime — different job, deliberate. Data: `bin/markscheme-sources.js` (a new paper is a registry
-   row). Open: whether the blind 19-skill walk stays alongside it (FIXLIST #465), and the AQA
-   Literature dataset rows (#466).
+   row). Open: whether the blind 19-skill walk stays alongside it (FIXLIST #472), and the AQA
+   Literature dataset rows (#473).
 14. ⭐⭐ **TRIAL 1 CARRIES A SECOND DIMENSION — TECHNICAL ACCURACY, OUT OF 2 (Neil, ruled
    2026-08-25, testing .558; he acknowledged it overrules rulings 1, 6 and 11 above for the
    trials).** *"With the real GCSE for creative writing there's actually two sets of criteria —

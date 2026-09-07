@@ -8,7 +8,7 @@
  * from the board's own document and manifest-loaded for marking. Which sections are
  * extracted is the registry in bin/markscheme-sources.js (v7.20.603: every AQA Lang
  * P1 + P2 question, not only Q5 — the examiner ladder is going into the assessments,
- * FIXLIST #462, PEDAGOGY §33.13 / §35). The
+ * FIXLIST #469, PEDAGOGY §33.13 / §35). The
  * examiner-ladder walk needs the same text as a code-served dataset. Retyping it
  * into JS is the drift class this repo keeps getting bitten by, so this build
  * step EXTRACTS it to frontend/wml-markscheme-data.js, and bin/markscheme-gate.js
