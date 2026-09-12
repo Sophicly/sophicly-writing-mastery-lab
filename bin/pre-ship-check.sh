@@ -494,6 +494,12 @@ fi
 # the frontend is three files and the trace is cheap, so it runs on every invocation.
 node bin/fossil-lint.js || fail=1
 
+# #478 (v7.20.606): the placeholder predicate must recognise every placeholder the templates emit.
+# Six drifting copies of a phrase list meant a PRISTINE document reported "has student work", so a
+# stale document could never be rebuilt — the Rosabel live-modelling lesson served the essay
+# document to a whole class. Whole-file and instant, like fossil-lint.
+node bin/placeholder-predicate-gate.js || fail=1
+
 # The CW course numbering must agree with ITSELF across six independent number-keyed surfaces.
 # v7.20.452 scar: a new Step 8 renumbered the course 8..29 -> 9..30. The handoff said one file;
 # it was six, and the hand sweep STILL missed the document builder (it greps as `step === N`,

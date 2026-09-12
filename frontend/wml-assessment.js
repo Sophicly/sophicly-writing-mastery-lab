@@ -9,6 +9,45 @@
 (function() {
     'use strict';
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.606 (#478) — THE ONE PLACEHOLDER PREDICATE. Read this before adding a seventh.
+    //
+    // THE DEFECT IT ENDS, measured on prod 2026-09-12. "Is this section still the untouched
+    // template, or has a human put something in it?" was answered in SIX places by SIX copies of
+    // a phrase list, and they had DRIFTED. Five copies knew `appear here after`; the constant at
+    // the fill site knew `appear here (?:after|once)`. The Overall Feedback placeholder ends
+    // "…will appear here ONCE your assessment is complete", so the five short copies did not
+    // recognise it — and one of those five is the guard that decides whether a stale document may
+    // be rebuilt (`hasStudentWork = _responseWords > 20 || _hasFeedbackContent`).
+    //
+    // The consequence was permanent and silent: a PRISTINE document scored hasFeedback=true with
+    // responseWords=0, so `isStale && hasStudentWork` preserved it for ever and the correct
+    // template could never be generated. The Rosabel live-modelling lesson therefore served the
+    // generic ESSAY document — ESSAY PLAN · Body Paragraph 1-3 — for a multi-question paper, and
+    // because a live-modelling viewer renders the AUTHOR's document, every attendee saw it too.
+    // Deleting the document did not help: the next visit rebuilt the essay shell and re-saved it.
+    //
+    // ⭐ WHY A PHRASE LIST WAS ALWAYS GOING TO FAIL. It enumerates the placeholders somebody
+    // happened to know about. Adding a placeholder is a one-line change in a template; teaching
+    // six regexes about it is not, and nothing failed when you skipped that. So the predicate is
+    // ONE function, and `bin/placeholder-predicate-gate.js` asserts that every placeholder string
+    // the templates actually emit is recognised by it — a new placeholder that this cannot see
+    // fails the build instead of freezing a student's document.
+    //
+    // THE LENGTH CEILING IS DELIBERATE, and it is the safety direction that matters. Calling real
+    // work a placeholder is the dangerous error (it permits a regen that wipes), so the match is
+    // refused on anything longer than every placeholder we ship. The longest shipped placeholder
+    // is ~160 chars; real overall feedback runs to many hundreds.
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    const SWML_PLACEHOLDER_MAX = 220;
+    const SWML_PLACEHOLDER_RE = /\bwill appear\b|\bwill be assessed\b|\bwill be filled\b|\bappear here\b|\bwill begin here\b/i;
+    function _isTemplatePlaceholderText(t) {
+        const s = String(t == null ? '' : t).replace(/\s+/g, ' ').trim();
+        if (!s) return true;                              // empty is, by definition, untouched
+        if (s.length > SWML_PLACEHOLDER_MAX) return false; // long text is a human's, never ours
+        return SWML_PLACEHOLDER_RE.test(s);
+    }
+
     const WML = window.WML;
 
     // v7.19.858: single opt-in debug flag for the v7.19.136 telemetry suite. That suite
@@ -6243,7 +6282,7 @@
                     } finally { _suppressFillScroll = false; }
                 }
             } catch (_) { _suppressFillScroll = false; }
-            const PLACEHOLDER_RE = /will appear after assessment|will be assessed here|appear here (?:after|once)/i;
+            const PLACEHOLDER_RE = SWML_PLACEHOLDER_RE;   // v7.20.606 (#478): one predicate, no local copy
             const placeholderQs = new Set();
             let overallPlaceholder = false;
             canvasEditor.state.doc.descendants((node) => {
@@ -6982,7 +7021,7 @@
                     canvasEditor.commands.insertContentAt({ from: cardStart, to: to }, html);
                     console.log('WML Feedback: overwrote card', JSON.stringify(cardHeading), '→', card.q);
                 } else {
-                    const isPlaceholder = existingText.trim() === '' || /will appear after assessment|will be assessed here|appear here after/i.test(existingText);
+                    const isPlaceholder = _isTemplatePlaceholderText(existingText);   // v7.20.606 (#478)
                     if (isPlaceholder) {
                         // fresh box — replace the placeholder
                         canvasEditor.commands.insertContentAt({ from: boxInner, to: boxEnd }, html);
@@ -8811,7 +8850,7 @@
                     .replace(/\s*\(\s*(?:—|\d+(?:\.\d+)?)\s*\/\s*\d+\s*\)\s*$/, '').trim();
                 if (!base || SKIP.test(base)) return;
                 const whole = (_sectionContentOf(sec).textContent || '').trim(); // v7.19.951: skip control-row chrome
-                if (!whole || /will appear after assessment|will be assessed here|appear here after/i.test(whole)) return;
+                if (_isTemplatePlaceholderText(whole)) return;   // v7.20.606 (#478)
                 let para = '';
                 sec.querySelectorAll('p, li, h3, h4').forEach(bl => {
                     const t = (bl.textContent || '').trim();
@@ -14025,7 +14064,7 @@
                     if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback'
                         && HAS_MARK.test(String(node.attrs.label || ''))) {
                         const txt = String(node.textContent || '');
-                        if (!(txt.trim() === '' || /will appear after assessment|will be assessed here/i.test(txt))) {
+                        if (!_isTemplatePlaceholderText(txt)) {   // v7.20.606 (#478)
                             target = { pos: pos, size: node.nodeSize };
                             return false;
                         }
@@ -35754,7 +35793,7 @@
                 let fbAdded = 0;
                 fbEls.forEach((f, i) => {
                     const txt = (_sectionContentOf(f).textContent || '').trim(); // v7.19.951: skip control-row chrome — an EMPTY box with a mark widget must still read as placeholder
-                    if (!txt || /will appear after assessment|will be assessed here|appear here after/i.test(txt)) return;
+                    if (_isTemplatePlaceholderText(txt)) return;   // v7.20.606 (#478)
                     const fLbl = f.getAttribute('data-section-label') || ('Feedback ' + (i + 1));
                     body.appendChild(el('div', { className: 'swml-extract-essay-heading', textContent: fLbl }));
                     // v7.19.920 (Neil Run 8): pad parity — the doc's Predicted·Actual·Δ readout
@@ -62214,7 +62253,7 @@
                     const _fd = document.createElement('div'); _fd.innerHTML = currentHTML;
                     _fd.querySelectorAll('[data-section-type="feedback"]').forEach((fb) => {
                         const _t = (fb.textContent || '').replace(/\s+/g, ' ').trim();
-                        const _isPlaceholder = !_t || /will appear after assessment|will be assessed here|appear here after/i.test(_t);
+                        const _isPlaceholder = _isTemplatePlaceholderText(_t);   // v7.20.606 (#478) — the site that froze Rosabel
                         if (!_isPlaceholder && _t.length > 30) _hasFeedbackContent = true;
                     });
                 } catch (_) {}

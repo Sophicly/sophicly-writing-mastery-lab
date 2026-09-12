@@ -1,0 +1,17 @@
+import { chromium } from '../node_modules/playwright/index.mjs';
+const [url, cookieName, cookieValue, label] = process.argv.slice(2);
+const u = new URL(url);
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }, ignoreHTTPSErrors: true });
+await ctx.addCookies([{ name: cookieName, value: cookieValue, domain: u.hostname, path: '/', secure: true, httpOnly: true }]);
+const page = await ctx.newPage();
+const ev = [];
+const t0 = Date.now();
+page.on('console', m => { const t = m.text(); if (t.startsWith('WML')) ev.push([Date.now() - t0, 'console', t.slice(0, 110)]); });
+page.on('request', r => { const x = r.url(); if (x.includes('topic-question') || x.includes('canvas/load') || x.includes('canvas/save')) ev.push([Date.now() - t0, 'REQ ', x.split('/wp-json/sophicly-wml/v1/')[1]?.slice(0, 60)]); });
+page.on('response', async r => { const x = r.url(); if (x.includes('topic-question') || x.includes('canvas/load')) { let n = '?'; try { const j = await r.json(); n = j && (j.question_format || (j.topic && j.topic.question_format) || (j.html ? 'html ' + String(j.html).length : 'no-format')); } catch {} ev.push([Date.now() - t0, 'RESP', x.split('/wp-json/sophicly-wml/v1/')[1]?.slice(0, 40) + ' → ' + n]); } });
+await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(15000);
+console.log(`[${label}] timeline:`);
+ev.sort((a, b) => a[0] - b[0]).forEach(([ms, k, t]) => console.log(`  ${String(ms).padStart(6)}ms ${k} ${t}`));
+await browser.close();

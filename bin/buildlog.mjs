@@ -1,0 +1,14 @@
+import { chromium } from '../node_modules/playwright/index.mjs';
+const [url, cookieName, cookieValue, label] = process.argv.slice(2);
+const u = new URL(url);
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }, ignoreHTTPSErrors: true });
+await ctx.addCookies([{ name: cookieName, value: cookieValue, domain: u.hostname, path: '/', secure: true, httpOnly: true }]);
+const page = await ctx.newPage();
+const logs = [];
+page.on('console', m => { const t = m.text(); if (t.startsWith('WML')) logs.push(t.slice(0, 190)); });
+await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(15000);
+console.log(`[${label}] ${logs.length} WML console lines:`);
+logs.forEach((l, i) => console.log(`  ${String(i + 1).padStart(2)} ${l}`));
+await browser.close();
