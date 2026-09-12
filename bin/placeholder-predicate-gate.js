@@ -85,7 +85,7 @@ if (!unseen && !tooLong) ok(`all ${emitted.length} recognised, none over the cei
 // the live DOM. Reading the whole block therefore reports "student work" on a pristine template.
 // _sectionContentOf() exists to strip it; the stale-regen guard was the one reader that did not
 // call it, which is what actually froze the Rosabel document even after the predicate was fixed.
-const guardM = src.match(/_fd\.querySelectorAll\('\[data-section-type="feedback"\]'\)[\s\S]{0,1400}?\}\);/);
+const guardM = src.match(/_fd\.querySelectorAll\('\[data-section-type="feedback"\]'\)[\s\S]{0,4000}?\}\);/);
 if (!guardM) bad('the stale-regen feedback scan was not found — check this gate still points at it');
 else if (!/_sectionContentOf\s*\(\s*fb\s*\)/.test(guardM[0]))
     bad('the stale-regen guard reads the whole feedback block — runtime chrome will read as student work and freeze the document');
@@ -95,6 +95,27 @@ else ok('the stale-regen guard strips control-row chrome via _sectionContentOf')
 const CHROME = 'Opt-outs this attempt—012345678910Top Missed AreasOpt-outs This AttemptNumber of times you opted out';
 if (isPlaceholder(CHROME)) ok('note: chrome text alone would not trip the predicate');
 else ok('chrome text is NOT a placeholder — which is exactly why it must be stripped, not matched');
+
+// ── F. derived panels must be excluded from the "has student work" test ──────────────────────
+// Analytics / Score Summary / Action Plan / Document Progress are feedback-typed for layout, but
+// the engine draws them from stored scores. Analytics renders 117 chars of its own sub-headings on
+// an untouched document; counting that as student work froze Rosabel through two earlier fixes.
+const derM = src.match(/const\s+SWML_DERIVED_PANEL_RE\s*=\s*(\/[^\n]*\/i)\s*;/);
+if (!derM) bad('SWML_DERIVED_PANEL_RE not declared — derived panels would count as student work');
+else {
+    const DER = eval(derM[1]);                                   // eslint-disable-line no-eval
+    const mustSkip = ['Analytics', 'Score Summary', 'Action Plan', 'Document Progress'];
+    const missed = mustSkip.filter(l => !DER.test(l));
+    if (missed.length) bad('derived panels not excluded: ' + missed.join(', '));
+    else ok('all four derived panels excluded from the student-work test');
+    const mustCount = ['Feedback: Introduction (— / 3)', 'Feedback: Body 1 (— / 7)', 'Overall Feedback'];
+    const wrong = mustCount.filter(l => DER.test(l));
+    if (wrong.length) bad('a REAL feedback box is being skipped: ' + wrong.join(', '));
+    else ok('the real feedback boxes are still counted (Feedback: … and Overall Feedback)');
+}
+if (!/SWML_DERIVED_PANEL_RE\.test/.test(guardM ? guardM[0] : ''))
+    bad('the stale-regen guard does not skip derived panels');
+else ok('the stale-regen guard skips derived panels');
 
 // ── D. injected-defect proof ──────────────────────────────────────────────────────────────────
 const OVERALL = 'Your examiner’s overall summary — holistic evaluation, key strength, and priority targets — will appear here once your assessment is complete.';

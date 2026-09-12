@@ -39,6 +39,9 @@
     // refused on anything longer than every placeholder we ship. The longest shipped placeholder
     // is ~160 chars; real overall feedback runs to many hundreds.
     // ═══════════════════════════════════════════════════════════════════════════════════════
+    // Derived panels: drawn by the engine from stored scores, never typed into by a person. They
+    // are data-section-type="feedback" for layout reasons only. v7.20.608 (#478).
+    const SWML_DERIVED_PANEL_RE = /^(Analytics|Score Summary|Action Plan|Document Progress)$/i;
     const SWML_PLACEHOLDER_MAX = 220;
     const SWML_PLACEHOLDER_RE = /\bwill appear\b|\bwill be assessed\b|\bwill be filled\b|\bappear here\b|\bwill begin here\b/i;
     function _isTemplatePlaceholderText(t) {
@@ -62261,6 +62264,17 @@
                         // other reader already strips it with _sectionContentOf (v7.19.951, whose
                         // own comment says "an EMPTY box with a mark widget must still read
                         // empty") — this was the one site that did not.
+                        // ⭐ v7.20.608 (#478): a DERIVED panel is never evidence of student work.
+                        // Analytics / Score Summary / Action Plan / Document Progress are
+                        // data-section-type="feedback" too, but they are drawn by the engine from
+                        // stored scores and carry their own static sub-headings — Analytics alone
+                        // renders 117 characters of "Top Missed Areas · Opt-outs This Attempt ·
+                        // Number of opt-outs: — · Trend: Repeated Errors …" on a document nobody
+                        // has touched. Counting that as student work is what kept the Rosabel
+                        // document frozen after both earlier fixes. Only a box a PERSON writes in
+                        // counts: the per-question "Feedback: …" boxes and "Overall Feedback".
+                        const _lbl = (fb.getAttribute && fb.getAttribute('data-section-label')) || '';
+                        if (SWML_DERIVED_PANEL_RE.test(_lbl.trim())) return;
                         const _t = ((_sectionContentOf(fb) || fb).textContent || '').replace(/\s+/g, ' ').trim();
                         const _isPlaceholder = _isTemplatePlaceholderText(_t);   // v7.20.606 (#478) — the site that froze Rosabel
                         if (!_isPlaceholder && _t.length > 30) _hasFeedbackContent = true;
