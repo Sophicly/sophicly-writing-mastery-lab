@@ -62252,7 +62252,16 @@
                 try {
                     const _fd = document.createElement('div'); _fd.innerHTML = currentHTML;
                     _fd.querySelectorAll('[data-section-type="feedback"]').forEach((fb) => {
-                        const _t = (fb.textContent || '').replace(/\s+/g, ' ').trim();
+                        // ⭐ v7.20.607 (#478): read the section's CONTENT, never the whole block.
+                        // A feedback block renders a control row at runtime — the mark widget
+                        // ("Predicted —·Actual —·Δ ——0123") and, on Analytics, an opt-out counter
+                        // ("Opt-outs this attempt—012345678910"). That chrome is neither a
+                        // placeholder nor short, so reading the whole block reported "this document
+                        // has student work" on a PRISTINE template and froze it for ever. Every
+                        // other reader already strips it with _sectionContentOf (v7.19.951, whose
+                        // own comment says "an EMPTY box with a mark widget must still read
+                        // empty") — this was the one site that did not.
+                        const _t = ((_sectionContentOf(fb) || fb).textContent || '').replace(/\s+/g, ' ').trim();
                         const _isPlaceholder = _isTemplatePlaceholderText(_t);   // v7.20.606 (#478) — the site that froze Rosabel
                         if (!_isPlaceholder && _t.length > 30) _hasFeedbackContent = true;
                     });

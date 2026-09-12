@@ -79,6 +79,23 @@ for (const s of emitted) {
 }
 if (!unseen && !tooLong) ok(`all ${emitted.length} recognised, none over the ceiling`);
 
+// ── E. every reader of a section's text must strip the runtime control-row chrome ────────────
+// v7.20.607: a feedback block renders a mark widget ("Predicted —·Actual —·Δ ——0123") and, on
+// Analytics, an opt-out counter — at RUNTIME, so it is absent from the saved HTML and present in
+// the live DOM. Reading the whole block therefore reports "student work" on a pristine template.
+// _sectionContentOf() exists to strip it; the stale-regen guard was the one reader that did not
+// call it, which is what actually froze the Rosabel document even after the predicate was fixed.
+const guardM = src.match(/_fd\.querySelectorAll\('\[data-section-type="feedback"\]'\)[\s\S]{0,1400}?\}\);/);
+if (!guardM) bad('the stale-regen feedback scan was not found — check this gate still points at it');
+else if (!/_sectionContentOf\s*\(\s*fb\s*\)/.test(guardM[0]))
+    bad('the stale-regen guard reads the whole feedback block — runtime chrome will read as student work and freeze the document');
+else ok('the stale-regen guard strips control-row chrome via _sectionContentOf');
+
+// and the chrome strings themselves must never be mistaken for student work once stripped
+const CHROME = 'Opt-outs this attempt—012345678910Top Missed AreasOpt-outs This AttemptNumber of times you opted out';
+if (isPlaceholder(CHROME)) ok('note: chrome text alone would not trip the predicate');
+else ok('chrome text is NOT a placeholder — which is exactly why it must be stripped, not matched');
+
 // ── D. injected-defect proof ──────────────────────────────────────────────────────────────────
 const OVERALL = 'Your examiner’s overall summary — holistic evaluation, key strength, and priority targets — will appear here once your assessment is complete.';
 const PRE_FIX = /will appear after assessment|will be assessed here|appear here after/i;
