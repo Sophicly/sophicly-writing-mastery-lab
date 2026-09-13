@@ -1,0 +1,62 @@
+{
+  "board": "ccea",
+  "paper": "literature_u2",
+  "title": "CCEA GCSE English Literature — Unit 2: The Study of Drama and Poetry (GEL21)",
+  "authority": {
+    "file": "protocols/ccea/_sources/ccea-lit-unit2-summer2025-paper.pdf",
+    "kind": "question paper",
+    "sitting": "Summer 2025, [GEL21], Thursday 29 May morning",
+    "url": "https://ccea.org.uk/downloads/docs/Past-Papers/cleared/GCSE/GCSE%20English%20Literature%20(2017)/2025-Summer/Standard/0/GCSE-English%20Literature-493-Summer2025-Unit%202,%20The%20Study%20of%20Drama%20and%20Poetry-Paper.pdf",
+    "why_this_source": "The QUESTION PAPER states both tariffs in one verifiable sentence; the mark scheme states them only as band ranges inside two assessment matrices.",
+    "mark_scheme": "protocols/ccea/_sources/ccea-lit-unit2-summer2025-MS.pdf (Summer 2025, document code 14577.01 F). Both matrices band on the same scale: 'Band 0 Mark [0] · Band 1: Basic [1]–[10] · Band 2: Emerging [11]–[18] · Band 3: Competent [19]–[26] · Band 4: Good [27]–[34] · Band 5: Excellent [35]–[40]'.",
+    "second_series": "protocols/ccea/_sources/ccea-lit-unit2-summer2024-MS.pdf (Summer 2024) — same two sections, same band structure.",
+    "marking_model_note": "Band-holistic per Assessment Objective on an assessment matrix, best fit, then a mark inside the band's range. Quality of written communication is folded into the bands; there is no SPaG tariff.",
+    "ao_note": "⭐⭐ THE TWO SECTIONS DO NOT ASSESS THE SAME OBJECTIVES, and this is the fact a port must not get wrong. Section A (Drama) has exactly TWO matrix rows: 'AO1 Argument' and 'AO2 Form and Language'. Section B (Poetry) has FOUR: 'AO1 Argument', 'AO2 Form and Language', 'AO3 Comparison' and 'AO4' (context). AO3's band wording rises 'Poems considered in isolation' → 'Simplistic connections made between poems' → 'Makes some relevant comparisons and contrasts between poems' → 'Meaningful and effectively pointed comparisons and contrasts between poems' → 'A synthesised approach to detailed comparison and contrast'. So a Section B answer that treats the two poems separately is capped on a whole objective, and a Section B answer with no contextual material loses another. Section A must never be marked for comparison or context.",
+    "structure_note": "Two hours, 80 marks. 'Answer two questions. Answer one question from each section.' 'All questions in Section A and Section B carry equal marks, i.e. 40 marks for each question.' One hour on each section. The candidate has an UNANNOTATED copy of the drama text and of the poetry anthology with them — unlike Unit 1 Section A, where the novel is not allowed."
+  },
+  "total": {
+    "marks": 80,
+    "quote": "The total mark for this paper is 80."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 40,
+      "aos": ["AO1", "AO2"],
+      "section": "A — Drama (one question from a choice of seven set plays, either (a) or (b))",
+      "quote": "All questions in Section A and Section B carry equal marks, i.e. 40 marks for each question.",
+      "quote_note": "Summer 2025 set texts: O'Casey Juno and the Paycock · Priestley An Inspector Calls · Friel Philadelphia, Here I Come! · Russell Blood Brothers · Sherriff Journey's End · Stephens The Curious Incident of the Dog in the Night-Time · Wilder Our Town. Each offers (a) a WHOLE-TEXT question ('With reference to the ways [dramatist] presents [character], show how far you agree that …') or (b) an EXTRACT-AND-ELSEWHERE question, which prints the extract's opening and closing lines with page references and asks 'With reference to the ways [dramatist] presents … in the extract and elsewhere in the play, show how far you agree that …'. The (a)/(b) choice changes the reading task but not the tariff or the objectives.",
+      "components": [
+        {
+          "label": "Band-holistic across AO1 Argument and AO2 Form and Language",
+          "marks": 40,
+          "kind": "content",
+          "aos": ["AO1", "AO2"],
+          "quote": "All questions in Section A and Section B carry equal marks, i.e. 40 marks for each question.",
+          "quote_note": "TWO matrix rows only. The mark scheme does not split 40 between them, so there is exactly one component."
+        }
+      ]
+    },
+    {
+      "id": "Q8",
+      "marks": 40,
+      "aos": ["AO1", "AO2", "AO3", "AO4"],
+      "section": "B — Poetry (one question from the student's anthology: One IDENTITY, Two RELATIONSHIPS or Three CONFLICT; either (a) or (b))",
+      "quote": "All questions in Section A and Section B carry equal marks, i.e. 40 marks for each question.",
+      "quote_note": "Each anthology offers (a) or (b). Both name ONE poem and a theme, and require the student to choose the second poem themselves: 'Look again at [named poem] by [poet] which deals with the theme of [theme], and at one other poem from the [ANTHOLOGY] anthology which also deals with the theme of [theme]. With close reference to the ways each poet uses language, compare and contrast what the speakers in the poems say about [theme]. You should include relevant contextual material.' Summer 2025 themes: IDENTITY — family (Catrin, Gillian Clarke) or self-discovery (Here, R. S. Thomas); RELATIONSHIPS — bitter feelings or the past; CONFLICT — the impact of war or memories of conflict. ⭐ The instruction 'You should include relevant contextual material' is the AO4 row's trigger and is printed in EVERY Section B question.",
+      "components": [
+        {
+          "label": "Band-holistic across AO1 Argument, AO2 Form and Language, AO3 Comparison and AO4 Context",
+          "marks": 40,
+          "kind": "content",
+          "aos": ["AO1", "AO2", "AO3", "AO4"],
+          "quote": "All questions in Section A and Section B carry equal marks, i.e. 40 marks for each question.",
+          "quote_note": "FOUR matrix rows. The mark scheme does not publish a per-objective share of the 40, so there is exactly one component — and a port must NOT invent one (a 10/10/10/10 split would be fabricated)."
+        }
+      ]
+    }
+  ],
+  "protocols": [],
+  "protocols_note": "No CCEA drama or poetry protocol cell exists yet. resolve_protocol_group() already maps ccea/modern_text → 'modern' and ccea/poetry_anthology → 'poetry', so the ROUTER needs no change — the directories protocols/ccea/modern/ and protocols/ccea/poetry/ simply do not exist. Named as a gap in protocols/ccea/_PORT-REPORT-2026-09-13.md, together with the two literature-paper-specs.json blocks (ccea.drama / ccea.poetry_anthology) this paper needs.",
+  "spec_note": "⛔ NO SPEC ENTRIES. literature-paper-specs.json's `ccea` object holds only `prose` (40) and `unseen_prose` (20) — Unit 1's two sections. Unit 2's drama and poetry have no entries, so no spec_key is declared above and the gate's D-SPEC / element-sum checks cannot run for this paper. Proposed blocks are byte-exact in the port report."
+}

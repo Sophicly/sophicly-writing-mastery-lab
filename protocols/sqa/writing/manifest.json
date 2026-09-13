@@ -1,0 +1,39 @@
+{
+    "board": "sqa",
+    "group": "writing",
+    "version": "1.0.0",
+    "base_path": "protocols/sqa/writing",
+    "_provenance": "Created 2026-09-13 (SQA content lane). Cell = SQA National 5 English Portfolio–writing (X824/75/03): ONE piece, no more than 1,000 words, broadly creative OR broadly discursive, marked out of 15 and doubled to 30. Tariff cited in protocols/_marks/sqa__writing.json against the board's own assessment-task document; both source PDFs are saved under protocols/sqa/_sources/ because neither is on the drive. Module names resolve board-first then protocols/shared (class-protocol-router.php ~2575).",
+    "_resolver_note": "The router's resolve_protocol_group() sqa map does not name 'writing'; the fallback `return sanitize_key($subject)` reaches this directory when the lesson's subject is 'writing'. An explicit map entry is proposed byte-exact in protocols/sqa/_PORT-REPORT-2026-09-13.md so the route does not depend on a fallback.",
+    "_coursework_note": "⚠️ This component is COURSEWORK that SQA marks, and the specification forbids the teacher supplying model answers for the candidate's own task, rephrasing their wording, handing them a structure or plan, or correcting their spelling, grammar and punctuation. Sophia works behind that line on this cell — see knowledge-mark-scheme-portfolio.md §8. Nothing in this manifest may load a module that rewrites student sentences.",
+    "planning": {
+        "_destitched": "Planning is fed WHOLE — planning/protocol-b-planning.md is the monolith and there are no sliced step files (PROTOCOL-STANDARD C-COMMON.1).",
+        "always": [
+            "../_shared/foundation-sqa.md",
+            "planning/protocol-b-planning.md",
+            "modules/knowledge-mark-scheme-portfolio.md",
+            "language/modules/communication-standards.md",
+            "language/modules/anti-hallucination.md"
+        ],
+        "steps": {},
+        "groups": []
+    },
+    "assessment": {
+        "always": [
+            "../_shared/foundation-sqa.md",
+            "modules/protocol-a-assessment.md",
+            "modules/knowledge-mark-scheme-portfolio.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "mark-scheme/marking-fairness-universal.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "_retired": "Polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_env row for the text slug sqa_n5_portfolio proposed in protocols/sqa/_PORT-REPORT-2026-09-13.md (inline-coaching stack + rubric-sqa-n5-writing.md + modules/knowledge-mark-scheme-portfolio.md as the criteria file). This cell has NO protocol-c-polishing.md on disk and must never acquire one (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose — if the router row is ever removed this cell loads nothing and fails loud.",
+        "always": [],
+        "steps": {}
+    }
+}

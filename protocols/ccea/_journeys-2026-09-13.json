@@ -1,0 +1,405 @@
+{
+  "_what_this_is": "Representative student responses for the CCEA polishing environment, to be driven through the real chat endpoint on staging by the ENGINE lane (PROTOCOL-STANDARD E5: 'representative journeys (weak · partial · strong · valid-different) through the real chat endpoint on staging, replies recorded'). Every quotation attributed to a source text is VERBATIM from the paper named in `source`; every piece of student prose is written for this file, with its faults deliberate.",
+  "_authored": "2026-09-13, CCEA content lane",
+  "_not_tested": "None of these has been run. No staging run was performed by this lane (content lanes do not deploy). The `expect` fields are the acceptance criteria for whoever runs them.",
+  "_source_gap": "⛔ Unit 4 Task 2 (the 32-mark comparison) has NO journeys with source quotations. The two literary extracts arrive on a SEPARATE INSERT, and the insert is not part of the question-paper PDF the board publishes at the Past-Papers URL used here. Rather than invent extract text (PORT BRIEF §1), the Task 2 journeys below test the COMPARATIVE SHAPE using the student's own prose only, and the insert is recorded as a gap in the port report.",
+  "journeys": [
+    {
+      "id": "u1-t2-craft",
+      "cell": "ccea/language1",
+      "text_slug": "ccea_lang_paper_1",
+      "question_type": "Unit 1 Task 2 — explain how a non-fiction writer engages the reader (21 marks, three CL strands)",
+      "source": "ccea-lang-unit1-summer2025-paper.pdf, Task 2 — Max Wallis on the cheese toastie (The Guardian, adapted). Verbatim phrases available to a student: \"Toast, like the colour of a Strictly Come Dancing contestant's tan\", \"warmly embraces\", \"soft, oozy\", \"no finer food in the universe\", \"weighing a ton\", \"Mr Toastie\", \"through thick and thin, brioche and bagels\", \"long may he continue to 'dough' just that!\"",
+      "responses": [
+        {
+          "grade": "weak",
+          "action": "scan-elements",
+          "student_text": "The writer shows that he likes toasties. He uses a simile \"Toast, like the colour of a Strictly Come Dancing contestant's tan\". This shows the toast is brown. It makes the reader want a toastie.",
+          "faults_planted": ["F1 'shows' twice", "no conceptual topic sentence", "no close analysis of a word", "one thin effect sentence, no second", "no writer's purpose", "S2 every sentence under a line"],
+          "expect_must": [
+            "count the taught elements present and name the number missing before teaching anything (four of six absent)",
+            "ask ONE question, then stop",
+            "name the strand the missing elements sit under — 'Explain and evaluate elements of the writer's craft'",
+            "quote the student's own words when naming a fault"
+          ],
+          "expect_must_not": [
+            "rewrite the student's sentences",
+            "tour the rest of the answer",
+            "give a mark, a band, a Competence Level or a percentage",
+            "use the word rubric, protocol, tier, hurdle or unlock",
+            "claim CCEA requires three paragraphs"
+          ]
+        },
+        {
+          "grade": "partial",
+          "action": "scan-coherence",
+          "student_text": "Wallis builds his enthusiasm out of everyday comedy rather than argument. He deploys hyperbole in \"no finer food in the universe\", which inflates a cheap snack into the best thing that exists. The word \"universe\" is the joke, because it belongs to astronomy and not to lunch. The reader laughs and takes his side at the same time.",
+          "faults_planted": ["only one effect sentence where two are taught", "no writer's purpose sentence", "close analysis is present but stops at where the word belongs, without what it implies here"],
+          "expect_must": [
+            "confirm what is working first, in one clause, with the student's own phrase quoted",
+            "identify that the chain breaks after the first effect — the second effect and the purpose are the missing links",
+            "ask one question that makes the student produce the second effect themselves"
+          ],
+          "expect_must_not": [
+            "supply a candidate second effect",
+            "list more than one problem",
+            "quote another board's model answer"
+          ]
+        },
+        {
+          "grade": "strong",
+          "action": "compare-gold-standard",
+          "student_text": "Wallis treats affection as something worth exaggerating. He personifies the appliance as \"Mr Toastie\", the courtesy title turning a kitchen object into a member of the household. \"Mr\" is a word reserved for people the speaker respects, so applying it to a machine admits an attachment the writer knows is absurd. The reader is invited to smile at him rather than at the toastie. A moment later that smile turns into recognition, because most readers have one object they treat this way. Wallis arguably wants his enthusiasm to feel shared rather than eccentric, so the reader ends up defending the toastie too.",
+          "faults_planted": [],
+          "expect_must": [
+            "⛔ NOT quote a stored model answer — none exists for CCEA English Language",
+            "quote the CL5 craft-strand wording verbatim ('Evaluation of elements of the writer's craft and how these elements impact the reader') and ONE of the board's own indicative bullets from knowledge-mark-scheme-u1.md §4a",
+            "ask what the student notices about the shape of the board's bullet beside their own sentence",
+            "say whose model it is in the same sentence if it reaches for an AQA model at all"
+          ],
+          "expect_must_not": [
+            "present an AQA model as CCEA's",
+            "invent a CCEA model answer",
+            "improve the student's paragraph"
+          ]
+        },
+        {
+          "grade": "valid-but-different",
+          "action": "scan-concept",
+          "student_text": "The article works because it keeps refusing to be serious. Wallis's puns, \"long may he continue to 'dough' just that!\", make the writing feel like conversation rather than food journalism, and a reader who expected a recipe gets a comedian instead. That mismatch is the engagement: we keep reading to see how far he will take it.",
+          "faults_planted": [],
+          "valid_difference": "A whole-text structural reading (the register mismatch) rather than the device-by-device reading the board's indicative bullets model. Fully creditable — the scheme says 'Credit any other valid suggestions' and the CL5 wording rewards judicious selection and perceptive interpretation, not coverage.",
+          "expect_must": [
+            "accept the reading as valid and say why in one clause",
+            "treat 'is the topic sentence conceptual?' as a YES here and move to what would deepen it",
+            "keep the student's interpretation theirs"
+          ],
+          "expect_must_not": [
+            "steer the student back to the indicative list as though it were required",
+            "call the answer off-task",
+            "say the board expects one technique per paragraph"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u1-t3-own-words",
+      "cell": "ccea/language1",
+      "text_slug": "ccea_lang_paper_1",
+      "question_type": "Unit 1 Task 3 — two reasons in your own words with two pieces of evidence each (12 marks, best-fit descriptors)",
+      "source": "ccea-lang-unit1-summer2025-paper.pdf, Task 3 — the second half of the same toastie article. Paragraph one verbatim includes \"costs little\", \"No toastie maker? No problem.\", \"handy toaster bag\", \"can be inexpensive\", \"no need to break the bank\", \"for about 50p\". Paragraph two includes \"flexible\", \"can be enhanced\", \"jazzed-up\", \"doused in ketchup\", \"become a scrumptious treat\", \"elevated\", \"adaptability\", \"never-ending list of possibilities\". The mark scheme's own answers are 'The toastie is cheap, convenient and does not require specialist equipment' and 'The toastie is versatile and can be transformed/improved by including different fillings'.",
+      "responses": [
+        {
+          "grade": "weak",
+          "action": "scan-elements",
+          "student_text": "Reason one: the toastie gives joy but costs little. Evidence: \"costs little\", \"about 50p\". Reason two: it is familiar and flexible. Evidence: \"flexible\", \"processed cheese\".",
+          "faults_planted": ["W1-OWN — both reasons lift the article's own phrasing almost intact ('gives joy but costs little', 'familiar and flexible')", "one piece of evidence, \"processed cheese\", is on the mark scheme's UNACCEPTABLE list for 3(d)"],
+          "expect_must": [
+            "name that the marks here are for the student's OWN words and quote the lifted phrase back to them",
+            "quote the 4-mark descriptor verbatim ('Demonstrates a clear and precise understanding of the above point using his/her own words') beside the 2-mark one ('with reliance on the language of the text')",
+            "ask the student to say reason one again without using any of the article's words",
+            "on the evidence, say that one of the two does not support the reason, and ask which"
+          ],
+          "expect_must_not": [
+            "supply the reworded reason",
+            "reveal the mark scheme's own wording as the answer to copy",
+            "give a mark"
+          ]
+        },
+        {
+          "grade": "partial",
+          "action": "rephrase",
+          "student_text": "Reason one: you can make a toastie without buying anything special, and it hardly costs anything. Evidence: \"No toastie maker? No problem.\", \"handy toaster bag\". Reason two: it is flexible. Evidence: \"jazzed-up\", \"elevated\".",
+          "faults_planted": ["reason two is a single lifted adjective where reason one is fully reworded — the two halves are at different descriptor levels"],
+          "expect_must": [
+            "credit reason one's rewording explicitly, quoting it",
+            "point at the CONTRAST between the two halves as the thing to fix — the student already knows how to do it",
+            "ask one question about reason two only"
+          ],
+          "expect_must_not": ["re-teach reason one", "offer a finished version of reason two"]
+        },
+        {
+          "grade": "strong",
+          "action": "explain",
+          "student_text": "Reason one: a toastie is within reach of anyone, because it needs no special equipment and almost no money. Evidence: \"No toastie maker? No problem.\", \"no need to break the bank\". Reason two: the same basic snack can be turned into something much better simply by changing what goes inside it. Evidence: \"can be enhanced\", \"never-ending list of possibilities\".",
+          "faults_planted": [],
+          "expect_must": [
+            "teach the selected thing in one substantive sentence and then ask one anchoring question",
+            "if asked what more could be done, say honestly that this already meets the top descriptor and name the descriptor"
+          ],
+          "expect_must_not": ["invent a further improvement to justify the turn", "downgrade a correct answer to have something to say"]
+        },
+        {
+          "grade": "valid-but-different",
+          "action": "scan-concept",
+          "student_text": "Reason one: it rescues you when money is tight, because the whole thing can be assembled from what is already in the kitchen. Evidence: \"In these financially difficult times\", \"make it at home\". Reason two: it is a snack you can keep re-inventing, so it never becomes boring. Evidence: \"adaptability\", \"scrumptious treat\".",
+          "faults_planted": [],
+          "valid_difference": "Reason one frames the point as rescue-in-hard-times rather than cheapness; reason two frames versatility as never getting boring. Both are accurate readings of the paragraphs, in the student's own words, with valid evidence, and neither matches the mark scheme's wording.",
+          "expect_must": [
+            "accept both reasons as valid and say that the descriptor rewards the student's own words, not a fixed answer",
+            "check the evidence supports the reason as the student has framed it"
+          ],
+          "expect_must_not": ["say the answer is wrong because it differs from the scheme's wording", "hand the student the scheme's wording"]
+        }
+      ]
+    },
+    {
+      "id": "u1-t4-media-language",
+      "cell": "ccea/language1",
+      "text_slug": "ccea_lang_paper_1",
+      "question_type": "Unit 1 Task 4 — how language develops a sense that the DVD would be exciting (20 marks, three CL strands)",
+      "source": "ccea-lang-unit1-summer2025-paper.pdf, Task 4 — the Hugo DVD cover blurb. Verbatim: \"Orphaned, alone and scared\", \"evading capture by the intimidating station inspector\", \"fix the broken pieces of his past\", \"Racing against time\", \"one step ahead\", \"imagination and intrigue\", \"Be captivated, be inspired\", \"let your heart take flight\", \"cinematic adventure of a lifetime\", \"Hugo's spellbinding story awaits\", \"Time is ticking\".",
+      "responses": [
+        {
+          "grade": "weak",
+          "action": "scan-structure",
+          "student_text": "The cover has a big clock on it and a boy hanging off it, which makes it look exciting. The colours are gold. It uses \"Racing against time\" which shows it is exciting.",
+          "faults_planted": ["M1 — describes the IMAGE, which belongs to Task 5, not the language which is what Task 4 asks about", "F1 'shows'", "no taught elements at all"],
+          "expect_must": [
+            "say in one line that this task asks about the WORDS and the picture belongs to the other task",
+            "point at the one quoted phrase the student did use as the place to start",
+            "ask one question"
+          ],
+          "expect_must_not": ["mark the answer", "rewrite it", "say the image is irrelevant to the paper (it is Task 5's whole subject)"]
+        },
+        {
+          "grade": "partial",
+          "action": "scan-elements",
+          "student_text": "The blurb keeps the reader in a hurry. \"Racing against time\" personifies the chase so that the danger feels physical. The reader feels the pressure Hugo is under.",
+          "faults_planted": ["no close analysis of a word inside the quotation", "one effect only", "no purpose sentence"],
+          "expect_must": ["count the elements present and name how many are missing", "ask the student which single element to build next"],
+          "expect_must_not": ["supply the close analysis", "list every missing element as a to-do"]
+        },
+        {
+          "grade": "strong",
+          "action": "lang-scan-verbs",
+          "student_text": "The blurb sells urgency before it sells story. \"Time is ticking\" works as a pun, borrowing the clocks Hugo repairs and turning them into a countdown against him. \"Ticking\" is a sound word, so the phrase makes the reader hear the film before seeing it. The effect is impatience, a wish to start watching now. It also plants unease, because a ticking clock in a story rarely ends calmly. The writer arguably wants the cover to feel like the film's opening minute rather than its summary.",
+          "faults_planted": [],
+          "expect_must": [
+            "be answered from CODE, not from the model — the reply is the list of F1/T1 verbs and the fix rule",
+            "return nothing to flag here (there is no banned or weak-tier verb in this paragraph) and say so without inventing a fault"
+          ],
+          "expect_must_not": ["hand the turn to the model when the code scan returns no hits and the student has not typed a question", "flag 'works' or 'plants' as weak-tier verbs — neither is on the registry"]
+        },
+        {
+          "grade": "valid-but-different",
+          "action": "scan-coherence",
+          "student_text": "What makes the blurb exciting is that it never lets a sentence settle. The triple \"Orphaned, alone and scared\" piles up three states in one breath, and then \"Be captivated, be inspired\" turns the same rhythm on the reader as an order. The first triple describes Hugo and the second commands us, so by the end we are inside the chase rather than watching it.",
+          "faults_planted": [],
+          "valid_difference": "Builds the whole paragraph on ONE structural pattern traced across two quotations, rather than one technique with one quotation. Creditable: CL5 asks for judicious selection and evaluation of how elements impact the reader, and this does both.",
+          "expect_must": ["accept the two-quotation pattern as a legitimate shape and name what it achieves", "check the chain holds, which it does, and say so"],
+          "expect_must_not": ["insist on one quotation per paragraph", "call the second quotation a new paragraph's material"]
+        }
+      ]
+    },
+    {
+      "id": "u1-t5-presentational",
+      "cell": "ccea/language1",
+      "text_slug": "ccea_lang_paper_1",
+      "question_type": "Unit 1 Task 5 — two presentational features and their intended effect (10 marks: 1 + 4 + 1 + 4)",
+      "source": "ccea-lang-unit1-summer2025-paper.pdf, Task 5 — the Hugo DVD front cover. ⚠️ The cover IMAGE is removed from the published PDF for copyright ('DVD front cover of film Hugo removed due to copyright find image on link below'), so a journey must not quote visual detail beyond what the mark scheme itself names: colour and contrasting colours, the layout, the background, the font of the title or a review, the image of the characters, the image of the clock.",
+      "responses": [
+        {
+          "grade": "weak",
+          "action": "scan-concept",
+          "student_text": "Feature one: the colours. Effect: they make it look nice and make you want to watch it. Feature two: the layout. Effect: it is set out well so you can read it.",
+          "faults_planted": ["G1-VAGUE twice — 'the colours' and 'the layout' are exactly the general answers the board does not credit", "both effects describe rather than reach an intended effect on the audience"],
+          "expect_must": [
+            "quote the board's own wording — it credits 'a specific aspect of colour', not colour in general",
+            "ask the student to name WHICH aspect of colour they actually mean",
+            "handle ONE of the two features, not both"
+          ],
+          "expect_must_not": ["name a specific feature for them", "give a mark", "invent visual detail the PDF does not carry"]
+        },
+        {
+          "grade": "partial",
+          "action": "scan-elements",
+          "student_text": "Feature one: the gold font of the title. Effect: gold looks expensive, so the film feels like a big production. Feature two: the image of the clock. Effect: there is a clock.",
+          "faults_planted": ["feature two's explanation stops at description — no intended effect at all"],
+          "expect_must": ["credit feature one's specificity, quoting it", "name that the second half has a feature but no effect yet", "ask one question about the clock's effect on the audience"],
+          "expect_must_not": ["re-teach feature one", "supply the clock's effect"]
+        },
+        {
+          "grade": "strong",
+          "action": "compare-gold-standard",
+          "student_text": "Feature one: the contrast in size between the image of the boy and the image of the man in uniform. Effect: the smaller adult reads as the weaker threat, so an audience expects the child to win, and a family audience is reassured before it buys the film. Feature two: the gold hues of the clock face. Effect: gold is the colour of something precious, so time itself is presented as the thing at stake, which tells the audience the story is a race rather than a mystery.",
+          "faults_planted": [],
+          "expect_must": [
+            "⛔ NOT quote a stored model — none exists; quote the 4-mark descriptor and ONE of the board's own listed explanations from knowledge-mark-scheme-u1.md §6 instead",
+            "ask what the student notices about the shape of the board's own explanation beside theirs"
+          ],
+          "expect_must_not": ["present the board's listed explanation as the only right answer", "improve the student's wording"]
+        },
+        {
+          "grade": "valid-but-different",
+          "action": "explain",
+          "student_text": "Feature one: the dark background behind the title. Effect: a dark background makes the lighter title jump forward, so the eye lands on the name before anything else and the film is remembered by name. Feature two: the image of the stars. Effect: stars belong to wishes rather than train stations, so the cover promises the audience something magical inside an ordinary setting.",
+          "faults_planted": [],
+          "valid_difference": "The background and the stars are both on the board's own credit lists, but the effects given are the student's own rather than the scheme's; the first is about reading behaviour rather than theme.",
+          "expect_must": ["accept both as valid, specific features with genuine intended effects", "answer the explain request in one substantive sentence and one question"],
+          "expect_must_not": ["prefer the scheme's explanation to the student's", "treat 'reading behaviour' as an invalid kind of effect"]
+        }
+      ]
+    },
+    {
+      "id": "u4-t2-comparison",
+      "cell": "ccea/language2",
+      "text_slug": "ccea_lang_paper_4",
+      "question_type": "Unit 4 Task 2 — compare and contrast how two writers created a sense of excitement (32 marks, three CL strands with comparison folded into two of them)",
+      "source": "⛔ NONE. The two literary extracts (Texts A and B) are on a SEPARATE INSERT which the published question-paper PDF does not contain. No extract text is quoted below and none is invented (PORT BRIEF §1). These journeys test the comparative SHAPE only. The engine lane should re-author them with real extract text once the insert is obtained.",
+      "responses": [
+        {
+          "grade": "weak",
+          "action": "scan-structure",
+          "student_text": "In Text A the writer makes it exciting by using short sentences. It makes the reader feel rushed. In Text B the writer also makes it exciting. There is a lot of noise described. Both texts are exciting.",
+          "faults_planted": ["T2-NOLINK — no comparative connective anywhere", "the final sentence is a summary, not a comparison", "no technique named for Text B", "no quotation from either text"],
+          "expect_must": [
+            "say plainly that on this task the marks follow CONNECTION, and quote the board's ladder wording ('simple/straightforward connections' up to 'explore meaningful comparisons and contrasts')",
+            "name that 'both texts are exciting' is a label, not a comparison",
+            "ask one question that produces a joining sentence"
+          ],
+          "expect_must_not": ["write the pivot sentence for them", "list all four problems", "give a mark or a Competence Level"]
+        },
+        {
+          "grade": "partial",
+          "action": "scan-coherence",
+          "student_text": "Both writers build excitement out of speed, but they get there from opposite directions. The first writer keeps the sentences short so the reader is never allowed to settle. Whereas the second writer uses one long sentence that runs the whole length of the race. The reader of the second text runs out of breath rather than out of time.",
+          "faults_planted": ["Text A has a method and an effect; Text B has a method but the effect sentence has drifted into a shared observation, so the pair sentence and Text A's effect are doing the same job", "no close analysis", "no purpose comparison"],
+          "expect_must": [
+            "credit the comparative topic sentence and the pivot explicitly, quoting them",
+            "identify that Text A's own effect sentence is missing — the last sentence is the pair, not A's effect",
+            "ask one question"
+          ],
+          "expect_must_not": ["suggest a second effect per text (the taught shape is ONE per text here)", "supply Text A's effect"]
+        },
+        {
+          "grade": "strong",
+          "action": "scan-elements",
+          "student_text": "Both writers make excitement out of what the reader is not told, though one withholds the outcome and the other withholds the danger. The first writer cuts away at the moment of impact, so the reader supplies the crash themselves. That absence makes the reader complicit, inventing something worse than any description. Similarly, the second writer never names what is chasing the boy, leaving the threat as a sound behind him. Here the reader's own imagination becomes the monster. Taken together, the two extracts show that withholding works differently depending on WHEN it happens: withholding an ending produces suspense, while withholding a cause produces dread. The sharper of the two choices is the second writer's, because a nameless threat cannot be resolved by being survived. Both writers arguably want the reader to do the frightening work, which is why neither finishes the sentence the reader expects.",
+          "faults_planted": [],
+          "expect_must": [
+            "count eight of eight elements present and say so",
+            "if asked what would strengthen it, answer against the CL5 wording rather than inventing a shortfall"
+          ],
+          "expect_must_not": ["manufacture a fault", "ask for quotations the journey has deliberately not invented"]
+        },
+        {
+          "grade": "valid-but-different",
+          "action": "scan-concept",
+          "student_text": "The two extracts are not really trying to do the same thing, and that is the comparison. The first writer wants the reader excited about an outcome, so everything is aimed forward at who wins. The second writer wants the reader excited about a place, so the race is an excuse to describe it. Because their aims differ, the same technique does opposite work in each: repetition drives the first extract onward and holds the second one still.",
+          "faults_planted": [],
+          "valid_difference": "Compares the writers' PURPOSES first and derives the method comparison from that, instead of comparing method then purpose. Fully creditable — the CL5 strands ask for perceptive interpretation of both writers' intentions and meaningful comparison, in no prescribed order.",
+          "expect_must": ["accept the inverted order as a legitimate comparative shape", "confirm the topic sentence spans both extracts, which it does"],
+          "expect_must_not": ["insist on the taught sentence order as a requirement", "call the answer unstructured"]
+        }
+      ]
+    },
+    {
+      "id": "u4-t3-t4-nonfiction",
+      "cell": "ccea/language2",
+      "text_slug": "ccea_lang_paper_4",
+      "question_type": "Unit 4 Tasks 3 and 4 — how the writer gained and held interest (15) and how he presented a named view (15), three CL strands, one mark per grid row",
+      "source": "ccea-lang-unit4-summer2025-paper.pdf, Tasks 3 and 4 — 'The AI doctor will see you now' (Daily Mail, adapted). Verbatim from Task 3's extract: \"a stark warning\", \"Have no doubt about it, chatbots could soon outsmart humans\", \"notoriously difficult to pass\", \"a spine-chilling milestone\", \"propels humanity firmly into the realm of Science Fiction\", \"How real is the risk from robots?\". From Task 4's extract: \"The world's greatest minds are split\", \"enhance or harm\", \"History is littered with examples\", \"organ transplants, antibiotics and vaccinations\", \"heralding\", \"with staggering accuracy\", \"And it did so in a heartbeat.\", \"make that verruca vanish\".",
+      "responses": [
+        {
+          "grade": "weak",
+          "action": "scan-structure",
+          "student_text": "The writer gets our interest with the title. He uses a quote from Hinton which shows AI is dangerous. He uses \"spine-chilling\" which is a scary word. The reader is interested.",
+          "faults_planted": ["answers only how interest was GAINED, never how it was HELD — half the question", "F1 'shows'", "no taught elements", "the last sentence asserts an effect with no mechanism"],
+          "expect_must": [
+            "name the two-part demand — gained AND held — and say which half is missing",
+            "quote the student's own 'The reader is interested' as the place where the effect is asserted rather than built",
+            "ask one question"
+          ],
+          "expect_must_not": ["mark it", "rewrite it", "explain both halves in the same turn"]
+        },
+        {
+          "grade": "partial",
+          "action": "lang-scan-starters",
+          "student_text": "The writer opens on authority so the reader trusts him early. This is done by quoting Hinton directly, \"Have no doubt about it, chatbots could soon outsmart humans\", which borrows an expert's certainty. This certainty makes the threat feel settled rather than speculative. These two moves together mean the reader stops arguing and starts worrying.",
+          "faults_planted": ["S1 — three of four sentences open on This / These / The", "no writer's purpose sentence"],
+          "expect_must": [
+            "be answered from CODE — the reply lists the S1 openers found and states the fix rule",
+            "list the actual hits (This, This, These) and not invent a fourth",
+            "leave the student to rewrite one of them"
+          ],
+          "expect_must_not": ["rewrite a sentence", "hand the turn to the model before the student types back", "also raise the missing purpose sentence in the same code reply"]
+        },
+        {
+          "grade": "strong",
+          "action": "scan-concept",
+          "student_text": "The writer presents the positives of AI as inevitable rather than hopeful. He deploys the metaphor \"History is littered with examples\", which reframes doubt about AI as a repeated historical error rather than a reasonable caution. \"Littered\" carries carelessness, so the word quietly accuses the reader of joining a long line of people who worried about the wrong thing. The reader feels the pull of not wanting to be one of them. A moment later the short sentence \"And it did so in a heartbeat.\" replaces argument with demonstration, and the reader is left with speed rather than doubt. Arguably the writer wants scepticism to feel old-fashioned, which is why every positive arrives as a precedent rather than a promise.",
+          "faults_planted": [],
+          "expect_must": ["confirm the topic sentence is a genuine conceptual claim about the named view", "if asked for more, answer against the CL5 wording rather than inventing a fault"],
+          "expect_must_not": ["manufacture a shortfall", "say a sixth element is missing when all six are present"]
+        },
+        {
+          "grade": "valid-but-different",
+          "action": "scan-coherence",
+          "student_text": "The writer presents AI's medical positives by making them small. \"make that verruca vanish\" is the last thing a reader expects after a paragraph about diagnosing disease, and the alliteration makes it sound almost silly. Shrinking the technology to a verruca removes the fear that the article's first half built. By the end the reader is not deciding whether AI is safe, only whether it is useful.",
+          "faults_planted": [],
+          "valid_difference": "Reads a DEFLATION strategy and traces it across the article's two halves, which means the paragraph is about structure as much as language. Creditable: the strands reward interpretation of the writer's intentions and evaluation of craft, and nothing restricts the answer to word-level devices.",
+          "expect_must": ["accept the cross-article reading as legitimate on Task 4", "check the chain holds, which it does, and say what makes it hold"],
+          "expect_must_not": ["say Task 4 is only about language and not structure", "require a quotation from Task 3's extract to support it — a quotation re-used across the two tasks is the fault, not the cure"]
+        }
+      ]
+    },
+    {
+      "id": "u1-t1-and-u4-t1-writing",
+      "cell": "both",
+      "text_slug": "ccea_lang_paper_1 and ccea_lang_paper_4",
+      "question_type": "The writing task — Unit 1 Task 1 (87, transactional: the Summer 2025 task set a speech to classmates on whether homework is still necessary) and Unit 4 Task 1 (88, a personal essay about a favourite teacher OR a story from an image for young adults)",
+      "source": "The student's own prose. No source text to quote.",
+      "responses": [
+        {
+          "grade": "weak",
+          "action": "scan-structure",
+          "student_text": "Homework is bad. It takes too long and people get stressed. Teachers should give less of it. In conclusion homework should be banned because it is unfair.",
+          "faults_planted": ["no image anywhere — every sentence is an abstraction", "no urgency, no vision, no counter-argument", "the conclusion introduces 'banned', which the argument never built"],
+          "expect_must": [
+            "name which of the six sections exist and which do not, in one line",
+            "ask which section the student wants to build first",
+            "judge register against the printed audience (classmates) rather than an essay default"
+          ],
+          "expect_must_not": ["say the piece is too short (no word count is set on this paper and no ceiling is injected)", "write a section", "give a mark"]
+        },
+        {
+          "grade": "partial",
+          "action": "strengthen-hook",
+          "student_text": "Last Tuesday I finished my last worksheet at eleven at night, and my little sister had been asleep for three hours. Homework takes time we do not have. Teachers set it because they think it helps. I think there is a better way to spend those hours.",
+          "faults_planted": ["the hook lands, then the next three sentences drop back to abstraction", "no named tone", "the counter-argument ('teachers think it helps') is stated but never answered"],
+          "expect_must": [
+            "credit the opening image by quoting it",
+            "diagnose the current opening against the image-first law and offer ONE alternative SHAPE as a skeleton, then wait",
+            "keep the student's own anecdote as theirs"
+          ],
+          "expect_must_not": ["write a replacement opening in full", "offer three options", "raise the counter-argument in the same turn"]
+        },
+        {
+          "grade": "strong",
+          "action": "cw-cut-modifiers",
+          "student_text": "The bell had gone twenty minutes earlier and the corridor still smelled faintly of wet coats. Mr Akhtar was extremely patiently rewriting the same equation on the board for a boy who had genuinely not asked him to. He did not really look up when I came in. He just slid a chair out with his foot and carried on, very quietly, as though the afternoon had always been going to include me.",
+          "faults_planted": ["four modifiers that Clark's test would cut: extremely, genuinely, really, very"],
+          "expect_must": [
+            "be answered from CODE — the reply lists the -ly adverbs and intensifiers found and states Clark's test",
+            "list exactly the four hits and not invent a fifth",
+            "leave the cutting to the student"
+          ],
+          "expect_must_not": ["rewrite the paragraph", "be offered at all on a reading task (this button is Task 1 only)"]
+        },
+        {
+          "grade": "valid-but-different",
+          "action": "scan-concept",
+          "student_text": "I am going to argue for MORE homework, which I know is the wrong side to be on in this room. Two years ago I did none, and the thing I lost was not marks. It was the hour after dinner when the house went quiet and nobody wanted anything from me. Homework gave me that hour and called it work, and nobody argues with work.",
+          "faults_planted": [],
+          "valid_difference": "Takes the unpopular side of the printed question and builds the argument from a personal redefinition rather than evidence. Fully creditable — the Purpose and Audience strand rewards a judicious relationship with the audience, and knowingly opposing the room is a deliberate rhetorical choice.",
+          "expect_must": [
+            "accept the stance without steering the student to the expected side",
+            "confirm there is one controlling idea the piece serves, and name it back in the student's own terms"
+          ],
+          "expect_must_not": ["suggest the popular side would score better", "treat an unpopular stance as a misread of the task", "praise the stance without checking the controlling idea"]
+        }
+      ]
+    }
+  ]
+}

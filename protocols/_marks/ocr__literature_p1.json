@@ -1,0 +1,95 @@
+{
+  "board": "ocr",
+  "paper": "literature_p1",
+  "title": "OCR GCSE (9–1) English Literature — J352/01: Exploring modern and literary heritage texts",
+  "authority": {
+    "file": "MSR/OCR Literature Mark Schemes/June 2024 MS - Component 1 OCR English Literature GCSE.pdf",
+    "kind": "mark scheme",
+    "sitting": "June 2024",
+    "why_this_source": "The board's own published mark scheme, already on the drive in the shared mark-scheme library (unlike OCR Language, which is not on the drive at all). Extracted text saved alongside at protocols/ocr/_sources/ocr-j352-01-june2024-ms.txt.",
+    "second_series": "NOT ON DISK. Only the June 2024 series is in 'Sophicly Etch Mark Scheme Resources/OCR Literature Mark Schemes/' (searched 2026-09-13), so PROTOCOL-STANDARD E1.4 — read more than one paper to tell a recurring pattern from one series' feature — is NOT satisfied for this paper. The tariffs below are therefore recorded as ONE SERIES VERIFIED, and a second OCR Literature series should be fetched before any teaching claim treats the shape as permanent.",
+    "quote_note": "Every quote is a row of the mark scheme's own 'Mark Scheme Assessment Objectives (AO) Grid' (final page), column order Question | AO1 | AO2 | AO3 | AO4 | Total.",
+    "board_document_inconsistency": "Two places in the SAME document disagree about whether Section A part (a) assesses AO3. The final AO grid gives 1a/2a/3a as AO1 8 + AO2 12 = 20 with no AO3; the part (a) weightings table gives 'AO1 5 · AO2 2.5 · AO3 5 = 12.5% of the GCSE', its SKILLS line says 'AO1 and AO3 are the equally dominant assessment objectives', and every part (a) level descriptor carries an AO3 context bullet. The MARKS agree (20 either way). We mark part (a) as AO1 + AO2 + AO3 because the level descriptors are what marking uses, and the disagreement is recorded rather than silently resolved."
+  },
+  "spec": {
+    "file": "literature"
+  },
+  "total": {
+    "marks": 80,
+    "quote": "Totals 32 36 8 4 80",
+    "why": "The AO grid's Totals row. The three question tariffs also sum to it: 20 + 20 + 40 = 80."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 20,
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3"
+      ],
+      "section": "A — Modern prose or drama, part (a)",
+      "type": "paired_extract_comparison",
+      "quote": "1a, 2a, 3a 8 12 20",
+      "quote_note": "The grid row for part (a) of every Section A choice (candidates answer on ONE studied text, so 1a OR 2a OR 3a). Part (a) compares an extract from the studied modern text with an UNSEEN extract, marked holistically: 'The response is to be marked holistically. Examiners to indicate overall mark awarded at the end of the response. AO1 and AO3 are the equally dominant assessment objectives.' Six levels: 18–20 / 15–17 / 11–14 / 7–10 / 4–6 / 1–3. ⚠️ NO spec_key: literature-paper-specs.json records ocr.modern_text as a single 40-mark essay, which contradicts this paper — see the proposed correction in protocols/ocr/_PORT-REPORT-2026-09-13.md."
+    },
+    {
+      "id": "Q2",
+      "marks": 20,
+      "aos": [
+        "AO1",
+        "AO2"
+      ],
+      "section": "A — Modern prose or drama, part (b)",
+      "type": "whole_text_essay",
+      "quote": "1b, 2b, 3b 10 10 20",
+      "quote_note": "The grid row for part (b). Part (b) is a whole-text essay on the same studied text, marked holistically, with AO1 and AO2 'equally weighted' and NO AO3 bullet anywhere in its level descriptors. Six levels: 18–20 / 15–17 / 11–14 / 7–10 / 4–6 / 1–3. ⚠️ NO spec_key, same reason as Q1."
+    },
+    {
+      "id": "Q3",
+      "marks": 40,
+      "aos": [
+        "AO1",
+        "AO2",
+        "AO3",
+        "AO4"
+      ],
+      "section": "B — 19th century prose",
+      "type": "extract_or_discursive_essay",
+      "spec_key": "ocr.19th_century",
+      "quote": "Section B: Nineteenth Century Prose",
+      "quote_note": "Locator: the Section B heading, so this question's region covers the Section B level descriptors AND every set-text question table. Candidates answer ONE question from the eight (one extract-based and one discursive per set text); each table prints its tariff as '36 +4' — 36 content marks on the six level descriptors (top band 31–36) plus 4 AO4 marks on the separate 'Marking Grid for AO4 – SPaG (1–4 marks)'. The final AO grid gives the same total as AO1 14 + AO2 14 + AO3 8 + AO4 4 = 40. Rubric rules worth teaching, verbatim: 'If a candidate has not moved beyond the extract, the mark should not be above Level 3' and 'If a candidate has only referred to one moment in the text in a discursive question, the mark should not move beyond Level 3'.",
+      "components": [
+        {
+          "label": "content (AO1 + AO2 + AO3)",
+          "marks": 36,
+          "kind": "content",
+          "aos": [
+            "AO1",
+            "AO2",
+            "AO3"
+          ],
+          "quote": "36 +4",
+          "quote_note": "Every Section B question table prints '36 +4' beside the question. 36 = AO1 14 + AO2 14 + AO3 8, the marks the six level descriptors cover (top band 31-36)."
+        },
+        {
+          "label": "spelling, punctuation and grammar (AO4)",
+          "marks": 4,
+          "kind": "spag",
+          "aos": [
+            "AO4"
+          ],
+          "quote": "36 +4",
+          "quote_note": "The '+4' in the same printed tariff — awarded on the separate 'Marking Grid for AO4 - SPaG (1-4 marks)'."
+        }
+      ],
+      "marks_from": "components"
+    }
+  ],
+  "protocols": [
+    {
+      "file": "protocols/ocr/literature/modules/protocol-a-assessment.md"
+    }
+  ],
+  "port_status": "TARIFFS ONLY. The ocr/literature protocol is the March-2026 monolith (PROTOCOL-STANDARD audit: 2/10 assessment, 1/8 planning, polishing monolith) and was NOT ported in this pass. This file exists so that whoever does port it cannot invent a tariff, and so the 20/20/40 shape is on record with its citation."
+}

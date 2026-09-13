@@ -4,8 +4,10 @@
     "version": "1.0.0",
     "base_path": "protocols/edexcel-igcse/language2",
     "planning": {
+        "_ladder_note": "steps/b-ladder.md rides the ALWAYS list so the contingent-scaffolding ladder (PROTOCOL-STANDARD §C-LADDER), the @ELEMENT_JUDGE verdict contract, this paper's lens/model registry and its invented model domain are in context on every planning step. It lives in steps/ rather than planning/ because this cell's planning walk is wired out of steps/ — see _PORT-REPORT-2026-09-13.md §4 Row 5 for the audit/harness blindness that causes.",
         "always": [
             "modules/foundation.md",
+            "steps/b-ladder.md",
             "language/modules/knowledge-algorithm-planning.md",
             "modules/knowledge-text-bank.md",
             "modules/knowledge-genre.md",
@@ -112,19 +114,15 @@
             "modules/workflow-entry.md",
             "modules/macros-socratic.md",
             "modules/macros-analysis.md",
-            "modules/assessment-section-a.md",
-            "modules/assessment-section-b.md",
+            "modules/protocol-a-assessment.md",
             "mark-scheme/marking-fairness-universal.md"
-        ]
+        ],
+        "_superseded_note": "modules/assessment-section-a.md and modules/assessment-section-b.md were replaced on 2026-09-13 by the single modules/protocol-a-assessment.md (PROTOCOL-STANDARD Part B). Copies are kept, unloadable, in modules/_superseded/.",
+        "steps": {}
     },
     "polishing": {
-        "always": [
-            "modules/foundation.md",
-            "modules/knowledge-model-answer.md",
-            "modules/knowledge-mark-scheme.md",
-            "modules/workflow-entry.md",
-            "modules/polishing-section-a.md",
-            "modules/polishing-section-b.md"
-        ]
+        "_retired": "Polishing is an ENVIRONMENT, not a walk (PROTOCOL-STANDARD Part D). It loads through the router's essay_polishing_env row for text slug 'edexcel_igcse_lang_a_paper_2': inline-coaching-core.md + inline-coaching-engine-language.md + rubric-base.md + rubric-edexcel-igcse-lang-p2-anthology.md + the gold files modules/knowledge-model-answer.md and modules/knowledge-mark-scheme.md. This list is EMPTY on purpose — modules/_superseded/polishing-section-a.md and polishing-section-b.md stay on disk as source and must never be loaded, because anything a manifest loads is in the model's context and a fence loses to in-file text (WML CLAUDE.md §5, retained-source law).",
+        "always": [],
+        "steps": {}
     }
 }

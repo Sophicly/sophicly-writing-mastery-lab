@@ -108,19 +108,15 @@
   "protocols": [
     {
       "file": "protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md",
-      "role": "assessment protocol",
+      "role": "assessment protocol (rewritten 2026-09-13 to PROTOCOL-STANDARD Part B; every question now carries an “Assessment Sub-Protocol: Question N” heading with its tariff on the heading line, so check E verifies all six rather than reporting them unchecked)",
       "questions": [
         "Q1",
         "Q2",
         "Q3",
         "Q4",
-        "Q5"
+        "Q5",
+        "Q6"
       ]
-    },
-    {
-      "file": "protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md",
-      "role": "Section B (Q6/Q7) — headed 'Assessment Sub-Protocol: Section B (AO4/AO5 – 45 Marks)', not 'Question 6', which is why check E reported it unverified",
-      "questions": []
     }
   ]
 }

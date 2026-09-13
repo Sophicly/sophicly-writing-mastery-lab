@@ -4,8 +4,10 @@
     "version": "1.0.0",
     "base_path": "protocols/edexcel-igcse/language1",
     "planning": {
+        "_ladder_note": "planning/b-ladder.md rides the ALWAYS list so the contingent-scaffolding ladder (PROTOCOL-STANDARD §C-LADDER), the @ELEMENT_JUDGE verdict contract, this paper's lens/model registry and its invented model domain are in context on every planning step — the modular pattern the standard names, ported from protocols/aqa/literature/planning/b-ladder.md.",
         "always": [
             "modules/foundation.md",
+            "planning/b-ladder.md",
             "language/modules/knowledge-algorithm-planning.md",
             "modules/knowledge-macros.md",
             "modules/knowledge-validation.md",
@@ -164,6 +166,7 @@
             "modules/knowledge-state.md",
             "modules/knowledge-hub.md",
             "modules/protocol-a-assessment.md",
+            "modules/knowledge-mark-scheme.md",
             "language/modules/communication-standards.md",
             "language/modules/graceful-degradation.md",
             "language/modules/anti-hallucination.md",
@@ -174,17 +177,8 @@
         "steps": {}
     },
     "polishing": {
-        "always": [
-            "modules/foundation.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-hub.md",
-            "modules/protocol-c-polishing.md",
-            "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
-            "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
-        ],
+        "_retired": "Polishing is an ENVIRONMENT, not a walk (PROTOCOL-STANDARD Part D). It loads through the router's essay_polishing_env row for text slug 'edexcel_igcse_lang_a': inline-coaching-core.md + inline-coaching-engine-language.md + rubric-base.md + rubric-edexcel-igcse-lang-p1-nonfiction.md + the gold file modules/knowledge-hub.md. This list is EMPTY on purpose — modules/protocol-c-polishing.md stays on disk as source and must never be loaded, because anything a manifest loads is in the model's context and a fence loses to in-file text (WML CLAUDE.md §5, retained-source law).",
+        "always": [],
         "steps": {}
     }
 }

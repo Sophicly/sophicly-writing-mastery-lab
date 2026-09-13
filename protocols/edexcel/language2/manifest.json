@@ -116,10 +116,6 @@
     "assessment": {
         "always": [
             "modules/foundation-lang2.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-progress.md",
-            "modules/knowledge-operations.md",
-            "modules/knowledge-penalties.md",
             "modules/knowledge-mark-scheme.md",
             "modules/protocol-a-assessment.md",
             "modules/knowledge-safeguarding.md",
@@ -128,24 +124,15 @@
             "language/modules/anti-hallucination.md",
             "language/modules/state-management.md",
             "language/modules/ttecea-rationale-lang.md",
-            "mark-scheme/marking-fairness-universal.md"
+            "mark-scheme/marking-fairness-universal.md",
+            "modules/knowledge-mark-scheme-lang2.md"
         ],
-        "steps": {}
+        "steps": {},
+        "_pruned": "2026-09-13 (Edexcel GCSE Lang lane) — ONE-TEMPLATE LAW (PROTOCOL-STANDARD, Phase 0). Removed from the loaded set: modules/knowledge-algorithm.md, modules/knowledge-progress.md, modules/knowledge-operations.md and modules/knowledge-penalties.md. All four narrate the retired March-2026 walk as if it were live — a 'Main Menu', an 'Exam Practice' assessment type, an 'Assessment Type Selection' step, 'Type Y to continue' cues outside protocol-a, and a second penalty registry. knowledge-operations.md alone is 1209 lines of it. They stay on disk as source; protocol-a-assessment.md owns every turn, and modules/knowledge-mark-scheme-lang2.md is the only place level descriptors are quoted from. modules/knowledge-mark-scheme.md is KEPT because it is the GOLD file (§2A models, §2B criteria, §2.C style models) and carries no competing emission template."
     },
     "polishing": {
-        "always": [
-            "modules/foundation-lang2.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-operations.md",
-            "modules/knowledge-penalties.md",
-            "modules/knowledge-mark-scheme.md",
-            "modules/protocol-c-polishing.md",
-            "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
-            "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
-        ],
+        "_retired": "2026-09-13 (Edexcel GCSE Lang lane) — polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), to be served by the essay_polishing_env row for edexcel_lang_paper_2 in class-protocol-router.php (inline-coaching-language stack + rubric-edexcel-lang-p2-nonfiction.md + knowledge-mark-scheme.md as the gold). modules/protocol-c-polishing.md stays on disk as the source the rubric was distilled from and must NEVER be loaded at a student again (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose: if the router row is absent, this cell loads nothing and fails loud rather than the March-2026 walk.",
+        "always": [],
         "steps": {}
     }
 }

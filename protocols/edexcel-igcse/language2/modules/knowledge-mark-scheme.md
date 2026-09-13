@@ -1,3 +1,37 @@
+# Edexcel International GCSE English Language A — Paper 2 (4EA1/02) — Mark Scheme Descriptors (VERBATIM)
+
+**Provenance (added 2026-09-13).** Every descriptor below is quoted verbatim from the board's own mark
+scheme:
+`Sophicly Etch Mark Scheme Resources/EDEXCEL IGCSE English Language Component A/Edexcel IGCSE Spec A Language Paper 2/Edexcel IGCSE Language Paper 2 Spec A June 2024 MS.pdf`
+(Pearson Edexcel International GCSE in English Language (4EA1), Paper 02: Poetry and Prose Texts and
+Imaginative Writing, June 2024, Publications Code 4EA1_02_2406_MS). **Cross-checked word for word
+against two further series in the same folder** — `June 2022 MS.pdf` (4EA1_02_2206_MS) and
+`January 2023 MS.pdf` (4EA1_02_2301_MS): all four grids and every band boundary are identical, so
+these are the paper's descriptors rather than one sitting's. Nothing here is authored from general
+GCSE knowledge. **Level Alignment in `protocol-a-assessment.md` quotes ONLY from this file.**
+
+**The paper's assessment objectives (mark scheme, AO table):**
+- **AO1** Read and understand a variety of texts, selecting and interpreting information, ideas and perspectives.
+- **AO2** Understand and analyse how writers use linguistic and structural devices to achieve their effects.
+- **AO4** Communicate effectively and imaginatively, adapting form, tone and register of writing for specific purposes and audiences.
+- **AO5** Write clearly, using a range of vocabulary and sentence structures, with appropriate paragraphing and accurate spelling, grammar and punctuation.
+
+⚠️ **AO3 is NOT assessed on Paper 2.** On this qualification AO4 is a WRITING objective (purpose,
+audience, form, tone, register) and AO5 is technical accuracy — neither is context. There is no AO6.
+⚠️ **The AO1 grid tops out at Level 4 (10–12); AO2, AO4 and AO5 run to Level 5.** Do not assume a
+uniform five-level ladder across the four grids.
+
+**Marks:** Section A (Question 1) = AO1 12 + AO2 18 = **30** · Section B (one of Questions 2, 3, 4) =
+AO4 18 + AO5 12 = **30** · the question paper prints "TOTAL FOR PAPER = 60 MARKS".
+
+**The best-fit approach (mark scheme, every levelled question):** "An answer may not always satisfy
+every one of the assessment criteria for a particular level in order to receive a mark within that
+level range, since on individual criteria the answer may meet the descriptor for a higher or lower
+mark range. The best-fit approach should be used to determine the mark which corresponds most closely
+to the overall quality of the response."
+
+---
+
 ## **2.F. Edexcel IGCSE Spec A Lang P2 Mark Scheme Descriptors for English Language A PAPER 2: Poetry and Prose Texts and Imaginative Writing, Section A**
 
 ## **Section A Criteria (Question 1\)**

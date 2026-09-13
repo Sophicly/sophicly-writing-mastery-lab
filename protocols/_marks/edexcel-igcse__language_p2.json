@@ -93,12 +93,13 @@
   },
   "protocols": [
     {
-      "file": "protocols/edexcel-igcse/language2/modules/assessment-section-b.md",
-      "role": "Section B assessment",
+      "file": "protocols/edexcel-igcse/language2/modules/protocol-a-assessment.md",
+      "role": "assessment protocol (written 2026-09-13; replaces assessment-section-a.md + assessment-section-b.md, now unloadable in modules/_superseded/). Section B is headed “Assessment Sub-Protocol: Questions 2, 3 and 4” because the candidate answers one of three on the same pair of grids; the gate keys on the first number.",
       "questions": [
+        "Q1",
         "Q2"
       ]
     }
   ],
-  "protocols_note": "Section A is decomposed in assessment-section-a.md as our own teaching split — introduction out of 3, each body paragraph out of 7, conclusion out of 6 (3 + 3x7 + 6 = 30). That is a Sophicly structure, not a board one, so it carries no 'Assessment Sub-Protocol: Question 1' heading and check E cannot read it. ⭐ FOLLOW-UP WORTH DOING: a per-part check that a protocol's element marks SUM to the board tariff — PROTOCOL-QUESTION-STRUCTURE-MAP.md already records three Edexcel protocols where they do not (modern totals 36.5/37 against a stated 40; poetry's intro header says 3 but its breakdown sums to 2; unseen Q12 sums to 25 against a stated 20)."
+  "protocols_note": "Our teaching split for Section A is a SOPHICLY structure, not a board one, and since 2026-09-13 it is AO-exact: Introduction 3.0 (AO1 2.0 + AO2 1.0) + 3 body paragraphs x 7.0 (AO1 2.5 + AO2 4.5) + Conclusion 6.0 (AO1 2.5 + AO2 3.5) = 30.0, with AO1 summing to 12.0 and AO2 to 18.0 — the board’s two grid maxima. That is what lets the protocol report the board’s AO-split award (AO1 X/12 + AO2 Y/18) by derivation instead of estimate. The earlier split (3 + 3x7 + 6 with mixed AO1/AO2 rows) summed to 30 but decomposed to AO1 14.0 / AO2 12.5 / 3.5 shared, which cannot produce the board’s two marks."
 }

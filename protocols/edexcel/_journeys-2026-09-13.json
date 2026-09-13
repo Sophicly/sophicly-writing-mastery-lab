@@ -1,0 +1,363 @@
+{
+  "board": "edexcel",
+  "qualification": "Pearson Edexcel GCSE (9-1) English Language (1EN0)",
+  "authored": "2026-09-13",
+  "authored_by": "Edexcel GCSE Language content lane",
+  "purpose": "Representative polishing journeys for the ENGINE lane to drive through the real chat endpoint on staging (PROTOCOL-STANDARD Part E5, polishing row). Each journey is one selection a student makes in the POLISHING lesson, the quick action they press, and the bar the coaching reply must clear. The student prose below is written for this file; every quotation inside it is verbatim from the real paper named in `source`, so a reply that corrects a quotation is wrong about the paper, not about the student.",
+  "how_to_run": "Open the polishing lesson for the named text slug on staging (uid 1355), paste the `selection` into the response section for that question, highlight it, tap Sophia, press `action`. Record the reply and check it against `must` and `must_not`. A reply that fails any `must_not` line is a FAIL even if it is otherwise good.",
+  "sources": [
+    {
+      "id": "P2-JUN2024",
+      "text_slug": "edexcel_lang_paper_2",
+      "paper": "1EN0/02 June 2024",
+      "text_1": "A doctor's memoir of deciding on, and then beginning, a medical career. Verbatim lines available for quotation: \"extracurricular activities\" / \"captain of two sports teams\" / \"the county swimming champion\" / \"leader of the youth orchestra\" / \"editor of the school newspaper\" / \"During the day, the job was manageable, if mind-numbing and insanely time-consuming.\" / \"You turn up every morning for the 'ward round', where your whole team of doctors pootles past each of their patients.\" / \"You trail behind like a hypnotised duckling, your head cocked to one side in a caring manner, noting down every pronouncement from your seniors.\" / \"Then you spend the rest of your working day filling in forms, making phone calls.\" / \"Not really what I'd trained so hard for.\" / \"I don't remember medicine ever being an active career decision\"",
+      "text_2": "An account of Elizabeth Blackwell deciding to become a doctor. Verbatim lines: \"The thought of becoming a doctor struck Elizabeth as preposterous.\" / \"The very thought of dwelling on the physical structure of the body and its various ailments filled me with disgust.\" / \"Impracticable. You won't get into medical school. If you do, you won't have the money to pay for it. Not to mention the time—it takes years of study. Then afterwards, how will you get patients? People would never consult a woman doctor. Forget it. It can't be done. There are too many obstacles.\" / \"German, metaphysics, and music\" / \"She had moved from books to anatomical models, from cadavers to living patients\" / her studies \"leave her unsatisfied and restless\"",
+      "questions": "Q1 2 (AO1) · Q2 2 (AO1) · Q3 15 (AO2, Text 1, language and structure) · Q4 1 (AO1) · Q5 1 (AO1) · Q6 15 (AO4, Text 2, \"In this extract, the writer attempts to demonstrate determination. Evaluate how successfully this is achieved.\") · Q7a 6 (AO1, \"The two texts show people who decide to become doctors. What similarities do the two people share in these extracts?\") · Q7b 14 (AO3, \"Compare how the writers of Text 1 and Text 2 present ideas and perspectives about choosing a career.\") · Q8 or Q9 40 (AO5 24 + AO6 16; Q8 = a section for a guide for young people about choosing a career; Q9 = a magazine article titled 'My ambitions and setting goals to achieve them')"
+    },
+    {
+      "id": "P1-JUN2024",
+      "text_slug": "edexcel_lang_paper_1",
+      "paper": "1EN0/01 June 2024",
+      "text": "Elizabeth Gaskell, an extract narrated by the nurse Hester. Verbatim lines: \"It was bitter cold; so cold, that the air almost took the skin off my face as I ran; but I ran on, crying to think how my poor little darling must be perished and frightened.\" / \"I was within sight of the holly-trees, when I saw a shepherd coming down the hill, bearing something in his arms wrapped in his cloak.\" / \"and I saw my wee one, lying still, and white, and stiff in his arms, as if she had been dead\" / \"he had found my little lady – my lamb – my queen – my darling – stiff and cold in the terrible sleep which is frost-begotten\" / \"(a black) shadow\" / \"moonlight\"",
+      "questions": "Q1 1 (AO1) · Q2 2 (AO1) · Q3 6 (AO2, language and structure) · Q4 15 (AO4, \"In the extract, there is an attempt to create strong feelings in the reader. Evaluate how successfully this is achieved.\") · Q5 or Q6 40 (AO5 24 + AO6 16, imaginative writing)"
+    }
+  ],
+  "universal_must_not": [
+    "Never write the student's replacement sentence for them. The only exception is the coaching-pedagogy STOP RULE, and that is always TWO contrasting versions of their own line to choose between, never one finished line.",
+    "Never say rubric, protocol, tier, engine, module, or 'Level 4 needs…'. Say 'the examiner rewards…' and quote the examiner's words.",
+    "Never grade the selection, never give it a mark out of anything, never predict a grade. Polishing is not assessment.",
+    "Never tour the rest of the document or list what else is weak. Coach the selection and its parent paragraph only.",
+    "Never offer a task menu, a workbook, or 'start a new assessment / plan an answer'. The exit is Mark Complete in the document footer.",
+    "Never ask the student to paste, re-type, confirm or identify the text, the question, the line range or their own answer — all of it is in the document.",
+    "Never invent a mark-scheme requirement. Every claim about what the examiner rewards must be traceable to a descriptor in knowledge-mark-scheme-lang1.md or knowledge-mark-scheme-lang2.md.",
+    "Never reply at length. One diagnosis, one Socratic question, stop."
+  ],
+  "journeys": [
+    {
+      "id": "P2-Q3-language-weak",
+      "source": "P2-JUN2024",
+      "question": "Q3",
+      "grade_band": "weak",
+      "action": "scan-elements",
+      "selection": "The writer uses a simile in the ward round part. It shows that he felt small. This makes the reader feel sorry for him. It is effective.",
+      "faults_planted": ["no conceptual topic sentence", "no quotation at all (the simile is named but never quoted)", "F1 'It shows that'", "T1 'uses'", "S1 The/It/This/It openers", "S2 every sentence under two lines", "no writer's purpose"],
+      "must": [
+        "Count the taught elements present out of five and name the count before anything else — a student can see 'two of five' and act on it.",
+        "Name ONE gap as the priority, and make it the quotation: the simile is asserted but never quoted, so the evidence criterion is unscored.",
+        "End on a single question the student can answer from the text in front of them."
+      ],
+      "must_not": [
+        "Do not fix the verb, the openers and the missing quotation in one reply — that is four problems and a wall.",
+        "Do not supply the quotation ('hypnotised duckling') yourself. Ask which words in Text 1 make the writer small."
+      ]
+    },
+    {
+      "id": "P2-Q3-structure-partial",
+      "source": "P2-JUN2024",
+      "question": "Q3",
+      "grade_band": "partial",
+      "action": "scan-coherence",
+      "selection": "Structurally, the writer moves from the glamour a teenager imagines to the admin a junior doctor actually does. He tells us the day dissolves into \"filling in forms, making phone calls\", which is a list of two dull tasks. The reader notices the drop.",
+      "faults_planted": ["F1 'tells us'", "the close analysis stops at labelling the list ('a list of two dull tasks') instead of unpacking a word", "effect on the reader is one flat clause", "no writer's purpose sentence"],
+      "must": [
+        "Say what DOES work first, in one clause — the shift is genuinely structural and correctly located.",
+        "Diagnose the coherence break precisely: the paragraph names the structural move and the evidence but never says what the writer is DOING with the drop, so the last two elements are missing rather than weak.",
+        "Point at the gold file's structure model for the shape, and quote one line of it to show where the purpose sentence sits."
+      ],
+      "must_not": [
+        "Do not treat 'tells us' as the headline problem here — the missing purpose sentence is worth more marks than the verb.",
+        "Do not suggest adding a second quotation. The paragraph's problem is depth, not quantity."
+      ]
+    },
+    {
+      "id": "P2-Q3-strong",
+      "source": "P2-JUN2024",
+      "question": "Q3",
+      "grade_band": "strong",
+      "action": "compare-gold-standard",
+      "selection": "Deflation is built into the rhythm of the account itself. Placing the bathetic \"filling in forms, making phone calls\" at the end of a sentence that began with a whole \"team of doctors\", the writer lets the grammar fall away exactly as the job does. The plural noun \"pronouncements\" is the sharpest word in the passage: it dresses ordinary instructions in the language of prophecy, so the reader feels the gap between the profession's self-image and its paperwork. That gap is what the writer wants us to sit inside — not contempt for medicine, but the disappointment of a boy who had imagined something else.",
+      "faults_planted": ["none — this is the top of Level 5 and the journey exists to prove the reply does not invent a fault"],
+      "must": [
+        "Confirm what the paragraph is doing at the top level, in the examiner's own words ('the selection of references is discriminating and clarifies the points being made').",
+        "Quote ONE line of the gold file model for the same question and ask what the student notices about its shape — the action is compare-gold-standard, so the comparison is the reply.",
+        "Where nothing needs fixing, say so plainly and name the ONE thing that would extend it (pairing this language point with the structural shift, which is what Q3's third paragraph is for)."
+      ],
+      "must_not": [
+        "Do not manufacture a fault to have something to say. No F1, no S1, no 'you could add'.",
+        "Do not rewrite a single sentence of it.",
+        "Do not claim the paragraph reaches a numbered level — no grading in polishing."
+      ]
+    },
+    {
+      "id": "P2-Q3-valid-different",
+      "source": "P2-JUN2024",
+      "question": "Q3",
+      "grade_band": "valid but different",
+      "action": "scan-structure",
+      "selection": "The account keeps its warmth even while it complains. \"Insanely time-consuming\" is hyperbole a friend would use, and the self-mocking \"hypnotised duckling\" turns the writer, not the hospital, into the joke. Comedy is doing the persuading here: a reader who has laughed with him will trust the complaint when it arrives.",
+      "faults_planted": ["none in craft — the reading (comedy as persuasion) is simply not the reading the gold model takes"],
+      "must": [
+        "Accept the reading. A different defensible interpretation is the goal, not a deviation — say so in one clause.",
+        "Answer the action that was pressed: scan-structure means report the WHOLE-ANSWER shape for Q3 — three paragraphs, language, structure, then the two together — and say which of the three this selection is.",
+        "Ask which of the other two paragraphs the student wants to look at next, because the balance rule is what the marks turn on."
+      ],
+      "must_not": [
+        "Do not steer the student towards the gold model's interpretation, or imply theirs is second best.",
+        "Do not answer a different action. scan-structure is about shape, not about this paragraph's word choice."
+      ]
+    },
+    {
+      "id": "P2-Q6-evaluation-weak",
+      "source": "P2-JUN2024",
+      "question": "Q6",
+      "grade_band": "weak",
+      "action": "scan-concept",
+      "selection": "Elizabeth studies lots of subjects like \"German, metaphysics, and music\". Then she is told \"It can't be done\" but she does it anyway. She goes from books to real patients. This shows she was determined.",
+      "faults_planted": ["retells the extract in order (M1)", "the judgement arrives last, as an afterthought, instead of leading", "F1 'This shows'", "no evaluation of HOW SUCCESSFULLY the writer demonstrates determination — only that Elizabeth was determined", "no evaluative or tentative language (E1)"],
+      "must": [
+        "Name the difference the question turns on, in one sentence a 13-year-old can hold: the question asks how well the WRITER demonstrates determination, not whether Elizabeth was determined.",
+        "Quote the statement's own keyword back ('determination', 'successfully') and ask where the student's own judgement of the writing is.",
+        "Point at the first thing that would change the paragraph: the topic sentence carrying the judgement instead of the last line."
+      ],
+      "must_not": [
+        "Do not coach against a word the printed statement does not contain. 'Completely', 'fully' and 'convincingly' are not in this statement.",
+        "Do not tell the student the writer succeeds or fails. Either judgement can reach full marks; only the execution is marked."
+      ]
+    },
+    {
+      "id": "P2-Q6-evaluation-partial",
+      "source": "P2-JUN2024",
+      "question": "Q6",
+      "grade_band": "partial",
+      "action": "scan-elements",
+      "selection": "The list of obstacles is the writer's strongest move. Piling up \"you won't have the money\", \"it takes years of study\" and \"People would never consult a woman doctor\" in one breathless speech makes the refusal feel total, so Elizabeth's decision to continue reads as determination rather than stubbornness. The writer perhaps relies a little heavily on that one speech.",
+      "faults_planted": ["strong start but the close analysis never zooms to a single word", "the effect-on-the-reader sentence is folded into the inference rather than standing on its own", "no writer's purpose sentence evaluated against the statement"],
+      "must": [
+        "Credit the evaluative move explicitly — 'perhaps relies a little heavily' is exactly the tentative critical judgement the top level asks for.",
+        "Count the six taught elements and name which are missing (the standalone reader-effect sentence and the purpose sentence).",
+        "Ask for the purpose sentence specifically, framed against the statement's own words."
+      ],
+      "must_not": [
+        "Do not charge the tentativeness as hedging. Evaluative tentativeness is required on this question.",
+        "Do not ask for a second quotation — three are already embedded and the selection criterion is satisfied."
+      ]
+    },
+    {
+      "id": "P2-Q7a-synthesis-weak",
+      "source": "P2-JUN2024",
+      "question": "Q7a",
+      "grade_band": "weak",
+      "action": "scan-structure",
+      "selection": "In Text 1 the writer says \"I don't remember medicine ever being an active career decision\", which is quite a passive way of describing it. Whereas Text 2 uses a metaphor to show Elizabeth's disgust, \"filled me with disgust\", which is a much stronger emotion. The two writers therefore use very different techniques.",
+      "faults_planted": ["answers the WRONG question — this is comparison and technique analysis, which Q7a does not reward", "the paragraph ends on a difference, when the question asks for similarities", "no similarity statement, no synthesis sentence"],
+      "must": [
+        "Say in one sentence what Q7a is and is not: similarities only, synthesised, with no techniques and no differences — those are Q7b's marks and Q3's marks.",
+        "Show that the two quotations chosen actually CAN serve a similarity (neither person set out to be a doctor), so the fix is the framing, not the evidence.",
+        "Ask the student for the similarity sentence that would open the paragraph."
+      ],
+      "must_not": [
+        "Do not praise the comparative move here. It earns nothing on this question, and calling it good teaches the wrong lesson.",
+        "Do not tell the student to delete the quotations. They are usable."
+      ]
+    },
+    {
+      "id": "P2-Q7a-synthesis-strong",
+      "source": "P2-JUN2024",
+      "question": "Q7a",
+      "grade_band": "strong",
+      "action": "explain",
+      "selection": "Neither person arrived at medicine by choosing it. In Text 1 the career simply happens to the writer, who admits \"I don't remember medicine ever being an active career decision\"; in Text 2 the idea is put to Elizabeth by someone else and strikes her as \"preposterous\". Taken together, the two accounts show that a vocation can begin as an accident or an insult rather than an ambition.",
+      "faults_planted": ["none — Level 3 synthesis; the journey tests that `explain` teaches rather than re-marks"],
+      "must": [
+        "Answer the action: explain the thing selected, in ONE substantive sentence, then one anchoring question.",
+        "If the student selected the synthesis sentence, explain what synthesis IS — one idea built from both texts, not two summaries side by side — and use their own sentence as the worked example."
+      ],
+      "must_not": [
+        "Do not turn `explain` into a critique. The student asked what something is, not how good theirs is.",
+        "Do not introduce Q7b's comparison vocabulary here."
+      ]
+    },
+    {
+      "id": "P2-Q7b-comparison-weak-one-text",
+      "source": "P2-JUN2024",
+      "question": "Q7b",
+      "grade_band": "weak",
+      "action": "scan-structure",
+      "selection": "Text 1 presents choosing a career as something that just happens to you. The writer's tone is comic and self-deprecating, calling himself a \"hypnotised duckling\" and admitting the job was \"mind-numbing\". His perspective is that medicine was never really chosen at all. This is shown throughout the whole extract.",
+      "faults_planted": ["only ONE text in a comparative paragraph", "no comparative topic sentence", "no pivot (Z1)", "F1 'This is shown'", "the last sentence asserts coverage instead of analysing"],
+      "must": [
+        "Name the single highest-cost fact first: the examiner's own note is that an answer considering only one text in detail cannot pass the top of Level 2, so Text 2 inside this paragraph is worth more than every other fix combined.",
+        "Explain the pivot as a sentence with a job, and ask the student where in their paragraph it would go.",
+        "Keep it to that one thing plus the question."
+      ],
+      "must_not": [
+        "Do not list the verb, the topic sentence and the final assertion as well. One priority, one question.",
+        "Do not suggest writing a separate Text 2 paragraph — that is the shape the balance rule punishes."
+      ]
+    },
+    {
+      "id": "P2-Q7b-comparison-strong",
+      "source": "P2-JUN2024",
+      "question": "Q7b",
+      "grade_band": "strong",
+      "action": "scan-coherence",
+      "selection": "Both writers present a career as something decided by other people, but they disagree about whether that is funny. Text 1's writer hands the decision to a system he mocks, where medical schools \"fixate on extracurricular activities\" and a junior doctor trails behind \"like a hypnotised duckling\"; the comedy keeps his own agency small and forgivable. Text 2 gives the same external pressure no comic cover at all: the flat, unanswerable \"It can't be done. There are too many obstacles.\" leaves Elizabeth's determination as the only thing in the passage that moves. Where the first writer survives other people's expectations by laughing at them, the second is defined by refusing them.",
+      "faults_planted": ["none — Level 5 comparison with a genuine pivot; tests that the reply does not invent a fault and answers the action asked"],
+      "must": [
+        "Confirm the pivot is doing real work and quote the words that carry it ('gives the same external pressure no comic cover at all').",
+        "Answer scan-coherence: check element follows element, and say that the combined judgement in the last sentence is the one that closes the paragraph.",
+        "Offer the ONE genuine extension: the methods are compared but tone is doing all the work, so the next paragraph could compare structure."
+      ],
+      "must_not": [
+        "Do not invent a balance problem. Both texts are quoted and weighted.",
+        "Do not rewrite or 'tighten' any of it."
+      ]
+    },
+    {
+      "id": "P2-Q8-transactional-weak-register",
+      "source": "P2-JUN2024",
+      "question": "Q8",
+      "grade_band": "weak",
+      "action": "adjust-tone",
+      "selection": "Basically, choosing a career is really really hard and loads of people get it totally wrong. You've gotta think about it properly or you'll end up stuck doing something rubbish forever!!! Anyway, here's some stuff to think about.",
+      "faults_planted": ["register wrong for the set audience (a guide for young people, informing or advising)", "intensifier pile-up ('really really', 'totally', 'loads of')", "three exclamation marks", "'stuff' as the noun", "no organisational feature of a guide"],
+      "must": [
+        "Name the form and audience the task set before judging the words — a guide that informs or advises young people, which permits a direct, warm register but not shouting.",
+        "Diagnose ONE thing on the highlighted span: the intensifiers are doing the work that concrete detail should do.",
+        "Ask the student to replace one intensifier with the specific thing it is standing in for."
+      ],
+      "must_not": [
+        "Do not impose an essay register. This is transactional writing and a direct voice is credited when it suits the audience.",
+        "Do not fix the exclamation marks, the vague noun and the intensifiers in one reply.",
+        "Do not deduct or score. There are no penalties on Question 8."
+      ]
+    },
+    {
+      "id": "P2-Q8-transactional-device",
+      "source": "P2-JUN2024",
+      "question": "Q8",
+      "grade_band": "partial",
+      "action": "device-triadic",
+      "selection": "A good career choice needs you to know what you enjoy and what you are actually good at.",
+      "faults_planted": ["none as written — the student has asked to turn a flat, correct sentence into a stronger one"],
+      "must": [
+        "One line on what a triadic structure does to a reader — a rhythm of three lands as completeness.",
+        "Ask for the student's own attempt at THEIR line in that shape. Attempt-first: one to three tries, then say which lands and why.",
+        "Stay on Question 8 — this button only appears on the writing question."
+      ],
+      "must_not": [
+        "Do not write the triadic version for them on the first turn. Only on the STOP RULE, and then as two contrasting versions to choose between.",
+        "Do not name a quota of devices for the piece, and never ban one."
+      ]
+    },
+    {
+      "id": "P2-Q8-transactional-strong-structure",
+      "source": "P2-JUN2024",
+      "question": "Q8",
+      "grade_band": "strong",
+      "action": "scan-structure",
+      "selection": "Nobody tells you the truth about picking a career, so here it is: the question is not what you want to be, it is what you want your days to look like. Ask anyone doing the job you think you want what their Tuesday afternoon involves. If the answer bores you, the job title will not save you.",
+      "faults_planted": ["none in craft; the piece may be missing later IUMVCC sections, which is what the scan must report"],
+      "must": [
+        "Answer the action: report the whole-answer shape — the six IUMVCC sections in order, and which of them this opening is.",
+        "Name which sections are present and which are absent from the document, in one line, and ask which the student wants to work on.",
+        "Credit the opening's concrete turn ('what their Tuesday afternoon involves') as exactly what the top band means by shaping audience response."
+      ],
+      "must_not": [
+        "Do not require the student to print the six section names as headings. They are the argument beneath the guide's own organisational features.",
+        "Do not tell the student the examiner requires 650 words. That target is ours."
+      ]
+    },
+    {
+      "id": "P1-Q3-language-and-structure-partial",
+      "source": "P1-JUN2024",
+      "question": "Q3",
+      "grade_band": "partial",
+      "action": "scan-structure",
+      "selection": "Gaskell uses cold to make the reader worried. She writes \"It was bitter cold; so cold, that the air almost took the skin off my face as I ran\", and the word \"bitter\" makes the cold feel cruel and personal, as though the weather is attacking Hester rather than simply being unpleasant. The reader feels the danger to the child before anyone says the child is in danger.",
+      "faults_planted": ["T1 'uses'", "genuinely good language analysis, but the answer as a whole has NO structure paragraph — the scan must catch it"],
+      "must": [
+        "Lead with the whole-answer fact, because it is the only thing on this paper that caps a mark: the examiner cannot take a Q3 answer past the top of Level 1 if only language or only structure has been considered, and this answer has no structure paragraph.",
+        "Credit the language paragraph in one clause so the student knows what to keep.",
+        "Name one structural feature in the extract the student could analyse (the dash-chained list of endearments near the end, the shift from running to the shepherd's arrival) as a choice, not an instruction — then ask."
+      ],
+      "must_not": [
+        "Do not open with the verb 'uses'. The cap is worth four marks; the verb is worth half a mark.",
+        "Do not rewrite their language sentences.",
+        "Do not quote Paper 2's cap figure here — on Paper 1 the cap is the top of Level 1, 2 out of 6."
+      ]
+    },
+    {
+      "id": "P1-Q4-evaluation-valid-different",
+      "source": "P1-JUN2024",
+      "question": "Q4",
+      "grade_band": "valid but different",
+      "action": "scan-concept",
+      "selection": "The attempt to move the reader is arguably too heavy to fully succeed. Stacking \"my little lady – my lamb – my queen – my darling\" in one breath is the writer reaching for grief rather than trusting the reader to feel it, and the earlier restraint of \"lying still, and white, and stiff\" is more devastating precisely because it does not push. Where the writer trusts plainness, the feeling arrives; where the dashes take over, the reader notices the technique instead of the child.",
+      "faults_planted": ["none — a judgement that the writer only partly succeeds, argued well; the journey exists to prove the reply does not penalise disagreement"],
+      "must": [
+        "State plainly that a judgement of partial or failed success can reach full marks, because the marks come from how well the evaluation is argued.",
+        "Answer scan-concept: the controlling judgement is present, stated in the statement's own terms, and sustained — say where.",
+        "Offer the one genuine extension: the judgement is made about the writing's technique, and the top band also asks for a detached overview of the extract as a whole."
+      ],
+      "must_not": [
+        "Do not nudge the student towards agreeing that the attempt succeeds.",
+        "Do not treat 'arguably' as a hedge to remove. It is the evaluative language this question requires."
+      ]
+    },
+    {
+      "id": "P1-Q5-imaginative-weak-prose",
+      "source": "P1-JUN2024",
+      "question": "Q5",
+      "grade_band": "weak",
+      "action": "cw-cut-modifiers",
+      "selection": "I was really very nervous as I slowly and carefully walked into the extremely old, incredibly dusty attic, and I could definitely feel my heart absolutely pounding really hard in my chest.",
+      "faults_planted": ["intensifier and -ly adverb pile-up", "abstract 'nervous' told rather than rendered", "one sentence carrying five modifiers"],
+      "must": [
+        "This action is answered by CODE first — the list of modifiers arrives before Sophia is called. Coach only the ONE sentence the student then asks about.",
+        "Give the rule in one line (if the adverb is doing the verb's job, change the verb) and ask for their attempt on one clause.",
+        "Keep the student's own image. The attic and the heartbeat are theirs."
+      ],
+      "must_not": [
+        "Do not re-list the scan the code already gave.",
+        "Do not rewrite the sentence. Not even 'as an example' — only the STOP RULE's two contrasting versions."
+      ]
+    },
+    {
+      "id": "P2-crib-selection-guard",
+      "source": "P2-JUN2024",
+      "question": "Q6",
+      "grade_band": "n/a — guard journey",
+      "action": "explain",
+      "selection": "In this extract, the writer attempts to demonstrate determination. Evaluate how successfully this is achieved.",
+      "faults_planted": ["the student has highlighted the QUESTION, not their own writing — a Sophicly-authored crib section"],
+      "must": [
+        "Recognise from the Location line that the selection sits in a `question` section, and explain what the question is asking in plain words.",
+        "Then point at where the student's own work for that question is, and stop."
+      ],
+      "must_not": [
+        "Never coach the question wording as if it were the student's prose — no F1 charge, no 'you could tighten this', no rewrite.",
+        "Never suggest the student edit the question."
+      ]
+    },
+    {
+      "id": "P2-empty-selection-guard",
+      "source": "P2-JUN2024",
+      "question": "n/a",
+      "grade_band": "n/a — guard journey",
+      "action": "none (typed question, nothing highlighted)",
+      "selection": "",
+      "typed": "how do I get a level 5 on question 7b",
+      "faults_planted": ["no selection at all — tests that the lesson still responds and still leaves a way forward (WML CLAUDE.md §4d liveness)"],
+      "must": [
+        "Answer the question asked, using the examiner's own Level 5 wording for Q7(b) (a varied and comprehensive range of comparisons; references balanced across both texts and discriminating).",
+        "Say the one thing that most often stops it — one text carrying the paragraph — and invite the student to highlight a Q7b paragraph so it can be looked at.",
+        "Leave the student with something to do. A reply that ends without a next step is a failure even if the content is right."
+      ],
+      "must_not": [
+        "Do not refuse for want of a selection, and do not say 'please highlight something' as the entire reply.",
+        "Do not tour the document looking for a Q7b paragraph to critique unasked."
+      ]
+    }
+  ]
+}

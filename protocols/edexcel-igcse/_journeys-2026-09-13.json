@@ -1,0 +1,207 @@
+{
+  "_meta": {
+    "board": "edexcel-igcse",
+    "qualification": "Pearson Edexcel International GCSE English Language A (4EA1)",
+    "authored": "2026-09-13",
+    "purpose": "Representative student responses for the ENGINE lane to drive through the real chat endpoint on staging (PROTOCOL-STANDARD Part E5, polishing row). Each journey names the lesson, the text and question actually studied, four student responses (weak / partial / strong / valid-but-different), the coaching action to press, and what a correct reply MUST and MUST NOT do. The engine lane records the real replies beside each.",
+    "sources_studied": [
+      "Paper 1 — Edexcel IGCSE Spec A Language Paper 1/Edexcel IGCSE Language Paper 1 June 2024 QP.pdf (Text One: Tin Bath Tournament, Ben Fogle; Text Two: From A Game of Polo with a Headless Goat, Emma Levine) + Edexcel IGCSE Language Paper 1 Spec A June 2024 MS.pdf",
+      "Paper 2 — Edexcel IGCSE Spec A Language Paper 2/Edexcel IGCSE Language Paper 2 June 2024 QP (1).pdf (An Unknown Girl, Moniza Alvi; Section B Q3 'Write a story with the title A Perfect Place') + Edexcel IGCSE Language Paper 2 Spec A June 2024 MS.pdf"
+    ],
+    "quotation_rule": "Every quotation inside a student response is VERBATIM from the printed source named in that journey. Student prose is authored for this file, with its faults deliberate. No quotation was written from memory.",
+    "not_tested": "None of these journeys has been run. There is no router row for either text slug yet (the ENGINE lane must add it), so the polishing environment cannot be reached on staging as of 2026-09-13."
+  },
+  "journeys": [
+    {
+      "id": "p1-q2-own-words",
+      "lesson": "polishing",
+      "text_slug": "edexcel_igcse_lang_a",
+      "question": "Q2",
+      "question_type": "describe in your own words (AO1, 4 marks)",
+      "task_as_printed": "Look again at lines 41–51. In your own words, describe what happens.",
+      "action": "scan-elements",
+      "responses": {
+        "weak": "The sky was a palette of greys that melted into the gun-metal ocean and seagulls circled overhead. The cobblestones glistened from a recent downpour.",
+        "partial": "It is early morning at the harbour. Lots of people come to watch. The writer is nervous.",
+        "strong": "Early in the morning the harbour fills up with thousands of spectators. The writer edges down a slippery ramp into freezing water, wedges himself into the tin bath and paddles out, shaking with cold. Because he has just rowed the Atlantic with an Olympic rower, the crowd has decided he is the favourite and starts chanting his name.",
+        "valid_different": "The writer describes getting into the tin bath. He says his legs shook with cold and his heart pounded, and he admits the crowd only made him favourite because they had mistaken him for a proper oarsman — so he goes to the start line already feeling like a fraud."
+      },
+      "must": [
+        "Name the ONE fault that costs marks here: the weak answer copies the text's wording instead of using the student's own words, so its points cannot be rewarded.",
+        "Count valid points against the 4-mark maximum and say how many more are available in the named lines.",
+        "Accept the valid_different answer at full credit — the mark scheme says 'Reward all valid points', and a correct point in the student's own phrasing earns its mark whatever order or emphasis it takes.",
+        "Ask ONE question, then stop."
+      ],
+      "must_not": [
+        "Do not coach paragraph structure, topic sentences or TTECEA — this question is a list of points.",
+        "Do not ask for analysis, techniques or effects on the reader; AO2 is not assessed on Q2.",
+        "Do not rewrite the student's sentence.",
+        "Do not mention a level or a band — Q2 has no level grid."
+      ]
+    },
+    {
+      "id": "p1-q3-thoughts-feelings",
+      "lesson": "polishing",
+      "text_slug": "edexcel_igcse_lang_a",
+      "question": "Q3",
+      "question_type": "the writer's thoughts and feelings, with brief quotations (AO1, 5 marks)",
+      "task_as_printed": "From lines 64–74, explain the writer's thoughts and feelings.",
+      "action": "scan-elements",
+      "responses": {
+        "weak": "The writer gets into the bath and paddles to the start line. A helicopter flies over and there are photographers in the water.",
+        "partial": "He is nervous. He is also cold. He thinks the crowd has got the wrong idea about him.",
+        "strong": "He is apprehensive as he approaches the water, moving “gingerly” and “clenching my teeth tightly”. The cold shocks him — his “legs were shaking with the cold”. He feels exposed by the attention, because “my heart was pounding” as he reaches the start. He is also quietly amused at the crowd's mistake: “I think they had mistaken me for a top oarsman.”",
+        "valid_different": "Underneath the nerves he seems to enjoy the absurdity of it. He notices the “news helicopter” and the film crews with something like disbelief, and his own words — “I think they had mistaken me for a top oarsman” — admit that the expectation on him is a misunderstanding he has no way of correcting."
+      },
+      "must": [
+        "Name the fault in the weak answer: it describes EVENTS where a thought or feeling was asked for, so it earns nothing — and show in one line how to turn one of its events into the feeling behind it.",
+        "Tell the partial answer what secures a point here: a brief quotation, and name a phrase from the printed lines that would secure one of its three points.",
+        "Count points against the 5-mark maximum.",
+        "Accept the valid_different answer — it names feelings and quotes accurately, so it is fully rewardable even though it reads the tone differently."
+      ],
+      "must_not": [
+        "Do not demand analysis of technique or effect on the reader — this is AO1.",
+        "Do not charge any penalty code; Q3 is point-marked (flag a habit if you must, with no deduction).",
+        "Do not quote a phrase that is not in the printed lines.",
+        "Do not mention a level or a band — Q3 has no level grid."
+      ]
+    },
+    {
+      "id": "p1-q4-language-structure",
+      "lesson": "polishing",
+      "text_slug": "edexcel_igcse_lang_a",
+      "question": "Q4",
+      "question_type": "single-source language and structure analysis (AO2, 12 marks, 3 TTECEA paragraphs)",
+      "task_as_printed": "How does the writer, Emma Levine, use language and structure in Text Two to interest and engage the reader?",
+      "action": "scan-elements",
+      "responses": {
+        "weak": "Emma Levine uses lots of interesting words. She says “Wacky Races” which shows the race is funny and it makes the reader want to read on and feel interested.",
+        "partial": "Levine builds the reader's impatience before the race arrives. She writes that they “waited for eternity on the brow of the hill”, and the hyperbole of “eternity” stretches a single hour into something unbearable. The reader begins to share her doubt.",
+        "strong": "Levine builds the reader's impatience so that the arrival feels earned. Through hyperbole she reports that they “waited for eternity on the brow of the hill”, which inflates one hour into an unendurable stretch of time. The noun “eternity” is doing careful work: it measures the wait not in minutes but in the feeling of being stranded, which is exactly how a spectator experiences delay. A reader who has been made to wait alongside her starts to doubt, as she does, that the race is coming at all. That doubt then pays off, because the reader meets the donkeys at the same moment she does, inside “a cloud of fumes and dust”. Levine's purpose, arguably, is to put the reader in the boot of the car with her rather than at a safe distance from the event.",
+        "valid_different": "Levine's real method here is structural rather than lexical. She withholds the race for three paragraphs, filling them with false alarms — “a villager on a wobbly bicycle”, then “some donkey-carts carrying spectators” — before the delayed reveal of “two approaching donkey-carts in front of a cloud of fumes and dust”. The ordering itself is the technique: each near-miss resets the reader's expectation, so the arrival lands as a release rather than as information. Levine's purpose, perhaps, is to make the reader feel the unpredictability of the event rather than simply be told about it."
+      },
+      "must": [
+        "Count the taught elements present and absent, and say the count before diagnosing: the weak response has a technique-free assertion and an unnamed effect, so five or six of the eight elements are missing.",
+        "Flag the weak response's F1 verb 'shows' by quoting it verbatim and offering a precise analytical verb as the fix, on a DIFFERENT sentence.",
+        "Credit the valid_different response fully: it analyses STRUCTURE rather than language, which this question's grid explicitly rewards ('language and structure and how these are used by writers to achieve effects').",
+        "Point at the gold model in knowledge-hub.md §2.B when the student asks what better looks like, and quote from a DIFFERENT paragraph than the one being coached."
+      ],
+      "must_not": [
+        "Do not rewrite the student's own sentence unless the STOP RULE has fired, and then only as two contrasting versions to choose between.",
+        "Do not introduce AO3 or context — neither is assessed on Q4.",
+        "Do not ask for an introduction or a conclusion; Q4 is body-only.",
+        "Do not tell the student a Level number they need."
+      ]
+    },
+    {
+      "id": "p1-q5-comparison",
+      "lesson": "polishing",
+      "text_slug": "edexcel_igcse_lang_a",
+      "question": "Q5",
+      "question_type": "comparison of two non-fiction texts (AO3, 22 marks)",
+      "task_as_printed": "Compare how the writers present their ideas and perspectives about their experiences. Support your answer with detailed examples from both texts, including brief quotations.",
+      "action": "scan-coherence",
+      "responses": {
+        "weak": "Ben Fogle describes the harbour and how nervous he was. He says his “heart was pounding”. Emma Levine writes about a donkey race in Karachi and she waited a long time. Both texts are about sport and both writers are interested in what they are doing.",
+        "partial": "Both writers place themselves inside the event rather than outside it. Fogle lowers himself into the tin bath and his “legs were shaking with the cold”, so his body reports the experience for him. Levine also puts herself in an undignified position, “perched in the boot with a zoom lens pointing out”. Both are willing to look ridiculous.",
+        "strong": "Both writers make their own discomfort the instrument through which the reader experiences the event, but they aim it at different feelings. Fogle turns his body into the record: his “legs were shaking with the cold” and his “heart was pounding”, so the reader meets the tin bath race as physical exposure. Levine's discomfort is social rather than physical — “perched in the boot with a zoom lens pointing out”, she admits she was “beginning to feel rather silly” — so the reader meets the donkey race as an act of faith that might not be repaid. Where Fogle's nerves rise towards a moment he cannot avoid, Levine's silliness stretches out across an hour in which nothing happens at all; the first perspective is compressed by dread, the second slackened by doubt. Arguably Levine's is the more generous perspective, because she lets the reader share her uncertainty before she rewards it.",
+        "valid_different": "The sharper contrast is in who owns the event. Fogle is the spectacle: thousands “descended on the small harbour”, a “news helicopter circled above”, and he is made “the hot favourite to win” by a crowd that has misread him, so his perspective is that of a man watched. Levine is never watched — she watches, and the only person who looks at her is “a villager on a wobbly bicycle, who nearly fell off as he cycled past and gazed around at us”. That single comic glance reverses the whole arrangement. Fogle's experience is therefore presented as pressure, Levine's as curiosity, and both writers use the crowd, or its absence, to establish it."
+      },
+      "must": [
+        "Name the specific defect in the weak response: the two texts sit side by side with no comparative link (CP1), and 'both are about sport' is a topic, not a comparison of perspectives. Give the comparative move that would join them as a skeleton, not as their finished sentence.",
+        "State the one-text cap ONLY if a text is genuinely absent, quoting 'candidates who have considered only ONE text may only achieve a mark up to the top of Level 2'. All four responses here use both texts, so the cap must NOT be raised.",
+        "Tell the partial response what it is missing: the analysis stops at similarity and never says what the difference does to a reader, and there is no comparative evaluation of the two purposes.",
+        "Accept the valid_different response as fully creditable — a different comparative lens (who is watched) is not a wrong answer."
+      ],
+      "must_not": [
+        "Do not treat AO3 as context. On this qualification AO3 is comparison.",
+        "Do not tell the student to write one paragraph per text.",
+        "Do not apply the one-text cap because the comparison is thin — only because a text is missing.",
+        "Do not rewrite their sentence outside the STOP RULE."
+      ]
+    },
+    {
+      "id": "p1-q6-transactional",
+      "lesson": "polishing",
+      "text_slug": "edexcel_igcse_lang_a",
+      "question": "Q6",
+      "question_type": "transactional writing — review (AO4 27 + AO5 18 = 45), holistic",
+      "task_as_printed": "A magazine is inviting readers to send in a review of a memorable event which they have seen or experienced. Write the review that you would submit to the magazine.",
+      "action": "scan-structure",
+      "responses": {
+        "weak": "I went to a football match last year. It was really good. The atmosphere was amazing and everyone was cheering. I would recommend it to anyone who likes football. It was a memorable event and I will never forget it.",
+        "partial": "Last August I stood in a car park at six in the morning to watch a hot-air balloon festival, and I have not stopped talking about it since. The first balloon went up so quietly that the crowd stopped talking. By seven there were forty of them. If you go, take a flask, because the queue for coffee is longer than the queue for the field.",
+        "strong": "Nobody warns you that a hot-air balloon makes no noise. At six in the morning, in a car park that smelled of wet grass and diesel, four hundred of us watched the first envelope fill, and the only sound was the burner — a short, dragon-ish breath, then silence, then a shape the size of a house rising over the hedge. That silence is what the festival sells, and it is why I would tell you to arrive before dawn rather than at the advertised eight o'clock. By seven there were forty balloons over the valley and the field had turned into something between a village fete and a launch site. The organisers deserve credit for the small things: clear signage, enough water, stewards who actually knew where the toilets were. They deserve criticism for one big thing, which is the single coffee van. Take a flask. Come early. Stand at the top of the field, where the balloons pass low enough that you can hear the burner over your head, and you will understand why people drive two hours for ninety minutes of sky.",
+        "valid_different": "Reviewed: the county hot-air balloon festival, one Saturday in August, 6 a.m. until noon. Verdict: worth the alarm clock, not worth the queue. The case for going is a single sensation — a balloon leaving the ground is almost completely silent, and four hundred strangers fall quiet with it. The case against is logistical: one coffee van for a field of that size is an insult to anyone who has got up at five. My advice to the organisers is to double the catering and move the rope line ten metres back, so the people at the front are not the only ones who hear the burner. My advice to readers is to bring a flask and stand high."
+      },
+      "must": [
+        "Judge AO4 against the form the task set — a magazine review for a general readership — and say in one clause what the weak response is missing (an opinion with reasons, a described event, a reader it is written FOR).",
+        "Walk the IUMVCC sections and name which are absent, with a verbatim quote from each section that exists.",
+        "Treat the valid_different response as fully creditable: a verdict-first review with an explicit recommendation is a legitimate form choice, and AO4 rewards 'Sophisticated use of form, tone and register', not one house style.",
+        "Say once that AO5 carries 18 marks and is the cheapest band to climb, then let the student choose whether to work on it."
+      ],
+      "must_not": [
+        "Do not apply any penalty code to Q6.",
+        "Do not quote a word quota at the student; the 700-word target is stated once, as the ceiling's reason, never as a rule per section.",
+        "Do not invent a word-count ceiling if none was injected.",
+        "Do not write the student's sentence for them; on the STOP RULE give two contrasting versions of THEIR line."
+      ]
+    },
+    {
+      "id": "p2-q1-anthology-essay",
+      "lesson": "polishing",
+      "text_slug": "edexcel_igcse_lang_a_paper_2",
+      "question": "Q1",
+      "question_type": "single anthology text essay (AO1 12 + AO2 18 = 30)",
+      "task_as_printed": "How does the writer present the importance of traditional Indian culture in An Unknown Girl? In your answer, you should write about: how the writer presents the cultural experience with the unknown girl; how the writer presents feelings about the place; the use of language and structure.",
+      "action": "scan-elements",
+      "responses": {
+        "weak": "In the poem the girl is doing henna on the speaker's hand. Alvi says “an unknown girl is hennaing my hand” and this shows that Indian culture is important. It makes the reader think about culture. Then the poem talks about the bazaar and the dummies in the shop-fronts.",
+        "partial": "Alvi presents the henna as something that marks the speaker permanently. She writes “I have new brown veins”, and the metaphor turns a decoration into part of the body. The reader senses that the speaker wants the culture to belong to her rather than to be worn for an evening.",
+        "strong": "Alvi presents traditional culture as something the speaker wants to be changed by, not merely decorated with. The metaphor “I have new brown veins” places the henna inside the body rather than on it, so an evening's pattern is claimed as inheritance. The choice of “veins” is precise and slightly shocking: veins are not chosen, they are inherited, and by borrowing that word the speaker asserts a belonging she cannot actually prove. A reader is therefore made to feel the difference between having a culture and wanting one — an ache rather than a celebration. That ache sharpens a second time when the poem admits the pattern is temporary, since the speaker will “scrape off / the dry brown lines”, which sets a permanent claim against a fading one. Alvi's purpose, arguably, is to argue that identity is something we reach for and keep losing hold of, rather than something we simply have.",
+        "valid_different": "The poem's argument is carried by its repetitions rather than by any single image. Three times Alvi returns to almost the same four lines — “In the evening bazaar / … / an unknown girl / is hennaing my hand” — and each return arrives with one word changed, from “for a few rupees” to “very deftly”. The refrain works structurally, like a ritual being performed rather than an event being reported, and the small variations are what let it develop instead of repeat. Because the reader keeps arriving back at the same moment, the bazaar stops being a place and becomes a memory being rehearsed. Alvi's purpose, perhaps, is to show that a culture is held by repetition — by going back to the same act until it becomes yours."
+      },
+      "must": [
+        "Count the eight taught elements in the paragraph the selection sits in and name the gaps before diagnosing anything.",
+        "Say which GRID a missing element costs: the weak response has no named method and no close analysis, which are AO2 elements, and AO2 carries 18 of the 30 marks.",
+        "Quote the F1 verb 'shows' verbatim from the weak response and give a precise analytical verb as the fix on a different sentence.",
+        "Accept the valid_different response fully — structural analysis of the refrain is exactly what 'selection of language and structural devices' rewards, and it quotes the poem accurately.",
+        "Check every quotation against the poem as printed; 'I have new brown veins', 'I'll scrape off / the dry brown lines', 'for a few rupees' and 'very deftly' are all verbatim."
+      ],
+      "must_not": [
+        "Do not mention AO3, comparison, or context — none is assessed on this paper.",
+        "Do not tell the student the AO1 grid has a Level 5; it stops at Level 4.",
+        "Do not accept a quotation that is not in the printed poem; if the student has misquoted, show the text's words beside theirs.",
+        "Do not tour the rest of the essay — coach the selection and its paragraph."
+      ]
+    },
+    {
+      "id": "p2-sectionb-imaginative",
+      "lesson": "polishing",
+      "text_slug": "edexcel_igcse_lang_a_paper_2",
+      "question": "Q2",
+      "question_type": "imaginative writing (AO4 18 + AO5 12 = 30), holistic",
+      "task_as_printed": "Write a story with the title 'A Perfect Place'. Your response could be real or imagined.",
+      "action": "scan-structure",
+      "responses": {
+        "weak": "My perfect place is my bedroom. It is nice and quiet and I can do what I want there. I have posters on the wall and a desk. I like it because nobody bothers me. It is the perfect place for me and I go there every day after school.",
+        "partial": "The allotment gate always stuck. Grandad would lift it with his knee, the way he had for thirty years, and the smell of tomato leaves would come out to meet us. I went back last week. The gate opened first time.",
+        "strong": "The allotment gate always stuck. Grandad lifted it with his knee — a small, practised shove he had been making for thirty years — and the smell of tomato leaves came out to meet us like something let off a lead. And then the letter came, and the council's word for the allotment was “site”. Until the Saturday I went back with a bin bag and a fork, and found the gate had been rehung, and it opened first time, and that was somehow worse than a padlock. And because of this I stood in the path for a long while without doing anything, listening to somebody else's radio two plots down. And because of this I took one tomato from the vine he had tied up in May, which was not mine to take, and ate it standing up, warm, like he used to. Until finally I left the fork by the shed for whoever comes next, because a perfect place is not a place you keep. It is a place that keeps you, and then lets go.",
+        "valid_different": "There is no gate in my perfect place, because there is no perimeter. At first there is only the sound: the 4 a.m. hum of the fish market, which my mother says is the ugliest noise in the city and I have always thought is the most beautiful. And then the lights come on under the awnings, and the ice is tipped out, and the whole street smells of salt and diesel. Until the day the market moved two miles east, and the street became a street. And because of this I started getting up at four for nothing. And because of this I learned that I had not loved the market; I had loved being awake while everyone else was asleep. Until finally I found I could have that anywhere, and the perfect place turned out to be a time of day."
+      },
+      "must": [
+        "Walk the six story-spine beats and name which exist and which are absent, anchoring each with a verbatim quote from the student's own piece.",
+        "Diagnose the weak response against AO4: it states a preference rather than telling a story, so there is no moment, no change and no reader being taken anywhere.",
+        "Tell the partial response, in one line, which beats it is missing rather than that it is 'too short'.",
+        "Accept the valid_different response as fully creditable — a piece whose 'place' resolves into a time of day is a sophisticated reading of the title, and AO4 rewards a task 'sharply focused on purpose'.",
+        "Offer the device group only on this question, and only after the student has attempted the line themselves."
+      ],
+      "must_not": [
+        "Do not apply any penalty code to Section B.",
+        "Do not invent a word-count ceiling if none was injected; the 450-word target is stated once as advice.",
+        "Do not present a full model answer as this paper's gold standard — there is none on disk (GOLD MISSING); a §2.D style excerpt may be quoted, labelled as a style model.",
+        "Do not correct spelling, punctuation and grammar for the student; flag the rule and cap it at three per turn."
+      ]
+    }
+  ]
+}

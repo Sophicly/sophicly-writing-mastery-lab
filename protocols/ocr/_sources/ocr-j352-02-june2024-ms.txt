@@ -1,0 +1,1431 @@
+                                             PMT
+
+
+
+
+GCSE (9-1)
+
+English Literature
+
+J352/02: Exploring poetry and Shakespeare
+
+
+General Certificate of Secondary Education
+
+
+
+Mark Scheme for June 2024
+
+
+
+
+Oxford Cambridge and RSA Examinations
+                                                                                                   PMT
+
+
+
+
+OCR (Oxford Cambridge and RSA) is a leading UK awarding body, providing a wide range of
+qualifications to meet the needs of candidates of all ages and abilities. OCR qualifications
+include AS/A Levels, Diplomas, GCSEs, Cambridge Nationals, Cambridge Technicals,
+Functional Skills, Key Skills, Entry Level qualifications, NVQs and vocational qualifications in
+areas such as IT, business, languages, teaching/training, administration and secretarial skills.
+
+It is also responsible for developing new specifications to meet national requirements and the
+needs of students and teachers. OCR is a not-for-profit organisation; any surplus made is
+invested back into the establishment to help towards the development of qualifications and
+support, which keep pace with the changing needs of today’s society.
+
+This mark scheme is published as an aid to teachers and students, to indicate the requirements
+of the examination. It shows the basis on which marks were awarded by examiners. It does not
+indicate the details of the discussions which took place at an examiners’ meeting before marking
+commenced.
+
+All examiners are instructed that alternative correct answers and unexpected approaches in
+candidates’ scripts must be given marks that fairly reflect the relevant knowledge and skills
+demonstrated.
+
+Mark schemes should be read in conjunction with the published question papers and the report
+on the examination.
+
+
+© OCR 2024
+
+
+
+
+Oxford Cambridge and RSA Examinations
+                                                                                                                                              PMT
+
+
+J352/02                                                            Mark Scheme                                                  June 2024
+
+                                                          MARKING INSTRUCTIONS
+PREPARATION FOR MARKING
+
+SCORIS
+
+1.   Make sure that you have accessed and completed the relevant training packages for on -screen marking: assessor Online Training; OCR
+     Essential Guide to Marking.
+
+2.   Make sure that you have read and understood the mark scheme and the question paper for this unit. These are posted on the RM Cambridge
+     Assessment Support Portal http://www.rm.com/support/ca
+
+3.   Log-in to RM assessor and mark the required number of standardisation responses.
+
+     YOU MUST MARK 10 STANDARDISATION RESPONSES BEFORE YOU CAN BE APPROVED TO MARK LIVE SCRIPTS.
+
+
+MARKING
+
+1.   Mark strictly to the mark scheme.
+
+2.   Marks awarded must relate directly to the marking criteria.
+
+3.   The schedule of dates is very important. It is essential that you meet the RM assessor 50% and 100% (traditional 50% Batch 1 and 100%
+     Batch 2) deadlines. If you experience problems, you must contact your Team Leader (Supervisor) without delay.
+
+4.   If you are in any doubt about applying the mark scheme, consult your Team Leader by telephone, email or via the RM assessor messaging
+     system.
+
+
+
+
+                                                                        2
+                                                                                                                                                    PMT
+
+
+J352/02                                                         Mark Scheme                                                          June 2024
+
+5.   Crossed Out Responses
+     Where a candidate has crossed out a response and provided a clear alternative then the crossed out response is not marked. Wh ere no
+     alternative response has been provided, examiners may give candidates the benefit of the doubt and mark the crossed out re sponse where
+     legible.
+
+     Rubric Error Responses – Optional Questions
+     Where candidates have a choice of question across a whole paper or a whole section and have provided more answers than requir ed, then
+     all responses are marked and the highest mark allowable within the rubric is given. Enter a mark for each question answere d into RM
+     assessor, which will select the highest mark from those awarded. (The underlying assumption is that the candidate has penalised themselves
+     by attempting more questions than necessary in the time allowed.)
+
+     GCSE English Literature specific guidance:
+
+     Section A
+
+     Part a)
+
+     Where a candidate has only referred to one poem, either the taught or the unseen, the mark awarded is unlikely to move beyond Level 2 and
+     cannot move beyond Level 3. Your comment should include: ‘only one poem considered; no attempt to compare’.
+
+     Part b)
+
+     Where a candidate has chosen a poem which is not in the cluster for that item number (for example, used a poem from the Confl ict cluster to
+     attempt question 1b) the response should be given 0 under the part b) item number chosen for part a) and the comment should state: ‘NAQ
+     choice of text inappropriate’.
+
+     Where a candidate has responded to part a) of one item number and part b) from a different item number, both responses should be marked
+     and the marks entered under the appropriate item numbers. RM Assessor will select the highest of the two marks. You shou ld attach a
+     message to any script where this occurs and refer it to your Team Leader. Team Leader should forward these messages to their Senior
+     Team Leader or Principal Examiner.
+
+     Section B
+
+     Extract-based questions
+
+     Where a candidate has not moved beyond the extract, the mark awarded cannot move beyond Level 3. Where a candidate has referr ed
+
+                                                                       3
+                                                                                                                                                    PMT
+
+
+J352/02                                                         Mark Scheme                                                          June 2024
+
+      briefly to the wider text, the mark cannot move beyond Level 4. Your comment should include: ‘has not referred to wider text’ .
+
+      Discursive questions
+
+      Where a candidate has only referred to one moment from the text, the mark awarded cannot move beyond Level 3. Where a candida te has
+      referred briefly to a second moment, the mark cannot move beyond Level 4. Your comment should include: ‘few references to wi der text’.
+
+
+      Longer Answer Questions (requiring a developed response)
+      Where candidates have provided two (or more) responses to a medium or high tariff question which only required a single (deve loped)
+      response and not crossed out the first response, then only the first response should be marked. Examiners will need to apply professional
+      judgement as to whether the second (or a subsequent) response is a ‘new start’ or simply a poorly expressed con tinuation of the first
+      response.
+
+6.    Always check the pages (and additional objects if present) at the end of the response in case any answers have been continued there. If the
+      candidate has continued an answer there, then add a tick to confirm that the work has been seen.
+
+7.    Award No Response (NR) if:
+             • there is nothing written in the answer space
+
+      Award Zero ‘0’ if:
+             • anything is written in the answer space and is not worthy of credit (this includes text and symbols).
+
+      Team Leaders must confirm the correct use of the NR button with their markers before live marking commences and should check this when
+      reviewing scripts.
+
+8.    If you have any questions or comments for your Team Leader, use the phone, the RM Assessor messaging system, or e-mail.
+
+9.    Assistant Examiners will send a brief report on the performance of candidates to their Team Leader (Supervisor) via email by the end of the
+      marking period. The report should contain notes on particular strengths displayed as well as common errors or weakne sses. Constructive
+      criticism of the question paper/mark scheme is also appreciated.
+
+10.   For answers marked by levels of response:
+      a.   To determine the level – start at the highest level and work down until you reach the level that matches the answer
+      b.   To determine the mark within the level, consider the following:
+
+
+
+                                                                        4
+                                                                                                                                              PMT
+
+
+J352/02                                                         Mark Scheme                                                       June 2024
+
+                   Descriptor                                                           Award mark
+ On the borderline of this level and the one      At bottom of level
+ below
+ Just enough achievement on balance for this      Above bottom and either below middle or at middle of level (depending on number of marks
+ level                                            available)
+ Meets the criteria but with some slight          Above middle and either below top of level or at middle of level (depending on number of
+ inconsistency                                    marks available)
+ Consistently meets the criteria for this level   At top of level
+
+11.   Annotations
+
+
+ Stamp                                              Description                                                       Placement
+
+                                                                                                         Body of response
+           To indicate explanations and analytical comment
+
+                                                                                                        Left margin
+           AO1 Knowledge
+
+
+           Personal response/interpretation                                                             Left margin
+
+                                                                                                        Left margin
+           AO1 Understanding
+
+                                                                                                        Left margin
+           AO1 Supporting detail/quotation
+
+                                                                                                        Left margin
+           AO1 Development of observation/argument/evaluation
+
+                                                                                                        Left margin
+           AO2 Good analysis of language
+
+
+
+
+                                                                       5
+                                                                                                            PMT
+
+
+J352/02                                                        Mark Scheme                      June 2024
+
+                                                                             Left margin
+          AO3 Context
+
+                                                                             Left margin
+          Link to wider text (Section B) or comparison (Section A)
+
+                                                                             Left margin
+          Not relevant to question
+
+                                                                             Left margin
+          Paraphrase or lifting
+
+          Omission                                                           Body of response
+
+
+          Needs development/needs example/general                            Left margin
+
+                                                                             Middle of page
+          Blank Page
+
+
+
+
+                                                                     6
+                                                                                                                                                  PMT
+
+
+J352/02                                                         Mark Scheme                                                           June 2024
+
+
+
+12.    Subject-specific Marking Instructions
+
+INTRODUCTION
+
+Your first task as an Examiner is to become thoroughly familiar with the material on which the examination depends. This mate rial includes:
+
+•     the specification, especially the assessment objectives
+•     the question paper and its rubrics
+•     the texts which candidates have studied
+•     the mark scheme.
+
+You should ensure that you have copies of these materials.
+
+You should ensure also that you are familiar with the administrative procedures related to the marking process. These are set out in the OCR
+booklet Instructions for Examiners. If you are examining for the first time, please read carefully Appendix 5 Introduction to Script Marking:
+Notes for New Examiners.
+
+Please ask for help or guidance whenever you need it. Your first point of contact is your Team Leader.
+
+
+
+
+                                                                        7
+                                                                                                                                                  PMT
+
+
+J352/02                                                           Mark Scheme                                                       June 2024
+
+ASSESSMENT OBJECTIVES
+
+Candidates are expected to demonstrate their ability to:
+
+    AO1
+             Read, understand and respond to texts.
+             Students should be able to:
+                 •   maintain a critical style and develop an informed personal response
+                 •   use textual references, including quotations, to support and illustrate interpretations.
+    AO2      Analyse the language, form and structure used by a writer to create meanings and effects, using relevant subject terminology where
+             appropriate.
+    AO3
+             Show understanding of the relationships between texts and the contexts in which they were written.
+    AO4
+             Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation.
+
+WEIGHTING OF ASSESSMENT OBJECTIVES
+
+The relationship between the units and the assessment objectives of the scheme of assessment is shown in the following grid:
+
+ Component                                                                    % of GCSE                                             Total
+                                                AO1                   AO2                    AO3                AO4
+ Exploring modern and literary                   20                   17.5                    10                2.5                  50
+ heritage texts (J352/01)
+ Exploring poetry and Shakespeare
+                                                 20                   22.5                    5                 2.5                  50
+ (J352/02)
+ Total                                           40                    40                     15                 5                  100
+
+
+
+
+                                                                         8
+                                                                                                                                                         PMT
+
+
+J352/02                                                           Mark Scheme                                                             June 2024
+
+
+USING THE MARK SCHEME
+
+Please study this Mark Scheme carefully. The Mark Scheme is an integral part of the process that begins with the setting of t he question paper and
+ends with the awarding of grades. Question papers and Mark Schemes are developed in association with each oth er so that issues of
+differentiation and positive achievement can be addressed from the very start.
+
+This Mark Scheme is a working document; it is not exhaustive; it does not provide ‘correct’ answers. The Mark Scheme can only provide ‘best
+guesses’ about how the question will work out, and it is subject to revision after we have looked at a wide range of scripts.
+
+The Examiners’ Standardisation Meeting will ensure that the Mark Scheme covers the range of candidates’ responses to the ques tions, and that all
+Examiners understand and apply the Mark Scheme in the same way. The Mark Scheme will be discussed and amended at the meeting, and
+administrative procedures will be confirmed. Practice scripts will be issued at the meeting to exemplify aspects of candidates’ responses and
+achievements; the practice scripts then become part of this Mark Scheme.
+
+Before the Standardisation Meeting, you should print out and read the practice scripts, in order to gain an impression of the range of responses and
+achievement that may be expected.
+
+Please read carefully all the scripts in your allocation and make every effort to look positively for achievement throughout the ability range. Always
+be prepared to use the full range of marks.
+
+
+
+
+                                                                          9
+                                                                                                                                                    PMT
+
+
+J352/02                                                         Mark Scheme                                                            June 2024
+
+INFORMATION AND INSTRUCTIONS FOR EXAMINERS
+
+1   The practice scripts provide you with examples of the standard of each level. The marks awarded for these scripts will have been agreed with
+    the Team Leaders and will be discussed fully at the Examiners’ Co-ordination Meeting.
+
+2   The specific task-related indicative content for each question will help you to understand how the Level of Response band descriptors may be
+    applied. However, this indicative content does not constitute the mark scheme: it is material that candidates might use, grouped according to
+    each assessment objective tested by the question. For each specific task, the intended balance between different assessment objectives is
+    highlighted in the Mark Scheme: dominant assessment objectives are flagged, or where assessment objectives are equally weighted, this is
+    flagged, too. It is hoped that candidates will respond to questions in a variety of ways and will give original and at times unexpected
+    interpretations of texts. Rigid demands for ‘what must be a good answer’ would lead to a distorted assessment.
+
+3   Candidates’ answers must be relevant to the question. Beware of prepared answers that do not show the candidate’s thought and which have
+    not been adapted to the thrust of the question. Beware also of answers where candidates attempt to reproduce interpr etations and concepts
+    that they have been taught but have only partially understood.
+
+4   Candidates’ answers should demonstrate knowledge of their chosen texts. This knowledge will be shown in part through the rang e and
+    relevance of their references to the text (bearing in mind that this is a closed text examination). Re -telling sections of the text without
+    commentary is of little or no value.
+
+
+
+
+                                                                       10
+                                                                                                                                                  PMT
+
+
+J352/02                                                          Mark Scheme                                                          June 2024
+
+INSTRUCTIONS TO EXAMINERS:
+
+A       INDIVIDUAL ANSWERS
+
+1       The INDICATIVE CONTENT indicates the sort of material candidates might use in their answers, but be prepared to recognise and credit
+        unexpected and alternative approaches where they are relevant.
+
+2       Using ‘best-fit’, decide first which set of LEVEL OF RESPONSE BAND DESCRIPTORS for the relevant assessment objectives
+        assessed in the task best describes the overall quality of the answer. In Unit J352/02, the AOs have different intended weightings in
+        the different sections:
+
+Component                                                      Intended weightings (% of GCSE)                                        Total
+Exploring poetry and Shakespeare                AO1                 AO2               AO3                      AO4
+(J352/02)
+Section A: Poetry across time
+                                                 5                   7.5                                                              12.5
+Part a)
+Section A: Poetry across time
+                                                6.25                 6.25                                                             12.5
+Part b)
+Section B: Shakespeare                          8.75                 8.75                  5                    2.5                    25
+Total                                            20                  22.5                  5                    2.5                    50
+
+        Keep in mind the intended weightings of assessment objectives targeted by the question when initially identifying the correct Level
+        of Response band. For each specific task, the intended balance between different assessment objectives is highlighted in the Mark
+        Scheme: dominant assessment objectives are flagged, or where assessment objectives are equally weighted, this is flagged, too .
+        Using ‘best-fit’, adjust the mark within the band according to the dominant (if applicable) assessment objectives following the
+        guidelines below:
+
+
+    •    Highest mark: If clear evidence of all the qualities in the band descriptors is shown, the HIGHEST Mark should be awarded.
+
+    •    Lowest mark: If the answer shows the candidate to be borderline (i.e. they have achieved all the qualities of the bands below and show
+         limited evidence of meeting the criteria of the band in question) the LOWEST mark should be awarded.
+
+    •    Middle mark: This mark should be used for candidates who are secure in the band. They are not ‘borderline’ but they have only achieved
+         some of the qualities in the band descriptors.
+
+
+
+                                                                       11
+                                                                                                                                                         PMT
+
+
+J352/02                                                             Mark Scheme                                                           June 2024
+
+    •    Further refinement can be made by using the intervening marks, if appropriate.
+
+3       Be prepared to use the full range of marks. Do not reserve high band marks ‘in case’ something turns up of a quality you have not yet seen. If
+        an answer gives clear evidence of the qualities described in the band descriptors, reward appropriately.
+
+B        TOTAL MARKS
+
+1       Transfer the mark awarded to the front of the script.
+
+2       The maximum mark for the paper is 80.
+
+
+C        RATIONALE FOR ASSESSING AO3
+
+Section B: Shakespeare
+
+In this Section, candidates will have knowledge of contextual factors for their studied texts and will use this to develop th eir response to the
+question. Candidates should only refer to contexts that are relevant to the specific question asked. The questi ons are worded to prompt candidates
+to consider relevant social, historical or cultural contexts as demonstrated in the play. More general knowledge of Shakespeare’s historical,
+dramatic or biographical contexts is not relevant for this assessment.
+
+
+
+
+                                                                          12
+                                                                                                                                               PMT
+
+
+J352/02                                                       Mark Scheme                                                         June 2024
+
+Section A, part (a): Poetry across time
+
+ Component                                                   Intended weightings (% of GCSE)                                      Total
+ Exploring poetry and Shakespeare            AO1                  AO2               AO3                      AO4
+ (J352/02)
+ Section A: Poetry across time
+                                              5                    7.5                                                            12.5
+ Part a)
+
+ SKILLS:        AO2: Analyse the language, form and structure used by a writer to create meanings and effects, using relevant terminology
+                where appropriate.
+                AO1: Read, understand and respond to texts: maintain a critical style; develop an informed personal response; use textual
+                references, including quotations, to support and illustrate interpretations.
+
+                Critically compare and contrast texts, referring where relevant to theme, characterisation, context (where known), style and
+                literary quality.
+
+                The response is to be marked holistically. Examiners to indicate overall mark awarded at the end of the response. AO2
+                is the dominant assessment objective.
+
+
+
+
+                                                                    13
+                                                                                                                                                          PMT
+
+
+J352/02                                                            Mark Scheme                                                                June 2024
+
+Level Descriptors: Section A, part (a): Poetry across time
+  Level 6   Sustained critical style in an informed personal response to both text and task
+  (18–20        • Detailed and sensitive analysis of writer’s use of language, f orm and structure to create meanings and ef f ects (AO2)
+  marks)        • Consistently ef f ective use of relevant subject terminology (AO2)
+                • Sustains a coherent critical style in an informed personal response to the text showing consistently perceptive understanding (AO1)
+                • Textual ref erences and quotations are precise, pertinent and skillf ully interwoven (AO1)
+                • Achieves a sustained, interwoven comparison of texts
+  Level 5   Convincing critical style in a well-developed personal response to both text and task
+  (15–17        • Thoughtf ul examination of writer’s use of language, f orm and structure to create meanings and ef f ects (AO2)
+  marks)        • Good use of relevant subject terminology (AO2)
+                • Maintains a convincing critical style in a well–developed personal response to the text showing some insightf ul understanding (AO1)
+                • Textual ref erences and quotations are well–selected and f ully integrated (AO1)
+                • Achieves a sustained comparison of texts
+  Level 4   Credible critical style in a detailed personal response to both text and task
+  (11–14        • Some analytical comments on writer’s use of language, f orm and structure to create meanings and ef f ects (AO2)
+  marks)        • Competent use of relevant subject terminology (AO2)
+                • Demonstrates some critical style in a detailed personal response to the text showing clear understanding (AO1)
+                • Relevant textual ref erences and quotations are selected to support the response (AO1)
+                • Develops some key points of comparison between texts
+  Level 3   A reasonably developed personal response to both text and task
+   (7–10     • Reasonable explanation of writer’s use of language, f orm and structure to create meanings and ef f ects (AO2)
+  marks)     • Some use of relevant subject terminology (AO2)
+             • Develops a reasonably detailed personal response to the text showing understanding (AO1)
+             • Uses some relevant textual ref erences and quotations to support the response (AO1)
+             • Makes some explicit, relevant comparisons between texts
+  Level 2   A straightforward personal response to both text and task
+   (4–6         • Simple comments on writer’s use of language, f orm or structure (AO2)
+  marks)        • Limited use of subject terminology (AO2)
+                • Begins to develop a straightf orward personal response to the text showing some understanding (AO1)
+                • Gives some relevant support f rom the text (AO1)
+                • Some identif ication of key links between texts
+  Level 1   A basic response to both text and task
+   (1–3         • A little awareness of language, f orm or structure (AO2)
+  marks)        • Very little use of subject terminology (AO2)
+                • Makes a f ew relevant comments about the text (AO1)
+                • Makes limited ref erences to the text (AO1)
+                • Limited, if any, attempt to make obvious links between texts
+ 0 marks        • No response or no response worthy of credit.
+
+
+                                                                          14
+                                                                                                                                                                 PMT
+
+
+J352/02                                                            Mark Scheme                                                                       June 2024
+
+
+ Question                                                         Indicative content                                                                 Marks
+1 a         Compare the ways in which these poems present how a person feels about themselves.                                                         20
+
+            You should consider:
+
+               •   ideas and attitudes in each poem
+               •   tone and atmosphere in each poem
+               •   the effects of the language and structure used.
+
+            Please bear in mind that other content may be equally valid and should be credited.
+
+            AO2:
+               •   Both poems are structured to represent the recognition of self-knowledge and a sense of happiness with the quality of
+                   the lif e they have lived: With Walcott, there is the progress through the looking f orward in anticipation to the time of
+                   understanding and release, and the use of f uture tense (“The time will come…you will greet…each will smile”) to the
+                   present moment and the repetition of the imperative “sit” - almost as if the person being addressed is reluctant to accept
+                   the new wisdom. With Smith, there is the structure of the rhetorical questions (“How long have I been wed to
+                   myself?…..How long have I been alone?”) and the answering, capturing the speaker’s self -questioning and thoughtf ul
+                   revelation. In both, the strong use of enjambment captures the heady sense of excitement in realisation.
+               •   Both poets use words and phrases linked by a sense of contentment, self -discovery and excitement: Walcott’s
+                   “elation…smile…love”; and Smith’s “pleasure…turn me on…darling”.
+               •   Both poets use literary devices to present their sense of discovery of their happiness within themselves: in Walcott, there
+                   is the extended metaphor of the “feast” (“Eat….wine…bread”) that captures the sense of enjoyment, relish, comf ort,
+                   nourishment; in the Smith, there is the extended metaphor of being the “bride” to oneself (“wed to myself….I am my own
+                   bride”) with the connotations of devotion, commitment, self -sacrif ice, self -knowing.
+            AO1:
+               •   In both poems there is a sense of delight and contentment in the relationship with oneself, and in both there is a f eeling
+                   that this has come relatively late in life and after unsuccessfully looking for fulfilment outside of oneself – Walcott has the
+                   mention of the self “whom you ignored for another”; in the Smith poem, we are told of how the voice was “married less to
+                   the man”.
+               •   In the Walcott, there is the sense of looking f orward in anticipation (“The time will come…you will”) when you will
+                   rediscover the “stranger” of oneself that has been lost in the pursuit of life (“the photographs, the desperate notes”) and
+                   love that stranger; in the Smith, there is the sense of looking back in thankful recognition (“How long have I been”) when
+                   the speaker understands the value of her own life that has been lost in dedication to others (“not alone…I have waited
+                   f or you all my lif e”).
+
+
+
+
+                                                                           15
+                                                                                                                                                              PMT
+
+
+J352/02                                                           Mark Scheme                                                                     June 2024
+
+ Question                                                        Indicative content                                                               Marks
+2 a         Compare how these poems present a demand for a conflict to end.                                                                         20
+
+            You should consider:
+
+               •   ideas and attitudes in each poem
+               •   tone and atmosphere in each poem
+               •   the effects of the language and structure used.
+
+            Please bear in mind that other content may be equally valid and should be credited.
+
+            AO2:
+               •   Both poems use various linguistic devices to explore the demand f or conf lict to end: in Harper, the harsh f ricative
+                   alliteration of “f ever and f ret” to suggest the trials f elt by people as a result of conf lict; in Hughes, the breathless
+                   enjambment captures the excitement and anticipation (as well as the f elt need) of the conf lict ending and change
+                   coming.
+               •   Use of extensive figurative language to convey the demand for conf lict to end and change to happen: Harper uses a
+                   gentle, romantic language, with a semantic cluster of worlds linked to betterment to suggest the results of a world in
+                   which conflict has been ended, with “thrill the hearts…relax their tension…To f loat…To hush…grown tender”; Hughes
+                   uses metaphors linked to oppression and imposition, with his reference to “f enced -of f narrow space” and “silly walls”.
+               •   Both poems’ structure supports the idea of the need for change and the demand f or change: in the Harper, the regular
+                   rhyme scheme and the structuring to each stanza, so that the positing of the initial two lines of conf lict is answered by
+                   two lines of resolution means a sureness and confidence that the conflict will be ended; in the Hughes, structurally the
+                   way that the early stanzas each start with the first person singular “I” and the sense of a personal sense of demand, only
+                   to change to the plural “us” and the emotive lexical term “comrades” at the poem’s conclusion.
+            AO1:
+               •   Both poems have a clear sense of the speaker’s own role as a consequence of the demand for change, through the use
+                   of the first person pronoun, almost as if it were an obligation, a personal responsibility, a sense of necessity because of
+                   the scale of the conf lict and the associated problems: in Harper we hear the voice appeal, “Let me make…Let me
+                   make…Let me sing…I would sing”); in the Hughes there is the knowledge expressed that “I see that my own hands can
+                   make….”)
+               •   In the Harper, the sense of conf lict and lack of equality that needs to be addressed is extensive, almost universal
+                   (“young and old…weary…poor and aged”), while with the Hughes there is the strong sense that the conf lict is f ocused
+                   closely on the needs and disenf ranchisement of the speaker’s race (“…a black f ace…dark eyes in a dark f ace…”)
+
+
+
+
+                                                                         16
+                                                                                                                                                            PMT
+
+
+J352/02                                                          Mark Scheme                                                                    June 2024
+
+ Question                                                       Indicative content                                                              Marks
+3 a         Compare how these poems present contrasts between young people and old people.                                                        20
+
+
+            You should consider:
+                •    ideas and attitudes in each poem
+                •    tone and atmosphere in each poem
+                •    the effects of the language and structure used.
+
+            Please bear in mind that other content may be equally valid and should be credited.
+
+            AO2:
+               • Both poems are structured to help present the sense of contrast between young people and old people. In Blake, the
+                 tripping rising cadence of Blake’s iambs and anapaests, and the regularity of the rhyming couplets suggest the
+                 unarguability of the contrasts drawn and judgements made. In the Kramer, the sequence of triplets with their shortening
+                 length in each stanza suggest in general a narrowing in and a focusing on the unpalatable realities of the old person in
+                 the young person’s world (“…slight concern…naked…burnt away…holding a plate…”)
+               • Both poems use various linguistic devices to explore contrasts between young people and old people: in Blake, the
+                 immeasurable potential power of young people is conveyed by the use of natural imagery (“mighty wind…thunderings”) ,
+                 while f or this public occasion the sticks of the beadles are described metaphorically and euphemistically as “wands”; in
+                 the Kramer, the harsh reality of the disconnect between young and old is captured by the hard alliteration of
+                 “bones…brittle…Beauty burnt”, as well as the sense of outrage and disbelief of the poet being conveyed by the tumbling
+                 enjambment.
+               • Both poems use figurative language to capture the contrasts that exist between young and old: in the Blake poem,
+                 multiple metaphors (“flowers…lambs…angel”) suggest the innocence and unrewarded virtue of young people, that
+                 contrasts with how colour symbolism (“grey-headed…white as snow”) captures the cold, unfeeling aspect and ignorance
+                 of the aged guardians; in the Kramer, the challenging aspect of the old lady is conveyed by the harsh extended
+                 metaphor of the “Beauty burnt away” within the “brittle grate” of her bones, while the complacent inattention of the
+                 waitress is captured by the plain, factual language (“You walked across? Such a rough day….Roast beef today and
+                 apple-tart”).
+               AO1:
+               • Both poems describe a sense of contrast between the worlds of young people and old people, with a clear sense of
+                 judgement and authorial critique: in the Blake, the poet clearly favours the “radiance” of the children, with the injunction
+                 to “cherish pity”; in the Kramer, however, the bland, inconsequential platitudes and “slight concern” of the waitress are
+                 contrasted with the “never still” but “unheard” mouth, and the undiminished “height and bearing”, of the old woman.
+                 Both poems present a third person account of the differing worlds of young and old; and both poems deliver a clear
+                 verdict on what the response of the reader should be and where our sympathies are meant to lie: in the Blake, the
+                 reader is lef t feeling warned if not directly admonished by the imperative “Then cherish pity”; while, in the Kramer there
+                 is a clear sense of outrage and challenge in the questioning of “Are these the only words each day…..”
+
+
+
+                                                                        17
+                                                                                                                                            PMT
+
+
+J352/02                                                      Mark Scheme                                                       June 2024
+
+Level Descriptors Section A, part (b): Poetry across time
+
+ Component                                                  Intended weightings (% of GCSE)                                   Total
+ Exploring poetry and Shakespeare           AO1                  AO2               AO3                    AO4
+ (J352/02)
+ Section A: Poetry across time
+                                            6.25                 6.25                                                          12.5
+ Part (b)
+
+ SKILLS:        AO1: Read, understand and respond to texts: maintain a critical style; develop an informed personal response; use textual
+                references, including quotations, to support and illustrate interpretations.
+                AO2: Analyse the language, form and structure used by a writer to create meanings and effects, using relevant terminology
+                where appropriate.
+
+                The response is to be marked holistically. Examiners to indicate overall mark awarded at the end of the response. AO1
+                and AO2 are equally weighted.
+
+
+
+
+                                                                   18
+                                                                                                                                                         PMT
+
+
+J352/02                                                            Mark Scheme                                                               June 2024
+
+Level Descriptors: Section A, part (b): Poetry across time
+
+  Level 6   Sustained critical style in an informed personal response to both text and task
+  (18–20       • Sustains a coherent critical style in an informed personal response to the text showing consistently perceptive understanding (AO1)
+  marks)       • Textual ref erences and quotations are precise, pertinent and skilf ully interwoven (AO1)
+               • Detailed and sensitive analysis of writer’s use of language, f orm and structure to create meanings and ef f ects (AO2)
+               • Consistently ef f ective use of relevant subject terminology (AO2)
+  Level 5   Convincing critical style in a well-developed personal response to both text and task
+  (15–17       • Maintains a convincing critical style in a well–developed personal response to the text showing some insightf ul understanding (AO1)
+  marks)       • Textual ref erences and quotations are well–selected and f ully integrated (AO1)
+               • Thoughtf ul examination of writer’s use of language, f orm and structure to create meanings and ef f ects (AO2)
+               • Good use of relevant subject terminology (AO2)
+
+  Level 4   Credible critical style in a detailed personal response to both text and task
+  (11–14       • Demonstrates some critical style in a detailed personal response to the text showing clear understanding (AO1)
+  marks)       • Relevant textual ref erences and quotations are selected to support the response (AO1)
+               • Some analytical comments on writer’s use of language, f orm and structure to create meanings and ef f ects (AO2)
+               • Competent use of relevant subject terminology (AO2)
+
+  Level 3   A reasonably developed personal response to both text and task
+   (7–10     • Develops a reasonably detailed personal response to the text showing understanding (AO1)
+  marks)     • Uses some relevant textual ref erences and quotations to support the response (AO1)
+             • Reasonable explanation of writer’s use of language, f orm and structure to create meanings and ef f ects (AO2)
+             • Some use of relevant subject terminology (AO2)
+
+  Level 2   A straightforward personal response to both text and task
+   (4–6         • Begins to develop a straightf orward personal response to the text showing some understanding (AO1)
+  marks)        • Gives some relevant support f rom the text (AO1)
+                • Simple comments on writer’s use of language, f orm or structure (AO2)
+                • Limited use of subject terminology (AO2)
+  Level 1   A basic response to both text and task
+   (1–3         • Makes a f ew relevant comments about the text (AO1)
+  marks)        • Makes limited ref erences to the text (AO1)
+                • A little awareness of language, f orm or structure (AO2)
+                • Very little use of subject terminology (AO2)
+ 0 marks        • No response or no response worthy of credit.
+
+
+
+
+                                                                          19
+                                                                                                                                                                     PMT
+
+
+J352/02                                                               Mark Scheme                                                                        June 2024
+
+Indicative Content Section A, part (b): Poetry across time
+
+ Question                                                            Indicative content                                                                    Marks
+ 1 b        Explore in detail one other poem from your anthology which presents a satisfying relationship.                                                  20
+
+            Please bear in mind that other content may be equally valid and should be credited.
+
+            Possible poems might include: Helen Marie Williams “A Song”; Rita Dove “Flirtation”; June Jordan “Poem f or my Love”’; Raymond
+            Antrobus “The Perseverance”; Fatima Asghar “Lullaby”; John Keats, “Bright Star”; Robert Browning, “Now”; Emily Bronte, “Love and
+            Friendship”; Sylvia Plath, “Morning Song”, James Fenton, “In Paris with You”; Carol Ann Duf f y, “Warming Her Pearls”.
+
+            AO1:
+               •    Critical overview of how another poem expresses how relationships can be satisfying: e.g. Bronte’s unlikely heralding of the
+                    qualities of friendship over love, with her praise of the holly tree and its ability to “bloom most constantly”; June Jordan’ s
+                    calm, meditative sense of contentment that she has been blessed with a loving relations hip; the brief and treasured
+                    contentment of the speaker in “The Perseverance”, on remembering how “I will eat again with my f ather”.
+                •   Textual ref erence and quotation may demonstrate appreciation of both surf ace meaning and deeper implications: e.g.
+                    Browning’s use of forceful alliteration to convey the excitement, pleasure and satisf action of the wished-f or intensity of a
+                    condensed moment (“rapture of rage…soul and sense…Merged in a moment…clutch at the core”; Plath’s movement away
+                    f rom the disabling sense of inadequacy and responsibility in the last stanza of her poem towards the delight caused when the
+                    “handf ul of notes….rise like balloons”; Jordan’s lack of punctuation that conveys the breathless wonder, contentment, and
+                    how she is “amazed by peace”.
+            AO2:
+               •    Appreciation of the impact of poetic conventions such as lyrical voice, choice of stanza form, figurative language, rhythm and
+                    sound effects, e.g. how the sensual alliteration and sibilance of Dove’s persona in “Flirtation” (“rolled up her rugs….strewn
+                    salt across the sky”) captures the pleasurable relish being taken in the flirtation and playful anticipation; how the enjambment
+                    and colloquial language of Fenton’s persona suggest the satisfying (if brief , or f orced) immersion in the unprepossessing
+                    surroundings and the delights of the moment (“There’s that crack across the ceiling And the hotel walls are peeling”).
+                •   Evaluation of the impact of language, aspects of poetic form and structure and the poet’s choice of images to encourage the
+                    reader to ref lect on how relationships can bring satisfaction: e.g. Asghar’s contentment in times of sorrow captured by the
+                    alliterative memory of her mother’s “henna-dyed hair”, and how it could metaphorically “light the underworld”; Duffy’s speaker
+                    ref lecting with hypnotic obsessive detail on her mistress’s day and evening, both when in her presence and when elsewhere
+                    with others, with her pearls taking on a symbolic significance suggesting the delights (as well as the admitted dif f iculties) of
+                    the relationship.
+
+
+
+
+                                                                              20
+                                                                                                                                                                     PMT
+
+
+J352/02                                                               Mark Scheme                                                                        June 2024
+
+Question                                                            Indicative content                                                                     Marks
+2 b        Explore in detail one other poem from your anthology which presents the wish for an end to conflict.                                             20
+
+           Please bear in mind that other content may be equally valid and should be credited.
+
+           Possible poems might include: Mary Lamb, “Envy”; William Wordsworth, “Boat Stealing”; Lord Byron “The Destruction of
+           Sennacherib”; Emily Dickinson, “There’s a Certain Slant of Light”; Keith Douglas, “Vergissmeinicht”; Denise Levertov, “What Were
+           They Like?”; Gillian Clarke, “Lament; Louise Bennett, “Colonization in Reverse”; John Agard, “Flag”; Caleb Femi, “Thirteen”; Imtiaz
+           Dharker, “Honour Killing”; Sujata Bhatt, “Partition”.
+
+           AO1:
+              •    Critical overview of how another poem conveys the wish for an end to conflict: e.g. Lamb’s criticism and wish f or the end of
+                   conf lict achieved through a metaphor of the envious person as resembling a “rose tree” that (unaware of “its own red rose”)
+                   shows itself to be “blind and senseless”, and more likely to “fret” and be “discontent” than to “f ind Some pretty f lower in their
+                   own mind”; Douglas’s unwaveringly grim f igurative description of the “burst stomach live a cave”, and the irony of the
+                   personif ied equipment that’s “hard and good when he’s decayed” – mocking the sacrif ice of the soldier and lover
+               •   Textual ref erence and quotation will demonstrate understanding of both surf ace meaning and deeper implications, e.g.
+                   Levertov’s wish for the conflict to end, expressed through the nostalgic rhetorical questions in the first section of the poem,
+                   and a clear identification with the values of the victims of the Vietnam conflict (“their speech…was like a song”) as well as a
+                   strong sense of sympathy expressed through disgust at the appalling pain suf f ered by the inhabitants (“children were
+                   killed…the bones were charred”); Dickinson’s use of language characterized by a sense of pain, suffering and a wish to end
+                   the conf lict that generates it – “Winter…Hurt…scar…Despair…af f liction…Death”.
+           AO2:
+              •    Appreciation of the impact of poetic conventions, such as lyrical voice, choice of stanza form, figurative language, rhythm and
+                   sound effects, e.g. Dharker’s creation of a sorrow and regret at what she has become, and a wish to end the conf lict within
+                   herself , through the complex and extended imagery of undressing and map making that captures the speaker’s inner conflict
+                   between what she has become and what she aspires to be, and her external conflict with the “dictator dreams” that made her
+                   like that; Femi’s extended metaphor that describes the shif t in meaning and understanding of the “supernova”, and his
+                   strident sense of outrage that the institutions of policing and education need to drop their sense of relationship as conf lic t.
+               •   Evaluation of the impact of language, aspects of poetic form and structure and the poet’s choice of images to encourage the
+                   reader to ref lect on the need for conflict to end: e.g. the generational impact in Bhatt’s poem, wishing for an end to the sense
+                   of a historical inevitability, where conflict continues to have an impact across generations, with multiple ref erences to time
+                   passing and yet the damage of the conf lict unaltered and wide-reaching (“…nineteen-years-old then…each
+                   day…endless…tells me this at midnight…seventy-years old…older than that”; Agard’s use of imaginary dialogue to illustrate
+                   the ridiculous logic of those who f ollow a f lag, and the urgent need f or conf lict thus generated to end - because of the
+                   ungiving stubbornness of nationalistic f ervor, and the bleakly pessimistic answers that sum up the speaker’s sense of
+                   desperate helplessness at the strength and universality of those nationalistic feelings that so frequently lead to conf lict and
+                   produce new victims.
+
+
+
+
+                                                                             21
+                                                                                                                                                                    PMT
+
+
+J352/02                                                              Mark Scheme                                                                        June 2024
+
+Question                                                           Indicative content                                                                     Marks
+3 b        Explore in detail one other poem from your anthology which presents differences between youth and age.                                          20
+
+           Please bear in mind that other content may be equally valid and should be credited.
+
+           Possible poems might include: Theresa Lola, “Equilibrium”; Anne Bronte, “The Bluebell”; Thomas Hardy, “Midnight on the Great
+           Western”; Zaffar Kunial “Prayer”; Raymond Antrobus “Happy Birthday Moon”; Robert Frost, “Out, Out – “; Warsan Shire, “Tea with
+           our Grandmothers”; Thom Gunn, “Baby Song”; Sylvia Plath, “You’re”; Gillian Clarke, “Cold Knapp Lake”; Sharon Olds, “My First
+           Weeks”; Yusuf Komunyakaa, “Venus’s-f lytraps”; Kate Clanchy’s “Love”.
+
+           AO1:
+              •   Critical overview of how another poem presents differences between youth and age: e.g. Clarke’s suggestions on the nature
+                  and quality of memory of youth and its experiences, which f rom the perspective of age “lie under hidden water…..where
+                  satiny mud blooms in cloudiness”; Frost’s recognition of how the difference between youth and age, narrowed as a result of
+                  the “boy Doing a man’s work”, is f elt more clearly and sharply as the adult community “turned to their af f airs”.
+              •   Relevant use of textual reference and quotation to demonstrate understanding of surf ace meaning and perhaps deeper
+                  implications: e.g. Bronte’s symbolic bluebell and reassuring iambic trimeter that calls to mind how the viewpoint of youth is
+                  one where the heart “is not so heavy”, where “I knew no care”, where “heart and soul were f ree” set against the “thankless
+                  lif e” of later years full of “anxious toil and strife”; Hardy’s conveying of the dif f erence between the “journeying boy” and the
+                  region of adulthood that he is “not of ”, through the clumsy alliteration of “rude realms” – and with the uncertainty of his
+                  progress from his world of childhood to the “region of sin” captured by the symbolism of the “roof lamp’s oily f lame”.
+           AO2:
+              •   Appreciation of the impact of poetic conventions, such as lyrical voice, choice of stanza form, figurative language, rhythm and
+                  sound effects, e.g. Clanchy’s use of exotic imagery and similes based on unexpected, unknown or alien comparisons to
+                  describe her baby (“…hot as a smelted coin….some rare snowcreature’s aureole”) to capture the huge distance and
+                  dif ference in experience and perceptions felt by the adult mother; Lola’s use of couplets at the start and end of “Equilibrium”
+                  to juxtapose and capture the inevitable dif f erence between lives just starting and lives just ending.
+              •   Evaluation of the impact of language, poetic form and structure and the poet’s choice of images to encourage the reader to
+                  ref lect on the presentation of the differences between youth and age: e.g. Frost’s relentless repetition of the word “boy” to
+                  hint at his anonymity and the lack of care given, and to emphasise the sense of lost youth in the context of doing a man’s
+                  work; Gunn’s oppositional structuring of lines to suggest the viewpoint and concern of the baby in its journey from the “private
+                  ease of Mother’s womb” to the “lighted room”, and beyond that room the roaring of “all time” that represents the introduction
+                  to the process of growing.
+
+
+
+
+                                                                            22
+                                                                                                                                                 PMT
+
+
+J352/02                                                       Mark Scheme                                                          June 2024
+
+Section B: Shakespeare
+
+Component                                                   Intended weightings (% of GCSE)                                        Total
+Exploring poetry and Shakespeare            AO1                  AO2               AO3                       AO4
+(J352/02)
+Section B: Shakespeare                      8.75                  8.75                   5                    2.5                   25
+
+
+SKILLS:        AO1: Read, understand and respond to texts: maintain a critical style; develop an informed personal response; use textual
+               references, including quotations, to support and illustrate interpretations.
+               AO2: Analyse the language, form and structure used by a writer to create meanings and effects, using relevant terminology
+               where appropriate.
+               AO3: Show understanding of the relationships between texts and the contexts in which they were written.
+               AO4: Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation.
+
+               The response is to be marked holistically. Examiners to indicate overall mark awarded at the end of the response. AO1
+               and AO2 are the equally dominant assessment objectives.
+
+
+
+
+                                                                    23
+                                                                                                                                                               PMT
+
+
+J352/02                                                               Mark Scheme                                                                  June 2024
+
+Level Descriptors: Section B: Shakespeare
+ Level 6 (31–   Sustained critical style in an informed personal response to both text and task
+  36 marks)         • Sustains a coherent critical style in an informed personal response to the text showing consistently perceptive understanding (AO1)
+                    • Textual references and quotations are precise, pertinent and skilfully interwoven (AO1)
+                    • Detailed and sensitive analysis of writer’s use of language, form and structure to create meanings and effects (AO2)
+                    • Consistently effective use of relevant subject terminology (AO2)
+                    • Shows a perceptive and sensitive understanding of how context informs evaluation of the text (AO3)
+ Level 5 (25–   Convincing critical style in a well-developed personal response to both text and task
+  30 marks)         • Maintains a convincing critical style in a well–developed personal response to the text showing some insightful understanding (AO1)
+                    • Textual references and quotations are well–selected and fully integrated (AO1)
+                    • Thoughtful examination of writer’s use of language, form and structure to create meanings and effects (AO2)
+                    • Good use of relevant subject terminology (AO2)
+                    • Uses a convincing understanding of context to inform the response to the text (AO3)
+ Level 4 (19–   Credible critical style in a detailed personal response to both text and task
+  24 marks)         • Demonstrates some critical style in a detailed personal response to the text showing clear understanding (AO1)
+                    • Relevant textual references and quotations are selected to support the response (AO1)
+                    • Some analytical comments on writer’s use of language, form and structure to create meanings and effects (AO2)
+                    • Competent use of relevant subject terminology (AO2)
+                    • Uses clear understanding of context to inform the response to the text (AO3)
+ Level 3 (13–   A reasonably developed personal response to both text and task
+  18marks)        • Develops a reasonably detailed personal response to the text showing understanding (AO1)
+                  • Uses some relevant textual references and quotations to support the response (AO1)
+                  • Reasonable explanation of writer’s use of language, form and structure to create meanings and effects (AO2)
+                  • Some use of relevant subject terminology (AO2)
+                  • Makes some relevant comments about context to inform the response to the text (AO3)
+ Level 2 (7–    A straightforward personal response to both text and task
+ 12 marks)          • Begins to develop a straightforward personal response to the text showing some understanding (AO1)
+                    • Gives some relevant support from the text (AO1)
+                    • Simple comments on writer’s use of language, form or structure (AO2)
+                    • Limited use of subject terminology (AO2)
+                    • Shows some awareness of context which may be implied (AO3)
+ Level 1 (1–6   A basic response to both text and task
+   marks)           • Makes a few relevant comments about the text (AO1)
+                    • Makes limited references to the text (AO1)
+                    • A little awareness of language, form or structure (AO2)
+                    • Very little use of subject terminology (AO2)
+                    • Implies a little awareness of context related to the text (AO3)
+  0 marks           • No response or no response worthy of credit.
+
+
+
+
+                                                                             24
+                                                                                                                                                 PMT
+
+
+J352/02                                                       Mark Scheme                                                        June 2024
+
+
+Marking Grid for AO4 –SPaG(1–4 marks)
+
+
+
+    High
+performance In the context of the Level of Demand of the question, learners spell and punctuate with consistent accuracy, and consistently use
+ (4 marks)  vocabulary and sentence structures to achieve effective control of meaning.
+
+Intermediate
+             In the context of the Level of Demand of the question, learners spell and punctuate with considerable accuracy, and use a
+performance
+ (2–3 marks) considerable range of vocabulary and sentence structures to achieve general control of meaning.
+ Threshold
+performance In the context of the Level of Demand of the question, learners spell and punctuate with reasonable accuracy, and use a
+  (1 mark)  reasonable range of vocabulary and sentence structures; any errors do not hinder meaning in the response.
+
+
+
+
+                                                                    25
+                                                                                                                                                                    PMT
+
+
+J352/02                                                              Mark Scheme                                                                        June 2024
+
+  Question                                                           Indicative content                                                                  Marks
+ 4        *    Romeo and Juliet                                                                                                                          36+4
+              Explore the ways in which Shakespeare presents fate in this tragedy. Refer to this extract which is the Prologue and                       SPaG
+              elsewhere in the play.
+
+              Please bear in mind that other content may be equally valid and should be credited .
+
+              AO1:
+                 •    Responses are likely to explore how Romeo and Juliet’s love is ‘death-marked’ from the beginning of the text, and how
+                      the audience are aware of this even if they are not. They are born into conf lict f rom ‘f atal loins’ and their love is ‘star-
+                      crossed’ so controlled by fortune rather than their own free choices. The role of misfortune or the accidental are also set
+                      out in the Prologue as ‘misadventur’d piteous overthrows’, raising debate about how f ar the action of the play is
+                      determined and how f ar it is the result of a series of unlucky accidents
+                  •   Responses may be extended by looking at a wide range of scenes from the play but there are explicit references to fate in
+                      Act 1 Scene 4 (Queen Mab speech); the first meeting of Romeo and Juliet (Act 1 Scene 5) – ‘prodigious birth of love’; in
+                      Act 3 Scene 1 – ‘O, I am f ortune’s fool’; Act 3 Scene 5 – ‘O, God, I have an ill-divining soul…O Fortune, Fortune! All men
+                      call thee f ickle’; Act 5 Scene 1 – ‘Then I def y you, stars’; Act 5 Scene 3 - ‘One writ in sour misf ortune’s book’; and the
+                      Prince’s closing words – ‘see what a scourge is laid upon your hate’
+                  •   Candidates might equally focus on misfortune and chance accidents from Romeo being asked to read the invitation to the
+                      Capulet’s party through the death of Mercutio to the accidental f ailure of the message f rom Friar Lawrence to reach
+                      Romeo on time and tell him that Juliet had not really died.
+              AO2:
+                 •    The sonnet form sets a pattern for later part of the play and structures love within conventions, both literary and social ;
+                      Petrarchan conventions and tropes dominate the love poetry of the play
+                  •   The two interventions of the Chorus and other moments of dramatic irony give a theatrical structure to the play’s narrative,
+                      so that the audience are very aware of how fate and chance shape the lives of the lovers, despite their attempts to take
+                      control of their destinies; the theatre audience are critical observers of the ‘two hours’ traf f ic of our stage’
+                  •   The imagery of the stars is echoed later in the play: Juliet’s beauty is also celestial to Romeo so that their love seems
+                      f ated from the beginning, while the contrast of ‘rage’ and ‘love’ sets out oppositions which are sustained throughout the
+                      staging of the scene which of ten alternates scenes of violence with scenes of romance.
+              AO3:
+                  •   Candidates may reference belief systems of the time which placed a strong emphasis on predetermination, on astrology
+                      and on outward and visible signs of f ate
+                  •   The opening sonnet puts the love of Romeo and Juliet in its social context; it is the feud and its consequences which has
+                      brought blood to a city which is meant to be ‘civil’ and introduced an element of civil war; the theme of f ate and
+                      punishment is taken up at the end of the play by the Prince but earlier the Friar though it was providence which had
+                      brought Romeo and Juliet together ‘to turn your households’ rancour to pure love’.
+
+
+
+
+                                                                             26
+                                                                                                                                                                 PMT
+
+
+J352/02                                                            Mark Scheme                                                                       June 2024
+
+  Question                                                         Indicative content                                                                 Marks
+ 5       *   Romeo and Juliet                                                                                                                         36+4
+             ‘The death of Mercutio completely changes the play’. To what extent do you agree with this view? Explore at least two                    SPaG
+             moments from the play to support your ideas.
+
+             Please bear in mind that other content may be equally valid and should be credited.
+
+             AO1:
+                •   The death of Mercutio is a dramatic turning point from comedy to tragedy, altering the tone and impact of the play f or its
+                    audience as well as introducing inevitable patterns of revenge, exile and deception, so it is a catalyst f or a f ast -moving
+                    catastrophe, darkening the whole mood of the play; from this point, it is impossible f or Romeo and Juliet to reveal their
+                    love or reconcile their parents to it
+                •   However, candidates might also argue that the patterns of the play were fixed from the beginning, and that Mercutio had
+                    been spoiling for, and ultimately provoked the fight with Tybalt, so his death is the result of the escalating violence of the
+                    f eud and Mercutio’s own abrasive character
+                •   Mercutio’s death removes a lot of the fun of the play, and perhaps its most memorable and colourful character: candidates
+                    might make reference to his joking contributions to Act 1 Scene 4, Act 2 Scene 1 and Act 2 Scene 4; from this point love
+                    and relationships are no longer comic but increasingly despairing.
+             AO2:
+                •   The exuberance of Mercutio’s language is a memorable aspect of his character, most evidently in the Queen Mab
+                    speech, but also in his taunting of Tybalt (‘King of cats’), the love-sick Romeo and the ageing but sex-obsessed Nurse,
+                    whom he quickly betters in repartee
+                •   Later parts of the play miss his wit and wordplay and his capacity to ‘jest at scars’
+                •   The words of his curse ‘a plague on both your houses’ quickly proves prophetic, so his death is a key structural moment in
+                    the play, ensuring that fate prevails and tragedy becomes the dominant genre; as long as the tone of the play remained
+                    comic there was a chance that mistakes and misfortunes might be happily resolved, and the play could end in marriage
+                    rather than death.
+             AO3:
+                •   Contextually, as a kinsman of the Prince, he is meant to be above the f ray, but as Romeo revenges the death of his
+                    f riend, it ensures the action of the play is dominated by vendetta and violence from this moment; it is inevitable that the
+                    Prince will react harshly, and with the Capulets in disfavour, Lord Capulet decides to hasten the marriage of Juliet to the
+                    Prince’s other kinsman, Paris
+                •   Because he is not a lover, Mercutio is an outsider and sceptical about Romeo’s romantic obsessions: this perspective is
+                    lost from this moment in the play: romance and obsession are deadly serious in the last two and a half Acts of the play .
+
+
+
+
+                                                                          27
+                                                                                                                                                               PMT
+
+
+J352/02                                                           Mark Scheme                                                                      June 2024
+
+  Question                                                        Indicative content                                                                Marks
+ 6       *   The Merchant of Venice                                                                                                                 36+4
+             Explore the ways in which Shakespeare presents Shylock’s relationship with his family and servants. Refer to this extract              SPaG
+             from Act 2 Scene 5 and elsewhere in the play.
+
+             Please bear in mind that other content may be equally valid and should be credited.
+
+             AO1:
+                •   The question and passage allow candidates to look at Shylock’s relationship with Launcelot Gobbo as well as Jessica. His
+                    preoccupation with ‘thrif t’ has dif f erent consequences f or each: he is happy to lose someone he sees as a waster
+                    (although an audience find him amusing), while determined to treat Jessica like a precious possession. These unattractive
+                    aspects of Shylock’s character arguably present him as an enemy to the comic and romantic (or Carnivalesque) elements
+                    of the play, and make him less sympathetic to the audience.
+                •   Candidates could extend their responses to look at Launcelot’s comic soliloquy in Act 2 Scene 2 (‘the Jew is the very devil
+                    incarnation’); Jessica’s exchange with him in Act 2 Scene 3 (‘our house is hell, and thou, a merry devil/ Didst rob it of
+                    some taste of tediousness’) when she expresses how she is ‘asham’d to be my father’s child’; Launcelot’s assistance in
+                    Jessica’s elopement with Lorenzo; Shylock’s tragi-comic response to Tubal’s ‘news from Genoa’ in Act 3 Scene 5, with its
+                    serious consequences for Antonio; and the contrasting happiness of Jessica, Launcelot and Lorenzo in Belmont in Act 3
+                    Scene 5 ‘the joys of heaven here on earth’ and Act 5 Scene 1 (“look how the floor of heaven/ Is thick inlaid with patines of
+                    bright gold’.
+                •   Some candidates may wish to explore hints of Shylock’s relationship with his wif e – ‘It was a turquoise; I had it of Leah
+                    when I was a bachelor. I would not have given it f or a wilderness of monkeys’ – to suggest that he is not simply
+                    materialistic, or to look ahead to the consequences of the Venetian court, at Antonio’s prompting, assigning his legacy
+                    ‘unto the gentleman/That lately stole his daughter’ and f orcing him to become a Christian.
+             AO2:
+                •   The musical references here are in sharp contrast with the celestial harmonies in Act 5: Shylock detests the ‘wry -neck’d
+                    squealing of a f ife’ and the ‘sound of shallow foppery’ as part of his contempt f or carnival and the passions it excites.
+                    Later, in Act 4, he expresses his hatred of the ‘woollen bagpipe’.
+                •   Shylock’s language has its own, more Biblical, music: ‘Hear you me, Jessica’ and ‘By Jacob’s staf f I swear’, ‘Fool of
+                    Hagar’s of f ering, demonstrating his pride in his own heritage.
+                •   Animalistic comparisons show how much he despises Launcelot and the Christians: ‘drones hive not with me’.
+             AO3:
+                •   Candidates may show awareness of commedia dell’arte conventions: Shylock is a comic Pantalone who might be seen as
+                    deservedly robbed of a daughter he does not treat well. They might also be conscious of servant/master stereotypes in
+                    stage comedy.
+                •   However, candidates may well see Shylock as a victim of the ghetto he has been forced into; his ‘thrift’ is because usury
+                    is his only means to live and it could be argued that he has good reason to want to guard Jessica f rom ‘Christians’ who
+                    are careless, racist and exploitative. There are tragic elements to Shylock’s f ate, and his paranoia proves justif ied.
+
+
+
+
+                                                                          28
+                                                                                                                                                               PMT
+
+
+J352/02                                                           Mark Scheme                                                                      June 2024
+
+  Question                                                        Indicative content                                                                Marks
+ 7       *   The Merchant of Venice                                                                                                                 36+4
+             How does Shakespeare present the young lovers in this play? Explore at least two moments from the play to support your                 SPaG
+             ideas.
+             Please bear in mind that other content may be equally valid and should be credited.
+
+             AO1:
+                •   The young lovers, their desires, their need f or money to f ulf il them and their ruthlessness in getting what they want
+                    certainly dominate this play! The audience’s reaction to them and to their behaviour will determine their f eelings about
+                    how the play ends
+                •   The young lovers need to overcome a lot of obstacles in order to f ind the person they love or live a f ree lif e: Bassanio
+                    needs to overcome his lack of money, Portia the constraints of her f ather’s will, Jessica an overcontrolling f ather who
+                    insists on segregation and Gratiano the unwillingness of anyone to f ind him particularly f unny until he meets Nerissa
+                •   All f ind ingenious ways to achieve what they want: Bassanio manipulates Antonio’s friendship, Portia gives away clues to
+                    the correct casket, Jessica dresses as a boy, while Gratiano and Nerissa assist the schemes of their friends; the disguise
+                    of the lawyer and ‘his’ clerk just takes this a stage further, freeing Antonio (and Bassanio) f rom the bonds of obligation,
+                    ensuring Jessica gets her inheritance and finding a way to guarantee the fidelity of the two young men – an audience’s
+                    response will depend on whether the ends justif y the means.
+             AO2:
+                •   As a comedy, the form of the play prioritises wit, fun and humour, and mocks the serious, the outsiders and those who put
+                    barriers between young people and the f ulf ilment of their desires
+                •   The structure of the play is determined by the need to bring couples together and culminate in a sequence of marriages
+                •   The humour of the play is certainly on the side of the young lovers: Bassanio’s extravagant language, Portia’s emotional
+                    intelligence, Jessica’s evidently sincere and passionate love for Lorenzo and Gratiano’s more self-deprecating remarks all
+                    put the audience on their side, while the fairytale manipulations of casket, bond and ring plots all depend on youthf ul
+                    ingenuity and improvisation.
+             AO3:
+                •   Culturally, Shakespeare’s plays were perf ormed to a young audience at the Globe, who would have enjoyed the
+                    transgressive elements of the play and the wit and poetry of the young lovers
+                •   However, there are other possible responses to their ruthlessness and amorality ; Portia’s Christian rhetoric is of ten at
+                    odds with her behaviour, while Bassanio’s love seems very materialistic so the characterisation of the play could be
+                    viewed more satirically: in a hierarchical society, they seem to threaten codes of good conduct, while a contemporary
+                    audience might question the f airness and integrity of their actions, and their evident prejudices.
+
+
+
+
+                                                                          29
+                                                                                                                                                                   PMT
+
+
+J352/02                                                             Mark Scheme                                                                        June 2024
+
+  Question                                                         Indicative content                                                                   Marks
+ 8       *   Macbeth                                                                                                                                    36+4
+             Explore how horror is presented in the play presented. Refer to this extract from Act 2 Scene 3 and elsewhere in the                       SPaG
+             play.
+
+             Please bear in mind that other content may be equally valid and should be credited.
+
+             AO1:
+                •   This is one of the most dramatic moments in the play, as Macduff, Macbeth’s future nemesis, announces the death of the
+                    King while Macbeth has to feign his innocence; the horror is not shown and arguably is more impressive because the
+                    audience hear about it and have to picture it in their own imaginations
+                •   The horror is moral as well as physical: for Macduff, the crime is the offence against monarchy, religion and good order
+                    and so is very different from bloodshed in battle or in a just cause; for Macbeth, this will deepen his sense that there is no
+                    going back now
+                •   Candidates have plenty of other scenes of horror to compare: some might compare or contrast the violence of the
+                    battlefield in Act 1 Scene 1 or Act 5, but the moral horror of of f ences against the natural order is more evident in the
+                    murder of Banquo followed by the appearance of his ghost in Act 3 Scene 4, or the murder of Lady Macduf f in Act 4
+                    Scene 2; they might argue that the scenes with the witches in Act 1 Scene 3 and Act 4 Scene 1 show a horrif ic inversion
+                    of morality, that Macbeth’s language shows the horror of his moral decline in Act 3 Scene 4 (‘For mine own good/all
+                    causes shall give way’) and Lady Macbeth’s Sleepwalking scene Act 5 Scene 1 the horror of a guilty conscience.
+             AO2:
+                •   Although the language of the scene becomes highly rhetorical, initially Macduff is literally lost for words, repeating ‘horro r’
+                    three times and struggling to name the ‘most sacrilegious murder’ which is an offence against God and against lif e itself
+                •   Lennox’s questions show his struggle to understand; the dramatic irony is that Macbeth of course knows only too well
+                    what Macduf f means
+                •   The allusions to the ‘anointed temple’ and to ‘a new Gorgon’ make ref erences to both the Biblical and the classical, in
+                    characteristic Renaissance tropes, both of which explain why he struggles f or words to express a horror which is
+                    powerf ully associated with ‘the great doom’s image’, the apocalyptical painting of the end of the world and day of
+                    judgement; the provocative suggestion is that Malcolm and Banquo have to imitate the walking dead in order to conf ront
+                    this unspeakable premonition of the end of time.
+             AO3:
+                •   Context should be intrinsic to a response to this scene: the killing of a King is not an ordinary murder, but disturbs all
+                    aspects of the social order; the language that Macduff uses makes clear allusions to the Divine Right of Kings, and idea of
+                    majesty as an image of Godhead: to overthrow a King is to overthrow morality
+                •   The horror of the imagery alludes to doom and judgment, which Shakespeare’s audiences would have been f amiliar with
+                    f rom apocalyptic images and (more recently) language in church, and which could be understood both literally and
+                    metaphorically: death is associated with judgement and whether one is ultimately destined f or heaven or f or hell.
+
+
+
+
+                                                                           30
+                                                                                                                                                               PMT
+
+
+J352/02                                                           Mark Scheme                                                                      June 2024
+
+  Question                                                        Indicative content                                                                Marks
+ 9       *   Macbeth                                                                                                                                36+4
+             To what extent does Shakespeare encourage the audience to feel pity for Lady Macbeth? Explore at least two moments                     SPaG
+             from the play to support your ideas.
+             Please bear in mind that other content may be equally valid and should be credited.
+
+             AO1:
+                •   Candidates are likely to provide a variety of responses to this question: Lady Macbeth initially appears to be a deeply
+                    unsympathetic character who calls on and appears familiar with the spirits of darkness, leading some to ask if she is in
+                    league with the witches; she appears to choose to abandon her f emininity and capacity f or remorse in order to f orce
+                    Macbeth to carry out the murder; she speaks to him in emasculating terms accusing him of not being a man in both Act 1
+                    Scene 6 and in response to the appearance of Banquo’s ghost in Act 3 Scene 4; she even says she would kill her own
+                    child rather than break the promise to murder Duncan
+                •   However, there are early signs that she is not as strong as she appears: her ‘dauntless mettle’ does not allow her to go
+                    through with the murder herself (‘Had he not resembled My father as he slept I had done’t’), her f ainting f it may not be a
+                    f ake, and she is as unhappy and unsettled as Macbeth in Act 3 Scene 2 (‘Nought’s had, all’s spent/Where our desire is
+                    got without content’)
+                •   We can begin to pity her when Macbeth no longer treats her as his ‘dearest partner of greatness’ but says ‘be innocent of
+                    the knowledge dearest chuck’ as she is no longer privy to his secrets, and although she reasserts her dominance in the
+                    banqueting scene, she is a broken and passive figure thereafter who clearly internalises a deep sense of guilt (‘All the
+                    perf umes of Arabia will not sweeten this little hand’) bef ore taking her own lif e and dying unlamented.
+             AO2:
+                •   Imagery of blood and sleep in the Sleepwalking scene are echoes of her language throughout the play: ‘a little water
+                    clears us of this deed’ proves ill-judged, as do her attempts to appear innocent sleepers instead of ‘watchers’ in the night
+                •   The language of motherhood is distorted in her invocation (‘take my milk f or gall, you murdering ministers’) and her
+                    rebukes of Macbeth to suggest that she has had some kind of trauma which has distorted her images of nurturing
+                    f emininity.
+                •   Structurally, Lady Macbeth dominates the early parts of the play but f ades away af terwards, so she is a catalyst f or
+                    Macbeth’s decision to ‘catch the nearest way’ but her descent into madness lacks the self -consciousness of Macbeth’s
+                    awareness of moral decline, sterility and lack of f ulf ilment
+             AO3:
+                •   Candidates will be likely to explore the ways in which Lady Macbeth def ies the stereotypes of f emale passivity and
+                    submission in a patriarchal society. Of course, Elizabethan and Jacobean society did not lack women, but many had to
+                    exercise their inf luence through men, and Lady Macbeth is a good example of this
+                •   In order to empower herself, she needs to reject the constructions of gender, but this seems unsuccessf ul – the play
+                    movingly explores her mental distress in ways that reflect the medical and psychological understanding of Shakespeare’s
+                    day but remain powerf ul today.
+
+
+
+
+                                                                          31
+                                                                                                                                                                PMT
+
+
+J352/02                                                           Mark Scheme                                                                       June 2024
+
+ Question                                                         Indicative content                                                                 Marks
+10      *   Much Ado About Nothing                                                                                                                    36
+            How does Shakespeare present surprises in this play? Refer to this extract from Act 5 Scene 4 and elsewhere in the
+            play.
+            Please bear in mind that other content may be equally valid and should be credited.
+
+            AO1:
+               •   This extract f rom the final scene show Benedick and Beatrice amusingly confronted with the reality of their love, although
+                   they continue to joke about it until the final kiss; Benedick reviews the play’s developments and concludes that ‘man is a
+                   giddy thing’ – the unfolding drama has had plenty of incidents to prove the truth of this, but the concluding reconciliations
+                   and dance bring an end to the play’s conflicts, suggesting characters have developed the resilience to overcome such
+                   surprises, and are now true to themselves and their emotions
+               •   There are plenty of examples of the surprising and disruptive f or candidates to ref er to and they are more ef f ective
+                   because the initial presentation of characters in Act 1 is conventional and close to stereotype: it is surprising that
+                   Benedick is so hurt by Beatrice’s insults in Act 2 Scene 1, that both fall so easily for their friends’ setup in Act 2 Scene 3
+                   and Act 3 Scene 1, and that Claudio believes so quickly in Hero’s disloyalty in Act 3 Scene 2 and that Dogberry and
+                   Verges manage to effect an arrest but are unable to communicate their news in time to save Hero f rom insult; the shock
+                   disruption of the wedding in Act 4 Scene 1 shows the power of surprise, and several characters behave in ways the
+                   audience might not have expected, including Leonato and Benedick, bef ore the power of surprise is used to deepen
+                   Claudio’s repentance and show Benedick is more committed to behaving with integrity than male solidarity
+               •   the way the play concludes is predictable, but makes strong theatrical use of the revelation of what is unexpected (or
+                   surprising) to at least some of the characters.
+            AO2:
+               •   Structurally, surprise is a theatrical device which is reinforced by dramatic irony, as what is a surprise to characters will
+                   not be unexpected to the audience
+               •   Staging emphasises this by encouraging the audience to observe some characters overhearing and commenting on
+                   others
+               •   Beatrice’s verbal wit comes from her surprising vigour of repartee, showing she can f ight verbally with the men, while
+                   Benedick’s humour comes more f rom his inconsistencies and unexpected actions, culminating in the f inal kiss;
+                   proverbially, ‘man is a giddy thing’ is an attempt to make sense of this, and of the play’s twists and surprises.
+            AO3:
+               •   Much of the humour of the play comes from unexpected reversals of gender expectations and loyalties, which only work
+                   because society in Shakespeare’s Sicily is so conventional, making Beatrice’s wit and Hero’s vindication surprising
+               •   There are also surprises in the play’s social hierarchy: the worst villains of the play are gentlemen while the watch prove
+                   to be unexpected heroes; Leonato’s first instincts are to follow the expectations of his social class, but, encouraged by
+                   Antonio, he later shows unexpected strength in def ending the honour of his daughter.
+
+
+
+
+                                                                         32
+                                                                                                                                                                  PMT
+
+
+J352/02                                                            Mark Scheme                                                                        June 2024
+
+ Question                                                         Indicative content                                                                   Marks
+11      *   Much Ado About Nothing                                                                                                                      36
+            ‘They seem too naïve to cope with real life’. To what extent do you agree with this opinion of Hero and Claudio? Explore
+            at least two moments from the play to support your ideas.
+
+            Please bear in mind that other content may be equally valid and should be credited.
+
+            AO1:
+               •   Hero and Claudio are perhaps not strongly drawn characters: both are shy, have little to say and let others speak for them
+                   in the early parts of the play; candidates might be quite critical of Hero’s passivity, or the way Claudio recruits his f riends
+                   to do his wooing f or him
+               •   They begin to be more engaging and alert to the realities of life in the humorous scenes when they set up Benedick and
+                   Beatrice: comedy seems to f ree them up and joking with others removes their shyness
+               •   Both are essentially victims: Claudio too quickly believes Don John’s slanders , and Hero is too shocked to defend herself;
+                   however, she gains agency through the drama her f riends enact (ironically by pretending to have died), and both
+                   Claudio’s initial bravado when challenged by Benedick and his repentance seem genuine and show he is conf ronting the
+                   reality of life, so there is plenty of evidence to suggest that both are much stronger and more capable of coping with what
+                   lif e might throw at them by the end of the play.
+            AO2:
+               •   The naivety of Hero and Claudio is essential for the plot to be powerful, as they need to be easily shocked and gulled, and
+                   remain innocent enough f or audiences to pity them and want to see their reconciliation
+               •   Hero and Claudio are dramatic foils for Benedick and Beatrice and their innocence contrasts with the worldliness of the
+                   older pair
+               •   The play depends on conventions of comedy which are of ten closer to f airytale than real lif e, and demand a happy
+                   ending; however, there is no magic in this play, and both the story of Hero’s def amation and f ightback and the ways
+                   f riends enable Beatrice and Benedick to see the truth of their obsession with each other have strongly realistic elements.
+            AO3:
+               •   Candidates might refer to the gender stereotypes of the period which both characters conf orm to: Hero is a virginal and
+                   inexperienced bride and Claudio a gallant and decorated military hero with very little experience of or ability to understand
+                   and communicate with women
+               •   The separate lives and education of men and women has shaped the characters of Hero and Claudio: she has lived a
+                   sheltered, chaperoned and domestic life with little contact with men of her own age; he has lived the in the masculine
+                   world of a courtier and soldier, and consequently thinks of women as weak and fickle; perhaps neither should be blamed
+                   f or initially behaving in stereotypical ways, but praised for showing the ability to overcome expectations, and to listen to
+                   their f riends.
+
+
+
+
+                                                                          33
+                                                                                                         PMT
+
+
+J352/02                                         Mark Scheme                                  June 2024
+
+                                 Mark Scheme Assessment Objectives (AO) Grid
+
+
+
+           Question             AO1             AO2              AO3           AO4   Total
+
+          Section A:
+
+           1a, 2a, 3a            8              12                                    20
+
+           1b, 2b, 3b           10              10                                    20
+
+          Section B:
+
+     4, 5, 6, 7, 8, 9, 10, 11   14              14                8             4     40
+
+             Totals             32              36                8             4     80
+
+
+
+
+                                                      34
+                                                                                                                                                    PMT
+
+
+Need to get in touch?
+
+If you ever have any questions about OCR qualifications or services (including administration, logistics and teaching) please feel free to get in
+touch with our customer support centre.
+
+Call us on
+
+01223 553998
+
+Alternatively, you can email us on
+
+support@ocr.org.uk
+
+For more information visit
+
+       ocr.org.uk/qualifications/resource-finder
+
+       ocr.org.uk
+
+       Twitter/ocrexams
+
+       /ocrexams
+
+       /company/ocr
+
+       /ocrexams
+
+
+
+
+OCR is part of Cambridge University Press & Assessment, a department of the University of Cambridge.
+
+For staff training purposes and as part of our quality assurance programme your call may be recorded or monitored. © OCR
+2024 Oxford Cambridge and RSA Examinations is a Company Limited by Guarantee. Registered in England. Registered office
+The Triangle Building, Shaftesbury Road, Cambridge, CB2 8EA.
+
+Registered company number 3484466. OCR is an exempt charity.
+
+OCR operates academic and vocational qualifications regulated by Ofqual, Qualifications Wales and CCEA as listed in their
+qualifications registers including A Levels, GCSEs, Cambridge Technicals and Cambridge Nationals.
+
+OCR provides resources to help you deliver our qualifications. These resources do not represent any particular teaching method
+we expect you to use. We update our resources regularly and aim to make sure content is accurate but please check the OCR
+website so that you have the most up-to-date version. OCR cannot be held responsible for any errors or omissions in these
+resources.
+
+Though we make every effort to check our resources, there may be contradictions between published support and the
+specification, so it is important that you always use information in the latest specification. We indicate any specification changes
+within the document itself, change the version number and provide a summary of the changes. If you do notice a discrepancy
+between the specification and a resource, please contact us.
+
+Whether you already offer OCR qualifications, are new to OCR or are thinking about switching, you can request more
+information using our Expression of Interest form.
+
+Please get in touch if you want to discuss the accessibility of resources we offer to support you in delivering our qualifications.
+

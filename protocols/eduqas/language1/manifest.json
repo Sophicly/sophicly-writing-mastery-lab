@@ -4,164 +4,15 @@
     "version": "1.0.0",
     "base_path": "protocols/eduqas/language1",
     "planning": {
+        "_destitched": "v7.20.611 (Eduqas port 2026-09-13) — PART C C-COMMON.1: one planning monolith fed WHOLE; planning.steps is EMPTY and the sliced b*.md files under planning/ are superseded source (a superseded slice left loaded is a coin-flip at runtime, ONE-TEMPLATE LAW).",
         "always": [
             "modules/foundation-lang1.md",
-            "language/modules/knowledge-algorithm-planning.md",
-            "modules/knowledge-persona.md",
-            "modules/knowledge-hub.md",
+            "planning/protocol-b-planning.md",
             "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
             "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
             "language/modules/ttecea-rationale-lang.md"
         ],
-        "groups": [
-            {
-                "id": "setup",
-                "label": "Setup",
-                "steps": [
-                    1
-                ]
-            },
-            {
-                "id": "q2",
-                "label": "Q2",
-                "steps": [
-                    2,
-                    3
-                ]
-            },
-            {
-                "id": "q3",
-                "label": "Q3",
-                "steps": [
-                    4,
-                    5,
-                    6
-                ]
-            },
-            {
-                "id": "q4",
-                "label": "Q4",
-                "steps": [
-                    7,
-                    8,
-                    9
-                ]
-            },
-            {
-                "id": "q5",
-                "label": "Q5",
-                "steps": [
-                    10,
-                    11,
-                    12,
-                    13
-                ]
-            },
-            {
-                "id": "section_b",
-                "label": "Section B",
-                "steps": [
-                    14,
-                    15
-                ]
-            }
-        ],
-        "steps": {
-            "1": {
-                "label": "Setup & Goals",
-                "files": [
-                    "planning/b-intro.md",
-                    "planning/b1-setup.md",
-                    "planning/b2-goals.md"
-                ]
-            },
-            "2": {
-                "label": "Q2: Evidence Selection",
-                "files": [
-                    "planning/b3-evidence.md"
-                ]
-            },
-            "3": {
-                "label": "Q2: Body Paragraph Planning",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "4": {
-                "label": "Q3: Evidence Selection",
-                "files": [
-                    "planning/b3-evidence.md"
-                ]
-            },
-            "5": {
-                "label": "Q3: Body Paragraph 1",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "6": {
-                "label": "Q3: Body Paragraph 2",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "7": {
-                "label": "Q4: Evidence Selection",
-                "files": [
-                    "planning/b3-evidence.md"
-                ]
-            },
-            "8": {
-                "label": "Q4: Body Paragraph 1",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "9": {
-                "label": "Q4: Body Paragraph 2",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "10": {
-                "label": "Q5: Evidence Selection",
-                "files": [
-                    "planning/b3-evidence.md"
-                ]
-            },
-            "11": {
-                "label": "Q5: Body Paragraph 1",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "12": {
-                "label": "Q5: Body Paragraph 2",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "13": {
-                "label": "Q5: Final Plan",
-                "files": [
-                    "planning/b6-final.md"
-                ]
-            },
-            "14": {
-                "label": "Section B: Creative Writing",
-                "files": [
-                    "planning/b5-creative.md"
-                ]
-            },
-            "15": {
-                "label": "Section B: Final Plan",
-                "files": [
-                    "planning/b6-final.md"
-                ]
-            }
-        }
+        "steps": {}
     },
     "assessment": {
         "always": [
@@ -177,23 +28,14 @@
             "language/modules/anti-hallucination.md",
             "language/modules/state-management.md",
             "language/modules/ttecea-rationale-lang.md",
-            "mark-scheme/marking-fairness-universal.md"
+            "mark-scheme/marking-fairness-universal.md",
+            "modules/knowledge-mark-scheme-c1.md"
         ],
         "steps": {}
     },
     "polishing": {
-        "always": [
-            "modules/foundation-lang1.md",
-            "modules/knowledge-operations.md",
-            "modules/knowledge-persona.md",
-            "modules/knowledge-hub.md",
-            "modules/protocol-c-polishing.md",
-            "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
-            "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
-        ],
+        "_retired": "v7.20.611 (Eduqas port 2026-09-13) — polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_env row for eduqas_lang_paper_1 in class-protocol-router.php (inline-coaching-language stack + rubric-eduqas-lang-c1-fiction.md + modules/knowledge-hub.md as the gold). modules/protocol-c-polishing.md stays on disk as the source the rubric was distilled from and must NEVER be loaded at a student again (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose: if the router row is ever removed, this cell loads nothing and fails loud rather than the March-2026 walk.",
+        "always": [],
         "steps": {}
     }
 }

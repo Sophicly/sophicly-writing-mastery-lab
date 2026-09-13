@@ -1,99 +1,38 @@
 {
     "board": "sqa",
     "group": "critical-reading",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "base_path": "protocols/sqa/critical-reading",
+    "_provenance": "Rewritten 2026-09-13 (SQA content lane). Cell = SQA National 5 English Critical Reading (X824/75/12): Section 1 Scottish text 20 marks + Section 2 Critical essay 20 marks. Tariffs cited in protocols/_marks/sqa__critical_reading.json against the 2025 Finalised Marking Instructions; 2024 + 2023 read for the recurring pattern. Module names resolve board-first then protocols/shared (class-protocol-router.php ~2575).",
+    "_pruned": "⛔ SEVEN MODULES REMOVED FROM EVERY LOADED LIST (ONE-TEMPLATE LAW, PROTOCOL-STANDARD Phase 0). They stay on disk as the source the rewrite was distilled from and must never be loaded at a student again (retained-source law, WML CLAUDE.md §5). (a) modules/foundation.md — states an INVENTED granular mark scheme for the critical essay ('Introduction simplified to 2 marks (Hook + Thesis only)', 'Body paragraphs reduced from 7 to 5 marks each', 'Conclusion reduced from 6 to 3 marks'). SQA marks the critical essay LEVEL-BASED against a five-band supplementary marking grid and publishes no element worths at all, so every one of those numbers is a fabricated mark-scheme claim (PROTOCOL-STANDARD A4). Its header also says it was adapted from an AQA Literature protocol and that 'All pedagogical frameworks ... preserved from AQA master protocol'. (b) modules/knowledge-hub.md — an AQA persona ('guide students towards mastering the AQA assessment criteria') plus a MENU_FOOTER that appends a retired main menu to every message. (c) modules/knowledge-macros.md, (d) modules/knowledge-algorithm.md, (e) modules/knowledge-state.md, (f) modules/knowledge-progress.md, (g) modules/knowledge-validation.md — the March-2026 pseudo-code control-flow layer (turn algorithms, progress displays, persistent student profiles, stuck-response sequences, its own validation checks). The engine owns control flow, pacing, progress and ladder state now; a second template always eventually gets imitated. modules/knowledge-mark-scheme-critical-reading.md replaces all of their mark-scheme content, verbatim from the board.",
     "planning": {
+        "_destitched": "v2.0.0 — planning is fed WHOLE. planning/protocol-b-planning.md is the monolith; the sliced b-intro/b1–b9 set moved to planning/_superseded/ and must NEVER be ported from or loaded (C-COMMON.1 + ONE-TEMPLATE LAW). Those slices asked the student to supply three anchor quotations as a block of text and ran their own hand-authored help sequences beside the code-owned ladder; b1-setup also told them to copy ideas into a 'workbook' that no longer exists. `steps` is empty on purpose.",
         "always": [
-            "modules/foundation.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-state.md",
-            "modules/knowledge-macros.md",
-            "modules/knowledge-validation.md",
-            "modules/knowledge-hub.md",
-            "literature/modules/theme-check.md",
-            "literature/modules/socratic-literature.md",
-            "literature/modules/conclusion-scaffolding.md"
+            "../_shared/foundation-sqa.md",
+            "planning/protocol-b-planning.md",
+            "modules/knowledge-mark-scheme-critical-reading.md",
+            "language/modules/communication-standards.md",
+            "language/modules/anti-hallucination.md"
         ],
-        "steps": {
-            "1": {
-                "label": "Setup, Goals & Keywords",
-                "files": [
-                    "planning/b-intro.md",
-                    "planning/b1-setup.md",
-                    "planning/b2-goals.md"
-                ]
-            },
-            "2": {
-                "label": "Diagnostic Import",
-                "files": [
-                    "planning/b3-diagnostic.md"
-                ]
-            },
-            "3": {
-                "label": "Anchor Quotes",
-                "files": [
-                    "planning/b4-anchors.md"
-                ]
-            },
-            "4": {
-                "label": "Body Paragraph 1",
-                "files": [
-                    "planning/b5-bodies.md"
-                ]
-            },
-            "5": {
-                "label": "Body Paragraph 2",
-                "files": [
-                    "planning/b5-bodies.md"
-                ]
-            },
-            "6": {
-                "label": "Body Paragraph 3",
-                "files": [
-                    "planning/b5-bodies.md"
-                ]
-            },
-            "7": {
-                "label": "Thesis & Introduction",
-                "files": [
-                    "planning/b6-thesis.md",
-                    "planning/b7-introduction.md"
-                ]
-            },
-            "8": {
-                "label": "Conclusion & Review",
-                "files": [
-                    "planning/b8-conclusion.md",
-                    "planning/b9-review.md"
-                ]
-            }
-        }
+        "steps": {},
+        "groups": []
     },
     "assessment": {
         "always": [
-            "modules/foundation.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-state.md",
-            "modules/knowledge-macros.md",
-            "modules/knowledge-validation.md",
-            "modules/knowledge-progress.md",
-            "modules/knowledge-hub.md",
+            "../_shared/foundation-sqa.md",
             "modules/protocol-a-assessment.md",
-            "literature/modules/theme-check.md",
-            "literature/modules/socratic-literature.md",
+            "modules/knowledge-mark-scheme-critical-reading.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
             "mark-scheme/marking-fairness-universal.md"
         ],
         "steps": {}
     },
     "polishing": {
-        "always": [
-            "modules/foundation.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-hub.md",
-            "modules/protocol-c-polishing.md",
-            "literature/modules/socratic-literature.md"
-        ],
+        "_retired": "v2.0.0 — polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_subject_rows entry for sqa/critical_reading proposed in protocols/sqa/_PORT-REPORT-2026-09-13.md (inline-coaching stack + rubric-sqa-n5-critical-reading.md + the Scottish-poetry model answers as the gold). modules/protocol-c-polishing.md stays on disk as source and must NEVER be loaded at a student again (retained-source law, WML CLAUDE.md §5 — a fence loses to in-file text). No 'always' list on purpose: if the router row is ever removed this cell loads nothing and fails loud rather than the March-2026 walk.",
+        "always": [],
         "steps": {}
     },
     "exam_question": {

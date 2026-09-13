@@ -22,7 +22,7 @@
 
 Lessing intensifies the oppressive atmosphere by presenting the African landscape as a hostile, almost predatory presence that gradually erodes Mary's sense of stability. Through metaphor, the veldt becomes "a furnace breathing over the land," which infuses the natural environment with a suffocating vitality. Specifically, "furnace" connotes not only unbearable heat but also entrapment, as though Mary is imprisoned within an industrial mechanism designed to consume and weaken her. For the reader, heightened awareness of Mary's physical and psychological fragility emerges, inviting us to imagine the crushing intensity of such an environment. At the same time, interpreting the setting as a symbolic antagonist deepens our emotional investment in Mary's struggle against forces beyond her control. By transforming the landscape into an active threat, Lessing underscores her wider purpose: to suggest that colonial existence is not merely challenged by external social pressures but by a natural world that resists and destabilises the colonial presence itself.
 
-**Gold Standard Model \- Question 3 (AO2 \- Structure Analysis, 10 marks, 2 paragraphs)**
+**Gold Standard Model \- Question 3 (AO2 \- Language AND Structure, 10 marks, 2 paragraphs)**
 
 (T)opic Sentence: Through its structure, the text constructs a narrative arc that mirrors Mary's deteriorating mental state, creating a claustrophobic sense of rising tension.
 
@@ -68,7 +68,11 @@ Lessing intensifies the oppressive atmosphere by presenting the African landscap
 
 **Prompt:** Write a story about a disagreement.
 
-**Model Snippet:** Silence in the car was a physical thing, a heavy blanket smothering the space between them. Elias stared at the road, his knuckles white on the steering wheel. Each flicker of a passing streetlight illuminated the rigid set of his jaw. Beside him, Clara watched the city lights smear into long, sorrowful streaks through the rain-spattered window. Arguments had ended ten minutes ago, but their ghost remained, conducting the tense orchestra of the wiper blades' rhythmic sweep and the engine's low hum. Words themselves no longer echoed, but the chasm they had opened remained. A disagreement over something as trivial as a forgotten set of keys had somehow become a referendum on their entire life together, and neither of them knew how to bridge the divide.
+**\[AI_INTERNAL\] THIS SECTION B EXAMPLE IS AN EXTRACT, NOT A GOLD.** It shows register and
+sentence craft only. Every gold you emit for Question 6 is a COMPLETE piece of about 600 words with
+the seven taught beats labelled inline \- never a snippet, never an ellipsis (PROTOCOL-STANDARD A7).
+
+**Style extract (NOT a complete gold \- see the note below):** Silence in the car was a physical thing, a heavy blanket smothering the space between them. Elias stared at the road, his knuckles white on the steering wheel. Each flicker of a passing streetlight illuminated the rigid set of his jaw. Beside him, Clara watched the city lights smear into long, sorrowful streaks through the rain-spattered window. Arguments had ended ten minutes ago, but their ghost remained, conducting the tense orchestra of the wiper blades' rhythmic sweep and the engine's low hum. Words themselves no longer echoed, but the chasm they had opened remained. A disagreement over something as trivial as a forgotten set of keys had somehow become a referendum on their entire life together, and neither of them knew how to bridge the divide.
 
 ### **2.B. Aspirational Style Models**
 
@@ -154,7 +158,7 @@ You must use the following criteria to guide your Socratic questioning during th
 
 #### **Body Paragraph Criteria (Q2, Q3, Q4, Q5)**
 
-**Internal AI Note:** The TTECEA structure is the gold-standard model used for body paragraphs across Q2, Q3, Q4, and Q5. It stands for: Topic sentence, Technique, Evidence, Connotation/Inference, Effect on the reader, and Author's purpose. All body paragraph models for these questions follow this structure. Questions 2, 3, and 4 assess AO2. Question 5 assesses AO4 but uses the same TTECEA structure.
+**Internal AI Note:** The TTECEA structure is the gold-standard model used for body paragraphs across Q2, Q3, Q4, and Q5. It stands for: Topic sentence, Technique, Evidence, Connotation/Inference, Effect on the reader, and Author's purpose. All body paragraph models for these questions follow this structure. Questions 2, 3 and 4 assess AO2 \- Q2 and Q4 on LANGUAGE only, Q3 on language AND the organisation of events (the board's own annotations: Q2/Q4 `AO2 1a, c, d`; Q3 `AO2 1a, b, c, d`). Question 5 assesses AO4 but uses the same TTECEA structure.
 
 * **TTECEA Structure:** Precisely follows the TTECEA structure to build a logical and robust argument.  
     

@@ -1,0 +1,65 @@
+{
+  "board": "ccea",
+  "paper": "literature_u1",
+  "title": "CCEA GCSE English Literature — Unit 1: The Study of Prose (GEL11)",
+  "authority": {
+    "file": "protocols/ccea/_sources/ccea-lit-unit1-summer2025-paper.pdf",
+    "kind": "question paper",
+    "sitting": "Summer 2025, [GEL11], Monday 12 May morning",
+    "url": "https://ccea.org.uk/downloads/docs/Past-Papers/cleared/GCSE/GCSE%20English%20Literature%20(2017)/2025-Summer/Standard/0/GCSE-English%20Literature-493-Summer2025-Unit%201,%20The%20Study%20of%20Prose-Paper.pdf",
+    "why_this_source": "The QUESTION PAPER is cited here rather than the mark scheme because it is the document that states the tariffs in words a citation check can verify ('The total mark for this paper is 60. Section A is worth 40 marks. Section B is worth 20 marks.'). The MARK SCHEME states the same marks only as band RANGES inside an assessment matrix.",
+    "mark_scheme": "protocols/ccea/_sources/ccea-lit-unit1-summer2025-MS.pdf (Summer 2025, document code 14576.01 F) — the band descriptors live there: Section A 'Band 0 Mark [0] · Band 1: Basic [1]–[10] · Band 2: Emerging [11]–[18] · Band 3: Competent [19]–[26] · Band 4: Good [27]–[34] · Band 5: Excellent [35]–[40]'; Section B '[1]–[5] · [6]–[9] · [10]–[13] · [14]–[17] · [18]–[20]'.",
+    "second_series": "protocols/ccea/_sources/ccea-lit-unit1-summer2024-MS.pdf (Summer 2024) — same two sections, same band structure.",
+    "marking_model_note": "⚠️ CCEA Literature is marked by BANDS, not by Competence Level strands (that is the Language papers' method) and not by points. One band per Assessment Objective on an assessment matrix, best fit, then a mark inside the band's range — 'Threshold performance … at or near the bottom of the range · Intermediate performance … at or near the middle · High performance … at or near the top'. Quality of written communication is folded into the bands ('Band 3: Quality of written communication is competent'), not assessed separately. There is no SPaG tariff.",
+    "ao_note": "⭐ Unit 1 assesses AO1 (Argument) and AO2 (Form and Language) ONLY — both Section A and Section B. The matrix has exactly those two rows. AO3 (comparison) and AO4 (context) appear in the general marking instructions' list of the qualification's objectives but are NOT rows on Unit 1's matrix, and must never be marked or named as targets here. (They ARE assessed on Unit 2 Section B — see protocols/_marks/ccea__literature_u2.json.)"
+  },
+  "spec": {
+    "file": "literature"
+  },
+  "total": {
+    "marks": 60,
+    "quote": "The total mark for this paper is 60."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 40,
+      "aos": ["AO1", "AO2"],
+      "section": "A — Novel (one question from a choice of seven set novels, either (a) or (b))",
+      "spec_key": "ccea.prose",
+      "quote": "Section A is worth 40 marks.",
+      "quote_note": "Section A sets one question per set novel — Summer 2025: Golding Lord of the Flies · Hornby About a Boy · Johnston How Many Miles to Babylon? · Lee To Kill a Mockingbird · Steinbeck Of Mice and Men · Doyle Paddy Clarke Ha Ha Ha · Orwell Animal Farm — and the student answers ONE, choosing (a) or (b). The command wording is fixed across every text and both options: 'With reference to the ways [author] presents [subject], show how far you agree that …'. Candidates may NOT have the novel with them ('You should not have a copy of your novel for Section A'). One hour.",
+      "components": [
+        {
+          "label": "Band-holistic across AO1 Argument and AO2 Form and Language",
+          "marks": 40,
+          "kind": "content",
+          "aos": ["AO1", "AO2"],
+          "quote": "Section A is worth 40 marks.",
+          "quote_note": "The matrix bands BOTH objectives on the same 40-mark scale; the mark scheme does not split 40 into an AO1 share and an AO2 share, so there is exactly one component here. Our own teaching split (intro 5 + 3×body 9 + conclusion 8 = 40) is recorded in literature-paper-specs.json ccea.prose.split and is checked against this tariff by the gate."
+        }
+      ]
+    },
+    {
+      "id": "Q8",
+      "marks": 20,
+      "aos": ["AO1", "AO2"],
+      "section": "B — Unseen Prose (compulsory)",
+      "spec_key": "ccea.unseen_prose",
+      "quote": "Section B is worth 20 marks.",
+      "quote_note": "One compulsory question on a single unseen prose extract. Summer 2025 wording: 'Show how the writer of the extract engages the reader. You should consider: the characters' feelings and reactions; the writer's use of language, structure and form'. The paper allots 45 minutes to Section B and tells the candidate to spend '15 minutes reading the extract and 30 minutes writing your answer'.",
+      "components": [
+        {
+          "label": "Band-holistic across AO1 Argument and AO2 Form and Language",
+          "marks": 20,
+          "kind": "content",
+          "aos": ["AO1", "AO2"],
+          "quote": "Section B is worth 20 marks.",
+          "quote_note": "Same two-objective matrix as Section A on a 20-mark scale. Our teaching split (intro 2 + 3×body 5 + conclusion 3 = 20) is in literature-paper-specs.json ccea.unseen_prose.split."
+        }
+      ]
+    }
+  ],
+  "protocols": [],
+  "protocols_note": "protocols/ccea/prose/ and protocols/ccea/unseen-prose/ exist but are pre-hardening monoliths (PROTOCOL-STANDARD audit 2/10 assessment, 1/8 planning, polishing monolith, as of 2026-09-13) and their question sections do not carry an 'Assessment Sub-Protocol: Question N' heading, so check E has nothing to read. Deliberately left out of `protocols` rather than pointed at a file the gate would report as UNVERIFIED. Hardening those two cells is a named gap in protocols/ccea/_PORT-REPORT-2026-09-13.md."
+}

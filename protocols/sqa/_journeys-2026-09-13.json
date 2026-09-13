@@ -1,0 +1,260 @@
+{
+  "_what_this_is": "Representative student journeys for the SQA National 5 cells, for the ENGINE lane to run through the real chat endpoint on staging (PROTOCOL-STANDARD §E5, polishing row). Each entry: the cell, the question type, four student responses of my own prose (weak · partial · strong · valid-but-different), the action to press, and what a correct coaching reply MUST and MUST NOT do. Faults are deliberate.",
+  "_verbatim_quotation_provenance": "Every quotation attributed to a source is VERBATIM from a document I read. RUAE quotations are from the 2025 passage (adapted from an article by Ethan Joella, lithub.com) printed in 'SQA English National 5 N5_English_Reading-for-Understanding-Analysis-and-Evaluation_2025'. Critical Reading quotations are from the 2025 Section 1 Part A Text 1 extract, 'Bold Girls' by Rona Munro, as printed in the paper and quoted in its Finalised Marking Instructions. Portfolio journeys quote nothing — the student's own writing is the text there.",
+  "_author": "SQA content lane, 2026-09-13",
+  "_untested": "NONE of these has been run. They are written to be run; no reply below has been observed.",
+
+  "ruae": [
+    {
+      "id": "RUAE-ANALYSIS-1",
+      "cell": "sqa/ruae",
+      "question_type": "analysis — two examples (4 marks: Reference 1 + Comment 1 + Reference 2 + Comment 2)",
+      "live_question": "Look at lines 8–12. By referring to one example of word choice and one example of sentence structure, explain how the writer makes it clear that writing can be difficult.",
+      "action": "scan-elements",
+      "responses": {
+        "weak": "The writer uses word choice and sentence structure to show that writing is hard. He says his screen is taunting which shows he finds it difficult.",
+        "partial": "The word 'taunting' suggests the screen is mocking him. He also uses sentence structure.",
+        "strong": "The word 'taunting' in 'my taunting blank screen' suggests the screen is deliberately mocking him, as though the blankness were an insult aimed at him personally. The repetition of 'every' in 'every character, every name, every feeling' piles up his sense that nothing is left to write, so the sentence itself feels exhausting to read.",
+        "valid_but_different": "'Distracted' suggests his attention is being pulled away by things outside his control, so the failure is not laziness. And the short blunt sentence 'Every idea felt ridiculous.' lands like a verdict, giving the reader no room to argue with it, which is exactly how his own self-criticism works."
+      },
+      "a_correct_reply_must": [
+        "count the four rows and name which are present and which are absent — on the weak answer: one reference present ('taunting'), no real comment, no sentence-structure pair at all",
+        "name 'shows' as a weak analytical verb on the weak answer and give the replacement family (suggests / conveys / emphasises / reveals)",
+        "say that the second pair must be a SENTENCE-STRUCTURE example because the live question names both kinds",
+        "on the partial answer, quote 'He also uses sentence structure.' back and ask which sentence, and what about its shape",
+        "accept the valid_but_different answer as full marks and say why — a different quotation and a different structural feature, both from the stated lines, each with a real comment",
+        "state, exactly once and only if relevant, that nothing here costs marks: the marks were simply not yet earned"
+      ],
+      "a_correct_reply_must_not": [
+        "deduct anything, or use the words penalty or deduction as a mark change",
+        "print AO1 / AO2 or any assessment-objective label",
+        "quote a band, a level or a descriptor — this paper has none",
+        "rewrite the student's own sentence except as one half of a labelled contrasting pair",
+        "ask the student to supply the passage, the line numbers or the question",
+        "prefer its own listed answer over the student's valid alternative"
+      ]
+    },
+    {
+      "id": "RUAE-OWNWORDS-1",
+      "cell": "sqa/ruae",
+      "question_type": "understanding — own words (4 marks: 1 per key point; the paper states the number)",
+      "live_question": "Look at lines 19–25. Using your own words as far as possible, summarise what the writer already knew about Taylor Swift. You should make four key points in your answer.",
+      "action": "scan-structure",
+      "responses": {
+        "weak": "He was of course aware of the ubiquitous Taylor and he knew she had become the kind of phenomenon he loves to see in our culture.",
+        "partial": "He knew who she was but not much about her. He knew she was very successful. He admired her for speaking out.",
+        "strong": "He recognised her name without knowing her work closely. He had only really seen her on television or in the news. He had decided she was reliably good, because nobody has that many hits by chance. He respected her for using her fame to say what she believed, which he thinks takes courage.",
+        "valid_but_different": "He placed her alongside performers who have lasted — the kind of figure he admires in public life. He understood that a following that size is not an accident. He knew she had spoken about politics. He thought saying nothing would have been the easier choice for her."
+      },
+      "a_correct_reply_must": [
+        "on the weak answer, quote the lifted phrases 'of course aware of the ubiquitous Taylor' and 'the kind of phenomenon he loves to see in our culture' and say that lifted wording earns nothing on an own-words question, quoting SQA's rule: 'Unless quoting from the passage, the candidates should use their own words as far as possible'",
+        "count the points against the number the paper printed — the weak answer has at most one idea, the partial has three where four are asked for",
+        "give a gloss of ONE lifted phrase as a worked fix, on a phrase the student did not choose, or as a skeleton",
+        "accept the valid_but_different answer as four earned points even though its wording matches no example list",
+        "say plainly that 'ubiquitous' may be quoted if the student then glosses it, since the rule is about wording, not about vocabulary"
+      ],
+      "a_correct_reply_must_not": [
+        "deduct anything",
+        "tell the student to write more as a general instruction — the instruction is to make the stated NUMBER of distinct points",
+        "accept two re-wordings of the same idea as two points",
+        "print an AO label or a band"
+      ]
+    },
+    {
+      "id": "RUAE-LINK-1",
+      "cell": "sqa/ruae",
+      "question_type": "linkage (2 marks: one quotation + link back, one quotation + link forward)",
+      "live_question": "Look at line 13 'I didn't feel like I was getting anywhere; then came Taylor.' By referring to any part of this sentence, explain how it helps to provide a link between the writer's ideas at this point in the passage.",
+      "action": "scan-coherence",
+      "responses": {
+        "weak": "It is a link sentence because it joins the two paragraphs together and moves the passage on.",
+        "partial": "'I didn't feel like I was getting anywhere' links back to him not writing anything since spring.",
+        "strong": "'I didn't feel like I was getting anywhere' looks back to the stuck months he has just described — nothing written since spring, every idea ridiculous. 'Then came Taylor' looks forward to the part of the passage that follows, where his daughters' obsession with her music reaches him and starts him writing again.",
+        "valid_but_different": "The semicolon is the hinge: what stands before it gathers up the blank screen and the ridiculous ideas, and what stands after it — a name, with nothing explained yet — announces the new subject the rest of the passage is about."
+      },
+      "a_correct_reply_must": [
+        "name the two rows: link back, and link forward",
+        "on the weak answer, say that describing a sentence AS a link earns nothing — the marks are for quoting each half and naming what it points to",
+        "on the partial answer, credit the backward half and ask what the second half of the sentence introduces",
+        "accept the valid_but_different answer, because SQA's own formula is 'Any pair OR two selections covering different directions' and the punctuation reading still quotes and still covers both directions"
+      ],
+      "a_correct_reply_must_not": [
+        "insist on a specific quotation from a list",
+        "deduct anything",
+        "accept two backward links as full marks"
+      ]
+    },
+    {
+      "id": "RUAE-CONCLUSION-1",
+      "cell": "sqa/ruae",
+      "question_type": "evaluation of the conclusion (2 marks: Selection + Comment)",
+      "live_question": "Look at lines 64–68. Select any expression from these lines and explain how it contributes to the passage's effective conclusion.",
+      "action": "scan-concept",
+      "responses": {
+        "weak": "'I'm still not sick of it' is an effective ending because it sums up the main ideas of the passage and rounds it off nicely.",
+        "partial": "'I'm still not sick of it' shows he still likes the song.",
+        "strong": "'I'm still not sick of it' closes the passage on the same song it opened his recovery with: at the start he could not write at all, and the song he played on a school run is still playing while he polishes a hundred pages. The plainness of the phrase also matches the honesty he admired in her lyrics.",
+        "valid_but_different": "'I've got back something I didn't think I was worthy of' answers the feeling he began with — 'feeling worthless' — so the ending returns to the exact idea the passage opened on and reports it settled."
+      },
+      "a_correct_reply_must": [
+        "quote SQA's explicit refusal verbatim on the weak answer: 'do not reward a response which simply says \"it sums up the main ideas of the passage etc\" unless the candidate goes on to explain what the main ideas are'",
+        "credit the selection row on the weak and partial answers and name what the comment row still needs",
+        "on the partial answer, flag 'shows' as a weak analytical verb and ask WHICH earlier idea the phrase closes",
+        "accept both strong and valid_but_different as full marks, and say that any expression from the stated lines is allowed"
+      ],
+      "a_correct_reply_must_not": [
+        "deduct anything",
+        "require a particular expression",
+        "accept 'it rounds it off nicely' as a comment"
+      ]
+    }
+  ],
+
+  "critical_reading": [
+    {
+      "id": "CR-EXTRACT-1",
+      "cell": "sqa/critical-reading",
+      "question_type": "Section 1 extract question (4 marks: two Reference + Comment pairs)",
+      "live_question": "Look at lines 1–11. By referring to two examples of language, explain how the writer creates tension. [Bold Girls by Rona Munro, 2025 Section 1 Part A Text 1]",
+      "action": "scan-elements",
+      "responses": {
+        "weak": "The writer creates tension with the stage directions and with the dialogue, which shows the reader that something bad is about to happen.",
+        "partial": "'What do you want?' creates tension because it is a question and questions make the reader want to know the answer.",
+        "strong": "'What do you want?' is blunt and unwelcoming, and asking a stranger's purpose before anything else suggests the women feel intruded on and are on their guard. The stage direction 'There is a thunderous knocking at the front door' suggests violence arriving from outside before anyone has spoken, so the audience is uneasy before the scene has even started.",
+        "valid_but_different": "'Her legs are bare and scratched, there are more scratches on her arms' suggests Deirdre has come through something the audience has not seen, so the tension comes from what is missing rather than what is shown. And 'I don't know your face' suggests a threat that cannot be placed, which is harder to be calm about than a named one."
+      },
+      "a_correct_reply_must": [
+        "count the four rows and say which are present — the weak answer has no quotation at all, so neither reference row is earned",
+        "say that a NAMED FEATURE counts as a reference, quoting the instructions' own example form: 'reference to stage direction/\"(Pause)\" (1) suggests …'",
+        "flag 'shows' as a weak analytical verb on the weak answer",
+        "on the partial answer, say that a comment about questions in general is not a comment about THIS question's effect, and ask what being asked that, first, in that house, suggests",
+        "accept the valid_but_different pair as full marks"
+      ],
+      "a_correct_reply_must_not": [
+        "deduct anything",
+        "print an AO label",
+        "quote a band or level for Section 1 — there are none",
+        "correct any Scots form in the student's quotation or in the extract",
+        "invent a quotation that is not in the extract the canvas holds"
+      ]
+    },
+    {
+      "id": "CR-COMMONALITY-1",
+      "cell": "sqa/critical-reading",
+      "question_type": "Section 1 commonality (8 marks: shared element 2 + extract 2 + elsewhere 4; maximum 2 marks only for discussion of extract)",
+      "live_question": "By referring to this extract and to elsewhere in the play, show how the writer presents the character of Deirdre.",
+      "action": "scan-structure",
+      "responses": {
+        "weak": "In the extract Deirdre is presented as frightening. 'There is a thunderous knocking at the front door' suggests she arrives violently. 'I don't know your face' suggests nobody knows who she is. 'Her legs are bare and scratched' suggests she has been hurt. This all shows she is a frightening character in the extract.",
+        "partial": "Deirdre is presented as an outsider who unsettles the other women. In the extract, 'watching Deirdre like she's a dog deciding whether to bite or not' suggests the women cannot predict her. Elsewhere in the play she is also an outsider.",
+        "strong": "Deirdre is presented throughout as an outsider whose arrival forces the truth into the open. In the extract, 'watching Deirdre like she's a dog deciding whether to bite or not' suggests the women treat her as an animal whose next move cannot be read, so she is dangerous by being unknowable. Elsewhere, 'It was in a car. A blue car . . . With a man. With him. With —' suggests she carries the truth the women have agreed not to say, and she says it in fragments they cannot interrupt. And 'A wee bit of hard truth you could hold in your hand and point where you liked' suggests the truth she brings is a weapon rather than a relief.",
+        "valid_but_different": "What links the extract to the rest of the play is the way Deirdre is written as something the other women have to explain to themselves. In the extract, 'I don't know your face' suggests she is unplaceable. Elsewhere, 'It's just bruised' suggests she refuses the sympathy her injuries invite, and 'I used to follow him about' suggests she has been present in their story far longer than any of them realised."
+      },
+      "a_correct_reply_must": [
+        "state the three-part allocation before anything else, quoting the instructions: 'Identification of commonality (2)', 'A further 2 marks can be achieved for reference to the extract given', '4 additional marks can be awarded for similar references to at least one other text/part of the text'",
+        "on the weak answer, state the ceiling plainly and quote it: 'maximum of 2 marks only for discussion of extract' — three extract quotations cannot earn more than two marks between them, and four of the eight marks are unreachable as written",
+        "on the weak answer, also point out that the shared element is never named as something spanning extract AND wider play",
+        "on the partial answer, credit the shared element and the extract pair and ask for TWO quotations from elsewhere, not a statement that she is also an outsider elsewhere",
+        "say that bullet points are acceptable here, quoting: 'There is no requirement to write a \"mini essay\"'",
+        "accept the valid_but_different answer as full marks — a different shared element, different quotations, still two from elsewhere"
+      ],
+      "a_correct_reply_must_not": [
+        "deduct anything",
+        "describe the extract ceiling as a penalty",
+        "require the shared element to be one from the instructions' example list ('theme, central relationship, importance of setting…') — that list ends 'or any other key element'",
+        "mark a bullet-point answer down for form",
+        "invent a line from elsewhere in the play"
+      ]
+    },
+    {
+      "id": "CR-ESSAY-1",
+      "cell": "sqa/critical-reading",
+      "question_type": "Section 2 critical essay (20 marks, level-based, five bands; minimum standards cap the mark at 9)",
+      "live_question": "Choose a play which contains an interesting character. By referring to appropriate techniques, explain how the writer makes this character interesting.",
+      "action": "scan-elements",
+      "responses": {
+        "weak": "In this essay I am going to write about a play I studied and a character in it who is interesting. The writer uses techniques like language and structure to make him interesting. First he is introduced. Then things happen to him. Then at the end he changes. This shows that the writer has made an interesting character and I enjoyed studying the play.",
+        "partial": "The playwright makes the character interesting through the gap between what he says and what he does. My first paragraph shows how his opening speech sets up an image of himself. My second paragraph shows how his behaviour contradicts it. My third paragraph shows the audience's reaction at the end. I found the play interesting and would recommend it.",
+        "strong": "A single body paragraph for review: 'The character is most interesting where the writer lets the audience see what he cannot. The stage direction placing him with his back to the room as he speaks suggests he is addressing an idea of himself rather than the people in front of him; the word \"back\" does the work, because it turns a piece of blocking into a refusal to be looked at. The audience is invited to watch him perform confidence and to notice, at the same moment, that nobody in the room is convinced. That double position — believing him and not believing him at once — is what keeps him interesting for three acts, and it suggests the writer is less interested in whether he is honest than in why we keep listening.'",
+        "valid_but_different": "A conclusion for review: 'What I took from the play is a way of watching people who are performing for me. Before studying it I would have called the character a liar and stopped there; the writer made me notice that his lying is the most honest thing about him, because it shows exactly what he wishes were true. The lines where he corrects himself mid-sentence are the ones that did it, and I now read that habit in people I know.'"
+      },
+      "a_correct_reply_must": [
+        "judge the selection against the BAND, not against a pair count or a mark formula",
+        "quote the band descriptor the writing has not yet earned, verbatim, and ask what would meet it",
+        "on the weak answer, name the minimum-standards ceiling plainly and quote it: 'If minimum standards are not achieved, the maximum mark which can be awarded is 9' — this answer has no line of thought relevant to the task and names no technique, and say what would lift the ceiling",
+        "on the weak answer, also name 'This shows' as a weak analytical verb and 'I enjoyed studying the play' as the evaluation strand asserted rather than developed",
+        "on the partial answer, credit the line of thought and ask where the evaluation strand is — quoting 'a well developed commentary of what has been enjoyed/gained from the text(s), supported by a range of well-chosen references to its relevant features' — because 'I found the play interesting and would recommend it' is not it",
+        "recognise the valid_but_different conclusion AS the evaluation strand, well developed and referenced, and say so"
+      ],
+      "a_correct_reply_must_not": [
+        "print an AO label",
+        "state or predict a mark out of 20",
+        "treat a band as a grade — SQA states 'Bands are not grades'",
+        "coach the student to add historical or biographical context: this board assesses no context objective, and scan-context-drive must redirect in one line",
+        "rewrite the student's own sentence except as one half of a labelled contrasting pair",
+        "claim an SQA exemplar exists for a drama essay — none is on disk"
+      ]
+    }
+  ],
+
+  "writing": [
+    {
+      "id": "PORT-CREATIVE-1",
+      "cell": "sqa/writing",
+      "question_type": "portfolio piece, broadly CREATIVE (30 marks: holistic, best-fit band out of 15, doubled)",
+      "live_task": "One piece of writing of no more than 1,000 words, broadly creative, on a focus the student chose with their teacher.",
+      "action": "scan-elements",
+      "responses": {
+        "weak": "It was a normal day when I got the news. I felt very very sad and I didn't know what to do. My mum was crying and I was crying too. Then we went to the hospital and it was a long drive. When we got there everyone was quiet. It was the worst day of my life and I will never forget it.",
+        "partial": "The phone rang at the wrong time of day, which is how I knew. Mum picked it up in the hall and turned away from me while she listened. In the car she drove under the speed limit for the first time in her life. I counted the cats' eyes because counting was something to do.",
+        "strong": "The phone rang at the wrong time of day, which is how I knew. Mum took it in the hall and turned her back, and I watched her shoulders do the listening. In the car she drove under the speed limit for the first time in her life, and I understood that she was giving us a few more minutes of before. I counted cats' eyes to keep my head busy, and somewhere around the second roundabout I realised I was not frightened of the hospital; I was frightened of being the person who came out of it.",
+        "valid_but_different": "A script extract for review: 'HALL. MUM has the phone. She does not sit down. / MUM: Right. / (She does not say anything else for eleven seconds.) / MUM: Right. / She hangs up and looks at the coats instead of at me.'"
+      },
+      "a_correct_reply_must": [
+        "judge against the CREATIVE grid only, and quote the descriptor the piece has not yet earned, verbatim",
+        "on the weak answer, name the pattern 'feelings stated, not explored' and quote 'I felt very very sad' — then ask what the sadness made the writer DO or notice, without supplying an answer",
+        "on the weak answer, name the intensifier pattern ('very very') as a rule, not a correction, and leave the instances to the student",
+        "on the partial answer, credit the concrete detail and ask what the piece is FOR — the first line of every band is attention to purpose and audience",
+        "recognise the valid_but_different script extract as a legitimate form, quoting the specification's own list: 'a dramatic script (for example scene, monologue or sketch)'",
+        "report the word count against the 1,000-word maximum and never suggest writing more to fill a length"
+      ],
+      "a_correct_reply_must_not": [
+        "rewrite, rephrase or complete any sentence of the student's piece, even as one half of a contrasting pair — the board forbids 'specific advice on how to rephrase wording' and 'model answers, which are specific to a candidate's task'",
+        "correct any spelling, grammar or punctuation for them",
+        "hand the student an idea, an opening, a structure or a plan",
+        "print AO5 / AO6 or any assessment-objective label",
+        "state or predict a mark",
+        "judge this piece against the discursive grid"
+      ]
+    },
+    {
+      "id": "PORT-DISCURSIVE-1",
+      "cell": "sqa/writing",
+      "question_type": "portfolio piece, broadly DISCURSIVE (30 marks: holistic, best-fit band out of 15, doubled)",
+      "live_task": "One piece of writing of no more than 1,000 words, broadly discursive, on a focus the student chose with their teacher.",
+      "action": "scan-structure",
+      "responses": {
+        "weak": "Everyone knows that school should start later. Studies show that teenagers need more sleep. It is obvious that starting later would help everyone and anyone who disagrees has not thought about it properly. In conclusion school should definitely start later because it is better.",
+        "partial": "Teenagers' body clocks shift later during adolescence, which means an eight o'clock start asks them to work at the hour their brains are least ready. A sleep study I read found that later starts improved attendance. Schools should therefore move the start of the day.",
+        "strong": "Teenagers' body clocks shift later during adolescence, so an eight o'clock start asks them to think at the hour their brains are least ready — a scheduling decision, not a discipline problem. Where schools have moved the start later, attendance has improved and so have results in first-period subjects. The obvious objection is childcare: parents who leave for work at half past seven cannot simply keep a fourteen-year-old at home, and any honest case has to answer that rather than dismiss it. A staggered start would — supervised space from eight, lessons from nine — which costs a room and a rota rather than a building.",
+        "valid_but_different": "A report-style opening for review: 'Purpose of this report: to set out the case for a later start to the school day, the objections to it, and what it would cost. Findings are drawn from three sources, listed at the end.'"
+      },
+      "a_correct_reply_must": [
+        "judge against the DISCURSIVE grid only, and quote the descriptor the piece has not yet earned, verbatim",
+        "on the weak answer, name 'research asserted, not shown' and quote 'Studies show that teenagers need more sleep' — then ask where that came from, and remind them the board asks for sources to be acknowledged in footnotes or a bibliography",
+        "on the weak answer, name the missing counter-argument and quote the grid's 'a very good degree of objectivity/depth/ insight/persuasive force'",
+        "on the partial answer, credit the reasoning and the source and ask what a fair opponent would say",
+        "recognise the valid_but_different report opening as a legitimate form, quoting the specification's own list: 'a report'",
+        "note, on the strong answer, the incomplete sentence 'A staggered start would —' as a PATTERN to check (sentence boundaries), without correcting it"
+      ],
+      "a_correct_reply_must_not": [
+        "supply a statistic, a study, a source or a URL the student could put in the piece",
+        "rewrite or rephrase any of the student's wording",
+        "correct their spelling, grammar or punctuation",
+        "hand them the counter-argument",
+        "print an AO label, or state or predict a mark",
+        "judge this piece against the creative grid"
+      ]
+    }
+  ]
+}

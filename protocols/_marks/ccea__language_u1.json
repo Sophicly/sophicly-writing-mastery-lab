@@ -1,0 +1,167 @@
+{
+  "board": "ccea",
+  "paper": "language_u1",
+  "title": "CCEA GCSE English Language — Unit 1: Writing for Purpose and Audience and Reading to Access Non-fiction and Media Texts (GEN11)",
+  "authority": {
+    "file": "protocols/ccea/_sources/ccea-lang-unit1-summer2025-MS.pdf",
+    "kind": "mark scheme",
+    "sitting": "Summer 2025, [GEN11], Wednesday 7 May morning (document code 14574.01 F)",
+    "url": "https://ccea.org.uk/downloads/docs/Past-Papers/cleared/GCSE/GCSE%20English%20Language%20(2017)/2025-Summer/Standard/0/GCSE-English%20Language-490-Summer2025-Unit%201,%20Writing%20for%20Purpose%20and%20Audience%20and%20Reading%20to%20access%20Non-fiction%20and%20Media%20Texts-MS.pdf",
+    "why_this_source": "CCEA mark schemes are NOT on the Sophicly drive (PORT BRIEF §6). Downloaded from the board's own past-paper library on 2026-09-13 and saved here so provenance is on disk (PROTOCOL-STANDARD E1.3). Top of the authority order: the board's own published mark scheme.",
+    "second_series": "protocols/ccea/_sources/ccea-lang-unit1-summer2024-MS.pdf (Summer 2024, document code 14204.01 F) prints the identical tariff set — Section A 87 (57 + 30) and Section B 63 (21 + 12 + 20 + 10) — so this is the paper's recurring shape, not one series' feature (E1.4). The Summer 2024 question paper text is also on disk as ccea-lang-unit1-summer2024-paper.txt.",
+    "marking_model_note": "⚠️ CCEA marks by COMPETENCE LEVEL STRANDS, not by points. Each task is judged on THREE named strands at CL0–CL5, and the three-digit strand combination is then looked up in a published MARK GRID to give the mark range (e.g. Task 2 '332' = 11–12 of 21). Tasks 3 and 5 are the exception: they are marked with task-specific checklists and per-part descriptors, which is why their component marks below are real point tariffs. Our per-strand 'Worth' columns are a Sophicly presentation of the board's strands; the AUTHORITATIVE mark is always the grid mark. This delta is stated in the protocol header (PROTOCOL-STANDARD E2)."
+  },
+  "spec": {
+    "file": "language",
+    "key": "ccea.language_u1"
+  },
+  "total": {
+    "marks": 150,
+    "marks_from": "questions",
+    "why": "The mark scheme never prints a 150. The question paper does ('The total mark for this paper is 150. Section A (Writing) One task marked out of 87 marks. Section B (Reading) Four tasks marked out of 63 marks.' — ccea-lang-unit1-summer2025-paper.pdf p.1), and 87 + 21 + 12 + 20 + 10 = 150, which matches language-paper-specs.json ccea.language_u1.total."
+  },
+  "questions": [
+    {
+      "id": "T1",
+      "marks": 87,
+      "marks_from": "components",
+      "aos": ["AO4"],
+      "section": "A — Writing for Purpose and Audience",
+      "quote": "Task 1    Response time: 55 minutes     Mark allocation: 57 marks",
+      "quote_note": "LOCATOR only. The mark scheme never states 87 for Task 1: it splits Task 1 into TWO separate assessments with their own strand sets and their own grids — Writing (i) and (ii) out of 57, and Writing (iii) out of 30. 57 + 30 = 87, which is what the question paper prints.",
+      "components": [
+        {
+          "label": "Writing (i) and (ii) — Development and Style · Structuring/Use of Linguistic and Structural Features · Purpose and Audience",
+          "marks": 57,
+          "kind": "content",
+          "spec_field": "content_marks",
+          "aos": ["AO4"],
+          "quote": "Mark allocation: 57 marks",
+          "quote_note": "Three CL strands, CL0–CL5 each; grid 000=0 · 100=1–2 · 110=3–5 · 111=6–9 · 112=10–13 · 221=14–17 · 222=18–21 · 223=22–25 · 332=26–29 · 333=30–33 · 334=34–37 · 443=38–41 · 444=42–45 · 445=46–49 · 554=50–53 · 555=54–57."
+        },
+        {
+          "label": "Writing (iii) — Range of Sentence Structures · Use of Punctuation and Grammar · Spelling",
+          "marks": 30,
+          "kind": "technical",
+          "spec_field": "spag_marks",
+          "aos": ["AO4"],
+          "quote": "Task 1   Response time: 55 minutes        Mark allocation: 30 marks",
+          "quote_note": "⚠️ This strand set covers SENTENCE STRUCTURES as well as punctuation, grammar and spelling, so language-paper-specs.json's field name `spag_marks` is narrower than what CCEA assesses here. Recorded as kind 'technical' rather than 'spag' for that reason. Grid 000=0 · 100=1–2 · 110=3–4 · 111=5–6 · 112=7–8 · 221=9–10 · 222=11–12 · 223=13–14 · 332=15–16 · 333=17–18 · 334=19–20 · 443=21–22 · 444=23–24 · 445=25–26 · 554=27–28 · 555=29–30."
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "marks": 21,
+      "aos": ["AO3"],
+      "section": "B — Reading Non-fiction",
+      "quote": "Response time: 15 minutes.             Total 21 marks",
+      "quote_note": "Competence-Level assessed. Strands: 'Read and understand text/select material' · 'Develop and sustain interpretations of writer's intentions' · 'Explain and evaluate elements of writer's craft'. Grid 000=0 · 100=1 · 110=2 · 111=3 · 112=4 · 221=5–6 · 222=7–8 · 322=9–10 · 332=11–12 · 333=13–14 · 334=15–16 · 443=17 · 444=18 · 445=19 · 554=20 · 555=21."
+    },
+    {
+      "id": "T3",
+      "marks": 12,
+      "marks_from": "components",
+      "aos": ["AO3"],
+      "section": "B — Reading Non-fiction",
+      "quote": "Response time: 10 minutes.      Total 12 marks.",
+      "quote_note": "LOCATOR. 'Tasks 3 and 5 will be assessed using task-specific checklists' — so this task is genuinely point-marked, in four parts: a reason and two pieces of supporting evidence from each of two paragraphs. 4 + 2 + 4 + 2 = 12.",
+      "components": [
+        {
+          "label": "3(a) reason from paragraph one, in the student's own words",
+          "marks": 4,
+          "kind": "content",
+          "aos": ["AO3"],
+          "quote": "Crediting each reason [up to a max. of 4 marks]",
+          "quote_note": "Four best-fit descriptors: 4 'a clear and precise understanding … using his/her own words' · 3 'accurate understanding … mainly using his/her own words' · 2 'mostly accurate … but with reliance on the language of the text' · 1 'a general sense … relying heavily on the language of the text' · 0 no creditworthy response."
+        },
+        {
+          "label": "3(b) two pieces of supporting evidence from paragraph one",
+          "marks": 2,
+          "kind": "content",
+          "aos": ["AO3"],
+          "quote": "Crediting the supporting evidence [up to a max. of 2 marks",
+          "quote_note": "'1 mark for each piece of supporting evidence'; 'Evidence may be reported or quoted'. The mark is the number of valid ticks (none, one or two)."
+        },
+        {
+          "label": "3(c) reason from paragraph two, in the student's own words",
+          "marks": 4,
+          "kind": "content",
+          "aos": ["AO3"],
+          "quote": "Crediting each reason [up to a max. of 4 marks]",
+          "quote_note": "Same descriptor ladder as 3(a); the mark scheme prints the instruction once and applies it to 3(a) and 3(c) ('Enter this mark in the scoring facility for 3(a) or 3(c)')."
+        },
+        {
+          "label": "3(d) two pieces of supporting evidence from paragraph two",
+          "marks": 2,
+          "kind": "content",
+          "aos": ["AO3"],
+          "quote": "Crediting the supporting evidence [up to a max. of 2 marks",
+          "quote_note": "Same as 3(b) ('the scoring facility for 3(b) or 3(d)'). The 2025 scheme also lists UNACCEPTABLE evidence for 3(d), so evidence is judged, not merely counted."
+        }
+      ]
+    },
+    {
+      "id": "T4",
+      "marks": 20,
+      "aos": ["AO3"],
+      "section": "B — Reading Media Texts",
+      "quote": "Task 4: Spend 17 minutes on this task.     Total 20 marks",
+      "quote_note": "Competence-Level assessed, same three strands as Task 2. Grid 000=0 · 100=1 · 110=2 · 111=3 · 112=4 · 221=5 · 222=6–7 · 322=8–9 · 332=10–11 · 333=12–13 · 334=14–15 · 443=16 · 444=17 · 445=18 · 554=19 · 555=20. Note the grid differs from Task 2's even though the strands are identical — never reuse one task's grid for another."
+    },
+    {
+      "id": "T5",
+      "marks": 10,
+      "marks_from": "components",
+      "aos": ["AO3"],
+      "section": "B — Reading Media Texts",
+      "quote": "Response time: 8 minutes                 Total 10 marks.",
+      "quote_note": "LOCATOR. Checklist-marked: two presentational features, each identified (1) and its intended effect explained (up to 4). 1 + 4 + 1 + 4 = 10.",
+      "components": [
+        {
+          "label": "5(a) first presentational feature identified",
+          "marks": 1,
+          "kind": "content",
+          "aos": ["AO3"],
+          "quote": "Crediting the selection of valid presentational features [1 mark for each]",
+          "quote_note": "'In each case the score awarded is zero or one mark'. The scheme prints a list of valid features (an aspect of colour, layout, background, font, the image of the characters, the image of the clock) and credits any other valid suggestion."
+        },
+        {
+          "label": "5(b) intended effect of the first feature on the audience",
+          "marks": 4,
+          "kind": "content",
+          "aos": ["AO3"],
+          "quote": "Crediting each ‘Explanation’ [up to a max. of 4 marks]",
+          "quote_note": "Best-fit descriptors 4/3/2/1/0 on the precision of understanding of the feature identified."
+        },
+        {
+          "label": "5(c) second presentational feature identified",
+          "marks": 1,
+          "kind": "content",
+          "aos": ["AO3"],
+          "quote": "Crediting the selection of valid presentational features [1 mark for each]",
+          "quote_note": "Same instruction, scored for 5(c)."
+        },
+        {
+          "label": "5(d) intended effect of the second feature on the audience",
+          "marks": 4,
+          "kind": "content",
+          "aos": ["AO3"],
+          "quote": "Crediting each ‘Explanation’ [up to a max. of 4 marks]",
+          "quote_note": "Same instruction, scored for 5(d)."
+        }
+      ]
+    }
+  ],
+  "protocols": [
+    {
+      "file": "protocols/ccea/language1/modules/protocol-a-assessment.md",
+      "questions": ["T1", "T2", "T3", "T4", "T5"]
+    }
+  ],
+  "ao_warning": {
+    "issue": "language-paper-specs.json records this paper's AOs with AQA's numbering (AO5/AO6 for the writing task, AO1/AO2 for the reading tasks). CCEA's own mark scheme numbers them differently.",
+    "board_wording": "'Below are the relevant assessment objectives for English Language Unit 1. Reading AO3 Candidates must: (i) read and understand texts, selecting material appropriate to purpose; (ii) develop and sustain interpretations of writers' ideas and perspectives; and (iii) explain and evaluate how writers use linguistic, structural and presentational features to achieve effects and engage and influence the reader. Writing AO4 Candidates must: (i) write to communicate clearly, effectively and imaginatively…; (ii) organise information and ideas into structured and sequenced sentences, paragraphs and whole texts…; and (iii) use a range of sentence structures for clarity, purpose and effect, with accurate spelling, punctuation and grammar.'",
+    "action": "Proposed spec correction is in protocols/ccea/_PORT-REPORT-2026-09-13.md. The tariff gate does not compare language AO sets, so this cannot fail the gate — it is recorded here so it cannot be lost. The protocol files use CCEA's own AO3/AO4 numbering."
+  }
+}

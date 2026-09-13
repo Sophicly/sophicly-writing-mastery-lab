@@ -1,0 +1,38 @@
+{
+    "board": "sqa",
+    "group": "ruae",
+    "version": "1.0.0",
+    "base_path": "protocols/sqa/ruae",
+    "_provenance": "Created 2026-09-13 (SQA content lane). Cell = SQA National 5 English, Reading for Understanding, Analysis and Evaluation (X824/75/11). Tariffs and mark formulas cited in protocols/_marks/sqa__ruae.json against the 2025 Finalised Marking Instructions; 2024 + 2023 read for the recurring pattern. Module names resolve board-first then protocols/shared (class-protocol-router.php ~2575).",
+    "_resolver_note": "The router's resolve_protocol_group() sqa map does not name 'ruae'; the fallback `return sanitize_key($subject)` reaches this directory when the lesson's subject is 'ruae'. An explicit map entry is proposed byte-exact in protocols/sqa/_PORT-REPORT-2026-09-13.md so the route does not depend on a fallback.",
+    "planning": {
+        "_destitched": "Planning is fed WHOLE — planning/protocol-b-planning.md is the monolith and there are no sliced step files (PROTOCOL-STANDARD C-COMMON.1: a superseded slice left loaded is a coin-flip at runtime).",
+        "always": [
+            "../_shared/foundation-sqa.md",
+            "planning/protocol-b-planning.md",
+            "modules/knowledge-mark-scheme-ruae.md",
+            "language/modules/communication-standards.md",
+            "language/modules/anti-hallucination.md"
+        ],
+        "steps": {},
+        "groups": []
+    },
+    "assessment": {
+        "always": [
+            "../_shared/foundation-sqa.md",
+            "modules/protocol-a-assessment.md",
+            "modules/knowledge-mark-scheme-ruae.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "mark-scheme/marking-fairness-universal.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "_retired": "Polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_env row for the text slug sqa_n5_ruae proposed in protocols/sqa/_PORT-REPORT-2026-09-13.md (inline-coaching stack + rubric-sqa-n5-ruae.md + modules/knowledge-mark-scheme-ruae.md as the gold/criteria file). This cell has NO protocol-c-polishing.md on disk and must never acquire one: a walk file anywhere in a loadable list is in the model's context (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose — if the router row is ever removed this cell loads nothing and fails loud.",
+        "always": [],
+        "steps": {}
+    }
+}

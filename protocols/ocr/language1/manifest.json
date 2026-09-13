@@ -1,0 +1,40 @@
+{
+    "board": "ocr",
+    "group": "language1",
+    "version": "1.0.0",
+    "base_path": "protocols/ocr/language1",
+    "_provenance": "Ported 2026-09-13 against OCR's own mark schemes for J351/01 Communicating information and ideas — November 2024 (primary) and November 2021 (second series), both saved under protocols/ocr/_sources/. Anchor: LANGUAGE (protocols/aqa/language1). Nothing here is authored from general GCSE knowledge.",
+    "planning": {
+        "_destitched": "Planning is fed WHOLE — planning/protocol-b-planning.md is the monolith and there are no slice files (PROTOCOL-STANDARD C-COMMON.1: a superseded slice left loadable is a coin-flip at runtime).",
+        "always": [
+            "modules/foundation-c1.md",
+            "planning/protocol-b-planning.md",
+            "language/modules/communication-standards.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/ttecea-rationale-lang.md",
+            "modules/knowledge-mark-scheme-c1.md"
+        ],
+        "steps": {},
+        "groups": []
+    },
+    "assessment": {
+        "_order": "Workflow first, reference data last (PROTOCOL ROUTER PREAMBLE RULES §1) — the verbatim board descriptors load LAST so they sit closest to the student's turn.",
+        "always": [
+            "modules/foundation-c1.md",
+            "modules/protocol-a-assessment.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md",
+            "mark-scheme/marking-fairness-universal.md",
+            "modules/knowledge-mark-scheme-c1.md"
+        ],
+        "steps": {}
+    },
+    "polishing": {
+        "_retired": "Polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_env row for the text slug ocr_lang_paper_1 in class-protocol-router.php (inline-coaching stack + rubric-ocr-lang-c1-nonfiction.md + this cell's knowledge-mark-scheme-c1.md as the criteria source). This cell never had a protocol-c-polishing.md walk, and none must ever be added: a file a manifest loads is a file in the model's context (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose — if the router row is ever removed, this cell loads nothing and fails loud.",
+        "always": [],
+        "steps": {}
+    }
+}

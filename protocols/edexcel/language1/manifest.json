@@ -128,24 +128,14 @@
             "language/modules/anti-hallucination.md",
             "language/modules/state-management.md",
             "language/modules/ttecea-rationale-lang.md",
-            "mark-scheme/marking-fairness-universal.md"
+            "mark-scheme/marking-fairness-universal.md",
+            "modules/knowledge-mark-scheme-lang1.md"
         ],
         "steps": {}
     },
     "polishing": {
-        "always": [
-            "modules/foundation-lang1.md",
-            "modules/knowledge-profiling.md",
-            "modules/knowledge-progress.md",
-            "modules/knowledge-persona.md",
-            "modules/knowledge-hub.md",
-            "modules/protocol-c-polishing.md",
-            "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
-            "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
-        ],
+        "_retired": "2026-09-13 (Edexcel GCSE Lang lane) — polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), to be served by the essay_polishing_env row for edexcel_lang_paper_1 in class-protocol-router.php (inline-coaching-language stack + rubric-edexcel-lang-p1-fiction.md + knowledge-hub.md as the gold). modules/protocol-c-polishing.md stays on disk as the source the rubric was distilled from and must NEVER be loaded at a student again (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose: if the router row is absent, this cell loads nothing and fails loud rather than the March-2026 walk.",
+        "always": [],
         "steps": {}
     }
 }

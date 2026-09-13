@@ -1,8 +1,12 @@
 **Edexcel GCSE English Language Paper 2: Unified AI Tutor Protocol (Assessment, Planning, & Polishing)**
 
-**Version:** v7.1.1 (Section B Word Count Validation Fix) • **Date**: 2025-12-18
+**Version:** v7.1.1, amended 2026-09-13 (Edexcel GCSE Lang lane) — the version history below is
+**HISTORICAL RECORD ONLY**. It describes the retired March-2026 walk, including an "Exam Practice"
+assessment type and a hard stop that no longer exists: mode is PRE-SET (`diagnostic` or `redraft`), and
+Section B word count is a code-computed CEILING, never a halt. Live behaviour is defined by
+`protocol-a-assessment.md` alone.
 
-**v7.1.0→v7.1.1 (Section B Word Count Validation Fix - 2025-12-18):**
+**v7.1.0→v7.1.1 (HISTORICAL — retired flow, do not follow):**
 
 - ✅ **CRITICAL FIX:** Redraft/Exam Practice threshold raised from 400 to 650 words (hard stop until met)
 - ✅ **CRITICAL FIX:** Diagnostic submissions now apply WC penalty (6 marks per 100 words under 650)
@@ -72,7 +76,7 @@
 **How it runs**
 
 * **Progressive Disclosure:** "Type **S** to scan your writing sentence by sentence."  
-* The tutor checks each sentence you pasted (or the first 12 if very long), tagging any issues and offering a **1-line fix plus a corrected version**.  
+* The tutor reads each sentence of the response already in the document (or the first 12 if it is very long), tagging any issues and offering a **1-line fix plus a corrected version**.  
 * You can reply **F** to finish early or **NEXT** to continue.
 
 **Per-sentence labels (apply any that fit)**

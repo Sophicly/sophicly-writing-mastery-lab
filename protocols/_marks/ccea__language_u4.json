@@ -1,0 +1,87 @@
+{
+  "board": "ccea",
+  "paper": "language_u4",
+  "title": "CCEA GCSE English Language — Unit 4: Personal or Creative Writing and Reading Literary and Non-fiction Texts (GEN41)",
+  "authority": {
+    "file": "protocols/ccea/_sources/ccea-lang-unit4-summer2025-MS.pdf",
+    "kind": "mark scheme",
+    "sitting": "Summer 2025, [GEN41], Tuesday 20 May morning (document code 14575.01 F)",
+    "url": "https://ccea.org.uk/downloads/docs/Past-Papers/cleared/GCSE/GCSE%20English%20Language%20(2017)/2025-Summer/Standard/0/GCSE-English%20Language-490-Summer2025-Unit%204,%20Personal%20or%20Creative%20Writing%20and%20Reading%20Literary%20and%20Non-fiction%20Texts-MS.pdf",
+    "why_this_source": "CCEA mark schemes are NOT on the Sophicly drive (PORT BRIEF §6). Downloaded from the board's own past-paper library on 2026-09-13 and saved here.",
+    "second_series": "protocols/ccea/_sources/ccea-lang-unit4-november2024-MS.pdf (November 2024, document code 14841.01 F) prints the identical tariff set — Task 1 88 (58 + 30), Task 2 32, Task 3 15, Task 4 15 — so the shape recurs (E1.4). ⚠️ GAP: the Summer 2024 Unit 4 MARK SCHEME could not be retrieved; the URL pattern that works for every other Unit 1 / Unit 4 / Literature paper returns the site's 404 page for it (checked three filename variants, 2026-09-13). The Summer 2024 QUESTION PAPER text is on disk (ccea-lang-unit4-summer2024-paper.txt) and prints the same 88 / 32 / 15 / 15 tariffs.",
+    "marking_model_note": "⚠️ Every task on this paper is assessed by COMPETENCE LEVEL STRANDS — three named strands at CL0–CL5, then a published MARK GRID converts the three-digit strand combination into a mark range. There are no checklist-marked parts on Unit 4 (unlike Unit 1's Tasks 3 and 5). Our per-strand 'Worth' columns are a Sophicly presentation of the board's strands; the AUTHORITATIVE mark is always the grid mark."
+  },
+  "spec": {
+    "file": "language",
+    "key": "ccea.language_u4"
+  },
+  "total": {
+    "marks": 150,
+    "marks_from": "questions",
+    "why": "The mark scheme never prints a 150. The question paper does ('The total mark for this paper is 150. Section A (Writing) One task marked out of 88 marks. Section B (Reading) Three tasks marked out of 62 marks.' — ccea-lang-unit4-summer2025-paper.pdf p.1), and 88 + 32 + 15 + 15 = 150, which matches language-paper-specs.json ccea.language_u4.total."
+  },
+  "questions": [
+    {
+      "id": "T1",
+      "marks": 88,
+      "aos": ["AO4"],
+      "section": "A — Personal or Creative Writing",
+      "quote": "Task 1: Response time: 55 minutes          Mark allocation: 88 marks",
+      "quote_note": "A CHOICE of one task: (a) personal writing (Summer 2025: 'Write an essay for the examiner about your favourite teacher') OR (b) creative writing from a printed image ('Write a story for entry in a creative writing competition. The audience is young adults'). Both options are marked on the SAME two strand sets and the SAME two grids, so the tariff does not change with the choice.",
+      "components": [
+        {
+          "label": "Writing (i) and (ii) — Development and Style · Structuring/Use of Linguistic and Structural Features · Purpose and Audience",
+          "marks": 58,
+          "kind": "content",
+          "aos": ["AO4"],
+          "quote": "Marking Grid Task 1: Writing (i) and (ii) (58 marks)",
+          "quote_note": "Grid 000=0 · 100=1–2 · 110=3–6 · 111=7–10 · 112=11–14 · 221=15–18 · 222=19–22 · 223=23–26 · 332=27–30 · 333=31–34 · 334=35–38 · 443=39–42 · 444=43–46 · 445=47–50 · 554=51–54 · 555=55–58. ⚠️ Unit 1's equivalent strand set is worth 57, not 58, and its grid bands differ — never carry one unit's grid to the other."
+        },
+        {
+          "label": "Writing (iii) — Range of Sentence Structures · Use of Punctuation and Grammar · Spelling",
+          "marks": 30,
+          "kind": "technical",
+          "aos": ["AO4"],
+          "quote": "Mark Grid Task 1: Writing (iii) (30 marks)",
+          "quote_note": "Grid 000=0 · 100=1–2 · 110=3–4 · 111=5–6 · 112=7–8 · 221=9–10 · 222=11–12 · 223=13–14 · 332=15–16 · 333=17–18 · 334=19–20 · 443=21–22 · 444=23–24 · 445=25–26 · 554=27–28 · 555=29–30 — identical to Unit 1's Writing (iii) grid. ⚠️ language-paper-specs.json's ccea.language_u4.T1 has NO content_marks / spag_marks fields, so no spec_field is declared here; adding them (58 / 30) is a proposal in the port report."
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "marks": 32,
+      "aos": ["AO3"],
+      "section": "B — Reading Literary Texts",
+      "quote": "Total: 32 marks",
+      "quote_note": "The COMPARISON task: 'Compare and contrast how the writers have created a sense of excitement in both extracts. Present supporting evidence from both texts.' Two literary extracts arrive on a separate INSERT. Strands are the Task 2/3/4 reading strands with comparison folded INTO strands 1 and 3 ('make simple/straightforward connections' → 'make valid comparisons/contrasts' → 'develop relevant comparisons and contrasts' → 'explore meaningful comparisons and contrasts'; and craft judged 'across one or both texts' → 'across both texts'). Grid 000=0 · 100=1–2 · 110=3–4 · 111=5–6 · 112=7–8 · 221=9–10 · 222=11–12 · 322=13–14 · 332=15–16 · 333=17–18 · 334=19–20 · 443=21–22 · 444=23–24 · 445=25–26 · 554=27–29 · 555=30–32."
+    },
+    {
+      "id": "T3",
+      "marks": 15,
+      "aos": ["AO3"],
+      "section": "B — Reading Non-fiction",
+      "quote": "Response time: 12 minutes        Total 15 marks",
+      "quote_note": "Summer 2025 wording: 'Explain how the writer has gained and held the interest of the reader.' Grid 000=0 · 100=1 · 110=2 · 111=3 · 112=4 · 221=5 · 222=6 · 322=7 · 332=8 · 333=9 · 334=10 · 443=11 · 444=12 · 445=13 · 554=14 · 555=15 — one mark per grid row, so a single strand level decides a whole mark."
+    },
+    {
+      "id": "T4",
+      "marks": 15,
+      "aos": ["AO3"],
+      "section": "B — Reading Non-fiction",
+      "quote": "Response time: 12 minutes       Total: 15 marks",
+      "quote_note": "Summer 2025 wording: 'Explain how the writer has presented his views on the positives of Artificial Intelligence for use in medicine.' Same three strands and the SAME grid as Task 3. Tasks 3 and 4 are two extracts from the SAME article, so the reading is done once and applied twice."
+    }
+  ],
+  "protocols": [
+    {
+      "file": "protocols/ccea/language2/modules/protocol-a-assessment.md",
+      "questions": ["T1", "T2", "T3", "T4"]
+    }
+  ],
+  "ao_warning": {
+    "issue": "language-paper-specs.json records this paper's AOs with AQA's numbering (AO5/AO6 writing; AO1/AO2/AO3 reading). CCEA numbers them AO3 (Reading) and AO4 (Writing).",
+    "board_wording": "'Below are the relevant assessment objectives for English Language Unit 4. Reading AO3 Candidates must: (i) read and understand texts, selecting material appropriate to purpose, collating from different sources and making comparisons and cross-referencing as appropriate; (ii) develop and sustain interpretations of writers' ideas and perspectives; and (iii) explain and evaluate how writers use linguistic, structural and presentational features to achieve effects and engage and influence the reader. Writing AO4 Candidates must: (i) write to communicate clearly, effectively and imaginatively…; (ii) organise information and ideas…; and (iii) use a range of sentence structures for clarity, purpose and effect, with accurate spelling, punctuation and grammar.'",
+    "note": "Unit 4's AO3(i) adds 'collating from different sources and making comparisons and cross-referencing as appropriate' — the clause Unit 1's AO3(i) does not carry. That clause is where Task 2's comparison demand comes from, and it is the only AO difference between the two units.",
+    "action": "Proposed spec correction is in protocols/ccea/_PORT-REPORT-2026-09-13.md."
+  }
+}

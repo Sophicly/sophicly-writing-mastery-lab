@@ -1,0 +1,95 @@
+{
+  "board": "sqa",
+  "paper": "critical_reading",
+  "title": "SQA National 5 English — Critical Reading (X824/75/12): Section 1 Scottish text 20 marks + Section 2 Critical essay 20 marks",
+  "authority": {
+    "file": "MSR/SQA English National 5 Critical Reading/SQA English National 5 mi_N5_English_Critical-Reading_2025.pdf",
+    "kind": "finalised marking instructions",
+    "sitting": "2025 (X824/75/12, Tuesday 6 May, 10:30–12:00)",
+    "why_this_source": "SQA's own Question Paper Finalised Marking Instructions, including the Critical Essay supplementary marking grid on its final page. Matching question paper in the same folder.",
+    "second_series_read": "2024 (protocols/sqa/_sources/N5_English_Critical-Reading_2024.pdf + mi_N5_English_Critical-Reading_2024.pdf) and 2023 (same dir), downloaded from sqa.org.uk 2026-09-13.",
+    "recurring_pattern_vs_one_series_feature": "RECURRING, verified on 2025 + 2024 + 2023: Section 1 = 20 marks on ONE chosen Scottish text (extract questions summing to 12 + a FINAL 8-mark commonality question); Section 2 = ONE critical essay, 20 marks, on a DIFFERENT genre; paper total 40; 1 hour 30 minutes. The 8-mark commonality question's mark formula is printed VERBATIM IDENTICALLY in 2025 and 2024 ('Up to 2 marks … A further 2 marks … 4 additional marks'). NOT recurring: how the 12 extract marks are split. It varies BY TEXT within one sitting — 2025 Bold Girls = 4+4+4, 2025 Carol Ann Duffy = 4+2+4+2, 2025 Edwin Morgan = 2+4+4+2. The protocol therefore reads the pair count from each question's printed tariff (marks ÷ 2) and never assumes a split.",
+    "questions_recorded_here": "The four questions of the CITED TEXT OPTION — Section 1 Part A Text 1, 'Bold Girls' by Rona Munro (the board's own question numbers 1–4) — plus the critical essay as S2. A different chosen text carries different question numbers and a different extract split; the INVARIANT the protocol marks against is extract-questions = 12 and commonality = 8."
+  },
+  "total": {
+    "marks": 40,
+    "marks_from": "questions",
+    "why": "The question paper prints 'Total marks — 40', 'SECTION 1 — Scottish text — 20 marks' and 'SECTION 2 — Critical essay — 20 marks'; the course specification states '20 marks are available for each of the two sections' (protocols/sqa/_sources/n5-course-spec-english.pdf). 4+4+4+8 = 20 (Section 1) + 20 (Section 2) = 40."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 4,
+      "section": "1 — Scottish text (Text 1, Bold Girls)",
+      "type": "extract language analysis — two examples",
+      "aos": [],
+      "ao_note": "SQA National 5 English has NO numbered assessment objectives. Never print an 'AO' label for this board.",
+      "formula": "Reference (1) + Comment (1), twice.",
+      "quote": "1.              Reference (1)                       4     Possible answers include:",
+      "why": "Printed tariff [4] beside 'By referring to two examples of language, explain how the writer creates tension.'"
+    },
+    {
+      "id": "Q2",
+      "marks": 4,
+      "section": "1 — Scottish text (Text 1, Bold Girls)",
+      "type": "extract language analysis — two examples",
+      "aos": [],
+      "formula": "Reference (1) + Comment (1), twice.",
+      "quote": "2.              Reference (1)                       4     Possible answers include:",
+      "why": "Printed tariff [4]."
+    },
+    {
+      "id": "Q3",
+      "marks": 4,
+      "section": "1 — Scottish text (Text 1, Bold Girls)",
+      "type": "extract language analysis — two examples",
+      "aos": [],
+      "formula": "Reference (1) + Comment (1), twice.",
+      "quote": "3.              Reference (1)                           4     Possible answers include:",
+      "why": "Printed tariff [4]. Q1+Q2+Q3 = 12, the invariant extract total."
+    },
+    {
+      "id": "Q4",
+      "marks": 8,
+      "section": "1 — Scottish text (Text 1, Bold Girls)",
+      "type": "commonality — this extract AND elsewhere in the writer's work",
+      "aos": [],
+      "formula": "Identification of commonality 2 + one reference & comment from the extract 2 + two references & comments from at least one other text/part of the text 4 = 8. Maximum of 2 marks only for discussion of the extract.",
+      "quote": "4.              Possible areas for comment              8     Candidates may choose to answer in",
+      "components": [
+        {
+          "label": "identification of the commonality named in the question",
+          "marks": 2,
+          "quote": "Up to 2 marks can be achieved for"
+        },
+        {
+          "label": "reference to the extract given (one reference + one comment)",
+          "marks": 2,
+          "quote": "A further 2 marks can be achieved"
+        },
+        {
+          "label": "similar references to at least one other text/part of the text (two reference + comment pairs)",
+          "marks": 4,
+          "quote": "4 additional marks can be awarded"
+        }
+      ],
+      "why": "The three component lines are printed verbatim in the Additional guidance column and recur word-for-word in the 2024 marking instructions. The marking instructions also state: 'There is no requirement to write a “mini essay”' — candidates may answer in bullet points or linked statements."
+    },
+    {
+      "id": "S2",
+      "marks": 20,
+      "section": "2 — Critical essay",
+      "type": "critical essay — level-based, best-fit, one of five genres",
+      "aos": [],
+      "formula": "LEVEL-BASED, not point-based. Read for relevance and technical accuracy first: if minimum standards are not achieved the maximum mark is 9. If they are achieved, place the essay on the supplementary marking grid: 20–18 / 17–14 / 13–10 / 9–5 / 4–0, judged across four strands — familiarity and line of thought · analysis · evaluation · use of language and structure.",
+      "quote": "to place the work on a scale of marks out of 20",
+      "why": "The Critical Essay marking principles page: 'If minimum standards have been achieved, then the supplementary marking grid will allow you to place the work on a scale of marks out of 20.' The same page states 'If minimum standards are not achieved, the maximum mark which can be awarded is 9.' The grid's five bands and their descriptors are quoted verbatim in protocols/sqa/critical-reading/modules/knowledge-mark-scheme-critical-reading.md."
+    }
+  ],
+  "protocols": [
+    {
+      "file": "protocols/sqa/critical-reading/modules/protocol-a-assessment.md",
+      "questions": ["Q1", "Q2", "Q3", "Q4"]
+    }
+  ]
+}

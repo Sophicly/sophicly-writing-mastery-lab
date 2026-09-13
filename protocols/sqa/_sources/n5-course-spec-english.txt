@@ -1,0 +1,1959 @@
+National 5 English
+
+ Course code:                     C824 75
+
+ Course assessment code:          X824 75
+
+ Spoken language code:            HK57 75
+
+ SCQF:                            level 5 (24 SCQF credit points)
+
+ Valid from:                      session 2025–26
+
+
+
+
+ This document provides detailed information about the course and course assessment to
+ ensure consistent and transparent assessment year on year. It describes the structure of
+ the course and the course assessment in terms of the skills, knowledge and understanding
+ that are assessed.
+
+ This document is for teachers and lecturers and contains all the mandatory information
+ required to deliver the course.
+
+
+
+
+The information in this document may be reproduced in support of SQA qualifications only on
+a non-commercial basis. If it is reproduced, SQA must be clearly acknowledged as the
+source. If it is to be reproduced for any other purpose, written permission must be obtained
+from permissions@sqa.org.uk.
+
+
+This edition: September 2025, version 6.0
+
+© Scottish Qualifications Authority 2018, 2023, 2024, 2025
+Contents
+Course overview                                                       1
+Course rationale                                                      2
+Purpose and aims                                                      3
+Who is this course for?                                               3
+Course content                                                        4
+Skills, knowledge and understanding                                   5
+Skills for learning, skills for life and skills for work              7
+Course assessment                                                     8
+Course assessment structure: question paper                           9
+Course assessment structure: portfolio–writing                        12
+Portfolio–writing marking instructions                                17
+Course assessment structure: performance–spoken language              21
+Performance–spoken language marking instructions                      23
+Grading                                                               27
+Equality and inclusion                                                28
+Further information                                                   29
+Appendix: course support notes                                        30
+Introduction                                                          30
+Developing skills, knowledge and understanding                        30
+Approaches to learning and teaching                                   32
+Preparing for course assessment                                       35
+Developing skills for learning, skills for life and skills for work   42
+Course overview
+The course consists of 24 SCQF credit points which includes time for preparation for course
+assessment. The notional length of time for a candidate to complete the course is 160 hours.
+
+The course assessment has four components.
+
+
+ Component                            Marks          Scaled mark     Duration
+ Question paper:                      30             Not             1 hour
+ Reading for Understanding,                          applicable
+ Analysis and Evaluation
+ Question paper:                      40             Not             1 hour and 30 minutes
+ Critical Reading                                    applicable
+ Portfolio–writing                    15             30              See course assessment
+                                                                     section
+ Performance–spoken language          Achieved/      Not             See course assessment
+                                      not achieved   applicable      section
+
+
+
+ Recommended entry                               Progression
+ Entry to this course is at the discretion of     Higher English, other qualifications in
+ the centre.                                       English or related areas
+                                                  further study, employment and/or
+ Candidates should have achieved the fourth        training
+ curriculum level or the National 4 English
+ course or equivalent qualifications and/or
+ experience prior to starting this course.
+
+
+
+
+Conditions of award
+The grade awarded is based on the total marks achieved across all course assessment
+components along with achievement of the spoken language component.
+
+Achievement of this course gives automatic certification of the following Core Skill:
+
+ Communication at SCQF level 5
+
+
+
+
+Version 6.0                                                                             1
+Course rationale
+National Courses reflect Curriculum for Excellence values, purposes and principles. They
+offer flexibility, provide more time for learning, more focus on skills and applying learning,
+and scope for personalisation and choice.
+
+Every course provides opportunities for candidates to develop breadth, challenge and
+application. The focus and balance of assessment is tailored to each subject area.
+
+Candidates continue to acquire and develop the attributes and capabilities of the four
+capacities, as well as the skills for learning, life and work.
+
+In the National 5 English course, there is an emphasis on the development and application of
+key language skills closely associated with literacy and communication. Language skills have
+personal, social and economic value and importance. Our ability to use language, and to
+communicate, lies at the centre of the development and expression of our emotions, our
+thinking, and our sense of personal identity. It is generally accepted that language
+competence helps to unlock learning across all subjects.
+
+This course provides candidates with the opportunity to develop skills in reading, writing,
+talking and listening. Consequently, candidates should be able to understand, analyse,
+evaluate, and use, detailed language for a range of purposes in practical and relevant
+contexts.
+
+This course will allow candidates to encounter and engage with a wide range of texts across
+literature, language, and the media. The course enables candidates to communicate, to think
+critically, and to be thoughtful and creative. Candidates will be encouraged to reflect on, and
+to build an understanding of, their own experiences, environment, and culture, and the
+experiences, environments and cultures of others. Through the study of Scottish writers,
+candidates will develop an appreciation of Scotland’s own literary heritage. Language and
+literature are key aspects of our culture, and the cultures of others, and through them can be
+fostered an awareness, and a celebration of cultural diversity.
+
+
+
+
+Version 6.0                                                                                 2
+Purpose and aims
+The main purpose of this course is to provide candidates with the opportunity to develop the
+skills of reading, writing, talking and listening in order to understand and to use language
+which is detailed in content.
+
+The course offers candidates opportunities to develop and extend a wide range of skills. In
+particular, the course aims to enable candidates to develop the ability to:
+
+ read, write, talk and listen, as appropriate to purpose, audience and context
+ understand, analyse and evaluate texts, including Scottish texts, in the contexts of
+  literature, language and/or the media
+ create and produce texts, as appropriate to purpose, audience and context, through the
+  application of their knowledge and understanding of language
+
+As candidates develop their language skills, they will be able to process ideas and
+information more readily, apply knowledge of language in practical and relevant contexts,
+and gain confidence to use detailed language with clarity and purpose. Candidates develop
+analytical thinking and an understanding of the impact of language through the study of a
+wide range of texts.
+
+
+
+Who is this course for?
+This course is suitable for those who wish to develop their language and communication
+skills through the exploration and creation of language, literature and media texts.
+
+It is designed for those who are at the stage in their learning when they are ready to develop
+language and communication skills at SCQF level 5. They will have attained curriculum
+level 4 in the broad general education or have gained an award in National 4 English.
+
+This course provides a clear progressive pathway for those candidates who aim to go on to
+study Higher English, but also provides preparation for future learning in other subjects,
+employment, vocational training, and life beyond the classroom.
+
+The course is designed to be accessible and inclusive.
+
+
+
+
+Version 6.0                                                                              3
+Course content
+A National 5 English course will enable and encourage candidates to develop their language
+skills in reading, writing, talking and listening. Although these essential skills can be dealt
+with and treated separately, often the most effective and natural teaching and learning
+approaches will allow for them to be integrated.
+
+When operated together, the elements can be said to support each other, and often work on
+one skill can aid the development of another: broad reading of literature and language will
+not only strengthen key reading skills of understanding, analysis and evaluation, but will have
+an impact on a candidate’s ability to write. Spoken language has a part to play here too: it is
+often through discussion that a deeper understanding of language and literature emerges.
+Talking and listening activities also help to improve candidate interaction and engagement. In
+this way, a holistic approach can be taken to course content. Areas and topics of study could
+encompass many of the skills required.
+
+With the exception of the Scottish text list, which offers a range of prescribed texts across the
+genres of drama, prose fiction and poetry, there are no restrictions in the selection of texts for
+study. Texts can be chosen from literature, language or the media, and must offer sufficient
+challenge in that they should be detailed in content.
+
+Teaching and learning approaches should allow for personalisation and choice, where
+possible. When planning teaching and learning programmes, the needs of the candidates,
+their interests and motivations should be considered. There is freedom within the course to
+plan according to the needs of candidates.
+
+The course should allow for the acquisition of competence in key language and
+communication skills. Candidates should be reminded of the need for clarity and accuracy in
+their own use of language, and of appropriate use of register. Good study habits should be
+fostered in terms of research and the use of internet sources. Candidates should be
+reminded of the need to acknowledge research sources consulted.
+
+Opportunities should be given for candidates to explore the expression of their thoughts and
+feelings, their creativity and their imaginations. This could be part of work done towards the
+portfolio–writing.
+
+
+
+
+Version 6.0                                                                                 4
+Skills, knowledge and understanding
+Skills, knowledge and understanding for the course
+The following provides a broad overview of the subject skills, knowledge and understanding
+developed in the course:
+
+ the development of key communication and literacy skills in reading, writing, talking
+  and listening
+ understanding, analysis and evaluation of detailed texts in the contexts of literature,
+  language and media, including Scottish literature
+ the production of detailed texts in a range of contexts
+ knowledge and understanding of language
+
+For the purposes of the course, the skills of reading, writing, talking and listening can be
+further defined as:
+
+
+Reading
+ engaging with, considering, and selecting the main ideas of a text
+ identifying and selecting detailed information from a text
+ analysing and evaluating a writer’s choice and use of language
+ evaluating the overall effects and impact of a text
+
+
+Writing
+ communicating detailed ideas
+ communicating detailed information
+ exploring, describing and communicating personal experience
+ writing creatively and imaginatively in a literary form (for example prose fiction, drama,
+  poetry)
+
+
+Talking and listening
+ discussing and communicating detailed ideas and/or personal experience
+ communicating detailed information
+ using aspects of non-verbal communication
+ demonstrating listening skills by responding to detailed spoken language
+
+
+
+
+Version 6.0                                                                                 5
+Skills, knowledge and understanding for the course assessment
+The following provides details of skills, knowledge and understanding sampled in the
+course assessment:
+
+Read, understand, and respond to texts:
+
+ one unseen passage of non-fiction writing
+ one text or extract from a specified and previously-studied Scottish writer
+ make comparisons between texts or within a longer text by prescribed Scottish writers
+ other literature, media, or language studied as part of the course
+
+Analyse a writer’s use of language:
+
+ one unseen passage of non-fiction writing
+ one text or extract from a specified and previously-studied Scottish writer
+ making comparisons between texts or within a longer text from a specified and
+  previously-studied Scottish writer
+ other literature, media, or language studied as part of the course
+
+Write, with satisfactory technical accuracy, in one of two forms:
+
+ broadly creative
+ broadly discursive
+
+Demonstrate skills in talking and listening:
+
+ participating actively in spoken language activities, for example group discussions
+  or presentations
+
+Skills, knowledge and understanding included in the course are appropriate to the SCQF
+level of the course. The SCQF level descriptors give further information on characteristics
+and expected performance at each SCQF level and can be found on the SCQF website.
+
+
+
+
+Version 6.0                                                                              6
+Skills for learning, skills for life and skills for work
+This course helps candidates to develop broad, generic skills. These skills are based on
+SQA’s Skills Framework: Skills for Learning, Skills for Life and Skills for Work and draw from
+the following main skills areas:
+
+1     Literacy
+
+1.1   Reading
+1.2   Writing
+1.3   Listening and talking
+
+5     Thinking skills
+
+5.3   Applying
+5.4   Analysing and evaluating
+
+These skills must be built into the course where there are appropriate opportunities, and the
+level should be appropriate to the level of the course.
+
+Further information on building in skills for learning, skills for life and skills for work is given in
+the course support notes.
+
+
+
+
+Version 6.0                                                                                      7
+Course assessment
+Course assessment is based on the information provided in this document.
+
+The course assessment meets the key purposes and aims of the course by addressing:
+
+ breadth — drawing on knowledge and skills from across the course
+ challenge — requiring greater depth or extension of knowledge and/or skills
+ application — requiring application of knowledge and/or skills in practical or theoretical
+  contexts as appropriate
+
+This enables candidates to demonstrate:
+
+ the ability to understand, analyse and evaluate an unseen written text. This will be
+  assessed by a question paper
+ the ability to understand, analyse and evaluate detailed texts in the contexts of literature,
+  language and/or media. This will be assessed by a question paper
+ application of language skills in the creation of an original text. This will be assessed
+  through portfolio–writing
+ the ability to produce detailed spoken language through the demonstration of talking and
+  listening skills. This will be assessed through performance–spoken language
+
+
+
+
+Version 6.0                                                                               8
+Course assessment structure: question paper
+Reading for Understanding, Analysis and Evaluation                                30 marks
+The purpose of this question paper is to assess candidates’ application of their reading skills
+in the challenging context of unseen material and a limited time.
+
+30 marks (30% of the total mark) are awarded for applying reading skills in understanding,
+analysis and evaluation to questions on one passage.
+
+This question paper has one section.
+
+Candidates are required to read and understand one unseen non-fiction text. A series of
+questions will focus on their understanding, analysis and evaluation skills.
+
+This question paper gives candidates the opportunity to demonstrate some of the
+following skills:
+
+ understanding of the writer’s ideas by re-casting ideas from the passage in candidates’
+  own words
+ understanding of vocabulary in context
+ analysis of language (for example word choice, figurative language, sentence structure,
+  punctuation, text structure — opening, conclusion, linkage)
+ evaluation of the writer’s techniques or the overall impact of the text
+ inferring meaning
+ summarising: candidates demonstrate their understanding of the writer’s ideas through
+  identifying and isolating key points or main ideas
+
+The following main command words are generally used in this question paper:
+
+ explain (why): used to assess understanding of a writer’s ideas (always followed by
+  ‘in your own words’)
+ explain (how): used to assess the skills of analysis
+ identify: used to assess the skill of summarising (identifying the main points or ideas)
+
+
+Setting, conducting and marking the question paper
+This question paper is set and marked by SQA, and conducted in centres under conditions
+specified for external examinations by SQA. Candidates complete this question paper
+in 1 hour.
+
+
+
+
+Version 6.0                                                                               9
+Critical Reading                                                                  40 marks
+The purpose of this question paper is to assess the application of candidates’ critical reading
+skills and their knowledge and understanding of previously-studied literary, media or
+language texts, including the work of at least one Scottish writer from the prescribed list.
+
+This question paper has two sections. Candidates must select two different genres and
+cannot use the same text twice.
+
+20 marks are available for each of the two sections.
+
+
+Section 1 Scottish texts (20 marks)
+Candidates apply their skills of understanding, analysis and evaluation to previously-studied
+Scottish texts from the prescribed list. This list can be found on the English subject page.
+These texts are contemporary, 20th century and pre-20th century, and cover the genres of
+drama, prose and poetry. The list will be refreshed as required. An extract from each writer is
+provided (with poetry this will be the whole poem, where possible). Candidates select an
+appropriate extract (or whole poem), and answer questions.
+
+This section of the question paper gives candidates the opportunity to demonstrate some of
+the following skills:
+
+ summarising: candidates show understanding of the writer’s ideas, narrative events or
+  characterisation through summarising/explaining using their own words
+ analysis of language (for example word choice, figurative language, sentence structure,
+  punctuation, text structure — opening, conclusion)
+ analysis of how a writer achieves, for example, a particular effect or mood or atmosphere
+ analysis of overall text structure
+ inferring meaning from what is implied by the writer
+ evaluation of overall impact of the text, or the writer’s techniques
+ understanding and analysis of the remainder of the text or other texts
+
+The following command words are generally used in section 1 of this question paper:
+
+ identify or summarise: candidates are required to identify and isolate, for example a
+  writer’s key points and/or key narrative events. Candidates are instructed to use their own
+  words
+ explain: candidates are required to demonstrate understanding of, for example,
+  characterisation, narrative, theme or to analyse a writer’s use of language (for example
+  word choice, figurative language, sentence structure, punctuation and/or sound)
+ show: candidates are asked to show how the writer explores a given topic, or uses a
+  literary or linguistic technique, across more than one poem or short story, or a longer text
+  in its entirety
+
+
+
+
+Version 6.0                                                                              10
+Section 2 Critical essay (20 marks)
+Candidates apply their understanding, analysis and evaluation skills to previously-studied
+texts from the following genres: drama, prose, poetry, film and TV drama, and language, by
+writing a critical essay in response to one question from a choice of two.
+
+Candidates must choose a different genre from the one selected for section 1. Candidates
+will gain marks for their knowledge and understanding of the text, their skills in analysis and
+evaluation, and their construction of a line of thought in a critical essay. The essay should be
+relevant to the question throughout, and should achieve minimum requirements for technical
+accuracy, that is paragraphing, sentence construction and punctuation should be sufficiently
+accurate so that meaning is clear at first reading; writing may contain errors, but these will
+not be significant.
+
+The following main command words are generally used in section 2 of this question paper:
+
+ describe and explain
+ show how
+ explain how
+ explain and evaluate
+
+All of the above command words invite candidates to demonstrate their skills of
+understanding, analysis, and evaluation. Each question includes the instruction: ‘by referring
+to appropriate techniques’, which serves as a reminder for candidates of the need to
+demonstrate skills of analysis.
+
+In the language questions, candidates are asked to refer to ‘specific examples’ of language
+from their studies in this genre.
+
+
+Setting, conducting and marking the question paper
+This question paper is set and marked by SQA, and conducted in centres under conditions
+specified for external examinations by SQA. Candidates complete this question paper
+in 1 hour 30 minutes.
+
+Specimen question papers for National 5 courses are published on SQA’s website. These
+illustrate the standard, structure and requirements of the question papers candidates sit. The
+specimen papers also include marking instructions.
+
+
+
+
+Version 6.0                                                                               11
+Course assessment structure: portfolio–writing
+Portfolio–writing                                                                 30 marks
+The portfolio–writing provides evidence of candidates’ skills in writing for one of two
+purposes: broadly creative, and broadly discursive. These purposes are not mutually
+exclusive, and writing may contain elements of both.
+
+The portfolio–writing has a total mark allocation of 30 marks. This is 30% of the overall marks
+for the course assessment.
+
+15 marks are available for the piece of writing within the portfolio. The 30% weighting is
+achieved by doubling the mark for one piece.
+
+Candidates produce one written text: either broadly creative or broadly discursive. They can
+explore different types of writing throughout the course but must follow the portfolio–writing
+process for the piece selected for assessment.
+
+Most of the writing process requires candidates to work independently, but the teacher or
+lecturer can support them to choose the focus and genre of the piece of writing. Candidates
+must complete the first draft of the piece of writing in class under supervision.
+
+
+Portfolio–writing overview
+Candidates produce one written text for the portfolio. Some appropriate types of writing are,
+for example:
+
+Broadly creative
+
+ a personal or reflective essay
+ a piece of prose fiction (for example short story or episode from a novel)
+ a poem or set of thematically linked poems
+ a dramatic script (for example scene, monologue or sketch)
+
+Broadly discursive
+
+ an argumentative essay
+ a persuasive essay
+ a report
+ a piece of transactional or informative writing
+
+
+Setting, conducting and marking the portfolio–writing
+The portfolio–writing is:
+
+ set by centres within SQA guidelines
+ conducted under some supervision and control, with the first draft completed in class
+
+
+
+
+Version 6.0                                                                                  12
+Some supervision and control means that:
+
+ candidates do not need to be directly supervised at all times
+ the use of resources, including the internet, is not tightly prescribed
+ the work an individual candidate submits for assessment is their own
+ teachers and lecturers can provide reasonable assistance
+
+Evidence is submitted to SQA for external marking. SQA quality assures all marking.
+
+
+Assessment conditions
+Time
+Candidates are given the opportunity to demonstrate their writing skills at the most
+appropriate time in the course. That is, when their writing skills have reached the level of
+development and maturity required for National 5 English. There is no time limit for the
+production of this coursework, and the writing process can take place over a period of time.
+However, the first draft of the assessment piece must be done in class under supervision
+over a period of up to 4 hours. This may take place over several sessions, if required. There
+is no requirement for a formal timed write-up.
+
+
+Supervision, control and authentication
+The early stages of the writing process can be completed outwith the learning and teaching
+situation. When candidates are ready to complete the first draft of the assessment piece, this
+must be done in class under the supervision of a teacher or lecturer and with access to
+appropriate resources (for example notes, outline plan, research and/or ICT, as appropriate).
+Following teacher or lecturer feedback on the first draft, candidates then complete the final
+piece of writing under some supervision and control. Note: centres should only submit the
+final piece of writing for external marking.
+
+Although candidates may complete part of the work outwith the learning and teaching
+situation (for example research, planning and re-drafting), teachers and lecturers must put in
+place processes for monitoring progress to ensure that the work is the candidate’s own, and
+that plagiarism has not taken place.
+
+All candidates should follow the process below.
+
+
+Portfolio–writing process
+ choose focus and genre (with support of teacher or lecturer)
+ explore and develop initial idea (this can involve research and note-taking, as
+  appropriate)
+ plan the writing (outline and structure)
+ complete the first draft in class under supervision (open book conditions, with notes,
+  outline plan, research and/or ICT, as appropriate)
+ reflect on teacher or lecturer feedback
+ complete the final piece under some supervision and control
+
+
+
+
+Version 6.0                                                                              13
+Teachers and lecturers must carefully monitor each candidate during the preparation and
+production stages of the piece of writing to ensure that it is entirely the candidate’s own work.
+
+If the candidate is likely to have contact with professionals outwith the centre, the teacher or
+lecturer must make it clear to the candidate that no one else can be involved in the
+production of the portfolio–writing.
+
+Note: SQA defines plagiarism as: ‘Failing to acknowledge sources and/or submitting another
+person’s work as if it were your own.’ Examples of this would be using generative artificial
+intelligence tools to create a text output that is then submitted as a candidate’s own work or
+using it to improve a candidate’s own work.
+
+When the candidate is at the stage of writing the first draft, they must complete this in class
+under teacher or lecturer supervision. Note: candidates must have completed the first draft in
+class to allow submission of their final piece.
+
+The candidate must complete and sign the portfolio–writing declaration on the flyleaf to
+confirm that the writing is completely their own work.
+
+The portfolio–writing is a final summative assessment and when a candidate begins the
+process of drafting their piece of writing this must be under the direct supervision of their
+teacher or lecturer. At this point, no other person can be involved in the discussion or review
+of the candidate’s work.
+
+Centres must not accept a piece of writing for portfolio submission where:
+
+ there is doubt over the authenticity of a piece of writing
+ the candidate has not completed the first draft in class under supervision
+
+Mechanisms to authenticate candidate evidence could include:
+
+ regular checkpoint and/or progress meetings with candidates
+ checklists which record activity and/or progress
+ using the first draft of writing as a point of comparison with the final piece
+ asking candidates to provide an annotated bibliography (writing a sentence or two about
+  the usefulness of a source, for example, can remind candidates of where their
+  information and/or ideas came from)
+ making sure that candidates know exactly what is required for the portfolio, and that they
+  have read and understood the booklet Your National Qualifications
+
+
+Resources
+There are no restrictions on the resources to which candidates may have access. Depending
+on the task, or purpose of the writing, it may be appropriate for candidates to conduct
+research online or by referring to print publications. Alternatively, candidates may produce
+work which is personal or imaginative or reflective in nature and relies on no external
+resources.
+
+
+
+
+Version 6.0                                                                                14
+Candidates must be made aware of what constitutes plagiarism. Taking an essay from an
+internet site or submitting work that is not their own is plagiarism. The following are also
+examples of plagiarism:
+
+ copying and pasting from the internet without citing the source
+ copying directly from a textbook without citing the source
+ omitting quotation marks from quotations
+ using software such as generative artificial intelligence for anything other than providing
+  suggestions for potential source material
+
+Candidates must acknowledge all sources consulted. Any sources consulted for discursive
+writing must be acknowledged in footnotes or in a list at the end of the piece: details must be
+specific.
+
+
+Reasonable assistance
+Candidates should take the initiative in the planning, management and completion of the
+task. However, the teacher or lecturer may support the candidates in the planning and
+preparation of the piece. Reasonable assistance may be given in general terms to a group or
+class (for example advice on the finding of information) or may be given to candidates on an
+individual basis.
+
+The term ‘reasonable assistance’ is used in recognition of the need to support candidates
+through this task; however, care should be taken by teachers and lecturers to avoid too much
+intervention. If candidates require more than what is deemed to be ‘reasonable assistance’
+they may not be ready for assessment, or it may be that they have been entered for the
+wrong level of qualification.
+
+The teacher or lecturer should read and provide feedback to candidates on the draft of
+writing they complete in class under supervision. It is not acceptable for a teacher or lecturer
+to provide feedback on more than one draft of writing. Teachers and lecturers must give
+candidates the opportunity to improve on the first draft following consideration of this
+feedback, before submitting their final piece.
+
+Once candidates have submitted their final piece, this must not be changed by either the
+teacher, lecturer or candidate.
+
+It is acceptable for a teacher or lecturer to provide:
+
+ an initial discussion with the candidate on the selection of a focus and genre, leading to
+  an outline plan
+ written or oral feedback on one draft of writing
+
+
+
+
+Version 6.0                                                                                15
+It is not acceptable for a teacher or lecturer to provide:
+
+ model answers, which are specific to a candidate’s task
+ specific advice on how to rephrase wording
+ key ideas, or a specific structure or plan
+ corrections of errors in spelling and punctuation
+ feedback on more than one draft of writing
+
+It is not acceptable to use software such as generative artificial intelligence to provide:
+
+   model answers, which are specific to a candidate’s task
+   specific advice on how to rephrase wording
+   key ideas, or a specific structure or plan
+   corrections of errors in grammar, spelling and punctuation
+
+
+
+Evidence to be gathered
+The following candidate evidence is required for this assessment:
+
+ one piece of writing, which is broadly creative or broadly discursive
+
+
+Volume
+The written text produced by the candidates must be of no more than 1,000 words, but full
+marks can be achieved in a shorter piece, if appropriate to purpose (for example poetry).
+There is no minimum word count.
+
+If the word count exceeds the maximum by more than 10%, a penalty will be applied.
+
+
+
+
+Version 6.0                                                                                   16
+Portfolio–writing marking instructions
+In line with SQA’s normal practice, the following marking instructions for the National 5
+English portfolio–writing are addressed to the marker. They will also be helpful for those
+preparing candidates for course assessment.
+
+Candidates’ evidence is submitted to SQA for external marking.
+
+
+General marking principles
+This information is provided to help you understand the general principles you must apply
+when marking candidates’ submissions for this portfolio–writing. These principles must be
+read in conjunction with the detailed marking instructions, which identify the key features
+required in candidate responses.
+
+a   Marks for each candidate response must always be assigned in line with these general
+    marking principles and the detailed marking instructions for this assessment.
+b   Marking should always be positive. This means that, for each candidate’s response,
+    marks are accumulated for the demonstration of relevant skills, knowledge and
+    understanding: they are not deducted from a maximum on the basis of errors or
+    omissions.
+c   The candidate’s writing will be marked in terms of content and style.
+d   Assessment should be holistic. There will be strengths and weaknesses in every piece of
+    writing; assessment should focus as far as possible on the strengths, taking account of
+    weaknesses only when they significantly detract from the overall performance. Marks
+    should be awarded for the quality of the writing, and not deducted for errors or omissions.
+    Writing does not have to be perfect to gain full marks.
+
+
+
+
+Version 6.0                                                                              17
+Detailed marking instructions
+Assessors should assess the piece in terms of content and style and arrive at a final mark.
+The descriptors for awarding marks for content and style refer to the middle of the range.
+
+The marker should select the band descriptor that most closely describes the piece of
+writing.
+
+Once the best fit has been decided, then:
+
+ where the evidence almost matches the level above, the highest available mark from the
+  range should be awarded
+ where the candidate’s work just meets the standard described, the lowest mark from the
+  range should be awarded
+ otherwise the mark from the middle of the range should be awarded
+
+Satisfactory technical accuracy is a requirement for the piece to meet the minimum
+requirements for the 9–7 band. Writing may contain errors, but these will not be significant.
+Paragraphing, sentence construction, spelling and punctuation must be sufficiently accurate
+so that meaning is clear at the first reading.
+
+The following tables for each genre of writing should be used in helping assessors arrive
+at a mark.
+
+
+
+
+Version 6.0                                                                             18
+Writing which is broadly creative
+                       15–13                      12–10                       9–7                       6–4                        3–1
+ Creative:     attention to purpose      attention to purpose      attention to purpose      attention to          Writing pieces in this
+ content        and audience is            and audience is            and audience is            purpose and           category are likely to be
+                consistent                 consistent in the          reasonably well            audience is not       very rare and would be
+                                           main                       sustained                  always sustained      characterised by one or
+                As appropriate to                                                                                      more of the following:
+                genre:                     As appropriate to          As appropriate to          As appropriate to
+               the piece displays         genre:                     genre:                     genre:                 weak attention to
+                very good creativity      the piece displays        the piece shows           the piece has a         purpose and audience
+               feelings/reactions/        good creativity            some creativity            little evidence of     very thin content
+                experiences are           feelings/reactions/       feelings/reactions/        creativity             no attempt at using
+                expressed/explored         experiences are            experiences are           experiences are         language effectively
+                with a very good           expressed/explored         explored with a            expressed, but         brevity of response
+                degree of self-            with a good degree         sense of involvement       not always             irrelevance
+                awareness/                 of self-awareness/                                    convincingly
+                involvement/               involvement/
+                insight/sensitivity        insight/sensitivity
+ Creative:     features of the           features of the           features of the           there is an attempt
+ style          chosen genre are           chosen genre are           chosen genre are           to deploy the
+                deployed effectively       deployed, mostly           deployed with a            features of the
+               language is varied         successfully               degree of success          chosen genre
+                and often used to         language is apposite      language is effective     language lacks
+                create particular          and used at times to       in the main                variety
+                effects                    create an effect          structure of the piece    structure of the
+               structure of the piece    structure of the piece     is appropriate to          piece is not
+                enhances the               supports the               purpose/meaning            appropriate to
+                purpose/meaning            purpose/meaning                                       purpose/meaning
+                                                                                                significant errors
+                                                                                                 in sentence
+                                                                                                 construction/
+                                                                                                 paragraphing/
+                                                                                                 spelling
+
+
+
+Version 6.0                                                                                                                                   19
+Writing which is broadly discursive
+                          15–13                       12–10                       9–7                        6–4                      3–1
+ Discursive:    attention to purpose        attention to purpose      attention to purpose     attention to purpose     Writing pieces in
+ content         and audience is              and audience is            and audience is           and audience is not      this category are
+                 consistent                   consistent in              reasonably well           always sustained         likely to be very rare
+                information shows            the main                   sustained                information shows a      and would be
+                 evidence of careful         information shows         information shows         little relevant          characterised by
+                 research, is presented       evidence of relevant       evidence of some          research but is not
+                                                                                                                            one or more of the
+                 to maximise impact and       research and is            research and is           always presented in
+                 is sequenced to              presented in a clear       presented in a clear      a manner that            following:
+                 highlight key points         sequence                   sequence                  enhances meaning
+                ideas/techniques            ideas/techniques          ideas/techniques         ideas/techniques          weak attention to
+                 deployed to                  deployed to                deployed to               used to inform/argue,      purpose and
+                 inform/argue/discuss/        inform/argue/              inform/argue/             discuss/persuade are       audience
+                 persuade have a very         discuss/persuade           discuss/persuade          not always                very thin content
+                 good degree of               have a good degree         convey a line of          convincing and the        no attempt at
+                 objectivity/depth/           of objectivity/            thought/stance/           line of thought is not     using language
+                 insight/persuasive force     depth/insight/             point of view             consistently clear         effectively
+                 and are used to convey       persuasive force                                                               brevity of
+                 a clear line of              and are used to                                                                 response
+                 thought/appropriate          convey a clear line                                                            irrelevance
+                 stance/point of view         of
+                                              thought/stance/point
+                                              of view
+ Discursive:    features of the chosen      features of the           features of the          there is an attempt to
+ style           genre are deployed           chosen genre are           chosen genre are          deploy the features of
+                 effectively                  deployed, mostly           deployed with a           the chosen genre
+                language is varied and       successfully               degree of success        language lacks variety
+                 often used to create        language is apposite      language is              structure of the piece
+                 particular effects           and used at times to       effective in the main     is not appropriate to
+                structure of the piece       create an effect          structure of the          purpose/meaning
+                 enhances the                structure of the piece     piece is appropriate     significant errors in
+                 purpose/meaning              supports the               to purpose/meaning        sentence construction/
+                                              purpose/meaning                                      paragraphing/spelling
+
+
+Version 6.0                                                                                                                                   20
+Course assessment structure: performance–spoken
+language
+The performance–spoken language provides evidence of the candidates’ skills in talking and
+listening. This performance, which is part of course assessment, is assessed on an
+achieved/not achieved basis. It is a compulsory requirement for a course award in National 5
+English.
+
+The spoken language performance comprises the skills of talking and listening. There are
+four aspects to the spoken language performance, and candidates must achieve them all.
+These are:
+
+ employs detailed and relevant ideas and/or information using a structure appropriate
+  to purpose and audience
+ communicates meaning effectively through the selection and use of detailed
+  spoken language
+ uses aspects of non-verbal communication
+ demonstrates listening skills by responding to detailed spoken language
+
+In this assessment candidates have to do at least one of the following spoken
+language activities:
+
+ take part in a group discussion, or discussion-based activity, to which they contribute
+  relevant ideas, opinions, or information, using detailed language. Candidates must take
+  account of the contributions of others and stay focused on the topic or task
+ prepare and present a presentation. The presentation must be detailed in content and
+  must be structured in a clear and relevant way. Candidates must answer questions from
+  the audience at some point in the presentation
+
+
+Setting, conducting and marking the performance–spoken language
+The performance–spoken language is:
+
+ set by centres within SQA guidelines
+ conducted under some supervision and control
+
+Evidence is internally assessed by teachers or lecturers in each centre in line with SQA
+marking instructions and is externally verified by SQA. Separate information is given on
+arrangements for submission of evidence for external verification purposes.
+
+
+
+
+Version 6.0                                                                                21
+Assessment conditions
+Time
+Candidates should be given the opportunity to demonstrate their skills in talking and listening
+at the most appropriate time in the course. That is when their skills have reached the level of
+development and maturity required for National 5 English. Please note that ‘performance’
+should not be taken as necessarily implying just one assessment occasion. A holistic
+judgement can be made on a candidate’s performance based on a series of spoken
+language activities. There is no time limit for this coursework.
+
+
+Supervision, control and authentication
+The assessment should be conducted under some supervision and control. It is important
+that the assessment environment suits the purpose and nature of the spoken language, as
+well as the needs of each candidate.
+
+
+Resources
+There are no restrictions on the resources to which candidates may have access.
+Candidates may produce a presentation or visual aids and may refer to notes or prompts, as
+appropriate to purpose and audience.
+
+
+Reasonable assistance
+The teacher or lecturer may support the candidate in topic selection, planning and
+management of the task. Reasonable assistance may be given in general terms to a group
+or class (for example choice of topic, advice on the finding of information, choice of stimulus
+texts) or may be given to candidates on an individual basis.
+
+The term ‘reasonable assistance’ is used to try to balance the need for support with the need
+to avoid giving too much assistance. If any candidates require more than what is deemed to
+be ‘reasonable assistance’, they may not be ready for assessment, or it may be that they
+have been entered for the wrong level of qualification.
+
+It is acceptable for a teacher or lecturer to provide:
+
+ an initial discussion with the candidate on the selection of, for example a topic, theme,
+  texts, materials leading to notes or preparation for a discussion or presentation
+ some prompting during a discussion or presentation
+ questioning during a discussion or presentation in order to elicit evidence of
+  listening skills
+
+It is not acceptable for a teacher or lecturer to provide:
+
+ suggested responses which are specific to a candidate’s task
+ key ideas, or a specific structure or plan
+ excessive prompting during a presentation or discussion
+
+
+
+
+Version 6.0                                                                               22
+Evidence to be gathered
+The following candidate evidence is required for this assessment:
+
+ a detailed checklist which should be retained by centres for verification purposes
+
+This could be supplemented by a video recording of candidate performance. This may be
+useful for internal moderation and/or staff development and would also be acceptable for the
+purposes of verification, in addition to the detailed checklist.
+
+
+Volume
+There is no stipulation as to the length of the spoken language performance.
+
+
+
+Performance–spoken language marking instructions
+In line with SQA’s normal practice, the following marking instructions are addressed to the
+teacher or assessor.
+
+
+General assessment principles for National 5 English: performance–spoken language
+This information is provided to help understanding of the general principles that apply when
+assessing candidate performance. These principles must be read in conjunction with the
+detailed marking instructions, which identify the key features required in candidate
+performance.
+
+a   Judgements on performance must always be made in line with these general marking
+    principles and the detailed marking instructions for this assessment.
+b   The candidate’s performance will be assessed in terms of the following aspects of
+    performance: deployment of detailed and relevant ideas/information, selection and use
+    of detailed spoken language, use of non-verbal communication, responses to
+    detailed spoken language.
+c   For each candidate, the assessor should select the descriptions of performance from the
+    detailed marking instructions which most closely describe the evidence.
+d   Assessment should be holistic. There will be strengths and weaknesses in every
+    performance; assessment should focus as far as possible on the strengths, taking
+    account of weaknesses only when they significantly detract from the overall performance.
+e   On any one occasion, candidates may display ability across both ‘Achieved’ and
+    ‘Not achieved’ descriptors. It is important for assessors to remember that a holistic
+    judgement can be made on a candidate’s performance based on a series of spoken
+    language activities.
+
+
+
+
+Version 6.0                                                                             23
+The four aspects of performance
+1 Employs detailed and relevant ideas and/or information using a structure appropriate
+   to purpose and audience.
+
+    This could be broken down into three essential elements, all of which should be
+    achieved by the candidate:
+
+     The content could include ideas, opinions, reactions, information or be based on
+      personal experience and must be detailed.
+     Structure will vary depending on the type of performance (presentation or group
+      discussion), and on audience and purpose. A presentation should have a clear
+      introductory section, a sequenced body of content, and a suitable conclusion. In
+      group discussion, structure might involve, for example taking turns, acknowledging
+      the chair (where appropriate), summarising, challenging, developing the views of
+      others.
+     Relevance to task, topic, purpose and audience should be maintained throughout.
+
+
+2   Communicates meaning effectively through the selection and use of detailed
+    spoken language.
+
+    This could be broken down into two essential elements, both of which should be achieved
+    by the candidate:
+
+     Choice and use of, for example vocabulary and register will be appropriate to the
+      purpose and audience and allow for the effective communication of meaning.
+     Clarity and accuracy (in terms of the use of language structures) will be sufficient to
+      ensure that effective communication takes place.
+
+
+3   Uses aspects of non-verbal communication.
+
+     Non-verbal communication will be used by the candidate to assist communication
+      and/or meaning, for example, for emphasis, to indicate agreement.
+
+    Please note that assessors should accept a wide and inclusive definition of what
+    constitutes non-verbal communication.
+
+
+4   Demonstrates listening skills by responding to detailed spoken language.
+
+     Here, listening is the focus. Assessors should judge a candidate’s performance in
+      listening from the relevance/appropriateness of the candidate’s responses to a group
+      discussion, or from the relevance/appropriateness of the candidate’s responses to
+      questioning in, for example a presentation. Again, a holistic approach should be taken
+      when making an assessment judgement.
+
+
+
+
+Version 6.0                                                                              24
+Detailed marking instructions for National 5 English: performance–spoken language
+All aspects of performance, as stated in the left-hand column, must be met by candidates if
+they are to achieve the National 5 English performance–spoken language. Acceptable
+performance is described in more detail in the ‘Achieved’ column.
+
+Please note that group discussion is defined as a discussion involving the candidate and at
+least one other person. The other person could be the teacher or assessor.
+
+
+ Aspect of performance      Achieved                           Not achieved
+ Employs detailed and       Content                            Content
+ relevant ideas and/or       can contribute a range of         ideas, views, opinions,
+ information using a           detailed and relevant ideas,       and/or information lack detail
+ structure appropriate         views, opinions and/or             and/or relevance
+ to purpose and                information —contributions
+ audience                      could be made through a
+                               presentation, a group
+                               discussion, or a series of
+                               discussion-based activities
+
+                            Structure                          Structure
+                             spoken language is                structure is not effective,
+                                structured effectively, and,       and, where appropriate,
+                                where appropriate, takes           does not take account of the
+                                account of the contributions       contribution of others
+                                of others
+                            Relevance                          Relevance
+                             attention to task, purpose        attention to task, purpose
+                               and audience is sustained          and audience is not
+                               throughout the presentation,       sustained
+                               group discussion or series of
+                               discussion-based activities
+ Communicates               Choice and use of language         Choice and use of language
+ meaning effectively         can select and use detailed       spoken language selected
+ through the selection         spoken language that is            and used is not detailed
+ and use of detailed           appropriate to purpose and         and/or is not appropriate to
+ spoken language               audience                           purpose and audience
+
+                            Clarity and accuracy               Clarity and accuracy
+                             can employ appropriate            spoken language employed
+                               spoken language with               is unclear, and/or not
+                               sufficient clarity and             sufficiently accurate to
+                               accuracy to ensure that            ensure that communication
+                               effective communication is         is achieved
+                               achieved
+
+
+
+
+Version 6.0                                                                            25
+ Aspect of performance     Achieved                           Not achieved
+ Uses aspects of non-       can employ appropriate non-       non-verbal communication is
+ verbal communication        verbal features to assist          not employed
+                             communication and/or
+                             meaning, for example facial
+                             expression, emphasis,
+                             gesture and/or eye contact
+
+
+ Demonstrates listening     can give relevant responses       does not respond relevantly
+ skills by responding to     to the contributions of others     to others in group
+ detailed spoken             in group discussions or in a       discussions
+ language                    series of discussion-based
+                             activities                          Or
+
+                              Or                               does not respond relevantly
+                                                                to questions which follow a
+                            can respond relevantly to          presentation
+                             questions which follow, for
+                             example, a presentation
+
+
+
+
+Version 6.0                                                                        26
+Grading
+A candidate’s overall grade is determined by their performance across the course
+assessment. The course assessment is graded A–D on the basis of the total mark for all
+course assessment components.
+
+
+Grade description for C
+For the award of grade C, candidates will typically have demonstrated successful
+performance in relation to the skills, knowledge and understanding for the course.
+
+
+Grade description for A
+For the award of grade A, candidates will typically have demonstrated a consistently high
+level of performance in relation to the skills, knowledge and understanding for the course.
+
+
+
+
+Version 6.0                                                                              27
+Equality and inclusion
+This course is designed to be as fair and as accessible as possible with no unnecessary
+barriers to learning or assessment.
+
+Guidance on assessment arrangements for disabled candidates and those with additional
+support needs is available on the assessment arrangements web page.
+
+
+
+
+Version 6.0                                                                           28
+Further information
+ National 5 English web page
+ Assessment arrangements
+ Building the Curriculum 3–5
+ Guidance on conditions of assessment for coursework
+ Guide to Assessment
+ Recent SQA research
+ Remote assessment
+ SCQF Handbook
+ Know Your SCQF Level - Scottish Credit and Qualifications Framework
+ SQA’s Skills Framework: Skills for Learning, Skills for Life and Skills for Work
+
+
+
+
+Version 6.0                                                                          29
+Appendix: course support notes
+Introduction
+These support notes are not mandatory. They provide advice and guidance to teachers and
+lecturers on approaches to delivering the course. They should be read in conjunction with
+this course specification and the specimen question paper and/or coursework.
+
+
+
+Developing skills, knowledge and understanding
+This section provides further advice and guidance about skills, knowledge and understanding
+that could be included in the course. Teachers and lecturers should refer to this course
+specification for the skills, knowledge and understanding for the course assessment. Course
+planners have considerable flexibility to select coherent contexts which will stimulate and
+challenge their candidates, offering both breadth and depth.
+
+The following provides a broad overview of the subject skills, knowledge and understanding
+developed in the course:
+
+ the development of key communication and literacy skills in reading, writing, talking
+  and listening
+ understanding, analysis and evaluation of detailed texts in the contexts of literature,
+  language and media, including Scottish literature
+ the production of detailed texts in a range of contexts
+ knowledge and understanding of language
+
+
+Communication and literacy skills
+The acquisition and development of communication and literacy skills should be fundamental
+to the course in National 5 English. To address the development of these skills, many of the
+teaching and learning activities chosen will be inter-related. There will be a cross-over of
+skills, and candidates should be encouraged to make connections in their learning across
+different aspects of the course. For example, it is very likely that work around the study of a
+Scottish writer for the Critical Reading question paper may well involve activities that would
+provide assessment evidence for the spoken language component. Similarly, an exercise
+which requires the close and careful reading of a Scottish text will likely contribute towards
+the development of the key skills required for the Reading for Understanding, Analysis and
+Evaluation (RUAE) question paper.
+
+
+Understanding, analysis and evaluation
+Development of the key reading skills of understanding, analysis and evaluation should be a
+principal focus of the course.
+
+Candidates should aim to demonstrate their understanding of a text by identifying, isolating
+and explaining in their own words, for example key ideas, information, points of view.
+
+Analysis involves the breaking down of the text into parts, and then looking closely at how
+the parts operate, thereby showing a greater understanding of how the text operates as a
+
+
+Version 6.0                                                                                 30
+whole. For a poem, it is reasonable to carry out a line-by-line examination of significant
+aspects, for example of word choice, metaphor, sound; however, it would not be fruitful or
+appropriate to take apart a novel or play in the same way. The scope of a novel or play is
+simply too large for this approach to be meaningful. Here, it would be more logical to divide
+the whole novel or play into larger parts, for example narrative, character, key scene or
+episode, setting. It is important to note that this analytical treatment should not detract from a
+holistic appreciation of the text as a whole. It should also be remembered that a writer aims
+to create a seamless work, not a framework of parts.
+
+Evaluation requires candidates to engage fully with the texts that they are studying.
+Candidates should be in a position to provide an articulation of the impact of a text (or parts
+of it), or a judgement on its effectiveness in terms of purpose.
+
+
+The production of detailed texts in a range of contexts
+Candidates should be encouraged to write in different contexts and for varying purposes. It is
+important to provide them with the opportunity to apply the skills they have learned
+throughout the course. The requirement is to produce one broadly creative piece or one
+broadly discursive piece for the portfolio–writing; however, several explorations should be
+made across types and genres before selection is made for the portfolio–writing submission.
+
+Candidates should learn the skills and techniques necessary for the production of critical
+essays: significantly, the development of a line of thought which addresses and answers a
+specific question and is sustained across an extended piece of writing.
+
+Candidates should apply the talking and listening skills that they have learned by taking part
+in discussions or delivering presentations. The production of spoken language texts in the
+form of presentations or discussions are both valid course assessment activities. It is
+important to note that there is no requirement for candidates to conduct individual
+presentations for the purposes of assessment, it is acceptable to restrict spoken language
+assessment activities to discussion-based tasks only.
+
+
+Knowledge and understanding of language
+Knowledge and understanding of language involves candidates becoming better skilled and
+equipped in the use of language for the purposes of their own written and spoken
+expression, and also takes the form of an exploration of the language which is specific to the
+texts they are studying in preparation for the Critical Reading question paper. The production
+of their own texts will see candidates applying their knowledge and understanding of how
+detailed language is used by writers across various types, genres and purposes. Candidates
+are required to have some knowledge of the main ways in which language works, for
+example:
+
+ the ways in which sentences are constructed and punctuated
+ how words and expressions can have denotative meaning and connotative meaning
+ the main principles and patterns of spelling
+ how structure and style can be used for meaning and effect
+ how language can be manipulated for different purposes
+ the significance of register in both written and spoken language
+
+
+Version 6.0                                                                                 31
+ the ways in which spoken language differs from written language
+ the use of listening skills in order to frame responses to questions, and to make effective
+  contributions to discussions
+ aspects of non-verbal communication
+
+It is anticipated that the study of the ways in which language works would operate as part of
+teaching and learning in other aspects of the course, rather than as a stand-alone element.
+However, direct treatment of these aspects may be appropriate where needed. Of course,
+language exploration need not stop here. Other areas worthy of study might include
+etymological considerations, the sound of words, Scots language, regional dialects and
+variations, how English is used in different cultures.
+
+
+
+Approaches to learning and teaching
+The National 5 English course is concerned with the language used by candidates in their
+learning, language which is useful to candidates outwith the classroom, and language that
+they use in everyday life. The aim of the course is to build on prior language and literacy
+learning, and to improve candidates’ use of language. On completion of the course,
+candidates should be able to deal with and use language which is detailed in nature.
+
+In terms of course planning, there is considerable choice available in order that teachers or
+lecturers have sufficient freedom to decide on teaching and learning approaches which best
+suit their candidates.
+
+Reading is central to all English courses, and reading for enjoyment as a life skill should be
+promoted. Regular reading provides opportunities to broaden candidates’ intellectual,
+emotional, social and political horizons. The use of, for example some self-selection of texts
+or peer recommendations could help to encourage pleasure in reading and contribute to the
+development of a positive attitude towards reading.
+
+The Scottish texts section of the Critical Reading question paper gives candidates the
+opportunity to explore the literature of Scotland through the study of the work of at least one
+Scottish writer. Learning about Scotland and Scottish culture will enrich the candidates'
+learning experience and help them to develop the skills for learning, life and work they will
+need to prepare them for taking their place in a diverse, inclusive and participative Scotland,
+and beyond.
+
+For the critical essay, there is free choice in the selection of texts. Openness here balances
+the prescription of the Scottish text section. Teachers and lecturers should consider a wide
+range of literature/media/language and take account of the needs of their candidates when
+making selections. While it is accepted that certain texts are popular for this level it is not the
+intention that there should be ‘National 5’ texts per se. Candidates can be introduced to a
+wide range of texts and take from them what they can at their own stage of learning
+and maturity.
+
+When considering the selection of texts, teachers should weigh up the scope for developing
+and demonstrating skills of analysis in a critical essay, and have in mind the personal, social,
+emotional, and developmental needs of their candidates. An important function of literature
+
+
+
+Version 6.0                                                                                  32
+is, of course, its ability to widen the reader’s intellectual and emotional experience. Texts
+should also be chosen with this in mind, together with possible progression to Higher
+English, and to further and higher education.
+
+Text selection has an important part to play in our work towards a diverse and inclusive
+curriculum where all candidates feel they have a voice and a sense of belonging. The texts
+they study help them to understand their own worlds and the worlds of others. Text selection,
+therefore, has significance for all candidates. Where possible, teachers and lecturers should
+have a discussion with candidates about the texts they want to read (within the confines of
+available resources). This could be a focus for departmental or faculty planning and
+discussion.
+
+Candidates should experience a range of texts to show that reading offers them choice and
+is an interactive and enjoyable activity. In the senior phase of the curriculum, reading should
+still be for pleasure. A narrow focus limits choice and opportunities for candidates to find
+connections with the texts they are studying.
+
+The texts they read should cultivate intellectual and emotional curiosity, helping candidates
+to find their own voice and expression. In order to do so they must find other voices that they
+can relate to, either in direct representation or indirectly through imaginative or empathetic
+response. An appropriate reference here is the metaphor devised by Rudine Sims Bishop,
+‘Mirrors, Windows and Sliding Glass Doors’ (The Ohio State University, 1990). Within this
+metaphor, texts can be:
+
+ mirrors: readers see themselves directly reflected in the text
+ windows: the text offers readers a new view of their world, or a view of an imaginative
+  world
+ sliding glass doors: the text seems to allow readers imaginative entry into the world
+  of the text
+
+If candidates do not feel included by the texts studied, they may feel excluded by the
+experience of reading critically. Equally, if they see only direct representations of themselves
+in these texts, they might be encouraged towards a limited and narrow view of the world and
+its diversity. In summary, candidates should feel both included and challenged by the texts
+they read.
+
+Teachers and lecturers should consider the following reflective questions when selecting
+texts to study for the critical essay:
+
+ Does the text provide suitable challenge for the development of candidates’ skills,
+  knowledge and understanding at National 5 level?
+ Have candidates had a say in what they want to read?
+ Does the text meet the needs of a diverse and multicultural candidate population?
+ Does the text accommodate multiple perspectives, for example linguistic, religious, faith,
+  ethnic, cultural, racial, gender, sex, sexual orientation, family, age, neurodiversity,
+  disability?
+ How would you address the ways in which the text might promote a certain cultural way
+  of thinking, or view of the world?
+
+
+Version 6.0                                                                                 33
+Teachers and lecturers should encourage candidates to:
+
+ think critically about, and develop a critical stance towards, the texts they are reading.
+  Taking a wider view, candidates increasingly need to be able to think critically in order to
+  be able to judge information and content online
+ have opportunities to respond to texts through discussion and examine texts from
+  different perspectives or through different lenses. The exchange of responses,
+  perspectives and ideas helps to refine understanding and develop critical skills
+ develop conceptual skills (to deal with ideas) in addition to functional skills of analysis. It
+  is important that the texts they study allow them to do this
+
+As a mediator of the texts studied, the teacher or lecturer has a key role guiding discussion in
+a careful and sensitive way. This may be especially true in the case of problematic or
+challenging content or language.
+
+As candidates read, or following reading, the teacher or lecturer could ask them to consider
+critical questions, for example:
+
+ Whose point of view or voice is heard in the text? Why do you think the writer made this
+  choice?
+ Whose point of view might be missing? How would it change the text if their voice was
+  heard?
+ How does your personal experience and identity affect how you engage with the text?
+ Do you think the text is trying to influence or change the way you think? If so, how?
+ What do you think the writer wants you to believe or feel? How has the writer made you
+  feel this way?
+
+Some useful websites include:
+
+Critical reading
+National Literacy Trust
+
+Professional practice
+Building racial literacy
+Breaking the mould: principles for an anti-racist curriculum
+Promoting race equality and anti-racist education: a curriculum which reflects diversity
+Promoting race equality and anti-racist education: Literacy and English
+
+Text suggestions
+Scottish Book Trust: book lists
+Penguin: Lit in Colour
+Glasgow Women’s Library
+
+
+
+
+Version 6.0                                                                                 34
+It is important to emphasise the significance of thinking skills to success in National 5
+English. Candidates should be given the freedom and opportunity to think for themselves.
+All course assessment components require candidates to think, for example:
+
+ dealing with an unseen passage of reading in RUAE question paper
+ dealing with the literature they have read while responding to questions in the Critical
+  Reading question paper
+ thinking through issues as part of discursive writing for the portfolio–writing
+ thinking about ideas raised as part of a discussion in the performance–spoken language
+
+It is also important to emphasise the necessity of providing opportunities for the application of
+skills which have been learned during the course. Teaching and learning results in the
+acquisition of important skills, and it is through assessment that we see, and measure,
+their application.
+
+
+
+Preparing for course assessment
+Question paper: Reading for Understanding, Analysis and Evaluation
+Reading for Understanding, Analysis and Evaluation (RUAE) is reading closely. It requires
+candidates to pay close attention to both ideas and language in their reading. The
+importance and value of wide reading in preparation for RUAE cannot be stressed too
+strongly.
+
+The RUAE passages are taken from non-fiction sources, often from newspapers, and it is
+recommended that candidates become familiar with this type of writing. A wide range of
+types should be tackled, including writing which is, for example discursive, persuasive,
+didactic, argumentative, personal, reflective, serious or humorous. Candidates could be
+asked to source and then to share articles of sufficient linguistic complexity. Discussion of
+main ideas and writers’ use of language could then follow. In this way the spoken language
+component could be integrated into teaching and learning approaches for RUAE.
+
+When reading in preparation for RUAE, candidates should be asking themselves the
+following questions:
+
+ What are the writer’s main ideas?
+ Which language techniques are used to get these ideas across?
+
+
+
+
+Version 6.0                                                                                35
+Further questions will follow:
+
+ What is the writer trying to do with this piece of writing?
+ Is the intention to persuade you of something?
+ Or, is it to provoke some kind of reaction?
+ How did you respond to it?
+ Did it make you laugh?
+ Were you, for example, sad or angry?
+ What impact did the writing have on you?
+ Was it effective?
+
+Candidates should aim to isolate main ideas, trying to separate these from examples, such
+as expansion, anecdote. Candidates should be able to identify, isolate, extract, and render
+into their own words a writer’s key ideas from reasonably large sections of the passage.
+
+The practice of using a dictionary to explore the origins and definitions, core meanings and
+sub-senses of words should be encouraged, along with the skill of how to come to meanings
+by recognising stems and roots. The skill of vocabulary in context should be fostered: how
+meaning can be worked out from the surrounding context. Candidates should be encouraged
+to take on the challenge posed by unfamiliar vocabulary; that is, not being defeated or put off
+by it. Similarly, there is the skill of being able to identify which words are central to
+understanding the ideas of the passage, and which are not.
+
+Candidates should develop confidence in their knowledge of common language techniques,
+for example word choice, sentence structure, metaphor, punctuation, tone, contrast. In the
+RUAE question paper, questions might point to specific language features (for example word
+choice or sentence structure) or might give candidates the opportunity to make their own
+decisions as to which technique(s) to discuss by referring to the writer’s use of language.
+Questions always specify the number of examples which a response should deal with.
+Candidates should be able to provide analytical comments which focus on and accompany
+identified examples of a writer’s use of language. It should be noted that, at National 5,
+marks for questions requiring the skill of analysis are awarded on the basis of 1 mark for a
+correct identification of a relevant reference, and 1 mark for an appropriate analytical
+comment.
+
+Candidates should be aware of, and be able to recognise, common patterns of structure
+within pieces of writing. They should be able to comment on how paragraphs are linked, and
+the effectiveness of opening and/or concluding sections, or paragraphs.
+
+
+
+
+Version 6.0                                                                              36
+Question paper: Critical Reading
+This question paper has two sections. For section 1, Scottish texts, candidates must study at
+least one of the Scottish writers from the set list. This list is refreshed as required.
+For section 2, critical essay, there are no restrictions on text selection. This allows for
+personalisation and choice across literature, film and TV drama, and language texts.
+
+Candidates should explore the techniques of writing, in particular the writing techniques
+specific to the writers and texts studied as part of the course. This will allow them to conduct
+analysis of the techniques of writers studied and will also nurture the growth and application
+of their own writing skills as required for the portfolio–writing. Candidates should be
+encouraged to explore the complexities of connotative, metaphorical language, and how it
+deepens meaning and effect.
+
+In their responses for the Critical Reading question paper, candidates are required to make
+reference to the texts which they have studied. A reference does not have to take the form of
+a quotation. A reference might be:
+
+ a summary of what a character in a play, novel or short story has said
+ a summary of an important event or a moment
+ an aspect of conflict
+ a description of aspects of setting, or comments on characterisation, for example a
+  character’s mental state or feelings
+
+There is, of course a place for actual quotation in, for example drama where analysis of a
+speech or dialogue might reveal key aspects of characterisation and/or the use of dramatic
+irony for thematic purposes. In poetry, there will likely be words and/or expressions where
+detailed analysis is required of, for example word choice, use of metaphor and/or sound. This
+approach might also be appropriate for the analysis of short stories.
+
+Candidates should be encouraged to evaluate the impact of reading the texts they have
+studied. They might want to consider whether the impact was overall or confined to certain
+sections of the text(s).
+
+
+Section 1 Scottish texts
+When candidates are studying the texts of their chosen Scottish writer, they should be on the
+lookout for connections between short stories and poems, or between parts of a longer text.
+These connections may take the form of central concerns or themes, or may be aspects of a
+writer’s techniques, including, for example characterisation, setting, word choice and
+imagery.
+
+While preparing for the final question in this section, candidates should be aware that they
+will be required to make a connection between the printed extract or poem, and at least one
+other poem or short story or part of a larger work. They must be able to show how this
+connection operates in the printed extract, and elsewhere. To do this effectively, candidates
+will have to make detailed references.
+
+
+
+
+Version 6.0                                                                                37
+There are opportunities here to incorporate discussion-based activities. If, for example a
+study is being made of the work of a poet, a group discussion could be used to explore
+further poems from the list, following initial, more teacher-led work from the first group of
+poems. There could be group annotation, or collaborative annotation of poems, with groups
+being asked to look at writers’ techniques or central concerns, or key features of the text(s).
+Approaches like these could serve to foster greater independence of learning.
+
+
+Section 2 Critical essay
+When writing a critical essay, candidates must remember they are writing in response to a
+question which directs them to a specific purpose. It is important that candidates aim to
+construct and communicate a line of thought in their critical essay. The line of thought must
+be relevant to the question and be structured in such a way that meaning is clear. Critical
+essays must demonstrate knowledge and understanding of the text(s), and include analysis
+of the writer’s techniques, and evaluation in the sense of the candidate showing what has
+been gained from, or enjoyed about the text(s). Candidates must be aware that technical
+accuracy is judged too, and that writing must be sufficiently accurate to access the full
+range of marks.
+
+All questions contain the expression ‘with reference to appropriate techniques’ in order to
+remind candidates that they have to give a full demonstration of their skills of analysis.
+
+Note: a technique might be appropriate for drama, but not, for example, poetry and
+candidates should know the difference.
+
+For example, techniques might include:
+
+ drama: key scene(s), structure, climax, theme, plot, conflict, setting
+ prose fiction: characterisation, setting, key incident(s), climax, turning point, plot, structure,
+  narrative technique, theme, description
+ prose non-fiction: use of evidence, stance, style, selection of material, narrative voice,
+  description
+ poetry: word choice, tone, imagery, structure, rhythm, rhyme, theme, sound
+ film and TV drama: camera, key sequence, characterisation, mise-en-scène, editing,
+  music, sound, special effects, plot, dialogue
+
+Note: for film and TV drama, candidates should study important scenes or sequences, in
+addition to developing an awareness of the work as a whole.
+
+In the language section of the Critical Reading question paper, candidates are asked to deal
+with actual examples of particular or specialised language use. Topics should be taken from
+an area of language use which provides sufficient scope for understanding, analysis, and
+evaluation. This could include the particular language used by groups (for example
+geographical, interest, political, social), the language of advertising, the language of politics,
+medicine or law. ‘The language of groups’ should be viewed as a wide term of reference.
+
+Analysis conducted should deal with actual examples of language use. Language features to
+cover might include register, accent, dialect, slang, jargon, vocabulary, tone and/or
+abbreviation.
+
+
+Version 6.0                                                                                   38
+Portfolio–writing
+The portfolio–writing allows for the assessment of candidates’ ability in writing. It is the
+culmination of the teaching and learning of the skills of writing conducted throughout the
+course and will build on prior learning. It represents the application of this learning. The
+teaching and learning of writing skills can be integrated into the work of other aspects of the
+course, especially reading.
+
+All writing must show an awareness of structure. In its most simple form this involves an
+opening, main body, and conclusion. However, more complex structures can produce
+powerful effects in creative writing, and experimentation is to be encouraged.
+
+Experimentation in terms of purposes, genres, and contexts is highly desirable in order that
+candidates begin to discover types of expression best suited to their needs and
+development. In work towards broadly creative writing, candidates should be encouraged to
+make use of their imaginations, as a faculty, as part of the process, in the creation of written
+artefacts, both for imaginative writing, and in their exploration of their own life experience.
+
+When candidates are writing about their own experience, it has to be acknowledged that they
+will approach this task with differing degrees of personal maturity or self-awareness. It is
+acceptable and sufficient for candidates to deal with thoughts, feelings and reactions. There
+is no necessity for a sense of distanced reflection to be present in the writing, unless it
+happens to emerge naturally from a piece of writing, or if a candidate has the personal
+maturity for that kind of expression. It should be stressed that it is the candidates’ ability in
+writing that is assessed in the portfolio–writing.
+
+Teachers and lecturers should offer as much personalisation and choice to candidates
+regarding the selection of topics and types of writing as possible. If candidates are fully
+involved with their tasks and topics, it generates a high level of engagement, and this
+enhances the prospects of success. Differentiation here largely comes from outcome, rather
+than being built into the task itself.
+
+Discursive writing may be supported by discussion-based activities, particularly group
+discussion on topics selected by candidates as part of independent learning. Discussion can
+help to deepen candidates’ understanding of the issues they are investigating and exploring.
+Discursive writing is typically a mixture of facts and opinions. Candidates should be
+encouraged to include both in their own discursive writing. Discursive writing can include
+personal aspects, but should not be too anecdotal. There should be as full an exploration of
+the relevant arguments as possible.
+
+Research for discursive pieces may well involve candidates reading pieces of professionally-
+written non-fiction or news articles. A dual purpose can be achieved here as candidates may
+have opportunities to improve their RUAE skills while preparing for the portfolio–writing.
+Further cross-over may occur between discursive writing and the RUAE question paper as
+candidates need to use their own words in the handling of ideas. Teachers and lecturers
+should promote good study habits regarding the conducting of research in that all sources
+consulted must be acknowledged and declared.
+
+Much of the above is also true for pieces of writing which are information-based, such as
+reports, blogs-posts, open letters, and biographies. Pieces of writing which are primarily
+
+
+
+Version 6.0                                                                                39
+concerned with conveying information are perfectly acceptable for portfolio–writing
+submission.
+
+Teachers and lecturers must make candidates aware of the word limit associated with
+National 5 English portfolio–writing. The written text must be of no more than 1,000 words.
+This figure is intended to be task appropriate for National 5 English. The skill of containing
+writing within specified word limits will be invaluable for candidates, if or when they progress
+to learning for Higher English, and in further or higher education.
+
+For poetry, a single poem is treated in exactly the same way as any other piece of creative
+writing: one piece is required. It is acceptable to submit a group of related short poems, but
+these will be treated as one piece and will be marked as such. In terms of length, brevity
+would be expected given the concentration of language that is characteristic of poetry. The
+maximum length of 1,000 words applies to poetry, but it may be significantly shorter.
+
+Writing in Scots can be submitted for both broadly creative, and broadly discursive pieces.
+
+
+Advice on authenticity and plagiarism
+Most candidates will know that taking (or purchasing) an essay from an internet site or
+submitting work that is not their own is plagiarism. It is also worth emphasising that the
+following are also examples of plagiarism:
+
+ copying and pasting from the internet without citing the source
+ copying directly from a textbook without citing the source
+ omitting quotation marks from quotations
+ using software such as generative artificial intelligence for anything other than providing
+  suggestions for potential source material
+
+Candidates’ portfolio–writing must be written in their own words unless they are quoting from
+a referenced source. If candidates are asked to explain what they mean by a certain
+expression or sentence, they should be able to do so.
+
+It is important that candidates understand that, when they sign the authentication statement
+on the flyleaf, they are confirming that the work is their own, they did not use generative
+artificial intelligence other than to identify potential sources, and any ideas or language
+belonging to someone else are properly acknowledged.
+
+Encouraging candidates to choose their own subject matter for pieces of writing not only
+encourages personalisation, choice and independent learning, but also reduces the chances
+of plagiarism between groups of candidates all tackling the same topic. For broadly
+discursive writing, insisting on the use of at least one source written within the past year will
+outdate most online essay bank materials.
+
+A marked change in writing style can be an indicator of plagiarism, as can be a reliance on
+non-UK sources (where these are clearly inappropriate). Using an advanced search in an
+internet search engine, and enclosing suspect phrases in double quotation marks (“…”), will
+ensure that pages with this particular sequence are returned.
+
+
+
+
+Version 6.0                                                                                  40
+The most effective way to help candidates avoid plagiarism is to spend time discussing the
+issue (including the risks and pitfalls), and by teaching basic research skills along with the
+teaching and learning of writing. A good starting point might be with the definition of
+plagiarism used by SQA: ‘Failing to acknowledge sources and/or submitting another person’s
+work as if it were your own.’ Examples of this would be using generative artificial intelligence
+tools to create a text output that is then submitted as a candidate’s own work or using it to
+improve a candidate’s own work.
+
+Candidates should have read and understood the rules surrounding the construction of a
+portfolio–writing, contained in the booklet Your National Qualifications.
+
+
+Performance–spoken language
+Spoken language (talking and listening) is fundamental to English courses. Firmly
+established teaching and learning approaches and contexts will generate assessment
+evidence for the performance–spoken language. The integration of spoken language
+assessment into work done in other areas of the course is encouraged. In this way, the
+assessment of spoken language need not stand apart from the teaching and learning
+process.
+
+The core concerns of the teaching and learning of spoken language are the selection,
+organisation, and presentation of detailed information, ideas, views, and language, together
+with a full awareness of intended purpose and audience.
+
+Discussion can be a hugely effective contributor to learning, and to the creative process in
+general. Group discussion in which there are different perspectives can lead to highly
+productive, creative interactions. For this reason, it is hard to predict the outcome or to
+legislate for consistency of discussion (it being dependent on so many factors). Therefore, it
+is important to remember that assessment evidence can be taken from a series of
+discussion-based activities, or that the duration of the spoken interactions can be increased,
+so all candidates have an equal opportunity to demonstrate their skills. Varying the
+candidates in the group can change the group dynamics and help produce different
+outcomes.
+
+In discussion it is expected that talking and listening will play equal parts. Candidates will do
+roughly as much talking as listening in group discussion situations. Candidates should learn
+to recognise, to value, and to use techniques of non-verbal communication. These should be
+seen as aids to communication, often used in place of a spoken word, or for emphasis.
+Non-verbal aspects might include nodding, shaking of head, gestures, hand movements,
+eye contact, varied pace, stress and intonation.
+
+Formal debates can be very effective in the development of spoken language skills. The
+importance of turn-taking, and the skills of argument development, reasoned refutation, etc
+are valuable tools for discussion. Teaching and learning activities associated with the drama
+teaching can also contribute to the development of spoken language skills, for example role
+play, or ‘hot seat’ techniques used to explore characterisation in literature.
+
+Presentations might be conducted on an individual or group basis. Topics could be drawn
+from, and links could be made to, work done towards broadly discursive writing for the
+portfolio–writing. Question and answer sessions at the end of presentations will provide
+
+
+Version 6.0                                                                                41
+evidence for the performance–spoken language but could also help candidates to clarify their
+thinking on ideas and/or evidence pertinent to their chosen issues or subjects.
+An understanding of the forms and varieties of spoken language can assist candidates with
+their learning of other aspects of knowledge of language, for example register, dialect,
+accent, tone.
+
+
+
+Developing skills for learning, skills for life and skills
+for work
+Course planners should identify opportunities throughout the course for candidates to
+develop skills for learning, skills for life and skills for work.
+
+Candidates should be aware of the skills they are developing, and teachers and lecturers can
+provide advice on opportunities to practise and improve them.
+
+SQA does not formally assess skills for learning, skills for life and skills for work.
+
+There may also be opportunities to develop additional skills depending on approaches being
+used to deliver the course in each centre. This is for individual teachers and lecturers
+to manage.
+
+The table below provides some suggested opportunities for how these skills can be further
+developed in the course.
+
+Skills for learning, skills for
+                                   Approaches for learning and teaching
+life and skills for work
+1 Literacy                         1.1   Reading
+                                   This may be developed by activities that:
+
+                                    involve fiction and information, or discursive texts
+                                    use discussion to help candidates engage with texts
+                                    identify the ideas within texts
+                                    identify and explain the language techniques used by a
+                                     writer
+                                   Activities to support candidates to identify the ideas within
+                                   texts include:
+
+                                    asking and answering questions
+                                    comparing and contrasting
+                                    sorting and sequencing
+                                    summarising, clarifying and predicting
+                                    text completion
+                                   Candidates also benefit from activities focusing on a writer’s
+                                   intended purpose.
+
+
+
+
+Version 6.0                                                                                 42
+Skills for learning, skills for
+                                  Approaches for learning and teaching
+life and skills for work
+                                  1.2 Writing
+                                  Candidates may be encouraged to plan their writing by:
+
+                                   creating mind maps
+                                   peer discussion where they consider the genre,
+                                    audience and purpose for their writing
+
+                                  Candidates’ writing will benefit from:
+
+                                   discussing structure and layout
+                                   building up sentences, by linking (using connectives)
+                                   planning paragraphs
+                                   considering register
+                                   use of topic sentences
+                                   developing vocabulary
+                                   exploring the denotative and connotative meanings of
+                                    language
+                                   developing technical skills in grammar, punctuation and
+                                    spelling
+                                   using plans for writing
+
+                                  1.3    Listening and talking
+                                  Where appropriate, candidates should be encouraged to
+                                  use the language skills in real language situations.
+
+                                  In such situations, particularly drawn from life and work,
+                                  activities may involve:
+
+                                   asking and answering questions
+                                   taking part in group discussions
+                                   planning and delivering an individual presentation
+                                   listening for and making comparisons/contrasts
+                                   summarising, clarifying and predicting
+                                   exploring the ways in which spoken language differs
+                                    from written language
+
+
+
+
+Version 6.0                                                                               43
+Skills for learning, skills for
+                                  Approaches for learning and teaching
+life and skills for work
+5       Thinking skills           5.3    Applying
+                                  This is the ability to use existing information to solve a
+                                  problem in a different context, and to plan, organise and
+                                  complete a task that reflects what may be required by life
+                                  or work situations.
+
+                                  In order to do this in a supported way at this level,
+                                  candidates should be given the chance to work at
+                                  language tasks which are carefully staged and sequenced,
+                                  allowing them to work from what they know and to apply it
+                                  to different situations (writing for the portfolio, writing
+                                  critical essays, etc).
+
+                                  5.4    Analysing and evaluating
+                                  Whenever possible, candidates should be given the
+                                  opportunity to practise developing these skills in real
+                                  communicative contexts.
+
+                                  A range of texts is vital to developing analysing and
+                                  evaluating skills in reading in order to develop candidates’
+                                  awareness of such aspects as:
+
+                                   writers’ purpose/theme/etc
+                                   writers’ use of common language techniques (word
+                                    choice, sentence structure, figurative language,
+                                    punctuation, tone, contrast, etc)
+                                   distinguishing fact and opinion
+                                   discussing bias, balance and point of view
+                                   impact of a text (or parts of a text)
+
+
+
+
+Version 6.0                                                                                 44
+Useful websites
+The below list may provide resources suitable for the National 5 English course.
+
+ Scottish text list
+ SQA National 5 English past papers
+ SQA Understanding Standards
+ SQA National 5 English course report
+ SQA English common questions
+ National e-Learning offer
+ Scottish Poetry Library
+ The Association for Scottish Literature
+ BBC Bitesize
+
+
+
+
+Version 6.0                                                                        45
+Administrative information
+
+Published:      September 2025 (version 6.0)
+
+
+
+
+History of changes
+
+ Version      Description of change                                             Date
+ 2.0          Course support notes added as appendix.                           August 2017
+
+ 2.1          Minor changes made to ‘Assessment conditions’ section for the     July 2018
+              portfolio–writing.
+ 3.0          Updated to reflect portfolio–writing requirement reduced to one   May 2023
+              piece of writing.
+ 4.0          Guidance on text selection added to course support notes,         September
+              ‘Approaches to learning and teaching’ section.                    2023
+ 5.0          Updated to reflect changes to conditions of assessment for the    May 2024
+              portfolio–writing.
+ 6.0          Clarified evidence requirements for the performance–spoken        September
+              language.                                                         2025
+
+              What you need to do differently
+              Ensure you retain a detailed checklist for the purposes of
+              verification.
+
+              Update on use of software such as generative artificial
+              intelligence.
+
+              What you need to do differently
+              You must be aware of SQA’s current policy on the use of
+              generative artificial intelligence tools in assessment.
+              Ensure candidates know they cannot use these tools for
+              anything other than providing suggestions for potential source
+              material for English portfolios.
+
+              ‘Further information’ section updated.
+
+
+
+Note: please check SQA’s website to ensure you are using the most up-to-date version of
+this document.
+
+
+© Scottish Qualifications Authority 2018, 2023, 2024, 2025
+
+
+
+Version 6.0                                                                            46
+

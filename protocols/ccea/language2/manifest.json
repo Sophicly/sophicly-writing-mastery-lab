@@ -1,0 +1,39 @@
+{
+    "board": "ccea",
+    "group": "language2",
+    "version": "1.0.0",
+    "base_path": "protocols/ccea/language2",
+    "_note": "CCEA GCSE English Language UNIT 4 (GEN41 — Personal or Creative Writing and Reading Literary and Non-fiction Texts). ⚠️ THE CELL IS NAMED language2 BUT ITS TEXT SLUG IS `ccea_lang_paper_4`, and the mismatch is deliberate because TWO engine surfaces disagree (§5d key-match): the router folds a `_paper_N` suffix to `languageN` (so paper_4 → `language4`, which needs ONE new map row `'language4' => 'language2'`), while the frontend's buildSyntheticTopicData maps CCEA `lang_paper_N` to `language_uN` and its BOARD_FORMAT_DEFAULTS only carries `language_u1` and `language_u4` — so a slug of `ccea_lang_paper_2` would resolve to `language_u2`, which does not exist, and the paper would fall back to 30 marks. Slug `ccea_lang_paper_4` + the one router row makes both surfaces correct. Measured 2026-09-13 against frontend/wml-assessment.js:52151 and :52228 and includes/class-protocol-router.php:3204 + :3287; full trace in protocols/ccea/_PORT-REPORT-2026-09-13.md §6.0. Created 2026-09-13.",
+    "planning": {
+        "_destitched": "Fed WHOLE from the start: protocol-b-planning.md is the monolith and `steps` is empty (PROTOCOL-STANDARD C-COMMON.1). There are no slice files to supersede because this cell was never sliced.",
+        "always": [
+            "modules/foundation-u4.md",
+            "planning/protocol-b-planning.md",
+            "language/modules/communication-standards.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/ttecea-rationale-lang.md"
+        ],
+        "steps": {},
+        "groups": []
+    },
+    "assessment": {
+        "always": [
+            "modules/foundation-u4.md",
+            "modules/protocol-a-assessment.md",
+            "language/modules/communication-standards.md",
+            "language/modules/graceful-degradation.md",
+            "language/modules/anti-hallucination.md",
+            "language/modules/state-management.md",
+            "language/modules/ttecea-rationale-lang.md",
+            "mark-scheme/marking-fairness-universal.md",
+            "modules/knowledge-mark-scheme-u4.md"
+        ],
+        "_load_order": "knowledge-mark-scheme-u4.md is LAST on purpose (PROTOCOL ROUTER PREAMBLE RULES §1 — workflow instructions first, reference data last). marking-rules-aqa-granular.md is deliberately NOT loaded: it is AQA's per-element 0.5-mark arithmetic, and CCEA awards by Competence Level strands plus a mark grid, so loading it would put a competing marking method in context (ONE-TEMPLATE LAW).",
+        "steps": {}
+    },
+    "polishing": {
+        "_retired": "Polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by an essay_polishing_env row for the text slug ccea_lang_paper_4 in class-protocol-router.php (inline-coaching stack + rubric-ccea-lang-u4-fiction.md + modules/knowledge-mark-scheme-u4.md as the gold reference). This cell has NO protocol-c-polishing.md on disk at all — it was never written, so there is no walk file to retain and nothing that could be loaded at a student by accident (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose: if the router row is missing, this cell loads nothing for polishing and fails loud.",
+        "always": [],
+        "steps": {}
+    }
+}

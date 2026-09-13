@@ -1,0 +1,116 @@
+{
+  "board": "eduqas",
+  "paper": "language_c1",
+  "title": "WJEC Eduqas GCSE (9-1) English Language — Component 1: 20th Century Literature Reading and Creative Prose Writing (C700U10-1)",
+  "authority": {
+    "file": "MSR/EDUQAS GCSE English/EDUQAS GCSE English Language Paper 1/2023 EDUQAS Lang P1 Mark Scheme and Q Paper/June 2023 MS - Component 1 Eduqas English Language GCSE.pdf",
+    "kind": "mark scheme",
+    "sitting": "June 2023 (S23-C700U10-1)",
+    "why_this_source": "The board's own published mark scheme — top of the authority order (PEDAGOGY.md, Neil 2026-08-16). The spec JSON's provenance line for this paper read 'verified by Neil 2026-04-02', a human check rather than a citation. Now cited. Second series read for the recurring pattern: the June 2024 question paper (MSR/EDUQAS GCSE English/EDUQAS GCSE English Language Paper 1/EDUQAS GCSE English Language Paper 1 Past Papers/June 2024 QP - Component 1 Eduqas English Language GCSE.pdf) prints the identical tariff set [5] [5] [10] [10] [10] + [40]; the Autumn 2021 mark scheme (GCSE English Courses/Mark Schemes for the Exam Boards/EDQAS Mark Scheme/…C700U10-1 EDUQAS GCSE English Lang - Comp 1 MS A21.docx.pdf, outside MSR so not citable by the gate) carries the same bands.",
+    "path_note": "The folder named 'Mark Scheme for EDUQAS English Language Paper 1' holds only a QUESTION PAPER (June 2023 QP) — the real mark scheme lives one folder over in '2023 EDUQAS Lang P1 Mark Scheme and Q Paper'. Cited from there."
+  },
+  "spec": {
+    "file": "language",
+    "key": "eduqas.language_c1",
+    "field_kinds": {
+      "content_marks": "content",
+      "spag_marks": "spag"
+    }
+  },
+  "total": {
+    "marks": 80,
+    "marks_from": "questions",
+    "why": "The mark scheme states 'Section A (40 marks)' and 'Section B (40 marks)', never an 80. 5+5+10+10+10 = 40 (Section A) + 40 (Section B) = 80, which matches language-paper-specs.json."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 5,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading",
+      "quote": "identified by the candidate, to a maximum of five",
+      "quote_note": "The instruction line under Q1: 'Award one mark for each point and/or inference identified by the candidate, to a maximum of five'. The question line itself prints '[5]'."
+    },
+    {
+      "id": "Q2",
+      "marks": 5,
+      "aos": [
+        "AO2"
+      ],
+      "section": "A — Reading",
+      "quote": "Give 5 marks to those who make accurate and perceptive comments about the",
+      "quote_note": "Q2 is marked in SINGLE-mark bands (1/2/3/4/5), unlike Q3–Q5's two-mark bands. Annotated '(AO2 1a, c, and d)' — language only, no structure strand."
+    },
+    {
+      "id": "Q3",
+      "marks": 10,
+      "aos": [
+        "AO2"
+      ],
+      "section": "A — Reading",
+      "quote": "Give 9-10 marks to those who make accurate and perceptive comments about",
+      "quote_note": "Annotated '(AO2 1a, b, c and d)' — the only Section A question that assesses STRUCTURE (strand 1b, 'the organisation of events') alongside language. Bands 1-2 / 3-4 / 5-6 / 7-8 / 9-10."
+    },
+    {
+      "id": "Q4",
+      "marks": 10,
+      "aos": [
+        "AO2"
+      ],
+      "section": "A — Reading",
+      "quote": "Give 9-10 marks to those who explore the narrator’s thoughts and feelings",
+      "quote_note": "Annotated '(AO2 1a, c, and d)' — language only. Bands 1-2 / 3-4 / 5-6 / 7-8 / 9-10."
+    },
+    {
+      "id": "Q5",
+      "marks": 10,
+      "aos": [
+        "AO4"
+      ],
+      "section": "A — Reading",
+      "quote": "Give 9-10 marks to those who give a persuasive evaluation of the text and its",
+      "quote_note": "Annotated '(AO4)'. 'The key to this question is the ability to sustain a coherent stance.' Bands 1-2 / 3-4 / 5-6 / 7-8 / 9-10."
+    },
+    {
+      "id": "Q6",
+      "marks": 40,
+      "aos": [
+        "AO5",
+        "AO6"
+      ],
+      "section": "B — Creative Prose Writing",
+      "quote": "The total mark for Section B (/40) will be given by awarding two marks:",
+      "quote_note": "Anchored to the Section B preamble line (page 10) so that the two component lines directly beneath it fall inside this question's region. The grid page prints the task as '1 1 Choice of Creative Prose writing task – see question paper. [40]' — the paper numbers Section B as question 1.1; our spec models it as Q6, the same 40 marks.",
+      "components": [
+        {
+          "label": "communication and organisation",
+          "marks": 24,
+          "kind": "content",
+          "spec_field": "content_marks",
+          "aos": [
+            "AO5"
+          ],
+          "quote": "communication and organisation (24 marks);"
+        },
+        {
+          "label": "vocabulary, sentence structure, spelling, punctuation",
+          "marks": 16,
+          "kind": "spag",
+          "spec_field": "spag_marks",
+          "aos": [
+            "AO6"
+          ],
+          "quote": "vocabulary, sentence structure, spelling, punctuation (16 marks)"
+        }
+      ],
+      "note": "Section B is a CHOICE of titles — FOUR in both series read (June 2023 prints a) The Big Decision, b) a story that ends '… and I don't miss her at all', c) an occasion when you did someone a favour, d) a story that begins 'Mum insisted that I went to the supermarket with her'; the Specimen Assessment Materials print four as well). Corrected 2026-09-13 — the earlier note said 'June 2023: three'. The question paper states 'You should aim to write about 450-600 words.' Five bands each for AO5 (20-24 / 15-19 / 10-14 / 5-9 / 1-4) and AO6 (14-16 / 11-13 / 7-10 / 4-6 / 1-3), applied 'best-fit'."
+    }
+  ],
+  "protocols": [
+    {
+      "file": "protocols/eduqas/language1/modules/protocol-a-assessment.md"
+    }
+  ]
+}

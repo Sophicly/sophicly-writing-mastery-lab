@@ -1,0 +1,114 @@
+{
+  "board": "sqa",
+  "paper": "ruae",
+  "title": "SQA National 5 English — Reading for Understanding, Analysis and Evaluation (X824/75/11)",
+  "authority": {
+    "file": "MSR/SQA English National 5 Reading for Understanding/SQA English National 5 mi_N5_English_Reading-for-Understanding-Analysis-and-Evaluation_2025.pdf",
+    "kind": "finalised marking instructions",
+    "sitting": "2025 (X824/75/11, Tuesday 6 May, 9:00–10:00)",
+    "why_this_source": "SQA's own Question Paper Finalised Marking Instructions — the top of the authority order (PEDAGOGY.md, Neil 2026-08-16). The matching question paper is in the same folder ('SQA English National 5 N5_English_Reading-for-Understanding-Analysis-and-Evaluation_2025.pdf').",
+    "second_and_third_series_read": "2024 (protocols/sqa/_sources/N5_English_Reading-for-Understanding-Analysis-and-Evaluation_2024.pdf) and 2023 (same dir, + mi_…_2023.pdf), downloaded from sqa.org.uk 2026-09-13.",
+    "recurring_pattern_vs_one_series_feature": "⭐ THE TARIFF SET IS NOT RECURRING — IT CHANGES EVERY SITTING. Measured: 2025 = 2·4·2·4·2·6·4·4·2; 2024 = 3·4·2·4·6·4·3·2·2; 2023 = 2·4·2·5·2·4·4·5·2. All three sum to 30 over exactly 9 questions. WHAT RECURS is (a) nine questions, (b) the 30-mark total, (c) the QUESTION TYPES and their per-type mark formulas, (d) a 2-mark LINK question early (2025 Q3, 2024 Q3, 2023 Q3) and a 2-mark 'effective conclusion' question LAST (Q9 in all three, with the identical command wording). So this file records the 2025 sitting's numbers as the cited instance, and the protocol marks BY TYPE from the live question's own printed tariff — never from a memorised set. See `why` on each question."
+  },
+  "total": {
+    "marks": 30,
+    "marks_from": "questions",
+    "why": "The question paper prints 'Total marks — 30' and the course specification states 'Reading for Understanding, Analysis and Evaluation  30 marks' (protocols/sqa/_sources/n5-course-spec-english.pdf). 2+4+2+4+2+6+4+4+2 = 30 for the cited 2025 sitting."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 2,
+      "type": "own-words understanding",
+      "aos": [],
+      "ao_note": "SQA National 5 English has NO numbered assessment objectives. The skills named in the course specification are understanding, analysis and evaluation. Never print an 'AO' label for this board.",
+      "formula": "1 mark per key point, glossed in the candidate's own words. The paper states how many key points are required.",
+      "quote": "1.               Any two points.",
+      "quote_note": "The paper's own wording for this question adds 'You should make two key points in your answer.' — the number of points IS the tariff on every own-words question.",
+      "why": "Type recurs every sitting; the number of points varies (2025 Q1 = 2 points; 2024 Q1 = 3 points; 2023 Q1 = 2 points)."
+    },
+    {
+      "id": "Q2",
+      "marks": 4,
+      "type": "language analysis — two examples",
+      "aos": [],
+      "formula": "Reference (1) + Comment (1), twice. A reference alone scores 0; a comment with no reference scores 0.",
+      "quote": "2.              Word choice:",
+      "marks_quote": "4     Possible answers",
+      "marks_quote_note": "The tariff sits in the 'Max mark' column on the same printed line as the question number; the locator quote anchors the question's own region so the 4 cannot be lifted from another question's grid.",
+      "why": "2025 Q2 asks for one word-choice example AND one sentence-structure example, 2 marks each = 4. 2024 Q2 and 2023 Q2 both ask for 'two examples of language' = 4. The 4-mark two-example analysis question recurs in all three sittings."
+    },
+    {
+      "id": "Q3",
+      "marks": 2,
+      "type": "link question",
+      "aos": [],
+      "formula": "A quotation from the sentence + what it links BACK to (1); a quotation from the sentence + what it links FORWARD to (1). Two selections covering different directions.",
+      "quote": "3.              Any pair OR two selections covering",
+      "why": "A 2-mark link question appears as Q3 in 2025, 2024 and 2023 with near-identical command wording ('explain how it helps to provide a link between the writer's ideas at this point in the passage')."
+    },
+    {
+      "id": "Q4",
+      "marks": 4,
+      "type": "own-words summary",
+      "aos": [],
+      "formula": "1 mark per key point, glossed. The paper states the number of points.",
+      "quote": "4.                    Any four points.",
+      "why": "2025 Q4 = 4 points. The own-words summary type recurs every sitting; its position and size move (2023 Q4 = 5 points, 2024 Q5 = 6 points)."
+    },
+    {
+      "id": "Q5",
+      "marks": 2,
+      "type": "language analysis — one example",
+      "aos": [],
+      "formula": "Reference (1) + Comment (1).",
+      "quote": "5.              Reference (1)",
+      "marks_quote": "2     Possible answers",
+      "why": "A 2-mark single-example analysis question appears in 2025 (Q5) and in the Critical Reading paper's poetry options; 2024 and 2023 use only 4-mark two-example forms, so the 2-mark form is NOT guaranteed every sitting — the protocol therefore derives the pair count from the printed tariff (marks ÷ 2)."
+    },
+    {
+      "id": "Q6",
+      "marks": 6,
+      "type": "own-words understanding",
+      "aos": [],
+      "formula": "1 mark per key point, glossed. The paper states the number of points.",
+      "quote": "6.              Any six points.",
+      "why": "2025 Q6 = 6 points, the largest single question on the paper. 2024's 6-mark own-words question is Q5."
+    },
+    {
+      "id": "Q7",
+      "marks": 4,
+      "type": "own-words understanding",
+      "aos": [],
+      "formula": "1 mark per key point, glossed.",
+      "quote": "7.              Any four points.",
+      "why": "2025 Q7 = 4 points."
+    },
+    {
+      "id": "Q8",
+      "marks": 4,
+      "type": "language analysis — two examples",
+      "aos": [],
+      "formula": "Reference (1) + Comment (1), twice.",
+      "quote": "8.              Reference (1)",
+      "marks_quote": "4     Possible answers",
+      "why": "2025 Q8 = two examples of language, 4 marks."
+    },
+    {
+      "id": "Q9",
+      "marks": 2,
+      "type": "evaluation of the conclusion",
+      "aos": [],
+      "formula": "Selection (1) + Comment (1) — the comment must explain what the selected expression links back to, or which main idea it repeats. The marking instructions warn: do not reward a response which simply says 'it sums up the main ideas of the passage' unless the candidate goes on to explain what the main ideas are.",
+      "quote": "9.              Selection (1)",
+      "marks_quote": "2     Possible answers",
+      "why": "The LAST question is a 2-mark 'effective conclusion' evaluation in 2025, 2024 and 2023, with identical command wording: 'Select any expression from these lines and explain how it contributes to the passage's effective conclusion.' This is the most stable single row on the paper."
+    }
+  ],
+  "protocols": [
+    {
+      "file": "protocols/sqa/ruae/modules/protocol-a-assessment.md",
+      "questions": ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9"]
+    }
+  ]
+}

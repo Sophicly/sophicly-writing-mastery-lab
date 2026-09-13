@@ -1,0 +1,88 @@
+{
+  "board": "ocr",
+  "paper": "language_c1",
+  "title": "OCR GCSE (9–1) English Language — J351/01: Communicating information and ideas",
+  "authority": {
+    "file": "protocols/ocr/_sources/741958-mark-scheme-communicating-information-and-ideas.pdf",
+    "kind": "mark scheme",
+    "sitting": "November 2024",
+    "why_this_source": "The board's own published mark scheme — top of the authority order (PEDAGOGY.md, Neil 2026-08-16). OCR Language is NOT on the drive (searched 2026-09-13: 'Sophicly Etch Mark Scheme Resources/' holds OCR Literature only), so this PDF was downloaded from OCR's own site (https://www.ocr.org.uk/Images/741958-mark-scheme-communicating-information-and-ideas.pdf) and saved into protocols/ocr/_sources/ so provenance is on disk and the gate can re-open it.",
+    "second_series": "protocols/ocr/_sources/667576-mark-scheme-communicating-information-and-ideas.pdf — same unit, November 2021 (https://www.ocr.org.uk/Images/667576-mark-scheme-communicating-information-and-ideas.pdf). Read for the recurring pattern: same question set and same tariffs; it predates the per-question AO grid page, so the citations below all come from the November 2024 document.",
+    "quote_note": "Every quote below is a row of the mark scheme's own 'Mark Scheme Assessment Objectives (AO) Grid' (p. 20 of the November 2024 document), in the column order Question | AO1 | AO2 | AO3 | AO4 | AO5 | AO6 | Total. The grid is the only place the paper states a per-question tariff as a number, which is why it is cited rather than the question stems (those print e.g. '(6 marks)' but the retrieval parts print no total).",
+    "board_document_inconsistency": "The November 2024 grid prints 6 in the AO3 column of the Question 2 row as well as the Question 4 row, while the paper's AO3 total is 6 and Question 2's own skills line reads only 'AO1ii: Select and synthesise evidence from different texts.' Question 2 is AO1ii; the AO3 6 belongs to Question 4. Recorded here so nobody silently 'corrects' the protocol to match a layout artefact."
+  },
+  "spec": {
+    "file": "language",
+    "key": "ocr.language_c1"
+  },
+  "total": {
+    "marks": 80,
+    "quote": "The maximum mark for the paper is 80.",
+    "why": "Stated verbatim in the mark scheme's 'B TOTAL MARKS' instructions. The question tariffs also sum to it: 4 + 6 + 12 + 18 + 40 = 80."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 4,
+      "aos": ["AO1"],
+      "section": "A — Reading information and ideas",
+      "type": "retrieval",
+      "marks_from": "components",
+      "quote": "1a 1 0 0 0 0 0 1",
+      "quote_note": "Locator: the Question 1a row of the AO grid. The paper never prints a '4' for Question 1 as a whole — it is the sum of its printed parts, which is why marks_from is 'components'. ⚠️ The SPLIT varies by series (November 2024: 1 + 1 + 2, asked as parts a, b, c and d; June 2017 on the sister paper: 1 + 1 + 2; June 2023 on the sister paper: 2 + 1 + 1). The TOTAL of 4 is the recurring fact — never teach a fixed split.",
+      "components": [
+        { "label": "1a", "marks": 1, "aos": ["AO1"], "quote": "1a 1 0 0 0 0 0 1" },
+        { "label": "1b", "marks": 1, "aos": ["AO1"], "quote": "1b 1 0 0 0 0 0 1" },
+        { "label": "1c", "marks": 2, "aos": ["AO1"], "quote": "1c 2 0 0 0 0 0 2" }
+      ]
+    },
+    {
+      "id": "Q2",
+      "marks": 6,
+      "aos": ["AO1"],
+      "section": "A — Reading information and ideas",
+      "type": "synthesis",
+      "quote": "2 6 0 6 0 0 0 6",
+      "quote_note": "The Question 2 row of the AO grid; the row's Total column is 6. The question stem also prints '(6 marks)'. Skills line, verbatim: 'AO1ii: Select and synthesise evidence from different texts.' THREE levels only — Level 3 (5–6 marks), Level 2 (3–4), Level 1 (1–2). AO2 is not assessed here: naming techniques earns nothing."
+    },
+    {
+      "id": "Q3",
+      "marks": 12,
+      "aos": ["AO2"],
+      "section": "A — Reading information and ideas",
+      "type": "analysis",
+      "quote": "3 0 12 0 0 0 0 12",
+      "quote_note": "The Question 3 row of the AO grid. The stem also prints '(12 marks)'. SIX levels — 11–12 / 9–10 / 7–8 / 5–6 / 3–4 / 1–2. One combined AO2 strand: language AND structure, and the descriptors reward balance between them ('balanced' at Level 5, 'consistent and detailed' at Level 6)."
+    },
+    {
+      "id": "Q4",
+      "marks": 18,
+      "aos": ["AO3", "AO4"],
+      "section": "A — Reading information and ideas",
+      "type": "comparative_evaluation",
+      "quote": "4 0 0 6 12 0 0 18",
+      "quote_note": "The Question 4 row of the AO grid: AO3 6 + AO4 12 = 18. The board's own instruction, verbatim: 'Mark the response out of 12 marks (AO4) and out of 6 marks (AO3) using the two sets of level descriptors below; add the two marks together to award a total mark out of 18.' AO3 runs one mark per level (6 / 5 / 4 / 3 / 2 / 1); AO4 runs six two-mark bands (11–12 / 9–10 / 7–8 / 5–6 / 3–4 / 1–2).",
+      "components": [
+        { "label": "AO4 — critical evaluation of the statement", "marks": 12, "kind": "content", "aos": ["AO4"], "quote": "4 0 0 6 12 0 0 18", "quote_note": "The AO4 column of the Question 4 grid row. The descriptor page states it in words too: 'AO4 (12 marks): Evaluate texts critically and support this with appropriate textual references.'" },
+        { "label": "AO3 — comparison across the two texts", "marks": 6, "kind": "content", "aos": ["AO3"], "quote": "4 0 0 6 12 0 0 18", "quote_note": "The AO3 column of the same grid row. Descriptor page, verbatim: 'AO3 (6 marks) Compare writers\u2019 ideas and'." }
+      ]
+    },
+    {
+      "id": "Q5",
+      "marks": 40,
+      "aos": ["AO5", "AO6"],
+      "section": "B — Writing for audience, impact and purpose",
+      "type": "extended_writing",
+      "quote": "5/6 0 0 0 0 24 16 40",
+      "quote_note": "The Section B row of the AO grid. The paper numbers the two alternative tasks 5 and 6 ('EITHER 5. … OR 6. …'), so the grid names the row '5/6'; our spec models the chosen task as Q5, the same 40 marks. Choice rule, verbatim: 'If a candidate has written two answers for Section B, mark both answers and award the highest mark achieved.' Section B on THIS paper is TRANSACTIONAL (November 2024: the words of a talk, or a letter to a newspaper editor) — never creative.",
+      "components": [
+        { "label": "communication and organisation (AO5)", "marks": 24, "kind": "content", "aos": ["AO5"], "quote": "5/6 0 0 0 0 24 16 40", "quote_note": "The AO5 column of the Section B grid row. The board states it in words on the Section B skills line: 'Mark the response out of 24 marks (AO5) and out of 16 marks (AO6) using the two sets of level descriptors below; add the two marks together to award a total mark out of 40.'" },
+        { "label": "vocabulary, sentence structures, spelling and punctuation (AO6)", "marks": 16, "kind": "spag", "aos": ["AO6"], "quote": "5/6 0 0 0 0 24 16 40", "quote_note": "The AO6 column of the same Section B grid row (see the AO5 note for the board's words)." }
+      ],
+      "note": "AO5 has SIX levels (21–24 / 17–20 / 13–16 / 9–12 / 5–8 / 1–4). AO6 has FOUR (13–16 / 9–12 / 5–8 / 1–4) — its top band is Level 4, and there is no Level 5 or 6 for technical accuracy on this paper. The paper prints no word count guidance: any length target we teach is ours, and the frontend's MULTIQ_RESPONSE_TARGETS has no OCR key yet, so no code-computed ceiling reaches this paper (stated in the protocol, which forbids inventing one)."
+    }
+  ],
+  "protocols": [
+    { "file": "protocols/ocr/language1/modules/protocol-a-assessment.md" }
+  ]
+}

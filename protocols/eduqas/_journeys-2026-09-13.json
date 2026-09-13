@@ -1,0 +1,394 @@
+{
+  "board": "eduqas",
+  "written": "2026-09-13",
+  "written_by": "Eduqas GCSE English Language content lane (Component 1 C700U10 · Component 2 C700U20)",
+  "what_this_is": "Representative student responses for the engine lane to drive through the REAL chat endpoint on staging (PROTOCOL-STANDARD E5, polishing row). Every response below is this lane's own prose with deliberate faults; every quotation inside a response is VERBATIM from the source named in its journey, checked against the PDF. The 'must' and 'must_not' lines are the acceptance test for the coaching reply — a reply that breaks a must_not is a defect in the rubric or the engine, not in the student.",
+  "sources_used": [
+    {
+      "id": "c1_jun2024",
+      "component": "C1",
+      "pdf": "Sophicly Etch Mark Scheme Resources/EDUQAS GCSE English/EDUQAS GCSE English Language Paper 1/June 2024 QP - Component 1 Eduqas English Language GCSE.pdf",
+      "what": "S24-C700U10-1A Resource Material — a 20th-century prose passage set in Australia: Alice lives alone with her father Jack Cogdon on a sheep farm; her art teacher urges art school; Jack quietly hopes she will marry a farmer's son.",
+      "verbatim_available": true
+    },
+    {
+      "id": "c2_nov2022_text2",
+      "component": "C2",
+      "pdf": "Sophicly Etch Mark Scheme Resources/EDUQAS GCSE English/EDUQAS GCSE English Language Paper 2/November 2022 QP - Component 2 Eduqas English Language GCSE.pdf",
+      "what": "Text 2 of the A22 paper — an extract from Matthew Scott's autobiography (1885), the keeper of Jumbo the elephant at London Zoo.",
+      "verbatim_available": true
+    },
+    {
+      "id": "c2_jun2023_text2",
+      "component": "C2",
+      "pdf": "Sophicly Etch Mark Scheme Resources/EDUQAS GCSE English/EDUQAS GCSE English Language Paper 2/June 2023 QP - Component 2 Eduqas English Language GCSE.pdf",
+      "what": "Text 2 of the S23 paper — a New York Tribune report of 1869 on Ida Lewis, the Lime Rock lighthouse keeper's daughter, rescuing two soldiers.",
+      "verbatim_available": true
+    }
+  ],
+  "known_gap": {
+    "what": "NO Component 2 Resource Material (the 21st-century Text 1 article) is on the drive — the folder holds question papers and mark schemes only, plus one AQA-style source pair filed there by mistake. Searched with mdfind and find; both completed.",
+    "consequence": "Journeys on Q2 (Text 1), Q5 and Q6 (both texts) quote Text 2 verbatim and mark the Text 1 side with text1_placeholder. Before driving those journeys, substitute a verbatim Text 1 quotation from whichever paper the staging lesson actually serves. The coaching behaviour under test (the pivot, the pair, the synthesis link) does not depend on which words the Text 1 quotation contains.",
+    "do_not": "Do not invent a Text 1 quotation to close this gap."
+  },
+
+  "journeys": [
+    {
+      "id": "c1-q1-retrieval",
+      "component": "C1",
+      "question": "Q1",
+      "tariff": "5 (AO1, one mark per point, maximum five)",
+      "source": "c1_jun2024",
+      "stage": "assessment",
+      "action": "none — Q1 is marked on the Y-gate, no reflection panel and no polishing",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "1. They did not live in the town of Calwarra but about five miles out of it, along one of those dusty roads that seemed to go on forever but led into the bush, to nowhere really. 2. Alice lived alone with her father. 3. Her dad is a farmer.",
+          "planted_fault": "point 1 is an unabridged whole sentence copied out; points 2 and 3 are valid",
+          "must": ["award 2 of 5", "quote the copied sentence and name the board's own rule that an unabridged whole sentence earns no mark", "show the one-clause version that would have earned it (for example: they live five miles outside Calwarra)", "say two points were missing and each scores 0"],
+          "must_not": ["award 3", "mark the copied sentence as a valid point", "offer a gold model (Q1 has none)", "emit a reflection panel"]
+        },
+        {
+          "grade": "strong",
+          "text": "1. They live about five miles outside the town of Calwarra. 2. Their turning is marked only by a rickety signpost. 3. It is a remote place. 4. For a few weeks of the year the farm is busy with the grain harvest. 5. Most of the time they contend with heat, drought and ants.",
+          "planted_fault": "none",
+          "must": ["award 5 of 5", "state Q1 Total: 5/5 on its own line", "move to the Q-GATE naming Question 2"],
+          "must_not": ["add golds", "add a Calibration Check", "quote a level descriptor — Q1 has no levels"]
+        }
+      ]
+    },
+
+    {
+      "id": "c1-q2-impressions-language",
+      "component": "C1",
+      "question": "Q2",
+      "tariff": "5 (AO2 1a, c, d — language only; single-mark bands)",
+      "source": "c1_jun2024",
+      "stage": "assessment + polishing",
+      "action": "polishing: scan-elements on the paragraph, then compare-gold-standard",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "The writer shows that Jack is a hard man. He uses the quote \"He was determined to tame the unforgiving land\" which shows he is tough. This makes the reader think he is strong.",
+          "planted_fault": "F1 twice (\"shows\"), T1 (\"uses\"), no close analysis, one flat effect, no purpose, hanging quotation",
+          "must": ["name the missing elements by counting them (three of six present at best)", "charge F1 on the verbatim word \"shows\" with a precise-verb fix", "point at the word 'tame' as the one to unpack", "state what the 5-mark band actually asks for, in the board's words"],
+          "must_not": ["rewrite the student's sentence as the answer", "charge both F1 and T1 on the same verb", "mention structure or the organisation of events — Q2 is language only", "mention AO3"]
+        },
+        {
+          "grade": "partial",
+          "text": "The writer creates the impression that Jack is stubborn but loving. The metaphor \"He was determined to tame the unforgiving land\" suggests he treats the farm as an opponent. The word 'tame' carries connotations of breaking in an animal, which reveals he expects to win. The reader feels he will not be argued with.",
+          "planted_fault": "only one effect sentence; no purpose sentence; otherwise sound",
+          "must": ["credit the close analysis of 'tame' explicitly, quoting it", "name the two missing elements: a second, different effect, and the writer's purpose", "ask one question that gets the student to produce the second effect themselves"],
+          "must_not": ["supply the second effect", "supply the purpose sentence", "charge a penalty for the absence (it is already a criterion shortfall — one fault, one charge)"]
+        },
+        {
+          "grade": "strong",
+          "text": "Jack's love for his daughter is inseparable from his need to hold on to her. Through the metaphor of conquest in \"He was determined to tame the unforgiving land\", the writer presents a man who understands affection as a form of keeping. Within that image, 'tame' belongs to animals rather than fields, which quietly suggests Jack believes everything in his care can be trained to stay. A reader begins to distrust his kindness, sensing a cost inside it. More uncomfortably, the reader recognises the same instinct in his silence at the supper table. Arguably the writer wants us to see that love and possession can be learned in the same lesson.",
+          "planted_fault": "none",
+          "must": ["credit every element and place the answer in the 5-mark band using the board's own words", "keep the Why column to ten words or fewer per criterion"],
+          "must_not": ["find a penalty that is not verbatim in the text", "invent a shortfall to avoid awarding full marks"]
+        },
+        {
+          "grade": "valid-but-different",
+          "text": "The writer's impression of Jack is built out of what he does not say. His only reply to his daughter's plan is \"Why not?\", and the narration adds \"He dug his fork into his stew, avoiding her gaze.\" The verb 'dug' is the kind of word used for soil, not cutlery, so even at the table he is still working the land rather than facing her. A reader feels the conversation close rather than open. Then the reader notices how much is being carried by a gesture instead of a sentence. Perhaps the writer suggests that a man can be present and absent at once.",
+          "planted_fault": "none — a different quotation and a different reading from the mark scheme's suggestions",
+          "must": ["credit it fully", "say plainly that a valid different reading is welcome, because the board's own instruction is that the indicative content is not a checklist"],
+          "must_not": ["mark it down for not using the mark scheme's example detail", "redirect the student to the 'expected' quotation"]
+        }
+      ]
+    },
+
+    {
+      "id": "c1-q3-language-and-structure",
+      "component": "C1",
+      "question": "Q3",
+      "tariff": "10 (AO2 1a, b, c, d — language AND the organisation of events)",
+      "source": "c1_jun2024",
+      "stage": "assessment + polishing",
+      "action": "polishing: scan-structure, then scan-coherence",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "First the passage tells us about the farm. Then it tells us about the aunt. Then Alice grows up and the teacher says she could be an artist. At the end the two men talk in the bar about Alice marrying the Paget boy.",
+          "planted_fault": "pure retelling in chronological order — M1 in structural clothing; no language analysis, no structural analysis, no element of the taught shape",
+          "must": ["name the fault as retelling rather than analysing, and quote the student's own opening clause", "explain in one sentence what the organisation of events means here — what is placed first, what is withheld", "ask one question that makes the student choose ONE structural choice to analyse"],
+          "must_not": ["accept the sequence as structure analysis", "supply a candidate structural reading", "ask the student to find the text (the document holds it)"]
+        },
+        {
+          "grade": "partial",
+          "text": "The writer organises the passage so the aunt's argument comes early. The aunt warns about \"what happened to girls who stayed on farms\" and this plants a worry in the reader before Alice is old enough to leave. The word 'stayed' matters because it makes staying sound passive. The reader starts to expect that Alice will go.",
+          "planted_fault": "one paragraph only where two are taught; structure covered but language paragraph absent; no purpose",
+          "must": ["credit the structural paragraph and name it as the structure half", "state that the language half is Absent and that Q3 rewards both", "make the missing language paragraph the first Priority Improvement"],
+          "must_not": ["treat the single paragraph as the whole answer", "invent a second paragraph on the student's behalf"]
+        },
+        {
+          "grade": "strong",
+          "text": "Paragraph 1. Alice's future is decided by other people long before she is asked about it. The writer withholds her own voice, so that the aunt's prediction of \"dire warnings as to what happened to girls who stayed on farms\" arrives before Alice can answer it. Positioning the warning first makes the reader read every later scene as its test. A reader waits for Alice to speak and notices when she does not. The reader is then uneasy at how little of her the passage lets us hear. The writer, arguably, puts the argument before the girl to expose how ordinary that order is.\n\nParagraph 2. The passage closes the choice at the very moment it seems to open. Jack's line to Mr Paget, \"He might get on with my Alice. They might hit it off\", turns a future into an arrangement. 'Hit it off' is the language of luck rather than of planning, which lets Jack disown the plan even as he makes it. A reader hears the casualness and mistrusts it. More sharply, the reader understands that the deal is already done. The writer uses the lightest possible phrasing to show how heavily a life can be settled.",
+          "planted_fault": "none",
+          "must": ["credit one structural choice and one language choice across the two paragraphs, naming which is which", "place each paragraph in a two-mark band using the board's own words"],
+          "must_not": ["require a third paragraph", "penalise the student for not naming the structural feature in the topic sentence"]
+        },
+        {
+          "grade": "valid-but-different",
+          "text": "Paragraph 1. The passage is built on a shape that repeats: someone speaks for Alice, and then the narration quietly closes the subject. The writer ends the aunt's scene with \"there was no point in posing the question\", and the same shape returns at the supper table. Repeating the shape rather than the words makes the pattern feel like a habit rather than an event. A reader begins to predict it. The reader then feels how tiring that predictability would be to live inside. The writer perhaps suggests that a life can be organised by silences.\n\nParagraph 2. Alongside that shape, the writer's word choice keeps returning to land. Alice has \"grown into a quiet, uncomplaining person\", a phrase that describes a crop as much as a daughter. 'Uncomplaining' evaluates her by how little trouble she causes. A reader notices the praise is really about convenience. The reader then sees Jack's pride differently. The writer, it seems, wants his affection and his farming to sound like the same skill.",
+          "planted_fault": "none — treats structure as a repeated pattern rather than a position, which the mark scheme's wording permits",
+          "must": ["credit the repeated-shape reading as structure", "say plainly that a valid different reading is welcome"],
+          "must_not": ["insist structure must mean beginnings and endings", "mark it down for not matching the suggested content"]
+        }
+      ]
+    },
+
+    {
+      "id": "c1-q5-evaluation",
+      "component": "C1",
+      "question": "Q5",
+      "tariff": "10 (AO4 — two evaluative paragraphs, the second taking an overview of the whole passage)",
+      "source": "c1_jun2024",
+      "stage": "assessment + polishing",
+      "action": "polishing: scan-concept, then scan-coherence",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "I agree with the statement. Jack does not know Alice at all. He thinks she wants to stay on the farm but she wants to be an artist. This shows he is not listening to her.",
+          "planted_fault": "bare agreement, no quotation, F1, no judgement against the statement's own words",
+          "must": ["state that marks come from the evaluation, never from agreeing or disagreeing", "quote the statement's own words back and ask which of them the student is arguing about", "charge F1 on \"shows\" with a fix"],
+          "must_not": ["reward or punish the agreement itself", "coach against a word the printed statement does not contain", "supply the stance"]
+        },
+        {
+          "grade": "partial",
+          "text": "I mostly agree that Jack misreads his daughter. When Alice says she might try for art school he answers \"Why not?\" and then \"You do what you want to do. It's your life.\" His words give permission but the narration says he \"seemed anxious\", so the reader sees a gap between what he says and what he feels. That gap makes the reader trust the narration more than the dialogue.",
+          "planted_fault": "no explicit judgement on how far this supports the statement; second paragraph and the whole-passage overview both absent",
+          "must": ["credit the reference and the effect", "name the missing judgement element and ask for it in one question", "name the missing overview and say it is what the top band means by taking an overview"],
+          "must_not": ["supply the judgement", "treat the single paragraph as the whole answer"]
+        },
+        {
+          "grade": "strong",
+          "text": "Paragraph 1. The statement is only half true, because Jack's misreading is deliberate rather than ignorant. His permission arrives in two flat halves, \"Why not?\" and \"You do what you want to do. It's your life\", generous on the surface, yet the narration immediately undercuts it: he \"seemed anxious, although he tried to convey an impression of normality\". 'Tried' concedes the effort, which tells a reader the calm is manufactured. The effect is that we stop reading him as unaware and start reading him as frightened. To that extent the statement understates him: he sees exactly what is happening and cannot say so.\n\nParagraph 2. Across the passage as a whole, the writer keeps the misreading in the other direction too. Jack notices that Alice has \"grown into a quiet, uncomplaining person\" and \"The thought filled him with pride\", and the reader who has watched her silences reads that pride as a mistake. Because the same evidence carries two meanings, the passage as a whole suggests they misread each other rather than one failing to see the other. So the statement is accurate about the outcome and wrong about the cause, which is where its wording is weakest.",
+          "planted_fault": "none",
+          "must": ["credit the two-sided evaluation and the whole-passage overview, quoting the overview sentence", "place the answer in a two-mark band using the board's own words"],
+          "must_not": ["deduct for disagreeing in part with the statement", "require an introduction or a conclusion — neither is taught on this question"]
+        },
+        {
+          "grade": "valid-but-different",
+          "text": "Paragraph 1. I disagree with the statement, because the passage shows a father who understands his daughter and protects himself from what he understands. In the bar Jack says, \"I'll have to give up one day, I suppose. I'm not as lucky as you. With your sons.\" The word 'lucky' admits the loss before anyone names it. A reader hears him rehearsing the ending he expects. Read that way, the statement mistakes self-defence for blindness.\n\nParagraph 2. Taking the passage as a whole, the misreading is the narration's invitation rather than Jack's failure. The teacher decides Jack is \"one of those lonely, pathetic cases\", and the passage lets the reader adopt that verdict early. By the last exchange, \"They could do worse, couldn't they?\", the reader has to weigh their own quickness to judge him. The statement is therefore less a description of Jack than a trap the writer sets for us, which is a stronger reading of the whole passage than simple agreement allows.",
+          "planted_fault": "none — disagrees with the statement and reads the narration as the subject",
+          "must": ["credit it fully", "say that disagreement, executed well, reaches the same top band"],
+          "must_not": ["nudge the student toward agreeing", "treat the disagreement as a misreading"]
+        }
+      ]
+    },
+
+    {
+      "id": "c1-q6-creative-prose",
+      "component": "C1",
+      "question": "Q6",
+      "tariff": "40 (AO5 24 + AO6 16, holistic; about 450-600 words)",
+      "source": "c1_jun2024",
+      "stage": "assessment + polishing",
+      "action": "polishing: scan-structure, then cw-cut-modifiers, then device work is NOT offered on this paper",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "It was a really nice day and I was very happy. I went to the shop with my mum. She bought some bread. Then we went home. It was quite boring actually but then something amazing happened. The end.",
+          "planted_fault": "no scene structure, intensifiers throughout, a narrated summary rather than a scene, far under length",
+          "must": ["state the code-computed word count against the 450-600 guidance in one sentence", "name which of the seven beats are absent", "run the modifier scan on 'really', 'very', 'quite' and hand the cut back to the student", "quote the board's own line that a very short response is self-penalising"],
+          "must_not": ["apply a word-count ceiling number of its own invention", "rewrite the piece", "list more than three technical patterns"]
+        },
+        {
+          "grade": "strong",
+          "text": "[engine lane: drive a full 550-600 word student piece with all seven beats present, an epiphany that is a realisation rather than an event, and a denouement that is an image. This lane did not author a full piece because the acceptance test here is that the reply marks holistically, names a Band using the board's own words, and gives per-beat feedback anchored in verbatim quotes from the student's own piece.]",
+          "planted_fault": "not authored — see the note in the text",
+          "must": ["give ONE holistic mark for communication and organisation out of 24 and ONE for vocabulary, sentence structure, spelling and punctuation out of 16", "name each Band with the board's own wording", "give one short block per beat anchored with a verbatim quote from the student's piece", "emit ONE labelled holistic gold of about 600 words"],
+          "must_not": ["mark the piece paragraph by paragraph", "apply any penalty code", "emit two golds", "shorten the gold or use an ellipsis"]
+        }
+      ]
+    },
+
+    {
+      "id": "c2-q3-retrieval-text2",
+      "component": "C2",
+      "question": "Q3 a, b, c",
+      "tariff": "1 mark each (AO1 1a, b, c, d — explicit or inferred)",
+      "source": "c2_nov2022_text2",
+      "stage": "assessment",
+      "action": "none — marked on the Y-gate",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "a) eight tons b) I don't know c) When I first saw Jumbo and he was given into my care, the poor thing was full of disease, and his whole hide covered with sores.",
+          "planted_fault": "(a) correct; (b) unanswered; (c) a lifted sentence that does not answer the question asked",
+          "must": ["mark each part separately and award 1, 0, 0", "for (c), quote the lifted sentence and say which words in the text would have answered the question instead", "state Q3 Total: 1/3 on its own line", "state Total Mark for Q3a, Q3b and Q3c on their own lines, each out of 1"],
+          "must_not": ["mark Q3 out of 3 as a single judgement", "award part credit for a wrong part", "emit a reflection panel or a gold"]
+        },
+        {
+          "grade": "strong",
+          "text": "a) Nearly eight tons. b) He had been giving children rides for a long time. c) Scott says Jumbo would usually do what he asked.",
+          "planted_fault": "(b) is vague where the text gives a figure, so it may or may not earn the mark depending on the printed question",
+          "must": ["judge (b) against the words the text actually gives and say plainly whether it earns the mark", "keep each part's judgement independent"],
+          "must_not": ["invent a figure the text does not contain", "average the three parts into one level"]
+        }
+      ]
+    },
+
+    {
+      "id": "c2-q4-evaluation-text2",
+      "component": "C2",
+      "question": "Q4",
+      "tariff": "10 (AO4 — two evaluative paragraphs; GOLD MISSING for this question)",
+      "source": "c2_nov2022_text2",
+      "stage": "assessment + polishing",
+      "action": "polishing: scan-concept, then compare-gold-standard (which must report that no model exists)",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "I agree that Scott is proud of Jumbo. He says he is \"the largest, most intelligent and certainly the most powerful living creature in creation\" which shows he loves him.",
+          "planted_fault": "one sentence, F1, no close analysis, no judgement, no second paragraph",
+          "must": ["credit the well-chosen quotation", "charge F1 on \"shows\" with a fix", "name the missing elements and ask for the close analysis first"],
+          "must_not": ["supply the analysis", "coach against a word the printed view does not contain"]
+        },
+        {
+          "grade": "partial",
+          "text": "Scott's pride is real but it is also a claim about himself. He writes that he \"undertook to be his doctor, his nurse and general servant\", and the triple list puts his own labour at the centre of the sentence rather than the animal. The word 'servant' is doing something odd, because a keeper is not a servant. A reader starts to hear self-justification inside the affection.",
+          "planted_fault": "no explicit judgement on how far this supports the printed view; no second paragraph; no whole-text weighing",
+          "must": ["credit the close analysis of 'servant' by quoting it", "name the missing judgement and the missing second paragraph", "say what the whole-text weighing buys at the top band"],
+          "must_not": ["produce the judgement for the student", "offer a stored model — there is none for Q4 on this paper"]
+        },
+        {
+          "grade": "strong",
+          "text": "Paragraph 1. The printed view is right about the affection and too simple about the pride. Scott writes that he \"watched and nursed him night and day with all the care and affection of a mother\", a comparison that claims a relationship rather than a job. 'Mother' is a large word to take for oneself, and taking it converts care into kinship. The effect on a reader is a warmth that arrives with a small discomfort attached. So the view holds, but only if pride here is understood as a claim being made, not a feeling being reported.\n\nParagraph 2. Weighed as a whole, the extract keeps returning the elephant to the writer's own contentment: \"so long as I am permitted the company of dear old Jumbo, I shall be quite contented.\" Read across the passage, the affection is genuine and the perspective is narrow, because Jumbo appears almost entirely as what he gives Scott. That makes the printed view accurate about the feelings and incomplete about the writing, which is the most honest verdict the extract supports.",
+          "planted_fault": "none",
+          "must": ["credit both paragraphs and the whole-text judgement, quoting it", "place the answer in a two-mark band using the board's own words", "say explicitly that no stored model exists for this question if the student asks for one"],
+          "must_not": ["offer the AQA Paper 2 model as if it belonged to this paper", "require an introduction or a conclusion"]
+        },
+        {
+          "grade": "valid-but-different",
+          "text": "Paragraph 1. I disagree with the printed view in one respect: the loudest feeling in the extract is relief, not pride. Scott records that Jumbo was \"full of disease, and his whole hide covered with sores\" and then that he is \"now rewarded by having a fine-looking creature in a perfectly sound state of mind and body\". Placing ruin beside recovery makes the passage read as an escape narrowly managed. A reader feels the closeness of the alternative. Pride is the word the view offers, but relief is what the sentence structure carries.\n\nParagraph 2. Across the whole extract that relief keeps resurfacing in the language of permission: he writes of \"these, my older days\" and of being \"permitted the company\". Taken together, the passage is written by a man aware that the arrangement could end. The printed view therefore names a real feeling and misses the anxiety underneath it, and the anxiety is the more interesting reading of the text as a whole.",
+          "planted_fault": "none — argues a different dominant feeling from the printed view",
+          "must": ["credit it fully", "confirm that a different but grounded reading reaches the same band"],
+          "must_not": ["treat the disagreement as a misreading", "steer the student back to the printed view's word"]
+        }
+      ]
+    },
+
+    {
+      "id": "c2-q5-synthesis",
+      "component": "C2",
+      "question": "Q5",
+      "tariff": "4 (AO1 2a, b — select and synthesise from both texts; GOLD MISSING for this question)",
+      "source": "c2_nov2022_text2",
+      "text1_placeholder": true,
+      "stage": "assessment + polishing",
+      "action": "polishing: scan-elements (four synthesis elements)",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "Text 2 says Jumbo's diet is \"hay, oats and bread\" and his drink is \"chiefly water\".",
+          "planted_fault": "one text only — the board's own 1-mark descriptor",
+          "must": ["award 1", "name the missing text explicitly", "ask one question that gets the student to bring the other text's detail in"],
+          "must_not": ["reward the analysis of the quotation (Q5 rewards selection and synthesis, not analysis)", "supply the missing detail"]
+        },
+        {
+          "grade": "partial",
+          "text": "Text 2 says Jumbo ate \"hay, oats and bread\" and drank \"chiefly water\". <<TEXT 1 DETAIL — substitute a verbatim detail from the Resource Material article>>",
+          "planted_fault": "one relevant detail from each text, listed one after the other, no range and no link",
+          "must": ["award 2", "name the two missing elements: a second detail from each text, and the sentence that holds both together", "show the SHAPE of a joining sentence on invented material, not on their answer"],
+          "must_not": ["write the joining sentence for them", "add analysis to the coaching"]
+        },
+        {
+          "grade": "strong",
+          "text": "Both writers describe Jumbo being fed on ordinary human food rather than anything specialised. Text 2's keeper lists \"hay, oats and bread\" and adds that \"as a treat he can cope with a big dram of whisky\", while <<TEXT 1 DETAIL — substitute a verbatim detail from the Resource Material article>>. Read together, both accounts treat feeding Jumbo as a domestic arrangement rather than an animal-keeping problem.",
+          "planted_fault": "none",
+          "must": ["award 4 and quote the joining sentence as the thing that earned the fourth mark", "keep the reply short — this is a 4-mark question"],
+          "must_not": ["ask for more length", "ask for technique naming or effects"]
+        }
+      ]
+    },
+
+    {
+      "id": "c2-q6-comparison",
+      "component": "C2",
+      "question": "Q6",
+      "tariff": "10 (AO3 — two comparative paragraphs, both texts in each)",
+      "source": "c2_jun2023_text2",
+      "text1_placeholder": true,
+      "stage": "assessment + polishing",
+      "action": "polishing: scan-coherence (the pair test), then scan-structure",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "In Text 1 the writer talks about the rescue. In Text 2 the writer says there were \"blinding torrents\". Both texts are about rescues at sea and both writers admire the women.",
+          "planted_fault": "H1-COMP — a paragraph in halves with no pivot, no method named for either text, no development; the first half does not make clear what Text 1 actually says",
+          "must": ["charge H1-COMP on the verbatim half-sentence about Text 1 and supply the naming clause as the fix", "explain the pair test in one sentence: does the Text 2 point answer the Text 1 point", "quote the board's own lowest-band line about dealing with one text or leaving the text unclear"],
+          "must_not": ["accept 'both texts are about rescues' as a comparison", "supply the comparative reading", "use the words Source A or Source B"]
+        },
+        {
+          "grade": "partial",
+          "text": "Both writers make the sea the real antagonist rather than the rescuer's courage. The 1869 report describes how \"a gale drove the waves across the harbour with a fury that taxed the full strength and skill of the most experienced boatmen\", personifying the storm as something with intent. 'Taxed' is a word from accounting, which makes the sea a creditor collecting from the strongest men. A reader is made to measure Ida against professionals before she is even in the boat. <<TEXT 1 METHOD AND QUOTATION — substitute verbatim from the Resource Material article>>",
+          "planted_fault": "Text 1 side undeveloped; no pivot; the purposes are not compared",
+          "must": ["credit the Text 2 method, the close analysis of 'taxed' and the effect, quoting each", "name the missing pivot and the missing purpose comparison", "ask the student for the connecting words themselves"],
+          "must_not": ["hand the student a list of more than three connectives", "write the pivot sentence"]
+        },
+        {
+          "grade": "strong",
+          "text": "Paragraph 1. Both writers build their admiration out of what the rescuer risks rather than what she achieves. The 1869 report has Ida going out \"with little thought of her own safety\", a phrase that withholds heroism and gives us omission instead. 'Thought' is the telling noun, because it makes courage look like the absence of calculation rather than the presence of nerve. A reader is invited to admire a reflex, not a decision. By contrast, <<TEXT 1 METHOD AND QUOTATION — substitute verbatim from the Resource Material article>>, which builds admiration from training rather than instinct. Where the older report finds virtue in not thinking, the modern article finds it in knowing exactly what to do, and the pair together shows how differently two centuries explain the same act. Both writers, arguably, want the reader to believe ordinary people carry this capacity, but only the older one needs the rescuer to be surprised by it.\n\nParagraph 2. The two accounts also differ in how much they let the reader feel the danger. The 1869 writer lingers on the soldiers who \"clasp each other in a last embrace and sink to a watery grave\", a sentimental cadence that asks for pity before rescue arrives. 'Embrace' is the word doing the work, turning drowning men into a tableau. A reader is moved rather than alarmed. <<TEXT 1 EQUIVALENT — substitute verbatim from the Resource Material article>>, which reports rather than stages. The 1869 report therefore treats the reader as an audience where the modern article treats them as a witness, and the difference tells us what each writer thinks admiration is for.",
+          "planted_fault": "none apart from the declared Text 1 placeholders",
+          "must": ["credit the pivot, the pair development and the compared purposes, quoting each", "place each paragraph in a two-mark band using the board's own words"],
+          "must_not": ["require a conclusion", "charge H1-COMP where the one-text gap has already zeroed a criterion"]
+        },
+        {
+          "grade": "valid-but-different",
+          "text": "Paragraph 1. The two writers disagree about who the story belongs to. The 1869 report gives the decisive act to a bystander: Ida's mother \"immediately reported the fact to Ida\", so the rescue begins with someone else's eyes. 'Reported' is oddly official for a mother at a window, and it spreads the credit across a household. A reader comes to see the rescue as a small institution rather than an individual. <<TEXT 1 EQUIVALENT — substitute verbatim from the Resource Material article>>. Holding the two together, the older text distributes heroism and the modern one concentrates it, and each writer's purpose follows from that choice: one wants a community recognised, the other wants a person thanked.",
+          "planted_fault": "none apart from the declared placeholder — compares the distribution of credit rather than the obvious danger axis",
+          "must": ["credit the unexpected comparative axis", "say plainly that a valid different comparison is welcome"],
+          "must_not": ["redirect the student to the expected comparison", "treat a one-paragraph submission as complete (the missing second paragraph is still a shortfall)"]
+        }
+      ]
+    },
+
+    {
+      "id": "c2-q7q8-transactional",
+      "component": "C2",
+      "question": "Q7 and Q8",
+      "tariff": "20 each (AO5 12 + AO6 8, holistic; about 300-400 words each)",
+      "source": "c2_nov2022_text2",
+      "stage": "assessment + polishing",
+      "action": "polishing: scan-structure (IUMVCC), then device-direct-address, then adjust-tone",
+      "responses": [
+        {
+          "grade": "weak",
+          "text": "Dear Sir, I think teenagers should do voluntary work. It would be good for them. They would learn things. Also it would help people. In conclusion teenagers should do voluntary work. Yours faithfully.",
+          "planted_fault": "no awareness of audience beyond the salutation, no urgency, no method, no vision, no counter-argument, far under length, three sentences of content",
+          "must": ["name the form, the purpose and the audience the task set, and say which of the three the piece has not served", "name which IUMVCC sections are absent", "state the code-computed word count against the 300-400 guidance", "quote the board's own line that purpose, audience and format matter particularly here"],
+          "must_not": ["apply a penalty code (Section B has none)", "invent a ceiling figure", "rewrite the letter"]
+        },
+        {
+          "grade": "partial",
+          "text": "Dear Editor, your correspondent is right that young people could give more, and wrong about how to get it. Every Saturday in my town a dozen of us already clear the canal path, unpaid and unrecorded, while the letter you printed assumes we are absent. Making service compulsory would replace something we chose with something we resent. I would rather you asked schools to publish what their students already do. Yours faithfully.",
+          "planted_fault": "a real counter-argument and a real method, but no urgency section and no vision; strong register, under length",
+          "must": ["credit the register and the turned counter-argument, quoting them", "name the two missing sections and ask one question about the Vision", "give ONE holistic mark for each of the two grids"],
+          "must_not": ["mark it paragraph by paragraph", "ask the student to add a device for its own sake"]
+        },
+        {
+          "grade": "valid-but-different",
+          "text": "[engine lane: drive a 350-400 word talk to younger students that never states a thesis in the first paragraph but arrives at one through two concrete anecdotes. The acceptance test is that the reply judges it on how well it carries its own ambition, per the board's 'candidates themselves set the level of difficulty' instruction, rather than against the six-section order.]",
+          "planted_fault": "not authored — see the note in the text",
+          "must": ["judge the piece on its own ambition and say so", "name the six taught sections as a Sophicly framework, never as a board requirement", "emit ONE labelled holistic gold of about 400 words in the SAME form"],
+          "must_not": ["mark it down for arriving at its thesis late", "call the six sections a requirement of the mark scheme", "emit two golds"]
+        }
+      ]
+    }
+  ],
+
+  "cross_cutting_acceptance": [
+    "No reply anywhere asks the student to supply, re-type or find the text, the question or their own answer.",
+    "No reply uses the words Source A or Source B on Component 2.",
+    "No reply mentions AO3 on Component 1.",
+    "No reply mentions structure analysis as a requirement on Component 1 Q2 or Q4.",
+    "Every penalty quotes the student's verbatim phrase and carries a one-line fix.",
+    "Every level quotation is traceable to knowledge-mark-scheme-c1.md or knowledge-mark-scheme-c2.md.",
+    "Every question total is a whole number on its own line with nothing after it.",
+    "Component 1 Q1 and Component 2 Q1 and Q3 get no reflection panel, no gold and no level alignment.",
+    "Component 2 Q1 and Q3 are marked one mark per part, three separate judgements each."
+  ]
+}

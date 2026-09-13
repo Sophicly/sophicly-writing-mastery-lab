@@ -1,0 +1,111 @@
+{
+  "_what_this_is": "Representative student journeys for the OCR GCSE English Language J351 polishing environment (PROTOCOL-STANDARD E5: 'representative journeys — weak · partial · strong · valid-different — through the real chat endpoint on staging, replies recorded'). The ENGINE lane runs each entry: open the named cell's polishing lesson on staging, select the `selection` text inside the named question's Response section, press `action`, and record the reply. A reply that breaks any `must_not` line is a FAIL.",
+  "_authored": "2026-09-13, OCR content lane. Student prose is written for this file (deliberately faulty where the row says so). Every QUOTATION inside the student prose is verbatim from the real paper, taken from the indicative content of the mark scheme named in `source`.",
+  "_sources": {
+    "ocr_lang_paper_1": "protocols/ocr/_sources/741958-mark-scheme-communicating-information-and-ideas.pdf — J351/01, November 2024. Text 1 = Mary Seacole (memoir); Text 2 = Christie Watson on Betty (literary non-fiction). Q4 statement that series: the writers' sympathy for their patients.",
+    "ocr_lang_paper_2": "protocols/ocr/_sources/704889-mark-scheme-exploring-effects-and-impact.pdf — J351/02, June 2023. Text 1 = Enigma by Robert Harris; Text 2 = A Crossing: A Cyclist's Journey Home by Brian Newhouse. Q4 statement, verbatim: 'Both texts powerfully present an exciting journey.'"
+  },
+  "_universal_must_not": [
+    "never write the student's finished sentence for them (the only exception is the two contrasting rewrites, offered as a PAIR to choose between)",
+    "never use the words rubric, protocol, tier, engine, module, or a level label as an instruction ('Level 4 needs…')",
+    "never invent a level descriptor or a mark — every descriptor phrase comes from the cell's knowledge-mark-scheme file",
+    "never give a mark, a grade or a percentage: polishing does not mark",
+    "never tour the rest of the paper or name what else is weak",
+    "never claim to show 'the OCR model answer' — there is no OCR model answer on the system (GOLD MISSING)",
+    "never use 'shows' as the analytical verb in your own prose"
+  ],
+  "journeys": [
+    {
+      "id": "c1-q1-retrieval",
+      "cell": "ocr/language1",
+      "text": "ocr_lang_paper_1",
+      "question": "Q1",
+      "type": "retrieval (AO1i, 4 marks, point-marked)",
+      "rows": [
+        { "grade": "weak", "selection": "The man was worried about his workers.", "action": "explain", "must": ["say in one line that this part wants a phrase from the text, not a summary in the student's own words", "point at the lines the question named", "stop there — no rewriting"], "must_not": ["supply the phrase for them", "coach this as a paragraph with elements", "offer a gold model"] },
+        { "grade": "partial", "selection": "anxious for his head muleteer", "action": "explain", "must": ["confirm that a direct quotation is what this part rewards", "note in one line that the marks here are right-or-wrong, so polishing has little to offer on Q1 and their time is better spent on a later question"], "must_not": ["add a second candidate quotation", "invent a mark"] },
+        { "grade": "strong", "selection": "'the largest mule-owner in town'", "action": "explain", "must": ["agree it is a direct quotation from the named lines", "redirect to a question where polishing pays"], "must_not": ["praise at length", "grade it"] },
+        { "grade": "valid-different", "selection": "'selfishly anxious'", "action": "explain", "must": ["accept it as a different valid phrase — the board's list allows alternatives", "redirect"], "must_not": ["rule it wrong because it is not the first phrase on our list"] }
+      ]
+    },
+    {
+      "id": "c1-q2-synthesis",
+      "cell": "ocr/language1",
+      "text": "ocr_lang_paper_1",
+      "question": "Q2",
+      "type": "synthesis across both texts (AO1ii, 6 marks)",
+      "rows": [
+        { "grade": "weak", "selection": "In Text 1 the people are ill because 'some of his men were dying'. This shows the writer helped sick people.", "action": "scan-elements", "must": ["count the elements present and missing — the similarity is implied, Text 1 evidence is there, Text 2 evidence is absent, the synthesis sentence is absent", "ask which text is missing rather than naming what to add", "name that 'shows' is the weak verb here and ask for a precise one"], "must_not": ["supply a Text 2 quotation", "treat this as a technique question", "write the synthesis sentence"] },
+        { "grade": "partial", "selection": "Both writers help people who are unwell. In Text 1 the men were 'in dirty hammocks' and in Text 2 'her face looks concave and her teeth are chattering'.", "action": "scan-coherence", "must": ["credit that both texts are present and the similarity is stated", "ask what the two details tell them TOGETHER — the sentence that is missing", "quote the board's Level 3 phrase 'including conceptual ideas' as what the top level rewards"], "must_not": ["write the together-sentence", "ask for technique analysis"] },
+        { "grade": "strong", "selection": "Both writers describe people whose bodies have been left to the weather. Seacole's men lie 'in dirty hammocks' while Watson's patient sits 'at home with no heating', and together the two details suggest that in both centuries the people who need help most are the ones nobody has sheltered.", "action": "compare-gold-standard", "must": ["state plainly that there is no OCR model answer on the system and that the comparison will be against the criteria instead", "quote the Level 3 descriptor phrase and name which part of it this already meets", "ask ONE question about the second connection rather than praising twice"], "must_not": ["produce a 'model answer' and attribute it to OCR", "rewrite their sentence"] },
+        { "grade": "valid-different", "selection": "Both writers are thanked by people who have almost nothing. Seacole is given 'nothing better to give me than their thanks', and Watson's patient says 'You're so kind', which suggests that gratitude is what the poorest can afford to give.", "action": "scan-concept", "must": ["accept this similarity as valid even though it is not the obvious illness link — the board's list is 'may refer to some of the following'", "test that the idea is conceptual rather than a surface feature"], "must_not": ["steer them back to the illness similarity as 'the right one'"] }
+      ]
+    },
+    {
+      "id": "c1-q3-analysis",
+      "cell": "ocr/language1",
+      "text": "ocr_lang_paper_1",
+      "question": "Q3",
+      "type": "language and structure analysis (AO2, 12 marks)",
+      "rows": [
+        { "grade": "weak", "selection": "The writer uses the word 'searching' which shows the rain was bad. This makes the reader feel sad.", "action": "scan-elements", "must": ["count: no conceptual topic sentence, evidence present, no close analysis, one thin effect, no purpose", "ask which single element they want to build first", "name both weak verbs ('uses', 'shows') and ask for a precise replacement"], "must_not": ["list all five missing elements as instructions", "supply the close analysis of 'searching'"] },
+        { "grade": "partial", "selection": "Seacole presents the rain as an enemy. She calls it 'searching', and the reader feels sorry for the men.", "action": "scan-coherence", "must": ["credit the conceptual topic sentence and the embedded quotation", "ask what 'searching' does that 'heavy' would not — the word-level step that is missing", "point out that one effect sentence is present and a second, different one is not"], "must_not": ["write the word-level analysis", "introduce a structural feature they did not find"] },
+        { "grade": "strong", "selection": "Seacole presents the rain as something with intent. The verb 'searching' makes the weather deliberate, as if it were hunting the men out of their hammocks; the reader is first made to picture water finding every gap, then left uneasy that even shelter is no protection. Seacole wants the reader to see neglect as an active force, not bad luck.", "action": "scan-structure", "must": ["confirm the paragraph has the six elements", "move up a level: ask whether any of the three paragraphs is built on the SHAPE of the passage rather than a word, and quote the board's phrase about analysis of both language and structure being 'reasonably detailed and balanced'"], "must_not": ["ask for more on this paragraph when the whole-answer gap is the balance", "grade it"] },
+        { "grade": "valid-different", "selection": "Seacole builds the passage from sounds rather than sights. 'Groans and agony' arrives before any description of the hut, so the reader hears the suffering before they can see it, and by the time the space is described it has already been filled with sound. Seacole makes the reader listen in, which is harder to look away from.", "action": "scan-concept", "must": ["accept a structural reading as fully valid on this question — one AO2 strand covers language and structure", "test the topic sentence is conceptual, then leave it"], "must_not": ["ask them to name a language device instead", "call the structural reading off-task"] }
+      ]
+    },
+    {
+      "id": "c1-q4-comparative-evaluation",
+      "cell": "ocr/language1",
+      "text": "ocr_lang_paper_1",
+      "question": "Q4",
+      "type": "comparative evaluation (AO4 12 + AO3 6, 18 marks)",
+      "rows": [
+        { "grade": "weak", "selection": "I agree with the statement. Text 1 is very sympathetic because the men 'screamed and groaned' and it is sad.", "action": "scan-structure", "must": ["name the whole-answer shape in one line: a short stance, three comparative paragraphs, a short conclusion", "say that agreeing or disagreeing earns nothing by itself", "ask what the paragraph would need to reach the second text"], "must_not": ["write the stance for them", "penalise the agreement itself", "coach towards a keyword the printed statement does not contain"] },
+        { "grade": "partial", "selection": "Seacole is sympathetic to her patients. The men 'screamed and groaned' and she 'lighted a fire' for them, which suggests she acts as well as feels. Watson is sympathetic too.", "action": "scan-coherence", "must": ["credit the Text 1 evidence and inference", "name the missing comparative pivot: Text 2 is asserted, not evidenced or weighed", "quote the AO3 Level 6 phrase 'a detailed, interwoven comparison' as the target"], "must_not": ["supply a Watson quotation", "let the paragraph pass as comparative"] },
+        { "grade": "strong", "selection": "Seacole's sympathy is practical before it is emotional: she 'lighted a fire' while the men 'screamed and groaned', so her feeling is measured in what she does. Watson's is quieter — 'can I get you a cup of tea and a sandwich' offers comfort rather than rescue — and the contrast suggests that sympathy in Seacole's world had to be physical, while in Watson's it is mostly social. Arguably the statement holds more firmly for Seacole, whose care costs her something.", "action": "compare-gold-standard", "must": ["state that there is no OCR model answer on the system, then compare against the criteria", "name which AO3 level phrase this paragraph already earns and what the next level asks for, in the next level's own words", "ask ONE question about the paragraph that is weakest across the three"], "must_not": ["present an invented passage as OCR's model", "rewrite their pivot"] },
+        { "grade": "valid-different", "selection": "I would argue the statement understates Watson. Her patient's 'temperature … dangerously low' is recorded as a number, not a feeling, and that clinical restraint is what makes the sympathy land: she does not perform it. Seacole, by contrast, tells us the men had 'nothing better to give me than their thanks', which keeps her own part in view. Perhaps sympathy is strongest in Text 2 precisely because it is least visible.", "action": "scan-concept", "must": ["accept a disagreement with the statement as fully creditable", "check the stance is on the statement's own words and the three points are distinct", "praise the tentative language as what the evaluation levels reward"], "must_not": ["push them back towards agreeing", "charge them for disagreeing"] }
+      ]
+    },
+    {
+      "id": "c1-q5-transactional",
+      "cell": "ocr/language1",
+      "text": "ocr_lang_paper_1",
+      "question": "Q5",
+      "type": "transactional writing (AO5 24 + AO6 16, holistic)",
+      "rows": [
+        { "grade": "weak", "selection": "Dear Editor, I think old people need more help. It is really really sad and something should be done about it. Thank you.", "action": "scan-structure", "must": ["name the six IUMVCC sections once and ask which one they want to build first", "note that the form is a letter and that the marks reward the form being adapted for its reader", "ask for one concrete action instead of 'something should be done'"], "must_not": ["write the letter's opening", "list every fault", "call IUMVCC OCR's requirement"] },
+        { "grade": "partial", "selection": "Every winter, thousands of older people sit in cold rooms. The council could fund one warm room in every library, open from November to March.", "action": "scan-elements", "must": ["credit the urgency and the method as present", "ask which of the remaining sections is missing — the vision, the counter-argument, the close", "keep the reply short"], "must_not": ["supply the counter-argument", "switch to a story"] },
+        { "grade": "strong", "selection": "You will have walked past her: the woman at the bus stop in three coats. Now imagine a library where she can sit at two in the afternoon with a book and a radiator. Some will say the council cannot afford it; a warm room costs less than one ambulance call-out.", "action": "adjust-tone", "must": ["name what the tone is doing now (direct address, second person) and quote the AO5 top-band phrase about tone being 'ambitiously selected'", "offer ONE alternative SHAPE, as a skeleton, and hand the writing back"], "must_not": ["rewrite the passage", "add a device they did not choose"] },
+        { "grade": "valid-different", "selection": "Good afternoon. I want to start with a number: four. That is how many of my neighbours over seventy have asked me, this month, whether it is cheaper to stay in bed.", "action": "device-suggest", "must": ["recognise this is a TALK, not a letter, and judge it against a spoken form", "name ONE device that would suit a room of listeners, say what it does to them, and ask the student to try it", "leave the writing to them"], "must_not": ["tell them the form is wrong", "supply the device already written into their line"] }
+      ]
+    },
+    {
+      "id": "c2-q2-short-analysis",
+      "cell": "ocr/language2",
+      "text": "ocr_lang_paper_2",
+      "question": "Q2",
+      "type": "short-span analysis of Text 1 (AO2, 6 marks)",
+      "rows": [
+        { "grade": "weak", "selection": "Harris uses the word 'seized' which shows Jericho was in a hurry and makes it exciting.", "action": "scan-elements", "must": ["count the five elements and name which are absent", "flag 'uses' and 'shows' and ask for precise verbs", "ask for the one idea the paragraph argues"], "must_not": ["supply the topic sentence", "ask for a second paragraph before this one works"] },
+        { "grade": "partial", "selection": "Harris makes Jericho's night feel transformed. The town is 'familiarly drab and ugly' until this night, when it becomes 'on this night beautiful'.", "action": "scan-coherence", "must": ["credit the conceptual topic sentence and the contrast the two quotations set up", "ask what one word inside either quotation is doing — the close-analysis step", "note that the effect sentence and the purpose sentence are still to come"], "must_not": ["write the close analysis", "add a device name"] },
+        { "grade": "strong", "selection": "Harris makes the ordinary world change with the character's mood. The town is 'familiarly drab and ugly' before, and 'on this night beautiful' after; 'familiarly' is the word that does the work, because it admits Jericho has always seen the place this way and only tonight sees differently. The reader is made to feel the lift as a private one, and is left suspecting the change is in him, not the streets. Harris wants excitement to arrive as perception rather than event.", "action": "scan-structure", "must": ["confirm the five elements are present", "move up: ask whether the second paragraph takes the SHAPE of the passage, since the board's higher levels ask for language and structure together", "keep it to two sentences"], "must_not": ["ask for more on a paragraph that is complete", "grade it"] },
+        { "grade": "valid-different", "selection": "Harris builds the passage out of interruptions. 'Shunting…sidings…sudden' arrives in fragments, so the reader is given the night in pieces rather than in sentences, and the shape of the writing keeps catching before it settles. Harris makes the reader share a mind that cannot hold still.", "action": "scan-concept", "must": ["accept a structural reading as fully valid on this question", "check the topic sentence is conceptual, then stop"], "must_not": ["require a named language device", "treat the structural reading as off-task"] }
+      ]
+    },
+    {
+      "id": "c2-q5-creative",
+      "cell": "ocr/language2",
+      "text": "ocr_lang_paper_2",
+      "question": "Q5",
+      "type": "creative writing (AO5 24 + AO6 16, holistic)",
+      "rows": [
+        { "grade": "weak", "selection": "At that moment she realised she was late. She ran and ran and ran to the station and it was very very scary and then she got on the train and it was fine.", "action": "scan-structure", "must": ["name the seven scene elements once and ask which one they want to build first", "note that the given opening line must be used exactly as printed", "ask for one concrete image instead of 'very very scary'"], "must_not": ["write the opening", "list every fault at once", "call the seven elements OCR's requirement"] },
+        { "grade": "partial", "selection": "At that moment she realised the platform was empty. Her bag strap cut into her shoulder. Somewhere behind the barriers a tannoy said a name that might have been hers.", "action": "scan-elements", "must": ["credit the hook and the setup", "ask what happens next — the reaction beat — in one question", "keep the reply short"], "must_not": ["write the next beat", "switch her into an essay"] },
+        { "grade": "strong", "selection": "At that moment she realised the platform was empty. Her bag strap cut into her shoulder, and the tannoy said a name that might have been hers. She did not run. She set the bag down on the yellow line and, for the first time in four years, decided to let something leave without her.", "action": "cw-cut-modifiers", "must": ["run the modifier test on the selection and report the hits from code, then ask the student to apply the test themselves", "if there are no modifiers to cut, say so plainly and point at the next useful move"], "must_not": ["rewrite the passage", "invent adverbs that are not there"] },
+        { "grade": "valid-different", "selection": "The hill came at me the way a wall does. I snapped the brakes off and, for a while, the road did the work: 'phone wires swung on their poles like jump ropes' and the corn went past in one long breath. Then. Magic.", "action": "strengthen-vocabulary", "must": ["recognise this is the DESCRIPTION task, not the story task, and judge it as description", "name the AO6 top-band phrase about vocabulary being 'precise and subtle' and ask which one word they would sharpen", "note if a borrowed phrase from the source text is quoted inside their own creative piece, and ask them to put the idea in their own words — their writing is what is marked"], "must_not": ["tell them the description task is the wrong choice", "supply replacement vocabulary"] }
+      ]
+    }
+  ],
+  "_not_tested": "None of these journeys has been run: the OCR polishing rows are not in the router yet (they are proposed byte-exact in protocols/ocr/_PORT-REPORT-2026-09-13.md), so there is no OCR polishing environment on staging to press a button in. The engine lane should run them in the same cycle as the router row lands."
+}

@@ -1,14 +1,25 @@
 ## **2\. MARK SCHEME & GOLD STANDARDS**
 
+**\[AI_INTERNAL\] QUESTION NUMBERS AND TEXT NAMES ON THIS PAPER (corrected 2026-09-13).** Eduqas
+Component 2 numbers its questions **Q1 a/b/c (retrieval, 1 mark each) - Q2 (AO2, 10) - Q3 a/b/c
+(retrieval, 1 mark each) - Q4 (AO4 evaluation, 10) - Q5 (AO1 synthesis, 4) - Q6 (AO3 comparison, 10)
+- Q7 and Q8 (transactional writing, 20 each)**. The gold models below were originally labelled with
+another board's numbering; they are relabelled to match. The two texts are called **Text 1** (the
+21st-century article in the Resource Material) and **Text 2** (the 19th-century extract) - the
+printed paper contains no "Text 1" or "Text 2", so never use those names with a student.
+**There is no gold model on this paper yet for Q4 (AO4 evaluation) or Q5 (AO1 synthesis)** - build
+those golds from the criteria in `protocol-a-assessment.md` and say nothing that implies a stored
+model exists.
+
 ### **2A: Gold Standard Models & Exemplars**
 
 **\[AI\_INTERNAL\]** Reference these exemplars when generating gold standard models or assessing student work quality. All examples demonstrate Band 4-5 criteria across relevant Assessment Objectives.
 
 ---
 
-### **Question 2 (AO2) – Gold Standard TTECEA Paragraph (Source A Language Analysis)**
+### **Question 2 (AO2) – Gold Standard TTECEA Paragraph (Text 1 Language Analysis)**
 
-**TTECEA Gold Standard (Question 2 \- Language Analysis):**
+**TTECEA Gold Standard (Question 2 \- Language, Tone and Structure Analysis):**
 
 **Structure Requirements:**
 
@@ -29,15 +40,15 @@
 
 ---
 
-**Example Question 2 Gold Standard Paragraph (Source A):**
+**Example Question 2 Gold Standard Paragraph (Text 1):**
 
 Fogle's account conveys overwhelming psychological pressure through surreal imagery and dark humor. In his description, the hospital environment feels like an enormous ship on fire with him sailing alone, suggesting an institution spiraling into catastrophic failure with him as the sole inadequate responder. Zooming into this comparison reveals how medical professionals experience their workload—not simply as difficult but as actively life-threatening chaos where containment seems impossible. Readers understand that healthcare workers don't just face busy shifts but operate in conditions of genuine psychological crisis, where responsibility vastly exceeds capacity. Fogle perhaps reveals how medical professionals cope by transforming trauma into metaphor, making horror communicable through exaggeration and humor.
 
 ---
 
-### **Question 3 (AO2) – Gold Standard TTECEA Paragraph**
+### **Question 2, second paragraph (AO2) – Gold Standard TTECEA Paragraph**
 
-**TTECEA Gold Standard (Question 3 Body Paragraph):**
+**TTECEA Gold Standard (Question 2, second paragraph):**
 
 **Structure Requirements:**
 
@@ -58,24 +69,24 @@ Fogle's account conveys overwhelming psychological pressure through surreal imag
 
 ---
 
-**Example Question 3 Gold Standard Body Paragraph:**
+**Example Question 2 Gold Standard Paragraph (second paragraph):**
 
 Fogle employs dark humor through surreal metaphor to convey the overwhelming pressure of medical work, describing the hospital as "enormous, and on fire" while he "sails the ship alone." Zooming into "on fire," the destructive imagery carries connotations of catastrophe, danger, and desperate attempts to contain something spiraling beyond control, emphasizing how medical professionals experience their responsibilities not simply as difficult but as actively life-threatening. Readers experience vicariously the panic of impossible responsibility, understanding that healthcare workers don't just face busy shifts but operate in conditions of genuine crisis where containment feels futile. Additionally, the metaphor creates grim humor that makes the horror somehow bearable, inviting readers to recognize how professionals cope by transforming trauma into something communicable through exaggeration. Fogle perhaps reveals the psychological mechanisms healthcare workers develop—using metaphor and humor to process overwhelming experiences, turning unbearable pressure into something they can articulate and survive.
 
 ---
 
-### **Question 4 (AO3) – Comparative TTECEA Gold Standard**
+### **Question 6 (AO3) – Comparative Gold Standard**
 
-**Comparative TTECEA Gold Standard (Question 4 Body Paragraph):**
+**Comparative Gold Standard (Question 6 comparative paragraph):**
 
 **Integrated Comparative Structure \- Each paragraph must compare both sources throughout:**
 
 * **(T) Topic:** Comparative topic sentence establishing the aspect being compared in both sources  
-* **(T) Technique \- Comparative:** Identify technique Source A writer uses, then use comparative connectives to identify technique Source B writer uses, showing how their methods compare  
-* **(E) Evidence \- Comparative:** Quote from Source A, then comparative transition to quote from Source B  
-* **(C) Close Analysis \- Comparative:** Zoom into Source A's specific details and what they suggest, then zoom into Source B's specific details and what they suggest, comparing what the contrast/similarity reveals  
-* **(E) Effects on Reader \- Comparative:** Two sentences analyzing Source A's effects on readers (focus, emotion, thought, reflection), then two sentences analyzing Source B's effects on readers, followed by comparison of whether these effects are similar or different  
-* **(A) Author's Purpose \- Comparative:** Discuss Source A writer's purpose with tentative language ("perhaps reveals," "arguably emphasizes"), then discuss Source B writer's purpose, comparing whether purposes are similar or contrasting  
+* **(T) Technique \- Comparative:** Identify technique Text 1's writer uses, then use comparative connectives to identify technique Text 2's writer uses, showing how their methods compare  
+* **(E) Evidence \- Comparative:** Quote from Text 1, then comparative transition to quote from Text 2  
+* **(C) Close Analysis \- Comparative:** Zoom into Text 1's specific details and what they suggest, then zoom into Text 2's specific details and what they suggest, comparing what the contrast/similarity reveals  
+* **(E) Effects on Reader \- Comparative:** Two sentences analyzing Text 1's effects on readers (focus, emotion, thought, reflection), then two sentences analyzing Text 2's effects on readers, followed by comparison of whether these effects are similar or different  
+* **(A) Author's Purpose \- Comparative:** Discuss Text 1's writer's purpose with tentative language ("perhaps reveals," "arguably emphasizes"), then discuss Text 2's writer's purpose, comparing whether purposes are similar or contrasting  
 * **(+C) Comparative Judgement:** Evaluate which writer's approach is more effective for this specific aspect using comparative language
 
 **Sentence-Level Rules:**
@@ -84,22 +95,22 @@ Fogle employs dark humor through surreal metaphor to convey the overwhelming pre
 * NO sentences start with "the," "this," or "these"  
 * NO use of the verb "shows"  
 * Use comparative connectives throughout ("whereas," "in contrast," "similarly," etc.)  
-* Weave both sources together throughout—never separate Source A section then Source B section
+* Weave both sources together throughout—never separate Text 1 section then Text 2 section
 
 ---
 
-**Example Question 4 Gold Standard Body Paragraph:**
+**Example Question 6 Gold Standard Comparative Paragraph:**
 
-Both writers convey overwhelming pressure, yet the Source A writer emphasizes psychological strain through dark humor and surreal imagery, whereas the Source B writer emphasizes physical exhaustion through visceral sensory details and statistical evidence. Fogle employs an extended metaphor describing the hospital as "enormous, and on fire," using hyperbolic destruction to capture how out of control the situation feels, while the Source B writer uses the stark statistic "one nurse for forty patients" combined with the sensory image of "staggering through corridors," creating a more grounded but equally overwhelming picture. Zooming into "on fire," Fogle's catastrophic imagery suggests not just difficulty but active crisis, with connotations of danger, destruction, and desperate attempts to contain something spiraling beyond control, whereas "staggering" in Source B carries connotations of physical exhaustion to the point of losing balance, suggesting bodies pushed beyond their limits. Readers of Source A are drawn into the psychological experience of feeling completely overwhelmed and powerless, experiencing vicariously the panic of responsibility without adequate resources, while also finding grim humor in the exaggeration that makes the horror somehow bearable. Fogle perhaps reveals how medical professionals cope through humor and metaphor, turning trauma into something they can process and communicate. Readers of Source B, in contrast, are confronted with the physical reality of exhausted bodies and impossible ratios, experiencing shock at the statistical evidence of systemic failure, while the visceral image of staggering makes the exhaustion tangible and real rather than abstract. The Source B writer arguably emphasizes the need for immediate systemic change, using concrete evidence to mobilize readers toward recognizing healthcare as a crisis requiring political action. Ultimately, Fogle's insider metaphorical approach creates deeper psychological understanding of how overwhelming pressure affects medical professionals' mental state, whereas the Source B writer's evidence-based approach more effectively demonstrates the unsustainability of current systems and the urgent need for intervention.
+Both writers convey overwhelming pressure, yet the Text 1's writer emphasizes psychological strain through dark humor and surreal imagery, whereas the Text 2's writer emphasizes physical exhaustion through visceral sensory details and statistical evidence. Fogle employs an extended metaphor describing the hospital as "enormous, and on fire," using hyperbolic destruction to capture how out of control the situation feels, while the Text 2's writer uses the stark statistic "one nurse for forty patients" combined with the sensory image of "staggering through corridors," creating a more grounded but equally overwhelming picture. Zooming into "on fire," Fogle's catastrophic imagery suggests not just difficulty but active crisis, with connotations of danger, destruction, and desperate attempts to contain something spiraling beyond control, whereas "staggering" in Text 2 carries connotations of physical exhaustion to the point of losing balance, suggesting bodies pushed beyond their limits. Readers of Text 1 are drawn into the psychological experience of feeling completely overwhelmed and powerless, experiencing vicariously the panic of responsibility without adequate resources, while also finding grim humor in the exaggeration that makes the horror somehow bearable. Fogle perhaps reveals how medical professionals cope through humor and metaphor, turning trauma into something they can process and communicate. Readers of Text 2, in contrast, are confronted with the physical reality of exhausted bodies and impossible ratios, experiencing shock at the statistical evidence of systemic failure, while the visceral image of staggering makes the exhaustion tangible and real rather than abstract. The Text 2's writer arguably emphasizes the need for immediate systemic change, using concrete evidence to mobilize readers toward recognizing healthcare as a crisis requiring political action. Ultimately, Fogle's insider metaphorical approach creates deeper psychological understanding of how overwhelming pressure affects medical professionals' mental state, whereas the Text 2's writer's evidence-based approach more effectively demonstrates the unsustainability of current systems and the urgent need for intervention.
 
 ---
 
-**Conclusion Gold Standard (Question 4):**
+**\[AI_INTERNAL\] RETIRED - Question 6 teaches NO conclusion** (two comparative paragraphs, 5 marks each). The lines below are historical and must never be served as a taught element:
 
 * Brief summary of key comparative finding (1 line)  
 * Final evaluative statement about which perspective/method is ultimately more effective and why (1 line)
 
-**Example Question 4 Gold Standard Conclusion:**
+**Historical example only (do not teach):**
 
 While both writers powerfully convey the crisis in healthcare, Fogle's psychological depth illuminates the human cost in ways that statistics cannot capture, making readers understand not just what medical professionals face but how it feels to live inside that pressure.
 
@@ -161,7 +172,7 @@ So here's my challenge to you: stop treating education as preparation for life a
 * **Powerful conclusion:** Memorable closing challenge  
 * **Word count:** 720 words (exceeds 650 minimum)
 
-### **2B: Body Paragraph Criteria (Questions 3 and 4\)**
+### **2B: Body Paragraph Criteria (Questions 2, 4 and 6)**
 
 **\[AI\_INTERNAL\]** This section provides a rapid-access summary of requirements for each question type. This is NOT a marking rubric—for detailed assessment criteria, penalty codes, and band descriptors, use the Assessment Protocol in Section 3\. For quality benchmarks, reference Section 2A Gold Standards.
 
@@ -174,7 +185,7 @@ So here's my challenge to you: stop treating education as preparation for life a
 
 ---
 
-**Question 3 Body Paragraph Requirements (TTECEA \- AO2):**
+**Question 2 Paragraph Requirements (TTECEA \- AO2):**
 
 **Structural Checklist:**
 
@@ -197,7 +208,7 @@ So here's my challenge to you: stop treating education as preparation for life a
 
 ---
 
-**Question 4 Body Paragraph Requirements (Comparative TTECEA \- AO3):**
+**Question 6 Paragraph Requirements (Comparative \- AO3):**
 
 **Structural Checklist:**
 
@@ -205,7 +216,7 @@ So here's my challenge to you: stop treating education as preparation for life a
 * ✓ Techniques identified for BOTH sources with comparative connectives  
 * ✓ Evidence from BOTH sources with comparative transitions  
 * ✓ Close analysis zooming into BOTH sources' specific details  
-* ✓ Two effect sentences for Source A, two for Source B, plus comparison  
+* ✓ Two effect sentences for Text 1, two for Text 2, plus comparison  
 * ✓ Author's purpose for BOTH sources with comparative evaluation  
 * ✓ Comparative judgement of effectiveness
 
@@ -218,7 +229,7 @@ So here's my challenge to you: stop treating education as preparation for life a
 * NO "the/this/these" sentence starters  
 * NO use of verb "shows"
 
-**\[v6.13 FIX \#4: Standardized penalty code from Q4-COMP to H1-COMP\]** **Critical Requirement:** BOTH sources must be compared throughout the paragraph. Treating Source A then Source B separately triggers H1-COMP penalty.
+**\[v6.13 FIX \#4: Standardized penalty code from Q4-COMP to H1-COMP\]** **Critical Requirement:** BOTH sources must be compared throughout the paragraph. Treating Text 1 then Text 2 separately triggers H1-COMP penalty.
 
 ---
 
