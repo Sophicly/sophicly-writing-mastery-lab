@@ -129,25 +129,8 @@
         "steps": {}
     },
     "polishing": {
-        "always": [
-            "modules/foundation.md",
-            "modules/protocol-integrity.md",
-            "modules/functions.md",
-            "modules/macros-utility.md",
-            "modules/macros-socratic.md",
-            "modules/macros-analysis.md",
-            "modules/macros-context-help.md",
-            "modules/student-profiling.md",
-            "modules/guard-macros.md",
-            "modules/error-recovery.md",
-            "modules/session-state.md",
-            "modules/progress-common.md",
-            "modules/progress-polishing.md",
-            "modules/knowledge-core.md",
-            "modules/knowledge-ttecea.md",
-            "modules/workflow-entry.md",
-            "modules/protocol-c-polishing.md"
-        ],
+        "_retired": "v7.20.610 — polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_env subject rows aqa/shakespeare, aqa/19th_century and aqa/modern_text in class-protocol-router.php (engine-1 + rubric-base + rubric-base-lit + the per-family rubric + knowledge-model-answer + gold-standard-exemplars + knowledge-style-models + penalty-codes + the active text's context-bank slice). modules/protocol-c-polishing.md stays on disk as source and must NEVER be loaded at a student again (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose: a removed router row fails loud rather than loading the March-2026 walk.",
+        "always": [],
         "steps": {}
     },
     "exam_question": {

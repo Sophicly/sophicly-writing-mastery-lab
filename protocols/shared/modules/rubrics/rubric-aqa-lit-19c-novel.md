@@ -2,9 +2,17 @@
 
 **Loads on top of:** `rubric-base.md`. Universal Sophicly rules apply unless overridden here.
 
-**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (Frankenstein / Jane Eyre / A Christmas Carol / Jekyll & Hyde / Pride & Prejudice / Sign of the Four) + `task='polishing'` (AQA Lit P1 Section B redraft).
+**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (Frankenstein / Jane Eyre / A Christmas Carol / Jekyll & Hyde / Pride & Prejudice / Sign of the Four) + `task='polishing'` (AQA Lit P1 Section B redraft — router `essay_polishing_env()` row `aqa/19th_century`, v7.20.610, loaded with `rubric-base.md`, `rubric-base-lit.md`, the gold `knowledge-model-answer.md` + `gold-standard-exemplars-aqa-lit.md`, the criteria `knowledge-style-models.md`, the registry `penalty-codes.md`, and the active text's slice of the AO3 context bank).
+
+**Provenance (PROTOCOL-STANDARD §2b):** level descriptors summarised from the AQA 8702/1 mark scheme (`protocols/aqa/literature/modules/knowledge-mark-scheme.md`); element structure from the Literature protocol `protocols/aqa/literature/modules/protocol-a-assessment.md` via `PROTOCOL-QUESTION-STRUCTURE-MAP.md` §literature. ⚠️ KNOWN GAP (map :194): the protocol marks this 30-mark paper with the 34-mark Shakespeare grid; no dedicated 30-mark split has been authored. Coach the shape; never quote a per-element mark for this paper.
 
 **Paper structure:** Single 50-minute extract-based question. **30 marks total** (AO1+AO2+AO3 only — NO AO4).
+
+---
+
+## THE LESSON'S SHAPE (PROTOCOL-STANDARD Part D — polishing)
+
+The polishing lesson here is identical in shape to the Shakespeare one (`rubric-aqa-lit-shakespeare.md` THE LESSON'S SHAPE): the student chooses, the gold standard is the target and the student's own reading stays theirs, the **Location** line names the paragraph (Introduction · Body 1–3 · Conclusion), macro → micro is recommended never enforced, help before Sophia, exit = **Mark Complete** in the footer with no task menu, and the student's language is 13–16 second-language-safe (never *rubric* / *protocol* / *tier* / *Level 4 needs…*). The one difference: there is no AO4 here, so spelling and punctuation are coached for clarity, not marks; "reader", never "audience".
 
 ---
 
@@ -54,15 +62,17 @@ Same extract → whole-text shape as Shakespeare. Treat both halves equal weight
 
 ## TTECEA SHAPE (PER `rubric-base.md`)
 
-For 19c novel, all 7 TTECEA elements compulsory:
+For 19c novel, all 7 TTECEA elements compulsory, in the order the protocol marks them:
 
 1. T (concept-only).
-2. T+e (technique + quote, anchored Chapter / volume / page ref).
-3. E1.
-4. C (close analysis of words inside quote).
-5. E2.
+2. T+e (technique + quote, anchored Chapter / volume / page ref, + inference).
+3. C (close analysis of words inside quote).
+4. E1 (reader reaction 1).
+5. E2 (reader reaction 2 — different from E1).
 6. A (Author's Purpose — compulsory for Lit).
-7. C (Context — AO3 woven anchor).
+7. C (Context — AO3 woven anchor, causal).
+
+Introduction (hook · building sentences · thesis) and Conclusion (restated thesis · link to the question · controlling concept · concept linked to techniques · purpose · context driving the central purpose · universal message) as in the Shakespeare rubric.
 
 **Audience vs reader:** prose narratives use **"reader"**, not "audience" (per base rubric tonal defaults).
 
@@ -150,14 +160,14 @@ Stack on top of base critical frames (Bradley / Eagleton / Ryan / Smith):
 
 ---
 
-## QUICK-ACTION → CRITERION MAP (DELTA FROM BASE)
+## INLINE COACHING ACTIONS (19th-century novel)
 
-| Action | Criterion (19c-novel-specific) |
-|---|---|
-| `check-author-purpose` | Lit-compulsory; A as argument about Victorian / Romantic society. |
-| `check-ao3-anchor` | Date + named source from per-text anchor list (this module); linked to BP concept. |
-| `check-ao-coverage` | All 3 AOs (AO1 + AO2 + AO3); NO AO4 marks. |
-| `compare-gold-standard` | Point at `Model Answers/AQA/[text]/topic-N-essay.md` exemplar. |
+Identical to the Shakespeare rubric's INLINE COACHING ACTIONS (same buttons, same behaviour: `scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), with these deltas:
+
+- **`scan-context-drive`** → the AO3 anchors are the Victorian / Romantic ones in this file and the active text's context-bank slice; "reader", never "audience".
+- **`compare-gold-standard`** → the loaded model answer is a Macbeth essay; quote its ELEMENT SHAPE (how a topic sentence is built, how context is fused) and say plainly that it is a different text — never present it as the answer to this question.
+- **`fix-spelling` / `fix-grammar` / `fix-punctuation`** → coached for clarity; there is no AO4 mark on this paper.
+- **The two contrasting rewrites** (STOP RULE) as in the Shakespeare rubric: always a pair of the student's own line, then their own version.
 
 ---
 

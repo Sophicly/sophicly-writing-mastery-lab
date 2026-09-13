@@ -4,25 +4,25 @@
 
 **Treat as authoritative.** Do not duplicate this content in per-paper rubrics. Reference it by section.
 
-**Scope:** Sophicly's universal rules across every board / every paper / every Q. These rules survive board boundaries.
+**Scope:** Sophicly's universal rules across every board / every paper / every Q. These rules survive board boundaries. **Literature-only material (the five-paragraph essay's intro and conclusion shapes, the AO3 critical frames, the tragedy anti-patterns) lives in `rubric-base-lit.md`** and is loaded only for Literature cells — v7.20.610 split, so a Language or Creative Writing session never carries a shape it cannot use.
 
 ---
 
 ## TTECEA — UNIVERSAL ANALYTICAL FRAMEWORK
 
-The 7-element framework for analytical body paragraphs. Pronounced *techie*.
+The 7-element framework for analytical body paragraphs. Pronounced *techie*. Order as the assessment protocols mark it (the LANGUAGE anchor, `protocols/aqa/language1/modules/protocol-a-assessment.md`, and the Literature protocol agree):
 
 1. **T**opic — pure concept. Names what the paragraph argues. NO techniques named yet. NO forms named (no "fractured sonnet" / "dramatic monologue").
-2. **T**echnique + evidence — names the technique, quotes the line.
-3. **E**ffect on audience 1 — what the audience feels or thinks.
-4. **C**lose analysis — words inside the quote unpacked.
-5. **E**ffect on audience 2 — a different feeling or thought.
+2. **T**echnique + evidence + inference — names the technique, embeds the quotation, infers its meaning. ONE sentence.
+3. **C**lose analysis — one or two words inside the quotation unpacked.
+4. **E**ffect on the audience 1 — what the audience feels or thinks.
+5. **E**ffect on the audience 2 — a DIFFERENT feeling or thought, not the first reworded.
 6. **A**uthor's purpose — what the author may be arguing.
 7. **(C)ontext** — for Lit: AO3 woven anchor. For Lang: NOT applicable to reading Qs.
 
 **Pointer phrase:** *Sophicly's locked analytical shape is TTECEA — pronounced techie. Each letter is a sentence in the body paragraph.*
 
-**Per-paper overrides** state which letters carry which AO marks for that paper.
+**Per-paper overrides** state which letters carry which AO marks for that paper, and how many paragraphs the question takes. Never assume a paragraph count from this file.
 
 ### Author's Purpose (the A) — paper-specific compulsory vs optional
 
@@ -52,7 +52,7 @@ Every body paragraph has ONE anchor quote that holds the main concept.
 - Quotes embedded in the analytical sentence, not appended.
 - Short quotes preferred (3-8 words). Long quotes only when structural / syntactic features matter.
 - Always pair with reference (Act/Scene/Stave/Chapter for Lit; line/paragraph for Lang).
-- Close analysis (TTECEA element 4) targets *words inside* the quote.
+- Close analysis (TTECEA element 3) targets *words inside* the quote.
 
 **Pointer phrase:** *AO2 rewards quotes that fuse with the analytical sentence — not quotes that sit beside it.*
 
@@ -68,7 +68,7 @@ Banned analytical verbs. Universal GCSE fallback. Force lazy analysis.
 
 **Replace with:** `illustrates` / `portrays` / `demonstrates` / `emphasises` / `highlights` / `reveals` / `exposes` / `presents` / `conveys` / `enacts` / `signals` / `mirrors` / `dramatises` / `embodies` / `crystallises` / `intensifies`.
 
-**Pointer phrase:** *"Shows" caps analysis at Level 3. What specific action is your verb performing?*
+**Pointer phrase:** *"Shows" names the technique but not what it does. What is your verb actually doing?*
 
 (Per memory `feedback_never_use_shows`.)
 
@@ -83,7 +83,7 @@ Banned analytical verbs. Universal GCSE fallback. Force lazy analysis.
 - No exclamation marks outside quoted text.
 - No vague hedges (`sort of` / `a bit of`).
 
-**Per-paper exception:** Q4 transactional writing varies register by audience — formal letter vs friendly speech. Per-paper override states the rule.
+**Per-paper exception:** Section B writing varies register by task — a story sets its own voice; transactional writing matches the set audience (formal letter vs a speech to peers). The per-paper rubric states the rule.
 
 **Pointer phrase:** *Academic register reads as third-person, formal, precise.*
 
@@ -113,72 +113,22 @@ Reason: 13-16 year-olds cannot follow longer sentences. Examiners likewise prefe
 
 ---
 
-## INTRO + CONCLUSION SHAPES (LIT, ALL BOARDS)
+## ATTRIBUTION RULE (HARD)
 
-**Attribution rule (HARD):** the shapes below are **Sophicly techniques** —
-our coaching scaffolds for landing the AQA / Edexcel / Eduqas / OCR mark
-schemes reliably. They are NOT prescribed by any exam board. When pointing
-at them, say *"At Sophicly we use a 3-sentence intro shape…"* or *"Our
-TTECEA scaffold…"* — never *"AQA's intro shape"* / *"Edexcel's TTECEA"*.
-
-The boards reward what these shapes produce (AO1 conceptual argument,
-AO2 woven analysis, AO3 integrated context, etc.); the shapes themselves
-are Sophicly's distillation. Mis-attribution to a board is a protocol
-failure — it both misrepresents the board AND erases Sophicly's IP.
-
-Same rule for: TTECEA(+C), 7-sentence body paragraph, 4-sentence conclusion,
-Story-Spine, IUMVCC, MADFATHER's CROPS. Sophicly originals.
-
-### Introduction — 3-sentence shape (Sophicly technique)
-
-1. **Hook (fact)** — publication / context fact, anchored in date.
-2. **Building sentence** — connects fact to the text's central tension.
-3. **Thesis** — names the 3 BP concepts in order (Beginning / Middle / End).
-
-### Conclusion — 4-sentence shape (Sophicly technique)
-
-1. **Restated thesis** — opens *"In conclusion,"* + names the 3 BP concepts/moments explicitly.
-2. **Controlling concept** — the text's central argument in one sentence.
-3. **Author's purpose** — what the author may be writing for / against.
-4. **Ultimate moral** — the message the text leaves the audience with.
-
-(Per memory `feedback_iumvcc_explanation_in_booklets` for transactional writing — different shape, see Lang per-paper rubrics.)
-
----
-
-## CRITICAL FRAMES (AO3 COMPANIONS, LIT)
-
-Strong critical voices to anchor analysis (gloss on first use, then reuse):
-
-- **A.C. Bradley** — tragic power lies in the gap between the protagonist's nature and the act they commit.
-- **Terry Eagleton** — tragedy punishes the very feelings society itself produces.
-- **Kiernan Ryan** — the play's true antagonist is often the social system, not a single character.
-- **Emma Smith** — protagonists rarely have a path open that does not also require the death of something essential.
-
-(Plus Brinda Charry for R&J historicist; per memory `feedback_prioritise_model_answer_resources` for per-text additions.)
-
-**Pointer phrase:** *A strong AO3 essay names one critical reading + one counter-reading — not a context-dump.*
-
-### Banned framings
-
-- **No feminist critique** as analytical framework. Reframe gender readings as tyranny / honour / dynastic / social-order critiques. (Per memory `feedback_avoid_feminist_critique_framework`.)
-- **No "patriarchy" / "patriarchal"** language. Use society / social order / paternal / Elizabethan substitutes. (Per memory `feedback_no_patriarchy_language`.)
-- **No magic / spellbook framing.** Drop spellbook / magic / spell / wizard / sorcery / incantation. MADFATHER's CROPS = "tools" / "scoring framework". (Per memory `feedback_no_magic_spellbook_language`.)
+TTECEA(+C), the 3-sentence intro and 4-sentence conclusion, the Story-Spine, IUMVCC and MADFATHER's CROPS are **Sophicly techniques** — our coaching scaffolds for landing the boards' mark schemes reliably. They are NOT prescribed by any exam board. When pointing at them say *"At Sophicly we…"* or *"Our TTECEA scaffold…"* — never *"AQA's intro shape"* / *"Edexcel's TTECEA"*. Mis-attribution to a board misrepresents the board AND erases Sophicly's IP.
 
 ---
 
 ## ANTI-PATTERNS TO FLAG (UNIVERSAL)
 
-- **Bolted-on A.** Author's Purpose as closing-sentence add-on. Symptom: paragraph reads complete without it.
-- **Context-dump.** Multiple AO3 facts piled in BP7 without analytical purchase.
-- **Restated-thesis-too-high.** Conclusion S1 rephrases too abstractly; should explicitly name 3 BP moments.
-- **Hamartia = "fatal flaw".** WRONG. Hamartia = *fatal error in action* the protagonist makes, NOT a defect they have. (Per memory `feedback_hamartia_not_fatal_flaw`.)
-- **Post-hamartia-as-redemption-window.** Banquo's ghost / sleepwalking / Birnam Wood are NOT "chances to refuse" — window closed at the hamartia point. (Per memory `feedback_post_hamartia_no_redemption`.)
 - **Vague abstraction.** Sentence claims a quote "states the controlling concept" / "articulates the message" without naming WHICH part. (Per memory `feedback_crib_sheets_clarity_standard`.)
 - **Form-naming in topic sentence.** Topic = concept-only.
-- **"Shows" as analytical verb.** Universal fallback; cap at Level 3.
+- **"Shows" as analytical verb.** Universal fallback; caps the analysis.
 - **Sentences >35 words.** Cognitive load too high for student readers.
 - **Arrow characters in prose / plans.** Use prose connectors.
+- **Bolted-on A.** Author's Purpose as closing-sentence add-on. Symptom: paragraph reads complete without it.
+
+Literature-specific anti-patterns (context-dump, hamartia, post-hamartia, restated-thesis-too-high) are in `rubric-base-lit.md`.
 
 ---
 
@@ -199,52 +149,16 @@ Strong critical voices to anchor analysis (gloss on first use, then reuse):
 
 ## QUICK-ACTION → CRITERION MAP (UNIVERSAL)
 
-The base map. Per-paper rubrics ADD paper-specific actions.
+The base map, using the button ids the interface actually ships. Per-paper rubrics define every button for their paper in their INLINE COACHING ACTIONS section; this map only names the universal criterion each one leans on.
 
 | Action | Universal criterion |
 |---|---|
-| `check-concept-strength` | Topic sentence concept-only rule (this module). |
-| `check-ttecea-element` | TTECEA framework (this module). |
-| `check-vocabulary-precision` | Banned verbs (this module). |
-| `check-quote-presence` | Quote integration (this module). |
+| `scan-concept` | Topic sentence concept-only rule (this module); one concept per paragraph. |
+| `scan-elements` | TTECEA framework (this module) — the per-paper rubric states the element set and count. |
+| `scan-coherence` | One concept per paragraph; each element follows from the last. |
+| `strengthen-vocabulary` | Banned verbs (this module); abstract nouns. |
 | `tighten` | Sentence length cap (this module). |
-| `adjust-tone` | Academic register (this module) — per-paper may override for transactional. |
-| `check-coherence` | One concept per paragraph. |
-| `check-structure-adherence` | Intro 3-sent / BP TTECEA / Conclusion 4-sent shape. |
-| `next-steps` | Student articulates one habit. |
-
-Per-paper rubrics ADD: `check-author-purpose` (compulsory for Lit, optional for Lang) / `check-ao3-anchor` (paper-specific) / `check-ao-coverage` (per-paper AO weighting) / `check-sensory-variety` (CW only) / `check-scene-structure-beats` (CW narrative only) / `check-show-dont-tell` (CW only) / `compare-gold-standard` (paper-specific exemplar pointer).
-
----
-
-## FILE INDEX (PER-PAPER OVERRIDES)
-
-Lit:
-- `rubric-aqa-lit-shakespeare.md`
-- `rubric-aqa-lit-19c-novel.md`
-- `rubric-aqa-lit-modern-text.md`
-- `rubric-aqa-lit-anthology-poetry.md`
-- `rubric-aqa-lit-unseen-poetry.md`
-- `rubric-edexcel-lit-shakespeare.md` *(TBD)*
-- `rubric-edexcel-lit-modern.md` *(TBD)*
-- `rubric-edexcel-lit-19c-novel.md` *(TBD)*
-- `rubric-edexcel-lit-poetry-anthology.md` *(TBD)*
-- `rubric-edexcel-lit-unseen.md` *(TBD)*
-- `rubric-eduqas-lit-shakespeare.md` *(TBD)*
-- `rubric-eduqas-lit-poetry.md` *(TBD)*
-- `rubric-eduqas-lit-modern.md` *(TBD)*
-- `rubric-eduqas-lit-19c-novel.md` *(TBD)*
-- `rubric-eduqas-lit-unseen-poetry.md` *(TBD)*
-- `rubric-edexcel-igcse-lit.md` *(TBD)*
-
-Lang (Engine 2 — Q-Conditional, except IGCSE Spec A):
-- `rubric-aqa-lang-p1.md` *(TBD)*
-- `rubric-aqa-lang-p2.md` *(TBD)*
-- `rubric-edexcel-lang-p1.md` *(TBD)*
-- `rubric-edexcel-lang-p2.md` *(TBD)*
-- `rubric-eduqas-lang-p1.md` *(TBD)*
-- `rubric-eduqas-lang-p2.md` *(TBD)*
-- `rubric-edexcel-igcse-lang-spec-a.md` *(extends Engine 1)*
-- `rubric-edexcel-igcse-lang-spec-b.md` *(TBD)*
-
-Total: ~28 per-paper rubric files. Authoring proceeds in priority order — Phase 1 = Lit (Engine 1), Phase 2 = Lang (Engine 2).
+| `adjust-tone` | Academic register (this module) — per-paper may override for Section B. |
+| `fix-spelling` / `fix-grammar` / `fix-punctuation` | Quote integration (H1) and the penalty registry of the paper. |
+| `compare-gold-standard` | The paper's gold-standard file — same question, same element. |
+| `explain` | Teach the selected thing; anchor to their answer. |

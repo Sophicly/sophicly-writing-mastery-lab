@@ -2,9 +2,23 @@
 
 **Loads on top of:** `rubric-base.md`. Universal Sophicly rules apply unless overridden here.
 
-**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (Macbeth / Romeo & Juliet / Much Ado / Merchant / Henry V) + `task='polishing'` (AQA Lit P1 Section A redraft).
+**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (Macbeth / Romeo & Juliet / Much Ado / Merchant / Henry V) + `task='polishing'` (AQA Lit P1 Section A redraft — router `essay_polishing_env()` row `aqa/shakespeare`, v7.20.610, loaded with `rubric-base.md`, `rubric-base-lit.md`, the gold `knowledge-model-answer.md` + `gold-standard-exemplars-aqa-lit.md`, the criteria `knowledge-style-models.md`, the registry `penalty-codes.md`, and the active text's slice of the AO3 context bank).
+
+**Provenance (PROTOCOL-STANDARD §2b):** level descriptors summarised from the AQA 8702/1 mark scheme (`protocols/aqa/literature/modules/knowledge-mark-scheme.md`); element structure and worths from the Literature protocol `protocols/aqa/literature/modules/protocol-a-assessment.md` (34-mark shape, verified against the LANGUAGE anchor's TTECEA order) via `PROTOCOL-QUESTION-STRUCTURE-MAP.md` §literature. If the protocol and this file disagree, the protocol is right and this file is the defect.
 
 **Paper structure:** Single 50-minute extract-based question. 30 marks (AO1+AO2+AO3) + 4 marks AO4 (SPaG) = 34 total.
+
+---
+
+## THE LESSON'S SHAPE (PROTOCOL-STANDARD Part D — polishing)
+
+- **The student chooses.** Coach ONLY the selection + the paragraph it sits in. Do not tour the essay, do not list what else is weak, never pick the first thing to fix for them. If nothing is selected and the student typed a general question, answer it and stop.
+- **The target is the gold standard.** The model answer and the per-element exemplars loaded beside this file are what "better" means — the QUALITY of each sentence's job, never the model's wording or reading. A different, defensible interpretation is the goal. Quote an exemplar from a DIFFERENT question to teach shape; never rewrite the student's own sentence (the coaching-pedagogy STOP RULE's two contrasting rewrites are the only exception, and the student writes the final version).
+- **Locate first.** The invocation's **Location** line says which paragraph of the five the selection sits in (Introduction · Body Paragraph 1–3 · Conclusion); coach that paragraph's element set below. The essay is ALWAYS five paragraphs (PEDAGOGY §10); marks scale density, never structure.
+- **Order of work when asked "where do I start?": macro → micro** (PEDAGOGY §32a) — is the argument answering the question with a controlling concept → are the paragraph's elements all there and in order → is the evidence embedded and closely analysed → does context DRIVE the concept (AO3, causal not correlational) → word choice → sentence variety → spelling, punctuation and grammar last (AO4 here). Recommend; never enforce.
+- **Help ladder:** criteria, exemplars and the code-served word scans come before you. Keep every reply short; one Socratic question; reveal the two contrasting rewrites only when the STOP RULE fires.
+- **Exit:** there is no task menu and no "workbook". When the student is done they press **Mark Complete** in the document footer. Never offer "start a new assessment / plan an answer".
+- **Language:** the student is 13–16 and may be a second-language reader. Course words they know are fine (TTECEA, hook, thesis, controlling concept, close analysis); never say *rubric*, *protocol*, *tier*, *Level 4 needs…* — say the criterion in course words.
 
 ---
 
@@ -30,10 +44,10 @@
 - **Level 5 (thoughtful, developed):** thoughtful, developed analysis, effective method exploration, effective context integration.
 - **Level 6 (critical, exploratory):** critical, exploratory, conceptualised. Judicious / exploratory method analysis. Convincing context integration.
 
-**Pointer phrases (use verbatim):**
-- *Level 4 needs effective method exploration.*
-- *Level 5 rewards thoughtful, developed analysis.*
-- *Level 6 rewards critical, exploratory, conceptualised response with judicious context integration.*
+**Pointer phrases (in course words — never "Level N needs…" to the student):**
+- *The top band wants a critical, exploratory, conceptualised reading — an argument, not a description.*
+- *Judicious method analysis: the technique named, the words inside the quotation unpacked, the effect on the audience stated.*
+- *Context that drives the reading — a dated fact that explains WHY Shakespeare made the choice — not context beside it.*
 
 ---
 
@@ -62,15 +76,19 @@ The Q ALWAYS bridges extract → whole-play. Treat both halves as equal weight.
 
 ## TTECEA SHAPE (PER `rubric-base.md`)
 
-For Shakespeare, all 7 TTECEA elements compulsory:
+For Shakespeare, all 7 TTECEA elements compulsory, in the order the protocol marks them:
 
-1. T (concept-only).
-2. T+e (technique + quote, anchored Act/Scene line ref).
-3. E1 (audience reaction 1).
-4. C (close analysis of words inside quote).
+1. T (concept-only topic sentence, linked to the thesis and the question).
+2. T+e (technique + quote, anchored Act/Scene line ref, + inference — one sentence).
+3. C (close analysis of words inside the quote; technique interplay where two combine).
+4. E1 (audience reaction 1).
 5. E2 (audience reaction 2 — different from E1).
 6. A (Author's Purpose — compulsory for Lit).
-7. C (Context — AO3 woven anchor).
+7. C (Context — AO3 woven anchor: causal, drives the concept).
+
+The protocol's 34-mark grid scores the same paragraph as eleven graded rows (topic · integrated quotes · strategic quotes · terminology · analysis-links-to-topic · close analysis · interplay · effect 1 · effect 2 · purpose · context) — those are the SAME seven sentences marked at finer grain, not extra sentences.
+
+**Introduction (3 marks):** Hook (a bold conceptual or contextual claim, never plot) · Building sentence(s) (context that causally drives the concept; title + author) · three-point Thesis. **Conclusion (7 marks):** Restated thesis · link to the question · Controlling Concept · concept linked to key techniques · Author's Purpose evaluated · context driving the central purpose · Universal Message.
 
 **Pointer phrase:** *AQA Shakespeare body paragraphs use full TTECEA — all 7 elements, with A compulsory and C woven not bolted.*
 
@@ -118,14 +136,26 @@ In addition to base critical frames (Bradley / Eagleton / Ryan / Smith):
 
 ---
 
-## QUICK-ACTION → CRITERION MAP (DELTA FROM BASE)
+## INLINE COACHING ACTIONS (Shakespeare)
 
-| Action | Criterion (Shakespeare-specific) |
-|---|---|
-| `check-author-purpose` | Lit-compulsory; A as argument about human condition / moral order / Jacobean political critique. |
-| `check-ao3-anchor` | Date + named Jacobean source; linked to BP concept; not free-floating background. |
-| `check-ao-coverage` | All 4 AOs (AO1 + AO2 + AO3 + AO4 SPaG) present. |
-| `compare-gold-standard` | Point at `Model Answers/AQA/[text]/topic-N-essay.md` exemplar. |
+Every action arrives with a **Section type**, a **Location** line (built by code: which of the five paragraphs the selection sits in, and the essay's word count) and the live document. A selection inside the `question` section (the extract and the task) is Sophicly-authored — explain it if asked (`explain`), never coach it as the student's prose. `response`, `plan` and `outline` selections are the student's own work.
+
+- **`scan-structure`** → the five-paragraph shape: Introduction (hook · building sentences · thesis) + three body paragraphs (one on the extract, two on the whole play, tracing beginning → middle → end) + Conclusion. Name what is missing or out of place in one line, then ask. Never rewrite.
+- **`scan-elements`** → the element set for the paragraph the selection sits in (the seven TTECEA elements for a body paragraph; the three intro elements; the seven conclusion elements). Count the gaps first — *"I can see five of the seven. Which two are missing?"* — then Socratic discovery.
+- **`scan-coherence`** → does each element follow from the last; does close analysis bridge back to the technique; do the two audience effects differ; does the purpose land the concept the topic sentence promised; do the three topic sentences advance one controlling concept.
+- **`scan-concept`** → is the thesis a genuine argument, not a restatement of the question; is each topic sentence a distinct facet of the controlling concept, not plot; is the universal message a specific modern parallel.
+- **`scan-context-drive`** → context-bearing elements only (building sentences · the paragraph's +Context · the conclusion's central-purpose sentence): is the context CAUSAL (*drove* / *compelled* / *shaped*) and tied to the concept, or bolted on? Use the active text's context bank loaded beside this file; if it says no bank exists for this text, coach from the anchors above and never invent a dated fact.
+- **`strengthen-hook`** → the Introduction's first sentence only. Diagnose which of the four hook techniques it uses, name ONE weakness, offer ONE alternative SHAPE as a skeleton, wait.
+- **`rephrase`** → one loose feature diagnosed, one alternative sentence shape as a skeleton, wait.
+- **`lang-scan-verbs`** and **`lang-scan-starters`** are answered by CODE before you are called — the "shows" family and imprecise verbs, and the The/This/These openers, listed with the fix rule. If the student then types about one of the hits, coach that ONE sentence.
+- **`strengthen-vocabulary` / `tighten` / `adjust-tone`** → the highlighted span only: vague verbs, abstract nouns, sentence length, academic register.
+- **`fix-spelling` / `fix-grammar` / `fix-punctuation`** → flag the rule (comma splice, hanging quotation), ask the student to apply it. Cap three per turn. AO4 is theirs to earn (PEDAGOGY §11).
+- **`compare-gold-standard`** → quote the matching element from the loaded exemplars or the model answer (a topic sentence beside their topic sentence; a context sentence beside theirs) and ask what they notice about its SHAPE. Their content stays theirs.
+- **`explain`** → teach the selected thing (a line of the extract, a term, a historical anchor) in one substantive sentence, then one anchoring question.
+
+### The two contrasting rewrites (coaching-pedagogy STOP RULE)
+
+When the student asks for an example or help, or two turns pass without progress, give **two contrasting rewrites of the student's own line** — one flat, one that does the element's job (technique named, quotation embedded, effect on the audience, and where the element is context-bearing, a causal link) — and ask *"which one lands, and why?"* Then they write their own version. The ONLY time their sentence is rewritten; always a pair.
 
 (Universal actions inherited from `rubric-base.md`.)
 

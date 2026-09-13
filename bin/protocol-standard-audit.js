@@ -61,12 +61,20 @@ const C = [
 // essay_polishing_env map has a row whose `cell` is this board/subject; then its rubric is checked.
 // An unported cell still loads its manifest's protocol-c-* stack and is reported as `monolith`.
 const ROUTER_SRC = read(path.join(ROOT, 'includes/class-protocol-router.php'));
+// v7.20.610: TWO maps — Language rows keyed on the text slug, Literature rows keyed on board/subject.
 const ENV_ROWS = (() => {
-    const blk = ROUTER_SRC.match(/\$essay_polishing_rubrics\s*=\s*\[([\s\S]*?)\n        \];/);
-    if (!blk) return [];
-    const re = /'([a-z0-9_]+)'\s*=>\s*\[\s*'cell'\s*=>\s*'([^']+)',\s*'rubric'\s*=>\s*'([^']+)'/g;
-    const out = []; let m;
-    while ((m = re.exec(blk[1])) !== null) out.push({ text: m[1], cell: m[2], rubric: m[3] });
+    const out = [];
+    for (const v of ['essay_polishing_rubrics', 'essay_polishing_subject_rows']) {
+        const blk = ROUTER_SRC.match(new RegExp('\\$' + v + '\\s*=\\s*\\[([\\s\\S]*?)\\n        \\];'));
+        if (!blk) continue;
+        const re = /'([a-z0-9_\/]+)'\s*=>\s*\[([\s\S]*?)\n            \],/g;
+        let m;
+        while ((m = re.exec(blk[1])) !== null) {
+            const cell = (m[2].match(/'cell'\s*=>\s*'([^']+)'/) || [])[1];
+            const rubric = (m[2].match(/'rubric'\s*=>\s*'([^']+)'/) || [])[1];
+            if (cell && rubric) out.push({ text: m[1], cell, rubric });
+        }
+    }
     return out;
 })();
 const D = [
@@ -88,13 +96,13 @@ function lastCommit(f) {
 
 const rows = [];
 for (const board of fs.readdirSync(P).sort()) {
-    if (board === 'shared') continue;
+    if (board === 'shared' || board.startsWith('_')) continue;   // v7.20.610: _marks is a data dir, not a board
     if (onlyBoard && board !== onlyBoard) continue;
     const bdir = path.join(P, board);
     if (!fs.statSync(bdir).isDirectory()) continue;
     for (const subject of fs.readdirSync(bdir).sort()) {
         const sdir = path.join(bdir, subject);
-        if (!fs.statSync(sdir).isDirectory()) continue;
+        if (!fs.statSync(sdir).isDirectory() || subject.startsWith('_')) continue;   // v7.20.610: _sources / _marks are data dirs
         const manifest = fs.existsSync(path.join(sdir, 'manifest.json')) ? JSON.parse(read(path.join(sdir, 'manifest.json'))) : null;
 
         // assessment = every protocol-a-* module (some subjects split per question)
@@ -138,7 +146,7 @@ for (const board of fs.readdirSync(P).sort()) {
             for (const [name, fn, verdict] of D) { const n = fn(rText); d[name] = n; dTotal++; if (verdict(n)) dPass++; }
             // loadable lists only — `_retired` / `_destitched` notes may name the file they retire
             const stillListed = manifest
-                ? JSON.stringify(manifest, (k, v) => (typeof k === 'string' && k.startsWith('_')) ? undefined : v).includes('protocol-c-polishing.md')
+                ? /protocol-c-polishing/.test(JSON.stringify(manifest, (k, v) => (typeof k === 'string' && k.startsWith('_')) ? undefined : v))
                 : false;
             pol.env = { text: envRow.text, rubric: envRow.rubric, rubricExists: !!rText, pass: dPass, total: dTotal, counts: d, monolithStillInManifest: stillListed };
         }

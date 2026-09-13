@@ -36,19 +36,8 @@
         "groups": []
     },
     "polishing": {
-        "always": [
-            "modules/foundation-lang2.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-operations.md",
-            "modules/knowledge-penalties.md",
-            "modules/knowledge-mark-scheme.md",
-            "modules/protocol-c-polishing.md",
-            "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
-            "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
-        ],
+        "_retired": "v7.20.610 — polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_env row for aqa_lang_paper_2 in class-protocol-router.php (inline-coaching-language stack + rubric-aqa-lang-p2-nonfiction.md + knowledge-mark-scheme.md as the gold). modules/protocol-c-polishing.md stays on disk as the source the rubric was distilled from and must NEVER be loaded at a student again (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose: if the router row is ever removed, this cell loads nothing and fails loud rather than the March-2026 walk.",
+        "always": [],
         "steps": {}
     }
 }

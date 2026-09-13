@@ -1494,6 +1494,9 @@ class SWML_REST_API {
             'step'    => absint($params['step'] ?? 1),
             'topic_number' => absint($params['topicNumber'] ?? 0),
             'phase'   => sanitize_text_field($params['phase'] ?? ''),
+            // v7.20.610: the selection chip now sends the draft type too, so a polishing turn's
+            // preamble stops labelling a redraft "Draft Type: Diagnostic / Phase: Initial".
+            'draft_type' => sanitize_text_field($params['draftType'] ?? ''),
             'marks'   => absint($params['marks'] ?? 0),
             // v7.17.47: attempt + suffix needed for assessment state pointer
             'attempt' => max(1, absint($params['attempt'] ?? 1)),

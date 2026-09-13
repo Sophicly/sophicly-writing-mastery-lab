@@ -1121,3 +1121,78 @@ From the 2026-07-01 live-run audit (R&J AQA diagnostic) + status as of v7.19.852
   Phase-1 targets, the `plan_required`-never-for-polishing fix, D-CHECKS in
   `bin/essay-polishing-env-gate.js` (pre-ship) and the audit runner's ENV/monolith column.
   Author: WML engine lane (Fable 5.1).
+
+---
+
+# PART E — PORTING A BOARD: THE PROCEDURE (v7.20.610, Neil's brief 2026-09-13)
+
+This part is the authoritative protocol-development guidance for taking a qualification from
+"2/10 on the audit" to a complete, evidenced route. Parts A–D say WHAT a protocol must be; this says
+HOW a port is done and WHAT counts as done. Every content lane and every subagent reads it first.
+
+## E1 — Official sources first, ours second (root CLAUDE.md §19/§20; WML CLAUDE.md §PARALLEL LANES 2)
+
+1. **Read the board's own documents before touching a file:** the current specification, the
+   question papers and their MATCHING mark schemes for at least two series, the sample assessment
+   materials for any revised assessment, and examiner reports where they exist. They are on the
+   drive under `Sophicly Etch Mark Scheme Resources/` (`mdfind -name` first; `pdftotext -layout`).
+2. **Establish, question by question:** section · order · compulsory vs choice · sources/anthology ·
+   exact command wording · response form · marks · AOs · point-based vs level-based marking ·
+   separately assessed criteria (SPaG) · indicative content vs required features · timing and any
+   word guidance · changes for the series our students sit.
+3. **Record provenance** in the file header: PDF path + series + version. Unstated provenance is
+   unverified and does not ship. Every tariff carries a `quote` in `protocols/_marks/<board>__<paper>.json`
+   that `bin/tariff-gate.js` finds verbatim in the PDF.
+4. **Distinguish a recurring pattern from one series' feature** by reading more than one paper.
+5. **If a document is missing, say so** in the report and the coverage matrix. Never invent a
+   requirement, never report an unconfirmed route as aligned.
+
+## E2 — Templates: choose by QUESTION TYPE, never by paper number
+
+| destination question type | template (assessment) | template (planning) | template (polishing) |
+|---|---|---|---|
+| retrieval / true-false / short own-words | AQA P1 Q1 / P2 Q1 "SKIP" rule (no plan, no polish; mark-per-point) | none | none |
+| single-source language or structure analysis | **LANGUAGE anchor** `protocols/aqa/language1/modules/protocol-a-assessment.md` Q2/Q3 (TTECEA ×N, body-only) | `protocols/aqa/language1/planning/protocol-b-planning.md` | `rubric-aqa-lang-p1-fiction.md` Q2/Q3 rows |
+| evaluation ("to what extent") | AQA P1 Q4 (short intro + 3 + short conclusion) or Eduqas-style body-only when the board's tariff is small | as above | `rubric-aqa-lang-p1-fiction.md` Q4 rows |
+| paired inference / synthesis | AQA P2 Q2 (paired-inference, 4 boxes/paragraph) | `protocols/aqa/language2/planning/protocol-b-planning.md` | `rubric-aqa-lang-p2-nonfiction.md` Q2 rows |
+| comparison of perspectives / methods | AQA P2 Q4 (comparative TTECEA, ONE effect per source) | as above | `rubric-aqa-lang-p2-nonfiction.md` Q4 rows |
+| narrative / descriptive writing | AQA P1 Q5 (holistic AO5+AO6; the seven scene elements: Hook · Setup · Reaction · Epiphany · Proaction · Climax · Denouement) | P1 planning Q5 beats + `rubric-cw-narrative.md` | `rubric-aqa-lang-p1-fiction.md` Q5 rows + code-served word scans |
+| transactional / viewpoint writing | AQA P2 Q5 (holistic; IUMVCC: Introduction · Urgency · Methodology · Vision · Counter-argument · Conclusion — defined in `protocols/aqa/language2/planning/protocol-b-planning.md` Beat 1) | P2 planning Beat 1 | `rubric-aqa-lang-p2-nonfiction.md` Q5 rows + `device-*` buttons |
+| anthology / set-text essay (Language papers that use one) | LIT anchor `protocols/aqa/literature/modules/protocol-a-assessment.md` — verified against the P1 anchor | `protocols/aqa/literature/planning/` | `rubric-aqa-lit-*.md` Part D sections |
+
+Where the destination mark scheme disagrees with the template (element count, one vs two effects,
+a level ladder instead of points), **the mark scheme wins** and the delta is stated in the protocol
+header. Our teaching frameworks (TTECEA, IUMVCC, the seven scene elements) are Sophicly techniques
+applied to the board's criteria — never described as the board's requirement (ATTRIBUTION RULE).
+
+## E3 — The three stages connect through the DOCUMENT, not the chat
+
+- **Assessment** writes the Phase-1 record (grade · total · strength_1 · target_1/2) through
+  `complete_phase`; the planning preamble and the polishing preamble both READ it (v7.20.610).
+- **Planning** fills the plan boxes (`@FIELD_SET` at approval) and the outline boxes
+  (`@FIELD_COMMIT` per element); the OUTLINING lesson transfers them to the Response.
+- **Polishing** is an ENVIRONMENT over the finished Response (Part D): router row
+  (`essay_polishing_env`) + rubric + gold + manifest `polishing.always: []` + chip ladder + Location
+  line. It never asks for anything the document holds (WML CLAUDE.md §3).
+- A port therefore ships THREE things per cell and the wiring between them; a stage that cannot be
+  reached from the lesson before it is not done (root CLAUDE.md §15).
+
+## E4 — Token discipline
+
+Deterministic decisions in code (routing, question profile, Location, word floors, penalty scans);
+model judgement only where it READS the student. Load per turn only what the cell needs: the
+language engine for language papers, the sliced context bank for a Literature text, never a whole
+resource collection. Measure a real turn with the payload probe before claiming a cost.
+
+## E5 — Evidence required to declare a route complete
+
+| stage | mechanical | judgement |
+|---|---|---|
+| assessment | `node bin/protocol-standard-audit.js --board=<b>` B-CHECKS 10/10 · `node bin/tariff-gate.js` green for the paper · no paste asks (`grep -n "paste" protocol-a*.md` = 0) | one weak + one strong response marked on staging; marks quoted from the PDF |
+| planning | C-CHECKS 8/8 · `plan-fanout-harness` + `planning-keymatch-harness` + `ladder-check-harness` green for the paper | one planning walk driven on staging to an approved plan |
+| polishing | `node bin/essay-polishing-env-gate.js` green for the row · audit prints `ENV n/6 <rubric>` | representative journeys (weak · partial · strong · valid-different) through the real chat endpoint on staging, replies recorded |
+| documents | the lesson's document renders the paper's sections (question labels, plan/outline/response shape) | opened once in a browser |
+
+The coverage matrix (`PROTOCOL-COVERAGE-MATRIX.md`) records status per qualification × paper ×
+question × stage, with source references and test status. A row is "complete" only with all four
+rows above filled; anything else is named as a gap, never rounded up.

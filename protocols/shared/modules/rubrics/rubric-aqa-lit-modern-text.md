@@ -2,9 +2,17 @@
 
 **Loads on top of:** `rubric-base.md`. Universal Sophicly rules apply unless overridden here.
 
-**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (An Inspector Calls / Blood Brothers / Animal Farm / Lord of the Flies / Anita and Me / Pigeon English / Leave Taking) + `task='polishing'` (AQA Lit P2 Section A redraft).
+**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (An Inspector Calls / Blood Brothers / Animal Farm / Lord of the Flies / Anita and Me / Pigeon English / Leave Taking) + `task='polishing'` (AQA Lit P2 Section A redraft — router `essay_polishing_env()` row `aqa/modern_text`, v7.20.610; the course category `20th_century` folds to this row; loaded with `rubric-base.md`, `rubric-base-lit.md`, the gold `knowledge-model-answer.md` + `gold-standard-exemplars-aqa-lit.md`, the criteria `knowledge-style-models.md`, the registry `penalty-codes.md`, and the active text's slice of the AO3 context bank).
+
+**Provenance (PROTOCOL-STANDARD §2b):** level descriptors summarised from the AQA 8702/2 mark scheme (`protocols/aqa/literature/modules/knowledge-mark-scheme.md`); element structure and worths from the Literature protocol `protocols/aqa/literature/modules/protocol-a-assessment.md` (34-mark shape) via `PROTOCOL-QUESTION-STRUCTURE-MAP.md` §literature. If the protocol and this file disagree, the protocol is right.
 
 **Paper structure:** Single 45-minute essay-only question (no extract). 30 marks (AO1+AO2+AO3) + 4 marks AO4 (SPaG) = 34 total.
+
+---
+
+## THE LESSON'S SHAPE (PROTOCOL-STANDARD Part D — polishing)
+
+Identical in shape to the Shakespeare rubric's THE LESSON'S SHAPE: the student chooses; the gold standard is the target and the student's own reading stays theirs; the **Location** line names the paragraph (Introduction · Body 1–3 · Conclusion); macro → micro recommended, never enforced; help before Sophia; exit = **Mark Complete** in the footer, no task menu; 13–16 second-language-safe language (never *rubric* / *protocol* / *tier* / *Level 4 needs…*). The differences: no extract, so quotation ACCURACY from memory is a live target; "audience" for the plays (AIC, Blood Brothers, Leave Taking), "reader" for the prose.
 
 ---
 
@@ -41,7 +49,7 @@ Same Level 3-6 ladder as Shakespeare. Per-paper Q-shape differs but mark-scheme 
 
 ## TTECEA SHAPE (PER `rubric-base.md`)
 
-For modern texts, all 7 TTECEA elements compulsory. Same shape as Shakespeare.
+For modern texts, all 7 TTECEA elements compulsory, in the protocol's order (T · T+e · C · E1 · E2 · A · +C). Same shape as Shakespeare, including the three-element Introduction and seven-element Conclusion.
 
 **Audience vs reader:**
 - For drama (AIC / Blood Brothers / Leave Taking) → **"audience"**.
@@ -139,15 +147,14 @@ Stack on top of base critical frames:
 
 ---
 
-## QUICK-ACTION → CRITERION MAP (DELTA FROM BASE)
+## INLINE COACHING ACTIONS (modern text)
 
-| Action | Criterion (modern-text-specific) |
-|---|---|
-| `check-author-purpose` | Lit-compulsory; A as didactic argument / political critique / moral indictment. |
-| `check-ao3-anchor` | Date + named source from per-text anchor list (this module); SETTING-vs-PUBLICATION gap often the lever. |
-| `check-ao-coverage` | All 4 AOs (AO1 + AO2 + AO3 + AO4 SPaG). |
-| `check-quote-presence` | Critical — students bring quotes from memory; flag missing-or-vague quotes. |
-| `compare-gold-standard` | Point at `Model Answers/AQA/[text]/topic-N-essay.md` exemplar. |
+Identical to the Shakespeare rubric's INLINE COACHING ACTIONS (same buttons: `scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), with these deltas:
+
+- **`scan-elements`** → a quotation that is vague or missing is the first gap to name (no extract: quotes come from memory); ask the student for the exact words before anything else.
+- **`scan-context-drive`** → the setting-date vs publication-date gap is the usual lever (AIC, Animal Farm); anchors in this file and the active text's context-bank slice.
+- **`compare-gold-standard`** → the loaded model answer is a Macbeth essay; quote its ELEMENT SHAPE and say plainly it is a different text.
+- **The two contrasting rewrites** (STOP RULE) as in the Shakespeare rubric.
 
 ---
 

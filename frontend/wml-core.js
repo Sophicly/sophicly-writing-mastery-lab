@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.609';
+var WML_BUILD = '7.20.610';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -3593,7 +3593,9 @@ window.WML = (function() {
                 id: 'polishing',
                 icon: SVG_POLISH,
                 title: 'Polish Your Essay',
-                desc: 'Write your improved essay using your outline with Sophia\'s guidance.',
+                // v7.20.610 (#476): the response is WRITTEN in the outlining lesson; polishing is a
+                // selection-driven refinement of an answer that already exists, never a rewrite.
+                desc: 'Improve the answer you wrote, one highlighted sentence at a time, towards the gold standard.',
                 status: statuses.polishing || (statuses.outlining === 'complete' ? 'not_started' : 'locked'),
                 statusLabel: statuses.polishingLabel || null,
                 onClick: () => {

@@ -2,9 +2,17 @@
 
 **Loads on top of:** `rubric-base.md`. Universal Sophicly rules apply unless overridden here.
 
-**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (unseen-poetry practice) + `task='polishing'` (AQA Lit P2 Section C redraft).
+**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (unseen-poetry practice) + `task='polishing'` (AQA Lit P2 Section C redraft — router `essay_polishing_env()` row `aqa/unseen_poetry`, v7.20.610, loaded with `rubric-base.md`, `rubric-base-lit.md` and the gold `knowledge-unseen.md` (§2.F model essay + plan, §2.F.3 the Q27.2 comparison paragraphs, §2.G/2.H mark allocations)).
+
+**Provenance (PROTOCOL-STANDARD §2b):** descriptors from the AQA 8702/2 mark scheme via `protocols/aqa/unseen/modules/knowledge-mark-scheme-unseen.md`; element structure and worths from `protocols/aqa/unseen/modules/protocol-a-assessment-unseen.md` and `knowledge-unseen.md` §2.G (Q27.1: Intro 2 + three 6-mark paragraphs + Conclusion 4 = 24) and §2.H (Q27.2: two 4-mark comparison paragraphs) via `PROTOCOL-QUESTION-STRUCTURE-MAP.md` §unseen. If the protocol and this file disagree, the protocol is right.
 
 **Paper structure:** TWO unseen poems. Q27.1 = single-poem analysis (24 marks AO1+AO2). Q27.2 = comparison of methods (8 marks AO2). NO AO3 anywhere. NO AO4.
+
+---
+
+## THE LESSON'S SHAPE (PROTOCOL-STANDARD Part D — polishing)
+
+As the Shakespeare rubric's THE LESSON'S SHAPE (the student chooses; the gold model's QUALITY is the target; the **Location** line names the question and paragraph; macro → micro recommended never enforced; help before Sophia; exit = **Mark Complete**, no task menu; 13–16 second-language-safe language), with two unseen-specific rules: **no context, ever** (there is no AO3 — a context sentence is a gap, not a bonus), and **Q27.2 is a different shape from Q27.1** (two short comparison paragraphs, method not theme, a fresh angle on Poem 1).
 
 ---
 
@@ -69,28 +77,26 @@ Pure METHOD comparison. Reuse of Poem 1 from Q27.1 is **penalised** (-3 marks fo
 
 ## TTECEA SHAPE — ADAPTED FOR UNSEEN POETRY
 
-### Q27.1 — Single poem (full TTECEA without context)
+### Q27.1 — Single poem (full TTECEA without context), in the protocol's order
 
-1. T (concept-only).
-2. T+e (technique + quote, anchored line ref).
-3. E1 (reader reaction 1).
-4. C (close analysis — words inside quote).
-5. E2 (reader reaction 2).
-6. A (poet's purpose — argued, not described).
+1. T (concept-led topic sentence with a clear argumentative claim).
+2. T+e (precise subject terminology + strategic quotation, smoothly integrated, anchored line ref).
+3. C (close analysis — zooming in on specific words / sounds / punctuation).
+4. E1 (reader reaction 1 — emotional / intellectual impact).
+5. E2 (reader reaction 2 — a deeper or alternative dimension).
+6. A (perceptive insight into the poet's purpose — argued, not described).
 7. **NO C (Context)** — AO3 not assessed for unseen.
 
-### Q27.2 — Comparison of methods
+Body Paragraph 1 takes a student-chosen pathway (Form OR the beginning of the poem), BP2 = Language, BP3 = the Ending. **Introduction (2 marks):** compelling hook · theme building sentence · three-point thesis about the poet's methods. **Conclusion (4 marks):** restated thesis · controlling concept · poet's purpose · universal message.
 
-Folded comparative TTECEA:
+### Q27.2 — Comparison of methods (two paragraphs, 4 marks each — the protocol's four rows)
 
-1. T (concept — applies to both poems).
-2. T+e (method + quote, POEM 1).
-3. T+e (method + quote, POEM 2 — distinct angle from Q27.1 if same poem).
-4. C (close analysis — words inside both quotes, comparing).
-5. E (combined effect across poems).
-6. A (poets' purposes — compared).
+1. Clear method identification with evidence (both poems named, a fresh angle on Poem 1).
+2. Analysis of effect.
+3. Explicit comparison to the other poem (similarity and / or difference in METHOD).
+4. Insight into the different approaches — why each poet's method suits their purpose.
 
-(Q27.2 essays typically 1-2 BPs only — 8 marks doesn't reward 4 BPs.)
+(Two short paragraphs — 8 marks does not reward four.)
 
 ---
 
@@ -143,22 +149,17 @@ Q27.2 specifically rewards method comparison, NOT theme comparison. If a compari
 
 ---
 
-## QUICK-ACTION → CRITERION MAP (DELTA FROM BASE)
+## INLINE COACHING ACTIONS (unseen poetry)
 
-| Action | Criterion (unseen-specific) |
-|---|---|
-| `check-author-purpose` | Lit-compulsory; A as poet's argument — drawn from poem text only, no biographical inference. |
-| `check-ao3-anchor` | **N/A — disable for unseen.** No AO3 marks. Do NOT prompt for context. |
-| `check-ao-coverage` | AO1 + AO2 only (Q27.1) / AO2 only (Q27.2). |
-| `check-quote-presence` | Critical — short quotes (3-8 words), line refs, embedded. |
+Same buttons as the Shakespeare rubric MINUS `scan-context-drive` (the chip does not offer it here; if it arrives, say there is no context mark on unseen poetry and point at `scan-elements`): `scan-structure` `scan-elements` `scan-coherence` `scan-concept` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`. Locate first: the **Location** line says whether the selection is under Q27.1 or Q27.2.
 
-**New action specific to unseen:**
-
-| Action | Criterion |
-|---|---|
-| `check-method-vs-theme` | Q27.2 — is this comparison naming the METHOD (HOW), or just the THEME (WHAT)? |
-| `check-q27-2-angle-reuse` | Q27.2 — is this angle on Poem 1 distinct from Q27.1, or recycled (-3 penalty)? |
-| `check-sequential-treatment` | Q27.2 — is each poem treated in turn (-3 penalty), or compared within each sentence? |
+- **`scan-structure`** → Q27.1 = five paragraphs (intro 3 elements · three body paragraphs on Form-or-Beginning / Language / Ending · conclusion 4 elements); Q27.2 = two short comparison paragraphs. A context sentence anywhere is a gap to name.
+- **`scan-elements`** → the six Q27.1 elements for a body paragraph, or the four Q27.2 rows; count the gaps first.
+- **`scan-coherence`** → Q27.1: close analysis bridges to the technique, the two effects differ, purpose lands the topic sentence's concept. Q27.2: is the comparison about METHOD (how), not theme (what); is the angle on Poem 1 fresh, not recycled from Q27.1; are the poems compared within the paragraph, not treated in turn.
+- **`scan-concept`** → Q27.1: is the thesis a claim about the poet's methods, is the controlling concept distilled from the text alone. Q27.2: does the insight explain why each method suits its poet's purpose.
+- **`compare-gold-standard`** → quote the matching element from the loaded model essay (§2.F) or the Q27.2 model paragraphs (§2.F.3) and ask what the student notices about its shape.
+- **`fix-*`** → coached for clarity; no AO4 mark here.
+- **The two contrasting rewrites** (STOP RULE) as in the Shakespeare rubric — for Q27.2, the pair names a METHOD in each poem.
 
 ---
 

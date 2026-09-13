@@ -71,6 +71,16 @@
         // most-charged analytical faults: the F1/T1 verb family and the S1 The/This/These openers).
         langScan:       ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept'],
         langWordChoice: ['lang-scan-verbs', 'lang-scan-starters', 'cw-cut-modifiers'],
+        // v7.20.610: the two analytical word scans are universal analytical faults (F1/T1 verbs, S1
+        // openers), so Literature polishing gets them too — code-served, $0. No modifier cut on an
+        // essay (adjectives are not the Literature fault; register is, and adjust-tone owns that).
+        litWordChoice:  ['lang-scan-verbs', 'lang-scan-starters'],
+        // v7.20.610: Language Paper 2 (nonfiction). Same four scans as P1 (the rubric states the
+        // shape per question: paired inference, TTECEA ×3, comparative, IUMVCC); the transactional
+        // Q5 adds the device group and the modifier cut — gated to a Q5 selection by the chip
+        // (_filterActionsForScope reads the Location), because a device button on a Q2 inference
+        // paragraph is a button the model can only refuse.
+        langWordChoiceReading: ['lang-scan-verbs', 'lang-scan-starters'],
         cw:           ['check-sensory-variety', 'check-scene-structure-beats', 'check-show-dont-tell'],
         // ── v7.20.579 (Neil, 2026-08-29) — Creative Writing gets its OWN scans and its own word-
         // choice group. Before this, a CW draft was offered the LITERATURE tier scans: "Scan
@@ -175,6 +185,8 @@
         cwArc:        'Character arc',
         langScan:       'Scan your answer',
         langWordChoice: 'Word choice',
+        litWordChoice:  'Word choice',
+        langWordChoiceReading: 'Word choice',
     };
 
     // ── Module-scoped state ──
@@ -256,7 +268,51 @@
         return 'unknown';
     }
 
-    function _filterActionsForScope(scope, taskCtx) {
+    // v7.20.610 — LOCATE THE SELECTION IN CODE (Neil's brief: "selecting the correct question profile"
+    // is a fixed decision, so code makes it). Walks to the enclosing section block and reports its
+    // label ("Q3 Response" / "Response" / "Plan: Body Paragraph 2"), the paragraph's position among
+    // the section's non-empty paragraphs, and the section's word count. Sent on every turn as the
+    // **Location** line, so the model never infers which question or paragraph it is coaching.
+    // Pure over a DOM node: null when no section encloses the node (the gate evaluates the shape).
+    function extractLocation(domNode) {
+        if (!domNode) return null;
+        let cur = domNode.nodeType === 3 ? domNode.parentElement : domNode;
+        let para = cur && cur.closest ? cur.closest('p, li, h1, h2, h3, h4') : null;
+        while (cur && cur !== document.body) {
+            if (cur.classList && cur.classList.contains('swml-section-block')) break;
+            cur = cur.parentElement;
+        }
+        if (!cur || cur === document.body) return null;
+        const label = cur.getAttribute('data-section-label') || '';
+        const type = cur.getAttribute('data-section-type') || 'unknown';
+        const paras = Array.prototype.filter.call(cur.querySelectorAll('p, li'), (p) => (p.textContent || '').trim().length > 0);
+        const idx = para ? paras.indexOf(para) : -1;
+        const words = (cur.textContent || '').trim().split(/\s+/).filter(Boolean).length;
+        const qm = /^(Q\d+\w*)\b/.exec(label.trim()) || /—\s*(Q\d+\w*)\s*$/.exec(label.trim());
+        return {
+            label, type,
+            question: qm ? qm[1] : null,
+            paraIndex: idx >= 0 ? idx + 1 : null,
+            paraCount: paras.length,
+            words,
+        };
+    }
+    function formatLocation(loc) {
+        if (!loc) return 'unknown';
+        const bits = [loc.label || loc.type];
+        if (loc.paraIndex && loc.paraCount) {
+            let pos = 'paragraph ' + loc.paraIndex + ' of ' + loc.paraCount;
+            // A five-paragraph Literature essay in ONE Response box: name the paragraph's job too.
+            if (loc.paraCount === 5 && !loc.question) {
+                pos += ' (' + (loc.paraIndex === 1 ? 'Introduction' : loc.paraIndex === 5 ? 'Conclusion' : 'Body Paragraph ' + (loc.paraIndex - 1)) + ')';
+            }
+            bits.push(pos);
+        }
+        bits.push(loc.words + ' words in this section');
+        return bits.join(' · ');
+    }
+
+    function _filterActionsForScope(scope, taskCtx, loc) {
         // v7.19.67: 7-tier polish ladder — tier-scan group always visible
         // (scans operate on parent element/doc, not the highlighted span).
         // Polish-prose + Fix-SPaG groups operate on the highlighted span.
@@ -296,16 +352,58 @@
         // reference. Keyed on the TEXT slug like NF_TEXTS above, and it MUST agree with the router's
         // essay_polishing_env rows (bin/essay-polishing-env-gate.js asserts the two lists match —
         // the §5d write-key / read-key law across two languages, exactly as the CW polishing gate).
-        const ESSAY_POLISH_ENV_TEXTS = ['aqa_lang_paper_1'];
-        const isFictionLang = !!(taskCtx && ESSAY_POLISH_ENV_TEXTS.includes(String(taskCtx.text || '').toLowerCase().replace(/-/g, '_')));
+        const ESSAY_POLISH_ENV_TEXTS = ['aqa_lang_paper_1', 'aqa_lang_paper_2'];
+        const envText = String((taskCtx && taskCtx.text) || '').toLowerCase().replace(/-/g, '_');
+        const isPolishing = !!(taskCtx && taskCtx.task === 'polishing');
+        const isLangEnv = isPolishing && ESSAY_POLISH_ENV_TEXTS.includes(envText);
+        const isFictionLang = isLangEnv && envText === 'aqa_lang_paper_1';
+        // The question the selection sits under (code-located, v7.20.610). Section B buttons
+        // (devices, the modifier cut) only make sense on the writing question.
+        const q = loc && loc.question ? String(loc.question).toUpperCase() : null;
+        const isSectionB = q === 'Q5';
         if (isFictionLang) {
             return [
                 { key: 'langScan',       actions: ACTION_MAP.langScan },
                 { key: 'elementPolish',  actions: ACTION_MAP.elementPolish },
-                { key: 'langWordChoice', actions: ACTION_MAP.langWordChoice },
+                { key: 'langWordChoice', actions: isSectionB || !q ? ACTION_MAP.langWordChoice : ACTION_MAP.langWordChoiceReading },
                 { key: 'polishProse',    actions: ACTION_MAP.polishProse },
                 { key: 'fixSpag',        actions: ACTION_MAP.fixSpag },
                 { key: 'reference',      actions: ACTION_MAP.reference },
+            ];
+        }
+        if (isLangEnv) {
+            // Language Paper 2 (nonfiction): the same reading scans; on Q5 the transactional-writing
+            // device group and the modifier cut join. Defined in rubric-aqa-lang-p2-nonfiction.md.
+            const groups = [
+                { key: 'langScan',       actions: ACTION_MAP.langScan },
+                { key: 'elementPolish',  actions: ACTION_MAP.elementPolish },
+            ];
+            if (isSectionB || !q) groups.push({ key: 'devices', actions: ACTION_MAP.devices });
+            groups.push({ key: 'langWordChoice', actions: isSectionB || !q ? ACTION_MAP.langWordChoice : ACTION_MAP.langWordChoiceReading });
+            groups.push({ key: 'polishProse',    actions: ACTION_MAP.polishProse });
+            groups.push({ key: 'fixSpag',        actions: ACTION_MAP.fixSpag });
+            groups.push({ key: 'reference',      actions: ACTION_MAP.reference });
+            return groups;
+        }
+        // v7.20.610: Literature polishing environment — keyed on board/subject-family like the
+        // router's essay_polishing_env subject rows (the gate asserts the two lists match). The
+        // Literature ladder keeps context-drive (AO3 is assessed) except on unseen poetry, and gains
+        // the two code-served analytical word scans.
+        const ESSAY_POLISH_ENV_SUBJECTS = ['aqa/shakespeare', 'aqa/19th_century', 'aqa/modern_text', 'aqa/poetry_anthology', 'aqa/unseen_poetry'];
+        let envSubject = String((taskCtx && taskCtx.subject) || '').toLowerCase().replace(/-/g, '_');
+        if (envSubject === '20th_century') envSubject = 'modern_text';
+        if (envSubject === 'poetry') envSubject = envText === 'unseen_poetry' ? 'unseen_poetry' : 'poetry_anthology';
+        const envBoard = String((taskCtx && taskCtx.board) || '').toLowerCase().replace(/_/g, '-');
+        const isLitEnv = isPolishing && ESSAY_POLISH_ENV_SUBJECTS.includes(envBoard + '/' + envSubject);
+        if (isLitEnv) {
+            const noAO3 = envSubject === 'unseen_poetry';
+            return [
+                { key: 'tierScans',     actions: noAO3 ? ACTION_MAP.tierScans.filter(a => a !== 'scan-context-drive') : ACTION_MAP.tierScans },
+                { key: 'elementPolish', actions: ACTION_MAP.elementPolish },
+                { key: 'litWordChoice', actions: ACTION_MAP.litWordChoice },
+                { key: 'polishProse',   actions: ACTION_MAP.polishProse },
+                { key: 'fixSpag',       actions: ACTION_MAP.fixSpag },
+                { key: 'reference',     actions: ACTION_MAP.reference },
             ];
         }
 
@@ -456,13 +554,15 @@
         return out;
     }
 
-    function buildPrompt(action, selection, sectionContext, taskCtx, freeText, fullDoc, sectionType) {
+    function buildPrompt(action, selection, sectionContext, taskCtx, freeText, fullDoc, sectionType, location) {
         const lines = [
             '## Inline Coaching Invocation',
             '',
             '- **Action:** ' + (action || 'freetext'),
             '- **Selection (frozen at open):** ' + JSON.stringify(selection || ''),
             '- **Section type:** ' + JSON.stringify(sectionType || 'unknown'),
+            // v7.20.610: code-located question + paragraph position + section word count.
+            '- **Location:** ' + formatLocation(location),
             '- **Section context (live, re-read this turn):** ' + JSON.stringify(sectionContext || ''),
             '- **Task context:** ' + JSON.stringify(taskCtx || {}),
         ];
@@ -838,12 +938,14 @@
         const scope = classifyScope(text, anchorEl, focusEl);
         const sectionContext = extractSectionContext(anchorEl);
         const sectionType = extractSectionType(anchorEl);
+        let location = null;
+        try { location = extractLocation(anchorEl); } catch (_) { location = null; }
 
         let rangeClone = null;
         try { rangeClone = range.cloneRange(); } catch (_) {}
 
         const selectionInfo = {
-            text, scope, sectionContext, sectionType, rect, anchorEl, focusEl,
+            text, scope, sectionContext, sectionType, location, rect, anchorEl, focusEl,
             range: rangeClone,
         };
         _openBox(selectionInfo);
@@ -1146,7 +1248,7 @@
         box.appendChild(inputRow);
 
         // 3. Quick-actions row(s) — grouped, scope-filtered
-        const groups = _filterActionsForScope(selectionInfo.scope, _ctx.taskCtx);
+        const groups = _filterActionsForScope(selectionInfo.scope, _ctx.taskCtx, selectionInfo.location);
         const actionsWrap = el('div', { className: 'swml-coach-actions' });
         groups.forEach((group) => {
             const groupEl = el('div', { className: 'swml-coach-action-group' });
@@ -1455,10 +1557,12 @@
             // buildPrompt's new fullDoc param.
             let liveSectionContext = sel.sectionContext;
             let liveSectionType = sel.sectionType || 'unknown';
+            let liveLocation = sel.location || null;
             try {
                 if (sel.anchorEl && sel.anchorEl.isConnected) {
                     liveSectionContext = extractSectionContext(sel.anchorEl);
                     liveSectionType = extractSectionType(sel.anchorEl);
+                    liveLocation = extractLocation(sel.anchorEl) || liveLocation;
                 }
             } catch (_) { /* fall back to frozen snapshot */ }
             let liveFullDoc = '';
@@ -1474,7 +1578,8 @@
                 _ctx.taskCtx,
                 trimmed,
                 liveFullDoc,
-                liveSectionType
+                liveSectionType,
+                liveLocation
             );
 
             try {
@@ -1497,6 +1602,9 @@
                     text: state ? state.text : '',
                     task: state ? state.task : 'exam_crib',
                     topicNumber: state ? (state.topicNumber || 0) : 0,
+                    // v7.20.610: phase + draft type, so the preamble knows this is a redraft.
+                    phase: state ? (state.phase || '') : '',
+                    draftType: state ? (state.draftType || '') : '',
                 };
 
                 const res = await apiPost(API.chat, body);
@@ -1618,6 +1726,7 @@
         ACTION_LABELS,
         buildPrompt,
         filterActionsForScope: _filterActionsForScope, // v7.20.609: exposed for bin/essay-polishing-env-gate.js
+        formatLocation: formatLocation,                 // v7.20.610: exposed for the gate
         classifyScope,
         isEditableSection,
         extractSectionContext,

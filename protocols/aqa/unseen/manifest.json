@@ -84,13 +84,8 @@
         "steps": {}
     },
     "polishing": {
-        "always": [
-            "modules/foundation-unseen.md",
-            "modules/knowledge-unseen.md",
-            "modules/workflow-entry.md",
-            "modules/protocol-c-polishing-unseen.md",
-            "literature/modules/socratic-literature.md"
-        ],
+        "_retired": "v7.20.610 — polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_env subject row aqa/unseen_poetry in class-protocol-router.php (engine-1 + rubric-base + rubric-base-lit + rubric-aqa-lit-unseen-poetry.md + knowledge-unseen.md). modules/protocol-c-polishing-unseen.md stays on disk as source and must NEVER be loaded at a student again (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose.",
+        "always": [],
         "steps": {}
     }
 }

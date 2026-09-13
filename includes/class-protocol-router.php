@@ -1825,16 +1825,118 @@ class SWML_Protocol_Router {
      * polishing stack exactly as before — no behaviour change until its row is added.
      */
     public static function essay_polishing_env($context) {
+        // ── LANGUAGE papers — one row per PAPER, keyed on the canonical text slug ────────────────
+        // 'engine' picks the coaching engine: 'language' = inline-coaching-engine-language.md (no
+        // five-paragraph essay, no AO3, no substrate banks — v7.20.610); 'lit' = engine-1 + the
+        // Literature base supplement. 'extras' are loaded whole after the gold (penalty registries,
+        // criteria files). 'context_bank' names the per-text AO3 bank to SLICE for the active text.
         $essay_polishing_rubrics = [
             'aqa_lang_paper_1' => [
                 'cell'   => 'aqa/language1',
                 'rubric' => 'rubric-aqa-lang-p1-fiction.md',
                 'gold'   => ['protocols/aqa/language1/modules/knowledge-hub.md'],
+                'engine' => 'language',
+            ],
+            'aqa_lang_paper_2' => [
+                'cell'   => 'aqa/language2',
+                'rubric' => 'rubric-aqa-lang-p2-nonfiction.md',
+                'gold'   => ['protocols/aqa/language2/modules/knowledge-mark-scheme.md'],
+                'engine' => 'language',
+            ],
+        ];
+        // ── LITERATURE — one row per SUBJECT FAMILY (board/subject), because the rubric, the gold
+        // model and the penalty registry are per family while the TEXT varies per lesson (macbeth,
+        // romeo_and_juliet, christmas_carol…). The text still matters: it selects the slice of the
+        // AO3 context bank. Keyed on the normalised subject the embed sends (`20th_century` folds to
+        // `modern_text` below, the same fold resolve_protocol_group applies).
+        $essay_polishing_subject_rows = [
+            'aqa/shakespeare' => [
+                'cell'   => 'aqa/literature',
+                'rubric' => 'rubric-aqa-lit-shakespeare.md',
+                'gold'   => ['protocols/aqa/literature/modules/knowledge-model-answer.md', 'protocols/shared/modules/rubrics/gold-standard-exemplars-aqa-lit.md'],
+                'extras' => ['protocols/aqa/literature/modules/knowledge-style-models.md', 'protocols/aqa/literature/modules/penalty-codes.md'],
+                'context_bank' => 'protocols/aqa/literature/modules/knowledge-text-context-banks.md',
+                'engine' => 'lit',
+            ],
+            'aqa/19th_century' => [
+                'cell'   => 'aqa/literature',
+                'rubric' => 'rubric-aqa-lit-19c-novel.md',
+                'gold'   => ['protocols/aqa/literature/modules/knowledge-model-answer.md', 'protocols/shared/modules/rubrics/gold-standard-exemplars-aqa-lit.md'],
+                'extras' => ['protocols/aqa/literature/modules/knowledge-style-models.md', 'protocols/aqa/literature/modules/penalty-codes.md'],
+                'context_bank' => 'protocols/aqa/literature/modules/knowledge-text-context-banks.md',
+                'engine' => 'lit',
+            ],
+            'aqa/modern_text' => [
+                'cell'   => 'aqa/literature',
+                'rubric' => 'rubric-aqa-lit-modern-text.md',
+                'gold'   => ['protocols/aqa/literature/modules/knowledge-model-answer.md', 'protocols/shared/modules/rubrics/gold-standard-exemplars-aqa-lit.md'],
+                'extras' => ['protocols/aqa/literature/modules/knowledge-style-models.md', 'protocols/aqa/literature/modules/penalty-codes.md'],
+                'context_bank' => 'protocols/aqa/literature/modules/knowledge-text-context-banks.md',
+                'engine' => 'lit',
+            ],
+            'aqa/poetry_anthology' => [
+                'cell'   => 'aqa/poetry',
+                'rubric' => 'rubric-aqa-lit-anthology-poetry.md',
+                'gold'   => ['protocols/aqa/poetry/modules/model-answers-poetry.md'],
+                'extras' => ['protocols/aqa/poetry/modules/penalty-codes-poetry.md'],
+                'engine' => 'lit',
+            ],
+            'aqa/unseen_poetry' => [
+                'cell'   => 'aqa/unseen',
+                'rubric' => 'rubric-aqa-lit-unseen-poetry.md',
+                'gold'   => ['protocols/aqa/unseen/modules/knowledge-unseen.md'],
+                'extras' => [],
+                'engine' => 'lit',
             ],
         ];
         $text = strtolower(str_replace('-', '_', (string) ($context['text'] ?? '')));
-        if ($text === '' || !isset($essay_polishing_rubrics[$text])) return null;
-        return $essay_polishing_rubrics[$text] + ['text' => $text];
+        if ($text !== '' && isset($essay_polishing_rubrics[$text])) {
+            return $essay_polishing_rubrics[$text] + ['text' => $text, 'extras' => [], 'context_bank' => null];
+        }
+        $board   = str_replace('-', '_', self::normalize_board($context['board'] ?? ''));
+        $subject = strtolower(str_replace('-', '_', (string) ($context['subject'] ?? '')));
+        if ($subject === '20th_century') $subject = 'modern_text';   // course-category sibling (main plugin :1562)
+        if ($subject === 'poetry')       $subject = ($text === 'unseen_poetry') ? 'unseen_poetry' : 'poetry_anthology';
+        $key = "{$board}/{$subject}";
+        if ($subject === '' || !isset($essay_polishing_subject_rows[$key])) return null;
+        return $essay_polishing_subject_rows[$key] + ['text' => $text];
+    }
+
+    /**
+     * v7.20.610 — slice ONE text's section out of a per-text bank (`## <Title> — …` headings), so a
+     * Literature polishing turn carries the active text's AO3 substrate (~10KB) and not all twelve
+     * texts (118KB). Returns '' when the text has no section — the caller then tells the model so,
+     * instead of the model inventing context (root §5c).
+     */
+    public static function slice_context_bank($path, $text) {
+        if (!file_exists($path)) return '';
+        $titles = [
+            'macbeth'           => 'Macbeth',
+            'christmas_carol'   => 'A Christmas Carol',
+            'acc'               => 'A Christmas Carol',
+            'inspector_calls'   => 'An Inspector Calls',
+            'aic'               => 'An Inspector Calls',
+            'frankenstein'      => 'Frankenstein',
+            'jane_eyre'         => 'Jane Eyre',
+            'pride_and_prejudice' => 'Pride and Prejudice',
+            'jekyll_and_hyde'   => 'Jekyll and Hyde',
+            'jekyll_hyde'       => 'Jekyll and Hyde',
+            'animal_farm'       => 'Animal Farm',
+            'blood_brothers'    => 'Blood Brothers',
+            'lord_of_the_flies' => 'Lord of the Flies',
+            'great_expectations'=> 'Great Expectations',
+            'anita_and_me'      => 'Anita and Me',
+        ];
+        $text = strtolower(str_replace('-', '_', (string) $text));
+        if (!isset($titles[$text])) return '';
+        $bank = file_get_contents($path);
+        $title = preg_quote($titles[$text], '/');
+        if (!preg_match('/^## ' . $title . ' — .*$/m', $bank, $m, PREG_OFFSET_CAPTURE)) return '';
+        $start = $m[0][1];
+        $rest  = substr($bank, $start + strlen($m[0][0]));
+        $end   = preg_match('/^## /m', $rest, $n, PREG_OFFSET_CAPTURE) ? $n[0][1] : strlen($rest);
+        $head  = "# Context bank — the ACTIVE text only (sliced from knowledge-text-context-banks.md)\n\n";
+        return $head . $m[0][0] . substr($rest, 0, $end);
     }
 
     private function load_modular_protocol($context, $user_id = 0) {
@@ -2025,7 +2127,10 @@ class SWML_Protocol_Router {
                 $rubrics_dir . 'rubric-base.md',
             ];
             // Lit-only Move-4 quoting exemplars — skip for non-fiction writing.
+            // v7.20.610: the Literature shapes (intro/conclusion, critical frames, tragedy anti-patterns)
+            // moved out of rubric-base.md into rubric-base-lit.md; a Lit crib loads both.
             if (!$is_nonfiction_lang) {
+                $files_to_load[] = $rubrics_dir . 'rubric-base-lit.md';
                 $files_to_load[] = $rubrics_dir . 'gold-standard-exemplars-aqa-lit.md';
             }
             $files_to_load[] = $rubrics_dir . $rubric_file;
@@ -2207,16 +2312,23 @@ class SWML_Protocol_Router {
         if ($task === 'polishing' && $polish_env) {
             $modules_dir = $plugin_dir . 'protocols/shared/modules/';
             $rubrics_dir = $modules_dir . 'rubrics/';
+            $is_lit = (($polish_env['engine'] ?? 'lit') === 'lit');
+            // v7.20.610: Language cells get the language engine (no five-paragraph essay, no AO3,
+            // no substrate banks); Literature keeps engine-1 + the Literature base supplement.
             $files_to_load = [
                 $modules_dir . 'inline-coaching-core.md',
-                $modules_dir . 'inline-coaching-engine-1.md',
+                $modules_dir . ($is_lit ? 'inline-coaching-engine-1.md' : 'inline-coaching-engine-language.md'),
                 $rubrics_dir . 'rubric-base.md',
-                $rubrics_dir . $polish_env['rubric'],
             ];
+            if ($is_lit) $files_to_load[] = $rubrics_dir . 'rubric-base-lit.md';
+            $files_to_load[] = $rubrics_dir . $polish_env['rubric'];
             // The paper's gold standard — what "better" means here (Neil: "the gold standard level
             // that we have in the protocols"). One source, loaded whole, never copied into the rubric.
             foreach ($polish_env['gold'] as $gold_rel) {
                 $files_to_load[] = $plugin_dir . $gold_rel;
+            }
+            foreach (($polish_env['extras'] ?? []) as $extra_rel) {
+                $files_to_load[] = $plugin_dir . $extra_rel;
             }
             $parts = [];
             foreach ($files_to_load as $f) {
@@ -2226,18 +2338,25 @@ class SWML_Protocol_Router {
                     error_log("WML Router: essay polishing module missing at {$f}");
                 }
             }
+            // The AO3 context bank, sliced to the ACTIVE text (never all twelve texts). A text with no
+            // section gets an explicit note, so the model says "no context bank" rather than inventing.
+            if (!empty($polish_env['context_bank'])) {
+                $slice = self::slice_context_bank($plugin_dir . $polish_env['context_bank'], $polish_env['text']);
+                $parts[] = $slice !== '' ? $slice
+                    : "# Context bank\n\nNo context bank exists for the text `{$polish_env['text']}`. Coach AO3 from what the student already wrote and from the rubric's anchors; never invent a dated fact for this text.";
+            }
             if (empty($parts)) {
                 error_log("WML Router: essay polishing loaded zero modules for text '{$polish_env['text']}' — protocol empty");
                 return null;
             }
             $content = implode("\n\n---\n\n", $parts);
             error_log("WML Router: Loaded essay polishing ENVIRONMENT for '{$polish_env['text']}': " . count($parts)
-                . " modules, " . strlen($content) . " chars (rubric={$polish_env['rubric']})");
+                . " modules, " . strlen($content) . " chars (rubric={$polish_env['rubric']}, engine=" . ($polish_env['engine'] ?? 'lit') . ")");
             return !empty(trim($content)) ? $content : null;
         }
 
         // Map board + subject to protocol group directory
-        $protocol_group = $this->resolve_protocol_group($board, $subject);
+        $protocol_group = $this->resolve_protocol_group($board, $subject, (string) ($context['text'] ?? ''));
         $manifest_path = $plugin_dir . "protocols/{$board}/{$protocol_group}/manifest.json";
 
         // Edexcel IGCSE Language Paper 1 = nonfiction anthology — use nonfiction CN protocol (v7.14.89)
@@ -3064,7 +3183,7 @@ TEMPLATE;
      *
      * Returns directory name (e.g., "literature", "poetry", "modern", "language1")
      */
-    private function resolve_protocol_group($board, $subject) {
+    private function resolve_protocol_group($board, $subject, $text = '') {
         // v7.20.49: the bridge's lang_map emits DASH-form subjects ('language-p2', v7.14.14)
         // while every map/regex below expects underscores — normalise first (same treatment
         // the board key already gets). Slug-trace law: dash-vs-underscore is a documented
@@ -3077,6 +3196,22 @@ TEMPLATE;
         // it, but this normaliser missed it, so that form would fall through to a
         // non-existent protocols/{board}/language_paper_N/ manifest and load nothing.
         $subject = preg_replace('/^language_p(?:aper_)?(\d)$/', 'language$1', $subject);
+        // v7.20.610 (#482): a bare course-category `language` reaches here from at least one surface
+        // (measured 2026-09-07; the embed's :825 conversion is not the only path) and resolved to a
+        // group with no manifest — every such assessment ran with NO protocol. Fold it from the text
+        // slug the same way the embed does: `*_lang_paper_N` / `*_paper_N` → languageN.
+        if ($subject === 'language') {
+            $text_for_fold = strtolower(str_replace('-', '_', (string) $text));
+            if (preg_match('/(?:lang_)?paper_(\d)$/', $text_for_fold, $pm)) {
+                $subject = 'language' . $pm[1];
+                error_log("WML Router: bare subject 'language' folded to '{$subject}' from text '{$text_for_fold}' (#482)");
+            }
+        }
+        // v7.20.610: the course-category sibling `20th_century` (main plugin :1562 knew, never folded)
+        // is the map's `modern_text` on every board — without this, an Inspector Calls / Blood Brothers
+        // lesson embedded under that category resolves to protocols/{board}/20th_century/, which does
+        // not exist, and loads nothing.
+        if ($subject === '20th_century') $subject = 'modern_text';
 
         // Normalise board key (frontend uses hyphens, map uses underscores)
         $board_key = str_replace('-', '_', $board);
@@ -3249,6 +3384,22 @@ TEMPLATE;
         // v7.19.579: foundational_help is the FQ twin of mark_scheme_help — same hard
         // rules (no reveal / no scoring / no new question / no markers), but the concept
         // explained is the underlying idea about the TEXT, not the mark scheme.
+        // v7.20.610 — a ported POLISHING cell (essay_polishing_env) gets a LEAN preamble and returns
+        // here. Measured on the v7.20.609 payload: the general path wrapped the environment framing in
+        // ~11KB of walk-era instructions that contradict it — UNIVERSAL RULES (A/B buttons, [PANEL]
+        // tags), MANDATORY FUNCTION CALLS (`revision_1/2/3`), PROTOCOL COMPLIANCE (chunks), HARD
+        // GATES, "This is a diagnostic essay… no hints", "greet the student fresh". An environment
+        // has no steps, no saves, no chunks and no greeting, so none of that belongs in its context.
+        // It also carries the ONE thing the framing promised and the general path never delivered:
+        // the student's Phase-1 result for THIS topic (grade + targets), so assessment findings
+        // reach the model and not just the coach card (Neil's brief, 2026-09-13).
+        if (($context['task'] ?? '') === 'polishing') {
+            $polish_env_row = self::essay_polishing_env($context);
+            if ($polish_env_row) {
+                return $this->build_polish_env_preamble($context, $polish_env_row, $user_id, $first_name, $session_context_block);
+            }
+        }
+
         $_help_task = $context['task'] ?? '';
         if ($_help_task === 'mark_scheme_help' || $_help_task === 'foundational_help') {
             $is_fq_help  = ($_help_task === 'foundational_help');
@@ -3568,21 +3719,9 @@ TEMPLATE;
             $raw_subject = $context['subject'] ?? '';
             $is_lang = (stripos($raw_subject, 'language') !== false);
             $is_mastery = !empty($context['phase']) && !empty($context['topic_number']);
-            // v7.20.609: a ported cell (essay_polishing_env) is an ENVIRONMENT — the framing below
-            // must not tell the model to pick the first weakness or run a dialogue; the legacy text
-            // stays for cells still on the manifest stack, untouched.
-            $polish_env = self::essay_polishing_env($context);
-
-            if ($polish_env) {
-                $preamble .= "\n### POLISHING ENVIRONMENT — THE STUDENT CHOOSES\n\n";
-                $preamble .= "You are Sophia, coaching {$first_name} as they polish a finished response to a {$board_label} {$subject} paper. ";
-                $preamble .= "This lesson has no steps and no sequence: the student highlights a sentence or paragraph they want to improve, picks a button or types, and you coach THAT selection towards the gold standard loaded below. ";
-                $preamble .= "Do NOT choose the first area to polish for them, do NOT tour the document, do NOT open with a greeting or a summary — you speak only when invoked, and your first sentence is always about the selection.\n\n";
-                $preamble .= "**Where the text is:** every invocation carries the selection, its section type, its section context, and the live full document (`Current full document (live this turn)`). ";
-                $preamble .= "The `Qn Response` heading above the selection tells you which question's shape applies. Never ask the student to paste anything or to say which question it is.\n\n";
-                $preamble .= "**The target:** the paper's Gold Standard Models and Prose Polishing Criteria loaded below, plus the student's own recorded targets under Student History. Point at them; never rewrite the student's sentence for them (the coaching-pedagogy STOP RULE's two contrasting rewrites are the only exception, and the student always writes the final version).\n\n";
-                $preamble .= "**Exit:** no task menu, no 'workbook'. When they are done they press **Mark Complete** in the document footer. Never offer 'start a new assessment / plan an answer / polish'.\n\n";
-            } else {
+            // v7.20.610: a ported cell (essay_polishing_env) never reaches this block — build_preamble
+            // returns its LEAN environment preamble early (build_polish_env_preamble). The legacy
+            // framing below serves only the cells still on their manifest's protocol-c stack.
             $preamble .= "\n### POLISHING SESSION — ROLE & PURPOSE\n\n";
             $preamble .= "You are a polishing tutor helping {$first_name} refine their written response to a {$board_label} {$subject} paper. ";
             $preamble .= "Use Socratic questioning to help them identify weaknesses and rewrite specific sentences or paragraphs.\n\n";
@@ -3609,7 +3748,6 @@ TEMPLATE;
                 $preamble .= "**START DIRECTLY** by reading the student's response from the document, identifying the first area to polish, and beginning the Socratic polishing dialogue.\n";
                 $preamble .= "Do NOT ask the student to paste text, select a question, or choose what to polish.\n\n";
             }
-            } // end legacy (non-environment) polishing framing
 
             // v7.19.283: Shared inline-coaching pedagogy for ALL polishing (literature
             // + language + creative writing). Injected here (preamble) — not in
@@ -5219,6 +5357,88 @@ TEMPLATE;
             ];
         }
         return $caps;
+    }
+
+    /**
+     * v7.20.610 — THE LEAN PREAMBLE for a ported polishing cell (PROTOCOL-STANDARD Part D).
+     *
+     * Everything an environment needs and nothing a walk needs: the session context block (minus
+     * its greeting line), the environment framing, the student's Phase-1 result for THIS topic,
+     * their standing history, the AO vocabulary of the subject, and the shared coaching pedagogy.
+     * Measured against v7.20.609: the general path shipped ~18KB of preamble to a P1 turn, ~11KB
+     * of it walk-era text an environment must ignore; this returns ~7KB and contradicts nothing.
+     */
+    private function build_polish_env_preamble($context, $polish_env, $user_id, $first_name, $session_context_block) {
+        $board       = self::normalize_board($context['board'] ?? 'aqa');
+        $board_label = strtoupper($board);
+        $text        = (string) ($context['text'] ?? '');
+        $subject     = (string) ($context['subject'] ?? '');
+        $is_lit      = (($polish_env['engine'] ?? 'lit') === 'lit');
+        $display_text = ucwords(str_replace('_', ' ', $text));
+        $paper_label = $is_lit ? "{$board_label} Literature ({$display_text})" : "{$board_label} " . ucwords(str_replace('_', ' ', $subject)) . " ({$display_text})";
+
+        // The session block tells a WALK to "greet the student fresh"; an environment never greets.
+        $block = str_replace(
+            [" Greet the student fresh.", "Use it naturally in greetings."],
+            ["", "Use it naturally when you address them."],
+            $session_context_block
+        );
+
+        $p  = $block;
+        $p .= "## WRITING MASTERY LAB — POLISHING ENVIRONMENT — THE STUDENT CHOOSES\n\n";
+        $p .= "**Student:** {$first_name}. **Paper:** {$paper_label}. **Topic:** " . (int) ($context['topic_number'] ?? 0) . ". **Phase:** redraft — the student has already been assessed once on this topic, planned and outlined a new answer, and written it.\n\n";
+        $p .= "You are Sophia, coaching {$first_name} as they polish a finished response. This lesson has no steps and no sequence: the student highlights a sentence or paragraph they want to improve, picks a button or types, and you coach THAT selection towards the gold standard loaded below. ";
+        $p .= "Do NOT choose the first area to polish for them, do NOT tour the document, do NOT list what else is weak, do NOT open with a greeting or a summary — you speak only when invoked, and your first sentence is always about the selection.\n\n";
+        $p .= "**Where the text is:** every invocation carries the selection, its section type, a **Location** line built by code (the question heading above the selection, the paragraph's position in its section, the section's word count), the live section context, and the live full document (`Current full document (live this turn)`). ";
+        $p .= "Trust the Location line to know which question and which paragraph you are coaching; read the rubric below for that question's shape. Never ask the student to paste anything or to say which question it is.\n\n";
+        $p .= "**The target:** the paper's gold-standard model(s) and criteria loaded below. \"Better\" means closer to the QUALITY of the model — the same job done by each sentence — never the model's wording or interpretation: a different successful answer is the goal. Point at the model; never rewrite the student's sentence for them (the coaching-pedagogy STOP RULE's two contrasting rewrites of THEIR line are the only exception, and the student always writes the final version).\n\n";
+        $p .= "**What matters most, in order** (PEDAGOGY §32a, macro → micro): does the answer do the task and hold an argument → are the taught elements present and doing their job → is the evidence embedded and analysed rather than described → coherence and concept → word choice → sentence variety → spelling, punctuation and grammar last. Recommend this order when asked where to start; never enforce it, and never reduce a session to vocabulary swaps or proofreading when a paragraph is missing its purpose sentence.\n\n";
+        $p .= "**Exit:** no task menu, no 'workbook', no 'start a new assessment / plan an answer'. When they are done they press **Mark Complete** in the document footer.\n\n";
+        $p .= "**Language:** the student is 13–16 and may read English as a second language. Course words they know are fine (TTECEA, topic sentence, close analysis, effect, writer's purpose, IUMVCC, Madfather's Crops, the seven scene elements). Never say rubric, protocol, tier, engine, level, AO-number-requires, or \"the mark scheme rewards\".\n\n";
+
+        // ── Phase-1 result for THIS topic — the assessment findings the student is polishing against.
+        // Read through the ONE canonical key-builder (key-match law), latest record in the re-mark
+        // fork chain (get_latest_phase_result). Absent record → no block, never an invented target.
+        $topic_for_phase = (int) ($context['topic_number'] ?? 0);
+        if ($topic_for_phase > 0 && $text !== '' && class_exists('SWML_Session_Manager')) {
+            $p1_att = SWML_Session_Manager::current_attempt($user_id, $board, $text, $topic_for_phase);
+            $p1_rec = SWML_Session_Manager::get_latest_phase_result($user_id, $board, $text, $topic_for_phase, 'initial', $p1_att);
+            if (is_array($p1_rec) && ($p1_rec['status'] ?? '') === 'complete') {
+                $g  = trim((string) ($p1_rec['grade'] ?? ''));
+                $ts = trim((string) ($p1_rec['total_score'] ?? ''));
+                $s1 = trim((string) ($p1_rec['strength_1'] ?? ''));
+                $t1 = trim((string) ($p1_rec['target_1'] ?? ''));
+                $t2 = trim((string) ($p1_rec['target_2'] ?? ''));
+                if ($g !== '' || $t1 !== '' || $t2 !== '') {
+                    $p .= "### THEIR FIRST ATTEMPT ON THIS TOPIC (the assessment they are redrafting from)\n";
+                    if ($g !== '')  $p .= "- Grade " . $g . ($ts !== '' ? " ({$ts})" : '') . " on the first attempt — for framing only; never restate marks unless asked.\n";
+                    if ($s1 !== '') $p .= "- Recorded strength: \"{$s1}\" — when it shows in the selection, name it in a clause and move on; do not re-teach a strength.\n";
+                    if ($t1 !== '') $p .= "- Priority target: \"{$t1}\"\n";
+                    if ($t2 !== '') $p .= "- Second target: \"{$t2}\"\n";
+                    $p .= "When a button's finding overlaps one of these targets, say so in one clause — it tells the student their redraft is hitting what the assessment asked for. These are the student's own recorded targets, not a list to work through.\n\n";
+                }
+            }
+        }
+
+        $reminders = $this->build_reminders($user_id, $text);
+        if ($reminders) $p .= $reminders . "\n";
+
+        // The subject's AO vocabulary in one block (v7.14.61 wording), so a Language turn never hears
+        // "context" for AO3 and a Literature turn never hears "comparison".
+        if ($is_lit) {
+            $p .= "### THE ASSESSMENT OBJECTIVES (Literature)\n- AO1 = respond to the text with a critical, informed argument, supported by textual references\n- AO2 = analyse the writer's language, form and structure and their effects, with subject terminology\n- AO3 = the relationship between the text and its contexts (not assessed on unseen poetry)\n- AO4 = spelling, punctuation and grammar (Shakespeare and modern text only)\n\n";
+        } else {
+            $p .= "### THE ASSESSMENT OBJECTIVES (Language)\n- AO1 = identify and interpret explicit and implicit information; synthesise across texts\n- AO2 = explain, comment on and analyse how writers use language and structure for effect\n- AO3 = compare writers' ideas and perspectives across texts (NOT historical context — there is no context mark on a Language paper)\n- AO4 = evaluate texts critically\n- AO5 = content and organisation (Section B)\n- AO6 = technical accuracy (Section B)\n\n";
+        }
+
+        // The shared coaching shell — attempt-first → two contrasting rewrites → fade, STOP RULE,
+        // RE-ANCHOR, NO INVENTED QUOTAS. Same file the general path appends (v7.19.283).
+        $pedagogy_path = SWML_PROTOCOLS_PATH . 'shared/modules/coaching-pedagogy-shared.md';
+        if (file_exists($pedagogy_path)) {
+            $pedagogy = file_get_contents($pedagogy_path);
+            if (!empty(trim($pedagogy))) $p .= "\n" . $pedagogy . "\n";
+        }
+        return $p;
     }
 
     /**

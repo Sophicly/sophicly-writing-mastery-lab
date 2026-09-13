@@ -83,15 +83,8 @@
         "steps": {}
     },
     "polishing": {
-        "always": [
-            "modules/foundation-poetry.md",
-            "modules/communication-standards.md",
-            "modules/macros-poetry.md",
-            "modules/guards-progress-poetry.md",
-            "modules/knowledge-poetry.md",
-            "modules/model-answers-poetry.md",
-            "modules/protocol-c-polishing-poetry.md"
-        ],
+        "_retired": "v7.20.610 — polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_env subject row aqa/poetry_anthology in class-protocol-router.php (engine-1 + rubric-base + rubric-base-lit + rubric-aqa-lit-anthology-poetry.md + model-answers-poetry.md + penalty-codes-poetry.md). modules/protocol-c-polishing-poetry.md stays on disk as source and must NEVER be loaded at a student again (retained-source law, WML CLAUDE.md §5). No 'always' list on purpose.",
+        "always": [],
         "steps": {}
     }
 }

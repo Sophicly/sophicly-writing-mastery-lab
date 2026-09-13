@@ -2,9 +2,17 @@
 
 **Loads on top of:** `rubric-base.md`. Universal Sophicly rules apply unless overridden here.
 
-**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (Power & Conflict / Love & Relationships / Worlds and Lives anthologies) + `task='polishing'` (AQA Lit P2 Section B redraft).
+**Used by:** `inline-coaching-engine-1.md` for tasks `task='exam_crib'` (Power & Conflict / Love & Relationships / Worlds and Lives anthologies) + `task='polishing'` (AQA Lit P2 Section B redraft — router `essay_polishing_env()` row `aqa/poetry_anthology`, v7.20.610, loaded with `rubric-base.md`, `rubric-base-lit.md`, the gold `model-answers-poetry.md` (full comparative essay + plan + style models) and the registry `penalty-codes-poetry.md`).
+
+**Provenance (PROTOCOL-STANDARD §2b):** element structure and worths from the poetry protocol `protocols/aqa/poetry/modules/protocol-a-assessment-poetry.md` (30-mark comparative shape: Intro 3 + three 7-mark comparative paragraphs fixed by TOPIC — Form · Structure · Language — + Conclusion 6) via `PROTOCOL-QUESTION-STRUCTURE-MAP.md` §poetry; descriptors from the AQA 8702/2 mark scheme via `knowledge-poetry.md`. If the protocol and this file disagree, the protocol is right.
 
 **Paper structure:** Single 45-minute comparison question — TWO named anthology poems. **30 marks** (AO1+AO2+AO3 only — NO AO4 SPaG marks).
+
+---
+
+## THE LESSON'S SHAPE (PROTOCOL-STANDARD Part D — polishing)
+
+As the Shakespeare rubric's THE LESSON'S SHAPE (the student chooses; the gold model's QUALITY is the target, never its reading; **Location** names the paragraph; macro → micro recommended, never enforced; help before Sophia; exit = **Mark Complete**, no task menu; 13–16 second-language-safe language), with the comparison-specific rule on top: **every paragraph compares** — a paragraph on one poem alone is the first thing `scan-structure` names. The three body paragraphs are fixed by topic: Body 1 = Form, Body 2 = Structure, Body 3 = Language.
 
 ---
 
@@ -43,15 +51,16 @@ Same Level 3-6 ladder as Shakespeare. Per-paper Q-shape differs but mark-scheme 
 
 ## TTECEA SHAPE — ADAPTED FOR COMPARISON
 
-For comparison Qs, TTECEA expands to compare both poems within each BP:
+For comparison Qs, TTECEA expands to compare both poems within each BP (the protocol's nine graded rows, as sentences):
 
-1. T (concept-only — applies to BOTH poems).
-2. T+e (technique + quote from POEM 1).
-3. T+e (technique + quote from POEM 2 — compared).
-4. C (close analysis — words inside BOTH quotes, comparing).
-5. E (effect — single combined effect across both poems, OR distinct E1 / E2 per poem).
-6. A (Author's purpose — comparing what the two poets are arguing).
-7. C (Context — both poems' contexts compared / contrasted).
+1. T (comparative topic sentence — concept-only, about how BOTH poets' choices convey meaning).
+2. T+e (accurate comparative terminology + strategic, integrated quotations from BOTH poems).
+3. C (comparative close analysis of BOTH quotations; interplay across the compared element).
+4. E1 / E2 (two effect sentences — how each poet's choice affects the reader DIFFERENTLY).
+5. A (comparative author's purpose — why EACH poet chose their approach).
+6. C (comparative context — how EACH poet's context shapes their choice).
+
+**Introduction (3 marks):** comparative hook · building sentence comparing both poets' contexts · building sentence on how each context shapes the poems differently · three-point comparative thesis. **Conclusion (6 marks):** restated comparative thesis · synthesised central comparative concept · how BOTH poets' methods serve their purposes · universal comparative message · final evaluative judgement (which approach is more effective, and why).
 
 **Pointer phrase:** *Comparative TTECEA folds two poems into one BP — concept first, then both poems' techniques + quotes, then comparison of effects + purposes.*
 
@@ -123,21 +132,18 @@ Too many Q-hooks feel pretentious. Lead with fact + quote.
 
 ---
 
-## QUICK-ACTION → CRITERION MAP (DELTA FROM BASE)
+## INLINE COACHING ACTIONS (anthology comparison)
 
-| Action | Criterion (anthology-comparison-specific) |
-|---|---|
-| `check-author-purpose` | Lit-compulsory; A as comparative argument — what BOTH poets argue, with same/different focus. |
-| `check-ao3-anchor` | Date + named source for BOTH poems; tradition-anchor optional. |
-| `check-ao-coverage` | All 3 AOs (AO1 + AO2 + AO3); NO AO4 marks. |
-| `check-quote-presence` | Critical — both poems must be quote-anchored per BP. |
-| `compare-gold-standard` | Point at `Model Answers/AQA/[anthology]/[poem-pair-topic].md` exemplar. |
+Same buttons as the Shakespeare rubric (`scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), read through the comparison:
 
-**New action specific to comparison:**
-
-| Action | Criterion |
-|---|---|
-| `check-comparison-coverage` | Are BOTH poems treated within each BP, or is treatment sequential (Level 3 cap)? |
+- **`scan-structure`** → five paragraphs, the three bodies on Form · Structure · Language in that order, EVERY paragraph on both poems; a sequential poem-by-poem essay is the first gap named.
+- **`scan-elements`** → the comparative element set above for a body paragraph (both poems in every element); the four intro elements; the five conclusion elements. Count the gaps first.
+- **`scan-coherence`** → is each comparison a real pair (a difference or similarity argued, not two observations side by side); do the effects differ per poet; does the paragraph's topic stay on its assigned lens (form / structure / language).
+- **`scan-concept`** → is the comparative thesis a conceptual argument about how the poets differ, not a theme list; is the final judgement earned by the three paragraphs.
+- **`scan-context-drive`** → both poets' contexts, each driving its poem's choice, causal not correlational.
+- **`compare-gold-standard`** → quote the matching element from the loaded comparative model essay (same lens: form / structure / language) and ask what the student notices about its shape.
+- **`fix-*`** → coached for clarity; there is no AO4 mark on this paper.
+- **The two contrasting rewrites** (STOP RULE) as in the Shakespeare rubric — the pair compares both poems.
 
 ---
 
