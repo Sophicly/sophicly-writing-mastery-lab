@@ -500,6 +500,12 @@ node bin/fossil-lint.js || fail=1
 # document to a whole class. Whole-file and instant, like fossil-lint.
 node bin/placeholder-predicate-gate.js || fail=1
 
+# Essay POLISHING is an ENVIRONMENT (v7.20.609, PROTOCOL-STANDARD Part D). The router's
+# essay_polishing_env map, the chip's ladder, the retired manifest cell and the per-paper rubric are
+# four surfaces in two languages that must agree — and the March-2026 protocol-c walk must be
+# unloadable for every ported cell (a fence loses to in-file text, §5). Whole-repo and instant.
+node bin/essay-polishing-env-gate.js || fail=1
+
 # The CW course numbering must agree with ITSELF across six independent number-keyed surfaces.
 # v7.20.452 scar: a new Step 8 renumbered the course 8..29 -> 9..30. The handoff said one file;
 # it was six, and the hand sweep STILL missed the document builder (it greps as `step === N`,

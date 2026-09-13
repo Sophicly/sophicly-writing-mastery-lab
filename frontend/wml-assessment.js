@@ -31255,6 +31255,40 @@
         // is callable from the header clear button + the messagesHost line above.
         function buildCoachEmptyState() {
         const empty = el('div', { className: 'swml-coach-panel-empty' });
+        // ── v7.20.609 — the POLISHING lesson opens with its INSTRUCTIONS, not a "Start with Sophia"
+        // button (PROTOCOL-STANDARD Part D; Neil, 2026-09-07: "We just need to think about quick
+        // action buttons, the instructions"). Code-served and re-rendered from state on every mount,
+        // so it is never a stored turn (§4c.7 fossil law) and the screen is never empty (§4d). The
+        // student's own Phase-1 targets are fetched from /phase/status and shown as suggested
+        // starting points — the target is visible, not implied (Part D §4). Sophia stays the LAST
+        // rung: no auto-select CTA here — the student highlights, then taps the toolbar button.
+        if (state.task === 'polishing') {
+            empty.classList.add('swml-polish-opener');
+            empty.innerHTML =
+                '<h4 class="swml-polish-opener-title">Your response, your call</h4>' +
+                '<p class="swml-coach-panel-empty-sub">Everything in the <strong>Response</strong> boxes is yours to improve. Pick the sentences you are not happy with, one at a time.</p>' +
+                '<ol class="swml-polish-opener-steps">' +
+                    '<li><strong>Highlight</strong> a sentence or paragraph in a Response box.</li>' +
+                    '<li><strong>Tap Sophia</strong> in the toolbar and choose a button. Start big, finish small: the shape of the answer first, then the words, then spelling and punctuation last.</li>' +
+                    '<li><strong>Edit your response yourself.</strong> Sophia points; you write.</li>' +
+                '</ol>' +
+                '<p class="swml-coach-panel-empty-sub swml-polish-opener-targets" hidden></p>' +
+                '<p class="swml-coach-panel-empty-sub">Finished? Press <strong>Mark Complete</strong> in the footer.</p>';
+            try {
+                const tEl = empty.querySelector('.swml-polish-opener-targets');
+                const url = `${API.phaseStatus}?board=${encodeURIComponent(state.board || '')}&text=${encodeURIComponent(state.text || '')}&topic=${state.topicNumber || 1}`;
+                apiGet(url).then(res => {
+                    const rec = res && res.initial;
+                    if (!rec || rec.status !== 'complete') return;
+                    const targets = [rec.target_1, rec.target_2].map(t => String(t || '').trim()).filter(Boolean);
+                    if (!targets.length || !tEl) return;
+                    tEl.innerHTML = '<strong>From your assessment</strong> — good places to start: ' +
+                        targets.map(t => '<em>' + t.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</em>').join(' · ');
+                    tEl.hidden = false;
+                }).catch(() => {});
+            } catch (_) { /* the card stands without targets */ }
+            return empty;
+        }
         // v7.19.90 / v7.19.91: replace static empty-state copy with the sparkle
         // CTA button (mirrors the .swml-coach-continue-wrap pattern from
         // wml-selection-chip.js — wrap + button + 18 random particles).

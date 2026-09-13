@@ -1811,6 +1811,32 @@ class SWML_Protocol_Router {
         return $b;
     }
 
+    /**
+     * v7.20.609 — THE essay-polishing environment map (PROTOCOL-STANDARD Part D). ONE resolver,
+     * called by load_modular_protocol (what to load) AND build_preamble (how to frame it), so the
+     * two cannot disagree about whether a cell is ported (§5d one canonical key-builder).
+     *
+     * Keyed on the canonical TEXT slug (dash→underscore, lower-cased) — see the slug-trace note at
+     * the call site. Value: the per-paper rubric file (protocols/shared/modules/rubrics/), the
+     * manifest cell it retires (for the gate + the audit), and the gold-standard file(s) loaded
+     * whole beside the rubric.
+     *
+     * Returns the row (+ 'text') or null. A cell absent here keeps loading its board manifest's
+     * polishing stack exactly as before — no behaviour change until its row is added.
+     */
+    public static function essay_polishing_env($context) {
+        $essay_polishing_rubrics = [
+            'aqa_lang_paper_1' => [
+                'cell'   => 'aqa/language1',
+                'rubric' => 'rubric-aqa-lang-p1-fiction.md',
+                'gold'   => ['protocols/aqa/language1/modules/knowledge-hub.md'],
+            ],
+        ];
+        $text = strtolower(str_replace('-', '_', (string) ($context['text'] ?? '')));
+        if ($text === '' || !isset($essay_polishing_rubrics[$text])) return null;
+        return $essay_polishing_rubrics[$text] + ['text' => $text];
+    }
+
     private function load_modular_protocol($context, $user_id = 0) {
         // v7.19.406 (CACHE): never let a previous call's slice leak into this request.
         $this->dynamic_step_slice = '';
@@ -2152,6 +2178,62 @@ class SWML_Protocol_Router {
             }
             error_log("WML Router: CW protocol file not found for task '{$task}'");
             return null;
+        }
+
+        // ── Essay POLISHING as an ENVIRONMENT (v7.20.609, PROTOCOL-STANDARD Part D) ──────────────
+        // Neil, 2026-09-07 (FIXLIST #476): *"by that point, they should actually have a full answer
+        // written out. And all they're gonna do is just pick certain things that they might want to
+        // improve… they'll get that contextual chat, and then they'll just say what they wanna do
+        // with it."* So a ported polishing cell does NOT load its board manifest's polishing stack
+        // (the March-2026 `protocol-c-polishing.md` walk + the whole foundation/knowledge/state stack
+        // around it). Whole files are loaded into the model's context, and the retained-source law
+        // (WML CLAUDE.md §5, proved v7.20.250/.252) is our measurement that a fence loses to in-file
+        // text — measured again on 2026-09-13: with the monolith loaded, a `scan-elements` chip turn
+        // came back as a chatty greeting that "identified the first area to polish". The CW polishing
+        // steps (v7.20.578, $cw_polishing_lenses above) are the precedent: the same inline-coaching
+        // stack, a per-paper rubric, and the old walk made unloadable.
+        //
+        // KEYED ON THE TEXT SLUG, not the subject (§0c slug-trace, measured 2026-09-13): the same
+        // paper reaches this method as subject `language1`, `language-p1`, `language_p1` or
+        // `language_paper_1` depending on the entry path, and a bare `language` resolves to a group
+        // with no manifest at all. The text slug is the one identity every path carries.
+        //
+        // THE ROW IS THE ONLY PER-CELL DATA. Ports add a row here (+ author the rubric, + retire the
+        // cell's manifest `polishing.always`). bin/essay-polishing-env-gate.js asserts every row's
+        // rubric exists, that its manifest cell no longer lists protocol-c-polishing.md, and that
+        // this branch runs BEFORE the subject-based group resolver. protocol-standard-audit.js
+        // reports each cell as ENV or monolith from this same map.
+        $polish_env = self::essay_polishing_env($context);
+        if ($task === 'polishing' && $polish_env) {
+            $modules_dir = $plugin_dir . 'protocols/shared/modules/';
+            $rubrics_dir = $modules_dir . 'rubrics/';
+            $files_to_load = [
+                $modules_dir . 'inline-coaching-core.md',
+                $modules_dir . 'inline-coaching-engine-1.md',
+                $rubrics_dir . 'rubric-base.md',
+                $rubrics_dir . $polish_env['rubric'],
+            ];
+            // The paper's gold standard — what "better" means here (Neil: "the gold standard level
+            // that we have in the protocols"). One source, loaded whole, never copied into the rubric.
+            foreach ($polish_env['gold'] as $gold_rel) {
+                $files_to_load[] = $plugin_dir . $gold_rel;
+            }
+            $parts = [];
+            foreach ($files_to_load as $f) {
+                if (file_exists($f)) {
+                    $parts[] = file_get_contents($f);
+                } else {
+                    error_log("WML Router: essay polishing module missing at {$f}");
+                }
+            }
+            if (empty($parts)) {
+                error_log("WML Router: essay polishing loaded zero modules for text '{$polish_env['text']}' — protocol empty");
+                return null;
+            }
+            $content = implode("\n\n---\n\n", $parts);
+            error_log("WML Router: Loaded essay polishing ENVIRONMENT for '{$polish_env['text']}': " . count($parts)
+                . " modules, " . strlen($content) . " chars (rubric={$polish_env['rubric']})");
+            return !empty(trim($content)) ? $content : null;
         }
 
         // Map board + subject to protocol group directory
@@ -3349,8 +3431,13 @@ TEMPLATE;
         }
 
         // Plan enforcement (unified handoff v2)
+        // v7.20.609: 'polishing' REMOVED from this list. is_plan_required() is true for every
+        // redraft-phase context, so every polishing session told the model "the student must
+        // complete a plan before writing" — and it did exactly that (staging chat, 2026-04-20:
+        // "we need to do one thing first — your essay plan. It's compulsory for this session").
+        // Polishing comes AFTER the planning and outlining lessons; the plan already exists.
         $plan_required = $context['plan_required'] ?? false;
-        if ($plan_required && in_array($task, ['planning', 'polishing'])) {
+        if ($plan_required && in_array($task, ['planning'])) {
             $preamble .= "**Plan Enforcement:** Essay plan is COMPULSORY for this session. The student must complete a plan before writing.\n";
         }
 
@@ -3481,7 +3568,21 @@ TEMPLATE;
             $raw_subject = $context['subject'] ?? '';
             $is_lang = (stripos($raw_subject, 'language') !== false);
             $is_mastery = !empty($context['phase']) && !empty($context['topic_number']);
+            // v7.20.609: a ported cell (essay_polishing_env) is an ENVIRONMENT — the framing below
+            // must not tell the model to pick the first weakness or run a dialogue; the legacy text
+            // stays for cells still on the manifest stack, untouched.
+            $polish_env = self::essay_polishing_env($context);
 
+            if ($polish_env) {
+                $preamble .= "\n### POLISHING ENVIRONMENT — THE STUDENT CHOOSES\n\n";
+                $preamble .= "You are Sophia, coaching {$first_name} as they polish a finished response to a {$board_label} {$subject} paper. ";
+                $preamble .= "This lesson has no steps and no sequence: the student highlights a sentence or paragraph they want to improve, picks a button or types, and you coach THAT selection towards the gold standard loaded below. ";
+                $preamble .= "Do NOT choose the first area to polish for them, do NOT tour the document, do NOT open with a greeting or a summary — you speak only when invoked, and your first sentence is always about the selection.\n\n";
+                $preamble .= "**Where the text is:** every invocation carries the selection, its section type, its section context, and the live full document (`Current full document (live this turn)`). ";
+                $preamble .= "The `Qn Response` heading above the selection tells you which question's shape applies. Never ask the student to paste anything or to say which question it is.\n\n";
+                $preamble .= "**The target:** the paper's Gold Standard Models and Prose Polishing Criteria loaded below, plus the student's own recorded targets under Student History. Point at them; never rewrite the student's sentence for them (the coaching-pedagogy STOP RULE's two contrasting rewrites are the only exception, and the student always writes the final version).\n\n";
+                $preamble .= "**Exit:** no task menu, no 'workbook'. When they are done they press **Mark Complete** in the document footer. Never offer 'start a new assessment / plan an answer / polish'.\n\n";
+            } else {
             $preamble .= "\n### POLISHING SESSION — ROLE & PURPOSE\n\n";
             $preamble .= "You are a polishing tutor helping {$first_name} refine their written response to a {$board_label} {$subject} paper. ";
             $preamble .= "Use Socratic questioning to help them identify weaknesses and rewrite specific sentences or paragraphs.\n\n";
@@ -3508,6 +3609,7 @@ TEMPLATE;
                 $preamble .= "**START DIRECTLY** by reading the student's response from the document, identifying the first area to polish, and beginning the Socratic polishing dialogue.\n";
                 $preamble .= "Do NOT ask the student to paste text, select a question, or choose what to polish.\n\n";
             }
+            } // end legacy (non-environment) polishing framing
 
             // v7.19.283: Shared inline-coaching pedagogy for ALL polishing (literature
             // + language + creative writing). Injected here (preamble) — not in

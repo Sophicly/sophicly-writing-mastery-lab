@@ -35,6 +35,9 @@ delta → fix batch).
 - Part C = the planning spec: C-COMMON (the settled spine) → C-LADDER (the universal
   contingent-scaffolding ladder every planning protocol inherits) → C-CHECKS (grep table). Anchor =
   the P2 planning monolith. Grows with the codify arc (outline contract + ownership map).
+- Part D = the polishing spec (v7.20.609): an ENVIRONMENT, not a walk — D-SHAPE → D-CHECKS.
+  Anchor = `rubric-aqa-lang-p1-fiction.md` + the router's `essay_polishing_env` row for
+  `aqa_lang_paper_1`. Gate: `bin/essay-polishing-env-gate.js`.
 - Appendices = P1 first-live-run lessons (items 1–14, still binding) + known-gap register.
 
 Authority order when documents conflict: Neil's latest decision > this file > the anchor files.
@@ -901,6 +904,75 @@ Promoted from the P2 monolith §10; counts parameterize per paper.
 
 ---
 
+# PART D — POLISHING SPEC (an ENVIRONMENT, not a walk)
+
+**Neil's ruling this part stands on (FIXLIST #476, 2026-09-07, verbatim):** *"by that point, they
+should actually have a full answer written out. And all they're gonna do is just pick certain things
+that they might want to improve, that they're not happy with. And that's all it is. So they're just
+gonna highlight… they'll get that contextual chat, and then they'll just say what they wanna do with
+it."* … *"the goal is to try and help them get it to the gold standard level that we have in the
+protocols. But it's up to them to choose what they wanna work on."*
+
+**POLISHING ANCHOR (one, named):** `protocols/shared/modules/rubrics/rubric-aqa-lang-p1-fiction.md`
++ the `aqa_lang_paper_1` row of `SWML_Protocol_Router::essay_polishing_env()`. Every port copies the
+SHAPE from that pair — a rubric authored from the board's own mark scheme (§2b provenance in the
+rubric header) and the LANGUAGE anchor's per-question structure — never from a board's
+`protocol-c-polishing.md`, which is the March-2026 walk Part D retires.
+
+## D-SHAPE — what a polishing cell IS (every ported cell carries ALL of it)
+
+1. **No steps, no sequence, no gate.** The student arrives with a finished response and leaves with a
+   better one. Nothing in the lesson advances; there is nothing to tick. (§18's discriminator: this is
+   one surface the student drives, not N decisions each needing a verdict.)
+2. **The surface is the selection chip.** Highlight → toolbar Sophia → scoped quick actions → the
+   persistent coach panel (`frontend/wml-selection-chip.js`, `EXERCISE_MANIFEST.polishing` =
+   `inline-coaching`, chat panel OFF). Nothing else is built for polishing.
+3. **What loads (router `essay_polishing_env` branch, before the subject-based group resolver):**
+   `inline-coaching-core.md` + `inline-coaching-engine-1.md` + `rubric-base.md` + the cell's rubric +
+   the paper's gold-standard file(s), loaded WHOLE. The preamble adds `coaching-pedagogy-shared.md`
+   and the environment framing (*"THE STUDENT CHOOSES"*). **The cell's manifest `polishing.always`
+   is EMPTY** and carries a `_retired` note — the walk file stays on disk as source and can never be
+   loaded (retained-source law, WML `CLAUDE.md` §5; a fence loses to in-file text).
+4. **The target is visible, not implied.** The coach panel's opening card (code-served, re-rendered
+   from state, never a stored turn) names the three moves, the exit, and the student's own Phase-1
+   `target_1` / `target_2` from `/phase/status` as suggested starting points; the rubric points at the
+   paper's Gold Standard Models as what "better" means.
+5. **Quick actions are the paper's, in macro → micro order (PEDAGOGY §32a):** scan the answer's shape
+   → its elements → coherence → concept → element polish → word choice → prose → SPaG last → reference.
+   Every button has a rubric row (a button with none is one the model improvises — §5c). Deterministic
+   scans answer from CODE (`_codeServedWordScan`: the F1/T1 verb family, the S1 openers, Clark's test)
+   and end at the help ladder; Sophia is the last rung (§4c.9).
+6. **Sophia never writes the sentence** (PEDAGOGY §11, `inline-coaching-core.md` red lines). The
+   coaching-pedagogy STOP RULE's two contrasting rewrites are the only exception — a pair to choose
+   between, never one finished line — and the student always writes the final version.
+7. **The preamble never demands a plan.** `plan_required` applies to `planning` only; polishing comes
+   after the planning and outlining lessons (the v7.20.609 fix — every redraft polishing session had
+   been told "essay plan is COMPULSORY", and did exactly that).
+8. **Exit:** no task menu, no "workbook". Mark Complete in the document footer (the settled ruling).
+9. **Language:** 13–16, second-language readers. Course vocabulary is fine; *rubric / protocol / tier /
+   engine* are banned on the card and in Sophia's mouth (engine-1's tier-label ban).
+
+**Port recipe (one cell):** author the rubric from the mark-scheme PDF (header states PDF + sitting)
+mirroring the anchor's sections · add the router row `{cell, rubric, gold}` · add the text slug to the
+chip's `ESSAY_POLISH_ENV_TEXTS` (or give the paper its own ladder) · empty the manifest cell's
+`polishing.always` with a `_retired` note · run the gate · drive one lesson on staging.
+
+## D-CHECKS — mechanical acceptance (`bin/essay-polishing-env-gate.js`, in pre-ship)
+
+| Check | Expect |
+|---|---|
+| Router `essay_polishing_env` row for the text slug | present; rubric + gold files exist; branch runs BEFORE `resolve_protocol_group` |
+| Manifest cell `polishing.always` | `[]` with a `_retired` note; `protocol-c-polishing.md` appears nowhere in the manifest |
+| Rubric header | `Provenance` names the mark scheme + sitting; `## INLINE COACHING ACTIONS`; `Mark Complete` + `no task menu`; the student chooses; `macro → micro` |
+| Chip `ESSAY_POLISH_ENV_TEXTS` | equals the router map's keys (§5d across two languages) |
+| Ladder for the text | opens with `scan-structure`; ends `fixSpag, reference`; every button labelled; every button has a rubric row; no `scan-context-drive` on a paper with no AO3 |
+| Code-served scans | pure (evaluate in isolation), run on real prose, end at the help ladder, `null` for unknown/empty |
+| Preamble | `plan_required` fires for `planning` only; `THE STUDENT CHOOSES` framing precedes the legacy `START DIRECTLY` else-branch; names the exit and the live-document block |
+| Coach panel | `buildCoachEmptyState` branches on `polishing` before the CTA; card names highlight / tap Sophia / edit yourself / Mark Complete; fetches `target_1`; stands without targets; no insider words |
+| `protocol-standard-audit.js` | reports the cell as `ENV n/6 <rubric>`; an unported cell as `monolith` |
+
+---
+
 # APPENDIX — P1 FIRST-LIVE-RUN LESSONS (items 1–14 — still binding; grep-check on every port)
 
 Neil's first full AQA Lang P1 runs (2026-07-03, v7.19.829–852) surfaced defects that generalise.
@@ -1034,3 +1106,18 @@ From the 2026-07-01 live-run audit (R&J AQA diagnostic) + status as of v7.19.852
   (3) Granular worths sum EXACTLY to the question max — the P1 "sum 22, MIN-cap 20" note was stale
   (fixed split 1+6+6+6+1=20); bonus rows are the only above-max mechanism. (4) WC rate one number:
   5/100 ceiling (engine) — P2's stray 6/100 dies. Author: wml-chat-A (Fable 5, session 11).
+- 2026-09-13 — v2.2 (v7.20.609). NEW PART D — POLISHING SPEC. Neil's ruling (FIXLIST #476,
+  2026-09-07): the polishing lesson is an ENVIRONMENT, not a walk — the student arrives with a
+  finished response, highlights what they want to improve, and Sophia coaches the selection towards
+  the gold standard. Measured before building (one real turn on staging, user 1355, AQA Lang P1):
+  instructions 120,528 chars (preamble 18,097 + the 10-file manifest stack 102,431), chip message
+  10,625 (document 10,093), wire 136,689 bytes — and the reply ignored the `scan-elements` action
+  and opened as a greeting that "identified the first area to polish": the monolith winning, as §5
+  predicts. Part D retires `protocol-c-polishing.md` per ported cell (router `essay_polishing_env`
+  row keyed on the TEXT slug, because a bare `language` subject resolves to no manifest at all;
+  manifest `polishing.always` emptied), adds the anchor rubric `rubric-aqa-lang-p1-fiction.md`
+  (June 2024 8700/1 descriptors + the LANGUAGE anchor's structure), a P1 chip ladder with two
+  code-served scans (F1/T1 verbs, S1 openers), the opening-instruction card with the student's own
+  Phase-1 targets, the `plan_required`-never-for-polishing fix, D-CHECKS in
+  `bin/essay-polishing-env-gate.js` (pre-ship) and the audit runner's ENV/monolith column.
+  Author: WML engine lane (Fable 5.1).

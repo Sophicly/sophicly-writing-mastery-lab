@@ -63,6 +63,14 @@
         polishProse:  ['strengthen-vocabulary', 'tighten', 'adjust-tone'],
         fixSpag:      ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
         reference:    ['explain', 'compare-gold-standard'],
+        // ── v7.20.609 — LANGUAGE PAPER 1 (fiction) polishing environment, PROTOCOL-STANDARD Part D.
+        // The Literature ladder offered "Scan context-drive" (AO3) on a paper that has no AO3, and
+        // its "Scan elements" meant the five-paragraph essay set. Paper 1 gets its own scans (the
+        // same engine handlers, scoped by rubric-aqa-lang-p1-fiction.md), and a WORD-CHOICE group
+        // whose first two buttons are answered from CODE (v7.20.585's cost lever, applied to the two
+        // most-charged analytical faults: the F1/T1 verb family and the S1 The/This/These openers).
+        langScan:       ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept'],
+        langWordChoice: ['lang-scan-verbs', 'lang-scan-starters', 'cw-cut-modifiers'],
         cw:           ['check-sensory-variety', 'check-scene-structure-beats', 'check-show-dont-tell'],
         // ── v7.20.579 (Neil, 2026-08-29) — Creative Writing gets its OWN scans and its own word-
         // choice group. Before this, a CW draft was offered the LITERATURE tier scans: "Scan
@@ -107,6 +115,9 @@
         // Reference
         'explain':               'Explain',
         'compare-gold-standard': 'Compare gold-standard',
+        // Language Paper 1 word choice (v7.20.609) — code-served, $0
+        'lang-scan-verbs':    'Find weak analytical verbs',
+        'lang-scan-starters': 'Find The / This / These openers',
         // CW (subject-conditional)
         'check-sensory-variety':       'Sensory variety',
         'check-scene-structure-beats': 'Scene-structure beats',
@@ -162,6 +173,8 @@
         cwScan:       'Scan your scene',
         cwWordChoice: 'Word choice',
         cwArc:        'Character arc',
+        langScan:       'Scan your answer',
+        langWordChoice: 'Word choice',
     };
 
     // ── Module-scoped state ──
@@ -278,6 +291,24 @@
             ];
         }
 
+        // v7.20.609: Language Paper 1 (fiction) polishing ladder — macro → micro (PEDAGOGY §32a):
+        // scan the answer's shape and elements, then the element, then the words, then SPaG, then
+        // reference. Keyed on the TEXT slug like NF_TEXTS above, and it MUST agree with the router's
+        // essay_polishing_env rows (bin/essay-polishing-env-gate.js asserts the two lists match —
+        // the §5d write-key / read-key law across two languages, exactly as the CW polishing gate).
+        const ESSAY_POLISH_ENV_TEXTS = ['aqa_lang_paper_1'];
+        const isFictionLang = !!(taskCtx && ESSAY_POLISH_ENV_TEXTS.includes(String(taskCtx.text || '').toLowerCase().replace(/-/g, '_')));
+        if (isFictionLang) {
+            return [
+                { key: 'langScan',       actions: ACTION_MAP.langScan },
+                { key: 'elementPolish',  actions: ACTION_MAP.elementPolish },
+                { key: 'langWordChoice', actions: ACTION_MAP.langWordChoice },
+                { key: 'polishProse',    actions: ACTION_MAP.polishProse },
+                { key: 'fixSpag',        actions: ACTION_MAP.fixSpag },
+                { key: 'reference',      actions: ACTION_MAP.reference },
+            ];
+        }
+
         const groups = [];
         groups.push({ key: 'tierScans',    actions: isNonfiction ? ACTION_MAP.tierScansNonfiction : ACTION_MAP.tierScans });
         groups.push({ key: 'elementPolish',actions: ACTION_MAP.elementPolish });
@@ -309,7 +340,8 @@
      * Sophia stays available as the LAST rung (§4c.9): the reply ends by pointing at the box.
      */
     function _codeServedWordScan(action, text) {
-        if (action !== 'cw-verbs' && action !== 'cw-cut-modifiers') return null;
+        // v7.20.609: + the two Language Paper 1 analytical scans (lang-scan-verbs / lang-scan-starters).
+        if (['cw-verbs', 'cw-cut-modifiers', 'lang-scan-verbs', 'lang-scan-starters'].indexOf(action) === -1) return null;
         const src = String(text || '');
         if (!src.trim()) return null; // nothing selected — let the API path answer oddities
 
@@ -339,6 +371,55 @@
         };
         const RESELECT = '\n\nMake the edits in your draft, then select the passage again and tap the button to re-scan.';
         const STUCK = '\nStuck on one? Type the sentence below and we will work it together.';
+
+        // ── v7.20.609 — Language Paper 1 analytical scans. The rules are the LANGUAGE anchor's
+        // penalty registry (protocol-a-assessment.md, v7.19.854): F1 = the "shows" family, T1 = the
+        // other imprecise verbs, S1 = The/This/These opening two or more sentences in a paragraph
+        // (one of each is permitted — never the first instance). Regex, not judgement, so code
+        // answers (WML §4 programmatic-first) and the student applies the fix rule themselves.
+        if (action === 'lang-scan-verbs') {
+            const showsFamily = collect(/\b(?:shows?|showing|shown|illustrates?|illustrating|tells us|is about|acts as|seems to|aims to)\b/gi);
+            const imprecise = collect(/\b(?:uses?|using|has|have|says?|saying|makes?|making|gets?|does|is|are|was|were)\b/gi);
+            if (!showsFamily.length && !imprecise.length) {
+                return 'I scanned this selection and found **no "shows"-family verbs and none of the usual imprecise verbs** (uses, has, says, makes). '
+                    + 'Your analytical verbs are already doing the work. Try **Find The / This / These openers** next.' + STUCK;
+            }
+            let out = '**The analytical-verb pass.** The verb is where analysis lives: *the storm imagery **exposes** Alex’s grief*, not *the storm imagery **shows** Alex is sad*.\n\n';
+            if (showsFamily.length) out += 'The **"shows" family** in your selection (' + showsFamily.length + ') — these cap the band:\n\n' + listOf(showsFamily, 10) + '\n\n';
+            if (imprecise.length) out += 'And the **imprecise verbs** (' + imprecise.length + ') — fine in a topic sentence, weak when they carry the analysis:\n\n' + listOf(imprecise, 8) + '\n\n';
+            out += 'Precise analytical verbs to choose from: *depicts · portrays · emphasises · reveals · conveys · evokes · underscores · exposes · critiques · mirrors*. '
+                + '**Pick TWO** sentences and rewrite each so the verb names what the writer’s choice actually does to the reader.' + RESELECT + STUCK;
+            return out;
+        }
+        if (action === 'lang-scan-starters') {
+            // Sentence openers: the first word after a sentence boundary (or at the start).
+            const openers = [];
+            const reSent = /(^|[.!?]\s+)(The|This|These)\b/g;
+            let ms;
+            while ((ms = reSent.exec(src)) !== null) {
+                const at = ms.index + ms[1].length;
+                openers.push({ word: ms[2], phrase: phraseAt(at, ms[2].length).replace(ms[2], '**' + ms[2] + '**') });
+                if (openers.length > 40) break;
+            }
+            const byWord = { The: 0, This: 0, These: 0 };
+            openers.forEach(o => { byWord[o.word] = (byWord[o.word] || 0) + 1; });
+            const repeated = Object.keys(byWord).filter(w => byWord[w] > 1);
+            if (!openers.length) {
+                return 'I scanned this selection and found **no sentence opening with The, This or These**. '
+                    + 'Varied openers already — that is what keeps analytical prose moving. Try **Find weak analytical verbs** next.' + STUCK;
+            }
+            let out = '**The sentence-opener pass.** One *The*, one *This* and one *These* per paragraph is fine; the same opener twice reads as a list, not an argument.\n\n'
+                + 'Sentences opening with The / This / These in your selection (' + openers.length + '):\n\n' + listOf(openers, 10) + '\n\n';
+            if (repeated.length) {
+                out += 'Repeated opener' + (repeated.length > 1 ? 's' : '') + ': **' + repeated.join('**, **') + '** — the second and later ones are the ones to change.\n\n';
+            } else {
+                out += 'No opener is repeated here, so nothing is charged — but check the paragraph around the selection too.\n\n';
+            }
+            out += 'Three ways to open instead: a discourse marker (*Furthermore, …* / *Consequently, …* / *Specifically, …*), '
+                + 'a prepositional phrase (*Through metaphor, the writer…*), or a participle (*Employing a triadic list, the writer…*). '
+                + '**Rewrite the repeated ones**; leave the first of each alone.' + RESELECT + STUCK;
+            return out;
+        }
 
         if (action === 'cw-verbs') {
             const beVerbs = collect(/\b(?:is|are|am|was|were|be|been|being)\b/gi);
@@ -1536,6 +1617,7 @@
         ACTION_MAP,
         ACTION_LABELS,
         buildPrompt,
+        filterActionsForScope: _filterActionsForScope, // v7.20.609: exposed for bin/essay-polishing-env-gate.js
         classifyScope,
         isEditableSection,
         extractSectionContext,

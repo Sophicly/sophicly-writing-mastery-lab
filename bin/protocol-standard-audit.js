@@ -57,6 +57,27 @@ const C = [
     ['falsifiable',         (t) => count(t, /falsifiable against the text or an established fact/g), (n) => n >= 1],
 ];
 
+// ── D-CHECKS (polishing) — PROTOCOL-STANDARD Part D (v7.20.609). A cell is PORTED when the router's
+// essay_polishing_env map has a row whose `cell` is this board/subject; then its rubric is checked.
+// An unported cell still loads its manifest's protocol-c-* stack and is reported as `monolith`.
+const ROUTER_SRC = read(path.join(ROOT, 'includes/class-protocol-router.php'));
+const ENV_ROWS = (() => {
+    const blk = ROUTER_SRC.match(/\$essay_polishing_rubrics\s*=\s*\[([\s\S]*?)\n        \];/);
+    if (!blk) return [];
+    const re = /'([a-z0-9_]+)'\s*=>\s*\[\s*'cell'\s*=>\s*'([^']+)',\s*'rubric'\s*=>\s*'([^']+)'/g;
+    const out = []; let m;
+    while ((m = re.exec(blk[1])) !== null) out.push({ text: m[1], cell: m[2], rubric: m[3] });
+    return out;
+})();
+const D = [
+    ['INLINE COACHING ACTIONS', (t) => count(t, /## INLINE COACHING ACTIONS/g),              (n) => n >= 1],
+    ['Provenance',              (t) => count(t, /Provenance/g),                              (n) => n >= 1],
+    ['Mark Complete exit',      (t) => count(t, /Mark Complete/g),                           (n) => n >= 1],
+    ['student chooses',         (t) => count(t, /student chooses|never pick the first/gi),   (n) => n >= 1],
+    ['macro → micro',           (t) => count(t, /macro → micro/g),                           (n) => n >= 1],
+    ['no task menu',            (t) => count(t, /no task menu/gi),                           (n) => n >= 1],
+];
+
 function filesUnder(dir, re) {
     if (!fs.existsSync(dir)) return [];
     return fs.readdirSync(dir).filter((f) => re.test(f)).map((f) => path.join(dir, f));
@@ -108,6 +129,19 @@ for (const board of fs.readdirSync(P).sort()) {
             markers: count(polText, /@[A-Z_]{4,}/g),
             last: polFiles.length ? lastCommit(polFiles[0]) : '-',
         };
+        // Part D: is this cell served as an ENVIRONMENT? (router row + rubric D-CHECKS)
+        const envRow = ENV_ROWS.find((r) => r.cell === `${board}/${subject}`);
+        if (envRow) {
+            const rubricPath = path.join(P, 'shared/modules/rubrics', envRow.rubric);
+            const rText = fs.existsSync(rubricPath) ? read(rubricPath) : '';
+            let dPass = 0, dTotal = 0; const d = {};
+            for (const [name, fn, verdict] of D) { const n = fn(rText); d[name] = n; dTotal++; if (verdict(n)) dPass++; }
+            // loadable lists only — `_retired` / `_destitched` notes may name the file they retire
+            const stillListed = manifest
+                ? JSON.stringify(manifest, (k, v) => (typeof k === 'string' && k.startsWith('_')) ? undefined : v).includes('protocol-c-polishing.md')
+                : false;
+            pol.env = { text: envRow.text, rubric: envRow.rubric, rubricExists: !!rText, pass: dPass, total: dTotal, counts: d, monolithStillInManifest: stillListed };
+        }
         rows.push({
             board, subject,
             manifest: !!manifest,
@@ -121,8 +155,8 @@ for (const board of fs.readdirSync(P).sort()) {
 if (asJson) { console.log(JSON.stringify(rows, null, 2)); process.exit(0); }
 
 const pad = (s, n) => String(s).padEnd(n);
-console.log('PROTOCOL-STANDARD audit — B-CHECKS (assessment) · C-CHECKS (planning) · polishing (no standard: markers only)');
-console.log(pad('board/subject', 30) + pad('ASSESS pass/abs  RG  FB  TMF  last', 40) + pad('PLAN pass/abs  FC  GR  last', 30) + 'POLISH files bytes @ last');
+console.log('PROTOCOL-STANDARD audit — B-CHECKS (assessment) · C-CHECKS (planning) · D-CHECKS (polishing: ENV rubric pass/abs, else monolith)');
+console.log(pad('board/subject', 30) + pad('ASSESS pass/abs  RG  FB  TMF  last', 40) + pad('PLAN pass/abs  FC  GR  last', 30) + 'POLISH  ENV pass/abs rubric | monolith files bytes @ last');
 for (const r of rows) {
     const A = r.assessment, Cc = r.planning, Po = r.polishing;
     const aCol = A.files
@@ -131,7 +165,9 @@ for (const r of rows) {
     const cCol = Cc.files
         ? `${Cc.pass}/${Cc.total}  ${pad(Cc.counts['@FIELD_COMMIT'], 3)} ${pad(Cc.counts['@GOLD_REF'], 3)} ${Cc.last}`
         : '— no planning —';
-    const pCol = Po.files ? `${Po.files} ${pad(Po.bytes, 6)} ${pad(Po.markers, 2)} ${Po.last}` : '—';
+    const pCol = Po.env
+        ? `ENV ${Po.env.pass}/${Po.env.total} ${Po.env.rubric}${Po.env.rubricExists ? '' : ' (MISSING)'}${Po.env.monolithStillInManifest ? ' ⚠ monolith still in manifest' : ''}`
+        : (Po.files ? `monolith ${Po.files} ${pad(Po.bytes, 6)} ${pad(Po.markers, 2)} ${Po.last}` : '—');
     console.log(pad(`${r.board}/${r.subject}`, 30) + pad(aCol, 40) + pad(cCol, 30) + pCol);
 }
 console.log('\nabs = rows the standard states as an absolute (≥1 / =0). RG=@REFLECT_GATE FB=@FB pairs TMF="Total Mark for" FC=@FIELD_COMMIT GR=@GOLD_REF');
