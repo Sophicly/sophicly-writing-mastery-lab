@@ -360,7 +360,12 @@
         // The question the selection sits under (code-located, v7.20.610). Section B buttons
         // (devices, the modifier cut) only make sense on the writing question.
         const q = loc && loc.question ? String(loc.question).toUpperCase() : null;
-        const isSectionB = q === 'Q5';
+        // v7.20.612: ASK THE SPEC, never assume Q5. The writing task is Q5 on AQA, Q8 on Edexcel
+        // GCSE P2, Q6 on Edexcel IGCSE P1 — a literal here serves the transactional-device buttons
+        // on a 1-mark retrieval question and withholds them from the real writing task.
+        const isSectionB = (typeof WML !== 'undefined' && typeof WML.isWritingQuestion === 'function')
+            ? WML.isWritingQuestion(q, taskCtx)
+            : q === 'Q5';
         if (isFictionLang) {
             return [
                 { key: 'langScan',       actions: ACTION_MAP.langScan },

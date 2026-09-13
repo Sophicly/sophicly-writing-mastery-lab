@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.611';
+var WML_BUILD = '7.20.612';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -2164,6 +2164,65 @@ window.WML = (function() {
             }
         }
         return null;
+    }
+
+    // ── WHICH QUESTION IS THE EXTENDED-WRITING QUESTION? (v7.20.612) ──
+    // ⛔ "Section B" is NOT a synonym for "Q5". AQA numbers its writing task Q5, but Edexcel
+    // International GCSE Language A numbers it **Q6** on Paper 1 and **Q2/Q3/Q4** on Paper 2, and
+    // Edexcel GCSE Paper 2 numbers it **Q8** — so every `q === 'Q5'` literal in the client is the
+    // wrong answer on some board we already ship (found independently by two board-port lanes,
+    // 2026-09-13). The spec JSON records the answer per paper, and `_deriveLangPaperShape` above
+    // already carries the discriminator: a question whose `type` is `extended_writing` or `choice`
+    // IS the writing task. This is that ONE definition exposed to the client — never a second list
+    // to drift from it (CANVAS TASK-SCOPING rule 3: one canonical naming layer).
+    // No spec for the board/paper → ['Q5'], which is byte-for-byte the pre-.612 behaviour.
+    // ⚠️ THE PAPER KEY IS SPELLED DIFFERENTLY PER BOARD, AND ASSUMING `_p` IS A SILENT MISS.
+    // Measured in language-paper-specs.json, 2026-09-13: AQA / Edexcel / Edexcel IGCSE / Cambridge
+    // use `language_p1`·`language_p2`; **Eduqas and OCR use `language_c1`·`language_c2`** (they are
+    // Components); **CCEA uses `language_u1`·`language_u4`** (Units — note 4, not 2, so the label is
+    // not the ordinal). A `'language_p' + n` resolver therefore answers "no spec" for three of the
+    // seven boards and falls back to Q5 — which is exactly the mismatch class this whole helper
+    // exists to kill, so it resolves the board's OWN spelling: the p/c/u form first, then the nth
+    // paper the board actually declares.
+    function _langPaperOrdinal(subject, text) {
+        const s = String(subject || '').replace(/-/g, '_').toLowerCase();
+        let m = /^lang(?:uage)?_?[pcu]?(?:aper_?)?(\d)$/.exec(s);
+        if (m) return +m[1];
+        // Bare course-category `language` (the #482 class): the PAPER lives in the text slug, so
+        // fold it the same way the server's resolve_protocol_group does.
+        m = /(?:lang_)?(?:paper|component|unit)_?(\d)$/.exec(String(text || '').replace(/-/g, '_').toLowerCase());
+        return m ? +m[1] : null;
+    }
+    function _langSpecPaperKey(boardSpec, subject, text) {
+        if (!boardSpec) return null;
+        const n = _langPaperOrdinal(subject, text);
+        if (n == null) return null;
+        for (const letter of ['p', 'c', 'u']) {
+            if (boardSpec['language_' + letter + n]) return 'language_' + letter + n;
+        }
+        const keys = Object.keys(boardSpec).filter(k => /^language_[pcu]\d+$/.test(k)).sort();
+        return keys[n - 1] || null;   // CCEA's second paper is `language_u4`
+    }
+    function writingQuestionIds(ctx) {
+        const specs = (typeof window !== 'undefined' && window.swmlLangSpecs) || null;
+        // Board keys in the spec JSON are hyphenated (`edexcel-igcse`). Never strip the hyphen —
+        // `edexceligcse` matches no board and would silently answer ['Q5'] for every IGCSE paper.
+        const board = String((ctx && ctx.board) || '').replace(/_/g, '-').toLowerCase();
+        const boardSpec = specs && specs[board];
+        const paper = boardSpec && boardSpec[_langSpecPaperKey(boardSpec, ctx && ctx.subject, ctx && ctx.text)];
+        const out = [];
+        ((paper && paper.sections) || []).forEach(sec => {
+            (sec.questions || []).forEach(q => {
+                if (q && (q.type === 'extended_writing' || q.type === 'choice')) {
+                    out.push(String(q.id).toUpperCase());
+                }
+            });
+        });
+        return out.length ? out : ['Q5'];
+    }
+    function isWritingQuestion(qId, ctx) {
+        if (!qId) return false;
+        return writingQuestionIds(ctx).indexOf(String(qId).toUpperCase()) !== -1;
     }
 
     // Helper: get manifest entry for current task (falls back to planning)
@@ -5576,6 +5635,9 @@ window.WML = (function() {
         cwProject,
         // v7.15.70: Paper-shape resolver (dormant — consumed starting Release B)
         resolvePaperShape,
+        // v7.20.612: the ONE answer to "is this the extended-writing question?" — spec-derived,
+        // because the number varies per board (AQA Q5 · Edexcel GCSE P2 Q8 · IGCSE P1 Q6).
+        writingQuestionIds, isWritingQuestion,
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
         caps, cap, isMarkingFlow, hasAssessmentSections, isLiveModelling,
         // v7.20.129: the ONE outline-row completion rule — all three consumers call it

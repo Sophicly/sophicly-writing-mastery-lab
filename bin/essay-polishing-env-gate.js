@@ -64,6 +64,60 @@ ok('every text row keys on a canonical text slug (lower-case, underscores — th
 ok('every subject row keys on board/subject in the resolver\'s normalised form', S.every(r => /^[a-z0-9_]+\/[a-z0-9_]+$/.test(r.key)), S.map(r => r.key));
 ok('every row names its engine (language | lit)', rows.every(r => r.engine === 'language' || r.engine === 'lit'), rows.map(r => r.key + ':' + r.engine));
 ok('Language rows use the language engine; Literature rows use engine-1', T.every(r => r.engine === 'language') && S.every(r => r.engine === 'lit'));
+
+// ── 1b. A LANGUAGE ROW WITHOUT A PAPER SPEC SILENTLY MIS-GATES THE WRITING QUESTION (v7.20.612) ──
+// The chip serves the transactional-device buttons and the writing-flavoured word-choice group on
+// the extended-writing question, and it asks `WML.isWritingQuestion`, which reads
+// protocols/shared/language-paper-specs.json. A board with NO spec block falls back to Q5 — correct
+// for AQA, wrong for Edexcel GCSE P2 (Q8) and Edexcel International GCSE P1 (Q6). Measured
+// 2026-09-13: eduqas, ocr and ccea have no block at all, so a row landing for one of them ahead of
+// its spec would gate Section B on a question the paper may not even have, with no error anywhere.
+// This is the §5d write-key/read-key law across a THIRD language (PHP row · JS chip · JSON spec).
+const _LANGSPECS = JSON.parse(read('protocols/shared/language-paper-specs.json'));
+const _CHIPSRC = read('frontend/wml-selection-chip.js');
+const _CORESRC = read('frontend/wml-core.js');
+// Run the REAL resolver out of wml-core.js — never a reimplementation. A gate that re-derives the
+// key it is checking tests its own copy and passes while the shipped code is wrong (which is how
+// the first cut of this very check was written: it built `'language_p' + n` and would have
+// false-failed every Eduqas, OCR and CCEA row, whose spec keys are `_c`/`_u`).
+const _resolver = (() => {
+    const grab = (name) => {
+        const i = _CORESRC.indexOf('function ' + name + '(');
+        if (i < 0) return null;
+        let d = 0;
+        for (let k = _CORESRC.indexOf('{', i); k < _CORESRC.length; k++) {
+            if (_CORESRC[k] === '{') d++;
+            else if (_CORESRC[k] === '}') { d--; if (!d) return _CORESRC.slice(i, k + 1); }
+        }
+        return null;
+    };
+    const parts = ['_langPaperOrdinal', '_langSpecPaperKey', 'writingQuestionIds', 'isWritingQuestion'].map(grab);
+    if (parts.some(p => !p)) return null;
+    global.window = { swmlLangSpecs: _LANGSPECS };
+    return new Function(parts.join('\n') + ';return { writingQuestionIds, _langSpecPaperKey };')();
+})();
+ok('the writing-question resolver is extractable from wml-core.js (so this gate runs the real code)', !!_resolver);
+T.forEach(r => {
+    const board = String(r.cell || '').split('/')[0];
+    const pm = /language(\d)$/.exec(String(r.cell || ''));
+    const ctx = { board, subject: 'language' + (pm ? pm[1] : ''), text: r.key };
+    const paperKey = _resolver && _resolver._langSpecPaperKey(_LANGSPECS[board], ctx.subject, ctx.text);
+    ok('language-paper-specs has a block for ' + r.key + ' (' + board + ' → ' + paperKey + ')',
+        !!(paperKey && _LANGSPECS[board][paperKey] && Array.isArray(_LANGSPECS[board][paperKey].sections)),
+        'MISSING — the chip would fall back to Q5');
+    const ids = _resolver ? _resolver.writingQuestionIds(ctx) : [];
+    const fellBack = ids.length === 1 && ids[0] === 'Q5' && board !== 'aqa';
+    ok('the spec for ' + r.key + ' names its own extended-writing question(s) — ' + JSON.stringify(ids)
+        + ' — so the device buttons land on the right one', !!paperKey && !fellBack, ids);
+});
+ok('the chip asks WML.isWritingQuestion rather than hardcoding q === \'Q5\'',
+    /WML\.isWritingQuestion\(q, taskCtx\)/.test(_CHIPSRC) && !/const isSectionB = q === 'Q5';/.test(_CHIPSRC));
+ok('WML exports the writing-question resolver and derives it from the spec\'s own question type',
+    /writingQuestionIds, isWritingQuestion,/.test(_CORESRC)
+    && /q\.type === 'extended_writing' \|\| q\.type === 'choice'/.test(_CORESRC));
+ok('the resolver keeps the board key hyphenated (edexceligcse matches no board — the §5d trap)',
+    /replace\(\/_\/g, '-'\)[\s\S]{0,200}_langSpecSubjectKey/.test(_CORESRC)
+    || /const board = String\(\(ctx && ctx\.board\) \|\| ''\)\.replace\(\/_\/g, '-'\)/.test(_CORESRC));
 ok('the resolver folds 20th_century → modern_text (the course-category sibling) in both essay_polishing_env and resolve_protocol_group',
     (ROUTER.match(/'20th_century'\)\s*\$subject = 'modern_text'/g) || []).length >= 2);
 ok('the resolver folds a bare "language" subject from the text slug (#482)', /if \(\$subject === 'language'\) \{[\s\S]{0,400}paper_\(\\d\)\$\//.test(ROUTER));
@@ -108,6 +162,41 @@ for (const r of rows) {
         ok(`${r.cell}: no loadable list in the manifest names a protocol-c-polishing file`, !/protocol-c-polishing/.test(loadable));
     }
 }
+
+// ── 3b. THE REVERSE PAIRING — A RETIRED MANIFEST WITH NO ROUTER ROW SERVES THE STUDENT NOTHING ──
+// §4d applied to configuration: emptying `polishing.always` is the REFUSAL half of the change, and
+// the router row is the "what they get instead" half. Land the content of a board port without its
+// row and that cell's polishing lesson loads NO protocol at all — strictly worse than the monolith
+// it replaced, and silent (`load_modular_protocol` simply returns an empty stack). Six board-port
+// lanes correctly retired their manifests on the assumption the row lands in the SAME change; this
+// asserts that assumption instead of trusting it. Whole-repo by nature: any cell, any board.
+console.log('\nEvery retired polishing cell has a router row to replace it (the §4d pairing):');
+const cellsWithRows = new Set(rows.map(r => r.cell));
+const manifestDirs = [];
+for (const board of fs.readdirSync(path.join(ROOT, 'protocols'))) {
+    if (board.startsWith('_') || board === 'shared') continue;
+    const boardDir = path.join(ROOT, 'protocols', board);
+    if (!fs.statSync(boardDir).isDirectory()) continue;
+    for (const subject of fs.readdirSync(boardDir)) {
+        if (subject.startsWith('_')) continue;
+        if (fs.existsSync(path.join(boardDir, subject, 'manifest.json'))) manifestDirs.push(board + '/' + subject);
+    }
+}
+let retiredNoRow = 0;
+for (const cell of manifestDirs) {
+    let man;
+    try { man = JSON.parse(read('protocols/' + cell + '/manifest.json')); } catch (_) { continue; }
+    const pol = man.polishing || {};
+    if (!Array.isArray(pol.always) || pol.always.length !== 0) continue;   // not retired — nothing to pair
+    if (!pol._retired) continue;                                          // never had a polishing stack
+    if (!cellsWithRows.has(cell)) {
+        retiredNoRow++;
+        ok(cell + ': manifest polishing is RETIRED but no essay_polishing_env row replaces it — '
+            + 'this cell\'s polishing lesson would load no protocol at all', false, 'add the router row');
+    }
+}
+ok('no cell has a retired polishing manifest without a router row (' + manifestDirs.length + ' manifests scanned)',
+    retiredNoRow === 0, retiredNoRow + ' unpaired');
 
 // ── 4. The rubric defines the lesson, the actions, and the exit ──────────────────────────────
 console.log('\nEach rubric is a Part D rubric — provenance, actions, exit, the paper\'s shape:');
