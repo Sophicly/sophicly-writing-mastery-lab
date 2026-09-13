@@ -7,6 +7,8 @@ lesson exists (census of `[writing_mastery_lab]` shortcodes, prod + staging, 202
 
 Legend: ✅ done+tested · 🟢 built, mechanical gates green, not driven · 🟡 partial · ⬜ not started · ❌ gap (source missing)
 
+**Journeys (real /chat on staging, 2026-09-13, v7.20.610):** P1 Q2 weak ✅ · P1 Q2 strong-different ✅ · P1 Q5 partial ✅ · P2 Q2 weak ✅ · P2 Q5 weak ✅ · Lit R&J body weak ✅ · Lit R&J STOP-RULE example ✅. Not driven in a browser by Neil yet.
+
 ## AQA GCSE English Language 8700 (spec 2026 sample papers; June 2024 mark schemes)
 
 | paper | Q | type | assessment | planning | polishing | gold | reachable | notes |
@@ -17,7 +19,7 @@ Legend: ✅ done+tested · 🟢 built, mechanical gates green, not driven · �
 | P1 | Q4 | evaluation, intro+3+concl | 🟢 | 🟢 | 🟢 | knowledge-hub | prod | |
 | P1 | Q5 | narrative, 7 scene elements | 🟢 | 🟢 | 🟢 | ❌ snippet + 376-word student model; floor is 650 | prod | |
 | P2 | Q1 | true/false | 🟢 (SKIP) | n/a | n/a | n/a | prod diag | |
-| P2 | Q2 | paired inference ×2 | 🟢 B 10/10 | 🟢 C 8/8 | 🟢 ENV v7.20.610 | knowledge-mark-scheme §2A | staging | |
+| P2 | Q2 | paired inference ×2 | 🟢 B 10/10 | 🟢 C 8/8 | 🟢 ENV v7.20.610 (journey ✅) | knowledge-mark-scheme §2A | staging | |
 | P2 | Q3 | language, 3×TTECEA | 🟢 | 🟢 | 🟢 | §2A | staging | |
 | P2 | Q4 | comparison, intro+3+concl | 🟢 | 🟢 | 🟢 | §2A (no intro gold; effects-count self-contradiction :204) | staging | |
 | P2 | Q5 | transactional, IUMVCC | 🟢 | 🟢 | 🟢 | §2A speech | staging | form list drift (review/leaflet) — mark scheme is authority |
@@ -26,13 +28,13 @@ Legend: ✅ done+tested · 🟢 built, mechanical gates green, not driven · �
 
 | paper | task | assessment | planning | polishing | gold | reachable |
 |---|---|---|---|---|---|---|
-| P1 §A Shakespeare | extract + whole play, 34 | 🟢 B 10/10 | 🟢 C 8/8 | 🟡 ENV row v7.20.610 (rubric Part D sections pending) | knowledge-model-answer (Macbeth) + exemplars; R&J has no context-bank section | staging (R&J) |
-| P1 §B 19th-c novel | 30, no AO4 | 🟢 (marked by the 34-shape — known over-mark) | 🟢 | 🟡 | same | prod planning only |
-| P2 §A modern text | 34 | 🟢 | 🟢 | 🟡 | same | staging (inspector_calls outlining) |
-| P2 §B anthology poetry | comparison 30 | 🟢 | 🟢 | 🟡 | model-answers-poetry | prod (planning) |
-| P2 §C unseen 27.1 / 27.2 | 24 / 8 | 🟢 | 🟢 | 🟡 | knowledge-unseen | prod diag |
+| P1 §A Shakespeare | extract + whole play, 34 | 🟢 B 10/10 | 🟢 C 8/8 | 🟢 ENV v7.20.610 (gate green; R&J journeys ✅ staging) | knowledge-model-answer (Macbeth) + exemplars; R&J has no context-bank section | staging (R&J) |
+| P1 §B 19th-c novel | 30, no AO4 | 🟢 (marked by the 34-shape — known over-mark) | 🟢 | 🟢 ENV v7.20.610 | same | prod planning only |
+| P2 §A modern text | 34 | 🟢 | 🟢 | 🟢 ENV v7.20.610 | same | staging (inspector_calls outlining) |
+| P2 §B anthology poetry | comparison 30 | 🟢 | 🟢 | 🟢 ENV v7.20.610 | model-answers-poetry | prod (planning) |
+| P2 §C unseen 27.1 / 27.2 | 24 / 8 | 🟢 | 🟢 | 🟢 ENV v7.20.610 | knowledge-unseen | prod diag |
 
-## Edexcel International GCSE English Language A (4EA1) — port in progress 2026-09-13 (subagent)
+## Edexcel International GCSE English Language A (4EA1) — port STARTED 2026-09-13 by a Fable agent, STOPPED before any report; partial work in `wml-port-agents-inflight-2026-09-13.patch` (FIXLIST #492)
 
 | paper | Q | type | assessment | planning | polishing | gold | reachable |
 |---|---|---|---|---|---|---|---|
@@ -43,7 +45,7 @@ Legend: ✅ done+tested · 🟢 built, mechanical gates green, not driven · �
 | P2 | Q1 | anthology text analysis 30 | 🟡 (no protocol-a) | ⬜ (no planning dir) | ⬜ | ? | prod diag |
 | P2 | Q2–4 | imaginative writing 30 | 🟡 | ⬜ | ⬜ | ? | prod diag |
 
-## Edexcel GCSE English Language (1EN0) — port in progress 2026-09-13 (subagent)
+## Edexcel GCSE English Language (1EN0) — port STARTED 2026-09-13 by a Fable agent, STOPPED before any report; partial work in `wml-port-agents-inflight-2026-09-13.patch` (FIXLIST #492)
 
 | paper | Q | type | assessment | planning | polishing | gold | reachable |
 |---|---|---|---|---|---|---|---|
@@ -57,7 +59,7 @@ Legend: ✅ done+tested · 🟢 built, mechanical gates green, not driven · �
 | P2 | Q7a/b | similarities 6 / compare 14 | 🟡 | 🟡 | ⬜ | ? | — |
 | P2 | Q8/9 | transactional 40 | 🟡 | 🟡 | ⬜ | ? | — |
 
-## Eduqas GCSE English Language (C700U10 / C700U20) — port in progress 2026-09-13 (subagent)
+## Eduqas GCSE English Language (C700U10 / C700U20) — port STARTED 2026-09-13 by a Fable agent, STOPPED before any report; partial work in `wml-port-agents-inflight-2026-09-13.patch` (FIXLIST #492)
 
 | component | Q | type | assessment | planning | polishing | gold | reachable |
 |---|---|---|---|---|---|---|---|
