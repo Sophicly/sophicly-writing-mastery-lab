@@ -1076,7 +1076,7 @@
                 'strip them of the ally, object or belief they have leaned on all story',
                 'nothing is solved here; the change has to be EARNED out of this, later',
             ],
-            ex: '*Macbeth:* told of his wife’s death, he calls life "a tale told by an idiot, signifying nothing" — the ambition has bought him emptiness.',
+            ex: '*Macbeth:* told of his wife’s death, he calls life "told by an idiot, full of sound and fury, signifying nothing" — the ambition has bought him emptiness.',
             more: [
                 '*Great Expectations:* Magwitch is taken, the fortune dies with him, and Estella is married — everything Pip built himself out of turns out to belong to someone else.',
                 '*A Christmas Carol:* Scrooge kneels at his own neglected headstone and grips the Spirit’s hand — everything he built has bought him an unvisited grave.',

@@ -74,11 +74,26 @@ function walk(dir, acc) {
     return acc;
 }
 const ALL_FILES = walk(SHARED, []);
+// v7.20.611: the library plugin's FULL-TEXT corpus (Gutenberg/MIT editions of the set texts, plain .txt)
+// is the richest readable source on disk and was never walked. Four real lines (three Macbeth, one
+// Lion King via Hamlet 1.1) failed the gate on 2026-09-13 because the Spotlight second chance is
+// BLIND to Google Drive streamed files (memory reference_mdfind_misses_google_drive_streamed_files)
+// while a plain grep found every one of them here. A missing corpus is announced, never silently
+// narrowed (same rule as MODEL_ANSWERS above).
+const LIBRARY_CORPUS = path.join(__dirname, '..', '..', '..', '..', 'sophicly-plugins',
+    'sophicly_library_cpts_v1_9_0', 'research', 'corpus');
 const HAS_MODEL_ANSWERS = fs.existsSync(MODEL_ANSWERS);
 if (HAS_MODEL_ANSWERS) walk(MODEL_ANSWERS, ALL_FILES);
+const HAS_LIBRARY_CORPUS = fs.existsSync(LIBRARY_CORPUS);
+if (HAS_LIBRARY_CORPUS) walk(LIBRARY_CORPUS, ALL_FILES);
 
 function norm(s) {
     return String(s)
+        // v7.20.611: case folded. Verse capitalises every line start, so a quotation that crosses a line
+        // break ("good men's lives / Expire before the flowers in their caps", "Long live the king")
+        // can never match case-sensitively however exact it is. Word order and punctuation stay strict,
+        // so case alone cannot pass a paraphrase.
+        .toLowerCase()
         .replace(/[‘’ʼ]/g, "'")
         .replace(/[“”]/g, '"')
         .replace(/[–—]/g, '-')
@@ -192,6 +207,10 @@ console.log('CW6 EXAMPLE QUOTES (#210) — anti-fabrication gate');
 console.log('   corpus: ' + Object.keys(CORPUS).length + ' text(s) · '
     + ALL_FILES.length + ' source file(s) scanned'
     + (HAS_MODEL_ANSWERS ? ' (incl. Model Answer Resources)' : ''));
+if (!HAS_LIBRARY_CORPUS) {
+    console.log('   ⚠️  Library full-text corpus NOT FOUND at ' + LIBRARY_CORPUS);
+    console.log('      Set-text quotations are then checked against protocols + Model Answers only.');
+}
 if (!HAS_MODEL_ANSWERS) {
     console.log('   ⚠️  Model Answer Resources NOT FOUND at ' + MODEL_ANSWERS);
     console.log('      Verification is running on the protocol corpus alone, which is SMALLER — a');
