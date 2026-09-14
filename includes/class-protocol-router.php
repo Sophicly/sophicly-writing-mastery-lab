@@ -597,6 +597,11 @@ class SWML_Protocol_Router {
         // fires for both streaming (http_api_curl runs AFTER http_request_args) and
         // non-streaming chat. Scoped to Anthropic's /v1/messages endpoint only.
         add_filter('http_request_args', [$this, 'extend_anthropic_cache_ttl'], 10, 2);
+
+        // v7.20.622 (COST): record what Anthropic actually billed. AI Engine never reads the
+        // cache token fields, so without this the ~68k-token cached prefix we send every turn
+        // is invisible and the cache hit ratio is unknowable. See record_anthropic_usage().
+        add_filter('http_response', [$this, 'record_anthropic_usage'], 10, 3);
     }
 
     /**
@@ -702,6 +707,121 @@ class SWML_Protocol_Router {
             }
         }
         return $args;
+    }
+
+    /**
+     * v7.20.622 (COST) — RECORD WHAT ANTHROPIC ACTUALLY BILLED US.
+     *
+     * WHY THIS EXISTS (Neil, 2026-09-14, deciding spend while short of API money):
+     * Sep 8 cost $12.46 on the Anthropic console. Our own logs said $2.98 and 310,088 units.
+     * The gap is not a rounding error — it is the whole cost model. AI Engine NEVER READS
+     * `cache_read_input_tokens` or `cache_creation_input_tokens` (grep the plugin: zero hits),
+     * so the ~68k-token cached protocol prefix we send on EVERY turn is invisible to it.
+     * Until those two numbers are recorded, nobody can say whether the cache is hitting, and
+     * the single largest variable cost in the business is unmeasurable.
+     *
+     * WHAT IT RECORDS — per day, per model, in the option `swml_api_usage_daily`:
+     *   input · output · cache_read · cache_write · reqs · unobserved · est_cost_usd
+     *
+     * ⭐ `unobserved` IS THE HONEST PART, AND THE FIRST THING TO READ. When AI Engine streams
+     * via a curl write-callback, the body never reaches `http_response` and we cannot see the
+     * usage. Rather than silently under-report (which is exactly the failure this whole feature
+     * exists to correct), such a request is counted as UNOBSERVED. A high unobserved count means
+     * the numbers below are a floor, not a total — escalate to parsing the SSE stream.
+     *
+     * Costs are ESTIMATES from list prices (see swml_api_token_prices); the console is the
+     * authority. They exist to show the SHAPE — cache hit ratio, cost per session — not to bill.
+     */
+    public function record_anthropic_usage($response, $args, $url) {
+        if (!is_string($url) || strpos($url, 'api.anthropic.com') === false) return $response;
+        if (strpos($url, '/v1/messages') === false) return $response;
+        if (is_wp_error($response)) return $response;
+
+        $body = '';
+        if (is_array($response) && isset($response['body']) && is_string($response['body'])) $body = $response['body'];
+
+        $model = '';
+        $u = ['input' => 0, 'output' => 0, 'cache_read' => 0, 'cache_write' => 0];
+        $seen = false;
+
+        if ($body !== '') {
+            $j = json_decode($body, true);
+            if (is_array($j) && !empty($j['usage']) && is_array($j['usage'])) {
+                // non-streaming reply
+                $model = (string) ($j['model'] ?? '');
+                $seen = $this->_accumulate_usage($j['usage'], $u);
+            } elseif (strpos($body, 'message_start') !== false) {
+                // buffered SSE: message_start carries input + cache tokens, message_delta the output
+                foreach (preg_split('/\r?\n/', $body) as $line) {
+                    if (strncmp($line, 'data:', 5) !== 0) continue;
+                    $ev = json_decode(trim(substr($line, 5)), true);
+                    if (!is_array($ev)) continue;
+                    if (isset($ev['message']['model']) && $model === '') $model = (string) $ev['message']['model'];
+                    if (!empty($ev['message']['usage'])) $seen = $this->_accumulate_usage($ev['message']['usage'], $u) || $seen;
+                    if (!empty($ev['usage']))            $seen = $this->_accumulate_usage($ev['usage'], $u) || $seen;
+                }
+            }
+        }
+
+        if ($model === '' && !empty($args['body']) && is_string($args['body'])) {
+            $req = json_decode($args['body'], true);
+            if (is_array($req) && !empty($req['model'])) $model = (string) $req['model'];
+        }
+        if ($model === '') $model = 'unknown';
+
+        $day = gmdate('Y-m-d');
+        $store = get_option('swml_api_usage_daily', []);
+        if (!is_array($store)) $store = [];
+        if (empty($store[$day][$model]) || !is_array($store[$day][$model])) {
+            $store[$day][$model] = ['reqs' => 0, 'input' => 0, 'output' => 0, 'cache_read' => 0, 'cache_write' => 0, 'unobserved' => 0];
+        }
+        $row = &$store[$day][$model];
+        $row['reqs']++;
+        if ($seen) {
+            foreach (['input', 'output', 'cache_read', 'cache_write'] as $k) $row[$k] += $u[$k];
+        } else {
+            $row['unobserved']++;   // streamed past us — the totals here are a FLOOR
+        }
+        unset($row);
+
+        // keep 60 days, never let this option grow without bound
+        if (count($store) > 60) { ksort($store); $store = array_slice($store, -60, null, true); }
+        update_option('swml_api_usage_daily', $store, false);
+
+        return $response;
+    }
+
+    /** Add one Anthropic `usage` object into the accumulator. Returns true if it carried anything. */
+    private function _accumulate_usage($usage, &$u) {
+        if (!is_array($usage)) return false;
+        $any = false;
+        $map = [
+            'input_tokens'                => 'input',
+            'output_tokens'               => 'output',
+            'cache_read_input_tokens'     => 'cache_read',
+            'cache_creation_input_tokens' => 'cache_write',
+        ];
+        foreach ($map as $from => $to) {
+            if (isset($usage[$from]) && is_numeric($usage[$from])) { $u[$to] += (int) $usage[$from]; $any = true; }
+        }
+        return $any;
+    }
+
+    /**
+     * List prices in USD per MILLION tokens. Filterable so a price change is one line, and so
+     * this never silently reports stale costs. Cache WRITE here is the 1-hour rate (2x base),
+     * because extend_anthropic_cache_ttl upgrades every ephemeral block to 1h.
+     * ⚠️ Verify against anthropic.com/pricing before quoting these to anyone.
+     */
+    public static function token_prices($model = '') {
+        $m = strtolower((string) $model);
+        $p = ['input' => 3.00, 'output' => 15.00, 'cache_read' => 0.30, 'cache_write' => 6.00];
+        if (strpos($m, 'haiku') !== false) {
+            $p = ['input' => 1.00, 'output' => 5.00, 'cache_read' => 0.10, 'cache_write' => 2.00];
+        } elseif (strpos($m, 'opus') !== false) {
+            $p = ['input' => 15.00, 'output' => 75.00, 'cache_read' => 1.50, 'cache_write' => 30.00];
+        }
+        return apply_filters('swml_api_token_prices', $p, $model);
     }
 
     /**

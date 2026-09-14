@@ -614,6 +614,15 @@ else
   echo "  ⚠️  tariff-gate SKIPPED — pdftotext not installed (brew install poppler). Tariffs UNVERIFIED."
 fi
 
+# FEEDBACK AUTO-FILING (v7.20.621, Neil): a protocol that marks in chat but files nothing into
+# the document is a SILENT defect — the student sees a mark and the box stays empty. Needs no
+# poppler, so it runs unconditionally.
+node bin/feedback-filing-gate.js || fail=1
+
+# API USAGE ACCOUNTING (v7.20.622, Neil): the cache hit ratio is the largest variable cost in the
+# business and AI Engine records none of it. Proves the accounting without spending on the API.
+php bin/api-usage-gate.php >/dev/null || { php bin/api-usage-gate.php; fail=1; }
+
 
 if [ "$fail" -ne 0 ]; then
   echo ""
