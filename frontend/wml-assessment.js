@@ -55851,15 +55851,68 @@
      * Bodies = ceil(marks / 4) — grounded, not guessed: protocol-a-assessment.md L43 + L378 + L454
      * mark AQA P1 Q2 and Q3 as "8 marks — 2 TTECEA paragraphs × 4".
      */
+    /**
+     * v7.20.625 — THE opt-in registry for outline dispatch (§CANVAS TASK-SCOPING rule 2:
+     * gate on a CAPABILITY / verified-paper set, NEVER on a literal board name).
+     *
+     * WHY IT REPLACES THREE `board === 'aqa'` LITERALS. The staged rollout below is correct
+     * and deliberate — a paper's element set must be read from ITS protocol before its
+     * outline ships, or an unscoped gate silently activates TTECEA outlines on papers
+     * shaped differently. But expressing "staged" as a hardcoded board string meant a
+     * newly-ported paper could satisfy every real condition and still render nothing, with
+     * no way to opt in: Edexcel IGCSE Lang P1 Q4 is 12 marks, type 'analysis', single AO2,
+     * ceil(12/4)=3 bodies — it fits _resolveBodyOnlyOutline exactly, and rendered NO outline
+     * at all purely because of the board string. A paper now opts in HERE, by name, once
+     * verified.
+     *
+     * Keys are `<board with -/_ stripped>/<_specSubjectKey()>`.
+     */
+    /**
+     * v7.20.625 — the ONE persuasive/transactional test, used by BOTH the plan branch and the
+     * outline branch (they must route to the same family — key-match law).
+     *
+     * `leaflet` was missing. Edexcel IGCSE Lang P1 offers Q6 (leaflet) and Q7 (speech) as a
+     * free choice, and Neil ruled them identical — same criteria, one Section B marking path,
+     * only the form conventions differ. Without `leaflet` the student who picked Q6 got the
+     * standard TTECEA outline and the student who picked Q7 got IUMVCC: the two questions the
+     * ruling says are the same would have diverged on the wording of the brief alone.
+     * `guide` and `report` join it — same transactional family, same omission waiting to happen.
+     */
+    const SWML_PERSUASIVE_RE = /persuasive|speech|letter|article|leaflet|guide|report|argue|convince|advise/i;
+
+    const OUTLINE_VERIFIED_PAPERS = {
+        // Body-only TTECEA (no intro/conclusion), N = ceil(marks / 4).
+        // · aqa/language_p1  Q2, Q3 — protocol-a-assessment.md L43/L378/L454: "8 marks — 2 TTECEA × 4"
+        // · aqa/language_p2  Q3     — same shape (v7.20.146)
+        // · edexceligcse/language_p1 Q4 — VERIFIED against its own protocol before enabling:
+        //   "Q4 = Three TTECEA paragraphs (no introduction or conclusion) - one paragraph for
+        //   every 4 marks" (edexcel-igcse/language1/modules/protocol-a-assessment.md:2005), and
+        //   the submission gate at :527 enforces exactly 3. ceil(12/4) = 3 agrees.
+        bodyOnly: ['aqa/language_p1', 'aqa/language_p2', 'edexceligcse/language_p1'],
+        // Short intro + comparative TTECEA bodies + short conclusion.
+        comparison: ['aqa/language_p2'],
+        // Paired-inference paragraphs (Source A → Source B).
+        inference: ['aqa/language_p2'],
+    };
+    /** `<board>/<subject>` for the registry above. Board loses BOTH - and _ so every spelling
+     *  of edexcel-igcse / edexcel_igcse collapses to one key (§5d: one canonical form). */
+    function _outlinePaperKey() {
+        const board = String((typeof state !== 'undefined' && state && state.board) || '')
+            .toLowerCase().replace(/[-_]/g, '');
+        return board + '/' + _specSubjectKey();
+    }
+    function _outlinePaperVerified(capability) {
+        const list = OUTLINE_VERIFIED_PAPERS[capability] || [];
+        return list.indexOf(_outlinePaperKey()) !== -1;
+    }
+
     function _resolveBodyOnlyOutline(qId, qType, qMarks, aosRaw, specQ) {
-        const board = (state.board || '').toLowerCase().replace(/-/g, '');
-        if (board !== 'aqa') return null;
+        // v7.20.625: was `if (board !== 'aqa') return null;` — see OUTLINE_VERIFIED_PAPERS.
         // v7.20.146 (Neil, P2 outline build): P2 Q3 is the same TTECEA analysis shape as P1 Q2/Q3
         // (single-AO, <20 marks) — admit language_p2 too. P2's OTHER reading Qs stay OUT of this
         // body-only path by the `analysis`-type guard below: Q2 = 'short_analysis' (inference),
         // Q4 = 'comparison' (comparative essay) — each has its own builder.
-        const _sk = _specSubjectKey();
-        if (_sk !== 'language_p1' && _sk !== 'language_p2') return null;
+        if (!_outlinePaperVerified('bodyOnly')) return null;
         if (qType !== 'analysis') return null;
         if (!(qMarks > 0 && qMarks < 20)) return null;
         // Per-QUESTION AO truth only — q.aos (authored) else the spec. topicData.aos is a
@@ -57580,7 +57633,7 @@
             const qType = q.type || specQ?.type || null;
             const isWritingQ = qType === 'extended_writing' || qType === 'choice'
                 || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
-            const isPersuasive = /persuasive|speech|letter|article|argue|convince|advise/i.test(q.text || q.label || '');
+            const isPersuasive = SWML_PERSUASIVE_RE.test(q.text || q.label || '');
             // v7.15.35: Broadened fiction detection — unanchored, checks description + text + label
             const creativeText = (q.text || '') + ' ' + (q.label || '') + ' ' + (specQ?.description || '');
             // v7.15.108: split — standalone CW course gets multi-stage archetype outline; Language fiction gets Scene Structure only
@@ -57707,13 +57760,11 @@
             // (it has a short intro + conclusion) and NOT >=20, so it needs its own gate admission +
             // branch. Comparative body = same TTECEA rows via the `comparative` focus overlay (ruling
             // feedback_comparative_body_is_ttecea_helper_text_only) — not a new element set.
-            const _isP2Comparison = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
-                && _specSubjectKey() === 'language_p2' && qType === 'comparison';
+            const _isP2Comparison = _outlinePaperVerified('comparison') && qType === 'comparison';
             // v7.20.148 (Neil): AQA Lang P2 Q2 = inference (short_analysis, 8m, AO1). Its own
             // paired-inference builder — NOT the body-only TTECEA path (that gates on qType
             // 'analysis'; Q2 is 'short_analysis'). Below the >=20 threshold, so admitted explicitly.
-            const _isP2Inference = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
-                && _specSubjectKey() === 'language_p2' && qType === 'short_analysis';
+            const _isP2Inference = _outlinePaperVerified('inference') && qType === 'short_analysis';
             if (mode === 'redraft' && qType !== 'multiple_choice' && (qMarks >= 20 || _bodyOnlyOutline || _isP2Comparison || _isP2Inference)) {
                 if (_bodyOnlyOutline) {
                     // Body-only: N TTECEA paragraphs, no intro/conclusion. Checked BEFORE the
@@ -64423,7 +64474,7 @@
             const isWritingQ = qType === 'extended_writing' || qType === 'choice'
                 || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(qLabel);
             const qText = qSection.textContent || '';
-            const isPersuasive = /persuasive|speech|letter|article|argue|convince|advise/i.test(qText);
+            const isPersuasive = SWML_PERSUASIVE_RE.test(qText);
 
             // Build plan HTML
             let planHTML = dividerHTML(`PLAN \u2014 ${qId}`);

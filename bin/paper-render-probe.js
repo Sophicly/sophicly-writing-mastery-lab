@@ -9,6 +9,11 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = process.argv[2] || path.join(__dirname, '..');
+// v7.20.625: board/subject are ARGUMENTS. The probe was hardcoded to Edexcel IGCSE, so the
+// AQA papers it shares every builder with could regress without it noticing.
+//   node bin/paper-render-probe.js . aqa language_p1
+const BOARD = process.argv[3] || 'edexcel-igcse';
+const SUBJ  = process.argv[4] || 'language_p1';
 const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
 
 function slice(marker, opener = '{') {
@@ -33,6 +38,10 @@ const parts = [
     slice('function needsFullEssayStructure(', '('),
     slice('function getOutlineSpecKey(', '('),
     slice('function getParagraphCount(', '('),
+    slice('const OUTLINE_VERIFIED_PAPERS = {'),
+    slice('const SWML_PERSUASIVE_RE = ', ';'),
+    slice('function _outlinePaperKey(', '('),
+    slice('function _outlinePaperVerified(', '('),
     slice('function _resolveBodyOnlyOutline(', '('),
     slice('function buildIntroCriteria(', '('),
     slice('function buildConclusionCriteria(', '('),
@@ -49,8 +58,8 @@ const explicit = {
     LIT_ESSAY_BODY_COUNT: parseInt((src.match(/var LIT_ESSAY_BODY_COUNT = (\d+)/) || [, '3'])[1], 10),
     outlineRowHTML: (crit, fid) => { captured.push(fid); return ''; },
     sectionHTML: (t, l, a, b, inner) => inner || '',
-    _specSubjectKey: () => 'language_p1',
-    state: { board: 'edexcel-igcse', subject: 'language_p1' },
+    _specSubjectKey: () => SUBJ,
+    state: { board: BOARD, subject: SUBJ },
 };
 const NOOP = new Proxy(function () { return NOOP; }, {
     get: (t, k) => (k === Symbol.toPrimitive || k === 'toString' ? () => '__STUB__' : NOOP),
@@ -60,22 +69,26 @@ const sandbox = new Proxy(explicit, {
     get: (t, k) => (k in t ? t[k] : (k in globalThis ? globalThis[k] : NOOP)),
     set: (t, k, v) => { t[k] = v; return true; },
 });
-vm.runInContext(parts.join('\n'), vm.createContext(sandbox));
+// v7.20.625: slices can overlap (a brace-matched block may swallow a later declaration),
+// which then re-declares a const and throws. Drop any part wholly contained in another.
+const uniq = parts.filter((a, i) => !parts.some((b, j) => j !== i && b.length > a.length && b.includes(a)));
+vm.runInContext(uniq.join('\n'), vm.createContext(sandbox));
 
-const spec = require(path.join(ROOT, 'protocols/shared/language-paper-specs.json'))['edexcel-igcse'].language_p1;
+const spec = require(path.join(ROOT, 'protocols/shared/language-paper-specs.json'))[BOARD][SUBJ];
 const qs = [];
 for (const sec of spec.sections) for (const q of sec.questions) qs.push(q);
 
 function render(fn) { captured.length = 0; try { fn(); } catch (e) { return ['THREW: ' + e.message]; } return captured.slice(); }
 
-console.log('=== REAL DISPATCH SIMULATION — board=edexcel-igcse subject=language_p1, mode=redraft ===\n');
+console.log(`=== REAL DISPATCH SIMULATION — board=${BOARD} subject=${SUBJ}, mode=redraft ===\n`);
 for (const q of qs) {
     const qId = q.id, qMarks = q.marks, qType = q.type, aos = q.aos;
     const bodyOnly = sandbox._resolveBodyOnlyOutline(qId, qType, qMarks, aos, q);
-    // the SHIPPED gate conditions, copied verbatim from wml-assessment.js ~57710
-    const boardNorm = 'edexceligcse';
-    const isP2Comparison = boardNorm === 'aqa' && 'language_p1' === 'language_p2' && qType === 'comparison';
-    const isP2Inference = boardNorm === 'aqa' && 'language_p1' === 'language_p2' && qType === 'short_analysis';
+    // v7.20.625: call the SHIPPED registry helper. These two lines used to COPY the gate
+    // conditions, so the probe reported on its own copy and could not see a dispatch change
+    // at all — the exact defect class it was built to catch.
+    const isP2Comparison = sandbox._outlinePaperVerified('comparison') && qType === 'comparison';
+    const isP2Inference  = sandbox._outlinePaperVerified('inference')  && qType === 'short_analysis';
     const admitted = qType !== 'multiple_choice' && (qMarks >= 20 || bodyOnly || isP2Comparison || isP2Inference);
 
     console.log(`--- ${qId}  (${qMarks} marks, type=${qType}, ${aos.join('+')}) ---`);
