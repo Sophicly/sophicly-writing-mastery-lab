@@ -48,29 +48,23 @@ const { _planFieldSegments, _planOutlineTargets, _planLabelElement } = new Funct
     + '; return { _planFieldSegments, _planOutlineTargets, _planLabelElement };'
 )();
 
-// Every planning protocol on disk, all boards. A "protocol" is the whole planning DIRECTORY
-// (v7.20.228): the lang papers keep everything in protocol-b-planning.md, but literature
-// splits across b1..b10 stage files — @FIELD_SET templates and @FIELD_COMMIT ids must be
-// collected across the dir, since that is the unit the router serves per session.
-function findProtocols(dir, out) {
-    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-        const p = path.join(dir, e.name);
-        if (e.isDirectory()) {
-            if (e.name === 'planning') out.push(p);
-            else findProtocols(p, out);
-        }
-    }
-    return out;
-}
-function readProtocolDir(dir) {
-    return fs.readdirSync(dir).filter(f => f.endsWith('.md')).sort()
-        .map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n\n');
-}
+// Every planning protocol the ROUTER LOADS, all boards. A "protocol" is the whole planning
+// DIRECTORY (v7.20.228): the lang papers keep everything in protocol-b-planning.md, but
+// literature splits across b1..b10 stage files — @FIELD_SET templates and @FIELD_COMMIT ids
+// must be collected across the dir, since that is the unit the router serves per session.
+//
+// v7.20.616: the directory set now comes from the MANIFESTS, not from a name match on disk.
+// This harness used to ask `if (e.name === 'planning')`, which is blind to Edexcel IGCSE
+// Lang P2 — its ladder lives in `steps/` — so that port's 25 @FIELD_COMMIT + 5 @FIELD_SET
+// went unchecked from 2026-08-16 while this gate printed ✅. See bin/lib/protocol-planning-dirs.js.
+const { resolvePlanningDirs, readProtocolDir, reportOrphans } = require('./lib/protocol-planning-dirs.js');
+const { dirs: PLANNING_DIRS, orphans: PLANNING_ORPHANS } = resolvePlanningDirs(ROOT);
 
 let fail = 0, checkedProtocols = 0, totalIds = 0;
-for (const file of findProtocols(path.join(ROOT, 'protocols'), [])) {
-    const rel = path.relative(ROOT, file);
-    const proto = readProtocolDir(file);
+fail += reportOrphans(PLANNING_ORPHANS);
+for (const entry of PLANNING_DIRS) {
+    const rel = entry.rel;
+    const proto = readProtocolDir(entry.dir);
 
     const templates = [];
     for (const m of proto.matchAll(/@FIELD_SET\{"field":"(plan-[^"]+)","value":"([^"]*)"\}/g)) {

@@ -173,6 +173,60 @@ for (const c of CASES) {
   }
 }
 
+// ── COVERAGE RATCHET (v7.20.616) ───────────────────────────────────────────────────────────────
+// This harness can only check a protocol that has a hand-written CASE (the render() call must
+// mirror that paper's real question dispatch — it cannot be derived). So the silent failure here
+// is not a wrong key, it is a protocol NOBODY CHECKS: it emits outline @FIELD_COMMITs, no case
+// names it, and the suite prints ✅ having never looked at it. That is exactly how Edexcel IGCSE
+// Lang P2 went a month unverified in the sibling fan-out harness.
+//
+// The ratchet makes existing debt VISIBLE and makes it unable to GROW: every manifest-loaded
+// planning dir that emits outline commits must either have a case above or be listed here with a
+// reason. A new uncovered protocol fails the build. ⛔ Adding a line here is a deliberate act —
+// never do it to silence a port you are actively building (that is the whole point of the gate).
+const KNOWN_UNCOVERED = {
+  'protocols/aqa/poetry/planning':
+    'poetry renders through the poem-specific builder, not buildOutlineSection — needs its own case (QUEUE).',
+  'protocols/aqa/unseen/planning':
+    'unseen poetry: two-poem comparison dispatch, own builder — needs its own case (QUEUE).',
+  'protocols/edexcel-igcse/language2/steps':
+    'IGCSE Lang P2 port (content lane, 2026-08-16). Fan-out harness now covers its 25 ids as of v7.20.616; a render case still owed (QUEUE).',
+  'protocols/eduqas/literature/planning':
+    'eduqas lit mirrors the AQA lit registry (ladder-check byte-traces it); a render case still owed (QUEUE).',
+};
+
+{
+  const { resolvePlanningDirs, readProtocolDir } = require('./lib/protocol-planning-dirs.js');
+  const covered = new Set();
+  for (const c of CASES) {
+    for (const p of (c.protocols || [c.protocol])) covered.add(path.relative(ROOT, path.dirname(p)));
+  }
+  const uncovered = [];
+  for (const d of resolvePlanningDirs(ROOT).dirs) {
+    if (covered.has(d.rel)) continue;
+    const n = [...readProtocolDir(d.dir).matchAll(/@FIELD_COMMIT\{"field":"(outline-[^"]+)"/g)].length;
+    if (n) uncovered.push({ rel: d.rel, n });
+  }
+  const unexplained = uncovered.filter(u => !KNOWN_UNCOVERED[u.rel]);
+  console.log(`— COVERAGE: ${covered.size} protocol(s) have a render case; `
+    + `${uncovered.length} emit outline commits with no case (${unexplained.length} unexplained).`);
+  for (const u of uncovered) {
+    console.log(`     ${KNOWN_UNCOVERED[u.rel] ? '·' : '❌'} ${u.rel} (${u.n} outline commits)`
+      + (KNOWN_UNCOVERED[u.rel] ? ` — known debt: ${KNOWN_UNCOVERED[u.rel]}` : ''));
+  }
+  if (unexplained.length) {
+    failed = 1;
+    console.log('  ❌ UNCOVERED PROTOCOL(S): these emit outline @FIELD_COMMITs that NO case checks — a key');
+    console.log('     mismatch in them would ship silently. Add a CASE mirroring that paper\'s real question');
+    console.log('     dispatch (preferred), or a justified line in KNOWN_UNCOVERED.');
+  }
+  const stale = Object.keys(KNOWN_UNCOVERED).filter(k => !uncovered.some(u => u.rel === k));
+  if (stale.length) {
+    failed = 1;
+    console.log('  ❌ STALE KNOWN_UNCOVERED entr(ies) — now covered or gone, delete them: ' + stale.join(', '));
+  }
+}
+
 if (failed) {
   console.log('\n❌ planning-keymatch-harness FAILED — a plan will save but not appear (key mismatch).');
   process.exit(1);

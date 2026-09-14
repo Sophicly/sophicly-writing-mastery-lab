@@ -63,16 +63,17 @@ const DIRECTION_NOUNS = new Set([
   'craft', 'approach', 'position', 'emphasis', 'concern', 'concerns',
 ]);
 
-function walk(dir, out) {
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, e.name);
-    if (e.isDirectory()) walk(p, out);
-    else if (e.isFile() && p.endsWith('.md') && p.includes(`${path.sep}planning${path.sep}`)) out.push(p);
+// v7.20.616: the planning file set comes from the MANIFESTS, not from a path substring.
+// The old test was `p.includes('/planning/')`, which is blind to Edexcel IGCSE Lang P2 —
+// its ladder lives in `steps/`. Same root defect as plan-fanout-harness had; one shared
+// resolver now answers "which directories does the router actually load as planning?".
+const { resolvePlanningDirs } = require('./lib/protocol-planning-dirs.js');
+const planningFiles = [];
+for (const entry of resolvePlanningDirs(ROOT).dirs) {
+  for (const f of fs.readdirSync(entry.dir)) {
+    if (f.endsWith('.md')) planningFiles.push(path.join(entry.dir, f));
   }
 }
-const protoDir = path.join(ROOT, 'protocols');
-const planningFiles = [];
-if (fs.existsSync(protoDir)) walk(protoDir, planningFiles);
 
 // v7.20.229: the invariant UNIT is the PROTOCOL, not the file — modular protocols (lit) split
 // the ladder module (b-ladder.md) from the step files that reference it, so each planning DIR's
