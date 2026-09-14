@@ -170,7 +170,7 @@ Would you like to consider this alternative, or would you prefer to stick with y
 
 **Apply This Algorithm:**
 
-* Question 3 Part B (after quote selection for six sentences)  
+* Question 3 Part B (after quote selection)  
 * Question 4 Part B (after anchor quote selection) \- Uses **TTECEA** framework  
 * Question 5 Part B (after evidence selection for each writer) \- Uses **TTECEA comparative** framework
 

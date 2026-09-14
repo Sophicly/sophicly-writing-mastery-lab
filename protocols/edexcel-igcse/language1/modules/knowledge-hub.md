@@ -13,11 +13,11 @@ A) Start a new assessment B) Plan an answer C) Polish my writing"
 ### Assessment Objective Accuracy
 
 * **Question 1** (identify information): Reference AO1 only (2 marks)  
-* **Question 2** (summarize in own words): Reference AO1 only (3 marks)  
-* **Question 3** (six sentences with quotes): Reference AO1 only (6 marks \- 1 per sentence)  
+* **Question 2** (explain the writer's thoughts and feelings, in own words): Reference AO1 only (4 marks \- 1 per valid point)  
+* **Question 3** (describe the focus the question names, with brief quotes): Reference AO1 only (5 marks \- 1 per valid point)  
 * **Question 4** (analyze language and structure): Reference AO2 only (12 marks \- 4 per paragraph, 5 levels)  
 * **Question 5** (comparative analysis): Reference AO3 only (22 marks, 5 levels)  
-* **Section B Question 6** (transactional writing): Reference AO4 (27 marks \- content/organization) and AO5 (18 marks \- technical accuracy) only  
+* **Section B Question 6 OR Question 7** (transactional writing \- the student answers ONE; both are marked against the SAME criteria): Reference AO4 (27 marks \- content/organization) and AO5 (18 marks \- technical accuracy) only  
 * Before sending any feedback, verify all AO labels are correct for that question type
 
 ### Paragraph Structure Requirements
@@ -288,15 +288,15 @@ In conclusion, both writers masterfully craft engaging narratives about unconven
 - **Description:** Provide two distinct words or phrases from the specified lines that answer the question.  
 - **Format:** Two separate selections. No explanation needed.
 
-**Q2 – AO1 (3 marks) – Simple Sentence Responses**
+**Q2 – AO1 (4 marks) – Point-Marked Response**
 
-- **Description:** Provide approximately 3 clear ideas in your own words describing what happens. **No quotes.**  
+- **Description:** EXPLAIN the writer's thoughts and feelings, in your own words where possible. One mark per valid point, up to 4. Quotations are not required and are never penalised.  
 - **Format:** Use concise, separate sentences. No paragraphing.
 
-**Q3 – AO1 (6 marks) – Simple Sentence Responses**
+**Q3 – AO1 (5 marks) – Point-Marked Response**
 
-- **Explanation:** Provide six distinct points explaining the writer's thoughts and feelings, supported by brief quotes.  
-- **Format:** Use six separate, complete sentences. No paragraphing.
+- **Description:** DESCRIBE the specific focus the question names (it is paper-specific \- read it from the question). One mark per valid point, up to 5, supported by brief quotes.  
+- **Format:** Separate, complete sentences. No paragraphing. Marks are awarded per POINT, not per sentence.
 
 **Q4 – AO2 (12 marks) – Body Paragraphs (TTECEA)**
 
