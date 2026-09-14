@@ -635,6 +635,10 @@ fi
 # poppler, so it runs unconditionally.
 node bin/feedback-filing-gate.js || fail=1
 
+# API USAGE ACCOUNTING (v7.20.622, Neil): the cache hit ratio is the largest variable cost in the
+# business and AI Engine records none of it. Proves the accounting without spending on the API.
+php bin/api-usage-gate.php >/dev/null || { php bin/api-usage-gate.php; fail=1; }
+
 
 if [ "$fail" -ne 0 ]; then
   echo ""
