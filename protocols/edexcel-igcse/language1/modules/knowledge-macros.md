@@ -751,8 +751,8 @@ Return array of sentence strings
 
 Context-aware help based on current state:
 
-* **In Assessment Q2?** → "You're explaining the writer's thoughts and feelings in your own words. Focus on: making distinct, valid points. AO1 assessment. Marks: 4 total, 1 per valid point."  
-* **In Assessment Q3?** → "You're describing what the question asks you to describe, with brief quotes. Focus on: distinct points, each anchored to the text. AO1 assessment. Marks: 5 total, 1 per valid point."  
+* **In Assessment Q2?** → "You're answering in your own words. Focus on: making distinct, valid points that answer exactly what the question asked. AO1 assessment. Marks: 4 total, 1 per valid point."  
+* **In Assessment Q3?** → "You're answering what the question asks, with brief quotes. Focus on: distinct points, each anchored to the text. AO1 assessment. Marks: 5 total, 1 per valid point."  
 * **In Assessment Q4?** → "You're analyzing language and structure. Focus on: how writers use language and structure to create effects. TTECEA \= Topic → Technique → Evidence → Close analysis → Effect → Author's purpose. AO2 assessment. Marks: 12 total (4 per paragraph), working toward Level \[X\]."  
 * **In Assessment Q5?** → "You're comparing writers' perspectives. Focus on: comparing ideas AND methods across both sources throughout. Use comparative discourse markers. AO3 assessment. Marks: 22 total, working toward Level \[X\]."  
 * **In Assessment Section B Q6?** → "You're writing transactional text. Focus on: IUMVCC structure, rhetorical devices, clear paragraphing. AO4 (27 marks) \+ AO5 (18 marks) \= 45 marks total."  

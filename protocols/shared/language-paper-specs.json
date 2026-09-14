@@ -15,7 +15,7 @@
   },
   "_question_types": {
     "multiple_choice": "Student selects correct answers from a list (e.g., AQA P2 Q1: choose 4 true from 8)",
-    "retrieval": "POINT-MARKED: one mark per valid point, capped — no levels grid. Typically 1-5 marks. This is the engine's 'no plan section, one input field per point' type (wml-assessment.js: _qPlanBuilt excludes it; the qMarks<=5 branch renders Point 1..N). Use it for ANY point-marked question whatever its verb — Edexcel IGCSE 4EA1/01 Q2 EXPLAINS and Q3 DESCRIBES, and both are retrieval-typed because both are scored one mark per point. Do NOT re-type a point-marked question as short_analysis because its wording sounds analytical: that builds it a plan it must not have.",
+    "retrieval": "POINT-MARKED: one mark per valid point, capped — no levels grid. Typically 1-5 marks. This is the engine's 'no plan section, one input field per point' type (wml-assessment.js: _qPlanBuilt excludes it; the qMarks<=5 branch renders Point 1..N). Use it for ANY point-marked question whatever its verb. Edexcel IGCSE 4EA1/01 Q2 and Q3 SWAP verbs between sittings (June 2022: Q2 explains, Q3 describes; June 2023: Q2 describes, Q3 explains) and both are retrieval-typed in every sitting, because both are scored one mark per point. Do NOT re-type a point-marked question as short_analysis because its wording sounds analytical: that builds it a plan it must not have.",
     "short_analysis": "5-10 marks, 1-2 paragraph analytical response",
     "analysis": "10-15 marks, multi-paragraph analytical response with evidence",
     "evaluation": "15-20 marks, extended evaluative response requiring personal judgement",
@@ -895,8 +895,8 @@
                 "AO1"
               ],
               "type": "retrieval",
-              "description": "EXPLAIN the writer's thoughts and feelings, in own words where possible. One mark per valid point, up to 4. No levels grid.",
-              "_source_note": "4EA1/01 June 2022 RMS (4EA1_01_2206_MS), Q2: 'Accept any reasonable explanation of the writer's thoughts and feelings, in own words where possible, up to a maximum of four marks... Reward all valid points.' Q2 and Q3 were CROSSED OVER here until v7.20.617 — Q2 read 'describe what happens' (Q3's verb and focus). 'In own words where possible' is guidance, NOT a ban on quotation: never refuse or penalise an answer for quoting."
+              "description": "Answer what the question asks, IN YOUR OWN WORDS where possible. One mark per valid point, up to 4. No levels grid. The TASK VARIES BY PAPER - read it from the question, never assume it.",
+              "_source_note": "4EA1/01. THE TASK IS NOT FIXED AND THE TWO SITTINGS ARE OPPOSITE: June 2022 RMS Q2 = 'Accept any reasonable EXPLANATION of the writer's THOUGHTS AND FEELINGS, in own words where possible, up to a maximum of four marks'; June 2023 RMS Q2 = 'Accept any reasonable DESCRIPTION of WHAT HAPPENS, in own words where possible, up to a maximum of four marks'. In 2022 Q2 explained and Q3 described; in 2023 Q2 described and Q3 explained. So neither the verb nor the focus can be hardcoded. WHAT IS ALWAYS TRUE: 4 marks, AO1, one mark per valid point ('Reward all valid points'), the 'in own words where possible' instruction, and indicative answers written as PARAPHRASE WITH NO QUOTATIONS (Q3's are quotation-rich - that is the reliable discriminator). 'In own words where possible' is guidance, NOT a ban on quotation: never refuse or penalise an answer for quoting. History: Q2/Q3 were crossed here until v7.20.617, then v7.20.617 over-corrected by hardcoding June 2022's focus; v7.20.620 made both read from the question."
             },
             {
               "id": "Q3",
@@ -905,8 +905,8 @@
                 "AO1"
               ],
               "type": "retrieval",
-              "description": "DESCRIBE the specific focus the question names (paper-specific — read it from the question, never assume). One mark per valid point, up to 5. No levels grid.",
-              "_source_note": "4EA1/01 June 2022 RMS, Q3: 'Accept any reasonable description of the argument between the writer and her parents, up to a maximum of five marks... Reward all valid points.' The focus is set by each paper's question — June 2022's was the argument with her parents. Type was 'short_analysis' until v7.20.617, which made the engine build Q3 a PLAN section (_qPlanBuilt = type not retrieval && marks >= 5) and give it one response box instead of one field per point — Q3 is point-marked like Q2 and gets neither (handoff 2026-09-15 section 2, Neil-confirmed)."
+              "description": "Answer what the question asks, supported by brief embedded quotations. One mark per valid point, up to 5. No levels grid. BOTH THE VERB AND THE FOCUS VARY BY PAPER - read them from the question.",
+              "_source_note": "4EA1/01. June 2022 RMS Q3 = 'Accept any reasonable DESCRIPTION of the argument between the writer and her parents, up to a maximum of five marks'; June 2023 RMS Q3 = 'Accept any reasonable EXPLANATION of David Nott's thoughts and actions, up to a maximum of five marks'. WHAT IS ALWAYS TRUE: 5 marks, AO1, one mark per valid point ('Reward all valid points'), NO 'own words' instruction (unlike Q2), and indicative answers that are QUOTATION-RICH - so brief embedded quotes are the expected shape. Type was 'short_analysis' until v7.20.617, which made the engine build Q3 a PLAN SECTION (_qPlanBuilt = type not retrieval && marks >= 5) and give it one response box instead of one field per point. Q3 is point-marked like Q2 and gets neither."
             },
             {
               "id": "Q4",

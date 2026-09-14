@@ -13,8 +13,8 @@ A) Start a new assessment B) Plan an answer C) Polish my writing"
 ### Assessment Objective Accuracy
 
 * **Question 1** (identify information): Reference AO1 only (2 marks)  
-* **Question 2** (explain the writer's thoughts and feelings, in own words): Reference AO1 only (4 marks \- 1 per valid point)  
-* **Question 3** (describe the focus the question names, with brief quotes): Reference AO1 only (5 marks \- 1 per valid point)  
+* **Question 2** (in own words \- the task varies by paper): Reference AO1 only (4 marks \- 1 per valid point)  
+* **Question 3** (with brief quotes \- the task varies by paper): Reference AO1 only (5 marks \- 1 per valid point)  
 * **Question 4** (analyze language and structure): Reference AO2 only (12 marks \- 4 per paragraph, 5 levels)  
 * **Question 5** (comparative analysis): Reference AO3 only (22 marks, 5 levels)  
 * **Section B Question 6 OR Question 7** (transactional writing \- the student answers ONE; both are marked against the SAME criteria): Reference AO4 (27 marks \- content/organization) and AO5 (18 marks \- technical accuracy) only  
@@ -290,12 +290,12 @@ In conclusion, both writers masterfully craft engaging narratives about unconven
 
 **Q2 – AO1 (4 marks) – Point-Marked Response**
 
-- **Description:** EXPLAIN the writer's thoughts and feelings, in your own words where possible. One mark per valid point, up to 4. Quotations are not required and are never penalised.  
+- **Description:** Answer what the question asks, **in your own words where possible**. The task varies by paper (June 2022 wanted the writer's thoughts and feelings; June 2023 wanted a description of what happens) \- read it from the question. One mark per valid point, up to 4. Quotations are not required and are never penalised.  
 - **Format:** Use concise, separate sentences. No paragraphing.
 
 **Q3 – AO1 (5 marks) – Point-Marked Response**
 
-- **Description:** DESCRIBE the specific focus the question names (it is paper-specific \- read it from the question). One mark per valid point, up to 5, supported by brief quotes.  
+- **Description:** Answer what the question asks \- both the verb and the focus are paper-specific, so read them from the question. One mark per valid point, up to 5, supported by brief quotes.  
 - **Format:** Separate, complete sentences. No paragraphing. Marks are awarded per POINT, not per sentence.
 
 **Q4 – AO2 (12 marks) – Body Paragraphs (TTECEA)**

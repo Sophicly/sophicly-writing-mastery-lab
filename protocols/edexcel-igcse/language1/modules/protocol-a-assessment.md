@@ -74,8 +74,8 @@ Type **A** or **B**."
 **Section A (Reading):**
 
 * **Q1** \- Two retrieval selections (2 marks)  
-* **Q2** \- Explain the writer's thoughts and feelings, in your own words (4 marks)  
-* **Q3** \- Describe the focus the question names, with brief quotes (5 marks)  
+* **Q2** \- In your own words (4 marks \- the task varies by paper)  
+* **Q3** \- With brief quotes (5 marks \- the task varies by paper)  
 * **Q4** \- Language and structure analysis (12 marks)  
 * **Q5** \- Comparative essay (22 marks)
 
@@ -274,7 +274,7 @@ PROCEED: to Step 4 (Student Answer Collection)
 
 **\[CONDITIONAL\]** IF Q1 in SESSION\_STATE.selected\_questions: **\[SAY\]** "Please submit your **complete Question 1 response** (your two selections from the specified lines)." **\[WAIT\]** Student response **\[AI\_INTERNAL\]** Store in SESSION\_STATE.answers.q1 PROCEED: to next question in array
 
-**\[CONDITIONAL\]** IF Q2 in SESSION\_STATE.selected\_questions: **\[SAY\]** "Please submit your **complete Question 2 response** (your explanation of the writer's thoughts and feelings, in your own words — one mark for each valid point, up to 4)." **\[WAIT\]** Student response **\[AI\_INTERNAL\]** Store in SESSION\_STATE.answers.q2 PROCEED: to next question in array
+**\[CONDITIONAL\]** IF Q2 in SESSION\_STATE.selected\_questions: **\[SAY\]** "Please submit your **complete Question 2 response** (your answer to what Question 2 asks, in your own words — one mark for each valid point, up to 4)." **\[WAIT\]** Student response **\[AI\_INTERNAL\]** Store in SESSION\_STATE.answers.q2 PROCEED: to next question in array
 
 **\[CONDITIONAL\]** IF Q3 in SESSION\_STATE.selected\_questions: **\[SAY\]** "Please submit your **complete Question 3 response** (your description of [the focus Question 3 names], with brief quotes — one mark for each valid point, up to 5)." **\[WAIT\]** Student response **\[AI\_INTERNAL\]** Store in SESSION\_STATE.answers.q3 PROCEED: to next question in array
 
@@ -419,11 +419,13 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
 
 ##### **Assessment Sub-Protocol: Question 2 (AO1 – 4 Marks)**
 
-1. **Submission:** Ask: "Now for Question 2\. Please submit your **complete answer for Question 2** (your explanation of the writer's thoughts and feelings, in your own words)."  
+1. **Submission:** Ask: "Now for Question 2\. Please submit your **complete answer for Question 2** (your answer in your own words)."  
      
 2. **Internal AI Note: ASSESSMENT TYPE ENFORCEMENT FOR Q2**  
      
-   **\[AI\_INTERNAL\]** Q2 is POINT-MARKED: **one mark per valid point, up to four**. The board's own words are *"Accept any reasonable explanation of the writer's thoughts and feelings, in own words where possible, up to a maximum of four marks… Reward **all** valid points."* Mark POINTS, never sentences — one sentence may carry two points, or none.  
+   **\[AI\_INTERNAL\] ⭐ READ Q2'S TASK FROM THE QUESTION — IT CHANGES EVERY PAPER.** What Q2 asks for is NOT fixed: June 2022 wanted *"explanation of the writer's thoughts and feelings"*; June 2023 wanted *"description of what happens"*. **Q3's task varies the same way and the two can be EITHER WAY ROUND** — in 2022 Q2 explained and Q3 described; in 2023 Q2 described and Q3 explained. ⛔ So never decide Q2's focus from memory, from this protocol, or from another paper. Read the question in front of you.
+     
+   **WHAT IS ALWAYS TRUE OF Q2, and these are the only reliable markers:** it is **4 marks**, AO1, **POINT-MARKED — one mark per valid point**, and it carries the instruction **"in your own words where possible"**. The board's indicative answers for Q2 are written as **paraphrase, with no quotations**. (Q3 is the 5-mark one and its indicative answers are quotation-rich.) Mark POINTS, never sentences — one sentence may carry two points, or none.  
      
    - **IF assessment type is 'Diagnostic':** Accept whatever the student submits. Proceed directly to assessment.  
        
@@ -444,13 +446,13 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
 
 ##### **Assessment Sub-Protocol: Question 3 (AO1 – 5 Marks)**
 
-1. **Submission:** Ask: "Let's move to Question 3\. Please submit your **complete answer for Question 3** (your description of \[the focus Question 3 names\], with brief quotes)."  
+1. **Submission:** Ask: "Let's move to Question 3\. Please submit your **complete answer for Question 3** (your answer to what Question 3 asks, with brief quotes)."  
      
 2. **Internal AI Note: ASSESSMENT TYPE ENFORCEMENT FOR Q3**  
      
-   **\[AI\_INTERNAL\] ⭐ READ Q3'S FOCUS FROM THE QUESTION ITSELF — NEVER ASSUME IT.** Q3 always asks the student to **describe** one specific thing, and **that thing changes with every paper** (June 2022: *the argument between the writer and her parents*). Take the focus from the question in front of you and name it back to the student in your own prompts. ⛔ Q3's focus is **NOT** "the writer's thoughts and feelings" — that is **Question 2's** focus, and confusing the two marks the student against the wrong criteria.  
+   **\[AI\_INTERNAL\] ⭐ READ Q3'S TASK AND FOCUS FROM THE QUESTION ITSELF — NEVER ASSUME EITHER.** Both change with every paper: June 2022 asked for a *description of the argument between the writer and her parents*; June 2023 asked for an *explanation of David Nott's thoughts and actions*. ⛔ The VERB is not fixed either — Q3 is not always "describe". Take task and focus from the question in front of you and name them back to the student in your own prompts.  
      
-   Q3 is POINT-MARKED: **one mark per valid point, up to five.** The board's own words are *"Accept any reasonable description of \[the named focus\], up to a maximum of five marks… Reward **all** valid points."* Mark POINTS, never sentences.  
+   **WHAT IS ALWAYS TRUE OF Q3:** it is **5 marks**, AO1, **POINT-MARKED — one mark per valid point** (*"Reward **all** valid points"*), and unlike Q2 it carries **no "own words" instruction** — the board's indicative answers for Q3 are **quotation-rich**, so brief embedded quotations are the expected shape. Mark POINTS, never sentences.  
      
    - **IF assessment type is 'Diagnostic':** Accept whatever the student submits. Proceed directly to assessment.  
        
@@ -462,7 +464,7 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
 
    
 
-3. **AI Analysis & Feedback:** Say: "Thank you. I am looking for distinct points describing \[the focus Question 3 names\], each anchored to the text with a brief quotation." (The AI will state how many valid, well-supported points the student has made.) "You have made \[number\] valid points... That earns \[number\] marks."  
+3. **AI Analysis & Feedback:** Say: "Thank you. I am looking for distinct points that answer what Question 3 asks, each anchored to the text with a brief quotation." (The AI will state how many valid, well-supported points the student has made.) "You have made \[number\] valid points... That earns \[number\] marks."  
      
 4. **Total Mark for Q3:** "**Total Mark for Q3:** \[X\] / 5."  
      
@@ -476,7 +478,7 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
 
 **Say:** "**Understanding Your Q3 Performance:**
 
-Question 3 is marked straightforwardly: **1 mark per valid point** that describes \[the focus the question names\] and anchors it to the text. One sentence can carry two points, or none — so it is the POINTS that are counted, never the sentences. This is pure AO1 (retrieval and interpretation).
+Question 3 is marked straightforwardly: **1 mark per valid point** that answers what the question asks and anchors it to the text. One sentence can carry two points, or none — so it is the POINTS that are counted, never the sentences. This is pure AO1 (retrieval and interpretation).
 
 Your **\[X\]/5** demonstrates \[choose appropriate description\]:
 
@@ -490,7 +492,7 @@ Your **\[X\]/5** demonstrates \[choose appropriate description\]:
 
 **To improve for next time:**
 
-- **Read actively:** Underline every place in the text that shows \[the focus the question names\]  
+- **Read actively:** Underline every place in the text that answers what the question asked  
 - **Quote briefly:** 2-6 words is usually sufficient  
 - **Explain clearly:** Use phrases like "This shows..." or "This reveals..."  
 - **Make distinct points:** Each point should cover a different aspect of what the question asked about
