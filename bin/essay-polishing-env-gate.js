@@ -388,16 +388,60 @@ console.log('\nThe analytical word-choice scans answer from CODE:');
         const prose = 'The writer shows that Alex is angry. This illustrates his grief and uses a metaphor. '
             + 'These images make the reader feel tense. Consequently, the storm exposes his loneliness.';
         const v = scan('lang-scan-verbs', prose);
-        ok('lang-scan-verbs finds the "shows" family (shows, illustrates)', /\*\*shows\*\*/.test(v) && /\*\*illustrates\*\*/.test(v), v && v.slice(0, 160));
+        // ⭐ v7.20.613 — THIS ASSERTION USED TO ENCODE THE DEFECT. It required `illustrates` to be
+        // FLAGGED, but the anchor's tier list (protocols/aqa/language1/modules/protocol-a-assessment.md
+        // :183-188, the v7.19.950 Neil ruling) puts `illustrates` on the STRONG tier — "consistent
+        // with depicts/portrays" — and rules `aims to` / `seems to` UN-TIERED hedges that must NEVER
+        // be penalised as verbs. The scan charged all three, so it told students off for verbs our
+        // own marking permits. The gate now asserts the ANCHOR, which makes it the regression guard.
+        ok('lang-scan-verbs finds the "shows" family', /\*\*shows\*\*/.test(v), v && v.slice(0, 160));
+        ok('…and does NOT charge `illustrates` — the anchor lists it STRONG (v7.19.950)', !/\*\*illustrates\*\*/.test(v));
+        ok('…and does NOT charge the un-tiered hedges `aims to` / `seems to`',
+            !/\*\*aims to\*\*/.test(scan('lang-scan-verbs', 'The poet aims to unsettle us and seems to mourn.'))
+            && !/\*\*seems to\*\*/.test(scan('lang-scan-verbs', 'The poet aims to unsettle us and seems to mourn.')));
+        ok('…and does NOT sweep is/are/was/were — they sit on no tier',
+            !/\*\*(?:is|are|was|were)\*\*/.test(scan('lang-scan-verbs', 'The mood is bleak. The soldiers were tired.')));
         ok('…and the imprecise verbs (uses, make)', /\*\*uses\*\*/.test(v) && /\*\*make\*\*/.test(v));
+        ok('…tells the student a hedge is SAFE rather than silently ignoring it',
+            /Not counted:/.test(scan('lang-scan-verbs', 'The writer shows grief and seems to mourn.')));
+        ok('…frames the scan as a pattern, not a verdict (Neil, 2026-09-14)', /pattern, not a verdict/.test(v));
+        ok('…links to the Toolkit Inference Verbs word bank', /@RESOURCE_LINK[^\n]*wb-verbs/.test(v));
         ok('…offers the precise-verb list and asks for TWO rewrites, not all', /depicts/.test(v) && /Pick TWO/.test(v));
         ok('…ends at the help ladder — Sophia is the last rung', /Type the sentence below/.test(v));
         const s = scan('lang-scan-starters', prose);
         ok('lang-scan-starters finds the The / This / These openers', /\*\*The\*\*/.test(s) && /\*\*This\*\*/.test(s) && /\*\*These\*\*/.test(s));
         ok('…does not flag "Consequently," (a discourse marker opener)', !/\*\*Consequently\*\*/.test(s));
         const s2 = scan('lang-scan-starters', 'The storm rages. The wind howls. Alex waits.');
-        ok('…names a REPEATED opener as the one to change (one of each is allowed)', /Repeated opener[^\n]*\*\*The\*\*/.test(s2));
+        // v7.20.613: the finding now SPLITS charged from permitted. S1 is charged on the second and
+        // later use of an opener, never the first, so listing all of them together invited a student
+        // to rewrite openers that cost them nothing (Neil, 2026-09-14: "distinguish a detected
+        // pattern from a confirmed problem").
+        ok('…separates the repeats worth changing from the first use, which is allowed',
+            /Worth changing \(1\)/.test(s2) && /Fine as they are \(1\)/.test(s2), s2 && s2.slice(0, 200));
+        ok('…says plainly that nothing is charged when no opener repeats',
+            /nothing is costing you marks/.test(scan('lang-scan-starters', 'The storm rages. This unsettles us. Alex waits.')));
+        ok('…links to Sentence Starters AND Coherence & Cohesion in the Toolkit',
+            /@RESOURCE_LINK[^\n]*fix-sentence-starters/.test(s2) && /@RESOURCE_LINK[^\n]*cohesion/.test(s2));
         ok('a clean passage gets praise, not an empty scan', /no "shows"-family verbs/.test(scan('lang-scan-verbs', 'Through metaphor, the writer exposes grief.')));
+        // ── v7.20.613: the combined SPaG CHECK. Both false positives below were found by running
+        // the first cut and are kept as regression guards — each one would quietly teach a student
+        // to "correct" writing that was already right, which is worse than not checking at all.
+        const spag = (t) => scan('check-spag', t);
+        ok('check-spag answers from CODE', typeof spag('He was tired , and  it is bleak.') === 'string');
+        ok('…it is a CHECK, not a fix — it says it is changing nothing',
+            /not changing them/.test(spag('He was tired , and  it is bleak.')));
+        ok('…it states the scope it did NOT cover (a regex cannot parse a clause)',
+            /What it did NOT cover/.test(spag('He was tired , and  it is bleak.')));
+        ok('…REGRESSION: "metaphor" is not an American spelling (the first cut matched any -or word)',
+            /found nothing to flag/.test(spag('Through metaphor the writer exposes grief. The imagery unsettles us.')));
+        ok('…REGRESSION: quoted material is masked, and the mask does not itself trip a check',
+            /found nothing to flag/.test(spag('The poet writes “the colour of  her realize i” and analyses it well.')));
+        ok('…both -ise and -ize are accepted British usage and are never flagged',
+            /found nothing to flag/.test(spag('The writer organises the scene; the poet realizes the cost.')));
+        ok('…but it does find the real faults (double space · space before comma · lone i · repeat)',
+            ['Double spaces', 'A space before punctuation', 'Lower-case', 'A word typed twice']
+                .every(k => spag('He was tired , and  the imagery is bleak. i think the the colour is wrong.').includes(k)));
+        ok('…and links to the Toolkit punctuation section', /@RESOURCE_LINK[^\n]*fix-punctuation/.test(spag('He was tired , and  it is bleak.')));
         ok('the CW scans still answer (cw-verbs unchanged)', /verb-circling pass/.test(scan('cw-verbs', 'She was tired and walked slowly.')));
         ok('an unknown action falls through to the API (null)', scan('scan-structure', prose) === null);
         ok('an empty selection falls through to the API (null)', scan('lang-scan-verbs', '   ') === null);

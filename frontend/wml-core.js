@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.612';
+var WML_BUILD = '7.20.613';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -4914,6 +4914,40 @@ window.WML = (function() {
         M1: { dest: 'toolkit', arg: 'topic-sentence', label: 'Topic Sentences' },
         I1: { dest: 'toolkit', arg: 'close-analysis', label: 'Close Analysis' },
         D1: { dest: 'toolkit', arg: 'finegrained', label: 'Fine-Grained Analysis' },
+        // ── v7.20.613: 8 of 30 live penalty codes carried a Learn chip; a student met the other
+        // 22 as a deduction with nowhere to go. Each id below is a real SECTIONS id and each
+        // pairing was read against the section's own content, not inferred from its title.
+        // ⭐ S1 closes the oldest one: the note above says "S1 has NO toolkit home yet" and that
+        // is STALE — `fix-sentence-starters` ("Stop every sentence beginning the same way") now
+        // exists and names The/This/These in its own opening line, which is exactly S1's trigger.
+        S1: { dest: 'toolkit', arg: 'fix-sentence-starters', label: 'Sentence Starters & Variety' },
+        H1: { dest: 'toolkit', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
+        P1: { dest: 'toolkit', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
+        G1: { dest: 'toolkit', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
+        C1: { dest: 'toolkit', arg: 'cohesion', label: 'Coherence & Cohesion' },
+        T2: { dest: 'toolkit', arg: 'cohesion', label: 'Coherence & Cohesion' },
+        R1: { dest: 'toolkit', arg: 'cohesion', label: 'Coherence & Cohesion' },
+        S2: { dest: 'toolkit', arg: 'word-budget', label: 'Word Count & Length' },
+        Q1: { dest: 'toolkit', arg: 'fix-evidence', label: 'Evidence & Quotes' },
+        B1: { dest: 'toolkit', arg: 'fix-evidence', label: 'Evidence & Quotes' },
+        L1: { dest: 'toolkit', arg: 'fix-effects', label: 'Effects on the Reader' },
+        E2: { dest: 'toolkit', arg: 'fix-effects', label: 'Effects on the Reader' },
+        E1: { dest: 'toolkit', arg: 'fix-authors-purpose', label: "Author's Purpose" },
+        P2: { dest: 'toolkit', arg: 'conceptual', label: 'Conceptual Thinking' },
+        A1: { dest: 'toolkit', arg: 'fix-context', label: 'Context' },
+        X1: { dest: 'toolkit', arg: 'fix-context', label: 'Context' },
+        STR1: { dest: 'toolkit', arg: 'ttecea', label: 'TTECEA + C' },
+        TTE1: { dest: 'toolkit', arg: 'ttecea', label: 'TTECEA + C' },
+        CMP1: { dest: 'toolkit', arg: 'wb-connectives', label: 'Comparison Connectives' },
+        // ⛔ DELIBERATELY UNMAPPED, and each for a stated reason — a chip that lands half the
+        // students on the wrong page is worse than no chip (the F1 silent-landing lesson):
+        //   STR2 — means TWO different faults (AQA P2: paragraph-count deviation → 'essay';
+        //          literature/poetry: TTECEA order violation → 'ttecea'). One code, two homes:
+        //          needs the protocols reconciled first, not a coin flip here.
+        //   U1  — academic register. 'wb-tone' is the likely home but its content was not read,
+        //          so it is not claimed (§14b: naming a destination you have not opened is a guess).
+        //   CMP2, WC — CMP2 has no defensible section; WC carries no digit so the line detector
+        //          (_LEARN_LINE_RE) cannot match it at all.
     };
     // Detection = the pen-ledger codeRe shape (keep in sync with _penLedgerCards' codeRe in
     // wml-assessment.js) PLUS the tally form the rebuilt Penalty Ledger / code-tallied Trend
@@ -5002,7 +5036,25 @@ window.WML = (function() {
     // technique name (swmlConfig.techniqueNames). Unknown → drop + console.warn, never a
     // dead chip or a silent landing-page open. Keep the allowlist in sync with
     // PENALTY_LEARN_MAP + the notes plugin's SECTIONS registry (parity check at pre-ship).
-    const RESOURCE_TOOLKIT_IDS = ['wb-verbs', 'evaluative-keywords', 'topic-sentence', 'close-analysis', 'finegrained'];
+    // v7.20.613: every id below was verified against the BUILT bundle's SECTIONS registry
+    // (sophicly-notes/assets/js/sophicly-toolkit.js — 53 sections, swept 2026-09-14), which is the
+    // slug law this allowlist exists to enforce. ⚠️ The two legacy bare entries 'topic-sentence' and
+    // 'close-analysis' are NOT section ids; they resolve only because tkNavigate tries 'fix-' + slug
+    // first. They are left alone (changing a live chip's arg is a needless risk), but every id added
+    // from here on is the REAL section id, so it resolves on the first attempt and survives any
+    // change to that prefix fallback.
+    const RESOURCE_TOOLKIT_IDS = [
+        'wb-verbs', 'evaluative-keywords', 'topic-sentence', 'close-analysis', 'finegrained',
+        // Fix My Writing — the sections that answer a polishing finding directly
+        'fix-sentence-starters', 'fix-punctuation', 'fix-evidence', 'fix-effects',
+        'fix-authors-purpose', 'fix-context', 'fix-structure', 'fix-technical-terms',
+        'fix-topic-sentence', 'fix-close-analysis', 'fix-creative-writing', 'word-budget',
+        // The Analysis Engine + Essay Structure — the shapes we teach
+        'ttecea', 'conceptual', 'effects', 'cohesion', 'essay', 'intro', 'body', 'conclusion',
+        'iumvcc', 'creative', 'thesis', 'controlling',
+        // Word Banks — what the student picks a replacement FROM
+        'wb-connectives', 'wb-tone',
+    ];
     function tagResourceLinks(text) {
         if (!text || String(text).indexOf('@RESOURCE_LINK') === -1) return text;
         return String(text).replace(/@RESOURCE_LINK\s*(\{[^}]*\})/g, (whole, json) => {

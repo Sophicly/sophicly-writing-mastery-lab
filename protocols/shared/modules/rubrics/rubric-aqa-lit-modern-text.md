@@ -149,7 +149,9 @@ Stack on top of base critical frames:
 
 ## INLINE COACHING ACTIONS (modern text)
 
-Identical to the Shakespeare rubric's INLINE COACHING ACTIONS (same buttons: `scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), with these deltas:
+Identical to the Shakespeare rubric's INLINE COACHING ACTIONS (same buttons: `scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `check-spag` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), with these deltas:
+
+**`check-spag`** (v7.20.613) — the combined CHECK that leads the SPaG group: double spaces, a space before punctuation, lower-case “i”, a word typed twice, a comma splice, a sentence starting lower-case, and possible American spellings. Quoted material is masked first, so the poem’s or text’s own words are never charged. It is code-served, states its own scope, and changes nothing — the student makes every edit.
 
 - **`scan-elements`** → a quotation that is vague or missing is the first gap to name (no extract: quotes come from memory); ask the student for the exact words before anything else.
 - **`scan-context-drive`** → the setting-date vs publication-date gap is the usual lever (AIC, Animal Farm); anchors in this file and the active text's context-bank slice.

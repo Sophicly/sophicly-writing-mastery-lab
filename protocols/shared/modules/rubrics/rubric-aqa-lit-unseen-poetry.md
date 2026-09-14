@@ -151,7 +151,9 @@ Q27.2 specifically rewards method comparison, NOT theme comparison. If a compari
 
 ## INLINE COACHING ACTIONS (unseen poetry)
 
-Same buttons as the Shakespeare rubric MINUS `scan-context-drive` (the chip does not offer it here; if it arrives, say there is no context mark on unseen poetry and point at `scan-elements`): `scan-structure` `scan-elements` `scan-coherence` `scan-concept` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`. Locate first: the **Location** line says whether the selection is under Q27.1 or Q27.2.
+Same buttons as the Shakespeare rubric MINUS `scan-context-drive` (the chip does not offer it here; if it arrives, say there is no context mark on unseen poetry and point at `scan-elements`): `scan-structure` `scan-elements` `scan-coherence` `scan-concept` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `check-spag` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`. Locate first: the **Location** line says whether the selection is under Q27.1 or Q27.2.
+
+**`check-spag`** (v7.20.613) — the combined CHECK that leads the SPaG group: double spaces, a space before punctuation, lower-case “i”, a word typed twice, a comma splice, a sentence starting lower-case, and possible American spellings. Quoted material is masked first, so the poem’s or text’s own words are never charged. It is code-served, states its own scope, and changes nothing — the student makes every edit.
 
 - **`scan-structure`** → Q27.1 = five paragraphs (intro 3 elements · three body paragraphs on Form-or-Beginning / Language / Ending · conclusion 4 elements); Q27.2 = two short comparison paragraphs. A context sentence anywhere is a gap to name.
 - **`scan-elements`** → the six Q27.1 elements for a body paragraph, or the four Q27.2 rows; count the gaps first.

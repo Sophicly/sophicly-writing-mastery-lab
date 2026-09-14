@@ -280,6 +280,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw6-quote-gate.js || fail=1
 fi
 
+# v7.20.613: TOOLKIT DEEP-LINK GATE. Every Mastery Toolkit id we emit must land on a real section.
+# `tagResourceLinks` drops an unknown id with a console.warn and renders NOTHING, so a typo is not
+# a visible error — it is a chip that silently never appears, indistinguishable from "not built
+# yet". wml-core.js has claimed a "parity check at pre-ship" since v7.19.949 and it did not exist;
+# .613 then added ~30 allowlist ids and 19 penalty rows, so the unchecked surface grew tenfold.
+# Runs UNCONDITIONALLY and reads only three files: the notes SECTIONS registry is outside this repo
+# and can change without any staged file here, which is exactly the drift a staged-file filter
+# would miss (the v7.20.372 CSS-skip lesson).
+node bin/toolkit-link-gate.js || fail=1
+
 # v7.20.411: FAMILY-SEARCH CHIP GATE (#227). A chip that deep-links the Table of Techniques with a
 # search term must land on a POPULATED grid — a term matching nothing dims everything and tells the
 # student nothing, which is worse than no chip. Terms are checked against the real technique

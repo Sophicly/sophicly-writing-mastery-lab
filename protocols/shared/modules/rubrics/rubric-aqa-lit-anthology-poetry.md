@@ -134,7 +134,9 @@ Too many Q-hooks feel pretentious. Lead with fact + quote.
 
 ## INLINE COACHING ACTIONS (anthology comparison)
 
-Same buttons as the Shakespeare rubric (`scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), read through the comparison:
+Same buttons as the Shakespeare rubric (`scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `check-spag` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), read through the comparison:
+
+**`check-spag`** (v7.20.613) — the combined CHECK that leads the SPaG group: double spaces, a space before punctuation, lower-case “i”, a word typed twice, a comma splice, a sentence starting lower-case, and possible American spellings. Quoted material is masked first, so the poem’s or text’s own words are never charged. It is code-served, states its own scope, and changes nothing — the student makes every edit.
 
 - **`scan-structure`** → five paragraphs, the three bodies on Form · Structure · Language in that order, EVERY paragraph on both poems; a sequential poem-by-poem essay is the first gap named.
 - **`scan-elements`** → the comparative element set above for a body paragraph (both poems in every element); the four intro elements; the five conclusion elements. Count the gaps first.

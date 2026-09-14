@@ -191,6 +191,10 @@ lesson, `outline`) sections are the student's own work.
   for Q5 prose; on an analytical selection, coach the same rule on register instead.
 - **`strengthen-vocabulary` / `tighten` / `adjust-tone`** → the highlighted span only: F1/T1 verbs,
   abstract nouns, sentence length, register.
+- **`check-spag`** → a CODE-SERVED check, not a rewrite: double spaces · a space before punctuation ·
+  lower-case “i” · a word typed twice · a comma splice (P1) · a sentence starting lower-case · possible
+  American spellings. Quoted material is masked first, so the text’s own words are never charged. It
+  states its own scope and hands tense/agreement/apostrophes to Sophia. It never edits the document.
 - **`fix-spelling` / `fix-grammar` / `fix-punctuation`** → flag the rule (P1, H1), ask the student to
   apply it. Cap three fixes per turn. The student does their own SPaG (PEDAGOGY §11).
 - **`compare-gold-standard`** → quote the matching element from the knowledge hub's §2.A model for

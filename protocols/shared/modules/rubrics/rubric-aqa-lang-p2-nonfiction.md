@@ -244,6 +244,10 @@ student's own work.
   the device, they choose and write their own. Never a flat ban on any device, never a count.
 - **`strengthen-vocabulary` / `tighten` / `adjust-tone`** → the highlighted span only: F1/T1 verbs,
   abstract nouns, sentence length, register — on Q5, register against the SET form and audience.
+- **`check-spag`** → a CODE-SERVED check, not a rewrite: double spaces · a space before punctuation ·
+  lower-case “i” · a word typed twice · a comma splice (P1) · a sentence starting lower-case · possible
+  American spellings. Quoted material is masked first, so the text’s own words are never charged. It
+  states its own scope and hands tense/agreement/apostrophes to Sophia. It never edits the document.
 - **`fix-spelling` / `fix-grammar` / `fix-punctuation`** → flag the rule (P1, H1), ask the student to
   apply it. Cap three fixes per turn. The student does their own SPaG (PEDAGOGY §11).
 - **`compare-gold-standard`** → quote the matching element from the gold file's §2A model for the SAME

@@ -166,6 +166,10 @@ Identical to the Shakespeare rubric's INLINE COACHING ACTIONS (same buttons, sam
 
 - **`scan-context-drive`** → the AO3 anchors are the Victorian / Romantic ones in this file and the active text's context-bank slice; "reader", never "audience".
 - **`compare-gold-standard`** → the loaded model answer is a Macbeth essay; quote its ELEMENT SHAPE (how a topic sentence is built, how context is fused) and say plainly that it is a different text — never present it as the answer to this question.
+- **`check-spag`** → a CODE-SERVED check, not a rewrite: double spaces · a space before punctuation ·
+  lower-case “i” · a word typed twice · a comma splice (P1) · a sentence starting lower-case · possible
+  American spellings. Quoted material is masked first, so the text’s own words are never charged. It
+  states its own scope and hands tense/agreement/apostrophes to Sophia. It never edits the document.
 - **`fix-spelling` / `fix-grammar` / `fix-punctuation`** → coached for clarity; there is no AO4 mark on this paper.
 - **The two contrasting rewrites** (STOP RULE) as in the Shakespeare rubric: always a pair of the student's own line, then their own version.
 

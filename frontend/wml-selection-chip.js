@@ -61,7 +61,11 @@
         // Suggest stays first (utility); advanced non-mnemonic devices tail; Other last.
         devices:      ['device-suggest', 'device-metaphor', 'device-alliteration', 'device-direct-address', 'device-foreshadowing', 'device-assonance', 'device-triadic', 'device-hyperbole', 'device-emotive', 'device-rhetorical-question', 'device-simile', 'device-contrast', 'device-repetition', 'device-onomatopoeia', 'device-personification', 'device-sibilance', 'device-anaphora', 'device-asyndeton', 'device-polysyndeton', 'device-parallelism', 'device-other'],
         polishProse:  ['strengthen-vocabulary', 'tighten', 'adjust-tone'],
-        fixSpag:      ['fix-spelling', 'fix-grammar', 'fix-punctuation'],
+        // v7.20.613: the combined CHECK leads; the three single-fault FIXES stay behind it as
+        // secondary options (Neil, 2026-09-14). Check and fix are different jobs and now read that
+        // way: `check-spag` names what it found and changes nothing, the `fix-*` three act on one
+        // named fault at a time.
+        fixSpag:      ['check-spag', 'fix-spelling', 'fix-grammar', 'fix-punctuation'],
         reference:    ['explain', 'compare-gold-standard'],
         // ── v7.20.609 — LANGUAGE PAPER 1 (fiction) polishing environment, PROTOCOL-STANDARD Part D.
         // The Literature ladder offered "Scan context-drive" (AO3) on a paper that has no AO3, and
@@ -70,17 +74,23 @@
         // whose first two buttons are answered from CODE (v7.20.585's cost lever, applied to the two
         // most-charged analytical faults: the F1/T1 verb family and the S1 The/This/These openers).
         langScan:       ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept'],
-        langWordChoice: ['lang-scan-verbs', 'lang-scan-starters', 'cw-cut-modifiers'],
+        // ⭐ v7.20.613 — OPENERS ARE SENTENCE VARIETY, NOT WORD CHOICE, and the tier they sit in is
+        // the order the student works in (PEDAGOGY §32a, Neil 2026-09-07: "the overall structure…
+        // then we refine each paragraph… then we'll get down to things like sentence length,
+        // vocabulary"). Keeping `lang-scan-starters` in the word-choice group put a whole-sentence
+        // fault in the word tier and made two numbered steps overlap. Its own group now.
+        sentences:      ['lang-scan-starters'],
+        langWordChoice: ['lang-scan-verbs', 'cw-cut-modifiers'],
         // v7.20.610: the two analytical word scans are universal analytical faults (F1/T1 verbs, S1
         // openers), so Literature polishing gets them too — code-served, $0. No modifier cut on an
         // essay (adjectives are not the Literature fault; register is, and adjust-tone owns that).
-        litWordChoice:  ['lang-scan-verbs', 'lang-scan-starters'],
+        litWordChoice:  ['lang-scan-verbs'],
         // v7.20.610: Language Paper 2 (nonfiction). Same four scans as P1 (the rubric states the
         // shape per question: paired inference, TTECEA ×3, comparative, IUMVCC); the transactional
         // Q5 adds the device group and the modifier cut — gated to a Q5 selection by the chip
         // (_filterActionsForScope reads the Location), because a device button on a Q2 inference
         // paragraph is a button the model can only refuse.
-        langWordChoiceReading: ['lang-scan-verbs', 'lang-scan-starters'],
+        langWordChoiceReading: ['lang-scan-verbs'],
         cw:           ['check-sensory-variety', 'check-scene-structure-beats', 'check-show-dont-tell'],
         // ── v7.20.579 (Neil, 2026-08-29) — Creative Writing gets its OWN scans and its own word-
         // choice group. Before this, a CW draft was offered the LITERATURE tier scans: "Scan
@@ -142,6 +152,7 @@
         'cw-verbs':          'Sharpen the verbs',
         'cw-nouns':          'Sharpen the nouns',
         'cw-cut-modifiers':  'Cut adjectives & adverbs',
+        'check-spag':        'Check spelling, punctuation & grammar',
         // CW character-arc lens (v7.20.579)
         'cw-arc-goal':   'Show the goal',
         'cw-arc-flaw':   'Show the flaw',
@@ -187,6 +198,11 @@
         langWordChoice: 'Word choice',
         litWordChoice:  'Word choice',
         langWordChoiceReading: 'Word choice',
+        // v7.20.613: the polishing ladder is NUMBERED, never locked. Part D rules that polishing
+        // has no steps and no gate, so the numbers carry PRIORITY (which work pays most) while
+        // every group stays tappable — a student who can see the thing that is wrong must be able
+        // to fix it now. Order = PEDAGOGY \u00a732a, macro \u2192 micro, in Neil's own words.
+        sentences:      'Sentences',
     };
 
     // ── Module-scoped state ──
@@ -312,6 +328,29 @@
         return bits.join(' · ');
     }
 
+    // ⭐ v7.20.613 — THE POLISHING ORDER, NUMBERED. PEDAGOGY §32a (Neil, 2026-09-07, verbatim):
+    // "we actually get them to fix their essay structure first. So like the overall structure…
+    // Once they've worked on that, we then get them to refine each paragraph… we're basically
+    // going from the macro to the micro… And then once they've sorted that out, then we'll get
+    // down to things like sentence length, vocabulary."
+    // NUMBERED, NEVER LOCKED: Part D rules polishing has no steps and no gate, so a number states
+    // which work pays most while every group stays tappable. A student who can see what is wrong
+    // must be able to fix it now, not after four other checks.
+    const POLISH_STEP_LABEL = {
+        langScan:              '1 · Structure & elements',
+        tierScans:             '1 · Structure & elements',
+        elementPolish:         '2 · Strengthen a part',
+        devices:               '2 · Turn into a device',
+        langWordChoice:        '3 · Word choice',
+        litWordChoice:         '3 · Word choice',
+        langWordChoiceReading: '3 · Word choice',
+        sentences:             '4 · Sentences',
+        polishProse:           '5 · Prose & tone',
+        fixSpag:               '6 · Spelling, punctuation & grammar',
+        reference:             'Look it up',
+    };
+    const _steps = (groups) => groups.map(g => (POLISH_STEP_LABEL[g.key] ? { ...g, label: POLISH_STEP_LABEL[g.key] } : g));
+
     function _filterActionsForScope(scope, taskCtx, loc) {
         // v7.19.67: 7-tier polish ladder — tier-scan group always visible
         // (scans operate on parent element/doc, not the highlighted span).
@@ -367,14 +406,15 @@
             ? WML.isWritingQuestion(q, taskCtx)
             : q === 'Q5';
         if (isFictionLang) {
-            return [
+            return _steps([
                 { key: 'langScan',       actions: ACTION_MAP.langScan },
                 { key: 'elementPolish',  actions: ACTION_MAP.elementPolish },
                 { key: 'langWordChoice', actions: isSectionB || !q ? ACTION_MAP.langWordChoice : ACTION_MAP.langWordChoiceReading },
+                { key: 'sentences',      actions: ACTION_MAP.sentences },
                 { key: 'polishProse',    actions: ACTION_MAP.polishProse },
                 { key: 'fixSpag',        actions: ACTION_MAP.fixSpag },
                 { key: 'reference',      actions: ACTION_MAP.reference },
-            ];
+            ]);
         }
         if (isLangEnv) {
             // Language Paper 2 (nonfiction): the same reading scans; on Q5 the transactional-writing
@@ -385,10 +425,11 @@
             ];
             if (isSectionB || !q) groups.push({ key: 'devices', actions: ACTION_MAP.devices });
             groups.push({ key: 'langWordChoice', actions: isSectionB || !q ? ACTION_MAP.langWordChoice : ACTION_MAP.langWordChoiceReading });
+            groups.push({ key: 'sentences',      actions: ACTION_MAP.sentences });
             groups.push({ key: 'polishProse',    actions: ACTION_MAP.polishProse });
             groups.push({ key: 'fixSpag',        actions: ACTION_MAP.fixSpag });
             groups.push({ key: 'reference',      actions: ACTION_MAP.reference });
-            return groups;
+            return _steps(groups);
         }
         // v7.20.610: Literature polishing environment — keyed on board/subject-family like the
         // router's essay_polishing_env subject rows (the gate asserts the two lists match). The
@@ -402,14 +443,15 @@
         const isLitEnv = isPolishing && ESSAY_POLISH_ENV_SUBJECTS.includes(envBoard + '/' + envSubject);
         if (isLitEnv) {
             const noAO3 = envSubject === 'unseen_poetry';
-            return [
+            return _steps([
                 { key: 'tierScans',     actions: noAO3 ? ACTION_MAP.tierScans.filter(a => a !== 'scan-context-drive') : ACTION_MAP.tierScans },
                 { key: 'elementPolish', actions: ACTION_MAP.elementPolish },
                 { key: 'litWordChoice', actions: ACTION_MAP.litWordChoice },
+                { key: 'sentences',     actions: ACTION_MAP.sentences },
                 { key: 'polishProse',   actions: ACTION_MAP.polishProse },
                 { key: 'fixSpag',       actions: ACTION_MAP.fixSpag },
                 { key: 'reference',     actions: ACTION_MAP.reference },
-            ];
+            ]);
         }
 
         const groups = [];
@@ -444,7 +486,8 @@
      */
     function _codeServedWordScan(action, text) {
         // v7.20.609: + the two Language Paper 1 analytical scans (lang-scan-verbs / lang-scan-starters).
-        if (['cw-verbs', 'cw-cut-modifiers', 'lang-scan-verbs', 'lang-scan-starters'].indexOf(action) === -1) return null;
+        // v7.20.613: + check-spag, the combined spelling/punctuation/grammar CHECK.
+        if (['cw-verbs', 'cw-cut-modifiers', 'lang-scan-verbs', 'lang-scan-starters', 'check-spag'].indexOf(action) === -1) return null;
         const src = String(text || '');
         if (!src.trim()) return null; // nothing selected — let the API path answer oddities
 
@@ -480,18 +523,107 @@
         // other imprecise verbs, S1 = The/This/These opening two or more sentences in a paragraph
         // (one of each is permitted — never the first instance). Regex, not judgement, so code
         // answers (WML §4 programmatic-first) and the student applies the fix rule themselves.
-        if (action === 'lang-scan-verbs') {
-            const showsFamily = collect(/\b(?:shows?|showing|shown|illustrates?|illustrating|tells us|is about|acts as|seems to|aims to)\b/gi);
-            const imprecise = collect(/\b(?:uses?|using|has|have|says?|saying|makes?|making|gets?|does|is|are|was|were)\b/gi);
-            if (!showsFamily.length && !imprecise.length) {
-                return 'I scanned this selection and found **no "shows"-family verbs and none of the usual imprecise verbs** (uses, has, says, makes). '
-                    + 'Your analytical verbs are already doing the work. Try **Find The / This / These openers** next.' + STUCK;
+        // ── v7.20.613 — CHECK spelling, punctuation and grammar. A CHECK, never a fix (Neil,
+        // 2026-09-14: "A check should identify issues and offer explanations or suggestions; it
+        // should not silently rewrite the student's work"). Nothing here edits the document.
+        //
+        // ⚠️ AND IT SAYS WHAT IT DID NOT CHECK. Neil: "Do not assume grammar and punctuation can be
+        // assessed comprehensively with simple pattern matching." True — a regex cannot parse a
+        // clause. So this runs a NAMED, deliberately small set of patterns that are reliable, prints
+        // the list it ran, and hands everything else to Sophia. A check that implies it covered
+        // grammar and did not is worse than no check: the student trusts a clean result.
+        //
+        // QUOTED MATERIAL IS MASKED FIRST. The text's own words are not the student's to fix — a
+        // 19th-century quotation carries archaic punctuation and American spellings, and charging
+        // either would teach the student to misquote. This is why the masking runs before any check.
+        if (action === 'check-spag') {
+            // Mask with a character that matches NONE of the checks below and is the same LENGTH,
+            // so phraseAt's offsets into the original still line up. Masking with spaces (the first
+            // cut) manufactured a long whitespace run and the double-space check then fired on it —
+            // a false positive invented by the masking itself.
+            const BLANK = '\u00a4';
+            const masked = src
+                .replace(/[“"][^”"]{0,400}[”"]/g, (m) => BLANK.repeat(m.length))
+                .replace(/[‘'][^’']{2,400}[’']/g, (m) => BLANK.repeat(m.length));
+            const find = (re, label, why) => {
+                const hits = []; let m;
+                while ((m = re.exec(masked)) !== null) {
+                    hits.push(phraseAt(m.index, m[0].length));
+                    if (hits.length > 12) break;
+                }
+                return hits.length ? { label, why, hits } : null;
+            };
+            const found = [
+                find(/[a-z]{2,}\s{2,}[a-zA-Z]/g, 'Double spaces', 'One space after a full stop is the convention; two is a typing habit the marker sees as untidy.'),
+                find(/\s+[,;:.!?]/g, 'A space before punctuation', 'Punctuation attaches to the word before it, with no gap.'),
+                find(/\b(?:i)\b(?!\.)/g, 'Lower-case “i”', 'The pronoun I is always a capital, wherever it sits in the sentence.'),
+                find(/\b(\w{3,})\s+\1\b/gi, 'A word typed twice', 'Almost always a slip while redrafting — read the sentence aloud and it disappears.'),
+                find(/,\s+(?:he|she|it|they|we|I|this|that|there)\s+(?:is|was|are|were|has|had|will|would|does|did|can|could)\b/g,
+                    'A comma joining two complete sentences', 'This is the comma splice (P1). Two sentences that could each stand alone need a full stop, a semicolon, or a joining word — not a comma.'),
+                find(/(?:^|[.!?]\s+)[a-z]{2,}/g, 'A sentence starting lower-case', 'Every sentence opens with a capital. Worth a glance — an abbreviation earlier in the line can cause a false alarm here.'),
+                // ⚠️ AN EXPLICIT LIST, NOT A SUFFIX NET. The first cut matched any word ending in
+                // "or" and duly flagged *metaphor* in a clean sentence. And -ise/-ize is NOT a
+                // reliable signal either: -ize is accepted British (Oxford) usage, so charging it
+                // would teach a student to "correct" writing that was already right. Only spellings
+                // with no British reading are listed.
+                find(/\b(?:colors?|favors?|honors?|humor|labor|neighbors?|centers?|theaters?|meters?|liters?|defense|offense|analyze[sd]?|paralyze[sd]?|traveled|travelin?g|canceled|jewelry|practiced?\s+(?=medicine))\b/gi,
+                    'American spellings', 'We write in British English: colour, favour, honour, humour, labour, neighbour, centre, theatre, metre, litre, defence, offence, analyse. (Both -ise and -ize are accepted British usage, so those are not flagged.)'),
+            ].filter(Boolean);
+            const SCOPE = '\n\n---\n**What this check covered:** double spaces · a space before punctuation · lower-case “i” · '
+                + 'a word typed twice · a comma joining two sentences · a sentence starting lower-case · American spellings. '
+                + 'Anything inside your quotation marks was skipped, because the text’s own words are not yours to correct.\n\n'
+                + '**What it did NOT cover:** tense, agreement, articles, apostrophes, and anything that needs the meaning of the sentence. '
+                + 'Code cannot read a clause. For those, highlight the sentence and ask below.';
+            const LINK = '\n\n@RESOURCE_LINK {"dest":"toolkit","arg":"fix-punctuation","label":"Punctuation & Embedding"}';
+            if (!found.length) {
+                return '**Spelling, punctuation and grammar check.** I ran the checks below over your selection and **found nothing to flag**.'
+                    + SCOPE + LINK;
             }
-            let out = '**The analytical-verb pass.** The verb is where analysis lives: *the storm imagery **exposes** Alex’s grief*, not *the storm imagery **shows** Alex is sad*.\n\n';
-            if (showsFamily.length) out += 'The **"shows" family** in your selection (' + showsFamily.length + ') — these cap the band:\n\n' + listOf(showsFamily, 10) + '\n\n';
+            let out = '**Spelling, punctuation and grammar check.** ' + found.length
+                + (found.length === 1 ? ' thing' : ' things') + ' to look at. '
+                + '*I am pointing at them, not changing them — every edit stays yours.*\n\n';
+            found.forEach((f) => {
+                out += '**' + f.label + '** (' + f.hits.length + ')\n' + f.why + '\n\n'
+                    + f.hits.slice(0, 5).map(h => '- ' + h).join('\n')
+                    + (f.hits.length > 5 ? '\n- …and ' + (f.hits.length - 5) + ' more.' : '') + '\n\n';
+            });
+            out += SCOPE + LINK + RESELECT;
+            return out;
+        }
+
+        if (action === 'lang-scan-verbs') {
+            // ⭐ v7.20.613 — THE TIERS ARE THE ANCHOR'S, VERBATIM, AND THEY WERE NOT BEFORE.
+            // Source: protocols/aqa/language1/modules/protocol-a-assessment.md:173-188 (the
+            // v7.19.950 Neil ruling). The shipped net charged three verbs the ruling explicitly
+            // protects — `illustrates` (moved to STRONG, "consistent with depicts/portrays"),
+            // and `seems to` / `aims to` (UN-TIERED hedges: "never penalise them as verbs",
+            // because evaluative tentativeness is REQUIRED elsewhere) — and its second net swept
+            // `is/are/was/were`, which sit on no tier at all, so every "is" in the paragraph
+            // became a finding. A scan that flags what marking permits teaches the wrong lesson
+            // and buries the real hits in noise.
+            // F1 = the "shows" family of EMPTY ASSERTIONS only. T1 = exactly six verbs
+            // (uses · has · goes · gets · says · makes · does) and their inflections.
+            const showsFamily = collect(/\b(?:shows?|showing|shown|tells us|is about|acts as|(?:is|to be)\s+symbolic\s+of|creates the idea that|represents that)\b/gi);
+            const imprecise = collect(/\b(?:uses?|using|used|has|have|had|goes?|going|went|gets?|getting|got|says?|saying|said|makes?|making|made|does|doing|did)\b/gi);
+            // Hedges are NOT a fault. Shown back deliberately, labelled as safe, because the
+            // boundary is the teaching: a student who has been told off for "seems to" once will
+            // strip every hedge from their writing, and the evaluation questions need them.
+            const hedges = collect(/\b(?:aims? to|seems? to|appears? to)\b/gi);
+            const LINK = '\n\n@RESOURCE_LINK {"dest":"toolkit","arg":"wb-verbs","label":"Inference Verbs"}';
+            if (!showsFamily.length && !imprecise.length) {
+                return 'I scanned this selection and found **no "shows"-family verbs and none of the six imprecise ones** (uses · has · goes · gets · says · makes · does). '
+                    + 'Your analytical verbs are already doing the work.'
+                    + (hedges.length ? ' The hedges here (*' + hedges.slice(0, 3).map(h => h.word).join('*, *') + '*) are fine — tentative language earns marks on an evaluation question.' : '')
+                    + ' Try **Find repeated sentence openers** next.' + STUCK;
+            }
+            let out = '**The analytical-verb pass.** The verb is where analysis lives: *the storm imagery **exposes** Alex’s grief*, not *the storm imagery **shows** Alex is sad*.\n\n'
+                + '*This finds a pattern, not a verdict — you decide which ones are actually doing too little.*\n\n';
+            if (showsFamily.length) out += 'The **"shows" family** in your selection (' + showsFamily.length + ') — these assert a meaning instead of analysing it:\n\n' + listOf(showsFamily, 10) + '\n\n';
             if (imprecise.length) out += 'And the **imprecise verbs** (' + imprecise.length + ') — fine in a topic sentence, weak when they carry the analysis:\n\n' + listOf(imprecise, 8) + '\n\n';
+            if (hedges.length) out += 'Not counted: *' + hedges.slice(0, 4).map(h => h.word).join('*, *') + '* — hedges are not weak verbs, and tentative language is rewarded on an evaluation question. Leave them.\n\n';
             out += 'Precise analytical verbs to choose from: *depicts · portrays · emphasises · reveals · conveys · evokes · underscores · exposes · critiques · mirrors*. '
-                + '**Pick TWO** sentences and rewrite each so the verb names what the writer’s choice actually does to the reader.' + RESELECT + STUCK;
+                + '**Pick TWO** sentences and rewrite each so the verb names what the writer’s choice actually does to the reader.'
+                + LINK + RESELECT + STUCK;
             return out;
         }
         if (action === 'lang-scan-starters') {
@@ -504,23 +636,36 @@
                 openers.push({ word: ms[2], phrase: phraseAt(at, ms[2].length).replace(ms[2], '**' + ms[2] + '**') });
                 if (openers.length > 40) break;
             }
-            const byWord = { The: 0, This: 0, These: 0 };
-            openers.forEach(o => { byWord[o.word] = (byWord[o.word] || 0) + 1; });
-            const repeated = Object.keys(byWord).filter(w => byWord[w] > 1);
+            // v7.20.613: split the list into what is actually CHARGED and what merely matched.
+            // The registry charges S1 on the SECOND and later use of the same opener, never the
+            // first — so listing all of them together (the pre-.613 behaviour) invited a student
+            // to rewrite openers that cost them nothing. A pattern is not a verdict.
+            const seen = Object.create(null);
+            const charged = [], permitted = [];
+            openers.forEach(o => {
+                if (seen[o.word]) charged.push(o); else permitted.push(o);
+                seen[o.word] = (seen[o.word] || 0) + 1;
+            });
+            const LINK = '\n\n@RESOURCE_LINK {"dest":"toolkit","arg":"fix-sentence-starters","label":"Sentence Starters & Variety"}'
+                + '\n@RESOURCE_LINK {"dest":"toolkit","arg":"cohesion","label":"Coherence & Cohesion"}';
             if (!openers.length) {
                 return 'I scanned this selection and found **no sentence opening with The, This or These**. '
                     + 'Varied openers already — that is what keeps analytical prose moving. Try **Find weak analytical verbs** next.' + STUCK;
             }
-            let out = '**The sentence-opener pass.** One *The*, one *This* and one *These* per paragraph is fine; the same opener twice reads as a list, not an argument.\n\n'
-                + 'Sentences opening with The / This / These in your selection (' + openers.length + '):\n\n' + listOf(openers, 10) + '\n\n';
-            if (repeated.length) {
-                out += 'Repeated opener' + (repeated.length > 1 ? 's' : '') + ': **' + repeated.join('**, **') + '** — the second and later ones are the ones to change.\n\n';
-            } else {
-                out += 'No opener is repeated here, so nothing is charged — but check the paragraph around the selection too.\n\n';
+            let out = '**The sentence-opener pass.** One *The*, one *This* and one *These* per paragraph is fine; the same opener twice reads as a list, not an argument.\n\n';
+            if (charged.length) {
+                out += '**Worth changing (' + charged.length + ')** — each one repeats an opener you have already used:\n\n' + listOf(charged, 10) + '\n\n';
+            }
+            if (permitted.length) {
+                out += 'Fine as they are (' + permitted.length + ') — the first use of each opener is allowed, so leave these unless you want the variety:\n\n' + listOf(permitted, 6) + '\n\n';
+            }
+            if (!charged.length) {
+                out += 'Nothing is repeated here, so **nothing is costing you marks** — check the rest of the paragraph around your selection before you change anything.\n\n';
             }
             out += 'Three ways to open instead: a discourse marker (*Furthermore, …* / *Consequently, …* / *Specifically, …*), '
                 + 'a prepositional phrase (*Through metaphor, the writer…*), or a participle (*Employing a triadic list, the writer…*). '
-                + '**Rewrite the repeated ones**; leave the first of each alone.' + RESELECT + STUCK;
+                + '**Rewrite the repeated ones**; leave the first of each alone.'
+                + LINK + RESELECT + STUCK;
             return out;
         }
 
@@ -1259,7 +1404,10 @@
             const groupEl = el('div', { className: 'swml-coach-action-group' });
             groupEl.appendChild(el('div', {
                 className: 'swml-coach-action-label',
-                textContent: SECTION_GROUP_LABELS[group.key] || group.key,
+                // v7.20.613: a ladder may carry its OWN numbered label. SECTION_GROUP_LABELS is
+                // GLOBAL and shared with the CW and legacy ladders, so numbering it there would
+                // print a step number that does not match those ladders' own order.
+                textContent: group.label || SECTION_GROUP_LABELS[group.key] || group.key,
             }));
             const btnRow = el('div', { className: 'swml-coach-action-row' });
             group.actions.forEach((action) => {
