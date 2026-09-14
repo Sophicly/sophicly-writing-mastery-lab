@@ -70,6 +70,28 @@ console.log('\n  The allowlist (' + ALLOW.length + ' ids):');
 ALLOW.forEach(id => ok('allowlist id resolves: ' + id
     + (SECTION_SET.has(id) ? '' : ' (via the fix- prefix → fix-' + id + ')'), resolves(id)));
 
+// ── 2b. v7.20.615 — EVERY ELEMENT_TOOLKIT_MAP DESTINATION MUST RESOLVE ───────────────────────
+// The map is what the model is handed to COPY from, so an unresolvable row is a link a stuck
+// student is offered and that renders nothing at all. This is the gate that makes the map safe
+// to hand over — it is why the model is allowed to emit links without inventing ids.
+const elMapSrc = core.match(/const ELEMENT_TOOLKIT_MAP = \{[\s\S]*?\n    \};/);
+ok('ELEMENT_TOOLKIT_MAP is present in wml-core.js', !!elMapSrc);
+if (elMapSrc) {
+    const EL = new Function(elMapSrc[0] + '\nreturn ELEMENT_TOOLKIT_MAP;')();
+    const rows = [].concat(...Object.values(EL));
+    const dests = [...new Set(rows.map(r => r.arg))];
+    console.log('\n  ELEMENT_TOOLKIT_MAP (' + rows.length + ' rows across ' + Object.keys(EL).length
+        + ' families, ' + dests.length + ' distinct sections):');
+    dests.forEach(a => ok('element-map destination resolves: ' + a
+        + (SECTION_SET.has(a) ? '' : ' (via the fix- prefix → fix-' + a + ')'), resolves(a)));
+    ok('…and every one is also in the allowlist (both halves matter — see the header)',
+        dests.every(a => ALLOW.includes(a)), dests.filter(a => !ALLOW.includes(a)));
+    ok('every row names the element in words a student would recognise, not an id',
+        rows.every(r => r.el && r.el.length > 3 && !/^[a-z-]+$/.test(r.el)), rows.filter(r => !r.el || /^[a-z-]+$/.test(r.el)).map(r => r.arg));
+    ok('every row carries a human label for the chip (root §14 — never a bare id on screen)',
+        rows.every(r => r.label && r.label.length > 2), rows.filter(r => !r.label).map(r => r.arg));
+}
+
 // ── 3. Every PENALTY_LEARN_MAP toolkit arg must resolve AND be in the allowlist ──────────────
 // Both halves matter: resolving proves the section exists; being in the allowlist proves
 // tagResourceLinks will not drop it. A row can satisfy one and fail the other.

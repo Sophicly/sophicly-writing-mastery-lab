@@ -1030,6 +1030,30 @@
     const FACT_SENTENCE_ACTIONS = ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept',
         'scan-context-drive', 'strengthen-hook', 'rephrase', 'compare-gold-standard', 'explain', 'freetext'];
 
+    // ⭐⭐ v7.20.615 — WHICH REFERENCE SET THIS LESSON USES. Derived from the same task context the
+    // ladder is built from, so the links a student is offered can never belong to a different kind
+    // of writing (an essay student must never be sent to the Story Spine).
+    function _referenceFamilies(taskCtx, location) {
+        const text = String((taskCtx && taskCtx.text) || '').toLowerCase().replace(/-/g, '_');
+        const subject = String((taskCtx && taskCtx.subject) || '').toLowerCase();
+        const task = String((taskCtx && taskCtx.task) || '');
+        if (subject === 'creative_writing' || task.indexOf('cw_') === 0) return ['creative'];
+        const q = location && location.question ? String(location.question).toUpperCase() : null;
+        const isWriting = (typeof WML !== 'undefined' && typeof WML.isWritingQuestion === 'function')
+            ? WML.isWritingQuestion(q, taskCtx) : q === 'Q5';
+        if (isWriting) {
+            // The writing question: fiction papers write a narrative, non-fiction papers a
+            // transactional piece. The text slug is what the router keys on, so it decides here too.
+            const NF = ['aqa_lang_paper_2', 'eduqas_lang_paper_2', 'edexcel_lang_paper_2', 'ocr_lang_paper_1', 'edexcel_igcse_lang_a'];
+            return NF.indexOf(text) !== -1 ? ['iumvcc'] : ['creative'];
+        }
+        const fams = ['analytical'];
+        // Comparison work (anthology poetry, and the cross-source question on a non-fiction paper)
+        // adds the connectives bank on top of the analytical set.
+        if (/poetry|anthology/.test(subject) || (q === 'Q4' && text === 'aqa_lang_paper_2')) fams.push('comparison');
+        return fams;
+    }
+
     function buildPrompt(action, selection, sectionContext, taskCtx, freeText, fullDoc, sectionType, location) {
         const lines = [
             '## Inline Coaching Invocation',
@@ -1047,6 +1071,18 @@
         // does not need it, and Neil's brief asks for focused context, not more of it.
         const facts = buildDocumentFacts(location, { sentences: FACT_SENTENCE_ACTIONS.indexOf(action || 'freetext') !== -1 });
         if (facts) { lines.push(''); lines.push(facts); }
+        // ⭐ v7.20.615 — the legal reference links for THIS lesson, built from the code-owned map.
+        // The model COPIES a line; it never composes an id (an invented one renders nothing, which
+        // is indistinguishable from "not built yet"). Rides the same judgement turns as the table.
+        if (FACT_SENTENCE_ACTIONS.indexOf(action || 'freetext') !== -1
+            && typeof WML !== 'undefined' && typeof WML.elementToolkitLines === 'function') {
+            const refs = WML.elementToolkitLines(_referenceFamilies(taskCtx, location));
+            if (refs.length) {
+                lines.push('');
+                lines.push('**Mastery Toolkit sections you may link to (COPY a line exactly — never invent an `arg`, and never offer one before the student has tried):**');
+                lines.push(refs.join('\n'));
+            }
+        }
         // v7.19.72: live full-doc snapshot per turn so cross-section student
         // edits become visible to Sophia without copy-paste workaround. The
         // frozen Selection above is what the student originally asked about;
@@ -2227,5 +2263,6 @@
         sentenceSignals,
         locateSelection,
         buildDocumentFacts,
+        referenceFamilies: _referenceFamilies,   // v7.20.615: exposed for the gate
     };
 })();

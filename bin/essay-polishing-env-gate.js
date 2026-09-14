@@ -652,6 +652,121 @@ console.log('\nStep 6 — the calibration stage compares the two judgements and 
     ok('…and forbidding re-marking in a lesson that has no marks in it', /this lesson has no marks in it/.test(ROUTER));
 }
 
+
+// ── 8e. DEEP LINKS — the element → reference map, and WHEN a link may appear (v7.20.615) ────
+// Neil, 2026-09-15: *"we want the students to get used to using the entire website"* — every
+// element we ask a student to master needs a reference, and a stuck student needs a route to it.
+// But retrieval comes FIRST: a link handed over at the finding teaches nothing.
+console.log('\nEvery taught element has a reference, and the link is a LATE rung:');
+{
+    const mapSrc = _CORESRC.match(/const ELEMENT_TOOLKIT_MAP = \{[\s\S]*?\n    \};/);
+    const fnSrc = _CORESRC.match(/function elementToolkitLines\(families\) \{[\s\S]*?\n    \}/);
+    ok('wml-core.js carries ELEMENT_TOOLKIT_MAP and its ONE line producer', !!mapSrc && !!fnSrc);
+    let M = null;
+    try { M = new Function(mapSrc[0] + '\n' + fnSrc[0] + '\nreturn { ELEMENT_TOOLKIT_MAP, elementToolkitLines };')(); }
+    catch (e) { ok('…and they evaluate in isolation (pure — no DOM, no window)', false, e.message); }
+    if (M) {
+        ok('…and they evaluate in isolation (pure — no DOM, no window)', true);
+        const FAMS = Object.keys(M.ELEMENT_TOOLKIT_MAP);
+        ok('the map covers the four kinds of writing we teach',
+            ['analytical', 'iumvcc', 'creative', 'comparison'].every((f) => FAMS.includes(f)), FAMS);
+
+        // ⭐ EVERY destination must be a REAL section AND in the allowlist. Either half failing
+        // makes the chip render nothing at all, which is invisible to the student and to Neil.
+        const args = [...new Set([].concat(...Object.values(M.ELEMENT_TOOLKIT_MAP)).map((r) => r.arg))];
+        console.log('    ' + args.length + ' distinct Toolkit destinations across the map');
+        // ⚠️ Whether each destination is in the allowlist AND resolves in the BUILT notes bundle is
+        // asserted by bin/toolkit-link-gate.js — that gate owns the bundle and hard-FAILS when it
+        // is absent, so the check belongs there and must never be duplicated weakly here.
+        const allowSrc = _CORESRC.match(/const RESOURCE_TOOLKIT_IDS = (\[[\s\S]*?\]);/);
+        const allow = allowSrc ? new Function('return ' + allowSrc[1] + ';')() : [];
+        ok('every destination is in RESOURCE_TOOLKIT_IDS (else tagResourceLinks drops it silently)',
+            args.every((a) => allow.includes(a)), args.filter((a) => !allow.includes(a)));
+
+        // ⭐ THE ELEMENTS WE ACTUALLY TEACH — sourced from the engine's own OUTLINE_CRITERIA, not
+        // from a list written here. An element with no reference is a CONTENT gap for the notes
+        // lane; this gate names it rather than letting it pass unnoticed.
+        const A = read('frontend/wml-assessment.js');
+        const oc = A.slice(A.indexOf('const OUTLINE_CRITERIA'), A.indexOf('const OUTLINE_CRITERIA') + 20000);
+        const taught = [...new Set([...oc.matchAll(/label: '([^']{3,40})'/g)].map((m) => m[1]))]
+            .filter((l) => !/^(Hero|STAGE|TURNING|Protagonist|The |Opening|Theme|Snapshot|May have|Expand|If the|Main character|B Story|Foreshadows|Oppressive|Given |State of)/.test(l));
+        const blob = JSON.stringify(M.ELEMENT_TOOLKIT_MAP).toLowerCase();
+        // Each taught element is covered when the map names it, or names the section that holds it.
+        const COVERED_BY_CONTAINER = {
+            'Hook': 'intro', 'Building Sentences': 'intro', 'Restated Thesis': 'conclusion',
+            'Technique + Evidence + Inference': 'fix-evidence', 'Effect 1 on Reader': 'fix-effects',
+            'Effect 2 on Reader': 'fix-effects', "Author's Central Purpose": 'purposes',
+            'Introduction': 'intro', 'Conclusion': 'conclusion',
+        };
+        const uncovered = taught.filter((l) => {
+            const key = l.toLowerCase().replace(/[^a-z ]/g, '').trim();
+            if (blob.includes(key)) return false;
+            return !COVERED_BY_CONTAINER[l];
+        });
+        console.log('    ' + taught.length + ' taught element labels checked against the map');
+        // The known gaps are NAMED, so a new one cannot hide among them (§10 fail loud).
+        const KNOWN_GAPS = [
+            'Source A — Perceptive Topic Sentence', 'Source A — Evidence + Developed Inference',
+            'Source B — Discourse Marker + Perceptive Topic Sentence', 'Source B — Evidence + Developed Inference',
+            'Hook technique', 'Devices', 'Urgency', 'Emotional appeal', 'Methodology', 'Vision', 'Emotion',
+            'Tone', 'Counter-Argument', 'Objection family', 'Rebuttal technique', 'Rebuttal verb family',
+            'Closing approach',
+        ];
+        const unexpected = uncovered.filter((l) => !KNOWN_GAPS.includes(l));
+        ok('no NEW taught element has appeared without a reference (known gaps are listed in the notes handoff)',
+            unexpected.length === 0, unexpected);
+
+        // The line the model copies must be the marker tagResourceLinks actually parses.
+        const lines = M.elementToolkitLines(['analytical']);
+        ok('the analytical set lists the whole TTECEA+C paragraph, element by element', lines.length >= 20, lines.length);
+        ok('…each line carries a COMPLETE, parseable @RESOURCE_LINK marker',
+            lines.every((l) => /@RESOURCE_LINK\{"dest":"toolkit","arg":"[a-z0-9-]+","label":"[^"]+"\}/.test(l)));
+        ok('…and every one of them parses as JSON the way tagResourceLinks parses it',
+            lines.every((l) => { try { return !!JSON.parse(/(\{[^}]*\})/.exec(l)[1]).arg; } catch (e) { return false; } }));
+        ok('⭐ the element Neil\'s scan found — Topic Sentences — has a line', /fix-topic-sentence/.test(lines.join('\n')));
+        ok('…and so does the paragraph shape itself, which is what he was really asking for', /"arg":"body"/.test(lines.join('\n')));
+        ok('a row whose section only CONTAINS the element says so, rather than implying its own page',
+            /this section also covers/.test(lines.join('\n')));
+        ok('the creative set does NOT claim to teach the seven scene elements (it holds the Story Spine)',
+            !/seven scene/i.test(JSON.stringify(M.ELEMENT_TOOLKIT_MAP.creative)));
+        ok('no duplicate destination inside one family (a menu of two links gets skipped)',
+            Object.values(M.ELEMENT_TOOLKIT_MAP).every((f) => new Set(f.map((r) => r.arg)).size === f.length));
+    }
+
+    // The chip picks the right family, so an essay student is never sent to the Story Spine.
+    const RF = WML.SelectionChip.referenceFamilies;
+    ok('the chip exposes the family resolver', typeof RF === 'function');
+    if (typeof RF === 'function') {
+        ok('a reading question on a fiction paper gets the analytical set',
+            RF({ text: 'aqa_lang_paper_1', subject: 'language1', task: 'polishing' }, { question: 'Q2' }).join() === 'analytical');
+        ok('⭐ the WRITING question on a FICTION paper gets the creative set, not the essay set',
+            RF({ text: 'aqa_lang_paper_1', subject: 'language1', task: 'polishing' }, { question: 'Q5' }).join() === 'creative');
+        ok('⭐ the WRITING question on a NON-FICTION paper gets IUMVCC',
+            RF({ text: 'aqa_lang_paper_2', subject: 'language2', task: 'polishing' }, { question: 'Q5' }).join() === 'iumvcc');
+        ok('a Creative Writing lesson gets the creative set whatever the question',
+            RF({ subject: 'creative_writing', task: 'cw_step_14' }, null).join() === 'creative');
+        ok('anthology poetry adds the comparison connectives on top of the analytical set',
+            RF({ text: 'love_relationships_poetry', subject: 'poetry_anthology', task: 'polishing' }, { question: null }).join() === 'analytical,comparison');
+    }
+
+    // The links ride the prompt, on the same turns as the sentence table.
+    ok('buildPrompt sends the legal lines, and says COPY not compose',
+        /Mastery Toolkit sections you may link to/.test(CHIP) && /never invent an `arg`/.test(CHIP));
+    ok('…on the judgement turns only', /if \(FACT_SENTENCE_ACTIONS\.indexOf\(action \|\| 'freetext'\) !== -1\n\s+&& typeof WML !== 'undefined' && typeof WML\.elementToolkitLines/.test(CHIP));
+
+    // The ORDER — retrieval first, the link late.
+    ok('inline-coaching-core.md carries THE HELP LADDER FOR A SCAN FINDING', /## ⭐⭐ THE HELP LADDER FOR A SCAN FINDING/.test(CORE));
+    ok('⭐ rung 0 and rung 1 forbid a link — the student must try first', /\*\*no link\*\*/.test(CORE));
+    ok('…and rung 3 is where it belongs', /this is where the link belongs/.test(CORE));
+    ok('a link NEVER replaces the question (§4d liveness)', /a link never replaces the question/.test(CORE));
+    ok('the model is told to COPY the line, never compose an id', /COPY the line verbatim/.test(CORE) && /Never invent, guess, shorten or "fix" an `arg`/.test(CORE));
+    ok('…and told what an invented id actually does — renders nothing at all', /\*\*renders\s+nothing at all\*\*/.test(CORE));
+    ok('ONE link per turn — two is a menu and a menu gets skipped', /Never offer more than ONE link in a turn/.test(CORE));
+    ok('⭐ an element with NO page is SAID, never substituted with the nearest one',
+        /Never substitute\s+the nearest page/.test(CORE) && /don't have a\s+page on that one yet/.test(CORE));
+    ok('the INPUT CONTRACT documents the block the chip now sends', /Mastery Toolkit sections you may link to`\*\* —/.test(CORE));
+}
+
 // ── 9. The coach panel opens the polishing lesson with its instructions ──────────────────────
 console.log('\nThe polishing lesson opens with instructions, not a "Start with Sophia" button:');
 const ASSESS = read('frontend/wml-assessment.js');

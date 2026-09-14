@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.614';
+var WML_BUILD = '7.20.615';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -5053,9 +5053,103 @@ window.WML = (function() {
         // The Analysis Engine + Essay Structure — the shapes we teach
         'ttecea', 'conceptual', 'effects', 'cohesion', 'essay', 'intro', 'body', 'conclusion',
         'iumvcc', 'creative', 'thesis', 'controlling',
+        // v7.20.615 — the ELEMENT_TOOLKIT_MAP's destinations. Every one verified in the built
+        // bundle by bin/toolkit-link-gate.js; a row is only added when the section really exists.
+        'purposes', 'universal', 'worked',
         // Word Banks — what the student picks a replacement FROM
-        'wb-connectives', 'wb-tone',
+        'wb-connectives', 'wb-tone', 'wb-goals', 'wb-symbol',
     ];
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.615 (Neil, 2026-09-15) — THE ELEMENT → REFERENCE MAP.
+    //
+    // Neil's brief: *"we need to look at each element that we're asking students to master…
+    // the paragraph structure, the essay structure, what goes in each sentence, and we need to
+    // make sure that there's a reference somewhere… and then we should provide deep links so
+    // that students can actually read them."* The aim behind it, in his words: the student gets
+    // used to using the WHOLE website, not just the chat in front of them.
+    //
+    // ⛔ WHY THE MODEL MAY NOT COMPOSE AN ID. `tagResourceLinks` drops an unknown section with a
+    // console.warn and renders NOTHING — a mistyped id is not an error anyone can see, it is a
+    // chip that silently fails to appear, which reads exactly like "not built yet" (the v7.19.949
+    // F1 lesson). A model asked to remember 53 section ids WILL invent one. So the invocation
+    // carries the legal lines, built from THIS map, and the model COPIES one verbatim.
+    //
+    // EVERY `arg` BELOW IS A REAL SECTION IN THE BUILT NOTES BUNDLE — bin/toolkit-link-gate.js
+    // proves it against tkNavigate's own two-step rule, and fails the build otherwise.
+    // ⚠️ Where a taught element has NO section of its own, the row points at the section that
+    // actually contains it and says so in `covers`; where NOTHING covers it, there is NO ROW —
+    // never a near-miss link, because landing a stuck student on the wrong page is worse than
+    // landing them nowhere. The gaps are tracked in the notes-lane handoff, not papered over.
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    const ELEMENT_TOOLKIT_MAP = {
+        // The analytical body paragraph — TTECEA+C, element by element.
+        analytical: [
+            { el: 'the paragraph shape (all seven elements, in order)', arg: 'body', label: 'Body Paragraphs' },
+            { el: 'Topic Sentence', arg: 'fix-topic-sentence', label: 'Topic Sentences' },
+            { el: 'naming the technique accurately', arg: 'fix-technical-terms', label: 'Precise Terminology' },
+            { el: 'choosing and embedding the quotation', arg: 'fix-evidence', label: 'Evidence & Quotes' },
+            { el: 'the inference verb (never "shows")', arg: 'wb-verbs', label: 'Inference Verbs' },
+            { el: 'Close Analysis', arg: 'fix-close-analysis', label: 'Close Analysis' },
+            { el: 'Effect 1 and Effect 2 on the reader', arg: 'fix-effects', label: 'Effects on the Reader' },
+            { el: "Author's Purpose", arg: 'fix-authors-purpose', label: "Author's Purpose" },
+            { el: 'Context (AO3 papers only)', arg: 'fix-context', label: 'Context' },
+            // Introduction + conclusion. Hook and Building Sentences have no section of their own;
+            // `intro` carries them in order, so the row points there and says what it covers.
+            { el: 'the Introduction — Hook, Building Sentences, Thesis', arg: 'intro', label: 'Introduction', covers: 'Hook · Building Sentences' },
+            { el: 'Thesis', arg: 'thesis', label: 'Thesis Statement' },
+            { el: 'the Conclusion — all four parts', arg: 'conclusion', label: 'Conclusion', covers: 'Restated Thesis' },
+            { el: 'Controlling Concept', arg: 'controlling', label: 'Controlling Concept' },
+            { el: "Author's Central Purpose", arg: 'purposes', label: "Why Authors Write" },
+            { el: 'Universal Message', arg: 'universal', label: 'Universal Human Values' },
+            // The whole answer, and the qualities that cut across every element.
+            { el: 'the whole-essay shape', arg: 'essay', label: 'The Full Essay' },
+            { el: 'a conceptual claim instead of description', arg: 'conceptual', label: 'Conceptual Thinking' },
+            { el: 'fine-grained rather than merely detailed', arg: 'finegrained', label: 'Fine-Grained vs Detailed' },
+            { el: 'flow from one sentence to the next', arg: 'cohesion', label: 'Coherence & Cohesion' },
+            { el: 'repeated sentence openers', arg: 'fix-sentence-starters', label: 'Sentence Starters' },
+            { el: 'punctuating and embedding a quotation', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
+            { el: 'answering the words the question actually uses', arg: 'evaluative-keywords', label: 'Evaluative Keywords' },
+            { el: 'how long the answer should be', arg: 'word-budget', label: 'Word Count & Length' },
+            { el: 'a full worked Grade 9 essay', arg: 'worked', label: 'Worked Example' },
+        ],
+        // Transactional / persuasive writing — the six-beat spine.
+        iumvcc: [
+            { el: 'the IUMVCC shape (all six beats)', arg: 'iumvcc', label: 'Persuasive Structure' },
+            { el: 'control in your own writing', arg: 'fix-creative-writing', label: 'Creative & Persuasive Writing' },
+            { el: 'flow from one sentence to the next', arg: 'cohesion', label: 'Coherence & Cohesion' },
+            { el: 'naming the writer’s attitude precisely', arg: 'wb-tone', label: 'Tone & Feeling Words' },
+            { el: 'how long the answer should be', arg: 'word-budget', label: 'Word Count & Length' },
+        ],
+        // Narrative / descriptive. ⚠️ The seven scene elements we TEACH have no section — the
+        // Toolkit's `creative` page carries the six-beat Story Spine and a three-part single-scene
+        // shape instead. The row says what is actually there; it does not pretend.
+        creative: [
+            { el: 'the Story Spine and shaping a single scene', arg: 'creative', label: 'Creative Writing Structure' },
+            { el: 'control in your own writing', arg: 'fix-creative-writing', label: 'Creative & Persuasive Writing' },
+            { el: 'the words for a character’s Want and Need', arg: 'wb-goals', label: 'Character Goals' },
+            { el: 'symbols writers reach for', arg: 'wb-symbol', label: 'Symbolism' },
+            { el: 'how long the piece should be', arg: 'word-budget', label: 'Word Count & Length' },
+        ],
+        // Comparison work rides the analytical set plus the connectives bank.
+        comparison: [
+            { el: 'connectives for comparing two texts', arg: 'wb-connectives', label: 'Comparison Connectives' },
+        ],
+    };
+    // The literal line the model copies. ONE producer, so the marker's shape can never drift.
+    function elementToolkitLines(families) {
+        const seen = {};
+        const out = [];
+        (families || ['analytical']).forEach((f) => {
+            (ELEMENT_TOOLKIT_MAP[f] || []).forEach((r) => {
+                if (seen[r.arg]) return;
+                seen[r.arg] = true;
+                out.push('  - ' + r.el + (r.covers ? ' *(this section also covers ' + r.covers + ')*' : '')
+                    + ' → `@RESOURCE_LINK{"dest":"toolkit","arg":"' + r.arg + '","label":"' + r.label + '"}`');
+            });
+        });
+        return out;
+    }
+
     function tagResourceLinks(text) {
         if (!text || String(text).indexOf('@RESOURCE_LINK') === -1) return text;
         return String(text).replace(/@RESOURCE_LINK\s*(\{[^}]*\})/g, (whole, json) => {
@@ -5691,6 +5785,8 @@ window.WML = (function() {
         // v7.20.612: the ONE answer to "is this the extended-writing question?" — spec-derived,
         // because the number varies per board (AQA Q5 · Edexcel GCSE P2 Q8 · IGCSE P1 Q6).
         writingQuestionIds, isWritingQuestion,
+        // v7.20.615: the element → reference map, and the ONE producer of the link line.
+        ELEMENT_TOOLKIT_MAP, elementToolkitLines, RESOURCE_TOOLKIT_IDS,
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
         caps, cap, isMarkingFlow, hasAssessmentSections, isLiveModelling,
         // v7.20.129: the ONE outline-row completion rule — all three consumers call it
