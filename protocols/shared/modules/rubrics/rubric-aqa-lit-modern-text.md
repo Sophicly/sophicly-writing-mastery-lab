@@ -149,7 +149,24 @@ Stack on top of base critical frames:
 
 ## INLINE COACHING ACTIONS (modern text)
 
+**⭐⭐ HOW EVERY SCAN BELOW DIAGNOSES (v7.20.614 — read before using any of them).** Two shared laws
+govern all of them and are not restated per button:
+
+- `inline-coaching-core.md` → *HOW A SCAN DIAGNOSES*. Counts come from the **Document facts** block
+  and are never asserted; sentences are judged one at a time and quoted verbatim by number; the
+  verdict is **MISSING** or **OUT OF ORDER** or **PRESENT BUT THIN**, never blurred — a thin element
+  is never reported as an absent one. A sentence may do more than one job, and a job folded into
+  another sentence is a finding in itself.
+- `rubric-base.md` → *THE INTERPRETATION LADDER* and its **six verdicts** (missing · literal ·
+  repetition · promising but undeveloped · supported and precise · speculation beyond the evidence).
+  Naming a technique is rung 0. The mark is in what the word makes the reader understand that the
+  plain version would not — and the student chooses which reading the passage supports; you open the
+  options, you never hand one over.
+
+
 Identical to the Shakespeare rubric's INLINE COACHING ACTIONS (same buttons: `scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `check-spag` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), with these deltas:
+
+- ⭐ Including its conclusion rule: `scan-elements` coaches the **four** taught conclusion elements (Restated Thesis · Controlling Concept · Author's Central Purpose · Universal Message), never the seven marking criteria.
 
 **`check-spag`** (v7.20.613) — the combined CHECK that leads the SPaG group: double spaces, a space before punctuation, lower-case “i”, a word typed twice, a comma splice, a sentence starting lower-case, and possible American spellings. Quoted material is masked first, so the poem’s or text’s own words are never charged. It is code-served, states its own scope, and changes nothing — the student makes every edit.
 

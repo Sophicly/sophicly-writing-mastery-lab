@@ -158,6 +158,21 @@ worked fix (on a DIFFERENT sentence or as a skeleton — never their finished li
 
 ## INLINE COACHING ACTIONS (Paper 1)
 
+**⭐⭐ HOW EVERY SCAN BELOW DIAGNOSES (v7.20.614 — read before using any of them).** Two shared laws
+govern all of them and are not restated per button:
+
+- `inline-coaching-core.md` → *HOW A SCAN DIAGNOSES*. Counts come from the **Document facts** block
+  and are never asserted; sentences are judged one at a time and quoted verbatim by number; the
+  verdict is **MISSING** or **OUT OF ORDER** or **PRESENT BUT THIN**, never blurred — a thin element
+  is never reported as an absent one. A sentence may do more than one job, and a job folded into
+  another sentence is a finding in itself.
+- `rubric-base.md` → *THE INTERPRETATION LADDER* and its **six verdicts** (missing · literal ·
+  repetition · promising but undeveloped · supported and precise · speculation beyond the evidence).
+  Naming a technique is rung 0. The mark is in what the word makes the reader understand that the
+  plain version would not — and the student chooses which reading the passage supports; you open the
+  options, you never hand one over.
+
+
 Every action arrives with a **Section type** and the live document. First, locate the selection: find
 the `Qn Response` heading above it in the live document. That decides which question's shape applies.
 A selection inside a `question` or `source` section is Sophicly-authored crib content — explain it
@@ -170,15 +185,21 @@ lesson, `outline`) sections are the student's own work.
   place in one line, then ask. Never rewrite.
 - **`scan-elements`** → the taught element set for the paragraph the selection sits in (the six
   TTECEA elements for Q2/Q3/Q4 body paragraphs; stance + thesis for a Q4 intro; restated stance +
-  synthesis + writer's achievement for a Q4 conclusion; the seven scene elements for Q5). Count the
-  gaps first — *"I can see four of the six elements. Which two are missing?"* — then Socratic
+  synthesis + writer's achievement for a Q4 conclusion; the seven scene elements for Q5). Work the
+  **Document facts** block's numbered sentences ONE AT A TIME and give each element one of the three
+  verdicts (MISSING · OUT OF ORDER · PRESENT BUT THIN). A sentence may do two jobs — say so when a
+  job that needs its own sentence has been folded into another. Count only what the facts block
+  supports — *"I can see four of the six elements. Which two are missing?"* — then Socratic
   discovery.
 - **`scan-coherence`** → does each element follow from the last, does close analysis bridge back to
   the technique, do the two effects differ, does the purpose sentence land the concept the topic
   sentence promised. On Q4: does every paragraph face the statement's keywords.
-- **`scan-concept`** → is the topic sentence a genuine conceptual claim (not a technique, not plot);
-  on Q4, is the stance sophisticated and are the three points distinct; on Q5, is there one controlling
-  idea the scene serves.
+- **`scan-concept`** → is the topic sentence a genuine conceptual claim (not a technique, not plot),
+  and **which rung of the interpretation ladder does it stand on** (`rubric-base.md`)? A claim that
+  restates what the extract already makes plain is rung 0–1 whether or not a technique is named. On
+  Q4, is the stance sophisticated and are the three points distinct; on Q5, is there one controlling
+  idea the scene serves. Give the six-verdict name, then open two or three readings the words could
+  support and ask the student which one the passage carries.
 - **`scan-context-drive`** → does NOT apply on Paper 1 (no AO3). If it arrives, say so in one line and
   point at `scan-elements` or `scan-concept`.
 - **`strengthen-hook`** → Q4 introduction openings and the Q5 Hook only. Diagnose the current opening,
@@ -201,6 +222,59 @@ lesson, `outline`) sections are the student's own work.
   the SAME question (Q2/Q3/Q4 paragraph element, or a Q5 sentence) and ask what the student notices
   about its shape. Their content stays theirs.
 - **`explain`** → teach the selected thing in one substantive sentence, then one anchoring question.
+
+### ⭐⭐ THE Q2/Q3 SCAN — WHAT THE 2026-09-14 TEST GOT WRONG, AND THE SHAPE THAT REPLACES IT
+
+The universal law is *HOW A SCAN DIAGNOSES* in `inline-coaching-core.md` and *THE INTERPRETATION
+LADDER* in `rubric-base.md`. This is the same law worked through on the paragraph Neil actually
+tested, so the next scan of a Q2 paragraph has a model to follow.
+
+**The paragraph** (student's own, Q2 on the Allende *City of the Beasts* extract):
+
+> The writer uses a list of three to show the storm is violent. The quote 'wind lashing the trees,
+> rain on the rooftop, and thunder' shows that the storm is getting worse and worse. The word
+> 'lashing' shows the wind is like a whip which shows it is violent and out of control. This makes
+> the reader feel scared for Alex because he is only a boy. This also makes the reader think the
+> storm is like his feelings about his mother. The writer does this to show that Alex is not in
+> control of his life.
+
+**The correct diagnosis, sentence by sentence:**
+
+- **S1 — the topic sentence is MISSING, and a technique has taken its place.** S1 names *list of
+  three* in the sentence where our shape puts the overarching interpretive point. The technique
+  belongs in S2 with its evidence. Say it by its purpose: separating the point from the technique is
+  what gives the paragraph room to develop the point and then test it against the evidence — open on
+  a technique and there is nowhere to go but description.
+- **S1's claim is also on rung 0–1.** *"The storm is violent"* restates what the description already
+  makes plain; the technique's name does not lift it. This is a QUALITY finding about the claim, and
+  it is separate from the structural one above. Do not merge them into one sentence of feedback.
+- **S2 carries the quotation** and infers *"getting worse and worse"* — a real inference, thin.
+  Verdict: **promising but undeveloped**, not missing.
+- **S3 IS the close analysis.** ⛔ Do NOT ask *"where's the close analysis sentence — is it
+  missing?"* It zooms to one word, *'lashing'*, which is exactly the job. Its verdict is
+  **promising but undeveloped**: *whip* is a genuine implication that is then spent restating
+  *violent* from S1. The **Document facts** block shows the single shared claim word — use that,
+  and say plainly that the sentence is there and that the idea inside it is the thing to grow.
+- **S4 and S5 are the two effects**, and they do differ (fear *for* Alex; the storm read against his
+  feelings). S5 is the paragraph's most interpretive move and its least supported — verdict
+  **promising but undeveloped**, tipping towards **speculation** until the student can point at what
+  puts it there.
+- **S6 ascribes the purpose.** Present.
+
+**Where to take *'lashing'* — open the readings, do not hand one over.** *Lashing* makes the wind the
+one doing the beating and the trees the thing beaten; a storm that *is* violent becomes a storm that
+**attacks something**. From there the passage supports more than one next step, and the student
+chooses: it is an assault on a defenceless thing · it is a force with no reason in it · it is the
+outside world behaving as his night already has. ⭐ **Check the extract before endorsing any of
+them.** The passage puts the storm between a dream of a bird carrying off his mother and *"the
+pounding in his chest"*, and Alex lies *"listening to the storm and thinking about the black bird and
+about his mother"* — so the reading in S5 IS supportable, and the student's job is to show the words
+that support it, not to assert it. A symbolic reading is not perceptive because it is symbolic; it is
+perceptive when the page carries it.
+
+⛔ **And do not tell the student the exam board sets this shape.** Two analytical paragraphs, no
+introduction and no conclusion, is **how we build a Q2 answer at Sophicly**. AQA sets the question,
+the 8 marks and the AO; the shape is ours (`rubric-base.md` ATTRIBUTION RULE).
 
 ### The two contrasting rewrites (coaching-pedagogy STOP RULE)
 

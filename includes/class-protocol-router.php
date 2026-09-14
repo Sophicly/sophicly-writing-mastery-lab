@@ -5418,6 +5418,33 @@ TEMPLATE;
                     if ($t2 !== '') $p .= "- Second target: \"{$t2}\"\n";
                     $p .= "When a button's finding overlaps one of these targets, say so in one clause — it tells the student their redraft is hitting what the assessment asked for. These are the student's own recorded targets, not a list to work through.\n\n";
                 }
+
+                // v7.20.614 — THE CALIBRATION TRAVELS. The student marked their own answer against
+                // the board's descriptors, compared it with Sophia's, and decided. That decision and
+                // the goal they set from it are the most useful thing they own coming into this
+                // lesson, and until now they stopped at the assessment door.
+                $cal = $p1_rec['calibration'] ?? null;
+                if (is_array($cal) && (!empty($cal['goal']) || !empty($cal['questions']))) {
+                    $p .= "### WHAT THEY DECIDED AFTER MARKING THEMSELVES (their calibration)\n";
+                    $goal = trim((string) ($cal['goal'] ?? ''));
+                    if ($goal !== '') {
+                        $p .= "- **The one thing they said they would do differently:** \"{$goal}\" — when the selection in front of you is where that applies, name it in one clause. Never open a turn by reciting it.\n";
+                    }
+                    foreach ((array) ($cal['questions'] ?? []) as $row) {
+                        if (!is_array($row)) continue;
+                        $q = trim((string) ($row['q'] ?? ''));
+                        if ($q === '') continue;
+                        $mine = (string) ($row['mine'] ?? ''); $soph = (string) ($row['sophia'] ?? '');
+                        $max  = (string) ($row['max'] ?? '');
+                        $why  = trim((string) ($row['why'] ?? ''));
+                        $gap  = (is_numeric($mine) && is_numeric($soph)) ? abs((float) $mine - (float) $soph) : null;
+                        $p .= "- **{$q}:** they marked themselves {$mine}/{$max}, I marked {$soph}/{$max}"
+                            . ($gap !== null ? ($gap == 0 ? " (the same)" : " (" . rtrim(rtrim(number_format($gap, 1), '0'), '.') . " apart)") : '')
+                            . ($why !== '' ? " — their own words: \"{$why}\"" : '') . "\n";
+                    }
+                    $p .= "⭐ A question where they marked themselves ABOVE me is where their judgement of their own writing is furthest from the criteria — coaching a selection there is worth more than coaching one where we already agreed. "
+                        . "⛔ Never tell them their self-mark was wrong, and never re-mark anything here: this lesson has no marks in it.\n\n";
+                }
             }
         }
 

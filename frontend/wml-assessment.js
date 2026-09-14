@@ -7867,6 +7867,264 @@
             + 'Open with brief FEEDBACK on their earlier key-aspects recall answer (2–3 lines), then begin marking exactly per the protocol\'s first marking step. Do not re-ask the grade, goal, or key-aspects questions.');
     }
 
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.614 (Neil, 2026-09-14) — THE CALIBRATION STAGE. Step 6 of the six he specified.
+    //
+    // Steps 1–5 were already built at v7.20.604 and are untouched: the board's own level
+    // descriptors, read bottom-up under the BEST-FIT regime (PEDAGOGY §35), a mark chosen inside
+    // the level, a justification against the descriptors, then Sophia marking the same response.
+    // What did NOT exist was step 6 as a STAGE: a place where the two judgements are put side by
+    // side, the student is given the chance to **reconsider or to keep their judgement and say
+    // why**, and that decision is kept as a record of its own.
+    //
+    // THREE DISTINCT RECORDS, as Neil asked, and they never overwrite one another:
+    //   1. `Mark-Scheme Self-Assessment` — the student's ORIGINAL judgement, made blind.
+    //   2. the per-question `Feedback` boxes + `Score Summary` — Sophia's assessment.
+    //   3. `Calibration` (this section) — what the student decided AFTER seeing both, and why.
+    //
+    // ⭐ SOPHIA'S MARK IS NOT A VERDICT TO SUBMIT TO. The student may keep their own mark; the
+    // walk asks them to say what carries it. Neil: *"It is an assessment to examine, not an
+    // unquestionable verdict."* Nothing here changes any mark — the awarded mark is the one in
+    // the Score Summary, and this stage never writes to it.
+    //
+    // Document-driven like the ladder host: the rows ARE the state, so a reload lands on the exact
+    // question the student was on (§4c.8b) and no fossil can form (§4c.7).
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    const CALIB_LABEL = 'Calibration';
+    const CALIB_KEEP = 'Keep my own mark';
+    const CALIB_TAKE = "Change to Sophia's mark";
+    const CALIB_BETWEEN = 'Somewhere in between';
+    function _calibFids(key) {
+        return { sophia: 'calib-' + key + '-sophia', decision: 'calib-' + key + '-decision', why: 'calib-' + key + '-why' };
+    }
+    // Sophia's awarded mark for a question, read from the Feedback box label the marking pipeline
+    // already maintains ("Feedback: Q2 (5 / 8)"). Returns null while the box still shows "—" —
+    // an unmarked question is simply not ready to calibrate, never a zero.
+    function _calibActualFor(qLabel) {
+        try {
+            const editorEl = document.getElementById('swml-tiptap-editor');
+            if (!editorEl) return null;
+            const want = String(qLabel || '').toUpperCase().replace(/[^A-Z0-9.]/g, '');
+            let found = null;
+            editorEl.querySelectorAll('[data-section-type="feedback"]').forEach((sec) => {
+                if (found !== null) return;
+                const lbl = sec.getAttribute('data-section-label') || '';
+                const m = /^Feedback\s*[:\-]?\s*(.+?)\s*\(\s*([\d.]+|—)\s*\/\s*([\d.]+)\s*\)/i.exec(lbl);
+                if (!m) return;
+                if (m[1].toUpperCase().replace(/[^A-Z0-9.]/g, '') !== want) return;
+                if (m[2] === '—') return;
+                found = { mark: parseFloat(m[2]), max: parseFloat(m[3]) };
+            });
+            return found;
+        } catch (e) { return null; }
+    }
+    function _calibGroups() {
+        return _ladderSchemeKeysFor().map((k) => {
+            const lf = _ladderFids(k.key), cf = _calibFids(k.key);
+            const mine = _ladderRowText(lf.mark);
+            const mineNum = parseFloat(String(mine).replace(/[^\d.]/g, ''));
+            return Object.assign({}, k, {
+                fids: cf,
+                mine: mine,
+                mineNum: isNaN(mineNum) ? null : mineNum,
+                myLevel: _ladderRowText(lf.level),
+                myWhy: _ladderRowText(lf.reason),
+                actual: _calibActualFor(k.q),
+                done: !!_ladderRowText(cf.decision),
+                answered: !!_ladderRowText(cf.why),
+            });
+        });
+    }
+    function _calibHostEligible() {
+        if (!state || (state.task !== 'assessment' && state.task !== 'redraft_assessment') || state.reviewMode) return false;
+        if (!document.querySelector('#swml-tiptap-editor [data-section-label="' + CALIB_LABEL + '"]')) return false;
+        const g = _calibGroups();
+        // Nothing to compare until the student marked themselves AND Sophia marked at least one
+        // of the same questions. Both halves are required — a comparison of one judgement is not
+        // a calibration, it is a mark.
+        return g.some((x) => x.mineNum !== null && x.actual);
+    }
+    function _calibHostComplete() {
+        const g = _calibGroups().filter((x) => x.mineNum !== null && x.actual);
+        return g.length > 0 && g.every((x) => x.done && x.answered) && !!_ladderRowText('calib-goal');
+    }
+    // The comparison itself — built in CODE from the two filed marks, so the numbers beside each
+    // other are never the model's recollection of them (the §19 rule, applied to a readout).
+    function _calibCompareText(g) {
+        const tol = _toleranceFor(g.max);
+        const delta = g.mineNum - g.actual.mark;
+        const ad = Math.abs(delta);
+        const agree = ad <= tol;
+        const dir = delta > 0 ? 'higher than' : 'lower than';
+        let out = '**' + g.q + ' — ' + g.ao + '**\n\n';
+        out += '| | level | mark |\n|---|---|---|\n';
+        out += '| **You** | ' + (g.myLevel || '—') + ' | **' + g.mineNum + ' / ' + g.max + '** |\n';
+        out += '| **Sophia** | see your feedback for ' + g.q + ' | **' + g.actual.mark + ' / ' + g.max + '** |\n\n';
+        if (g.myWhy) out += 'Your reason at the time: *"' + g.myWhy + '"*\n\n';
+        out += agree
+            ? 'That is **' + (ad === 0 ? 'the same mark' : ad + ' mark' + (ad === 1 ? '' : 's') + ' apart') + '** — inside what two examiners would differ by on a question worth ' + g.max + '. Your judgement is calibrated here.'
+            : 'That is **' + ad + ' mark' + (ad === 1 ? '' : 's') + ' apart**, and you placed yourself ' + dir + ' I did. That gap is the most useful thing on this page.';
+        return out;
+    }
+    function _calibHostRenderCurrent() {
+        if (!_chatShell || !_chatShell.addMsg) return;
+        const groups = _calibGroups().filter((x) => x.mineNum !== null && x.actual);
+        const next = groups.find((x) => !x.done || !x.answered);
+        if (next) {
+            if (!next.done) { _calibAskDecision(next); return; }
+            _calibAskWhy(next);
+            return;
+        }
+        if (!_ladderRowText('calib-goal')) { _calibAskGoal(groups); return; }
+        _calibHandBack();
+    }
+    function _calibAskDecision(g) {
+        const plain = _calibCompareText(g)
+            + '\n\nRead the part of your answer we both judged, then decide. **My mark is an assessment to examine, not a verdict** — if you still think yours is right, keep it and tell me what carries it.';
+        _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
+        WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain },
+            { durable: false, why: 'a present-state comparison of two live marks — re-derived from the document on entry, never stored (§4c.7 VALUE fossil)' });
+        // §4c.10 — the chat points at a document surface, so the document goes there. A missing
+        // box is a silent no-op, never an error.
+        try {
+            const fb = document.querySelector('#swml-tiptap-editor [data-section-label^="Feedback: ' + g.q + ' "]');
+            if (fb && typeof _swmlScrollToTop === 'function') _swmlScrollToTop(fb);
+        } catch (e) {}
+        _calibChips([CALIB_KEEP, CALIB_TAKE, CALIB_BETWEEN], function (label) {
+            let filed = label;
+            if (label === CALIB_TAKE) filed = label + ' (' + g.actual.mark + ' / ' + g.max + ')';
+            if (label === CALIB_KEEP) filed = label + ' (' + g.mineNum + ' / ' + g.max + ')';
+            try { _chatShell.addMsg(label, 'user'); } catch (e) {}
+            WML.recordTurn(_chatShell.history, { role: 'user', content: label }, { durable: true, why: 'the student tapped it — it happened, it stays' });
+            try { _writeOutlineRowField(g.fids.sophia, g.actual.mark + ' / ' + g.max + (g.myLevel ? ' (you said ' + g.myLevel + ')' : ''), { replace: true }); } catch (e) {}
+            try { _writeOutlineRowField(g.fids.decision, filed, { replace: true }); } catch (e) {}
+            try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) {}
+            setTimeout(function () { _calibHostRenderCurrent(); }, 200);
+        });
+    }
+    function _calibAskWhy(g) {
+        const tol = _toleranceFor(g.max);
+        const agree = Math.abs(g.mineNum - g.actual.mark) <= tol;
+        const plain = agree
+            ? 'In one line: **which criterion were you surest about**, and what in your answer earned it? Type it below.'
+            : 'In one line: **which criterion explains the gap** — and what would that part of your answer need to do to move up? Type it below.';
+        _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
+        WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain }, { durable: false, why: 'a present-state ask — re-derived from the document on entry' });
+    }
+    function _calibAskGoal(groups) {
+        const worst = groups.slice().sort((a, b) => Math.abs(b.mineNum - b.actual.mark) - Math.abs(a.mineNum - a.actual.mark))[0];
+        const plain = 'Last one. **What is the ONE thing you will do differently in your next answer** because of this?'
+            + (worst ? '\n\nYour judgement and mine were furthest apart on **' + worst.q + '** — that is the honest place to aim.' : '')
+            + '\n\nType it below, as something you would actually do, not something you would like to be.';
+        _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
+        WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain }, { durable: false, why: 'a present-state ask — re-derived from the document on entry' });
+    }
+    // Typed answers: the WHY line and the GOAL line. Consumed ONLY while the stage is live and the
+    // question is on the screen, so ordinary chat after the assessment is never swallowed (§4d).
+    function _calibHostConsumeTyped(msg) {
+        const text = String(msg || '').trim();
+        if (!text) return false;
+        if (!_calibHostEligible() || _calibHostComplete()) return false;
+        const groups = _calibGroups().filter((x) => x.mineNum !== null && x.actual);
+        const pendingWhy = groups.find((x) => x.done && !x.answered);
+        try { _chatShell.addMsg(text, 'user'); } catch (e) {}
+        WML.recordTurn(_chatShell.history, { role: 'user', content: text }, { durable: true, why: 'the student typed it — it happened, it stays' });
+        if (pendingWhy) {
+            try { _writeOutlineRowField(pendingWhy.fids.why, text, { replace: true }); } catch (e) {}
+        } else if (groups.every((x) => x.done && x.answered)) {
+            try { _writeOutlineRowField('calib-goal', text, { replace: true }); } catch (e) {}
+        } else {
+            // A decision chip is outstanding — there is nothing to file, but the turn is still
+            // OURS: falling through to the AI here would leave a student who reloaded mid-stage
+            // with no question on the screen and no chip to press (§4d — a refusal is half a
+            // change; the other half is what they see instead). Re-serve the question.
+            _calibHostRenderCurrent();
+            return true;
+        }
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) {}
+        _calibHostRenderCurrent();
+        return true;
+    }
+    function _calibChips(options, onPick) {
+        try {
+            const bar = el('div', { className: 'swml-quick-actions swml-sa-walk-bar' });
+            options.forEach(function (label) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn swml-sa-walk-btn', textContent: label,
+                    onClick: function () { bar.remove(); onPick(label); } }));
+            });
+            const host = document.querySelector('.swml-chat-messages');
+            const bubble = host && host.lastElementChild;
+            if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(bar);
+            else console.warn('WML calibration: no bubble to host the chips — the typed fallback still answers');
+        } catch (e) { /* the typed path still moves the walk on */ }
+    }
+    // The calibration travels: it is merged onto the phase record the POLISHING preamble already
+    // reads, so the next lesson opens knowing what the student decided and what they aimed at.
+    // Fire-and-forget — a failed write is logged and never blocks the student (the document keeps
+    // the record either way, which is the durable copy).
+    function _calibPersist() {
+        try {
+            const groups = _calibGroups().filter((x) => x.mineNum !== null && x.actual);
+            if (!groups.length) return;
+            const payload = {
+                board: state.board, text: state.text, topic_number: state.topicNumber || 0,
+                phase: (state.phase || 'initial'), attempt: state.attempt || 0,
+                goal: _ladderRowText('calib-goal'),
+                questions: groups.map((g) => ({
+                    q: g.q, ao: g.ao, max: g.max, mine: g.mineNum, sophia: g.actual.mark,
+                    decision: _ladderRowText(g.fids.decision), why: _ladderRowText(g.fids.why),
+                })),
+            };
+            const apiPost = WML && WML.apiPost, API = WML && WML.API;
+            if (!apiPost || !API || !API.phaseCalibration) { console.warn('WML calibration: no API handle — document record kept, phase record not updated'); return; }
+            apiPost(API.phaseCalibration, payload)
+                .then(() => console.log('WML calibration: filed onto the phase record'))
+                .catch((e) => console.warn('WML calibration: phase record not updated —', e && e.message));
+        } catch (e) { console.warn('WML calibration: persist skipped —', e && e.message); }
+    }
+    function _calibHandBack() {
+        if (_calibHandBack._fired) return;
+        _calibHandBack._fired = true;
+        _calibPersist();
+        const done = 'That is your calibration filed — your own judgement, mine, and what you decided after seeing both. It travels with you into your planning and your polishing.';
+        try {
+            _chatShell.addMsg(formatAI(done), 'ai', done, { suppressActions: true });
+            WML.recordTurn(_chatShell.history, { role: 'assistant', content: done }, { durable: true, why: 'a past-event report — the calibration was filed' });
+            try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (e) {}
+        } catch (e) {}
+    }
+    // The document section — ONE producer, used by the templates AND the on-load heal, exactly as
+    // the ladder section is. A NEW section (not extra rows inside the ladder's) precisely so the
+    // existing section-level heal carries it into documents that already exist.
+    function buildCalibrationSection(topicData) {
+        const keys = _ladderSchemeKeysFor(topicData);
+        if (!keys.length) return '';
+        let inner = '<p><em>You marked your own answer before I did. Here both marks sit side by side. '
+            + 'Where they differ, the gap is the lesson — and you may keep your own mark if you can say what carries it.</em></p>';
+        keys.forEach((k) => {
+            const f = _calibFids(k.key);
+            inner += '<h3>' + escapeHTML(k.q + ' — ' + k.ao + ' (/' + k.max + ')') + '</h3>';
+            inner += inputHTML("Sophia's mark", f.sophia);
+            inner += inputHTML('What you decided after seeing both', f.decision);
+            inner += inputHTML('Why — in your own words', f.why);
+        });
+        inner += '<h3>Your next goal</h3>';
+        inner += inputHTML('The ONE thing you will do differently next time', 'calib-goal');
+        return sectionHTML('action', CALIB_LABEL, true, null, inner);
+    }
+
+    // The [ASSESSMENT_COMPLETE] closing turn is where the two judgements first BOTH exist, so it
+    // is where the calibration stage opens. Guarded like _maybeEmitAssessmentGrade — closing turn
+    // only — and idempotent, because _calibHostRenderCurrent re-derives everything from the rows.
+    function _maybeOpenCalibration(reply) {
+        try {
+            if (!/\[ASSESSMENT_COMPLETE\]/i.test(reply || '')) return;
+            if (!_calibHostEligible() || _calibHostComplete()) return;
+            setTimeout(function () { try { _calibHostRenderCurrent(); } catch (e) {} }, 1800);
+        } catch (e) { console.warn('WML calibration: open skipped —', e && e.message); }
+    }
+
     function _saWalkEligible() {
         if (state.task !== 'assessment' || state.reviewMode) return false;
         return String(state.board || '').toLowerCase() === 'aqa';   // AQA P1 / P2 / Literature = the 3 anchors
@@ -8842,7 +9100,7 @@
         try {
             const editorEl = document.getElementById('swml-tiptap-editor');
             if (!editorEl) return null;
-            const SKIP = /^(Overall Feedback|Analytics|Self-Assessment|Mark-Scheme Self-Assessment|Action Plan|Score Summary)/i;
+            const SKIP = /^(Overall Feedback|Analytics|Self-Assessment|Mark-Scheme Self-Assessment|Calibration|Action Plan|Score Summary)/i;
             const penRe = /^([A-Z]{1,3}\d(?:-[A-Z]+)?).{0,80}?\((?:−|-|–)\s*([\d.]+)\)(.*)$/;
             const headRe = /^Mark\s+Breakdown\s*[—–-]+\s*((?:Body\s+Paragraph|Paragraph)\s*\d+|Introduction|Conclusion|.{1,40})$/i;
             const cards = {};
@@ -11583,7 +11841,7 @@
         if (!window.WML || WML.state?.task !== 'exam_crib') return 0;
         const STRIP_TYPES = new Set(['scores', 'improvement']);
         // Specific label-matched action / feedback sections (don't catch valid Q feedback).
-        const STRIP_LABELS = new Set(['Analytics', 'Self-Assessment', 'Mark-Scheme Self-Assessment', 'Action Plan']);
+        const STRIP_LABELS = new Set(['Analytics', 'Self-Assessment', 'Mark-Scheme Self-Assessment', 'Calibration', 'Action Plan']);
         // Trailing divider labels that introduce the stripped sections — drop them too
         // so we don't leave orphan section-break headers.
         const STRIP_DIVIDER_LABELS = new Set(['FEEDBACK', 'RESULTS', 'SCORES', 'Feedback', 'Results']);
@@ -17172,6 +17430,10 @@
             // v7.19.879: typed "1"–"5" during the self-assessment walk rates the current row.
             if (_pcStage === 'ladder' && _ladderHostConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
             if (_pcStage === 'selfassess' && _saWalkConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
+            // ⭐ v7.20.614: the CALIBRATION stage sits AFTER marking, so it is not a pre-chain
+            // stage — but its typed answers are consumed the same way. It only ever consumes while
+            // its own question is on the screen unanswered, so ordinary chat is never swallowed.
+            if (!_pcStage && _calibHostConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
             if (_pcStage) {
                 // v7.19.810: respect silent sends (mirrors the main path below) — a
                 // directive-style send must never render as a user bubble.
@@ -18027,6 +18289,7 @@
                             // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
+                            setTimeout(() => _maybeOpenCalibration(_r), 1600);   // v7.20.614 — step 6 opens on the closing turn
                             // v7.19.854: engine-owned closing chain — after section fills settle
                             setTimeout(() => _driveClosingChain(_r), 600);
                         }
@@ -40457,6 +40720,10 @@
                             // v7.19.879: typed "1"–"5" during the self-assessment walk rates the current row.
                             if (_pcStage === 'ladder' && _ladderHostConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
                             if (_pcStage === 'selfassess' && _saWalkConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
+            // ⭐ v7.20.614: the CALIBRATION stage sits AFTER marking, so it is not a pre-chain
+            // stage — but its typed answers are consumed the same way. It only ever consumes while
+            // its own question is on the screen unanswered, so ordinary chat is never swallowed.
+            if (!_pcStage && _calibHostConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
                             if (_pcStage) {
                                 // v7.19.810: respect silent sends (mirrors primary pipeline).
                                 const _pcSilent = canvasSilentSend;
@@ -40834,6 +41101,7 @@
                                             // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
                                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
+                            setTimeout(() => _maybeOpenCalibration(_r), 1600);   // v7.20.614 — step 6 opens on the closing turn
                                             // v7.19.854: engine-owned closing chain — after section fills settle
                                             setTimeout(() => _driveClosingChain(_r), 600);
                                         }
@@ -58485,6 +58753,7 @@
             html += dividerHTML('RESULTS');
             html += buildScoresSection(marks);
             html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#469) — exam-prep template: no topic data in scope; the key builder reads state
+            html += buildCalibrationSection(null);           // v7.20.614 — step 6: the two judgements, side by side
             html += buildSelfAssessmentSection(false);
             html += buildAnalyticsSection();
             html += buildActionPlanSection('diagnostic');
@@ -58519,6 +58788,7 @@
             html += dividerHTML('RESULTS');
             html += buildScoresSection(marks);
             html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#469) — exam-prep template: no topic data in scope; the key builder reads state
+            html += buildCalibrationSection(null);           // v7.20.614 — step 6: the two judgements, side by side
             html += buildSelfAssessmentSection(false);
             html += buildActionPlanSection('diagnostic');
         } else if (exerciseType === 'verbal_rehearsal' || exerciseType === 'quote_analysis') {
@@ -58998,6 +59268,7 @@
             let totalMarks = 0;
             html += dividerHTML('FEEDBACK');
             html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#469)
+            html += buildCalibrationSection(topicData);            // v7.20.614 — step 6: the two judgements, side by side
             html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             questions.forEach(function(q) {
                 const qMarks = parseInt(q.marks) || 0;
@@ -59013,6 +59284,7 @@
             const marksB = parseInt(topicData.part_b_marks) || 25;
             html += dividerHTML('FEEDBACK — PART A');
             html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#469)
+            html += buildCalibrationSection(topicData);            // v7.20.614 — step 6: the two judgements, side by side
             html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(marksA), 'Part A');
             html += dividerHTML('FEEDBACK — PART B');
@@ -59024,6 +59296,7 @@
             const feedbackMarks = parseInt(topicData.marks) || getDefaultMarks(state.board, state.subject);
             html += dividerHTML('FEEDBACK');
             html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#469)
+            html += buildCalibrationSection(topicData);            // v7.20.614 — step 6: the two judgements, side by side
             html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(feedbackMarks));
             html += dividerHTML('RESULTS');
@@ -62645,6 +62918,7 @@
         const requiredSections = [
             { label: 'Score Summary', build: () => buildScoresSection(getDefaultMarks(state.board, state.subject)) },
             ...(_ladderSchemeKeysFor().length ? [{ label: LADDER_SA_LABEL, build: () => buildMarkSchemeSelfAssessSection() }] : []),   // v7.20.604 (#469): healed into existing docs where scheme data exists
+            ...(_ladderSchemeKeysFor().length ? [{ label: CALIB_LABEL, build: () => buildCalibrationSection() }] : []),   // v7.20.614: same heal — a NEW section precisely so existing docs gain it
             { label: 'Self-Assessment', build: () => buildSelfAssessmentSection() },
             { label: 'Analytics', build: () => buildAnalyticsSection() },
             { label: 'Action Plan', build: () => buildActionPlanSection(state.draftType?.includes('redraft') ? 'redraft' : 'diagnostic') },

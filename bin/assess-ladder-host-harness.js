@@ -104,8 +104,10 @@ JS.replace(/return 'ladder';/g, (m, o) => { idxL.push(o); return m; });
 JS.replace(/return 'selfassess';/g, (m, o) => { idxS.push(o); return m; });
 ok(idxL.length === 2 && idxS.length === 2 && idxL[0] < idxS[0] && idxL[1] < idxS[1], 'the ladder precedes the blind walk at both sites');
 ok(/label: LADDER_SA_LABEL, build: \(\) => buildMarkSchemeSelfAssessSection\(\)/.test(JS), 'healed into existing documents (requiredSections)');
-ok(/STRIP_LABELS = new Set\(\['Analytics', 'Self-Assessment', 'Mark-Scheme Self-Assessment', 'Action Plan'\]\)/.test(JS), 'stripped from the marking payload');
-ok(/SKIP = \/\^\(Overall Feedback\|Analytics\|Self-Assessment\|Mark-Scheme Self-Assessment\|Action Plan\|Score Summary\)\/i/.test(JS), 'skipped by the ledger scan');
+// v7.20.614: the Calibration section joined both lists — it is the student's own record, not
+// their writing, so marking must never read it and the ledger must never scan it.
+ok(/STRIP_LABELS = new Set\(\['Analytics', 'Self-Assessment', 'Mark-Scheme Self-Assessment', 'Calibration', 'Action Plan'\]\)/.test(JS), 'stripped from the marking payload (incl. Calibration)');
+ok(/SKIP = \/\^\(Overall Feedback\|Analytics\|Self-Assessment\|Mark-Scheme Self-Assessment\|Calibration\|Action Plan\|Score Summary\)\/i/.test(JS), 'skipped by the ledger scan (incl. Calibration)');
 ok(count(/html \+= buildMarkSchemeSelfAssessSection\((?:topicData|null)\);/g) === 5, 'composed at all 5 document sites (2 exam-prep + 3 literature/dual) — got ' + count(/html \+= buildMarkSchemeSelfAssessSection\((?:topicData|null)\);/g));
 ok(/self_assessment: \{ regime: 'bestfit', confidence: _ladderHostConfidence\(\) \|\| null, items: items \}/.test(JS), 'the canvas save carries self_assessment {regime, confidence, items[]}');
 ok(/_ladderOpenHook = function \(o\) \{ return _examinerLadderCtl\.open\(o\); \};/.test(JS), 'the closure-local ladder is reached through a module-scope hook (the .898 lesson)');

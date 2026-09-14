@@ -372,7 +372,9 @@ if (chipEvalOk) {
     ok('formatLocation exists and names question · paragraph i of n · words', typeof fmt === 'function' && /Q3 Response · paragraph 2 of 3 · 180 words/.test(fmt({ label: 'Q3 Response', question: 'Q3', paraIndex: 2, paraCount: 3, words: 180 })));
     ok('…and names the paragraph\'s job in a five-paragraph Literature Response box', /paragraph 5 of 5 \(Conclusion\)/.test(fmt({ label: 'Response', question: null, paraIndex: 5, paraCount: 5, words: 900 })) && /\(Body Paragraph 2\)/.test(fmt({ label: 'Response', question: null, paraIndex: 3, paraCount: 5, words: 900 })));
     ok('buildPrompt sends the Location line every turn', /'- \*\*Location:\*\* ' \+ formatLocation\(location\)/.test(CHIP));
-    ok('the box-open snapshot and every send re-read the Location from the live DOM', /location = extractLocation\(anchorEl\)/.test(CHIP) && /liveLocation = extractLocation\(sel\.anchorEl\)/.test(CHIP));
+    // v7.20.614: both call sites now pass the SELECTION TEXT too — it is what decides which
+    // paragraph the selection sits in, and without it the position was never knowable.
+    ok('the box-open snapshot and every send re-read the Location from the live DOM, with the selection text', /location = extractLocation\(anchorEl, text\)/.test(CHIP) && /liveLocation = extractLocation\(sel\.anchorEl, sel\.text\)/.test(CHIP));
     ok('the chat body carries phase + draftType', /phase: state \? \(state\.phase \|\| ''\) : ''/.test(CHIP) && /draftType: state \? \(state\.draftType \|\| ''\) : ''/.test(CHIP));
 }
 
@@ -446,6 +448,208 @@ console.log('\nThe analytical word-choice scans answer from CODE:');
         ok('an unknown action falls through to the API (null)', scan('scan-structure', prose) === null);
         ok('an empty selection falls through to the API (null)', scan('lang-scan-verbs', '   ') === null);
     }
+}
+
+
+// ── 8b. THE DOCUMENT IS READ IN CODE (v7.20.614) ────────────────────────────────────────────
+// Neil, 2026-09-14: the structure scan claimed "both paragraphs present" about a selection whose
+// shape it had never been told. Measured cause: every response section is ONE `swml-input-field`
+// with `<br><br>` between paragraphs and ZERO `<p>` elements, so the paragraph count reaching the
+// model was always 0 and `textContent` welded the paragraphs into one run.
+//
+// The four regression paragraphs below are Neil's own list: his supplied example, a structurally
+// correct but shallow paragraph, one with no close analysis, and a strong alternative reading.
+// The gate asserts the FACTS distinguish them — the verdict itself is the model's judgement, but a
+// model cannot tell them apart from evidence that does not distinguish them.
+console.log('\nThe document is COUNTED in code, not asserted by the model:');
+{
+    const P = WML.SelectionChip;
+    const need = ['splitParagraphs', 'splitSentences', 'sentenceSignals', 'locateSelection', 'buildDocumentFacts'];
+    ok('the chip exposes the pure document readers', need.every((n) => typeof P[n] === 'function'), need.filter((n) => typeof P[n] !== 'function'));
+
+    // ⭐ THE ROOT: a `<br><br>`-separated input field is TWO paragraphs, not one welded run.
+    ok('a <br><br> field splits into real paragraphs', P.splitParagraphs('One.\nTwo.\n\nSecond para.').length === 2);
+    ok('…a soft single break does NOT start a new paragraph', P.splitParagraphs('One,\nstill one.').length === 1);
+    ok('…and empty input yields nothing rather than a phantom paragraph', P.splitParagraphs('   \n\n  ').length === 0);
+
+    const NEIL = "The writer uses a list of three to show the storm is violent. The quote 'wind lashing the trees, rain on the rooftop, and thunder' shows that the storm is getting worse and worse. The word 'lashing' shows the wind is like a whip which shows it is violent and out of control. This makes the reader feel scared for Alex because he is only a boy. This also makes the reader think the storm is like his feelings about his mother. The writer does this to show that Alex is not in control of his life.";
+    const P2 = "The writer also uses a metaphor 'a sensation of being adrift in a boat'. This shows that Alex feels lost, he does not know what to do. The word 'adrift' shows he is floating with no direction. This makes the reader feel sorry for him.";
+    // (b) structurally correct, every element present, every claim literal.
+    const SHALLOW = "Allende presents the storm as loud. She uses the triadic list 'wind lashing the trees, rain on the rooftop, and thunder' to build the noise. The word 'thunder' is a loud sound. This makes the reader feel the noise. This also makes the reader notice the weather. Allende does this to show the storm is loud.";
+    // (c) no sentence zooms to a single word — close analysis genuinely absent.
+    const NO_CLOSE = "Allende presents the storm as an intruder into Alex's sleep. She uses the triadic list 'wind lashing the trees, rain on the rooftop, and thunder' to pile the sounds on top of one another. This makes the reader feel surrounded. This also makes the reader share his exhaustion. Allende exposes how little control he has over his own night.";
+    // (d) a strong, supported alternative reading.
+    const STRONG = "Allende makes the storm the continuation of Alex's nightmare rather than his escape from it. The triadic list 'wind lashing the trees, rain on the rooftop, and thunder' arrives in the sentence that explains what woke him, so the waking world inherits the dream's violence. The verb 'lashing' casts the wind as something that beats a body, which suggests the storm is not merely loud but punitive. This makes the reader read the weather as an assault rather than as weather. This also invites the reader to hear his own 'pounding' heart in its rhythm. Allende arguably positions the storm as the form his fear for his mother takes when he is awake.";
+
+    const facts = (paras, sel) => {
+        const h = P.locateSelection(paras, sel);
+        return P.buildDocumentFacts({
+            label: 'Q2 Response', type: 'response', question: 'Q2',
+            paraCount: paras.length, paraTexts: paras,
+            paraIndex: h.start, paraEnd: h.end !== h.start ? h.end : null,
+            words: paras.join(' ').split(/\s+/).length,
+        }, { sentences: true });
+    };
+
+    const fNeil = facts([NEIL, P2], NEIL);
+    ok('⭐ the block STATES the paragraph count — the claim the scan used to invent', /holds \*\*2 paragraphs\*\*/.test(fNeil), fNeil.split('\n')[1]);
+    ok('…and which paragraph the selection sits in, decided by the selection\'s own text', /selection sits in \*\*paragraph 1 of 2\*\*/.test(fNeil));
+    ok('…a selection in the SECOND paragraph is located there, not defaulted to the first', /paragraph 2 of 2/.test(facts([NEIL, P2], P2)));
+    ok('…a selection spanning both is reported as SPANNING, never as one', /SPANS paragraphs 1–2/.test(facts([NEIL, P2], NEIL + ' ' + P2)));
+    ok('…an unlocatable selection says so rather than guessing', /could not be located/.test(facts([NEIL, P2], 'text that is nowhere in this document at all')));
+    ok('the block forbids re-counting and describing unlisted sentences', /AUTHORITATIVE/.test(fNeil) && /never describe a sentence or paragraph this block does not list/.test(fNeil));
+    ok('every sentence is quoted VERBATIM and numbered (no paraphrase to mis-attribute)',
+        /S1 \(13w\) "The writer uses a list of three to show the storm is violent\."/.test(fNeil));
+
+    // ⭐ FAULT 1 (Neil): the scan read S1 as a topic sentence. The facts say it names a technique.
+    ok('⭐ S1 is shown NAMING A TECHNIQUE — the evidence the scan needed to see the topic sentence was displaced',
+        /S1 [^\n]*names a technique: list of three/.test(fNeil));
+    // ⭐ FAULT 2 (Neil): "limited depth is a quality issue, not evidence the element is absent."
+    ok('⭐ S3 is shown ZOOMING TO ONE WORD — close analysis is PRESENT, however thin',
+        /S3 [^\n]*zooms to a single word \(“lashing”\)/.test(fNeil));
+    ok('…and the quotation it zooms into is named', /S3 [^\n]*quotes the text \(“lashing”\)/.test(fNeil));
+    // ⭐ FAULT 4 (Neil): "do not attribute wording or ideas to a sentence that does not contain it."
+    ok('⭐ repetition is EVIDENCED — the shared claim word is named, not recalled',
+        /S3↔S1 share “violent”/.test(fNeil), (fNeil.match(/Content words shared[^\n]*/) || [''])[0]);
+    ok('…and the block says outright that a shared word is not repetition by itself',
+        /A shared word is NOT repetition by itself/.test(fNeil));
+    ok('…the analytical furniture (writer · reader · shows · uses) is NOT counted as a shared claim word',
+        !/share [^\n]*“(?:writer|reader|show|use|quote)”/.test(fNeil), (fNeil.match(/Content words shared[^\n]*/) || [''])[0]);
+
+    // The four cases must be DISTINGUISHABLE from the facts alone.
+    const fShallow = facts([SHALLOW], SHALLOW);
+    const fNoClose = facts([NO_CLOSE], NO_CLOSE);
+    const fStrong = facts([STRONG], STRONG);
+    ok('⭐ REGRESSION (c): a paragraph with NO close analysis shows no zoom signal at all',
+        !/zooms to a single word/.test(fNoClose), fNoClose);
+    ok('⭐ REGRESSION (b): a shallow-but-complete paragraph still shows its zoom — shallow ≠ absent',
+        /zooms to a single word/.test(fShallow));
+    ok('…and the shallow one is marked as re-using its own claim word ("loud")',
+        /share [^\n]*“loud”/.test(fShallow), (fShallow.match(/Content words shared[^\n]*/) || [''])[0]);
+    ok('⭐ REGRESSION (d): the strong reading carries tentative language, which the thin ones do not',
+        /tentative language/.test(fStrong) && !/tentative language/.test(fShallow));
+    ok('…and the author\'s / character\'s name is never counted as a repeated claim word',
+        !/share [^\n]*“(?:allende|alex|scrooge|macbeth)”/.test(fStrong), (fStrong.match(/Content words shared[^\n]*/) || [''])[0]);
+    ok('…the strong reading carries MORE distinct signals than the shallow one (zoom · tentative · purpose)',
+        /S3 [^\n]*zooms to a single word/.test(fStrong) && /tentative language/.test(fStrong) && /ascribes a purpose/.test(fStrong));
+    ok('a purpose sentence is recognised by its verb, not by its position',
+        /ascribes a purpose/.test(fNeil) && /ascribes a purpose/.test(fNoClose));
+
+    // The block is only as big as the turn needs (Neil: keep API context focused).
+    ok('no sentence table on turns that do not judge a sentence',
+        !/sentence by sentence/.test(P.buildDocumentFacts({ label: 'Q2 Response', paraCount: 2, paraTexts: [NEIL, P2], paraIndex: 1, words: 231 }, {})));
+    ok('…and the sentence table rides scan-structure, scan-elements, scan-concept and freetext',
+        ['scan-structure', 'scan-elements', 'scan-concept', 'freetext'].every((a) => CHIP.includes("'" + a + "'"))
+        && /const FACT_SENTENCE_ACTIONS = \[/.test(CHIP));
+    ok('buildPrompt emits the facts block every turn it applies to', /const facts = buildDocumentFacts\(location, \{ sentences: FACT_SENTENCE_ACTIONS/.test(CHIP));
+
+    // The full document must not weld either — getText() lost both labels and breaks.
+    ok('the full-document snapshot is built from the DOM, not canvasEditor.getText()',
+        /function _liveFullDoc\(\)/.test(CHIP) && /liveFullDoc = _liveFullDoc\(\)/.test(CHIP));
+    ok('…it keeps the section labels the model locates by', /=== ' \+ label\.toUpperCase\(\) \+ ' \[' \+ type \+ '\] ===/.test(CHIP));
+    ok('…and still NAMES an empty student section rather than dropping it (v7.19.421)',
+        /EMPTY — the student has not written anything in this section yet/.test(CHIP));
+    ok('the section context read is br-aware (the v7.20.340 weld, on the polishing side)',
+        /_sectionParagraphs\(cur\)\.map\(\(u\) => u\.text\)/.test(CHIP) && /function _blockText\(node\)/.test(CHIP));
+    ok('the selection text reaches extractLocation on BOTH the box-open and the send path',
+        /extractLocation\(anchorEl, text\)/.test(CHIP) && /extractLocation\(sel\.anchorEl, sel\.text\)/.test(CHIP));
+}
+
+// ── 8c. THE DIAGNOSIS LAW IS IN THE LOADED PROTOCOL (v7.20.614) ─────────────────────────────
+console.log('\nThe scan-diagnosis law and the interpretation ladder reach the model:');
+{
+    ok('inline-coaching-core.md carries HOW A SCAN DIAGNOSES', /## ⭐⭐ HOW A SCAN DIAGNOSES/.test(CORE));
+    ok('…it names the three verdicts and forbids blurring them',
+        /MISSING/.test(CORE) && /OUT OF ORDER/.test(CORE) && /PRESENT BUT THIN/.test(CORE)
+        && /A thin element is never reported as a missing one/.test(CORE));
+    ok('…it forbids stating a number the facts block does not state', /Never state a number the block does not state/.test(CORE));
+    ok('…it forbids describing a sentence the block does not list', /Never describe a sentence the block does not list/.test(CORE));
+    ok('…it names the multi-function rule (a job folded into another sentence is the finding)',
+        /A SENTENCE MAY DO MORE THAN ONE JOB/.test(CORE));
+    ok('…it forbids presenting our shape as the board\'s rule', /is \*\*not\*\* an exam-board\nrule/.test(CORE) || /OUR SHAPE IS OURS/.test(CORE));
+    ok('…and the INPUT CONTRACT documents the facts block the chip now sends',
+        /Document facts \(counted in CODE this turn — AUTHORITATIVE\)/.test(CORE));
+
+    ok('rubric-base.md carries THE INTERPRETATION LADDER', /## ⭐⭐ THE INTERPRETATION LADDER/.test(BASE));
+    ok('…anchored to the board\'s own word, not ours', /perceptive/.test(BASE) && /judicious/.test(BASE));
+    ok('…with the six verdicts named', ['MISSING', 'LITERAL', 'REPETITION', 'PROMISING BUT UNDEVELOPED', 'SUPPORTED AND PRECISE', 'SPECULATION BEYOND THE EVIDENCE'].every((v) => BASE.includes(v)));
+    ok('…and Neil\'s explicit brake: it is NOT one new inference per sentence',
+        /THIS IS NOT A QUOTA OF ONE NEW INFERENCE PER SENTENCE/.test(BASE));
+    ok('…and a symbolic reading is not perceptive by default', /never treat a symbolic reading\nas automatically perceptive/.test(BASE) || /wearing a good coat/.test(BASE));
+
+    // Every analytical rubric points at both laws — one source, no per-paper drift (§13).
+    const analytical = ['rubric-aqa-lang-p1-fiction.md', 'rubric-aqa-lang-p2-nonfiction.md', 'rubric-nonfiction-lang.md',
+        'rubric-aqa-lit-shakespeare.md', 'rubric-aqa-lit-19c-novel.md', 'rubric-aqa-lit-modern-text.md',
+        'rubric-aqa-lit-anthology-poetry.md', 'rubric-aqa-lit-unseen-poetry.md'];
+    analytical.forEach((f) => {
+        const R = read('protocols/shared/modules/rubrics/' + f);
+        ok(f + ': points at both shared laws instead of restating them',
+            /HOW EVERY SCAN BELOW DIAGNOSES/.test(R) && /THE INTERPRETATION LADDER/.test(R));
+    });
+
+    // The P1 worked diagnosis — the paragraph Neil actually tested.
+    const P1R = read('protocols/shared/modules/rubrics/rubric-aqa-lang-p1-fiction.md');
+    ok('the P1 rubric works Neil\'s own paragraph through the law', /wind lashing the trees/.test(P1R));
+    ok('…and says outright that S3 IS the close analysis', /Do NOT ask \*"where's the close analysis sentence/.test(P1R));
+    ok('…and that S1 displaced the topic sentence', /the topic sentence is MISSING, and a technique has taken its place/.test(P1R));
+    ok('…quoting the extract, not inventing it (the words are Allende\'s)', /pounding in his chest/.test(P1R));
+
+    // ⭐ The conclusion-element contradiction: 4 taught, never 7 (PEDAGOGY §32a).
+    const SHK = read('protocols/shared/modules/rubrics/rubric-aqa-lit-shakespeare.md');
+    ok('⭐ the Shakespeare rubric coaches FOUR conclusion elements, not seven',
+        /\*\*for the conclusion, the FOUR taught elements\*\*/.test(SHK) && !/the seven conclusion elements/.test(SHK));
+    ok('…and explains the seven MARKING criteria as depth inside those four', /those are the DEPTH inside the four elements/.test(SHK));
+    const ASSESS_JS = read('frontend/wml-assessment.js');
+    const conc = ASSESS_JS.slice(ASSESS_JS.indexOf('            conclusion: ['), ASSESS_JS.indexOf('            conclusion: [') + 900);
+    ok('…which is what the engine\'s own element set holds (the one source)',
+        ['Restated Thesis', 'Controlling Concept', "Author's Central Purpose", 'Universal Message'].every((l) => conc.includes(l))
+        && (conc.match(/\{ id:/g) || []).length === 4);
+}
+
+// ── 8d. THE CALIBRATION STAGE (v7.20.614) ───────────────────────────────────────────────────
+console.log('\nStep 6 — the calibration stage compares the two judgements and keeps the decision:');
+{
+    const A = read('frontend/wml-assessment.js');
+    ok('there is a Calibration document section with ONE producer', /function buildCalibrationSection\(topicData\)/.test(A));
+    ok('…it is a NEW section, so the existing section-level heal carries it into existing documents',
+        /\{ label: CALIB_LABEL, build: \(\) => buildCalibrationSection\(\) \}/.test(A));
+    ok('…it holds all three records distinctly (their mark, Sophia\'s, what they decided and why)',
+        /inputHTML\("Sophia's mark", f\.sophia\)/.test(A) && /inputHTML\('What you decided after seeing both', f\.decision\)/.test(A)
+        && /inputHTML\('Why — in your own words', f\.why\)/.test(A));
+    ok('…and the ONE improvement goal', /inputHTML\('The ONE thing you will do differently next time', 'calib-goal'\)/.test(A));
+    ok('the student may KEEP their own mark — Sophia\'s is not a verdict to submit to',
+        /const CALIB_KEEP = 'Keep my own mark'/.test(A) && /an assessment to examine, not a verdict/.test(A));
+    ok('…all three options exist (keep · take mine · in between)', /CALIB_TAKE/.test(A) && /CALIB_BETWEEN/.test(A));
+    ok('the comparison numbers are read from the document, never recalled by the model',
+        /function _calibActualFor\(qLabel\)/.test(A) && /function _calibCompareText\(g\)/.test(A));
+    ok('…an unmarked question is skipped, never treated as a zero', /an unmarked question is simply not ready to calibrate, never a zero/.test(A));
+    ok('the stage NEVER changes a mark', /this stage never writes to it/.test(A));
+    ok('it is never marked and never scanned as a ledger row',
+        /STRIP_LABELS = new Set\(\['Analytics', 'Self-Assessment', 'Mark-Scheme Self-Assessment', 'Calibration', 'Action Plan'\]\)/.test(A)
+        && /Mark-Scheme Self-Assessment\|Calibration\|Action Plan/.test(A));
+    ok('it opens on the [ASSESSMENT_COMPLETE] closing turn', /function _maybeOpenCalibration\(reply\)/.test(A) && /_maybeOpenCalibration\(_r\)/.test(A));
+    ok('§4d LIVENESS: a typed turn mid-stage is consumed and the question RE-SERVED, never dropped to the AI',
+        /Re-serve the question\.\n            _calibHostRenderCurrent\(\);\n            return true;/.test(A));
+    ok('…and the typed consumer is wired into BOTH chat pipelines',
+        (A.match(/if \(!_pcStage && _calibHostConsumeTyped\(msg\)\)/g) || []).length === 2);
+    ok('§4c.7 FOSSIL: the live comparison is drawn, never stored', /durable: false, why: 'a present-state comparison of two live marks/.test(A));
+    ok('§4c.10: the document scrolls to the feedback box being discussed', /_swmlScrollToTop\(fb\)/.test(A));
+
+    const REST = read('includes/class-rest-api.php');
+    ok('the calibration is filed onto the phase record by its own endpoint', /'\/phase\/calibration'/.test(REST) && /function save_phase_calibration/.test(REST));
+    ok('…it MERGES, so no other field of the record is lost', /\$latest\['calibration'\] =/.test(REST));
+    ok('…it refuses when there is no completed result to calibrate against', /No completed phase result to attach a calibration to/.test(REST));
+    ok('…it round-trip verifies the write (the wp_unslash gotcha)', /Calibration saved but round-trip verification failed/.test(REST));
+    ok('…and it can never fork a re-mark attempt (it writes no grade or total)',
+        !/\$latest\['grade'\] =/.test(REST.slice(REST.indexOf('function save_phase_calibration'), REST.indexOf('public function complete_phase'))));
+
+    ok('the client posts it when the stage completes', /API\.phaseCalibration/.test(A) && /function _calibPersist\(\)/.test(A));
+    ok('…and a failed post never blocks the student (the document keeps the record)', /document record kept, phase record not updated/.test(A));
+    ok('the API map carries the route', /phaseCalibration: config\.restUrl \+ 'phase\/calibration'/.test(_CORESRC));
+
+    ok('⭐ the calibration TRAVELS into the polishing lesson', /WHAT THEY DECIDED AFTER MARKING THEMSELVES \(their calibration\)/.test(ROUTER));
+    ok('…naming the goal they set and where their judgement was furthest out', /The one thing they said they would do differently/.test(ROUTER) && /furthest from the criteria/.test(ROUTER));
+    ok('…and forbidding re-marking in a lesson that has no marks in it', /this lesson has no marks in it/.test(ROUTER));
 }
 
 // ── 9. The coach panel opens the polishing lesson with its instructions ──────────────────────

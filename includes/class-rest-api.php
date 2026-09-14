@@ -395,6 +395,14 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.20.614: the calibration record — the student's decision AFTER seeing both marks.
+        // MERGED into the existing phase record; it never re-files an attempt and never touches a
+        // grade (the re-mark fork in complete_phase keys on grade/total, which this cannot change).
+        register_rest_route($namespace, '/phase/calibration', [
+            'methods' => 'POST', 'callback' => [$this, 'save_phase_calibration'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // Phase status — read completion data (used by phase overview)
         register_rest_route($namespace, '/phase/status', [
             'methods' => 'GET', 'callback' => [$this, 'get_phase_status'],
@@ -5085,6 +5093,82 @@ class SWML_REST_API {
      * Stores: swml_phase_{board}_{text}_t{topic}_{phase}
      * Fires: do_action('swml_phase_complete', ...) for external integrations.
      */
+    /**
+     * v7.20.614 — FILE THE CALIBRATION onto the phase record it belongs to.
+     *
+     * The student's own marks are filed by the ladder BEFORE marking; Sophia's are filed by the
+     * marking pipeline; this is the THIRD record — what the student decided once they had seen
+     * both, and the one goal they set from it. Kept distinct from the other two by living under
+     * its own `calibration` key: nothing here overwrites a mark, a grade or a target.
+     *
+     * MERGE, never replace: it reads the latest record for this phase and writes the same array
+     * back with `calibration` added, so a concurrent/earlier commit's fields survive. It refuses
+     * outright when no completed record exists — a calibration with nothing to calibrate against
+     * is a row we would have to invent.
+     */
+    public function save_phase_calibration($request) {
+        $user_id = get_current_user_id();
+        $params  = $request->get_json_params();
+
+        $board   = sanitize_text_field($params['board'] ?? '');
+        $text    = sanitize_text_field($params['text'] ?? '');
+        $topic   = absint($params['topic_number'] ?? 0);
+        $phase   = sanitize_text_field($params['phase'] ?? 'initial');
+        $attempt = absint($params['attempt'] ?? 0);
+        if (!$board || !$text || !$topic) {
+            return new WP_Error('missing_params', 'board, text and topic_number are required', ['status' => 400]);
+        }
+        if ($attempt < 1) {
+            $idx = $this->get_attempt_index($user_id, $board, $text, $topic, '');
+            $attempt = $idx['current'] ?? 1;
+        }
+
+        // Find the attempt row the latest record actually lives on, so the merge lands on the SAME
+        // record the polishing preamble reads (get_latest_phase_result walks the re-mark fork).
+        $target_n = 0;
+        $latest   = null;
+        $latest_ts = '';
+        for ($n = $attempt; $n < $attempt + 50; $n++) {
+            $rec = SWML_Session_Manager::get_phase_result($user_id, $board, $text, $topic, $phase, $n);
+            if (!$rec) break;
+            $ts = (string) ($rec['completed_at'] ?? '');
+            if ($latest === null || $ts >= $latest_ts) { $latest = $rec; $latest_ts = $ts; $target_n = $n; }
+        }
+        if (!$latest || ($latest['status'] ?? '') !== 'complete') {
+            return new WP_Error('no_result', 'No completed phase result to attach a calibration to', ['status' => 404]);
+        }
+
+        $rows = [];
+        foreach ((array) ($params['questions'] ?? []) as $row) {
+            if (!is_array($row)) continue;
+            $rows[] = [
+                'q'        => sanitize_text_field($row['q'] ?? ''),
+                'ao'       => sanitize_text_field($row['ao'] ?? ''),
+                'mine'     => sanitize_text_field((string) ($row['mine'] ?? '')),
+                'sophia'   => sanitize_text_field((string) ($row['sophia'] ?? '')),
+                'max'      => sanitize_text_field((string) ($row['max'] ?? '')),
+                'decision' => sanitize_text_field($row['decision'] ?? ''),
+                'why'      => sanitize_textarea_field($row['why'] ?? ''),
+            ];
+        }
+        $latest['calibration'] = [
+            'goal'       => sanitize_textarea_field($params['goal'] ?? ''),
+            'questions'  => $rows,
+            'decided_at' => current_time('mysql'),
+        ];
+
+        $meta_key = $this->phase_meta_key($board, $text, $topic, $phase, $target_n);
+        update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($latest)));
+
+        // Round-trip verify (rule #9) — a write that reports true but decodes empty is the exact
+        // failure the wp_unslash gotcha produces, and it must never pass as saved.
+        $verify = json_decode((string) get_user_meta($user_id, $meta_key, true), true);
+        if (!is_array($verify) || empty($verify['calibration'])) {
+            return new WP_Error('storage_error', 'Calibration saved but round-trip verification failed', ['status' => 500]);
+        }
+        return ['success' => true, 'attempt' => $target_n, 'questions' => count($rows)];
+    }
+
     public function complete_phase($request) {
         $user_id = get_current_user_id();
         $params  = $request->get_json_params();

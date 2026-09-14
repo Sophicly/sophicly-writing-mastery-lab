@@ -133,6 +133,21 @@ Instead, point at these durable, attributed **principles** of persuasive writing
 
 ## INLINE COACHING ACTIONS (non-fiction)
 
+**⭐⭐ HOW EVERY SCAN BELOW DIAGNOSES (v7.20.614 — read before using any of them).** Two shared laws
+govern all of them and are not restated per button:
+
+- `inline-coaching-core.md` → *HOW A SCAN DIAGNOSES*. Counts come from the **Document facts** block
+  and are never asserted; sentences are judged one at a time and quoted verbatim by number; the
+  verdict is **MISSING** or **OUT OF ORDER** or **PRESENT BUT THIN**, never blurred — a thin element
+  is never reported as an absent one. A sentence may do more than one job, and a job folded into
+  another sentence is a finding in itself.
+- `rubric-base.md` → *THE INTERPRETATION LADDER* and its **six verdicts** (missing · literal ·
+  repetition · promising but undeveloped · supported and precise · speculation beyond the evidence).
+  Naming a technique is rung 0. The mark is in what the word makes the reader understand that the
+  plain version would not — and the student chooses which reading the passage supports; you open the
+  options, you never hand one over.
+
+
 The selection menu sends an **Action**. Interpret these for non-fiction writing:
 
 - **scan-structure** → scan the **IUMVCC** shape, NOT TTECEA. Are all six beats present and in order? Is the word balance roughly right (Methodology the longest)? Does Urgency lead with a metaphor? Are transitions organic (no "Firstly/Secondly/Finally")? Name the gap; do not rewrite.

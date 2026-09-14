@@ -134,12 +134,27 @@ Too many Q-hooks feel pretentious. Lead with fact + quote.
 
 ## INLINE COACHING ACTIONS (anthology comparison)
 
+**⭐⭐ HOW EVERY SCAN BELOW DIAGNOSES (v7.20.614 — read before using any of them).** Two shared laws
+govern all of them and are not restated per button:
+
+- `inline-coaching-core.md` → *HOW A SCAN DIAGNOSES*. Counts come from the **Document facts** block
+  and are never asserted; sentences are judged one at a time and quoted verbatim by number; the
+  verdict is **MISSING** or **OUT OF ORDER** or **PRESENT BUT THIN**, never blurred — a thin element
+  is never reported as an absent one. A sentence may do more than one job, and a job folded into
+  another sentence is a finding in itself.
+- `rubric-base.md` → *THE INTERPRETATION LADDER* and its **six verdicts** (missing · literal ·
+  repetition · promising but undeveloped · supported and precise · speculation beyond the evidence).
+  Naming a technique is rung 0. The mark is in what the word makes the reader understand that the
+  plain version would not — and the student chooses which reading the passage supports; you open the
+  options, you never hand one over.
+
+
 Same buttons as the Shakespeare rubric (`scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `check-spag` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), read through the comparison:
 
 **`check-spag`** (v7.20.613) — the combined CHECK that leads the SPaG group: double spaces, a space before punctuation, lower-case “i”, a word typed twice, a comma splice, a sentence starting lower-case, and possible American spellings. Quoted material is masked first, so the poem’s or text’s own words are never charged. It is code-served, states its own scope, and changes nothing — the student makes every edit.
 
 - **`scan-structure`** → five paragraphs, the three bodies on Form · Structure · Language in that order, EVERY paragraph on both poems; a sequential poem-by-poem essay is the first gap named.
-- **`scan-elements`** → the comparative element set above for a body paragraph (both poems in every element); the four intro elements; the five conclusion elements. Count the gaps first.
+- **`scan-elements`** → the comparative element set above for a body paragraph (both poems in every element); the four intro elements; and for the conclusion the **four taught elements read comparatively** (Restated comparative Thesis · synthesised central comparative Concept · how BOTH poets' methods serve their purposes = the Author's Central Purpose · universal comparative Message), plus the **final evaluative judgement** this paper alone asks for — which approach is more effective, and why. That judgement is a FIFTH element here and is the one genuine addition to the four (PEDAGOGY §32a): name it as the comparison paper's own requirement, never as an extra part of the shape students learned elsewhere. Count the gaps from the **Document facts** block.
 - **`scan-coherence`** → is each comparison a real pair (a difference or similarity argued, not two observations side by side); do the effects differ per poet; does the paragraph's topic stay on its assigned lens (form / structure / language).
 - **`scan-concept`** → is the comparative thesis a conceptual argument about how the poets differ, not a theme list; is the final judgement earned by the three paragraphs.
 - **`scan-context-drive`** → both poets' contexts, each driving its poem's choice, causal not correlational.

@@ -162,7 +162,24 @@ Stack on top of base critical frames (Bradley / Eagleton / Ryan / Smith):
 
 ## INLINE COACHING ACTIONS (19th-century novel)
 
+**⭐⭐ HOW EVERY SCAN BELOW DIAGNOSES (v7.20.614 — read before using any of them).** Two shared laws
+govern all of them and are not restated per button:
+
+- `inline-coaching-core.md` → *HOW A SCAN DIAGNOSES*. Counts come from the **Document facts** block
+  and are never asserted; sentences are judged one at a time and quoted verbatim by number; the
+  verdict is **MISSING** or **OUT OF ORDER** or **PRESENT BUT THIN**, never blurred — a thin element
+  is never reported as an absent one. A sentence may do more than one job, and a job folded into
+  another sentence is a finding in itself.
+- `rubric-base.md` → *THE INTERPRETATION LADDER* and its **six verdicts** (missing · literal ·
+  repetition · promising but undeveloped · supported and precise · speculation beyond the evidence).
+  Naming a technique is rung 0. The mark is in what the word makes the reader understand that the
+  plain version would not — and the student chooses which reading the passage supports; you open the
+  options, you never hand one over.
+
+
 Identical to the Shakespeare rubric's INLINE COACHING ACTIONS (same buttons, same behaviour: `scan-structure` `scan-elements` `scan-coherence` `scan-concept` `scan-context-drive` `strengthen-hook` `rephrase` `lang-scan-verbs` `lang-scan-starters` `strengthen-vocabulary` `tighten` `adjust-tone` `fix-spelling` `fix-grammar` `fix-punctuation` `compare-gold-standard` `explain`), with these deltas:
+
+- ⭐ Including its conclusion rule: `scan-elements` coaches the **four** taught conclusion elements (Restated Thesis · Controlling Concept · Author's Central Purpose · Universal Message), never the seven marking criteria.
 
 - **`scan-context-drive`** → the AO3 anchors are the Victorian / Romantic ones in this file and the active text's context-bank slice; "reader", never "audience".
 - **`compare-gold-standard`** → the loaded model answer is a Macbeth essay; quote its ELEMENT SHAPE (how a topic sentence is built, how context is fused) and say plainly that it is a different text — never present it as the answer to this question.

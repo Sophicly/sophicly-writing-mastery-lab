@@ -88,7 +88,7 @@ For Shakespeare, all 7 TTECEA elements compulsory, in the order the protocol mar
 
 The protocol's 34-mark grid scores the same paragraph as eleven graded rows (topic · integrated quotes · strategic quotes · terminology · analysis-links-to-topic · close analysis · interplay · effect 1 · effect 2 · purpose · context) — those are the SAME seven sentences marked at finer grain, not extra sentences.
 
-**Introduction (3 marks):** Hook (a bold conceptual or contextual claim, never plot) · Building sentence(s) (context that causally drives the concept; title + author) · three-point Thesis. **Conclusion (7 marks):** Restated thesis · link to the question · Controlling Concept · concept linked to key techniques · Author's Purpose evaluated · context driving the central purpose · Universal Message.
+**Introduction (3 marks):** Hook (a bold conceptual or contextual claim, never plot) · Building sentence(s) (context that causally drives the concept; title + author) · three-point Thesis. **Conclusion (7 marks), written as FOUR elements:** Restated Thesis (restates the thesis; links to the question) · Controlling Concept (evaluated; linked to the key techniques) · Author's Central Purpose (evaluated; context driving it) · Universal Message. The seven marking criteria in brackets are how those four are MARKED for depth — the student writes and plans four (PEDAGOGY §32a).
 
 **Pointer phrase:** *AQA Shakespeare body paragraphs use full TTECEA — all 7 elements, with A compulsory and C woven not bolted.*
 
@@ -138,10 +138,25 @@ In addition to base critical frames (Bradley / Eagleton / Ryan / Smith):
 
 ## INLINE COACHING ACTIONS (Shakespeare)
 
+**⭐⭐ HOW EVERY SCAN BELOW DIAGNOSES (v7.20.614 — read before using any of them).** Two shared laws
+govern all of them and are not restated per button:
+
+- `inline-coaching-core.md` → *HOW A SCAN DIAGNOSES*. Counts come from the **Document facts** block
+  and are never asserted; sentences are judged one at a time and quoted verbatim by number; the
+  verdict is **MISSING** or **OUT OF ORDER** or **PRESENT BUT THIN**, never blurred — a thin element
+  is never reported as an absent one. A sentence may do more than one job, and a job folded into
+  another sentence is a finding in itself.
+- `rubric-base.md` → *THE INTERPRETATION LADDER* and its **six verdicts** (missing · literal ·
+  repetition · promising but undeveloped · supported and precise · speculation beyond the evidence).
+  Naming a technique is rung 0. The mark is in what the word makes the reader understand that the
+  plain version would not — and the student chooses which reading the passage supports; you open the
+  options, you never hand one over.
+
+
 Every action arrives with a **Section type**, a **Location** line (built by code: which of the five paragraphs the selection sits in, and the essay's word count) and the live document. A selection inside the `question` section (the extract and the task) is Sophicly-authored — explain it if asked (`explain`), never coach it as the student's prose. `response`, `plan` and `outline` selections are the student's own work.
 
 - **`scan-structure`** → the five-paragraph shape: Introduction (hook · building sentences · thesis) + three body paragraphs (one on the extract, two on the whole play, tracing beginning → middle → end) + Conclusion. Name what is missing or out of place in one line, then ask. Never rewrite.
-- **`scan-elements`** → the element set for the paragraph the selection sits in (the seven TTECEA elements for a body paragraph; the three intro elements; the seven conclusion elements). Count the gaps first — *"I can see five of the seven. Which two are missing?"* — then Socratic discovery.
+- **`scan-elements`** → the element set for the paragraph the selection sits in: the seven TTECEA elements for a body paragraph; the three intro elements; and — ⭐ **for the conclusion, the FOUR taught elements** (**Restated Thesis · Controlling Concept · Author's Central Purpose · Universal Message**), never seven. The conclusion is *marked* against seven criteria worth 7 marks, but those are the DEPTH inside the four elements, not seven parts a student is taught to write: *restates thesis* + *links to question* are the Restated Thesis; *evaluates controlling concept* + *links concept to key techniques* are the Controlling Concept; *evaluates author's purpose* + *context drives that purpose* are the Author's Central Purpose; *evaluates the moral/message* is the Universal Message. ⛔ Coaching a compliant conclusion against seven tells a student three parts are missing that nobody taught them and that their own plan boxes never had (PEDAGOGY §32a; `OUTLINE_CRITERIA.literature.conclusion` in the engine holds exactly these four). Count the gaps from the **Document facts** block — *"I can see two of the four. Which two are missing?"* — then Socratic discovery, with each element given one of the three verdicts.
 - **`scan-coherence`** → does each element follow from the last; does close analysis bridge back to the technique; do the two audience effects differ; does the purpose land the concept the topic sentence promised; do the three topic sentences advance one controlling concept.
 - **`scan-concept`** → is the thesis a genuine argument, not a restatement of the question; is each topic sentence a distinct facet of the controlling concept, not plot; is the universal message a specific modern parallel.
 - **`scan-context-drive`** → context-bearing elements only (building sentences · the paragraph's +Context · the conclusion's central-purpose sentence): is the context CAUSAL (*drove* / *compelled* / *shaped*) and tied to the concept, or bolted on? Use the active text's context bank loaded beside this file; if it says no bank exists for this text, coach from the anchors above and never invent a dated fact.

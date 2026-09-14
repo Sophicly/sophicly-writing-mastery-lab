@@ -253,6 +253,89 @@
         return false;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.614 (Neil, 2026-09-14) — A COUNTABLE FACT IS COUNTED IN CODE, NEVER ASSERTED.
+    //
+    // THE DEFECT HE CAUGHT: the structure scan told him *"your selection has both paragraphs
+    // present, so the shape is right at that level"* about a selection whose shape it had never
+    // been told.
+    //
+    // MEASURED, not inferred — the live staging document
+    // (`swml_canvas_aqa_aqa_lang_paper_1_t1_polishing`, user 1355, 2026-09-14): EVERY response
+    // section is ONE `swml-input-field` div whose paragraphs are separated by `<br><br>`. Q1..Q5
+    // carry **zero `<p>` elements**. Consequences, all of them silent:
+    //   · `extractLocation` counted `querySelectorAll('p, li')` → **0** → paraIndex/paraCount null
+    //     → the **Location** line has never printed a paragraph position on ANY Language response.
+    //   · `extractSectionContext` and the full-document snapshot read `textContent`, which DROPS
+    //     `<br>` and WELDS the paragraphs together — *"…not in control of his life.The writer also
+    //     uses a metaphor…"*. The model received one unbroken run with no boundary in it.
+    // This is the SAME defect class already fixed for CW rows at v7.20.340 (`_cwNodeText`): *"the
+    // document was never wrong. EVERY READER was wrong."* The polishing readers never got that fix.
+    //
+    // THE LAW IT ESTABLISHES: what can be COUNTED is counted here and handed over as
+    // authoritative — how many paragraphs, which one the selection is in, what each sentence
+    // literally says. What must be JUDGED — what job a sentence does, whether it does it well —
+    // stays with the model. The model may never re-count or contradict the block, and may never
+    // describe a sentence the block does not list (Neil: *"Feedback must accurately quote or
+    // describe the student's writing"*).
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+
+    // A `<br>` is a paragraph boundary in this document and `textContent` throws it away.
+    function _blockText(node) {
+        if (!node) return '';
+        try {
+            const clone = node.cloneNode(true);
+            clone.querySelectorAll('br').forEach((b) => {
+                if (b.parentNode) b.parentNode.replaceChild(document.createTextNode('\n'), b);
+            });
+            clone.querySelectorAll('p, li, h1, h2, h3, h4').forEach((b) => {
+                try { b.appendChild(document.createTextNode('\n\n')); } catch (e) {}
+            });
+            return clone.textContent || '';
+        } catch (e) { return node.textContent || ''; }
+    }
+
+    // PURE. THE one paragraph splitter — blank-line separated blocks, inner soft breaks folded.
+    function splitParagraphs(text) {
+        return String(text || '')
+            .replace(/ /g, ' ')
+            .split(/\n[ \t]*\n+/)
+            .map((s) => s.replace(/\s+/g, ' ').trim())
+            .filter((s) => s.length > 0);
+    }
+
+    function _sectionContentRoot(sec) {
+        if (!sec || !sec.children) return sec;
+        for (let i = 0; i < sec.children.length; i++) {
+            const c = sec.children[i];
+            if (c.classList && c.classList.contains('swml-section-content')) return c;
+        }
+        return sec;
+    }
+
+    // Every paragraph of a section, in document order, each tied to the element that owns it.
+    // An input field can own several (the `<br><br>` case above); a `<p>` owns exactly one.
+    function _sectionParagraphs(sectionEl) {
+        const units = [];
+        if (!sectionEl) return units;
+        try {
+            const root = _sectionContentRoot(sectionEl);
+            const all = Array.prototype.slice.call(
+                root.querySelectorAll('[data-input-field="true"], .swml-input-field, p, li')
+            );
+            const tops = all.filter((n) => !all.some((o) => o !== n && o.contains && o.contains(n)));
+            tops.forEach((n) => {
+                const isField = !!(n.getAttribute && n.getAttribute('data-input-field') === 'true')
+                    || !!(n.classList && n.classList.contains('swml-input-field'));
+                const texts = isField
+                    ? splitParagraphs(_blockText(n))
+                    : [(n.textContent || '').replace(/\s+/g, ' ').trim()];
+                texts.forEach((t, i) => { if (t) units.push({ el: n, text: t, within: i }); });
+            });
+        } catch (e) { /* an unparseable section reports nothing rather than a wrong number */ }
+        return units;
+    }
+
     function extractSectionContext(domNode) {
         if (!domNode) return '';
         let cur = domNode.nodeType === 3 ? domNode.parentElement : domNode;
@@ -261,7 +344,9 @@
             cur = cur.parentElement;
         }
         if (!cur || cur === document.body) return '';
-        const text = (cur.textContent || '').replace(/\s+/g, ' ').trim();
+        // v7.20.614: paragraph breaks SURVIVE the read (they did not before — see the block above).
+        const paras = _sectionParagraphs(cur).map((u) => u.text);
+        const text = (paras.length ? paras.join('\n\n') : (cur.textContent || '').replace(/\s+/g, ' ').trim());
         const words = text.split(/\s+/);
         if (words.length <= 400) return text;
         return words.slice(0, 400).join(' ') + '…';
@@ -284,16 +369,38 @@
         return 'unknown';
     }
 
+    // PURE. Which paragraph does a selection sit in? Returns 1-based start/end, or nulls when the
+    // selection cannot be located — ⭐ NEVER a guess: an unlocatable selection reports "unknown"
+    // and the facts block says so, because a wrong position is what produced the defect above.
+    function locateSelection(paraTexts, selText) {
+        const norm = (s) => String(s || '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
+        const paras = (paraTexts || []).map(norm);
+        const sel = norm(selText);
+        if (!paras.length || !sel) return { start: null, end: null };
+        const head = sel.slice(0, 40);
+        const tail = sel.slice(-40);
+        let start = -1, end = -1;
+        for (let i = 0; i < paras.length; i++) {
+            if (start < 0 && paras[i].indexOf(head) !== -1) start = i;
+            if (paras[i].indexOf(tail) !== -1) end = i;
+        }
+        if (start < 0 && end < 0) return { start: null, end: null };
+        if (start < 0) start = end;
+        if (end < start) end = start;
+        return { start: start + 1, end: end + 1 };
+    }
+
     // v7.20.610 — LOCATE THE SELECTION IN CODE (Neil's brief: "selecting the correct question profile"
     // is a fixed decision, so code makes it). Walks to the enclosing section block and reports its
     // label ("Q3 Response" / "Response" / "Plan: Body Paragraph 2"), the paragraph's position among
-    // the section's non-empty paragraphs, and the section's word count. Sent on every turn as the
-    // **Location** line, so the model never infers which question or paragraph it is coaching.
+    // the section's paragraphs, and the section's word count. Sent on every turn as the **Location**
+    // line, so the model never infers which question or which paragraph it is coaching.
+    // v7.20.614: paragraphs come from _sectionParagraphs (br-aware), and the selection's own text
+    // decides WHICH paragraph — a selection spanning two reports BOTH, never one.
     // Pure over a DOM node: null when no section encloses the node (the gate evaluates the shape).
-    function extractLocation(domNode) {
+    function extractLocation(domNode, selText) {
         if (!domNode) return null;
         let cur = domNode.nodeType === 3 ? domNode.parentElement : domNode;
-        let para = cur && cur.closest ? cur.closest('p, li, h1, h2, h3, h4') : null;
         while (cur && cur !== document.body) {
             if (cur.classList && cur.classList.contains('swml-section-block')) break;
             cur = cur.parentElement;
@@ -301,31 +408,245 @@
         if (!cur || cur === document.body) return null;
         const label = cur.getAttribute('data-section-label') || '';
         const type = cur.getAttribute('data-section-type') || 'unknown';
-        const paras = Array.prototype.filter.call(cur.querySelectorAll('p, li'), (p) => (p.textContent || '').trim().length > 0);
-        const idx = para ? paras.indexOf(para) : -1;
-        const words = (cur.textContent || '').trim().split(/\s+/).filter(Boolean).length;
-        const qm = /^(Q\d+\w*)\b/.exec(label.trim()) || /—\s*(Q\d+\w*)\s*$/.exec(label.trim());
+        const units = _sectionParagraphs(cur);
+        const paraTexts = units.map((u) => u.text);
+        let hit = locateSelection(paraTexts, selText);
+        if (hit.start === null && units.length) {
+            // No selection text (the box-open snapshot) — fall back to the owning element's
+            // FIRST paragraph, which is exact whenever that element owns only one.
+            let owner = domNode.nodeType === 3 ? domNode.parentElement : domNode;
+            while (owner && owner !== cur && units.every((u) => u.el !== owner)) owner = owner.parentElement;
+            const idx = units.findIndex((u) => u.el === owner);
+            if (idx >= 0 && units.filter((u) => u.el === owner).length === 1) hit = { start: idx + 1, end: idx + 1 };
+        }
+        const qm = /^(Q\d+(?:\.\d+)?\w*)\b/.exec(label.trim()) || /—\s*(Q\d+(?:\.\d+)?\w*)\s*$/.exec(label.trim());
         return {
             label, type,
             question: qm ? qm[1] : null,
-            paraIndex: idx >= 0 ? idx + 1 : null,
-            paraCount: paras.length,
-            words,
+            paraIndex: hit.start,
+            paraEnd: hit.end !== hit.start ? hit.end : null,
+            paraCount: units.length,
+            paraTexts,
+            words: paraTexts.join(' ').split(/\s+/).filter(Boolean).length
+                || (cur.textContent || '').trim().split(/\s+/).filter(Boolean).length,
         };
     }
     function formatLocation(loc) {
         if (!loc) return 'unknown';
         const bits = [loc.label || loc.type];
-        if (loc.paraIndex && loc.paraCount) {
-            let pos = 'paragraph ' + loc.paraIndex + ' of ' + loc.paraCount;
+        if (loc.paraCount) {
+            let pos;
+            if (loc.paraIndex && loc.paraEnd) pos = 'paragraphs ' + loc.paraIndex + '–' + loc.paraEnd + ' of ' + loc.paraCount;
+            else if (loc.paraIndex) pos = 'paragraph ' + loc.paraIndex + ' of ' + loc.paraCount;
+            else pos = 'paragraph position unknown, of ' + loc.paraCount + ' in this section';
             // A five-paragraph Literature essay in ONE Response box: name the paragraph's job too.
-            if (loc.paraCount === 5 && !loc.question) {
+            if (loc.paraCount === 5 && !loc.question && loc.paraIndex && !loc.paraEnd) {
                 pos += ' (' + (loc.paraIndex === 1 ? 'Introduction' : loc.paraIndex === 5 ? 'Conclusion' : 'Body Paragraph ' + (loc.paraIndex - 1)) + ')';
             }
             bits.push(pos);
         }
         bits.push(loc.words + ' words in this section');
         return bits.join(' · ');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.614 — THE FACTS BLOCK. What the model is TOLD, so it stops inferring.
+    //
+    // Three faults in one scan (Neil, 2026-09-14), and each one has its answer here:
+    //   1. *"the first sentence introduces a technique immediately"* — the scan read the paragraph
+    //      as topic→technique→… and missed that sentence 1 is NOT a topic sentence. The table below
+    //      states, per sentence, whether it names a technique, carries a quotation, zooms to a
+    //      single word, addresses the reader, or ascribes a purpose — so ORDER is checked against
+    //      evidence rather than against the expected shape.
+    //   2. *"a close-analysis attempt is present… limited depth is a quality issue, not evidence
+    //      that the structural element is absent"* — `zooms to a single word` is exactly the
+    //      close-analysis signal, and it is listed whether the analysis is deep or thin.
+    //   3. *"do not attribute wording or ideas to an earlier sentence that it does not contain"* —
+    //      every sentence is quoted VERBATIM and numbered; the overlap line below names the shared
+    //      words rather than letting the model recall them.
+    //
+    // ⭐ A SENTENCE MAY DO MORE THAN ONE JOB. The signals are not a classification and the block
+    // never assigns an element name — that is the model's judgement, made from stated evidence.
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+
+    // The technique names our own protocols teach (Madfather's Crops + the analytical set). Used
+    // ONLY to answer "is a technique NAMED here?" — never to judge whether it is the right one.
+    const TECHNIQUE_NAMES = [
+        'list of three', 'rule of three', 'triadic', 'tricolon', 'metaphor', 'simile', 'personification',
+        'pathetic fallacy', 'alliteration', 'sibilance', 'assonance', 'onomatopoeia', 'repetition',
+        'anaphora', 'asyndeton', 'polysyndeton', 'parallelism', 'hyperbole', 'emotive language',
+        'rhetorical question', 'direct address', 'foreshadowing', 'juxtaposition', 'contrast',
+        'oxymoron', 'symbolism', 'imagery', 'semantic field', 'motif', 'irony', 'euphemism',
+        'caesura', 'enjambment', 'sonnet', 'rhyme', 'rhythm', 'stanza', 'volta', 'refrain',
+        'short sentence', 'sentence structure', 'first person', 'second person', 'third person',
+        'present tense', 'past tense', 'dialogue', 'stage direction', 'soliloquy', 'aside',
+        'dramatic irony', 'flashback', 'cyclical structure', 'in medias res', 'foreshadow',
+        'adjective', 'adverb', 'verb', 'noun', 'modal verb', 'imperative', 'superlative', 'simile',
+    ];
+    const PURPOSE_VERBS = ['warns', 'exposes', 'critiques', 'criticises', 'condemns', 'challenges',
+        'reveals', 'explores', 'presents', 'invites', 'forces', 'positions', 'wants us', 'wants the reader',
+        'does this to', 'is trying to', 'is showing', 'highlights', 'emphasises', 'conveys'];
+    const TENTATIVE = ['suggests', 'implies', 'perhaps', 'arguably', 'could', 'might', 'may',
+        'seems', 'appears', 'invites us to', 'hints'];
+    // Words that carry NO claim. Two families: ordinary function words, and the analytical
+    // furniture every sentence in an essay contains — writer · reader · shows · uses · quote.
+    // Leaving those in made every pair of sentences look like a repetition of each other, which
+    // is the false positive that would re-create the very fault Neil caught.
+    const STOPWORDS = new Set(('the a an and or but of to in on at for with is are was were be been being this that these those '
+        + 'it its his her their he she they them we us you your i as so if then than there here what which who whom whose '
+        + 'also very really just more most much many some any all not no nor do does did done have has had from by about into '
+        + 'over under out up down when while because since although though '
+        + 'writer reader writers readers author authors poet poets audience make makes made making show shows showing shown '
+        + 'use uses using used quote quotes quoted word words line lines text feel feels feeling think thinks mean means '
+        + 'like such thing things way ways rather merely quite indeed almost simply still even both each other another').split(' '));
+
+    // PURE. Analytical prose splits cleanly on terminal punctuation followed by whitespace.
+    function splitSentences(text) {
+        const s = String(text || '').replace(/\s+/g, ' ').trim();
+        if (!s) return [];
+        return (s.match(/[^.!?]+(?:[.!?]+(?=\s|$)|$)/g) || [s]).map((x) => x.trim()).filter(Boolean);
+    }
+
+    // Crude stemming so `show` / `shows` / `showing` count as one word for overlap purposes.
+    // Without it the overlap line is arbitrary: it would find a repeated "violent" but miss a
+    // repeated "shows"/"show", and the model cannot tell which absences are real.
+    function _stem(w) {
+        return w.replace(/(?:ings|ing|ies|ied|ed|es|s)$/, function (m) { return (w.length - m.length >= 4 ? '' : m); });
+    }
+    // ⭐ Proper nouns are dropped from the overlap signal. In a literary paragraph the author's and
+    // the character's names recur in nearly every sentence, so counting them makes every pair look
+    // like a repetition of every other — the false positive that would re-create the fault Neil
+    // caught. THE TEST, and it is deterministic: a token that appears capitalised in this paragraph
+    // and NEVER appears lower-case in it is a name. (Sentence position cannot decide this: "Allende"
+    // opens most of the sentences it appears in.)
+    function _properNounsIn(paraText) {
+        const words = String(paraText || '').split(/\s+/).map((w) => w.replace(/[^A-Za-z']/g, '')).filter(Boolean);
+        const lower = new Set(), caps = new Set();
+        words.forEach((w) => { if (/^[A-Z]/.test(w)) caps.add(w.toLowerCase()); else lower.add(w.toLowerCase()); });
+        const out = new Set();
+        caps.forEach((w) => { if (!lower.has(w)) out.add(w); });
+        return out;
+    }
+    function _contentWords(s, names) {
+        const raw = String(s || '').toLowerCase().replace(/[‘’]/g, "'").replace(/[^a-z' ]/g, ' ').split(/\s+/);
+        return raw
+            .filter((w) => w.length > 3 && !STOPWORDS.has(w) && !(names && names.has(w)))
+            .map(_stem).filter((w) => w && !STOPWORDS.has(w));
+    }
+
+    // PURE. Deterministic, stated-as-evidence signals for ONE sentence. No element names.
+    function sentenceSignals(sentence) {
+        const s = String(sentence || '');
+        const low = s.toLowerCase();
+        const quotes = [];
+        const qre = /[“‘"']([^“”‘’"']{2,})[”’"']/g;
+        let qm;
+        while ((qm = qre.exec(s)) !== null) quotes.push(qm[1].trim());
+        const techniques = TECHNIQUE_NAMES.filter((t) => low.indexOf(t) !== -1)
+            .filter((t, i, arr) => !arr.some((o) => o !== t && o.indexOf(t) !== -1 && o.length > t.length));
+        const shortestQuote = quotes.length ? quotes.slice().sort((a, b) => a.split(/\s+/).length - b.split(/\s+/).length)[0] : null;
+        return {
+            words: s.split(/\s+/).filter(Boolean).length,
+            quotes,
+            // A quotation of one or two words, or an explicit "the word/verb/adjective X" — the
+            // shape close analysis takes. Present ≠ deep: depth is the model's call.
+            zoom: !!(shortestQuote && shortestQuote.split(/\s+/).length <= 2)
+                || /\bthe (word|verb|adjective|adverb|noun|phrase|sound|letter|punctuation)\b/.test(low),
+            zoomWord: shortestQuote && shortestQuote.split(/\s+/).length <= 2 ? shortestQuote : null,
+            techniques,
+            reader: /\b(reader|audience|viewer|us feel|we feel)\b/.test(low),
+            writer: /\b(writer|author|poet|playwright|novelist|narrator)\b/.test(low),
+            purpose: PURPOSE_VERBS.filter((v) => low.indexOf(v) !== -1),
+            tentative: TENTATIVE.filter((v) => new RegExp('\\b' + v.replace(/ /g, '\\s+') + '\\b').test(low)),
+        };
+    }
+
+    // PURE. The block handed to the model. `paraTexts` and `focus` come from extractLocation.
+    // Returns '' when there is nothing certain to state — an empty block beats a wrong one.
+    function buildDocumentFacts(loc, opts) {
+        if (!loc || !loc.paraCount) return '';
+        const o = opts || {};
+        const paras = loc.paraTexts || [];
+        const lines = [];
+        lines.push('**Document facts (counted in CODE this turn — AUTHORITATIVE). Do not re-count them, do not contradict them, and never describe a sentence or paragraph this block does not list:**');
+        lines.push('- `' + (loc.label || loc.type) + '` holds **' + loc.paraCount + ' paragraph' + (loc.paraCount === 1 ? '' : 's')
+            + '**' + (paras.length ? ' (' + paras.map((p) => p.split(/\s+/).filter(Boolean).length + 'w').join(' · ') + ')' : '') + '.');
+        if (loc.paraIndex && loc.paraEnd) {
+            lines.push('- The selection SPANS paragraphs ' + loc.paraIndex + '–' + loc.paraEnd + ' of ' + loc.paraCount + '.');
+        } else if (loc.paraIndex) {
+            lines.push('- The selection sits in **paragraph ' + loc.paraIndex + ' of ' + loc.paraCount + '**.');
+        } else {
+            lines.push('- ⚠️ The selection could not be located to a paragraph. Say so if it matters; never guess which one it is.');
+        }
+        if (!o.sentences || !loc.paraIndex) return lines.join('\n');
+
+        const from = loc.paraIndex, to = loc.paraEnd || loc.paraIndex;
+        for (let pi = from; pi <= to && pi <= paras.length; pi++) {
+            const sents = splitSentences(paras[pi - 1]);
+            if (!sents.length) continue;
+            lines.push('- **Paragraph ' + pi + ', sentence by sentence** (verbatim — cite by number):');
+            const sigs = sents.map(sentenceSignals);
+            sents.forEach((s, i) => {
+                const g = sigs[i];
+                const notes = [];
+                if (g.techniques.length) notes.push('names a technique: ' + g.techniques.join(', '));
+                if (g.quotes.length) notes.push('quotes the text (' + g.quotes.map((q) => '“' + q + '”').join(', ') + ')');
+                if (g.zoom) notes.push('zooms to a single word' + (g.zoomWord ? ' (“' + g.zoomWord + '”)' : ''));
+                if (g.reader) notes.push('names the reader');
+                if (g.writer) notes.push('names the writer');
+                if (g.purpose.length) notes.push('ascribes a purpose (“' + g.purpose[0] + '”)');
+                if (g.tentative.length) notes.push('tentative language (“' + g.tentative[0] + '”)');
+                if (!notes.length) notes.push('none of the above');
+                lines.push('  - S' + (i + 1) + ' (' + g.words + 'w) "' + s + '" — ' + notes.join('; '));
+            });
+            // Overlap, stated rather than remembered — so "this repeats an earlier point" is a
+            // claim the model can only make about words that are actually shared (Neil's #4).
+            const rep = [];
+            const names = _properNounsIn(paras[pi - 1]);
+            for (let i = 1; i < sents.length; i++) {
+                const mine = new Set(_contentWords(sents[i], names));
+                let best = null;
+                for (let j = 0; j < i; j++) {
+                    const shared = [...new Set(_contentWords(sents[j], names))].filter((w) => mine.has(w));
+                    // ONE shared claim word is worth stating: it is exactly the evidence that
+                    // separates "this repeats the earlier point" from "this develops it".
+                    if (shared.length >= 1 && (!best || shared.length > best.shared.length)) best = { j: j + 1, shared };
+                }
+                if (best) rep.push('S' + (i + 1) + '↔S' + best.j + ' share ' + best.shared.slice(0, 4).map((w) => '“' + w + '”').join(', '));
+            }
+            lines.push(rep.length
+                ? '  - Content words shared with an earlier sentence: ' + rep.slice(0, 6).join(' · ') + '. ⭐ A shared word is NOT repetition by itself — judge whether the later sentence ADDS meaning to it. Adds nothing = repetition; adds a little = an inference worth developing, which is not a fault.'
+                : '  - No sentence in this paragraph re-uses a claim word from an earlier one.');
+        }
+        return lines.join('\n');
+    }
+
+    // v7.20.614: the FULL DOCUMENT, read the same way. The old snapshot came from
+    // `canvasEditor.getText()`, which loses both the section labels and (via the hardBreak leaf)
+    // every paragraph boundary — so a whole-answer scan was reading one welded run.
+    function _liveFullDoc() {
+        const root = _getEditorEl();
+        if (!root) return '';
+        const parts = [];
+        try {
+            Array.prototype.forEach.call(root.querySelectorAll('[data-section-type]'), (sec) => {
+                const type = sec.getAttribute('data-section-type') || '';
+                if (type === 'divider') return;
+                const label = sec.getAttribute('data-section-label') || '';
+                const heading = label ? '=== ' + label.toUpperCase() + ' [' + type + '] ===' : '=== ' + type.toUpperCase() + ' ===';
+                const paras = _sectionParagraphs(sec).map((u) => u.text).filter(Boolean);
+                if (!paras.length) {
+                    // v7.19.421's rule, kept: an empty student section is NAMED, never dropped —
+                    // a vacuum is what made Sophia quote answers the student never wrote.
+                    if (['response', 'plan', 'outline', 'notes'].indexOf(type) !== -1) {
+                        parts.push(heading + '\n(EMPTY — the student has not written anything in this section yet)');
+                    }
+                    return;
+                }
+                parts.push(heading + '\n' + paras.join('\n\n'));
+            });
+        } catch (e) { return ''; }
+        return parts.join('\n\n');
     }
 
     // ⭐ v7.20.613 — THE POLISHING ORDER, NUMBERED. PEDAGOGY §32a (Neil, 2026-09-07, verbatim):
@@ -704,6 +1025,11 @@
         return out;
     }
 
+    // The turns that judge what a sentence DOES or how WELL it does it. `freetext` is included:
+    // a typed question about the selection is the commonest judgement turn in the lesson.
+    const FACT_SENTENCE_ACTIONS = ['scan-structure', 'scan-elements', 'scan-coherence', 'scan-concept',
+        'scan-context-drive', 'strengthen-hook', 'rephrase', 'compare-gold-standard', 'explain', 'freetext'];
+
     function buildPrompt(action, selection, sectionContext, taskCtx, freeText, fullDoc, sectionType, location) {
         const lines = [
             '## Inline Coaching Invocation',
@@ -716,6 +1042,11 @@
             '- **Section context (live, re-read this turn):** ' + JSON.stringify(sectionContext || ''),
             '- **Task context:** ' + JSON.stringify(taskCtx || {}),
         ];
+        // v7.20.614: the code-counted facts. The sentence table rides only on the turns whose job
+        // is to judge a sentence's function or quality — a word-scan follow-up or a SPaG question
+        // does not need it, and Neil's brief asks for focused context, not more of it.
+        const facts = buildDocumentFacts(location, { sentences: FACT_SENTENCE_ACTIONS.indexOf(action || 'freetext') !== -1 });
+        if (facts) { lines.push(''); lines.push(facts); }
         // v7.19.72: live full-doc snapshot per turn so cross-section student
         // edits become visible to Sophia without copy-paste workaround. The
         // frozen Selection above is what the student originally asked about;
@@ -1089,7 +1420,7 @@
         const sectionContext = extractSectionContext(anchorEl);
         const sectionType = extractSectionType(anchorEl);
         let location = null;
-        try { location = extractLocation(anchorEl); } catch (_) { location = null; }
+        try { location = extractLocation(anchorEl, text); } catch (_) { location = null; }
 
         let rangeClone = null;
         try { rangeClone = range.cloneRange(); } catch (_) {}
@@ -1715,15 +2046,21 @@
                 if (sel.anchorEl && sel.anchorEl.isConnected) {
                     liveSectionContext = extractSectionContext(sel.anchorEl);
                     liveSectionType = extractSectionType(sel.anchorEl);
-                    liveLocation = extractLocation(sel.anchorEl) || liveLocation;
+                    // v7.20.614: the SELECTION'S OWN TEXT decides which paragraph it sits in.
+                    liveLocation = extractLocation(sel.anchorEl, sel.text) || liveLocation;
                 }
             } catch (_) { /* fall back to frozen snapshot */ }
+            // v7.20.614: built from the DOM, section-labelled, paragraph breaks intact.
+            // `canvasEditor.getText()` welded every paragraph in the document into one run.
             let liveFullDoc = '';
-            try {
-                if (_ctx && _ctx.canvasEditor && typeof _ctx.canvasEditor.getText === 'function') {
-                    liveFullDoc = _ctx.canvasEditor.getText() || '';
-                }
-            } catch (_) { /* leave empty if editor handle stale */ }
+            try { liveFullDoc = _liveFullDoc(); } catch (_) { liveFullDoc = ''; }
+            if (!liveFullDoc) {
+                try {
+                    if (_ctx && _ctx.canvasEditor && typeof _ctx.canvasEditor.getText === 'function') {
+                        liveFullDoc = _ctx.canvasEditor.getText() || '';
+                    }
+                } catch (_) { /* leave empty if editor handle stale */ }
+            }
             const promptText = buildPrompt(
                 isAction ? action : 'freetext',
                 sel.text,
@@ -1884,5 +2221,11 @@
         isEditableSection,
         extractSectionContext,
         extractSectionType,
+        // v7.20.614: the code-counted document readers, exposed PURE for bin/essay-polishing-env-gate.js.
+        splitParagraphs,
+        splitSentences,
+        sentenceSignals,
+        locateSelection,
+        buildDocumentFacts,
     };
 })();

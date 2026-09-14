@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.613';
+var WML_BUILD = '7.20.614';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -263,6 +263,7 @@ window.WML = (function() {
         topicQuestions: config.restUrl + 'topic-questions',
         phaseComplete: config.restUrl + 'phase/complete',
         phaseStatus:   config.restUrl + 'phase/status',
+        phaseCalibration: config.restUrl + 'phase/calibration',   // v7.20.614 — the calibration record
         chatSave:      config.restUrl + 'canvas/chat-save',
         chatLoad:      config.restUrl + 'canvas/chat-load',
         chatClear:     config.restUrl + 'canvas/chat-clear',
