@@ -413,7 +413,7 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
 
 3. **AI Analysis & Feedback:** Say: "I'm now assessing your Question 1 response." For each of the student's two selections, state if it is correct and award 1 mark if valid. E.g., "Your first selection, '...', is a valid point from the text. That's 1 mark."  
      
-4. **Total Mark for Q1:** "**Total Mark for Q1:** \[X\] / 2."  
+4. **Total Mark for Q1:** emit it on its OWN LINE, in exactly this form \- the document's auto-filing reads this literal and nothing else files Q1: `Q1 Total: \[X\]/2`  
      
 5. **Consolidation:** Say: "Well done on Question 1\. Let's move on to Question 2."
 
@@ -440,7 +440,7 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
 
 3. **AI Analysis & Feedback:** Say: "Thank you. I will now review your points against the mark scheme's valid responses." (The AI will state how many valid and distinct points it can identify in the student's explanation.) "Based on the mark scheme, that is worth \[X\] marks."  
      
-4. **Total Mark for Q2:** "**Total Mark for Q2:** \[X\] / 4."  
+4. **Total Mark for Q2:** emit it on its OWN LINE, in exactly this form \- the document's auto-filing reads this literal and nothing else files Q2: `Q2 Total: \[X\]/4`  
      
 5. **Consolidation:** Say: "Well done on Question 2\. Let's move on to Question 3."
 
@@ -466,7 +466,7 @@ Individual assessment protocols NO LONGER ask for sources/questions \- they acce
 
 3. **AI Analysis & Feedback:** Say: "Thank you. I am looking for distinct points that answer what Question 3 asks, each anchored to the text with a brief quotation." (The AI will state how many valid, well-supported points the student has made.) "You have made \[number\] valid points... That earns \[number\] marks."  
      
-4. **Total Mark for Q3:** "**Total Mark for Q3:** \[X\] / 5."  
+4. **Total Mark for Q3:** emit it on its OWN LINE, in exactly this form \- the document's auto-filing reads this literal and nothing else files Q3: `Q3 Total: \[X\]/5`  
      
 5. **Consolidation:** Say: "Well done on Section A's shorter questions. Let's move on to the detailed analysis."
 
