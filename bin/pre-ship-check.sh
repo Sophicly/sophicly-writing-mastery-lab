@@ -639,6 +639,12 @@ node bin/feedback-filing-gate.js || fail=1
 # business and AI Engine records none of it. Proves the accounting without spending on the API.
 php bin/api-usage-gate.php >/dev/null || { php bin/api-usage-gate.php; fail=1; }
 
+# MARK-SCHEME ROUTING (v7.20.623, Neil): 9 of 11 live mark-scheme lessons loaded NO protocol at
+# all for a month — the router keyed on a subject map of BANK-FILE names while every shortcode
+# emits a subject FAMILY. The model then ran a quiz with no marker contract and printed a score
+# nothing could capture, so a student's 10/10 recorded as in_progress. Silent by construction.
+php bin/markscheme-route-gate.php >/dev/null || { php bin/markscheme-route-gate.php; fail=1; }
+
 
 if [ "$fail" -ne 0 ]; then
   echo ""

@@ -2059,6 +2059,115 @@ class SWML_Protocol_Router {
         return $head . $m[0][0] . substr($rest, 0, $end);
     }
 
+
+    /**
+     * v7.20.623 — THE ONE mark-scheme family resolver (§5d key-match; §TEXT-SLUG REGISTRY SOP).
+     *
+     * ROOT CAUSE IT FIXES (measured on prod 2026-09-14): the `mark_scheme` and
+     * `mark_scheme_unit` branches keyed ONLY on `$subject` against a map whose keys are
+     * BANK-FILE names (`modern_text`, `19th_century`, `poetry_anthology`, `language1`).
+     * The real shipped shortcodes emit the SUBJECT-FAMILY instead — `literature`,
+     * `poetry`, `language` — none of which is in that map. Result: 9 of the 11 live
+     * mark-scheme lessons resolved to NOTHING and `mark_scheme_unit` returned null, so
+     * the model received NO quiz protocol, never saw the `[[QUIZ …]]` / `[[QUIZ_DONE]]`
+     * marker contract, and invented a "Final Score" dashboard the server could not
+     * capture. Only `subject="shakespeare"` — the one value that happens to be both a
+     * family AND a bank name — ever worked. That is the whole of the "the quiz never
+     * records a grade" defect (FIXLIST #535); function-calling was never involved.
+     *
+     * WHY TEXT FIRST: `subject="literature"` is AMBIGUOUS by construction — An Inspector
+     * Calls is `modern_text` and A Christmas Carol is `19th_century`, and both ship with
+     * the identical `subject="literature"`. Only the TEXT disambiguates them, so the text
+     * is the most specific dimension the content varies by and the SOP requires keying on
+     * it (`SOP — resolving a bank / template / protocol FILE by text`, rule 1). Subject is
+     * the fallback for legacy shortcodes that spell the paper into it.
+     *
+     * Returns a bank-file basename WITHOUT the extension, or null. NEVER guesses a
+     * default — a silent wrong default is what made the `mark_scheme` branch serve the
+     * Shakespeare mark scheme to every unmapped text (root §5c: student-facing content
+     * must derive from the right source, never a convenient one).
+     */
+    /**
+     * v7.20.623 — what the student sees when a mark-scheme quiz cannot be routed (§4d:
+     * a refusal is half a change; the other half is stating what appears instead).
+     *
+     * BEFORE this existed, an unresolved quiz returned null — no protocol at all — and the
+     * model happily ran a quiz from nothing and printed a "Final Score: 10/10" the server
+     * could never capture. A fabricated grade is worse than a blocked lesson: the student
+     * believes they are marked, the record says in_progress for ever, and nobody can tell
+     * from the transcript that anything failed. So an unroutable quiz STOPS, out loud.
+     */
+    private static function mark_scheme_unresolved_stub($subject, $text) {
+        return "# ⛔ THIS LESSON IS NOT AVAILABLE — DO NOT RUN A QUIZ\n\n"
+            . "The mark-scheme question bank for this lesson could not be loaded "
+            . "(subject=\"{$subject}\", text=\"{$text}\").\n\n"
+            . "## YOUR ONLY REPLY\n\n"
+            . "Say, in your own warm voice and in two sentences at most, that this quiz is not "
+            . "ready yet and their teacher has been told, and suggest they carry on with another "
+            . "lesson for now. Then STOP.\n\n"
+            . "⛔ You must NOT: invent or ask any quiz questions; mark anything; state, imply or "
+            . "print ANY score, mark, percentage or grade; or produce a results dashboard. There "
+            . "is no question bank behind this lesson, so any number you give would be fiction and "
+            . "would be recorded against this student as though it were real.\n";
+    }
+
+    public static function resolve_mark_scheme_family($subject, $text) {
+        $norm = function ($v) { return strtolower(str_replace('-', '_', trim((string) $v))); };
+        $subject = $norm($subject);
+        $text    = $norm($text);
+
+        // Canonicalise the text through the ONE slug registry before matching.
+        if ($text !== '' && class_exists('SWML_REST_API')) {
+            $aliases = SWML_REST_API::slug_aliases();
+            if (isset($aliases[$text])) $text = $norm($aliases[$text]);
+        }
+
+        // ── 1. TEXT → family (most specific; the only thing that separates the two
+        //       AQA Literature papers, which share subject="literature").
+        $by_text = [
+            // Shakespeare (Lit P1A)
+            'macbeth' => 'shakespeare', 'romeo_and_juliet' => 'shakespeare', 'much_ado' => 'shakespeare',
+            // 19th-century novels (Lit P1B)
+            'christmas_carol' => '19th_century', 'acc' => '19th_century',
+            'jekyll_and_hyde' => '19th_century', 'jekyll_hyde' => '19th_century',
+            'jane_eyre' => '19th_century', 'frankenstein' => '19th_century',
+            'pride_and_prejudice' => '19th_century', 'sign_of_the_four' => '19th_century',
+            'great_expectations' => '19th_century',
+            // Modern texts (Lit P2A)
+            'inspector_calls' => 'modern_text', 'aic' => 'modern_text',
+            'blood_brothers' => 'modern_text', 'animal_farm' => 'modern_text',
+            'anita_and_me' => 'modern_text', 'lord_of_the_flies' => 'modern_text',
+            'leave_taking' => 'modern_text',
+            // Poetry (Lit P2B/P2C)
+            'love_relationships_poetry' => 'poetry_anthology',
+            'power_conflict_poetry' => 'poetry_anthology',
+            'worlds_lives_poetry' => 'poetry_anthology',
+            'unseen_poetry' => 'poetry_anthology',
+            // Language papers — the paper lives in the text slug (§5d key-trace, 2026-09-07).
+            'aqa_lang_paper_1' => 'language1', 'aqa_lang_paper_2' => 'language2',
+            'edexcel_igcse_lang_a' => 'language1',
+        ];
+        if ($text !== '' && isset($by_text[$text])) return $by_text[$text];
+
+        // ── 2. SUBJECT → family (legacy shortcodes that spell the paper into the subject).
+        $by_subject = [
+            'shakespeare' => 'shakespeare',
+            'modern_text' => 'modern_text',
+            '19th_century' => '19th_century',
+            'poetry_anthology' => 'poetry_anthology', 'unseen_poetry' => 'poetry_anthology',
+            'language_paper_1' => 'language1', 'language_paper_2' => 'language2',
+            'language1' => 'language1', 'language2' => 'language2',
+            'language_p1' => 'language1', 'language_p2' => 'language2',
+            'lang_p1' => 'language1', 'lang_p2' => 'language2',
+        ];
+        if ($subject !== '' && isset($by_subject[$subject])) return $by_subject[$subject];
+
+        // ── 3. FAIL LOUD. `literature` / `poetry` / `language` alone cannot name a bank —
+        //      they need a text, and arriving here means the text is unknown to the map.
+        error_log("WML Router: mark-scheme family UNRESOLVED (subject='{$subject}' text='{$text}') — add the text to resolve_mark_scheme_family(). No protocol will be served.");
+        return null;
+    }
+
     private function load_modular_protocol($context, $user_id = 0) {
         // v7.19.406 (CACHE): never let a previous call's slice leak into this request.
         $this->dynamic_step_slice = '';
@@ -2107,23 +2216,15 @@ class SWML_Protocol_Router {
         // Protocols live in protocols/shared/mark-scheme/{subject}.md
         // Full question bank + scoring + feedback for each subject type
         if ($task === 'mark_scheme') {
-            $ms_subject_map = [
-                'shakespeare'        => 'shakespeare.md',
-                'modern_text'        => 'modern_text.md',
-                '19th_century'       => '19th_century.md',
-                'poetry_anthology'   => 'poetry_anthology.md',
-                'unseen_poetry'      => 'poetry_anthology.md', // shares anthology protocol
-                'language_paper_1'   => 'language1.md',
-                'language_paper_2'   => 'language2.md',
-                'language1'          => 'language1.md',
-                'language2'          => 'language2.md',
-                // v7.17.62: bridge dispatcher short-form slug aliases.
-                'language_p1'        => 'language1.md',
-                'language_p2'        => 'language2.md',
-                'lang_p1'            => 'language1.md',
-                'lang_p2'            => 'language2.md',
-            ];
-            $ms_file = $ms_subject_map[$subject] ?? 'shakespeare.md'; // default to shakespeare
+            // v7.20.623 §5d: ONE resolver, text-first. The old map keyed on $subject only and
+            // defaulted to shakespeare.md, so any unmapped text was silently served ANOTHER
+            // text's mark scheme. A wrong mark scheme is worse than none (root §5c).
+            $ms_family = self::resolve_mark_scheme_family($subject, $text);
+            if (!$ms_family) {
+                error_log("WML Router: mark_scheme UNRESOLVED subject='{$subject}' text='{$text}' — serving no protocol rather than the wrong text's mark scheme");
+                return null;
+            }
+            $ms_file = $ms_family . '.md';
             $ms_path = $plugin_dir . 'protocols/shared/mark-scheme/' . $ms_file;
             if (file_exists($ms_path)) {
                 $content = file_get_contents($ms_path);
@@ -2145,27 +2246,17 @@ class SWML_Protocol_Router {
         // Quiz + FYW share one canvas doc per attempt because the task suffix is identical.
         // Mark Scheme Assessment stays on the separate `mark_scheme` task above with its own doc.
         if ($task === 'mark_scheme_unit') {
-            $msu_subject_map = [
-                'shakespeare'        => 'shakespeare.md',
-                'modern_text'        => 'modern_text.md',
-                '19th_century'       => '19th_century.md',
-                'poetry_anthology'   => 'poetry_anthology.md',
-                'unseen_poetry'      => 'poetry_anthology.md',
-                'language_paper_1'   => 'language1.md',
-                'language_paper_2'   => 'language2.md',
-                'language1'          => 'language1.md',
-                'language2'          => 'language2.md',
-                // v7.17.62: bridge dispatcher short-form slug aliases.
-                'language_p1'        => 'language1.md',
-                'language_p2'        => 'language2.md',
-                'lang_p1'            => 'language1.md',
-                'lang_p2'            => 'language2.md',
-            ];
-            $msu_file = $msu_subject_map[$subject] ?? null;
-            if (!$msu_file) {
-                error_log("WML Router: mark_scheme_unit subject '{$subject}' not mapped");
-                return null;
+            // v7.20.623 §5d ROOT FIX: this branch keyed on $subject against BANK-FILE names,
+            // but every shipped shortcode emits a subject FAMILY (`literature`, `poetry`,
+            // `language`). 9 of 11 live lessons therefore resolved to null and returned NO
+            // protocol — so the model never saw the [[QUIZ …]] marker contract and no quiz
+            // could ever record a grade (FIXLIST #535). Text-first resolution fixes all 9.
+            $msu_family = self::resolve_mark_scheme_family($subject, $text);
+            if (!$msu_family) {
+                error_log("WML Router: mark_scheme_unit UNRESOLVED subject='{$subject}' text='{$text}' — serving the HARD-STOP stub, never a free-running quiz");
+                return self::mark_scheme_unresolved_stub($subject, $text);
             }
+            $msu_file = $msu_family . '.md';
             $msu_dir = ($step === 2) ? 'forging-your-weapon' : 'mark-scheme-quiz';
             $msu_path = $plugin_dir . 'protocols/shared/' . $msu_dir . '/' . $msu_file;
             if (file_exists($msu_path)) {
