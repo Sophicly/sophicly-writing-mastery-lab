@@ -2175,6 +2175,11 @@ class SWML_Protocol_Router {
         $subject = $context['subject'] ?? '';
         $task    = $context['task'] ?? 'planning';
         $step    = (int) ($context['step'] ?? 1);
+        // v7.20.623: the TEXT is a first-class routing dimension here, not just a payload field.
+        // It was never lifted out of $context, so the mark-scheme branches below had no $text to
+        // resolve on — the resolver was correct and every lesson still fell to the stub. Lifted
+        // beside the other four so a branch cannot silently read an undefined variable again.
+        $text    = $context['text'] ?? '';
 
         // v7.19.184: redraft_assessment aliases to assessment for manifest lookup.
         // Manifests declare protocol modules under `assessment` only; without this alias,
