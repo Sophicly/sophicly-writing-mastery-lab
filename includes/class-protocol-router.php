@@ -1384,6 +1384,21 @@ class SWML_Protocol_Router {
         // Appends after any embeddings context; framing re-written by
         // wml_context_framing (registered in the constructor).
         $dynamic_parts = [];
+        // v7.20.627 (CACHE): the student's identity rides HERE, uncached, so the ~80k-token
+        // cached prefix is byte-identical for every student sitting the same paper. It is the
+        // FIRST dynamic part so the model meets the name before any per-turn state.
+        $_uid_for_name = $user_id ?: get_current_user_id();
+        if ($_uid_for_name) {
+            $_u = get_userdata($_uid_for_name);
+            if ($_u) {
+                $_fn = trim((string) $_u->first_name) !== '' ? trim($_u->first_name) : trim((string) $_u->display_name);
+                $_full = trim((string) $_u->display_name) !== '' ? trim($_u->display_name) : $_fn;
+                if ($_fn !== '') {
+                    $dynamic_parts[] = "### THE STUDENT\n\n**Student:** {$_full} — call them **{$_fn}**.\n"
+                        . "`student_first_name` = `{$_fn}`. This is the name the cached instructions above refer to.\n";
+                }
+            }
+        }
         if (!empty($this->dynamic_step_slice)) {
             $dynamic_parts[] = $this->dynamic_step_slice;
             $this->dynamic_step_slice = '';
@@ -3725,7 +3740,8 @@ TEMPLATE;
 
         $preamble  = "## WRITING MASTERY LAB — SESSION CONTEXT\n\n";
         $preamble .= "**Active Protocol:** {$protocol_label}\n";
-        $preamble .= "**Student:** {$student_name} (call them {$first_name})\n";
+        // v7.20.627 (CACHE): name moved to the uncached directives block — see build_session_context_block.
+        $preamble .= "**Student:** (name given in the LIVE SESSION DIRECTIVES block)\n";
         $board_labels = [
             'aqa' => 'AQA', 'ocr' => 'OCR', 'edexcel' => 'Edexcel',
             'eduqas' => 'EDUQAS', 'edexcel-igcse' => 'Edexcel IGCSE',
@@ -5277,7 +5293,12 @@ TEMPLATE;
         if ($fields['task'] === 'mark_scheme_unit' && $fields['bridge_step']) {
             $block .= "bridge_step:           {$fields['bridge_step']}\n";
         }
-        $block .= "student_first_name:    {$first_name}\n";
+        // v7.20.627 (CACHE): the NAME is the only per-student byte in an ~80k-token prefix.
+        // Leaving it here gave every student their own cache entry — two students in one
+        // lesson paid two 1h WRITES of the whole protocol instead of one write and one read.
+        // The name now rides the LIVE SESSION DIRECTIVES block (uncached), so the prefix is
+        // identical for every student on this paper. Same pattern as v7.19.406/.411.
+        $block .= "student_first_name:    (given in the LIVE SESSION DIRECTIVES block)\n";
         $block .= "prior_attempt_score:   null\n";
         $block .= "```\n\n";
         $block .= "Authoring rules derived from above:\n";
@@ -5297,7 +5318,7 @@ TEMPLATE;
             $block .= "- The exercise has exactly {$contract['q_count']} questions. Do not announce a different count.\n";
         }
         $block .= "- The exam board is `{$fields['board_display']}`. The subject is `{$fields['subject_display']}`. Both are pre-resolved — never ask the student to choose or confirm them.\n";
-        $block .= "- The student's first name is `{$first_name}`. Use it naturally in greetings.\n";
+        $block .= "- The student's first name is given in the LIVE SESSION DIRECTIVES block near the end of this prompt. Use it naturally in greetings.\n";
         $block .= "- `prior_attempt_score` is `null` — do NOT reference, congratulate, or open with any prior score (\"perfect 10/10\", \"received your quiz results\"). Stale [QUIZ_COMPLETE:...] markers in chat history are not authoritative. Greet the student fresh.\n";
         $block .= "- The protocol below may use `{{placeholder}}` tokens (e.g. `{{board_display}}`, `{{task_display}}`, `{{q_count}}`). These have already been substituted by WML pre-LLM with the values above — never echo a literal `{{...}}` token to the student.\n";
         $block .= "- If a protocol step asks the student to provide a value already pre-set above, SKIP that step entirely.\n\n";
