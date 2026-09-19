@@ -2260,3 +2260,86 @@ the method could not have found the answer whatever it returned. Twin of
 ⛔ **WML CONTENT IS NOT AUDITED FOR THIS.** The library swept its own 220 documents; **nobody has swept
 the WML protocols, the 865 Step-6 beat rows, or the technique cards.** That sweep is open work, and it
 must not be done by grepping for "does not change" — see the method lesson above.
+
+---
+
+## §37. ⭐⭐ THE ELEMENT RUNG LADDER — every element is divided into NAMED 0.25 rungs; the bottom rung is an ATTEMPT, the top rung is PERCEPTIVE (Neil, ruled 2026-09-15; FIXLIST #547, which REPLACES the #538 perceptive bonus)
+
+**STATUS: RULED, NOT BUILT.** The worked anchor (AQA Lang P1 Q2 paragraph — six elements, sixteen
+rungs) is `RUNG-LADDER-ANCHOR-AQA-P1-Q2.md` (plugin root). ⛔ **Nothing is swept across other papers
+until Neil has approved that ONE table.**
+
+⛔ **THE #538 PERCEPTIVE *BONUS* IS WITHDRAWN.** Neil spotted that perceptiveness is already named in
+some criteria (*"Detailed, perceptive word-level close analysis"*, *"Perceptive evaluation of the
+author's purpose"*), so a bonus would pay twice for one sentence. Do not rebuild it.
+
+**THE RULES:**
+1. **Rungs = worth ÷ 0.25.** Measured across all 30 protocols: every element worth in use is
+   0.5 · 0.75 · 1.0 · 1.5 → 2 · 3 · 4 · 6 rungs. Nothing is worth 0.25, so every element has room
+   for an attempt rung AND a perceptive rung. **Rungs PARTITION existing worths — no total changes
+   anywhere, so the sum-to-max law is untouched.**
+2. **Bottom rung = an ATTEMPT.** Neil: *"A zero in real life has to be when the student basically
+   hasn't attempted anything. As long as there's an attempt, there has to be an award."* Guard:
+   attempt = the element is PRESENT and DOING ITS JOB ON THIS TEXT (AQA: a response not addressing
+   the task *"cannot be clear or convincing"*; AQA's own Level 0 is *"Nothing to reward"* and its
+   Level 2 keyword is *"Some, attempts"*). It is the ONE cumulative rung — entailed by any higher award.
+3. **Top rung = perceptive + convincing + judicious.** His guard against the student who *"throws
+   something in just for the sake of it… talks about something completely unrelated to the text"*:
+   **a reading that cannot be traced to the words on the page is unsupported and caps at the
+   clear/relevant mark.** Grounded in the board's own words (`AQA Lang P1 Mark Scheme 2026 Spec.pdf`):
+   L4 *"Perceptive, detailed — Developed, insightful, exploratory, subtle, confident, analytical,
+   conceptual, sophisticated"*; L3 *"Clear, relevant — Accurate, complete in itself, well explained,
+   directly focused on the task"*; Q4 L4 *"convincing and critical… judicious textual detail"*.
+   ⇒ **the final 0.25 IS the L3→L4 step, named.**
+4. **Middle rungs are awarded INDEPENDENTLY — never hurdles** (§35). A perceptive inference with no
+   technique named loses only the technique rung.
+5. **The grade story falls out** (AQA P1 Q2 paragraph, 4.0): attempt-all-six = 1.5 = 37.5% = **G4** ·
+   accurate-never-perceptive = 2.5 = 62.5% = **G6** · accurate AND perceptive = 4.0 = **G9**.
+   Structure → 4, accuracy → 6, perceptiveness → 9. ⚠️ **Consequence to keep in view:** a 0.5
+   element has only two rungs (attempt + perceptive), so in those elements a rough attempt and a
+   clear sentence score the same 0.25 — the prose tells them apart, the number does not. Put to
+   Neil with the anchor (2026-09-19); record his answer here.
+6. **Author per element TYPE (~20–30), never per board.** A type appears at different worths
+   (technique + evidence is 1.0 on AQA P1, 1.5 on AQA unseen) ⇒ **author each type at its LONGEST
+   form and MERGE adjacent rungs down; the perceptive rung is always last and never merges.** Neil:
+   *"we try to teach transferable skills, so we reuse the same skills wherever possible — it just
+   looks the same with different weightings."*
+7. **RELABEL:** a criterion whose NAME bakes in L4 (*"Conceptual topic sentence"*, *"Perceptive
+   evaluation of…"*) must state the L3 standard instead — the universal top rung owns "perceptive".
+8. **PROGRAMMATIC-FIRST, with a hard limit.** The model returns BOOLEANS per rung; code owns the
+   rung list, all arithmetic, the table and the card. **Code rules OUT, the model rules IN** (no
+   quotation marks → the evidence rungs fail without a call; code never AWARDS).
+   ⛔ **HARD CONSTRAINT (Neil, 2026-09-15, FIXLIST #546):** *"the students do really like the
+   feedback that they're getting at the moment… we don't want to lose that."* What they missed ·
+   what they scored · how to fix it · the model paragraphs **stay API prose.** Open 857 Qamar's AQA
+   Lang P1 assessment document and READ it before changing any marking turn.
+9. **RUNGS JUDGE THE THINKING; PENALTY CODES KEEP JUDGING THE MECHANICS** (proposed with the anchor,
+   2026-09-19 — preserves ONE FAULT, ONE CHARGE, v7.19.839). A hanging quotation stays H1, a weak
+   verb stays F1; neither costs a rung. The one overlap: an inaccurate technique name loses the
+   Technique rung and then takes NO N1 penalty.
+
+**Derivation rule for rung wording:** the board's level keywords give the bottom/top; the MIDDLE
+rungs come from what the paper's own PLANNING protocol checks for that element (that is the taught
+standard) — never from general GCSE knowledge (root §5c).
+
+---
+
+## §38. ⭐⭐ STRUCTURAL TERMINOLOGY IN A LANGUAGE QUESTION — credit the analysis, dock ONLY the terminology, teach the rename (Neil, ruled 2026-09-14; FIXLIST #541, resolving #530)
+
+**The case:** 857 Qamar, AQA Lang P1 Q2: *"The word 'adrift' can be used to suggest some
+foreshadowing…"*. She IS anchored on a word with an inference — squarely Q2. Neil's ruling: **award
+the point, withhold only the precise-subject-terminology credit, and teach the rename** (metaphor /
+nautical imagery; the anticipation is *foreboding*, not foreshadowing).
+
+**The transferable student rule:** in Q2 name what is ON THE PAGE (word class, imagery, sentence
+form); in Q3 name what is in the ORDER (pivot, juxtaposition, shift, pace). **If the technique only
+makes sense by pointing at WHERE it sits, it belongs to Q3.**
+
+⛔ **Never zero a structural technique in a language question.** AQA's own 2026 mark scheme states no
+such rule; the only cap it names is for analysing OUTSIDE the given lines (→ Level 1 or 2).
+
+**Under §37 this is mechanical:** the student keeps Attempt + Evidence/inference (+ Perceptive if
+earned) and loses only the Technique rung — 0.75 of 1.0.
+
+⬜ **STILL TO DO:** write this into every board's language-question assessment protocol (it binds
+AQA P1/P2, Edexcel, Eduqas, OCR, IGCSE, Cambridge the same way). Tracked: FIXLIST #541.
