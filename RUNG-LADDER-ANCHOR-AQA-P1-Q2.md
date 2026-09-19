@@ -1,5 +1,11 @@
 # RUNG LADDER — THE WORKED ANCHOR (AQA Language Paper 1 · Question 2 · one paragraph, out of 4.0)
 
+⚠️ **THIS FILE IS v1 AND IS CHALLENGED.** Neil (2026-09-19): *"If we give 0.25 for being perceptive and 0.25 for an
+attempt, what is the difference? I think the 0.25 should only be awarded for being convincingly perceptive, nothing
+else."* A **v2 with NO attempt mark** (job quarters + zero-examples + one perceptive quarter, after his own v7.19.403
+P2-Q2 quarter-ladder precedent) is live on the review page below and awaits his verdict — FIXLIST #565/#566. **Do not
+build from the Attempt rows in this file.** Rewrite it, and PEDAGOGY §37 rules 2 + 5, in the session he rules.
+
 **STATUS: DRAFT — awaiting Neil's verdict (shown 2026-09-19).** Ruling: `PEDAGOGY.md` §37 (FIXLIST #547).
 Review page (tick-list + Copy): https://claude.ai/artifact/CtvyMy3wWE1zEbe9bMRSnt
 ⛔ Nothing is swept to other papers, and no marking turn changes, until this ONE table is approved.
