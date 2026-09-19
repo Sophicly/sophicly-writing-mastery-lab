@@ -33,6 +33,9 @@ class SWML_Protocol_Router {
     // context block. Reset at the top of load_modular_protocol every request.
     private $dynamic_step_slice = '';
     private $dynamic_plan_state = '';
+    // v7.20.628 (CACHE): the polishing environment's PER-STUDENT record (first-attempt findings,
+    // calibration, history). Rides LIVE SESSION DIRECTIVES so the polishing prefix is shared.
+    private $dynamic_polish_student = '';
     // v7.20.205 (C-LADDER): the code-owned scaffolding-ladder TELL block for the current planning
     // turn — built uncached each turn from the frontend-derived state, injected beside
     // dynamic_plan_state under WML LIVE SESSION DIRECTIVES so it always beats the cached preamble.
@@ -1398,6 +1401,10 @@ class SWML_Protocol_Router {
                         . "`student_first_name` = `{$_fn}`. This is the name the cached instructions above refer to.\n";
                 }
             }
+        }
+        if (!empty($this->dynamic_polish_student)) {
+            $dynamic_parts[] = $this->dynamic_polish_student;
+            $this->dynamic_polish_student = '';
         }
         if (!empty($this->dynamic_step_slice)) {
             $dynamic_parts[] = $this->dynamic_step_slice;
@@ -5623,8 +5630,8 @@ TEMPLATE;
 
         $p  = $block;
         $p .= "## WRITING MASTERY LAB — POLISHING ENVIRONMENT — THE STUDENT CHOOSES\n\n";
-        $p .= "**Student:** {$first_name}. **Paper:** {$paper_label}. **Topic:** " . (int) ($context['topic_number'] ?? 0) . ". **Phase:** redraft — the student has already been assessed once on this topic, planned and outlined a new answer, and written it.\n\n";
-        $p .= "You are Sophia, coaching {$first_name} as they polish a finished response. This lesson has no steps and no sequence: the student highlights a sentence or paragraph they want to improve, picks a button or types, and you coach THAT selection towards the gold standard loaded below. ";
+        $p .= "**Paper:** {$paper_label}. **Topic:** " . (int) ($context['topic_number'] ?? 0) . ". **Phase:** redraft — the student has already been assessed once on this topic, planned and outlined a new answer, and written it.\n\n";
+        $p .= "You are Sophia, coaching the student (named in the LIVE SESSION DIRECTIVES block near the end of this prompt) as they polish a finished response. This lesson has no steps and no sequence: the student highlights a sentence or paragraph they want to improve, picks a button or types, and you coach THAT selection towards the gold standard loaded below. ";
         $p .= "Do NOT choose the first area to polish for them, do NOT tour the document, do NOT list what else is weak, do NOT open with a greeting or a summary — you speak only when invoked, and your first sentence is always about the selection.\n\n";
         $p .= "**Where the text is:** every invocation carries the selection, its section type, a **Location** line built by code (the question heading above the selection, the paragraph's position in its section, the section's word count), the live section context, and the live full document (`Current full document (live this turn)`). ";
         $p .= "Trust the Location line to know which question and which paragraph you are coaching; read the rubric below for that question's shape. Never ask the student to paste anything or to say which question it is.\n\n";
@@ -5634,6 +5641,8 @@ TEMPLATE;
         $p .= "**Attribution:** TTECEA, IUMVCC, the 3-sentence intro and 4-sentence conclusion, the Story Spine, the seven scene elements and Madfather's Crops are Sophicly's own shapes — never the board's. Say \"at Sophicly we…\" or \"our IUMVCC shape\"; never \"AQA's speech shape\" or \"the board requires six moves\". The board publishes criteria; the shapes are how we land them.\n\n";
         $p .= "**Language:** the student is 13–16 and may read English as a second language. Course words they know are fine (TTECEA, topic sentence, close analysis, effect, writer's purpose, IUMVCC, Madfather's Crops, the seven scene elements). Never say rubric, protocol, tier, engine, level, AO-number-requires, or \"the mark scheme rewards\". The mark scheme's level descriptors below are for YOUR reading only: where they say \"Level 4\" or \"Level 5\", you say \"the top band\" or \"a grade 9 answer\" — never \"what a Level 4 speech needs\".\n\n";
 
+        // v7.20.628 (CACHE): $s collects the per-student record; $p stays identical for every student.
+        $s = '';
         // ── Phase-1 result for THIS topic — the assessment findings the student is polishing against.
         // Read through the ONE canonical key-builder (key-match law), latest record in the re-mark
         // fork chain (get_latest_phase_result). Absent record → no block, never an invented target.
@@ -5648,12 +5657,12 @@ TEMPLATE;
                 $t1 = trim((string) ($p1_rec['target_1'] ?? ''));
                 $t2 = trim((string) ($p1_rec['target_2'] ?? ''));
                 if ($g !== '' || $t1 !== '' || $t2 !== '') {
-                    $p .= "### THEIR FIRST ATTEMPT ON THIS TOPIC (the assessment they are redrafting from)\n";
-                    if ($g !== '')  $p .= "- Grade " . $g . ($ts !== '' ? " ({$ts})" : '') . " on the first attempt — for framing only; never restate marks unless asked.\n";
-                    if ($s1 !== '') $p .= "- Recorded strength: \"{$s1}\" — when it shows in the selection, name it in a clause and move on; do not re-teach a strength.\n";
-                    if ($t1 !== '') $p .= "- Priority target: \"{$t1}\"\n";
-                    if ($t2 !== '') $p .= "- Second target: \"{$t2}\"\n";
-                    $p .= "When a button's finding overlaps one of these targets, say so in one clause — it tells the student their redraft is hitting what the assessment asked for. These are the student's own recorded targets, not a list to work through.\n\n";
+                    $s .= "### THEIR FIRST ATTEMPT ON THIS TOPIC (the assessment they are redrafting from)\n";
+                    if ($g !== '')  $s .= "- Grade " . $g . ($ts !== '' ? " ({$ts})" : '') . " on the first attempt — for framing only; never restate marks unless asked.\n";
+                    if ($s1 !== '') $s .= "- Recorded strength: \"{$s1}\" — when it shows in the selection, name it in a clause and move on; do not re-teach a strength.\n";
+                    if ($t1 !== '') $s .= "- Priority target: \"{$t1}\"\n";
+                    if ($t2 !== '') $s .= "- Second target: \"{$t2}\"\n";
+                    $s .= "When a button's finding overlaps one of these targets, say so in one clause — it tells the student their redraft is hitting what the assessment asked for. These are the student's own recorded targets, not a list to work through.\n\n";
                 }
 
                 // v7.20.614 — THE CALIBRATION TRAVELS. The student marked their own answer against
@@ -5662,10 +5671,10 @@ TEMPLATE;
                 // lesson, and until now they stopped at the assessment door.
                 $cal = $p1_rec['calibration'] ?? null;
                 if (is_array($cal) && (!empty($cal['goal']) || !empty($cal['questions']))) {
-                    $p .= "### WHAT THEY DECIDED AFTER MARKING THEMSELVES (their calibration)\n";
+                    $s .= "### WHAT THEY DECIDED AFTER MARKING THEMSELVES (their calibration)\n";
                     $goal = trim((string) ($cal['goal'] ?? ''));
                     if ($goal !== '') {
-                        $p .= "- **The one thing they said they would do differently:** \"{$goal}\" — when the selection in front of you is where that applies, name it in one clause. Never open a turn by reciting it.\n";
+                        $s .= "- **The one thing they said they would do differently:** \"{$goal}\" — when the selection in front of you is where that applies, name it in one clause. Never open a turn by reciting it.\n";
                     }
                     foreach ((array) ($cal['questions'] ?? []) as $row) {
                         if (!is_array($row)) continue;
@@ -5675,18 +5684,24 @@ TEMPLATE;
                         $max  = (string) ($row['max'] ?? '');
                         $why  = trim((string) ($row['why'] ?? ''));
                         $gap  = (is_numeric($mine) && is_numeric($soph)) ? abs((float) $mine - (float) $soph) : null;
-                        $p .= "- **{$q}:** they marked themselves {$mine}/{$max}, I marked {$soph}/{$max}"
+                        $s .= "- **{$q}:** they marked themselves {$mine}/{$max}, I marked {$soph}/{$max}"
                             . ($gap !== null ? ($gap == 0 ? " (the same)" : " (" . rtrim(rtrim(number_format($gap, 1), '0'), '.') . " apart)") : '')
                             . ($why !== '' ? " — their own words: \"{$why}\"" : '') . "\n";
                     }
-                    $p .= "⭐ A question where they marked themselves ABOVE me is where their judgement of their own writing is furthest from the criteria — coaching a selection there is worth more than coaching one where we already agreed. "
+                    $s .= "⭐ A question where they marked themselves ABOVE me is where their judgement of their own writing is furthest from the criteria — coaching a selection there is worth more than coaching one where we already agreed. "
                         . "⛔ Never tell them their self-mark was wrong, and never re-mark anything here: this lesson has no marks in it.\n\n";
                 }
             }
         }
 
         $reminders = $this->build_reminders($user_id, $text);
-        if ($reminders) $p .= $reminders . "\n";
+        if ($reminders) $s .= $reminders . "\n";
+        // v7.20.628 (CACHE): everything above this line is about ONE student. Inside the cached prefix it
+        // gave every student their own copy of the whole rubric + gold stack (the .627 defect, which the
+        // lean polishing preamble bypassed by returning early). It now rides the uncached block.
+        if ($s !== '') {
+            $this->dynamic_polish_student = "### THIS STUDENT'S RECORD — the polishing preamble above refers to it\n\n" . $s;
+        }
 
         // The subject's AO vocabulary in one block (v7.14.61 wording), so a Language turn never hears
         // "context" for AO3 and a Literature turn never hears "comparison".
