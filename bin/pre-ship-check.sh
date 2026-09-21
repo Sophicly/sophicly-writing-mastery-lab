@@ -109,6 +109,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/plan-fanout-harness.js || fail=1
 fi
 
+# v7.20.629 (FIXLIST #570): an approved paragraph plan whose @FIELD_SET the model omitted must be
+# recovered by ONE silent repair turn naming ONLY the lost box — never a box that already holds a
+# filed plan, never a paragraph still being worked. Driven on prod student 857's exact doc shape.
+# (Its DOM twin, bin/plan-scaffold-heal-probe.mjs, needs a browser and is run by hand.)
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|plan-file-repair-harness\.js'; then
+  node bin/plan-file-repair-harness.js || fail=1
+fi
+
 # v7.20.252 (Fable F1): the JS build-stamp (frontend/wml-core.js WML_BUILD, logged on load for
 # stale-client diagnosis) must equal the plugin version, or the console log lies about freshness.
 JS_BUILD=$(grep -oE "var WML_BUILD = '[^']+'" frontend/wml-core.js 2>/dev/null | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")

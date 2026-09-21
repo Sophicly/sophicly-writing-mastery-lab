@@ -7625,6 +7625,67 @@
         } catch (e) { console.warn('WML AP-FILE: repair skipped —', e && e.message); }
     }
 
+    // ⭐ v7.20.629 (FIXLIST #570) — PLAN-FILE self-heal, the AP-FILE pattern above applied to planning.
+    // The approved paragraph plan reaches the document ONLY through the @FIELD_SET the model emits on
+    // the mirror-back approval turn — and an LLM can omit a marker. It did, on prod: student 857
+    // tapped "A) Happy — next paragraph", was told "Filed to your plan", and the turn carried a legacy
+    // [PANEL] tag and no marker, so nothing filed and nothing said so. Named failure ⇒ engineered out:
+    // on an approval turn whose reply carries no plan @FIELD_SET, find the plan boxes whose outline
+    // rows are complete but which hold no approved plan, and fire ONE silent repair turn naming the
+    // exact field ids. Content-derived (never localStorage provenance), so it behaves the same on
+    // every device. Once per field per page load — no loop.
+    const _planFileRepairFired = {};
+    function _planBoxesAwaitingApprovedPlan() {
+        if (!canvasEditor) return [];
+        const rows = {}, plans = [];
+        canvasEditor.state.doc.descendants(n => {
+            const nm = n.type.name;
+            if ((nm === 'outlineRow' || nm === 'inputField') && n.attrs && n.attrs.fieldId) {
+                const fid = n.attrs.fieldId;
+                if (/^plan-/.test(fid)) {
+                    // A filed plan is one element per LINE (hardBreak) — textContent welds the lines
+                    // together, so read the box line by line or every filed box looks unfiled.
+                    let lines = '';
+                    n.forEach(ch => { lines += (ch.type && ch.type.name === 'hardBreak') ? '\n' : (ch.text || ch.textContent || ''); });
+                    plans.push({ fid: fid, lines: lines.split('\n') });
+                } else if (/^outline-/.test(fid)) rows[fid] = (n.textContent || '').trim();
+            }
+            return true;
+        });
+        const out = [];
+        plans.forEach(pb => {
+            const t = _planOutlineTargets(pb.fid, fid => Object.prototype.hasOwnProperty.call(rows, fid));
+            if (!t || t.mode !== 'elements') return;
+            // this box's outline rows = every row id the target's make() can produce
+            const parts = t.make('\u0000').split('\u0000');
+            const mine = Object.keys(rows).filter(fid => fid.indexOf(parts[0]) === 0
+                && fid.length > parts[0].length + parts[1].length
+                && fid.slice(fid.length - parts[1].length) === parts[1]
+                && /^[a-z0-9]+$/i.test(fid.slice(parts[0].length, fid.length - parts[1].length)));
+            if (!mine.length || mine.some(fid => !rows[fid])) return;          // paragraph not fully worked yet
+            const approved = pb.lines.filter(ln => { const i = ln.indexOf(':'); return i > 0 && !!_planLabelElement(ln.slice(0, i).trim(), t.family); }).length >= 2;
+            if (!approved) out.push(pb.fid);
+        });
+        return out;
+    }
+    function _maybeRepairPlanFile(reply) {
+        try {
+            if (state.reviewMode || state.task !== 'planning' || !_planPreChainActive()) return;
+            // No "the reply carried a marker" early-exit on purpose: this runs AFTER applyFieldSets has
+            // landed (1300ms), so a paragraph filed THIS turn already reads as approved below — and an
+            // EARLIER paragraph whose approval was lost (857's Q2 ¶2) is recovered on the next approval.
+            const h = (_chatShell && _chatShell.history) || [];
+            let lastUser = '';
+            for (let i = h.length - 1; i >= 0; i--) { if (h[i] && h[i].role === 'user') { lastUser = String(h[i].content || ''); break; } }
+            if (!/^\s*(A\)\s*)?Happy\b/i.test(lastUser)) return;                      // approval turns only
+            const missing = _planBoxesAwaitingApprovedPlan().filter(fid => !_planFileRepairFired[fid]);
+            if (!missing.length) return;
+            missing.forEach(fid => { _planFileRepairFired[fid] = true; });
+            console.warn('WML PLAN-FILE: paragraph approved but no plan @FIELD_SET in the reply — firing silent repair turn:', missing.join(', '));
+            _silentSystemSend('SYSTEM (not from the student): the student approved a paragraph plan, but your reply carried no @FIELD_SET marker, so NOTHING was filed to their document. Re-emit now — output one @FIELD_SET marker per line for each of these field ids: ' + missing.join(', ') + '. Each marker is {"field":"<id>","value":"<text>"} — valid JSON with straight double quotes, no line breaks inside the value. The value is that paragraph\'s approved structure: its labelled elements on one line separated by " | ", condensed to the student\'s plan mode and built only from their own words, exactly as the protocol\'s mirror-back approval step specifies. Never use [PANEL] tags. Then add one short visible line confirming the plan is saved, and do NOT repeat or re-ask the question you have already asked. Do not show the markers to the student.');
+        } catch (e) { console.warn('WML PLAN-FILE: repair skipped —', e && e.message); }
+    }
+
     // v7.20.145 (celebration-lane hand-off — wml-emit-sophiclyGradeUpdated-on-all-grading-paths):
     // the WRITING assessment (task='assessment'/'redraft_assessment') was the ONE graded WML path
     // that NEVER emitted `sophiclyGradeUpdated` — quizzes/MSQ/MSA already do (applyQuizResultToEditor
@@ -18286,6 +18347,7 @@
                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                             const _r = res.reply;
                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
+                            setTimeout(() => _maybeRepairPlanFile(_r), 1300);   // v7.20.629 — approved plan with no marker (#570)
                             // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
@@ -41098,6 +41160,7 @@
                                         { // v7.19.830: AP/Analytics filing self-heal — after the turn settles
                                             const _r = res.reply;
                                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
+                                            setTimeout(() => _maybeRepairPlanFile(_r), 1300);   // v7.20.629 — approved plan with no marker (#570)
                                             // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
                                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
@@ -48272,6 +48335,9 @@
             _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
             _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
             _migrateStep('migrateMissingPlans', migrateMissingPlans);
+            // v7.20.629: a REDRAFT doc seeded from a post-.110 diagnostic carries ONE plan box per
+            // question — upgrade it to the redraft scaffold the planning protocol files into (#569).
+            _migrateStep('healDiagnosticPlanScaffold', _healDiagnosticPlanScaffold);
             // v7.20.49: AQA P2 planning — Predictions section (S1d commits file here).
             // v7.20.65: also the Phase-1 write doc (student self-fills; no chain there).
             _migrateStep('ensurePredictionsSection', _ensurePredictionsSection);
@@ -57564,6 +57630,57 @@
      * Mode: 'diagnostic' = question + response (no plan).
      *        'redraft' = question + plan + response for writing questions.
      */
+    // ⭐ v7.20.629 — THE ONE REDRAFT PLAN-SCAFFOLD BUILDER. Extracted byte-for-byte from the template's
+    // redraft branch so the born doc and the load-time heal (_healDiagnosticPlanScaffold) cannot drift:
+    // every planning protocol's @FIELD_SET / @FIELD_COMMIT ids key on exactly what this returns (§5d).
+    // `f` = { isCreativeWritingQ, isWritingQ, isPersuasive, aos } — the caller derives them; this decides.
+    function _redraftPlanSectionsHTML(qId, qMarks, f) {
+        let out = '';
+        // v7.19.250: Language PAPER 1 Q5 (40-mark Section B fiction writing) is creative
+        // writing pedagogically, but state.subject is 'language1' / 'language_p1' (not
+        // 'creative_writing') and the f.isCreativeWritingQ keyword regex doesn't always
+        // catch it (depends on question text shape). Explicit override forces Scene
+        // Structure for Lang P1 Q5 only. Lang P2 Q5 = transactional/persuasive →
+        // continues to fall through to f.isPersuasive → IUMVCC, unchanged.
+        // (Language fiction = Scene Structure only, per feedback_language_fiction_scene_structure_only.)
+        const _isLangP1Q5Creative = qId === 'Q5'
+            && qMarks >= 40
+            && /^language[_-]?p?1$/.test(String(state.subject || ''));
+        if ((f.isCreativeWritingQ && f.isWritingQ) || _isLangP1Q5Creative) {
+            // Fiction Section B: 7-element scene structure (reused from CW Step 8)
+            out += buildCreativeScenePlan(qId);
+        } else if (f.isPersuasive
+            || ((state.board || '').toLowerCase() === 'aqa' && _isLangPaper2() && f.isWritingQ && !f.isCreativeWritingQ)) {
+            // v7.20.49 (brief §11.3): AQA P2 Section B is transactional BY SPEC — route
+            // it to IUMVCC even when the prompt text lacks a form-word trigger (a "Write
+            // an essay giving your views…" prompt used to fall silently to the generic
+            // essay plan, forking every iumvcc-* filing fieldId).
+            out += buildIUMVCCPlanSection(qId);
+        } else if (f.isWritingQ || qMarks >= 20) {
+            out += buildPlanSection(qId, qMarks);
+        } else if (qMarks >= 12 && qMarks < 20 && /AO3/i.test(String(f.aos || ''))) {
+            // v7.20.49: AO3 comparative, sub-essay band (AQA P2 Q4 = 16m):
+            // intro + 3 comparative bodies + conclusion. Capability gate, not name —
+            // per-QUESTION AO truth only (q.aos authored, else spec); topicData.aos is
+            // a topic-level default ('AO1,AO2,AO3') and would false-positive here.
+            out += buildComparativePlanSection(qId);
+        } else {
+            // Analysis/evaluation/comparison: paragraph-based planning (1 para per ~4-5 marks)
+            // ⚠ BYTE-PAIR (P2 audit 2026-07-14): each paper's planning protocol
+            // hardcodes its @FIELD_COMMIT ids to the paragraph count THIS formula
+            // yields from the spec marks (AQA P2: Q2 8m→2¶, Q3 12m→3¶) — and the
+            // AO3 branch above pre-empts this one for 12–19m questions. Change a
+            // spec's marks/AOs, or this routing, and the protocol's plan-{q}-para-*
+            // filings land nowhere. Re-check the paper's protocol in the same commit.
+            const planParas = Math.max(1, Math.ceil(qMarks / 5));
+            for (let i = 1; i <= planParas; i++) {
+                out += sectionHTML('plan', `Plan: Paragraph ${i} \u2014 ${qId}`, true, null,
+                    inputHTML(`Key points for paragraph ${i} — write the paragraph itself in the Response box below`, `plan-${qId}-para-${i}`));
+            }
+        }
+        return out;
+    }
+
     function buildMultiQuestionTemplate(mode, topicData) {
         const meta = typeof topicData.metadata === 'string' ? JSON.parse(topicData.metadata || '{}') : (topicData.metadata || {});
         const questions = meta.questions || [];
@@ -57705,48 +57822,7 @@
                     html += sectionHTML('plan', `Plan \u2014 ${qId}`, true, null,
                         inputHTML('Plan only — notes and quotes. Write your answer in the Response box below.', `plan-${qId}-para-1`));
                 } else {
-                // v7.19.250: Language PAPER 1 Q5 (40-mark Section B fiction writing) is creative
-                // writing pedagogically, but state.subject is 'language1' / 'language_p1' (not
-                // 'creative_writing') and the isCreativeWritingQ keyword regex doesn't always
-                // catch it (depends on question text shape). Explicit override forces Scene
-                // Structure for Lang P1 Q5 only. Lang P2 Q5 = transactional/persuasive →
-                // continues to fall through to isPersuasive → IUMVCC, unchanged.
-                // (Language fiction = Scene Structure only, per feedback_language_fiction_scene_structure_only.)
-                const _isLangP1Q5Creative = qId === 'Q5'
-                    && qMarks >= 40
-                    && /^language[_-]?p?1$/.test(String(state.subject || ''));
-                if ((isCreativeWritingQ && isWritingQ) || _isLangP1Q5Creative) {
-                    // Fiction Section B: 7-element scene structure (reused from CW Step 8)
-                    html += buildCreativeScenePlan(qId);
-                } else if (isPersuasive
-                    || ((state.board || '').toLowerCase() === 'aqa' && _isLangPaper2() && isWritingQ && !isCreativeWritingQ)) {
-                    // v7.20.49 (brief §11.3): AQA P2 Section B is transactional BY SPEC — route
-                    // it to IUMVCC even when the prompt text lacks a form-word trigger (a "Write
-                    // an essay giving your views…" prompt used to fall silently to the generic
-                    // essay plan, forking every iumvcc-* filing fieldId).
-                    html += buildIUMVCCPlanSection(qId);
-                } else if (isWritingQ || qMarks >= 20) {
-                    html += buildPlanSection(qId, qMarks);
-                } else if (qMarks >= 12 && qMarks < 20 && /AO3/i.test(String(q.aos || specQ?.aos || ''))) {
-                    // v7.20.49: AO3 comparative, sub-essay band (AQA P2 Q4 = 16m):
-                    // intro + 3 comparative bodies + conclusion. Capability gate, not name —
-                    // per-QUESTION AO truth only (q.aos authored, else spec); topicData.aos is
-                    // a topic-level default ('AO1,AO2,AO3') and would false-positive here.
-                    html += buildComparativePlanSection(qId);
-                } else {
-                    // Analysis/evaluation/comparison: paragraph-based planning (1 para per ~4-5 marks)
-                    // ⚠ BYTE-PAIR (P2 audit 2026-07-14): each paper's planning protocol
-                    // hardcodes its @FIELD_COMMIT ids to the paragraph count THIS formula
-                    // yields from the spec marks (AQA P2: Q2 8m→2¶, Q3 12m→3¶) — and the
-                    // AO3 branch above pre-empts this one for 12–19m questions. Change a
-                    // spec's marks/AOs, or this routing, and the protocol's plan-{q}-para-*
-                    // filings land nowhere. Re-check the paper's protocol in the same commit.
-                    const planParas = Math.max(1, Math.ceil(qMarks / 5));
-                    for (let i = 1; i <= planParas; i++) {
-                        html += sectionHTML('plan', `Plan: Paragraph ${i} \u2014 ${qId}`, true, null,
-                            inputHTML(`Key points for paragraph ${i} — write the paragraph itself in the Response box below`, `plan-${qId}-para-${i}`));
-                    }
-                }
+                html += _redraftPlanSectionsHTML(qId, qMarks, { isCreativeWritingQ: isCreativeWritingQ, isWritingQ: isWritingQ, isPersuasive: isPersuasive, aos: q.aos || specQ?.aos || '' });
                 } // end REDRAFT plan builders (v7.20.110 — diagnostic took the single-area branch)
             }
 
@@ -64184,6 +64260,92 @@
         canvasEditor.commands.insertContentAt(0, block);
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
         console.log('WML Migration: Reflection section injected (prior Phase-1 record present)');
+    }
+
+    /**
+     * ⭐ v7.20.629 (FIXLIST #569/#570 — Neil: "Plans are not autofiling into the plan area").
+     * Since v7.20.110 a DIAGNOSTIC doc carries ONE plan area per question (`Plan — Qn`, field
+     * `plan-Qn-para-1`) — deliberately: the diagnostic tests, the redraft trains. But the
+     * forward-snapshot seed copies that doc into every Phase-2 stage, so a REDRAFT planning doc
+     * was born with the diagnostic's scaffold: `plan-Q2-para-2`, `plan-intro`, `plan-scene-Q5-*`…
+     * did not exist, and every approved plan after Paragraph 1 was dropped with a console.warn.
+     * migrateMissingPlans cannot see it — it bails the moment ANY plan section exists.
+     *
+     * This heal upgrades each question's diagnostic plan area to the redraft scaffold through THE
+     * SAME BUILDER a born redraft doc uses. The student's first-attempt notes are never lost: they
+     * move into the FIRST box of the new scaffold (Neil's ruling, 2026-09-21: "Leave them in
+     * Paragraph 1's box" — the approved plan then lands beneath them, the v7.20.217 append rule).
+     * Idempotent: after one run no `Plan — Qn` section remains. Never runs in tutor/review view.
+     */
+    function _healDiagnosticPlanScaffold() {
+        if (!canvasEditor || state.reviewMode) return;
+        const redraft = state.phase === 'redraft' || (state.draftType && state.draftType.includes('redraft'));
+        if (!redraft) return;
+        if (state.task === 'mark_scheme' || (state.task && state.task.startsWith('cw_')) || state.subject === 'creative_writing') return;
+        const html = canvasEditor.getHTML();
+        if (html.indexOf('data-section-type="plan"') === -1) return;
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const healed = _upgradeDiagnosticPlanAreas(tmp);
+        if (!healed) return;
+        canvasEditor.commands.setContent(tmp.innerHTML, false);
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+    }
+
+    // The DOM half of the heal, split out so bin/plan-scaffold-heal-harness.js can drive it on a
+    // real diagnostic doc without an editor. Mutates `root`; returns how many questions it upgraded.
+    function _upgradeDiagnosticPlanAreas(root) {
+        let healed = 0;
+        root.querySelectorAll('[data-section-type="question"]').forEach(qSection => {
+            const qId = (qSection.getAttribute('data-section-label') || '').trim();
+            if (!/^Q\d+$/.test(qId)) return;
+            const para1 = 'plan-' + qId + '-para-1';
+            // The diagnostic branch is the ONLY producer of this exact label + field pair.
+            let diag = null;
+            root.querySelectorAll('[data-section-type="plan"]').forEach(sec => {
+                if (diag) return;
+                if ((sec.getAttribute('data-section-label') || '') !== ('Plan — ' + qId)) return;
+                if (sec.querySelector('[data-field-id="' + para1 + '"]')) diag = sec;
+            });
+            if (!diag) return;
+            const qText = qSection.textContent || '';
+            const marksMatch = qText.match(/\[(\d+)\s*marks?\]/i);
+            const specQ = lookupQuestionSpec(qId);
+            const qMarks = parseInt(specQ && specQ.marks != null ? specQ.marks : (marksMatch ? marksMatch[1] : 0)) || 0;
+            if (!qMarks) { console.warn('WML heal: plan scaffold for', qId, 'skipped — no marks resolvable'); return; }
+            const qType = (specQ && specQ.type) || null;
+            const creativeText = qText + ' ' + ((specQ && specQ.description) || '');
+            const f = {
+                isWritingQ: qType === 'extended_writing' || qType === 'choice' || qMarks >= 24,
+                isPersuasive: SWML_PERSUASIVE_RE.test(qText),
+                isCreativeWritingQ: qType === 'creative_writing'
+                    || (qType === 'extended_writing' && /creative|imaginative|narrative|descriptive|write a story|write a description/i.test(creativeText))
+                    || /creative writing|creative prose|imaginative writing|narrative writing|descriptive writing|write a story|write a description/i.test(creativeText),
+                aos: (specQ && specQ.aos) || ''
+            };
+            const frag = document.createElement('div');
+            frag.innerHTML = _redraftPlanSectionsHTML(qId, qMarks, f);
+            const freshIds = Array.prototype.map.call(frag.querySelectorAll('[data-field-id]'), n => n.getAttribute('data-field-id'));
+            if (!freshIds.length) { console.warn('WML heal: plan scaffold for', qId, 'skipped — builder returned no field'); return; }
+            // A scaffold that is ONLY the box the doc already has (a one-paragraph question) needs nothing.
+            if (freshIds.length === 1 && freshIds[0] === para1) return;
+            // Never build a second copy of a box that already exists elsewhere in the doc.
+            for (let i = 0; i < freshIds.length; i++) {
+                if (freshIds[i] === para1) continue;
+                if (root.querySelector('[data-field-id="' + freshIds[i] + '"]')) {
+                    console.warn('WML heal: plan scaffold for', qId, 'skipped — doc already holds', freshIds[i]);
+                    return;
+                }
+            }
+            const oldField = diag.querySelector('[data-field-id="' + para1 + '"]');
+            const firstField = frag.querySelector('[data-field-id]');
+            if (oldField && (oldField.textContent || '').trim()) firstField.innerHTML = oldField.innerHTML;
+            while (frag.firstChild) diag.parentNode.insertBefore(frag.firstChild, diag);
+            diag.remove();
+            healed++;
+            console.log('WML heal: ' + qId + ' plan area upgraded to the redraft scaffold (' + freshIds.length + ' boxes; first-attempt notes kept in ' + freshIds[0] + ')');
+        });
+        return healed;
     }
 
     /**

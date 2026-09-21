@@ -4069,26 +4069,41 @@ TEMPLATE;
         $preamble .= "**B** — No\n";
         $preamble .= "NEVER append control footers like '💡 Type M for menu | H for help | P to proceed' to your messages.\n\n";
 
-        $preamble .= "**RULE 7: CONFIRM BEFORE EVERY SAVE — USE [PANEL] TAGS.**\n";
-        $preamble .= "You MUST NEVER call `save_session_element` without first presenting an explicit confirmation prompt to the student.\n";
-        $preamble .= "For EVERY element that gets saved to the right panel, follow this exact sequence:\n";
-        $preamble .= "1. Gather all parts of the element through your Socratic questioning\n";
-        $preamble .= "2. Wrap the saveable content in `[PANEL: element_type]...[/PANEL]` tags — the frontend uses these to identify what to save\n";
-        $preamble .= "3. Show a confirmation prompt:\n";
-        $preamble .= "**A** — ✅ Save this\n";
-        $preamble .= "**B** — ✏️ I want to change something\n";
-        $preamble .= "4. ONLY call `save_session_element` when the student picks A\n";
-        $preamble .= "5. If B: ask what they want to change, revise, then re-present with [PANEL] tags and the same A/B choice. Loop until A.\n\n";
-        $preamble .= "**[PANEL] TAG FORMAT — MANDATORY:**\n";
-        $preamble .= "Every time you present content for confirmation, wrap it in:\n";
-        $preamble .= "`[PANEL: element_type]exact content to save[/PANEL]`\n";
-        $preamble .= "Examples:\n";
-        $preamble .= "- `[PANEL: goal]Level 6 critical, exploratory response — focusing on AO3 context integration[/PANEL]`\n";
-        $preamble .= "- `[PANEL: keywords]ambition; moral conflict; psychological tension; regicide; conscience[/PANEL]`\n";
-        $preamble .= "- `[PANEL: anchor_quote_start]\"Stars, hide your fires; let not light see my black and deep desires\"[/PANEL]`\n";
-        $preamble .= "- `[PANEL: body_para_1]Topic: Macbeth's ambition is presented as a destructive force...[/PANEL]`\n";
-        $preamble .= "The student will NOT see the [PANEL] tags — they are stripped from the display. The content inside IS what appears in the right panel.\n";
-        $preamble .= "This rule has NO exceptions. The `@CONFIRM_ELEMENT` markers in the protocol expand into the full confirmation flow with [PANEL] tags. Follow them exactly.\n\n";
+        // v7.20.629 (FIXLIST #570): RULE 7 is the LEGACY main-chat save flow — [PANEL] tags, an A/B
+        // 'Save this' prompt and the save_session_element function. A DE-STITCHED planning session
+        // (manifest planning.steps empty: AQA Language P1 + P2) files ONLY through the protocol's
+        // @FIELD_COMMIT / @FIELD_SET markers — no [PANEL] consumer exists on the canvas, and function
+        // calling is disabled. With both rules in context the model obeyed this one: prod student 857
+        // approved her Q2 Paragraph 2 plan, was told "Filed to your plan", and the turn carried
+        // `[PANEL: plan_confirmation]…` and no marker at all — nothing filed. Tell it what NOT to do
+        // AND what to still do (PREAMBLE RULES §5).
+        if (!empty($planning_destitched)) {
+            $preamble .= "**RULE 7: FILING IN THIS SESSION IS BY MARKERS ONLY.**\n";
+            $preamble .= "The planning protocol below files the student's work into their document through its literal `@FIELD_COMMIT{...}` and `@FIELD_SET{...}` markers, exactly where it says to emit them. Emit every marker it specifies, on its own line, in the SAME message.\n";
+            $preamble .= "NEVER write `[PANEL: ...]` tags, NEVER offer 'Save this / I want to change something', NEVER mention or call `save_session_element` — none of those exist in this session and anything wrapped in them is LOST.\n";
+            $preamble .= "NEVER say 'Filed to your plan' (or any wording that claims something was saved) unless that SAME message carries the literal marker for it. After a paragraph's mirror-back is approved, the approval reply MUST contain that paragraph's `@FIELD_SET` marker.\n\n";
+        } else {
+            $preamble .= "**RULE 7: CONFIRM BEFORE EVERY SAVE — USE [PANEL] TAGS.**\n";
+            $preamble .= "You MUST NEVER call `save_session_element` without first presenting an explicit confirmation prompt to the student.\n";
+            $preamble .= "For EVERY element that gets saved to the right panel, follow this exact sequence:\n";
+            $preamble .= "1. Gather all parts of the element through your Socratic questioning\n";
+            $preamble .= "2. Wrap the saveable content in `[PANEL: element_type]...[/PANEL]` tags — the frontend uses these to identify what to save\n";
+            $preamble .= "3. Show a confirmation prompt:\n";
+            $preamble .= "**A** — ✅ Save this\n";
+            $preamble .= "**B** — ✏️ I want to change something\n";
+            $preamble .= "4. ONLY call `save_session_element` when the student picks A\n";
+            $preamble .= "5. If B: ask what they want to change, revise, then re-present with [PANEL] tags and the same A/B choice. Loop until A.\n\n";
+            $preamble .= "**[PANEL] TAG FORMAT — MANDATORY:**\n";
+            $preamble .= "Every time you present content for confirmation, wrap it in:\n";
+            $preamble .= "`[PANEL: element_type]exact content to save[/PANEL]`\n";
+            $preamble .= "Examples:\n";
+            $preamble .= "- `[PANEL: goal]Level 6 critical, exploratory response — focusing on AO3 context integration[/PANEL]`\n";
+            $preamble .= "- `[PANEL: keywords]ambition; moral conflict; psychological tension; regicide; conscience[/PANEL]`\n";
+            $preamble .= "- `[PANEL: anchor_quote_start]\"Stars, hide your fires; let not light see my black and deep desires\"[/PANEL]`\n";
+            $preamble .= "- `[PANEL: body_para_1]Topic: Macbeth's ambition is presented as a destructive force...[/PANEL]`\n";
+            $preamble .= "The student will NOT see the [PANEL] tags — they are stripped from the display. The content inside IS what appears in the right panel.\n";
+            $preamble .= "This rule has NO exceptions. The `@CONFIRM_ELEMENT` markers in the protocol expand into the full confirmation flow with [PANEL] tags. Follow them exactly.\n\n";
+        }
 
         // ── ANTI-DUPLICATION GUARD: when conversation history exists, the welcome has already been sent ──
         global $swml_chat_history;
