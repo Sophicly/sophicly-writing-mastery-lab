@@ -1,10 +1,9 @@
 # RUNG LADDER — THE WORKED ANCHOR (AQA Language Paper 1 · Question 2 · one paragraph, out of 4.0)
 
-⚠️ **THIS FILE IS v1 AND IS CHALLENGED.** Neil (2026-09-19): *"If we give 0.25 for being perceptive and 0.25 for an
-attempt, what is the difference? I think the 0.25 should only be awarded for being convincingly perceptive, nothing
-else."* A **v2 with NO attempt mark** (job quarters + zero-examples + one perceptive quarter, after his own v7.19.403
-P2-Q2 quarter-ladder precedent) is live on the review page below and awaits his verdict — FIXLIST #565/#566. **Do not
-build from the Attempt rows in this file.** Rewrite it, and PEDAGOGY §37 rules 2 + 5, in the session he rules.
+⛔⛔ **WITHDRAWN — 2026-09-22.** Neil: *"why are we working on rungs all of a sudden? We have a protocol already."*
+The ruling is one sentence — **the last 0.25 of every criterion is for perceptiveness; the protocol's criteria and
+worths do not change** — and lives in `PEDAGOGY.md` §37. Everything below is a design he did not ask for (root
+`CLAUDE.md` §0, move 4). Kept only so the next session does not rebuild it. **Do not build from this file.**
 
 **STATUS: DRAFT — awaiting Neil's verdict (shown 2026-09-19).** Ruling: `PEDAGOGY.md` §37 (FIXLIST #547).
 Review page (tick-list + Copy): https://claude.ai/artifact/CtvyMy3wWE1zEbe9bMRSnt
