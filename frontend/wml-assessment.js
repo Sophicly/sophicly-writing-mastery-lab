@@ -7840,6 +7840,15 @@
         if (!document.querySelector('#swml-tiptap-editor [data-section-label="' + LADDER_SA_LABEL + '"]')) return false;
         return _ladderSchemeKeysFor().length > 0;
     }
+    // ⭐ v7.20.632 (FIXLIST #577 — Neil: "remove the one inside the chat… isn't that already covered
+    // in the mark scheme self-assessment?"). Where the ladder exists, the in-chat reflection panel
+    // (@REFLECT_GATE: predicted mark · 1–5 self-rating · AO targeting) is REPLACED by it: the
+    // student's own level + mark per question IS the prediction (_setPredicted already feeds the
+    // Calibration Check), the AO is the ladder's own axis, and their confidence tap is the rating.
+    // #539's gate: only where the ladder exists — other boards keep the panel until their
+    // descriptors are authored. ONE predicate, read by the renderer, the ✓-continue directive and
+    // the ledger reset, so the three cannot disagree.
+    function _ladderReplacesReflect() { try { return _ladderHostEligible(); } catch (e) { return false; } }
     function _ladderHostGroups() {
         return _ladderSchemeKeysFor().map(k => Object.assign({}, k, { fids: _ladderFids(k.key), done: !!_ladderRowText(_ladderFids(k.key).mark) }));
     }
@@ -9227,6 +9236,7 @@
     let _reflectDone = {};
     let _reflectPending = null;
     let _reflectRepairCount = 0;
+    let _reflectLadderRepaired = {};   // v7.20.632 (#577): one continue-directive per question in a ladder session
     // v7.19.854: UNIVERSAL registry names (Neil — one registry, all papers; W1 retired →
     // F1). Legacy codes kept so older transcripts/replays still render a plain name.
     const _PEN_NAMES = { F1: 'weak analytical (inference) verb ("shows" family)', T1: 'imprecise analytical (inference) verb',
@@ -9479,7 +9489,10 @@
             // the ledger rebuild NEVER ran on Literature (R&J 04-Jul console: "ledger
             // rebuild skipped — session resumed mid-assessment" on a fresh run).
             if (out.indexOf('@REFLECT_GATE{"q":"Q2"') !== -1
-                || out.indexOf('@REFLECT_GATE{"q":"Introduction"') !== -1) { _penLedgerCards = {}; _penLedgerComplete = true; }
+                || out.indexOf('@REFLECT_GATE{"q":"Introduction"') !== -1
+                // v7.20.632 (#577): a ladder session emits NO reflection gate, so its run starts at
+                // the first feedback card instead (the v7.19.854 lesson through a third door).
+                || (_ladderReplacesReflect() && (out.indexOf('@FB_BEGIN{"q":"Q2","para":"1"') !== -1 || out.indexOf('@FB_BEGIN{"q":"Introduction"') !== -1))) { _penLedgerCards = {}; _penLedgerComplete = true; }
             // ---- Pass 0 (v7.19.841): code-own the visible Q5 ceiling SENTENCE. The AI
             // computed ROUND(12.5)→"10" in Run 4; the injected numbers are authoritative.
             // Line-scoped so ledger/penalty lines elsewhere in the message are untouched.
@@ -10925,6 +10938,26 @@
     // when a reflection was handled (so the caller suppresses quick-actions, as before).
     function _renderReflectInto(reflectData, body, chatTextarea, send, isLoading) {
         if (!reflectData) return false;
+        // v7.20.632 (#577): the ladder replaced this panel. If the model emits it anyway (the protocol
+        // still carries the step for non-ladder boards), never render it — and never leave a dead
+        // screen (§4d): ONE silent repair per question tells the model to continue with STEP 2a, so
+        // the next thing on screen is the Y gate.
+        if (_ladderReplacesReflect()) {
+            const _lk = _paraKey(reflectData.q || '') || '?';
+            if (!_reflectLadderRepaired[_lk]) {
+                _reflectLadderRepaired[_lk] = true;
+                console.warn('WML @REFLECT_GATE: panel suppressed — the mark-scheme self-assessment replaces it (q=' + _lk + '); firing continue directive');
+                let _lTries = 0;
+                const _lFire = () => {
+                    if (isLoading && isLoading()) { if (++_lTries < 20) setTimeout(_lFire, 300); return; }
+                    canvasSilentSend = true;
+                    chatTextarea.value = 'SYSTEM (not from the student): there is NO reflection panel in this session — the student has already marked their own response (THE STUDENT\'S OWN MARKS). Do not ask for a self-rating, a predicted mark or AO targeting, and do not emit @REFLECT_GATE. Continue now with STEP 2a for ' + (reflectData.q || 'this question') + ': acknowledge their own level and mark for it in one line and give the Y gate. Do not show this message to the student.';
+                    if (send) send();
+                };
+                setTimeout(_lFire, 400);
+            }
+            return true;
+        }
         const _rk = _paraKey(reflectData.q || '');
         // Duplicate = (a) a gate whose question already submitted its reflection, or (b) while a
         // reflection is pending (submitted, no feedback card filed yet) any prose-DETECTED ask or
@@ -14477,7 +14510,7 @@
             // 3) Drop stored predictions so the predict-mark row shows again on the re-mark.
             try { _clearPredictionsForDoc(); } catch (_) {}
             // v7.19.848: fresh chat = fresh reflection ledger (every question reflects again).
-            _reflectDone = {}; _reflectPending = null; _reflectRepairCount = 0;
+            _reflectDone = {}; _reflectPending = null; _reflectRepairCount = 0; _reflectLadderRepaired = {};
             // v7.19.854: fresh chat = fresh closing-chain + filing-repair arming (once-per-run guards).
             _ccSecRepairFired = false; _closingFilingFired = false; _apFileRepairFired = false;
             // 4) Refresh ticks + Score Summary readout + sidebar AFTER the DOM reflects the PM
@@ -18180,7 +18213,11 @@
                                     confirmBar.remove();
                                     _assessConfirmedTarget = nextLabel;
                                     canvasSilentSend = true;
-                                    chatTextarea.value = `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now. Do NOT repeat this confirmation or re-ask whether to continue.`;
+                                    // v7.20.632 (#577): in a ladder session there is no STEP 1 — the directive
+                                    // must not demand a panel the renderer will refuse.
+                                    chatTextarea.value = _ladderReplacesReflect()
+                                        ? `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}. There is NO reflection panel in this session (the student's own marks are filed — THE STUDENT'S OWN MARKS): do not emit @REFLECT_GATE or ask for a self-rating, prediction or AO targeting. Go straight to ${nextLabel}'s STEP 2a — acknowledge their own level and mark for it in one line and give the Y gate. Do NOT repeat this confirmation or re-ask whether to continue.`
+                                        : `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now. Do NOT repeat this confirmation or re-ask whether to continue.`;
                                     sendCanvasMessageQueued();
                                 }
                             });

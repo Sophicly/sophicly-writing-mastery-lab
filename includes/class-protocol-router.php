@@ -3573,6 +3573,22 @@ TEMPLATE;
     /**
      * Build the session-specific preamble (public for fallback use by REST API)
      */
+    /**
+     * v7.20.632 (FIXLIST #577): TRUE once the ladder host has handed the student's own marks to
+     * Sophia — the silent user turn headed THE STUDENT'S OWN MARKS is in the chat history from the
+     * first marking turn on. Chat-truth, like the @REFLECT_GATE scan in the state block: no
+     * server-side twin of the client's scheme-key builder (§5d — one builder), no board literal.
+     */
+    private function ladder_marks_in_history() {
+        global $swml_chat_history;
+        if (empty($swml_chat_history) || !is_array($swml_chat_history)) return false;
+        foreach ($swml_chat_history as $m) {
+            if (is_array($m) && ($m['role'] ?? '') === 'user'
+                && strpos((string) ($m['content'] ?? ''), "THE STUDENT'S OWN MARKS") !== false) return true;
+        }
+        return false;
+    }
+
     public function build_preamble($context, $user_id) {
         // v7.15.38: normalize board slug upstream so all downstream $board references
         // work with the hyphenated canonical form (edexcel-igcse, cambridge-igcse).
@@ -4832,6 +4848,14 @@ TEMPLATE;
                 $preamble .= "Do NOT import AOs, paragraph shapes, or quality rules from a different paper or board. When a paper does not assess AO3, do not include contextual analysis in that paper's gold standard. When a paper labels Context as AO4 (Edexcel IGCSE Lit), do not confuse it with SPaG-AO4 (AQA). The schema + protocol module are the ONLY source of truth for content; this preamble rule only mandates that delivery happens.\n\n";
                 $preamble .= "Applies to every analytical question across AQA, Edexcel, Eduqas, OCR, Edexcel-IGCSE, SQA, CCEA — language reading and literature essays. Creative / extended writing (Q5-type) delivers holistic-structural feedback per the creative-writing protocol instead; this mandate does not cover those questions.\n";
 
+                // v7.20.632 (FIXLIST #577, Neil): where the mark-scheme self-assessment ladder has run, the
+                // in-chat reflection panel is REMOVED — the three reflection mandates below would re-impose
+                // it (the universal cycle, verbatim emission, per-paragraph cycle), so a ladder session gets
+                // the replacement block and none of them. Non-ladder boards are untouched.
+                if ($this->ladder_marks_in_history()) {
+                    $preamble .= "### ⛔ NO IN-CHAT REFLECTION IN THIS SESSION (v7.20.632)\n\n";
+                    $preamble .= "The student has ALREADY marked their own response against the board's level descriptors — the SYSTEM line headed THE STUDENT'S OWN MARKS. That REPLACES every self-rating, predicted-mark and AO-targeting ask: NEVER emit `@REFLECT_GATE`, never run a metacognitive reflection cycle, never ask the student to rate, predict or target anything, and never say they have not yet reflected. Each question opens at its STEP 2a: acknowledge THEIR own level and mark for it in one line, then the Y gate. The Calibration Check after each `Qn Total` compares THEIR mark with yours (their marks ARE the prediction). The Final Summary's metacognitive journey reads their own marks against the actual marks (over / under / accurate per question) and the confidence they declared.\n\n";
+                } else {
                 $preamble .= "### ⛔ METACOGNITIVE REFLECTION CYCLE — UNIVERSAL MANDATE (v7.18.29)\n\n";
                 $preamble .= "**PROTOCOL-PANEL OVERRIDE (v7.19.829):** If the active protocol module defines its OWN reflection panels/gates (@REFLECT_GATE — e.g. AQA Lang P1's ONE per-QUESTION panel capturing predicted mark + self-rating + AO targeting), the protocol's design is AUTHORITATIVE: emit exactly the panels it specifies, at the points it specifies, and nothing more. Do NOT additionally run the two-question cycle below per paragraph, and NEVER re-ask anything the panel already captured (self-rating, AO targeting, \"what were you trying to show\") — the student must never repeat themselves. The cycle below applies ONLY to protocols that define no @REFLECT_GATE of their own.\n\n";
                 $preamble .= "BEFORE marking each individual paragraph in any analytical question (Q2 / Q3 / Q4) and any transactional Q5 (letter, speech, IUMVCC structure), execute a two-question metacognitive reflection cycle:\n\n";
@@ -4866,6 +4890,7 @@ TEMPLATE;
                 $preamble .= "Do NOT consolidate multiple paragraph marks into one message. Do NOT skip the Self-Rate cycle for paragraph 2 because you already did one for paragraph 1. Each paragraph repeats the full cycle.\n\n";
                 $preamble .= "(v7.19.829 NOTE: AQA Lang P1's rebuilt protocol now uses per-QUESTION @REFLECT_GATE panels — it follows the PROTOCOL-PANEL OVERRIDE above, not the per-paragraph reflect cycle. Its per-paragraph mark/gold delivery + STOP-AND-YIELD remain the gold pattern.)\n\n";
 
+                }
                 // v7.19.186: STOP-AND-YIELD enforcement. Reeham redraft staging
                 // test (2026-05-19): even with the per-paragraph rule above, the
                 // model batched Q2 P1 + Q2 P2 into a single message after a single
@@ -7151,6 +7176,10 @@ TEMPLATE;
                 }
             }
         }
+        // v7.20.632 (#577): the ladder hand-back ends setup — in a ladder session there is no
+        // reflection panel for the scan above to find, so the first marking turn would otherwise
+        // still be told "marking has NOT begun".
+        if ($setup_phase && $this->ladder_marks_in_history()) $setup_phase = false;
         if ($setup_phase) {
             $q_ids = array_map(static function ($q) { return (string) $q['id']; }, $order);
             $q_seq = $q_ids ? implode(' → ', $q_ids) : 'Q1 → Q5';
@@ -7258,7 +7287,10 @@ TEMPLATE;
                 if ($t_pos >= 0 && ($g_pos === false || $g_pos < $t_pos)) $has_reflect = false;
                 elseif ($g_pos !== false) $has_reflect = true;
             }
-            if (!$has_reflect) {
+            if (!$has_reflect && $this->ladder_marks_in_history()) {
+                // v7.20.632 (#577): a ladder session owes NO panel — say so, or the directive below re-demands it.
+                $block .= "REFLECTION — {$current}: there is NO reflection panel in this session; the student's own marks (THE STUDENT'S OWN MARKS) stand in for it. Never emit @REFLECT_GATE or ask for a self-rating, prediction or AO targeting. Open {$current} at its STEP 2a: acknowledge their own level and mark for it in one line, then the Y gate.\n";
+            } elseif (!$has_reflect) {
                 $block .= "REFLECTION GATE — {$current}: no reflection panel (@REFLECT_GATE) for {$current} has been emitted yet. Before marking ANY part of {$current}, your next output MUST be {$current}'s own reflection panel (predicted mark + self-rating + AO targeting) and nothing else. NEVER reuse or re-attribute an earlier question's self-rating — every question gets its own panel and its own rating.\n";
             }
         }

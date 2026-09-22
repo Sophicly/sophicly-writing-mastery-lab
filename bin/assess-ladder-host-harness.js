@@ -149,5 +149,34 @@ ok(/_setPredicted\(qNum, res\.mark\)/.test(JS), 'the own mark feeds the existing
 console.log('\nF · a resumed wrap re-enters the host');
 ok(/else if \(cfg && cfg\.walkId === LADDER_SA_WALK\)/.test(ladderSrc) && /_ladderHostRenderCurrent\(\)/.test(ladderSrc), 'wrap without a live onDone (after reload) calls the host again');
 
+// ── G · v7.20.632 (#577) — the ladder REPLACES the in-chat reflection panel ──────────────────
+console.log('\nG · the in-chat reflection panel is removed wherever the ladder exists');
+const ROUTER = fs.readFileSync(path.join(ROOT, 'includes', 'class-protocol-router.php'), 'utf8');
+ok(/function _ladderReplacesReflect\(\)/.test(JS), 'ONE predicate: _ladderReplacesReflect');
+const rri = JS.slice(JS.indexOf('function _renderReflectInto('), JS.indexOf('function _taskUsesReflectPanel'));
+ok(/if \(_ladderReplacesReflect\(\)\)/.test(rri) && /return true;/.test(rri), 'the renderer never draws the panel in a ladder session');
+ok(/there is NO reflection panel in this session/.test(rri) && /Continue now with STEP 2a/.test(rri), '…and fires a continue directive instead (§4d — the next thing on screen is the Y gate)');
+ok(/_reflectLadderRepaired\[_lk\] = true/.test(rri), '…at most once per question (no loop)');
+ok(/_reflectLadderRepaired = \{\};/.test(JS.slice(JS.indexOf('_reflectDone = {}; _reflectPending = null;'))), 'the once-flag resets with the other reflection state');
+ok(/chatTextarea\.value = _ladderReplacesReflect\(\)\s*\?/.test(JS), 'the ✓-continue directive stops demanding STEP 1 in a ladder session');
+ok(/_ladderReplacesReflect\(\) && \(out\.indexOf\('@FB_BEGIN\{"q":"Q2","para":"1"'\)/.test(JS), 'the penalty ledger resets at the first CARD when there is no first gate');
+ok(/private function ladder_marks_in_history\(\)/.test(ROUTER), 'router: ladder_marks_in_history() (chat-truth, no board literal)');
+ok((ROUTER.match(/\$this->ladder_marks_in_history\(\)/g) || []).length >= 3, 'router: used at the metacog mandate, the setup-phase gate and the per-question reflection directive');
+ok(/NO IN-CHAT REFLECTION IN THIS SESSION/.test(ROUTER) && /\} else \{\s*\n\s*\$preamble \.= "### ⛔ METACOGNITIVE REFLECTION CYCLE/.test(ROUTER), 'router: the three reflection mandates are SKIPPED in a ladder session, not merely contradicted');
+ok(/REFLECTION — \{\$current\}: there is NO reflection panel in this session/.test(ROUTER), 'router: the per-question directive says "no panel" instead of demanding one');
+['protocols/aqa/language1/modules/protocol-a-assessment.md', 'protocols/aqa/language2/modules/protocol-a-assessment.md', 'protocols/aqa/unseen/modules/protocol-a-assessment-unseen.md'].forEach((rel) => {
+    const md = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    const step1 = md.match(/^\*\*STEP 1 — Reflection panel/gm) || [];
+    const skipped = md.match(/^\*\*STEP 1 — Reflection panel[^\n]*Skipped entirely when THE STUDENT'S OWN MARKS are present/gm) || [];
+    ok(step1.length > 0 && skipped.length === step1.length, rel.split('/')[2] + ': every STEP 1 (' + step1.length + ') is marked skipped when the own marks are present');
+    ok(/AND THERE IS NO REFLECTION PANEL IN THAT SESSION/.test(md), rel.split('/')[2] + ': the OWN-MARKS note carries the no-panel law');
+    ok(/Metacognitive journey[^\n]*their own level \+ mark per question vs actual/.test(md), rel.split('/')[2] + ': the Final Summary journey reads their own marks, not a self-rating pattern');
+});
+// The panel STAYS where no ladder exists: lit + poetry keep every gate untouched.
+['protocols/aqa/literature/modules/protocol-a-assessment.md', 'protocols/aqa/poetry/modules/protocol-a-assessment-poetry.md'].forEach((rel) => {
+    const md = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    ok(/@REFLECT_GATE\{/.test(md) && !/Skipped entirely when THE STUDENT'S OWN MARKS/.test(md), rel.split('/')[2] + ': no ladder → the reflection panel stays (untouched)');
+});
+
 console.log('\n' + (fail ? '❌' : '✅') + ' assess-ladder-host-harness: ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

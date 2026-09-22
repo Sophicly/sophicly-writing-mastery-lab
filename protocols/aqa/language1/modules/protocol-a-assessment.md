@@ -137,7 +137,7 @@ predicted mark from the reflection panel for the same question). In each questio
 name their level and mark beside yours, name the ONE criterion where your judgement and theirs differ
 most, and ask the direction-adaptive question exactly as specified above. Never re-ask them to mark
 themselves, never dispute their reason before you have marked, and never let their mark move yours —
-the gap between the two is the teaching.
+the gap between the two is the teaching. **AND THERE IS NO REFLECTION PANEL IN THAT SESSION (v7.20.632, Neil #577):** skip every STEP 1 entirely — never emit `@REFLECT_GATE`, never ask for a self-rating, predicted mark or AO targeting; open each question at STEP 2a, acknowledging THEIR level and mark for it in one line before the Y gate. In the Final Summary the metacognitive journey reads their own marks against the actual marks (over / under / accurate per question) and the confidence they declared.
 
 **ECHO THE STUDENT'S CHOICE VERBATIM (v7.19.932 — live failure):** when the student answers a
 lettered Calibration option, restate THEIR letter + label exactly as their message gives it
@@ -400,7 +400,7 @@ question's STEP 1 immediately (anti-loop rule).
 
 ## QUESTION 2 — Language Analysis (AO2, 8 marks — 2 TTECEA paragraphs × 4)
 
-**STEP 1 — Reflection panel (ONE, for the whole question).**
+**STEP 1 — Reflection panel (ONE, for the whole question).** *(Skipped entirely when THE STUDENT'S OWN MARKS are present — their own marks replace it; go to STEP 2a.)*
 Lead-in: restate Q2's focus (how the writer uses language — words, phrases, techniques, sentence
 forms — for effect) + cite the HEADLINE GOAL, then on its own line:
 
@@ -408,7 +408,7 @@ forms — for effect) + cite the HEADLINE GOAL, then on its own line:
 
 WAIT for the combined reply (Predicted Q2 mark /8 + self-rating + AO targeting). STORE all three.
 
-**STEP 2a — Acknowledge + gate.** Say: "Thank you. You rated yourself [N]/5, predicted [X]/8, and
+**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* Say: "Thank you. You rated yourself [N]/5, predicted [X]/8, and
 targeted [AO(s)]. Q2 is marked one paragraph at a time — type **Y** to see Paragraph 1's mark
 breakdown." **HARD STOP — your turn ENDS on that line.** No `@FB_BEGIN`, no table, nothing after
 it. WAIT for Y.
@@ -521,7 +521,7 @@ framing ("To what extent do you agree?") — never from an invented intensifier.
 charge, verify each keyword you cite appears verbatim in the statement; cannot verify → no
 charge (the ANTI-FABRICATION rule applies to the statement side exactly as to the student side).
 
-**STEP 1 — Reflection panel (ONE for the whole question).**
+**STEP 1 — Reflection panel (ONE for the whole question).** *(Skipped entirely when THE STUDENT'S OWN MARKS are present — their own marks replace it; go to STEP 2a.)*
 Lead-in: restate the Q4 statement + its evaluative keywords + the taught 5-part shape, note that
 3–4 strong paragraphs can still reach top grades (the structure serves the argument, not the other
 way round), cite the HEADLINE GOAL, then on its own line:
@@ -530,7 +530,7 @@ way round), cite the HEADLINE GOAL, then on its own line:
 
 WAIT for the combined reply. STORE predicted /20 + rating + AO targeting.
 
-**STEP 2a — Acknowledge + gate.** Echo their reflection, then: "Q4 is marked section by section —
+**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* Echo their reflection, then: "Q4 is marked section by section —
 type **Y** to see your Introduction's mark breakdown." **HARD STOP.** WAIT for Y.
 
 **STEP 2b — five section cards, ONE PER TURN, each ending "Type Y for [next section]" (HARD STOP)
@@ -597,7 +597,7 @@ ceiling-vs-halt split is retired; a short Q5 is always marked-and-capped, never 
   have NO word-count penalty. **NEVER halt Q5 for word count** — always mark it and apply the
   ceiling, then proceed.
 
-**STEP 1 — Reflection panel.** Lead-in: restate Q5's focus (an engaging, controlled, technically
+**STEP 1 — Reflection panel.** *(Skipped entirely when THE STUDENT'S OWN MARKS are present — their own marks replace it; go to STEP 2a.)* Lead-in: restate Q5's focus (an engaging, controlled, technically
 accurate piece — content & organisation /24 + technical accuracy /16) + cite the HEADLINE GOAL,
 then on its own line:
 
@@ -605,7 +605,7 @@ then on its own line:
 
 WAIT for the combined reply (Predicted Q5 mark /40 + rating + AO chips). STORE.
 
-**STEP 2a — Acknowledge + gate.** Echo, then: "Type **Y** to see your Question 5 assessment."
+**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* Echo, then: "Type **Y** to see your Question 5 assessment."
 **HARD STOP.** WAIT for Y.
 
 **STEP 2b — the Q5 card (holistic — NO per-paragraph marks).**
@@ -659,7 +659,7 @@ In order:
    - **Technical Accuracy note** (qualitative SPaG pattern across the paper).
    - **Overall Level pattern:** per-question levels reached (quote nothing new — reference the
      levels already cited; no whole-paper descriptor exists, so never invent one).
-   - **Metacognitive journey:** self-rating pattern across Q2–Q5 vs actual percentages;
+   - **Metacognitive journey:** *(with THE STUDENT'S OWN MARKS present: their own level + mark per question vs actual — over / under / accurate — and their declared confidence, instead of a self-rating pattern)* self-rating pattern across Q2–Q5 vs actual percentages;
      AO-targeting pattern vs each question's real AO; prediction-accuracy pattern (over/under/
      accurate per question); **closure of the HEADLINE GOAL** — "You set out to [goal]; here is
      how that went across the paper", specific and question-referenced.

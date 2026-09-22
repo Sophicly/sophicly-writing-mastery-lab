@@ -2337,3 +2337,40 @@ earned) and loses only the Technique rung — 0.75 of 1.0.
 
 ⬜ **STILL TO DO:** write this into every board's language-question assessment protocol (it binds
 AQA P1/P2, Edexcel, Eduqas, OCR, IGCSE, Cambridge the same way). Tracked: FIXLIST #541.
+
+---
+
+## §39. ⭐⭐ THE MARK-SCHEME SELF-ASSESSMENT REPLACES THE IN-CHAT REFLECTION PANEL (Neil, ruled 2026-09-14 as FIXLIST #539; ordered built 2026-09-22, #577)
+
+**His words (2026-09-22):** *"there's quite a lot of self-assessments… in the chat we've got that
+self-assessment there — do we need that in there, because we've got the mark scheme self-assessment…
+maybe we could remove the one inside the chat, where it says how confident were you and which
+assessment objective were you targeting — isn't that already covered in the mark scheme
+self-assessment? So that's what I want to do."*
+
+**THE RULE.** Where the mark-scheme self-assessment ladder exists for a paper (AQA Language P1, P2,
+unseen — `_ladderSchemeKeysFor()` non-empty), the in-chat reflection panel (`@REFLECT_GATE`:
+predicted mark · 1–5 self-rating · AO targeting) is **removed**. What it fed is already covered:
+- the **predicted mark** → the student's own level + mark per question (the ladder already feeds
+  `_setPredicted`, and the protocol already said their marks supersede the panel's prediction);
+- the **AO targeting** → the ladder is walked per question × AO, so the AO is its own axis;
+- the **1–5 confidence** → the ladder's one confidence tap.
+Each question now opens at its STEP 2a (their own level and mark acknowledged in one line, then the
+Y gate). The per-question **Calibration Check** and the end-of-assessment **calibration stage**
+(§33 / v7.20.614) are untouched — those are the comparison with Sophia's marks, which is the point.
+
+**THE GATE (#539):** removed only where the ladder exists. AQA Literature and poetry (no
+descriptors in the dataset yet) keep the panel until their ladder data is authored; then the same
+removal applies by construction — the predicate is the ladder's presence, never a board literal.
+
+**MECHANICS (v7.20.632):** one client predicate `_ladderReplacesReflect()` (renderer refuses the
+panel and fires ONE continue directive per question — §4d; the ✓-continue directive stops demanding
+STEP 1; the penalty ledger resets at the first card instead of the first gate); one server
+predicate `ladder_marks_in_history()` (chat-truth: the hand-back line THE STUDENT'S OWN MARKS) that
+skips the three reflection mandates in the preamble, ends the setup phase, and turns the per-question
+"panel still owed" directive into "no panel"; the three ladder protocols mark every STEP 1 as
+skipped and read the Final Summary's metacognitive journey from the student's own marks.
+Gate: `bin/assess-ladder-host-harness.js` §G.
+
+⬜ **Captured, not actioned (#574c):** Neil's thought that the remaining self-assessment might be
+renamed ("the technical self-assessment"). Ask when he raises it again; do not rename on a float.

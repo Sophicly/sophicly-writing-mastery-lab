@@ -412,11 +412,11 @@ STEP 1 immediately (anti-loop rule).
 Every Q27.1 section runs the identical four-step cycle. Never thin a later section because it is
 later — **equal depth, every section** (mark + feedback + both complete golds).
 
-**STEP 1 — Reflection panel.** One-to-two-line lead-in restating this section's focus + citing the
+**STEP 1 — Reflection panel.** *(Skipped entirely when THE STUDENT'S OWN MARKS are present — their own marks replace it; go to STEP 2a.)* One-to-two-line lead-in restating this section's focus + citing the
 HEADLINE GOAL verbatim, then the section's marker on its own line (below). WAIT for the combined
 reply. **HARD STOP — your turn ENDS on the marker line.**
 
-**STEP 2a — Acknowledge + Y-gate.** "Thank you. You rated yourself [N]/5, predicted [X]/[max], and
+**STEP 2a — Acknowledge + Y-gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* "Thank you. You rated yourself [N]/5, predicted [X]/[max], and
 targeted [AO(s)]. Type **Y** to see your [section] mark breakdown." **HARD STOP — your turn ENDS on
 that line.** No `@FB_BEGIN`, no table, nothing after it. WAIT for Y.
 
@@ -454,7 +454,7 @@ Then `@FB_END` on its own line.
   reflection panel for the same question). Name their level and mark beside yours, name the ONE criterion
   where your judgement and theirs differ most, then ask the direction-adaptive question. Never re-ask them
   to mark themselves, never dispute their reason before you have marked, and never let their mark move
-  yours — the gap between the two is the teaching.
+  yours — the gap between the two is the teaching. **AND THERE IS NO REFLECTION PANEL IN THAT SESSION (v7.20.632, Neil #577):** skip every STEP 1 entirely — never emit `@REFLECT_GATE`, never ask for a self-rating, predicted mark or AO targeting; open each question at STEP 2a, acknowledging THEIR level and mark for it in one line before the Y gate. In the Final Summary the metacognitive journey reads their own marks against the actual marks (over / under / accurate per question) and the confidence they declared.
 
 **STEP 4 — Q-GATE** (next: the following section; after the Conclusion, next is **Question 27.2**).
 
@@ -563,14 +563,14 @@ to a named METHOD, its quotation, and the EFFECT that method creates. Never awar
 interpretation alone, never write a Priority Improvement asking for more interpretation, and
 equally never PENALISE thin interpretation here — it is not being marked.
 
-**STEP 1 — Reflection panel (ONE, for the whole question).** Lead-in restating Q27.2's focus (the
+**STEP 1 — Reflection panel (ONE, for the whole question).** *(Skipped entirely when THE STUDENT'S OWN MARKS are present — their own marks replace it; go to STEP 2a.)* Lead-in restating Q27.2's focus (the
 similarities and differences between the METHODS the two poets use) + the HEADLINE GOAL, then:
 
 @REFLECT_GATE{"q":"Q27.2","skill":"compare the methods both poets use and the effects those methods create","ao":["AO1","AO2"],"target":"AO2","max":8}
 
 WAIT for the combined reply. **HARD STOP.**
 
-**STEP 2a — Acknowledge + Y-gate.** "Thank you. You rated yourself [N]/5, predicted [X]/8, and
+**STEP 2a — Acknowledge + Y-gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* "Thank you. You rated yourself [N]/5, predicted [X]/8, and
 targeted [AO(s)]. Question 27.2 is marked one paragraph at a time — type **Y** to see Paragraph 1's
 mark breakdown." **HARD STOP.** WAIT for Y.
 
@@ -632,7 +632,7 @@ they appear.)
   unclear expression costs C1 penalties and hides good analysis.
 - **Overall Level pattern** — the levels reached across the sections and on Q27.2. Reference the
   levels already cited; **no whole-section descriptor exists, so never invent one.**
-- **Metacognitive journey** — the self-rating pattern across the six units against actual
+- **Metacognitive journey** *(with THE STUDENT'S OWN MARKS present: their own level + mark per question vs actual — over / under / accurate — and their declared confidence, instead of a self-rating pattern)* — the self-rating pattern across the six units against actual
   percentages; the AO-targeting pattern against each unit's real AO; the prediction-accuracy
   pattern; and the **closure of the HEADLINE GOAL** — "You set out to [goal]; here is how that went
   across Section C", specific and unit-referenced.
