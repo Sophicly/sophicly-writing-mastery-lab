@@ -7984,7 +7984,15 @@
         return _ladderSchemeKeysFor().map((k) => {
             const lf = _ladderFids(k.key), cf = _calibFids(k.key);
             const mine = _ladderRowText(lf.mark);
-            const mineNum = parseFloat(String(mine).replace(/[^\d.]/g, ''));
+            // v7.20.631 (#574d): the ladder files the row as "6 / 8" (mark AND out-of). Stripping every
+            // non-digit welded them into 68 — the card read "68 / 8 … 64 marks apart" on Neil's first
+            // real run. Read the FIRST number only, and refuse a mark above the question's maximum.
+            const mineMatch = /(\d+(?:\.\d+)?)/.exec(String(mine));
+            let mineNum = mineMatch ? parseFloat(mineMatch[1]) : NaN;
+            if (!isNaN(mineNum) && k.max && mineNum > k.max) {
+                console.warn('WML calib: self-mark', mine, 'exceeds the maximum', k.max, 'for', k.key, '— ignored');
+                mineNum = NaN;
+            }
             return Object.assign({}, k, {
                 fids: cf,
                 mine: mine,
@@ -8019,7 +8027,10 @@
         const agree = ad <= tol;
         const dir = delta > 0 ? 'higher than' : 'lower than';
         let out = '**' + g.q + ' — ' + g.ao + '**\n\n';
-        out += '| | level | mark |\n|---|---|---|\n';
+        // v7.20.631: the first header cell must not be EMPTY — formatAI treats "| |" as a row
+        // boundary (its repair for AI output that drops newlines), which split this header into
+        // a stray "|" line and a two-column table.
+        out += '| Who | Level | Mark |\n|---|---|---|\n';
         out += '| **You** | ' + (g.myLevel || '—') + ' | **' + g.mineNum + ' / ' + g.max + '** |\n';
         out += '| **Sophia** | see your feedback for ' + g.q + ' | **' + g.actual.mark + ' / ' + g.max + '** |\n\n';
         if (g.myWhy) out += 'Your reason at the time: *"' + g.myWhy + '"*\n\n';

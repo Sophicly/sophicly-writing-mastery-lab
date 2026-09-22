@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.630';
+var WML_BUILD = '7.20.631';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -3191,8 +3191,40 @@ window.WML = (function() {
         // `el()` is the ONE seam every chip in the plugin passes through. There are five separate
         // `chipBar` implementations (the SINGLETONS problem, FIXLIST #38); doing it at the builders
         // would mean five edits and a sixth walk shipping without it.
-        if (tag === 'button') arrowizeEl(e);
+        if (tag === 'button') { arrowizeEl(e); glyphizeEl(e); }
         return e;
+    }
+    // ⭐ v7.20.631 (#574a) — the LEADING glyph on a chip ("✓ Got it — continue", "🤔 Still confused",
+    // "💬 Different question", "⏸ Pause here") becomes an inline SVG from WML.ICONS. Same law as the
+    // arrow above (#89): those emoji are QUICK-ACTION TOKENS matched as strings by the detour
+    // handlers and the harnesses, so the literal survives in a visually-hidden span and only the
+    // rendered mark changes. Leading glyph only — a glyph mid-label is prose and is left alone.
+    const GLYPH_ICONS = { '\u2713': 'check', '\u2705': 'check', '\uD83E\uDD14': 'help', '\uD83D\uDCAC': 'message', '\u23F8': 'pause' };
+    const _glyphRe = /^(\s*)(\u2713|\u2705|\uD83E\uDD14|\uD83D\uDCAC|\u23F8)\uFE0F?(\s*)/;
+    function glyphizeEl(root) {
+        try {
+            if (!root || (root.querySelector && root.querySelector('.swml-glyph-ico'))) return;
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+            let node = walker.nextNode();
+            while (node && !node.nodeValue.trim()) node = walker.nextNode();   // first text with content
+            if (!node) return;
+            const m = _glyphRe.exec(node.nodeValue);
+            if (!m || !GLYPH_ICONS[m[2]]) return;
+            const svg = icon(GLYPH_ICONS[m[2]], 15);
+            if (!svg) return;
+            const frag = document.createDocumentFragment();
+            const keep = document.createElement('span');
+            keep.className = 'swml-arrow-lit';                      // visually hidden; keeps textContent honest
+            keep.textContent = m[0];
+            frag.appendChild(keep);
+            const g = document.createElement('span');
+            g.className = 'swml-glyph-ico';
+            g.setAttribute('aria-hidden', 'true');
+            g.innerHTML = svg;
+            frag.appendChild(g);
+            frag.appendChild(document.createTextNode(node.nodeValue.slice(m[0].length)));
+            node.parentNode.replaceChild(frag, node);
+        } catch (_) {}
     }
     // Swap arrow CHARACTERS for the glyph, in place, without changing what the element READS AS.
     // ⚠️ THE LITERAL SURVIVES, and that is the whole design (#89): chip labels like "Continue →" are
@@ -4737,6 +4769,14 @@ window.WML = (function() {
         //           data-URI's 1.9 so it inherits currentColor and matches the house icon weight —
         //           the ONE disclosed deviation from the source (a data-URI background cannot
         //           inherit colour, which is exactly why it could not be reused as-is).
+        // ⭐ v7.20.631 (#574a, Neil: "These quick action buttons need SVG icons") — the four detour
+        // chips' leading glyphs. Tabler outline, 24 grid, bodies extracted programmatically from
+        // frontend/icons/tabler-*.svg (the rule at the top of this table). Swapped for the emoji at
+        // the `el()` seam by glyphizeEl, the way arrowizeEl swaps the arrow — the LITERAL stays.
+        check: { kind: 'line', src: 'tabler-check.svg', body: '<path d="M5 12l5 5l10 -10" />' },
+        help: { kind: 'line', src: 'tabler-help-circle.svg', body: '<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 16v.01" /><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />' },
+        message: { kind: 'line', src: 'tabler-message-circle.svg', body: '<path d="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1" />' },
+        pause: { kind: 'line', src: 'tabler-player-pause.svg', body: '<path d="M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12" /><path d="M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12" />' },
         chat:  { kind: 'filled', vb: '0 0 24 24', src: 'remix-question-answer-fill.svg', body: '<path d="M8 18H18.2372L20 19.3851V9H21C21.5523 9 22 9.44772 22 10V23.5L17.5455 20H9C8.44772 20 8 19.5523 8 19V18ZM5.45455 16L1 19.5V4C1 3.44772 1.44772 3 2 3H17C17.5523 3 18 3.44772 18 4V16H5.45455Z"/>' },
         // ⭐ Neil's ALLY and FOIL, B versions (2026-08-15). The A versions are RETIRED and were
         // never right: Ally A was an 88-grid fist-bump and Foil A a 500-grid full-colour
@@ -5772,6 +5812,7 @@ window.WML = (function() {
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG, setHaloLabel, approvalIconSVG, guideIconSVG, spineIconSVG, phoenixIconHTML, icon, techIcon, ICONS,
         arrowIcon, arrowize, arrowizeEl, setArrowStyle,   // v7.20.404 (#177) — Neil's arrows; setArrowStyle('boxed'|'bare') switches the whole app
+        glyphizeEl,   // v7.20.631 (#574a) — leading chip glyph → inline SVG, literal kept
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
         learnChipsForLine,  // v7.19.949/950: ungated line→chips resolver for the in-doc healer
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)
