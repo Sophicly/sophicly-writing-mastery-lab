@@ -580,7 +580,10 @@ inference is worth 2 marks, built from four half-mark checks — exactly how you
 be marked: the claim is inferential (what the writer *implies*, not what happens); the
 claim is perceptive (beyond the obvious); it's developed in detail (you explain what the
 chosen words *reveal*); and it's quote-anchored (a judicious embedded quotation, the claim
-built FROM the quoted words). Source B inferences open with a comparative discourse marker
+built FROM the quoted words). And one rule runs through every check on this paper: the
+last quarter-mark of each is only for being **perceptive** — going past the obvious in a
+way the words on the page genuinely support. Clear earns most of it; perceptive earns
+all of it. Source B inferences open with a comparative discourse marker
 ('However', 'In contrast', 'Whereas') and state a difference against the Source A inference
 before them." Cite the headline goal / Planning Target where it matches.
 

@@ -2276,9 +2276,25 @@ step: *"Clear, relevant"* → *"Perceptive, detailed"*; Q4's *"convincing… jud
 clearly but not perceptively scores at most its worth − 0.25. Below that quarter, an element is marked
 exactly as today.
 
-**Why it is one rule and not a table change:** every criterion worth in use is 0.5 · 0.75 · 1.0 · 1.5, so
-every criterion has a top quarter to reserve; totals are untouched; the sum-to-max law is untouched; the
-`+0.5` interplay BONUS is untouched. Nothing per board, nothing per element type.
+**Why it is one rule and not a table change:** measured across all 30 assessment protocols (2026-09-22):
+**467 criteria, worths 0.5 · 0.75 · 1.0 · 1.25 · 1.5 · 1.75 · 2.0 · 2.5 · 3.0 — none is 0.25**, so every
+criterion has a top quarter to reserve; totals are untouched; the sum-to-max law is untouched. Nothing
+per board, nothing per element type.
+
+**THE EXCEPTIONS — whole questions with no criteria (ruled 2026-09-22):** retrieval / right-or-wrong
+questions (Q1 on every language paper, per-statement marks) · extended writing marked as a whole piece by
+band (Section B / Q5, AO5 + AO6) · any separate technical-accuracy mark (AO4 SPaG, IGCSE AO5) · quizzes ·
+penalty rows.
+
+**THE BONUS (Neil, 2026-09-22: *"we can give that, but it has to be convincing… and really, probably
+perceptive as well"*):** a bonus is a Level-4 award in its entirety — the interplay bonus is given **only
+for convincing, perceptive interplay analysis** (a real relationship in the quoted words, explained).
+Written into `marking-fairness-universal.md` §Bonus elements.
+
+**PLANNING TEACHES IT (Neil, 2026-09-22: *"we need to incorporate it into the planning as well"*):** the
+rule is stated in the student's words at the first "how your answer will be marked" lead-in of every
+planning protocol (AQA P1 Q2, one clause at Q3/Q4; AQA P2 Q2) — criteria upfront, §4c.1. Not repeated
+per beat.
 
 **What the grades do (AQA P1 Q2 paragraph, 4.0):** every criterion met clearly, none perceptive = 2.5 =
 62.5% = **Grade 6**; clear AND perceptive throughout = 4.0 = **Grade 9**. Perceptiveness is what separates
@@ -2290,10 +2306,11 @@ zero-examples, job quarters, a per-type library (FIXLIST #547 design, #563 ancho
 not recognise it: *"I'm confused as to what we're even doing here now."* Root `CLAUDE.md` §0, move 4. The
 attempt-mark debate it created is void — below the top quarter the protocol already decides.
 
-**WHERE THE RULE LIVES:** stated once, in a shared module every assessment loads
-(`protocols/shared/mark-scheme/marking-fairness-universal.md`, loaded by 32 of 35 manifests — the three
-without it, `shared/literature` · `shared/poetry` · `shared/nonfiction`, must load it too or the rule forks).
-Never re-stated per protocol.
+**WHERE THE RULE LIVES:** `protocols/shared/mark-scheme/marking-fairness-universal.md` **Rule 5** (v1.1.0),
+loaded by every manifest that has an assessment stage (the three without it — `shared/literature` ·
+`shared/poetry` · `shared/nonfiction` — have no assessment stage, so nothing forks). The two AQA language
+assessment protocols carry a one-paragraph `[AI_INTERNAL]` pointer to it because the protocol loads LAST
+and dominates (PREAMBLE RULES §6); other protocols inherit it from the shared module alone.
 
 **STILL RULED AND UNTOUCHED BY THIS:** the feedback prose is the product (#546 — what they missed · what
 they scored · how to fix it · the model paragraphs stay API prose); §38 credit-the-analysis-dock-only-the-

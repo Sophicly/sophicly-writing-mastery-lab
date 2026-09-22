@@ -71,6 +71,13 @@ normal paragraph — so the three body paragraphs carry 15 of the 16 marks; the 
 conclusion are worth 0.5 each, mirroring real practice where body paragraphs are planned and
 written FIRST and the frame is added if time allows.
 
+**[AI_INTERNAL] THE LAST 0.25 OF EVERY CRITERION IS FOR PERCEPTIVENESS (Rule 5 of
+`marking-fairness-universal.md`, v7.20.630 — Neil, 2026-09-22):** on every criterion row in Q2, Q3 and
+Q4, the final 0.25 is awarded only for perceptive, convincing work traceable to the words on the page;
+met clearly but not perceptively = worth − 0.25 at most; the Why names which. **Every BONUS is awarded
+only for convincing, perceptive work** (a real relationship or synthesis the sources support, explained).
+Q1 (per-statement) and Q5 (holistic AO5/AO6) are outside the rule.
+
 ---
 
 ## GLOBAL INTERNAL AI NOTES (govern EVERY question below)

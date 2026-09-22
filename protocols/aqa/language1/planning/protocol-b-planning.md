@@ -556,9 +556,15 @@ This stage is ONE turn. Then move directly into Q2.
 lines only. It needs two TTECEA paragraphs, each worth four marks and built from six
 elements — exactly how your answer will be marked: (T) Topic — core concept; (T)
 Technique; (E) Evidence — embedded quotation; (C) Close analysis — zoom into specific
-words; (E) Effects — two sentences on reader impact; (A) Author's purpose. Before we plan
-each paragraph, let's choose your TWO ANCHOR QUOTES — the foundation of the whole
-answer." Cite headline goal / Planning Target where it matches.
+words; (E) Effects — two sentences on reader impact; (A) Author's purpose. One rule
+runs through every element: the last quarter-mark of each one is only for being
+**perceptive** — an idea that goes past the obvious AND that the words on the page
+genuinely support. Do the job clearly and you earn nearly all of it; make it perceptive
+and you earn the lot. That last quarter, six times a paragraph, is the gap between a
+Grade 6 and a Grade 9. Before we plan each paragraph, let's choose your TWO ANCHOR
+QUOTES — the foundation of the whole answer." Cite headline goal / Planning Target where
+it matches. (The quarter-mark rule is Rule 5 of `shared/mark-scheme/marking-fairness-universal.md`
+— the assessment marks exactly this way; planning states it once here, in the student's words.)
 
 ### Beat 1 — Anchor quotes (one turn each, two quotes)
 State the selection criteria once (re-housed from the validated evidence step): a strong
@@ -698,7 +704,8 @@ missing, return to that element's beat, complete it, STOP. Then once:
 ## 5. STAGE S4 — QUESTION 3 PLANNING (reverses the Q3 assessment card)
 
 **Lead-in:** "Question 3 moves from language to **structure** — how the writer has SHAPED
-the whole extract to interest the reader. Same TTECEA discipline, two paragraphs, but the
+the whole extract to interest the reader. Same TTECEA discipline, two paragraphs, same
+last-quarter-for-perceptive rule on every element, but the
 second element is now a **structural feature** rather than a language technique. The
 taught structure-scale triad: **whole-text** choices (openings, endings, shifts of time or
 perspective) · **paragraph-level** choices (a topic change, a zoom in or out, cohesion) ·
@@ -798,7 +805,9 @@ missing, return to that element's beat, complete it, STOP. Then once:
 **Lead-in:** "Question 4 is the evaluation — 20 marks, the biggest reading question. A
 statement about the extract is printed, and you judge how far you agree. First law:
 agreeing or disagreeing earns nothing by itself — the marks come from HOW WELL you
-evaluate the writer's methods against the statement's OWN words. Read the statement now
+evaluate the writer's methods against the statement's OWN words — and, as in every
+question, the last quarter-mark of each element is only for a perceptive, convincing
+judgement the text supports. Read the statement now
 and tell me: which of its exact words are the **evaluative keywords** — the words your
 whole answer must keep testing?" (KEYWORD-VERBATIM RULE: the keywords are the statement's
 own printed words, quoted verbatim — never an invented intensifier. Confirm their
