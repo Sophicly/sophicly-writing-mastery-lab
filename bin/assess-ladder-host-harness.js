@@ -139,7 +139,7 @@ ok(/regime: 'bestfit'/.test(JS.slice(JS.indexOf('function _ladderHostRenderCurre
 console.log('\nE · the marker is handed the student\'s own marks');
 ok(/THE STUDENT\\'S OWN MARKS \(their level, their mark, the criteria they judged met, their reason\)/.test(JS), 'hand-back directive carries the own-marks summary');
 ok(/Use these in every Calibration Check/.test(JS), 'directive tells the marker to use them in the Calibration Check');
-ok(/_setPredicted\(qNum, res\.mark\)/.test(JS), 'the own mark feeds the existing calibration path (_setPredicted)');
+ok(/_ladderFeedPrediction\(next\.q, next\.key, res\.mark\)/.test(JS) && /_setPredicted\(key, Math\.round\(sum\)\)/.test(JS), 'the own mark feeds the existing calibration path (_ladderFeedPrediction → _setPredicted, summed per question — v7.20.633)');
 ['protocols/aqa/language1/modules/protocol-a-assessment.md', 'protocols/aqa/language2/modules/protocol-a-assessment.md', 'protocols/aqa/unseen/modules/protocol-a-assessment-unseen.md'].forEach((rel) => {
     const md = fs.readFileSync(path.join(ROOT, rel), 'utf8').replace(/\s+/g, ' ');
     ok(/THE STUDENT'S OWN MARKS/.test(md) && /never let their mark move yours/.test(md), rel.split('/')[2] + ' protocol: own marks supersede the panel prediction; their mark never moves Sophia\'s');
@@ -177,6 +177,46 @@ ok(/REFLECTION — \{\$current\}: there is NO reflection panel in this session/.
     const md = fs.readFileSync(path.join(ROOT, rel), 'utf8');
     ok(/@REFLECT_GATE\{/.test(md) && !/Skipped entirely when THE STUDENT'S OWN MARKS/.test(md), rel.split('/')[2] + ': no ladder → the reflection panel stays (untouched)');
 });
+
+// ── H · v7.20.633 (#580) — the ladder feeds the document's Predicted·Actual row PER QUESTION ─────
+console.log('\nH · the prediction is the SUM of a question\'s schemes; the calibration actual is per scheme');
+ok((JS.match(/_ladderFeedPrediction\(/g) || []).length >= 3, 'both hand-off sites (host onDone + controller resume) feed through _ladderFeedPrediction');
+ok(!/_setPredicted\(qNum, res\.mark\)/.test(JS), 'no site feeds a single scheme\'s mark straight into the per-question prediction any more');
+ok(/actual: _calibActualFor\(k\.q, k\.ao, k\.max\)/.test(JS), '_calibGroups asks for the SCHEME\'s actual (q, ao, max)');
+{
+    const sl = (name) => { const i = JS.indexOf('    function ' + name + '('); let d = 0; for (let k = JS.indexOf('{', i); k < JS.length; k++) { if (JS[k] === '{') d++; else if (JS[k] === '}') { d--; if (!d) return JS.slice(i, k + 1); } } return ''; };
+    const rows = {};   // fieldId → text, the document's ladder rows
+    const secs = [];   // feedback sections: { label, text }
+    const store = {};
+    const ctx = {
+        window: { WML_MARK_SCHEMES: data }, state: { board: 'aqa', subject: 'language', text: 'aqa_lang_paper_1', attempt: 1 },
+        location: { pathname: '/t' }, console,
+        localStorage: { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: (k) => { delete store[k]; } },
+        document: {
+            querySelector: (sel) => { const m = /data-field-id="([^"]+)"/.exec(sel); return (m && m[1] in rows) ? { textContent: rows[m[1]] } : null; },
+            getElementById: () => ({ querySelectorAll: () => secs.map((x) => ({ getAttribute: () => x.label, textContent: x.text })) }),
+        },
+    };
+    vm.createContext(ctx);
+    vm.runInContext(kbSrc + sl('_ladderFids') + sl('_ladderRowText') + sl('_ladderHostGroups') + sl('_paraKey') + sl('_calibDocKey') + sl('_predKey')
+        + sl('_getPredicted') + sl('_setPredicted') + sl('_ladderFeedPrediction') + sl('_calibActualFor'), ctx);
+    const run = (code) => vm.runInContext(code, ctx);
+    run("_ladderFeedPrediction('Q2', 'aqa_lang1_q2_ao2', 6)");
+    ok(run("_getPredicted('2')") === 6 && run("_getPredicted(2)") === 6, 'Q2 (one scheme): prediction 6, readable by the doc row (string key) and the sidebar (number key)');
+    run("_ladderFeedPrediction('Q5', 'aqa_lang1_q5_ao5', 18)");
+    ok(run("_getPredicted('5')") === null, 'Q5 after AO5 only: NO prediction yet (AO6 not marked) — never a per-AO mark against a /40 box');
+    rows['sa-ms-aqa_lang1_q5_ao5-mark'] = '18 / 24';
+    run("_ladderFeedPrediction('Q5', 'aqa_lang1_q5_ao6', 14)");
+    ok(run("_getPredicted('5')") === 32, 'Q5 after AO6: prediction = 18 + 14 = 32 (the sum, against the /40 box) — got ' + run("_getPredicted('5')"));
+    secs.push({ label: 'Feedback: Q2 (5 / 8)', text: 'Mark Breakdown …' });
+    secs.push({ label: 'Feedback: Q5 (30 / 40)', text: 'Holistic marks: Content & Organisation (AO5): 17/24 — sits in the upper band. Technical Accuracy (AO6): 13/16 — Level 3.' });
+    const a2 = run("_calibActualFor('Q2', 'AO2', 8)"), a5 = run("_calibActualFor('Q5', 'AO5', 24)"), a6 = run("_calibActualFor('Q5', 'AO6', 16)");
+    ok(a2 && a2.mark === 5 && a2.max === 8, 'Q2 actual: 5 / 8 from the box label (whole-question scheme, unchanged)');
+    ok(a5 && a5.mark === 17 && a5.max === 24, 'Q5 AO5 actual: 17 / 24 from the card text, never 30 / 24 — got ' + JSON.stringify(a5));
+    ok(a6 && a6.mark === 13 && a6.max === 16, 'Q5 AO6 actual: 13 / 16 from the card text — got ' + JSON.stringify(a6));
+    secs[1].text = 'Holistic marks: (pending)';
+    ok(run("_calibActualFor('Q5', 'AO5', 24)") === null, 'Q5 box filled but the AO lines not yet → not ready (null), never the /40 total');
+}
 
 console.log('\n' + (fail ? '❌' : '✅') + ' assess-ladder-host-harness: ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

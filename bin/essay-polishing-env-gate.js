@@ -621,7 +621,7 @@ console.log('\nStep 6 — the calibration stage compares the two judgements and 
         /const CALIB_KEEP = 'Keep my own mark'/.test(A) && /an assessment to examine, not a verdict/.test(A));
     ok('…all three options exist (keep · take mine · in between)', /CALIB_TAKE/.test(A) && /CALIB_BETWEEN/.test(A));
     ok('the comparison numbers are read from the document, never recalled by the model',
-        /function _calibActualFor\(qLabel\)/.test(A) && /function _calibCompareText\(g\)/.test(A));
+        /function _calibActualFor\(qLabel, ao, max\)/.test(A) && /function _calibCompareText\(g\)/.test(A));   // v7.20.633: per-scheme actual (Q5 = AO5 + AO6)
     ok('…an unmarked question is skipped, never treated as a zero', /an unmarked question is simply not ready to calibrate, never a zero/.test(A));
     ok('the stage NEVER changes a mark', /this stage never writes to it/.test(A));
     ok('it is never marked and never scanned as a ledger row',

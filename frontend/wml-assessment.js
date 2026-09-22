@@ -7866,6 +7866,30 @@
             return '- ' + g.q + ' ' + g.ao + ': ' + (lvl || '—') + ' · ' + (mark || '—') + (met ? ' · met: ' + met.replace(/\n+/g, '; ') : '') + (why ? ' — "' + why + '"' : '');
         }).join('\n');
     }
+    // ⭐ v7.20.633 (#580, Neil: "can't we get the predicted mark from the mark-scheme self-assessment?").
+    // The document's Predicted · Actual · Δ row is per QUESTION; the ladder is per question × AO. Q5
+    // has TWO schemes (AO5 /24 + AO6 /16) against ONE /40 box, so feeding each scheme's mark as it
+    // landed overwrote the prediction with whichever AO came last (AO6's /16 shown against /40).
+    // The prediction is now the SUM of every scheme of that question, set only once all of them are
+    // marked, and keyed through _paraKey — the SAME resolver the doc row and the pad read with (§5d,
+    // one key builder). `mark` is the scheme just filed (its row may not be written yet); the others
+    // are read from the document.
+    function _ladderFeedPrediction(q, schemeKey, mark) {
+        try {
+            const groups = _ladderHostGroups().filter(g => g.q === q);
+            if (!groups.length) return;
+            let sum = 0;
+            for (const g of groups) {
+                let v = null;
+                if (g.key === schemeKey) v = parseFloat(mark);
+                else { const m = /(\d+(?:\.\d+)?)/.exec(_ladderRowText(g.fids.mark)); if (m) v = parseFloat(m[1]); }
+                if (v == null || isNaN(v)) return;          // not every scheme of this question is marked yet
+                sum += v;
+            }
+            const key = _paraKey(q);
+            if (key && typeof _setPredicted === 'function') _setPredicted(key, Math.round(sum));
+        } catch (e) {}
+    }
     function _ladderHostRenderCurrent() {
         if (!_chatShell || !_chatShell.addMsg) return;
         if (_ladderHostActive()) return;                       // the ladder owns the screen already
@@ -7878,8 +7902,9 @@
                 schemeKey: next.key, aoName: next.q + ' — ' + next.ao, walkId: LADDER_SA_WALK, regime: 'bestfit',
                 fids: next.fids,
                 onDone: function (res) {
-                    // Feed the EXISTING calibration path: the student's own mark IS their prediction.
-                    try { if (res && qNum && typeof _setPredicted === 'function') _setPredicted(qNum, res.mark); } catch (e) {}
+                    // Feed the EXISTING calibration path: the student's own mark IS their prediction
+                    // (v7.20.633: summed across the question's schemes — Q5 is AO5 + AO6).
+                    try { if (res && qNum) _ladderFeedPrediction(next.q, next.key, res.mark); } catch (e) {}
                     try { if (typeof _refreshLangSidebar === 'function') _refreshLangSidebar(); } catch (e) {}
                     setTimeout(function () { _ladderHostRenderCurrent(); }, 300);
                 },
@@ -7971,7 +7996,11 @@
     // Sophia's awarded mark for a question, read from the Feedback box label the marking pipeline
     // already maintains ("Feedback: Q2 (5 / 8)"). Returns null while the box still shows "—" —
     // an unmarked question is simply not ready to calibrate, never a zero.
-    function _calibActualFor(qLabel) {
+    // v7.20.633 (#580): `ao` + `max` name the SCHEME being calibrated. When the question's box is
+    // out of more than the scheme (Q5's /40 box holds AO5 /24 + AO6 /16), the scheme's actual is
+    // read from the card text Sophia filed — "Content & Organisation (AO5): 18/24" — never the /40.
+    // A whole-question scheme (Q2 /8 against the Q2 /8 box) is unchanged.
+    function _calibActualFor(qLabel, ao, max) {
         try {
             const editorEl = document.getElementById('swml-tiptap-editor');
             if (!editorEl) return null;
@@ -7984,7 +8013,14 @@
                 if (!m) return;
                 if (m[1].toUpperCase().replace(/[^A-Z0-9.]/g, '') !== want) return;
                 if (m[2] === '—') return;
-                found = { mark: parseFloat(m[2]), max: parseFloat(m[3]) };
+                const boxMax = parseFloat(m[3]);
+                if (ao && max && boxMax !== parseFloat(max)) {
+                    const re = new RegExp('\\(' + String(ao).replace(/[^A-Z0-9]/gi, '') + '\\)\\s*:?\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*' + String(parseFloat(max)), 'i');
+                    const am = re.exec(sec.textContent || '');
+                    found = am ? { mark: parseFloat(am[1]), max: parseFloat(max) } : null;   // the AO line not filed yet → not ready
+                    return;
+                }
+                found = { mark: parseFloat(m[2]), max: boxMax };
             });
             return found;
         } catch (e) { return null; }
@@ -8008,7 +8044,7 @@
                 mineNum: isNaN(mineNum) ? null : mineNum,
                 myLevel: _ladderRowText(lf.level),
                 myWhy: _ladderRowText(lf.reason),
-                actual: _calibActualFor(k.q),
+                actual: _calibActualFor(k.q, k.ao, k.max),   // v7.20.633: per-scheme actual (Q5 = AO5 + AO6)
                 done: !!_ladderRowText(cf.decision),
                 answered: !!_ladderRowText(cf.why),
             });
@@ -28903,8 +28939,8 @@
                     // the assessment host is document-driven, so it simply looks again (§4d: the
                     // student must never be left on a wrap with nothing to do next).
                     try {
-                        const qNum = parseInt(String((scheme() && scheme().question) || '').replace(/^Q/i, ''), 10);
-                        if (res && qNum && typeof _setPredicted === 'function') _setPredicted(qNum, res.mark);
+                        const _sq = (scheme() && scheme().question) || '';
+                        if (res && _sq && typeof _ladderFeedPrediction === 'function') _ladderFeedPrediction(_sq, (cfg && cfg.schemeKey) || '', res.mark);
                     } catch (e) {}
                     setTimeout(function () { try { _ladderHostRenderCurrent(); } catch (e) {} }, 300);
                 }
