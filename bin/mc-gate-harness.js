@@ -159,6 +159,13 @@ if (filt) {
     ok(/wp_verify_nonce\(substr\(\$vouch, 5\)/.test(f), 'a click the page vouched for is never second-guessed');
     ok(/current_user_can\('manage_options'\)\) return \$process;/.test(f), 'staff are never gated');
     ok(/if \(\$mode !== 'enforce'\) return \$process;/.test(f), 'watch mode records only');
+    // MEASURED on staging 2026-09-23: student-data's bridge completes a FINISHED assessment's lesson
+    // programmatically (swml_phase_complete → learndash_process_mark_complete). Gating that refused a
+    // finished student on a stale verdict. Only the student's own Mark Complete POST is gated.
+    ok(/if \(empty\(\$_POST\['sfwd_mark_complete'\]\) \|\| \(int\) \(\$_POST\['post'\] \?\? 0\) !== \(int\) \$post->ID\) return \$process;/.test(f),
+        'ONLY the student’s own Mark Complete press is gated — never a completion the system records (the bridge)');
+    const iPost = f.indexOf("empty($_POST['sfwd_mark_complete'])"), iRead = f.indexOf('mc_gate_doc_progress(');
+    ok(iPost > -1 && iRead > -1 && iPost < iRead, 'that check runs BEFORE the stored verdict is ever read');
     ok(!/mcGateDecide|unmarked.*block\s*=|sessionFinished/.test(f), 'the server does NOT re-derive the rule — it reads the page’s verdict');
 }
 ok(/'block'\s*=>\s*!empty\(\$dp\['block'\]\)/.test(rest), 'the save stores the page’s verdict with the document');

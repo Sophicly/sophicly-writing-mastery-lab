@@ -15282,13 +15282,26 @@
     }
     // STRICT on purpose — only the code word ends a marking session (see the header: the looser
     // detectAssessmentStep() would count a single question's "Total … Grade" as the end).
+    // Two signals, either is enough: the code word in the chat, or WML's own phase-complete flag
+    // (set only once the server confirms the phase complete AND the doc holds filed marks —
+    // initAssessmentState, v7.19.889). MEASURED on staging 2026-09-23: a finished assessment
+    // (857's, with [ASSESSMENT_COMPLETE] in its stored chat) read `false` from the registered
+    // chat-shell history alone — so neither signal is trusted as the only one.
     function _mcGateSessionFinished() {
+        if (state._phaseMarkedComplete === true) return true;
         const h = (_chatShell && _chatShell.history) || [];
         for (let i = h.length - 1; i >= 0; i--) {
             const m = h[i];
             if (m && m.role === 'assistant' && /\[ASSESSMENT_COMPLETE\]/i.test(String(m.content || ''))) return true;
         }
         return false;
+    }
+    // Read-only instrument (root §19): what the gate's "session finished" read actually sees.
+    function _mcGateDebug() {
+        const h = (_chatShell && _chatShell.history) || [];
+        let marker = -1;
+        for (let i = 0; i < h.length; i++) if (h[i] && /\[ASSESSMENT_COMPLETE\]/i.test(String(h[i].content || ''))) { marker = i; break; }
+        return { shellRegistered: !!_chatShell, shellHistoryLen: h.length, markerAt: marker, phaseMarked: state._phaseMarkedComplete === true };
     }
     // Mark-bearing feedback boxes still reading "(— / N)" — the questions not marked yet. From the
     // ProseMirror doc (the stored truth), never from what happens to be painted.
@@ -15539,7 +15552,7 @@
             }).catch(function () {});
         } catch (_) {}
     }
-    try { window.WML = window.WML || {}; window.WML.mcGate = { decide: mcGateDecide, family: mcGateFamily, reading: _mcGateReading, show: _mcGateShow }; } catch (_) {}
+    try { window.WML = window.WML || {}; window.WML.mcGate = { decide: mcGateDecide, family: mcGateFamily, reading: _mcGateReading, show: _mcGateShow, debug: _mcGateDebug }; } catch (_) {}
 
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)

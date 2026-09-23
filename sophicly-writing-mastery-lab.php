@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.634
+ * Version: 7.20.635
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.634');
+define('SWML_VERSION', '7.20.635');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -180,6 +180,13 @@ class Sophicly_Writing_Mastery_Lab {
     public function mc_gate_filter($process, $post, $current_user) {
         try {
             if (!$process || !($post instanceof WP_Post) || $post->post_type !== 'sfwd-topic') return $process;
+            // ONLY the student's own Mark Complete press (LearnDash's form POST for THIS lesson).
+            // ⚠️ MEASURED on staging (2026-09-23): LearnDash also completes a lesson PROGRAMMATICALLY —
+            // student-data's bridge calls learndash_process_mark_complete() on swml_phase_complete
+            // when an assessment genuinely finishes. Gating that path refused a FINISHED student on a
+            // save that had not landed yet (a stale verdict). Neil's rule is about the student
+            // PRESSING the button; a completion the system records for finished work is not his case.
+            if (empty($_POST['sfwd_mark_complete']) || (int) ($_POST['post'] ?? 0) !== (int) $post->ID) return $process;
             $mode = self::mc_gate_mode();
             if ($mode === 'off') return $process;
             $student_id = ($current_user instanceof WP_User) ? (int) $current_user->ID : 0;
