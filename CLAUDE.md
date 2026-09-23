@@ -5,7 +5,7 @@
 **See also:** `PRODUCT.md` (this dir) for users + voice. `../../../sophicly-plugins/BRAND.md` for design.
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** 7.20.633
+**Current version:** 7.20.634
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, polishing.
 **AI Provider:** `claude-sonnet-5` via MeowApps AI Engine (measured on prod from `mwai_chatbots`, 2026-09-06 — the header said Sonnet 4.6 for months; verify with `wp eval`, never from this line). GPT-5 fallback.
 
@@ -686,6 +686,26 @@ footer (v7.20.266) — a JS-built footer delayed by a perf plugin used to lose t
 `$post`, then compare `learndash_is_item_complete()` against `strlen(trim(learndash_mark_complete($p)))`.
 **Without `--user=`, `learndash_mark_complete()` returns empty for EVERY step** and you will
 "prove" a bug that isn't there.
+
+### ⭐⭐ THE MARK COMPLETE GATE (v7.20.634 — PEDAGOGY §40; Neil ruled 2026-08-07/08-18, approved 2026-09-23)
+
+The footer proxy asks `_mcGateCheckBeforeComplete()` BEFORE anything is recorded. An unfinished
+document gets the approved pop-up (house modal + the student's own Document Progress card) and the
+button back. **Mode = wp option `swml_mc_gate_mode`: `off` · `watch` (DEFAULT — records every click
+in user meta `swml_mc_gate_log`, stops nobody) · `enforce`.** Switch it with WP-CLI, no deploy.
+- **The rule lives ONCE:** `mcGateDecide` in wml-assessment.js (between `@MC-GATE-PURE` sentinels,
+  driven by `bin/mc-gate-harness.js`). The save stores its verdict per LESSON in user meta
+  `swml_docprog_{LearnDash post id}`; the server filter (`learndash_process_mark_complete`, main
+  plugin file) only READS that verdict — never re-derive the rule in PHP.
+- **Fail-open is the contract, not a nicety** (Neil: *"if they follow the process properly, they
+  should be able to mark the lesson complete without fail"*): unknown reading, error, no config,
+  staff, a vouched click → complete. Only a positive, eligible "incomplete" stops a student.
+- **Assessment "finished" = the strict `[ASSESSMENT_COMPLETE]` code word.** ⛔ Never
+  `detectAssessmentStep()` for this — it calls one question's "Total 5/8 … Grade 6" the end.
+- **Eligible families (enforce): cw · diagnostic · assessment.** Everything else is watch-only
+  until MEASURED — the ticks exist only in the live page (0 of 657 stored docs carry them), so
+  "does a properly finished doc of family X reach 100%?" is answered in a real browser, never by
+  reading code. Add a family to `MC_GATE_ENFORCE_FAMILIES` only with that evidence.
 
 ---
 

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.633';
+var WML_BUILD = '7.20.634';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -245,6 +245,8 @@ window.WML = (function() {
         deleteSession: config.restUrl + 'session/delete',
         savedQuestions: config.restUrl + 'saved-questions',
         canvasSave:    config.restUrl + 'canvas/save',
+        mcGateLog:     config.restUrl + 'mc-gate/log', // v7.20.634 (#585–#588): Mark Complete gate record
+        mcGateFirstDiagnostic: config.restUrl + 'mc-gate/first-diagnostic', // v7.20.634: PEDAGOGY §1 first-ever
         tutorComment:  config.restUrl + 'canvas/tutor-comment', // v7.19.538: was API.base (undefined) → 404
         studentComment: config.restUrl + 'canvas/student-comment', // v7.19.559: student persists feedback responses to own doc
         foundationalQuizResult: config.restUrl + 'foundational-quiz/result',
@@ -1945,6 +1947,10 @@ window.WML = (function() {
         // every Codex page binds to the same board/text in the bridge.
         mastery_codex: {
             label: 'Mastery Codex',
+            // v7.20.634: Neil's first named exception to the Mark Complete gate (2026-08-07) —
+            // "It's one whole document. So they do the same document from start to finish."
+            // One document spans every lesson, so a per-lesson 100% means nothing here.
+            markCompleteGate: false,
             environment: 'free',
             panels: { sidebar: false, chat: false, guidance: false, document: true },
             steps: null,

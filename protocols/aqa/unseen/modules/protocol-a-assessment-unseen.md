@@ -438,10 +438,13 @@ Then `@FB_END` on its own line.
 - **AQA Level Alignment:** quote the matching descriptor verbatim from
   `knowledge-mark-scheme-unseen.md`, name the level and its mark range, then the path to the next
   level in the next level's own wording.
-- **Calibration Check:** compare PREDICTED to ACTUAL, direction-adaptive — over-predicted → which
-  ONE criterion did they over-rate and what does it *actually* reward; accurate (within ~1 mark on
-  a section this size) → which criterion were they surest of and the exact evidence that earned it;
-  under-predicted → which strength did they undervalue. ONE question only. Also reflect their
+- **Calibration Check:** compare PREDICTED to ACTUAL, direction-adaptive — and when the question
+  offers lettered choices it must be one those choices ANSWER (v7.20.634, #585: a CRITERION
+  question with SECTION buttons left a student with no answer that fitted): over-predicted → which
+  section did they mark higher than it earned; accurate (within ~1 mark on a section this size) →
+  which section are they surest earned its mark; under-predicted → which section was stronger than
+  they thought. When they pick, acknowledge in ONE line naming the criterion in that section where
+  the marks differ most and what it actually rewards. ONE question only. Also reflect their
   self-rating and AO targeting against this section's real AO. **When the question offers choices,
   the lettered options are the REAL sections just marked** — `A) Introduction` `B) Body Paragraph 1`
   `C) Body Paragraph 2` `D) Body Paragraph 3` `E) Conclusion` — each on its own line. NEVER let
@@ -605,8 +608,11 @@ card still emitted). Then in the SAME turn:
   wording.
 - **Calibration Check** — predicted vs actual, self-rating, AO targeting. Lettered options are the
   REAL units just marked: `A) Comparison Paragraph 1` `B) Comparison Paragraph 2`, each on its own
-  line. WAIT for the one-sentence answer, acknowledge in ONE line, then the **Q-GATE, next: the
-  Final Summary**.
+  line — so the question must be one those options ANSWER (v7.20.634, #585): over-predicted →
+  which paragraph they marked higher than it earned; accurate → which they are surest earned its
+  mark; under-predicted → which was stronger than they thought. WAIT for the tap, then acknowledge
+  in ONE line naming the criterion in that paragraph where the marks differ most and what it
+  actually rewards, then the **Q-GATE, next: the Final Summary**.
 
 ---
 

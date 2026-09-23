@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.633
+ * Version: 7.20.634
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.633');
+define('SWML_VERSION', '7.20.634');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -152,6 +152,74 @@ class Sophicly_Writing_Mastery_Lab {
         // mode, but a malicious viewer could still POST directly — catch it here
         // early in the request (priority 5, before LearnDash processes the form).
         add_action('init', [$this, 'block_review_mark_complete'], 5);
+
+        // v7.20.634 (#588): the Mark Complete gate's server half — holds the same line as the page
+        // for a completion that did not come through the footer button. See mc_gate_filter().
+        add_filter('learndash_process_mark_complete', [$this, 'mc_gate_filter'], 20, 3);
+    }
+
+    /**
+     * v7.20.634 (#588) — the Mark Complete gate's mode: 'off' | 'watch' | 'enforce'.
+     * Default WATCH: every decision is recorded and nobody is stopped (Neil was promised it is
+     * proven on real students before it is switched on). Switch: wp option swml_mc_gate_mode —
+     * no deploy needed.
+     */
+    public static function mc_gate_mode() {
+        $m = get_option('swml_mc_gate_mode', 'watch');
+        return in_array($m, ['off', 'watch', 'enforce'], true) ? $m : 'watch';
+    }
+
+    /**
+     * v7.20.634 (#588) — LearnDash asks whether to record a completion. The RULE lives once, in
+     * wml-assessment.js (mcGateDecide); the page saves its verdict with the document
+     * (user meta swml_docprog_{post}) and this only reads it. Fail-open everywhere: no record, a
+     * record that does not block, staff, someone else's lesson, a click the page vouched for, or
+     * any error → LearnDash carries on exactly as before. A refusal leaves a one-shot flag so the
+     * reloaded lesson can show the pop-up that explains it (§4d).
+     */
+    public function mc_gate_filter($process, $post, $current_user) {
+        try {
+            if (!$process || !($post instanceof WP_Post) || $post->post_type !== 'sfwd-topic') return $process;
+            $mode = self::mc_gate_mode();
+            if ($mode === 'off') return $process;
+            $student_id = ($current_user instanceof WP_User) ? (int) $current_user->ID : 0;
+            if ($student_id < 1 || get_current_user_id() !== $student_id) return $process;
+            if (current_user_can('manage_options')) return $process;
+            $att_role = get_user_meta($student_id, 'sophicly_att_role', true);
+            $s_role   = get_user_meta($student_id, 'sophicly_role', true);
+            if ($att_role === 'tutor' || $att_role === 'specialist' || $s_role === 'sss') return $process;
+            // The page's own gate passed this click — never second-guess a document it could see.
+            $vouch = isset($_POST['swml_mc_gate']) ? sanitize_text_field(wp_unslash($_POST['swml_mc_gate'])) : '';
+            if (strpos($vouch, 'pass:') === 0
+                && wp_verify_nonce(substr($vouch, 5), 'swml_mc_gate_' . $student_id . '_' . $post->ID)) {
+                return $process;
+            }
+            if (!class_exists('SWML_REST_API')) return $process;
+            $rec = SWML_REST_API::mc_gate_doc_progress($student_id, $post->ID);
+            if (!$rec || empty($rec['block'])) return $process;
+            SWML_REST_API::mc_gate_append_log($student_id, [
+                'at'       => current_time('c'),
+                'kind'     => $mode === 'enforce' ? 'blocked' : 'would_block',
+                'where'    => 'server',
+                'mode'     => $mode,
+                'post_id'  => (int) $post->ID,
+                'task'     => (string) ($rec['task'] ?? ''),
+                'family'   => (string) ($rec['family'] ?? ''),
+                'why'      => 'server: ' . (string) ($rec['why'] ?? ''),
+                'done'     => (int) ($rec['done'] ?? 0),
+                'total'    => (int) ($rec['total'] ?? 0),
+                'pct'      => (int) ($rec['pct'] ?? 0),
+                'missing'  => (array) ($rec['missing'] ?? []),
+                'unmarked' => (array) ($rec['unmarked'] ?? []),
+                'version'  => SWML_VERSION,
+            ]);
+            if ($mode !== 'enforce') return $process;
+            set_transient('swml_mc_refused_' . $student_id . '_' . $post->ID, 1, 5 * MINUTE_IN_SECONDS);
+            return false;
+        } catch (\Throwable $e) {
+            error_log('[WML mc-gate] server check failed — completing anyway: ' . $e->getMessage());
+            return $process;
+        }
     }
 
     /**
@@ -1018,6 +1086,21 @@ class Sophicly_Writing_Mastery_Lab {
             'fqStage'     => $fq_stage,  // v7.19.952: per-lesson FQ stage (bridge, unified fq_stage=N)
             'fqRoundSize' => $fq_round_size, // v7.19.968: boot-time round size (first-paint sidebar)
             'cnStage'     => $cn_stage,  // v7.20.38: per-lesson CN stage (anthology staged-delivery)
+        ];
+
+        // v7.20.634 (#588): the Mark Complete gate — its mode, a one-shot "the server refused a
+        // completion" flag (so the reloaded lesson can explain itself), and a nonce the footer
+        // button uses to vouch for a click the page's own gate passed.
+        $mc_uid = get_current_user_id();
+        $mc_refused = false;
+        if ($mc_uid && $post_id) {
+            $mc_tk = 'swml_mc_refused_' . $mc_uid . '_' . $post_id;
+            if (get_transient($mc_tk)) { $mc_refused = true; delete_transient($mc_tk); }
+        }
+        $embed_config['mcGate'] = [
+            'mode'    => self::mc_gate_mode(),
+            'refused' => $mc_refused,
+            'nonce'   => ($mc_uid && $post_id) ? wp_create_nonce('swml_mc_gate_' . $mc_uid . '_' . $post_id) : '',
         ];
 
 

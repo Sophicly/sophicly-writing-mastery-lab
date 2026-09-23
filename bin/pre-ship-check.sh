@@ -118,6 +118,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/plan-file-repair-harness.js || fail=1
 fi
 
+# v7.20.634 (FIXLIST #585–#588): THE MARK COMPLETE GATE. Neil's condition, both directions: a student
+# who followed the process ALWAYS completes; one who did not gets the pop-up. The rule is extracted
+# from the shipped file and driven through Annaya's case, Sophia's-gap cases, the exceptions, every
+# mode and the unknown reading; the wiring must run the gate first and fail open on every error; the
+# server half must read the page's verdict, never re-derive it. Mutation-proven at .634.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|wml-canvas\.css|sophicly-writing-mastery-lab\.php|class-rest-api\.php|mc-gate-harness\.js'; then
+  node bin/mc-gate-harness.js || fail=1
+fi
+
 # v7.20.252 (Fable F1): the JS build-stamp (frontend/wml-core.js WML_BUILD, logged on load for
 # stale-client diagnosis) must equal the plugin version, or the console log lies about freshness.
 JS_BUILD=$(grep -oE "var WML_BUILD = '[^']+'" frontend/wml-core.js 2>/dev/null | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")

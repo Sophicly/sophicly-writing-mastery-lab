@@ -13414,7 +13414,10 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
 .swml-review-modal-overlay {
     position: fixed;
     inset: 0;
-    z-index: 10000;
+    /* v7.20.634: was 10000 — BELOW WML's own documented 999999 modal tier, so the protocol
+       sidebar (10001) and chrome at 100000/100010 rendered un-dimmed over the blurred backdrop
+       (ld-customization handoff, 2026-07-27). The Mark Complete gate wears this class too. */
+    z-index: 999999;
     /* Matches the project picker's scrim rather than a pure-black one (§1 bans
        `#000` as a surface). */
     background: rgba(20, 20, 40, 0.72);
@@ -13541,6 +13544,50 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
 }
 @media (prefers-reduced-motion: reduce) {
     .swml-review-modal-btn { transition: none; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   v7.20.634 (#588) — THE MARK COMPLETE GATE POP-UP. Neil approved it as previewed
+   (2026-09-23: look, words, "Carry on with Sophia"): the tutor-view modal above,
+   holding the student's OWN Document Progress card, with the house button. Nothing
+   below re-styles either of those; these rules add only what the gate needs:
+   · the two-button row (the tutor-view modal has one button);
+   · the quiet "Not now" — no fill and no outline at rest (BRAND §0: no thin outline
+     borders on default buttons), a family-grey wash on hover;
+   · the light-theme skin of the house button. The pop-up is BODY-mounted, so it sits
+     outside `.swml-canvas-light` and would keep the dark skin — the same reason the
+     phase-coach card carries its own `--light` class. Keyed on the body's theme attr.
+   ════════════════════════════════════════════════════════════════════════════ */
+.swml-mc-gate .swml-progress-card { margin: 0; }
+.swml-mc-gate-actions { gap: 8px; align-items: center; }
+.swml-mc-gate-quiet {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--swml-coach-text);
+    background: transparent;
+    border: 0;
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.swml-mc-gate-quiet:hover { background: rgba(127, 127, 140, 0.14); color: var(--swml-coach-title); }
+.swml-mc-gate-quiet:focus-visible,
+.swml-mc-gate .swml-progress-chip:focus-visible {
+    outline: 2px solid var(--swml-coach-accent);
+    outline-offset: 2px;
+}
+[data-swml-theme="light"] .swml-mc-gate .swml-btn-main {
+    --swml-bm-face: #1C1D1F;
+    --swml-bm-ink: #ffffff;
+    --swml-bm-flood: #51dacf;
+    --swml-bm-flood-ink: #0f2b2a;
+    --swml-bm-first-ink: #0f2b2a;
+    --swml-bm-stroke: rgba(26,26,30,0.20);
+}
+@media (prefers-reduced-motion: reduce) {
+    .swml-mc-gate-quiet { transition: none; }
 }
 
 /* Hide write-action buttons on any canvas rendered in review mode. */

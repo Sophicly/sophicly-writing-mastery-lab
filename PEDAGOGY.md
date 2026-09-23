@@ -2374,3 +2374,52 @@ Gate: `bin/assess-ladder-host-harness.js` §G.
 
 ⬜ **Captured, not actioned (#574c):** Neil's thought that the remaining self-assessment might be
 renamed ("the technical self-assessment"). Ask when he raises it again; do not rename on a float.
+
+---
+
+## §40. ⭐⭐ MARK COMPLETE IS EARNED BY THE DOCUMENT — and a student who did the work is never stopped (Neil, ruled 2026-08-07 + 2026-08-18; built 2026-09-23, FIXLIST #585–#588)
+
+**THE RULE, his words:** *"wherever there is a document, the lesson can't be marked complete unless
+the document is a hundred percent complete."* And (2026-08-18): *"the student should also get a
+modal explaining they need to complete the document accordingly before marking the lessons
+complete."* So it BLOCKS, and the block explains itself.
+
+**THE TWO EXCEPTIONS, his words — do not widen or narrow them:**
+1. **Grade 9 Core Skills** — *"It's one whole document. So they do the same document from start to
+   finish."* (`mastery_codex`, capability flag `markCompleteGate: false`.)
+2. **The very first diagnostic** — *"we don't expect that the students are going to complete the
+   essay plan, because the whole point is the vast majority of them actually don't know how to write
+   an essay."* Read through §1: the student's first diagnostic EVER, not the first in each course.
+
+**HIS CONDITION, 2026-09-23, and it binds both directions:** *"if they follow the process properly,
+they should be able to mark the lesson complete without fail, and if they don't then they get the
+popup."* That is why the gate:
+- reads **the same number the student sees** (the Document Progress card's own compute);
+- **fails open** — only a positive "incomplete" reading stops anyone; an unknown reading, an error,
+  or a missing config completes the lesson and is recorded;
+- **never stops a student for Sophia's gap** — an assessment stops only on questions not yet marked
+  before `[ASSESSMENT_COMPLETE]`; a Sophia-filled part (Analytics, Action Plan) left empty after the
+  marking goes through and is recorded as ours to fix;
+- is **proven before it is switched on**: mode `watch` records every click and stops nobody; a
+  document family is only eligible for enforcement once measured (first: CW · diagnostic ·
+  assessment).
+
+**THE POP-UP, approved as previewed (2026-09-23):** the student's own Document Progress card in the
+house modal. Writing step: *"This lesson isn't finished yet" · "Mark Complete works once your
+document reaches 100%." · Not now · Take me there*. Assessment: *"Your assessment isn't finished
+yet" · "Sophia fills in these parts as your assessment goes on. Carry on from where you stopped,
+then mark the lesson complete." · Not now · Carry on with Sophia*.
+
+**NOT decided, recorded for him:** whether lessons ALREADY marked complete while unfinished get
+un-ticked (Fatou 1330, Maysa 1279, Annaya 1398) — never retro-untick without his word; and where a
+staff "unmark lesson complete" control should live (he floated the review banner).
+
+**THE CALIBRATION QUESTION ANSWERS BY TAP (same batch, #585).** After each marked question the
+calibration check offers the units just marked as buttons, so the question must be one those
+buttons ANSWER: *which paragraph did you mark higher than it earned?* (over-predicted) · *which are
+you surest earned its mark?* (accurate) · *which was stronger than you thought?* (under-predicted).
+Sophia then names the criterion in that paragraph and what it rewards. Proof of the defect it
+fixes: Annaya was asked *"Which ONE criterion do you think you rated more highly…?"* with the
+buttons *"Paragraph 1 / Paragraph 2"* — no button answered it, and she stopped there.
+
+Gates: `bin/mc-gate-harness.js` (the rule extracted from the shipped file; mutation-proven).

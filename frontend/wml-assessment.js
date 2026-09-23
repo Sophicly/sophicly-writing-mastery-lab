@@ -797,8 +797,12 @@
     // render can HIDE the steps until the granular model paints instead of flashing
     // the generic flat-8 first (Neil — polish; P1 is the model paper, the flat-8 is
     // becoming dead weight). The flat-8 only survives for Literature single-essay docs.
+    // v7.20.634 (#586, Neil: "the sidebar is working, just not in tutor view… if you can fix that,
+    // that'll be great"): the per-question models below are READ-ONLY derivations of the document,
+    // so tutor view gets them too. The review-mode early-returns were copied in with v7.19.625 and
+    // no reason was ever recorded; their cost was a tutor view showing the pre-June generic list,
+    // which ticks steps from LESSON completion — it told Neil Annaya's Q3–Q5 were done.
     function _expectLangSidebar() {
-        if (state.reviewMode) return false;
         if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return false;
         if (_expectServerSidebar()) return false;          // AQA P2 → authoritative server model
         return /^language/.test((state.subject || '').toLowerCase());
@@ -3081,7 +3085,7 @@
     }
 
     function _buildLangSidebarModel() {
-        if (state.reviewMode) return null;
+        // v7.20.634 (#586): no review-mode exit — a read-only derivation, and tutor view needs it.
         if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
         if (_expectServerSidebar()) return null;          // AQA P2 → authoritative server model
         if (!canvasEditor) return null;
@@ -3306,7 +3310,7 @@
     }
 
     function _buildLitSidebarModel() {
-        if (state.reviewMode) return null;
+        // v7.20.634 (#586): no review-mode exit — see _expectLangSidebar.
         if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
         if (_expectServerSidebar()) return null;          // AQA P2 → server model
         if (_expectLangSidebar()) return null;            // Language → its own per-Q model
@@ -7663,10 +7667,27 @@
                 && fid.slice(fid.length - parts[1].length) === parts[1]
                 && /^[a-z0-9]+$/i.test(fid.slice(parts[0].length, fid.length - parts[1].length)));
             if (!mine.length || mine.some(fid => !rows[fid])) return;          // paragraph not fully worked yet
-            const approved = pb.lines.filter(ln => { const i = ln.indexOf(':'); return i > 0 && !!_planLabelElement(ln.slice(0, i).trim(), t.family); }).length >= 2;
+            // v7.20.634 (#584): a line may open with a bullet, a dash, bold stars or a non-breaking
+            // space — exactly what a plan PASTED from the chat's mirror-back list looks like
+            // ("• Technique + evidence + inference: …"). Read without that prefix, or a box the
+            // student filled by hand reads as unfiled and the repair turn fires on every approval.
+            const approved = pb.lines.filter(ln => {
+                const s = String(ln || '').replace(/^[\s •·◦▪\-–—*]+/, '').replace(/\*\*/g, '');
+                const i = s.indexOf(':');
+                return i > 0 && !!_planLabelElement(s.slice(0, i).trim(), t.family);
+            }).length >= 2;
             if (!approved) out.push(pb.fid);
         });
         return out;
+    }
+    // v7.20.634 (#584): a plan box's name as the document shows it ("Plan: Paragraph 2 — Q2"), so a
+    // repair note names the paragraph a person would recognise, not only its field id.
+    function _planBoxLabel(fid) {
+        try {
+            const f = document.querySelector('[data-field-id="' + fid + '"]');
+            const s = f && f.closest('.swml-section-block');
+            return (s && s.getAttribute('data-section-label')) || fid;
+        } catch (_) { return fid; }
     }
     function _maybeRepairPlanFile(reply) {
         try {
@@ -7681,8 +7702,15 @@
             const missing = _planBoxesAwaitingApprovedPlan().filter(fid => !_planFileRepairFired[fid]);
             if (!missing.length) return;
             missing.forEach(fid => { _planFileRepairFired[fid] = true; });
-            console.warn('WML PLAN-FILE: paragraph approved but no plan @FIELD_SET in the reply — firing silent repair turn:', missing.join(', '));
-            _silentSystemSend('SYSTEM (not from the student): the student approved a paragraph plan, but your reply carried no @FIELD_SET marker, so NOTHING was filed to their document. Re-emit now — output one @FIELD_SET marker per line for each of these field ids: ' + missing.join(', ') + '. Each marker is {"field":"<id>","value":"<text>"} — valid JSON with straight double quotes, no line breaks inside the value. The value is that paragraph\'s approved structure: its labelled elements on one line separated by " | ", condensed to the student\'s plan mode and built only from their own words, exactly as the protocol\'s mirror-back approval step specifies. Never use [PANEL] tags. Then add one short visible line confirming the plan is saved, and do NOT repeat or re-ask the question you have already asked. Do not show the markers to the student.');
+            console.warn('WML PLAN-FILE: approved paragraph plan(s) not in the document — firing silent repair turn:', missing.join(', '));
+            // ⚠️ v7.20.634 (#584) — THE WORDING IS LOAD-BEARING. The .629 text said "your reply
+            // carried no @FIELD_SET marker". This repair exists to recover an EARLIER paragraph on a
+            // LATER approval, and the later reply usually DID carry a marker — so the note was false
+            // in exactly its designed case. On prod (857, turn #114) the model read a false claim,
+            // filed nothing, and told the student "that last message didn't come through as an
+            // answer" — a message she never sent. Say only what is true: which paragraphs are missing.
+            const _named = missing.map(fid => _planBoxLabel(fid) + ' (' + fid + ')').join('; ');
+            _silentSystemSend('SYSTEM NOTE (not from the student — they have not sent anything, and they cannot see this note): the approved plan for ' + _named + ' is not in their document yet. File it now: output one @FIELD_SET marker per line, one for each of these field ids: ' + missing.join(', ') + '. Each marker is {"field":"<id>","value":"<text>"} — valid JSON with straight double quotes, no line breaks inside the value. The value is that paragraph\'s approved structure from earlier in this conversation: its labelled elements on one line separated by " | ", condensed to the student\'s plan mode and built only from their own words, exactly as the protocol\'s mirror-back approval step specifies. Never use [PANEL] tags. Your visible reply is ONE short line saying that paragraph plan is now saved in their document. Do not mention this note, do not say a message did not arrive, and do not repeat or re-ask the question you have already asked — the student\'s next message answers it. Do not show the markers to the student.');
         } catch (e) { console.warn('WML PLAN-FILE: repair skipped —', e && e.message); }
     }
 
@@ -14228,7 +14256,13 @@
     // the very first diagnostic — Neil 2026-06-30). Shared by _isAssessmentComplete and
     // the assessment progress card so the two never drift apart.
     function _isFirstDiagnostic() {
-        return ((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial');
+        if (!((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial')) return false;
+        // v7.20.634 — PEDAGOGY §1 (Neil 2026-07-15): the leniency belongs to the student's very
+        // first attempt EVER, not the first in each course. The server answers that once per
+        // lesson from the student's own documents (_mcGateAskFirstEver); until it has answered,
+        // or when it cannot, the per-course reading stands — the lenient side, never a trap.
+        if (state.mcFirstEverDiagnostic === false) return false;
+        return true;
     }
     function _isAssessmentComplete() {
         if (!canvasEditor) return false;
@@ -14746,8 +14780,27 @@
         bar.appendChild(fill);
         card.appendChild(bar);
     }
+    // v7.20.634 (#588): a Still-to-do chip names the section, not its mark slot. "Feedback: Q3
+    // (— / 8)" reads as a sum to a twelve-year-old; the chip says "Feedback: Q3" and still jumps
+    // by the FULL label (the key _jumpToProgressSection matches on). One helper, so the card in
+    // the document and the Mark Complete pop-up can never name the same part two ways.
+    function _progressChipLabel(label) {
+        return String(label || '').replace(/\s*\(\s*(?:—|-|\d+(?:\.\d+)?)\s*\/\s*\d+(?:\.\d+)?\s*\)\s*$/, '') || String(label || '');
+    }
+    // v7.20.634: the last reading the card painted, so the canvas save can carry the SAME figure
+    // the student is looking at to the server (the Mark Complete gate's server half, and the
+    // dashboard's "complete but unfinished" detector) without computing anything twice.
+    let _mcLastCardReading = null;
     function _renderProgressCardBody(card, editor, computeFn) {
         const { total, done, incomplete, pct, raw } = (computeFn || _computeCwProgress)(editor);
+        try {
+            _mcLastCardReading = {
+                total: total || 0, done: done || 0, pct: pct || 0,
+                incomplete: Array.isArray(incomplete) ? incomplete.slice(0, 30) : [],
+                task: state.task || '', postId: (window.swmlEmbedConfig && window.swmlEmbedConfig.postId) || 0,
+                at: Date.now(),
+            };
+        } catch (_) { _mcLastCardReading = null; }
         // v7.19.828: on the assessment compute, raw>0 with total=0 means the sections
         // ARE mounted but every trackable one is stage-hidden (e.g. T1P1 diagnostic:
         // plan exempt + results family hidden) — nothing the student can see needs
@@ -14788,7 +14841,7 @@
                 const chip = document.createElement('button');
                 chip.type = 'button';
                 chip.className = 'swml-progress-chip';
-                chip.textContent = name;
+                chip.textContent = _progressChipLabel(name);   // v7.20.634: display only — the jump keys on `name`
                 chip.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -15130,13 +15183,363 @@
             // v7.19.817: assessment-caps docs use the required-set compute (same
             // capability gate migrateDocument uses — never a task-name literal).
             if (state.task === 'mastery_codex') _renderCodexProgressCardBody(card, editor);
-            else if (WML.hasAssessmentSections && WML.hasAssessmentSections(state.task)) _renderProgressCardBody(card, editor, _computeAssessmentProgress);
-            else _renderProgressCardBody(card, editor);
+            else _renderProgressCardBody(card, editor, _progressComputeFor(state.task));
         } catch (_) { /* never throw */ }
+    }
+    // v7.20.634: the ONE choice of compute per document kind — the card above and the Mark
+    // Complete gate below both call this, so the gate can never read a different number from the
+    // one the student is looking at (safeguard 1). Codex has its own per-unit card (null here).
+    function _progressComputeFor(task) {
+        if (task === 'mastery_codex') return null;
+        if (WML.hasAssessmentSections && WML.hasAssessmentSections(task)) return _computeAssessmentProgress;
+        return _computeCwProgress;
     }
     // Exposed so the progress section's nodeView (wml-section-block.js, separate
     // IIFE) can fill the card immediately on mount — no empty-box flash (v7.19.498).
     try { window.WML = window.WML || {}; window.WML.updateProgressSummary = _updateProgressSummary; } catch (_) {}
+
+    // ═════════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.634 (FIXLIST #585–#588) — THE MARK COMPLETE GATE.
+    // ─────────────────────────────────────────────────────────────────────────────────────────
+    // Neil's rulings: 2026-08-07 — "wherever there is a document, the lesson can't be marked
+    // complete unless the document is a hundred percent complete", with two exceptions (Grade 9
+    // Core Skills; the very first diagnostic); 2026-08-18 — "the student should also get a modal
+    // explaining they need to complete the document accordingly before marking the lessons
+    // complete"; 2026-09-23 — the preview approved as shown (look, words, "Carry on with Sophia").
+    // Third student it happened to: Annaya 1398 marked "Get your assessment" complete with Q3–Q5
+    // never marked (prod, 2026-09-22 17:54 UTC).
+    //
+    // SEVEN SAFEGUARDS were promised with it, and each one is load-bearing below:
+    //   1 the SAME number the student sees — the reading IS the card's compute (_progressComputeFor);
+    //   2 FAIL-OPEN — only a positive "incomplete" reading can stop a student; an unknown reading,
+    //     an error, a missing config all let the lesson complete (and are recorded);
+    //   3 Sophia's gaps never stop a student — an ASSESSMENT stops only on questions not yet marked
+    //     before [ASSESSMENT_COMPLETE]; a Sophia-filled part left empty after that goes through
+    //     and is recorded. ⚠️ NOT detectAssessmentStep(): it calls "Q2 Total: 5/8 … Grade 6" in one
+    //     message COMPLETE — Annaya's unfinished assessment would have been waved through;
+    //   4/5 proven before switch-on — mode 'watch' records every click and stops nobody;
+    //   6 the server holds the same line (learndash_process_mark_complete, main plugin file) using
+    //     THIS file's verdict, saved with the document — never a second copy of the rule;
+    //   7 the pop-up is the house modal holding the card itself, scroll-isolated, focus-trapped.
+    // A family is ELIGIBLE to be enforced only once it has been measured: cw · diagnostic ·
+    // assessment. Every other document family is watch-only whatever the mode says.
+    // ═════════════════════════════════════════════════════════════════════════════════════════
+    /* @MC-GATE-PURE-START — extracted and unit-tested by bin/mc-gate-harness.js.
+       PURE: no DOM, no globals beyond the arguments. */
+    const MC_GATE_ENFORCE_FAMILIES = ['cw', 'diagnostic', 'assessment'];
+    function mcGateFamily(task) {
+        const t = String(task || '');
+        if (t === '' || t === 'diagnostic') return 'diagnostic';
+        if (t === 'assessment' || t === 'redraft_assessment') return 'assessment';
+        if (t.indexOf('cw_') === 0) return 'cw';
+        return 'other:' + t;
+    }
+    // r = { verdict: 'complete'|'incomplete'|'unknown', family, exempt, sessionFinished, unmarked[] }
+    // → { block, record, why } — `record` is what the gate's log should say (null = nothing to say).
+    function mcGateDecide(r, mode) {
+        const m = (mode === 'enforce' || mode === 'watch') ? mode : 'off';
+        if (m === 'off' || !r) return { block: false, record: null, why: 'off' };
+        const quietPass = m === 'watch' ? 'pass' : null;   // watch records every click — the base rate
+        if (r.exempt) return { block: false, record: m === 'watch' ? 'exempt' : null, why: 'exempt:' + r.exempt };
+        if (r.verdict !== 'complete' && r.verdict !== 'incomplete') return { block: false, record: 'unknown', why: 'unknown-reading' };
+        let would = false, why = 'complete', record = quietPass;
+        if (r.family === 'assessment') {
+            const unmarked = Array.isArray(r.unmarked) ? r.unmarked : [];
+            if (r.sessionFinished) {
+                why = 'session-finished';
+                if (r.verdict === 'incomplete') record = 'sophia_gap';
+            } else if (unmarked.length) {
+                would = true; why = 'unmarked:' + unmarked.join(' | ');
+            } else if (r.verdict === 'incomplete') {
+                why = 'all-marked-not-all-filed'; record = 'sophia_gap';
+            }
+        } else if (r.verdict === 'incomplete') {
+            would = true; why = 'incomplete';
+        }
+        if (!would) return { block: false, record: record, why: why };
+        const eligible = MC_GATE_ENFORCE_FAMILIES.indexOf(r.family) !== -1;
+        if (m === 'enforce' && eligible) return { block: true, record: 'blocked', why: why };
+        return { block: false, record: 'would_block', why: why + (eligible ? '' : ' · family is watch-only') };
+    }
+    /* @MC-GATE-PURE-END */
+
+    function _mcGateCfg() {
+        const c = window.swmlEmbedConfig && window.swmlEmbedConfig.mcGate;
+        return (c && typeof c === 'object') ? c : {};
+    }
+    // No config (older server, standalone lab page) = 'off' — today's behaviour (safeguard 2).
+    function _mcGateMode() {
+        const m = _mcGateCfg().mode;
+        return (m === 'enforce' || m === 'watch') ? m : 'off';
+    }
+    function _mcGateExempt(family) {
+        try {
+            const cfg = (WML.getExerciseConfig && WML.getExerciseConfig(state.task)) || null;
+            if (cfg && cfg.markCompleteGate === false) return 'one-document-course';   // Grade 9 Core Skills
+            if (family === 'diagnostic' && _isFirstDiagnostic() && (_canvasAttempt() || 1) <= 1) return 'first-diagnostic';
+        } catch (_) {}
+        return '';
+    }
+    // STRICT on purpose — only the code word ends a marking session (see the header: the looser
+    // detectAssessmentStep() would count a single question's "Total … Grade" as the end).
+    function _mcGateSessionFinished() {
+        const h = (_chatShell && _chatShell.history) || [];
+        for (let i = h.length - 1; i >= 0; i--) {
+            const m = h[i];
+            if (m && m.role === 'assistant' && /\[ASSESSMENT_COMPLETE\]/i.test(String(m.content || ''))) return true;
+        }
+        return false;
+    }
+    // Mark-bearing feedback boxes still reading "(— / N)" — the questions not marked yet. From the
+    // ProseMirror doc (the stored truth), never from what happens to be painted.
+    function _mcGateUnmarked() {
+        const out = [];
+        if (!canvasEditor || !canvasEditor.state) return out;
+        canvasEditor.state.doc.descendants(n => {
+            if (n.type && n.type.name === 'sectionBlock' && n.attrs && n.attrs.sectionType === 'feedback') {
+                const l = String(n.attrs.label || '');
+                if (/\(\s*—\s*\/\s*\d+(?:\.\d+)?\s*\)\s*$/.test(l)) out.push(_progressChipLabel(l));
+                return false;
+            }
+            return true;
+        });
+        return out;
+    }
+    function _mcGateReading() {
+        const task = state.task || '';
+        const family = mcGateFamily(task);
+        const out = {
+            verdict: 'unknown', family: family, task: task, total: 0, done: 0, pct: 0,
+            missing: [], unmarked: [], sessionFinished: false, exempt: '',
+            postId: (window.swmlEmbedConfig && window.swmlEmbedConfig.postId) || 0,
+        };
+        try {
+            out.exempt = _mcGateExempt(family);
+            const editorEl = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+            const fn = _progressComputeFor(task);
+            if (!editorEl || !fn) return out;
+            try { _recomputeAllCompletion(); } catch (_) {}   // fresh ticks, not the last debounce
+            const p = fn(editorEl);
+            if (!p || !p.total) return out;                    // mounting / nothing trackable → unknown
+            out.total = p.total; out.done = p.done; out.pct = p.pct;
+            out.missing = (p.incomplete || []).slice(0, 30);
+            out.verdict = p.done >= p.total ? 'complete' : 'incomplete';
+            if (family === 'assessment') {
+                out.sessionFinished = _mcGateSessionFinished();
+                out.unmarked = _mcGateUnmarked();
+            }
+        } catch (e) {
+            out.verdict = 'unknown';
+            out.error = String((e && e.message) || e);
+        }
+        return out;
+    }
+    function _mcGateRecord(kind, reading, decision, where) {
+        try {
+            if (!kind) return;
+            const r = reading || {};
+            const body = {
+                kind: kind, where: where || 'click', mode: _mcGateMode(), post_id: r.postId || 0,
+                task: r.task || '', family: r.family || '', why: (decision && decision.why) || '',
+                done: r.done || 0, total: r.total || 0, pct: r.pct || 0,
+                missing: (r.missing || []).slice(0, 12), unmarked: (r.unmarked || []).slice(0, 8),
+                session_finished: !!r.sessionFinished, exempt: r.exempt || '', error: r.error || '',
+            };
+            console.log('[WML mc-gate] ' + kind + ' · ' + body.why + ' · ' + body.done + '/' + body.total + ' · mode=' + body.mode);
+            if (API.mcGateLog) fetch(API.mcGateLog, { method: 'POST', headers, body: JSON.stringify(body), keepalive: true }).catch(function () {});
+        } catch (_) { /* recording must never block anything */ }
+    }
+    // Save the document NOW (with the figure it carries) and wait, bounded — so the server's copy of
+    // the verdict is the one the student is looking at when LearnDash asks. A slow or failed save
+    // never holds completion hostage: the click vouches for itself below either way.
+    function _mcGateFlushSave() {
+        try { saveCanvasContent(); } catch (_) {}
+        const body = _pendingCanvasSaveBody;
+        if (!body) return Promise.resolve(true);
+        _pendingCanvasSaveBody = null;
+        clearTimeout(canvasSaveToServerTimer);
+        const p = fetch(API.canvasSave, { method: 'POST', headers, body: JSON.stringify(body) })
+            .then(r => r.json()).then(res => !!(res && res.success)).catch(() => false);
+        _lastCanvasFlushPromise = p;
+        return Promise.race([p, new Promise(r => setTimeout(() => r(false), 3000))]);
+    }
+    // The click passed THIS gate — tell the server's half, so it never second-guesses a click it
+    // cannot see the document for. A nonce bound to this user + lesson, minted with the page.
+    function _mcGateVouch(ldMarkBtn) {
+        try {
+            const nonce = _mcGateCfg().nonce;
+            const form = ldMarkBtn && ldMarkBtn.form;
+            if (!nonce || !form) return;
+            let inp = form.querySelector('input[name="swml_mc_gate"]');
+            if (!inp) { inp = document.createElement('input'); inp.type = 'hidden'; inp.name = 'swml_mc_gate'; form.appendChild(inp); }
+            inp.value = 'pass:' + nonce;
+        } catch (_) {}
+    }
+    function _mcGateCarryOnWithSophia() {
+        try {
+            const host = document.getElementById('swml-canvas-chat-messages');
+            if (host) host.scrollTop = host.scrollHeight;
+            if (WML._askReach && typeof WML._askReach.check === 'function') WML._askReach.check('mc-gate');
+            const input = document.getElementById('swml-canvas-chat-input');
+            const bars = host ? host.querySelectorAll('.swml-quick-actions') : [];
+            const bar = bars.length ? bars[bars.length - 1] : null;
+            const chip = bar && bar.querySelector('button');
+            const target = (chip && chip.offsetParent !== null) ? chip : input;
+            if (target && typeof target.focus === 'function') target.focus({ preventScroll: true });
+        } catch (_) {}
+    }
+    // THE POP-UP (approved 2026-09-23): the tutor-view modal family holding the student's own
+    // Document Progress card. Resolves 'stay' | 'goto' | 'sophia'. One close door; Esc, backdrop,
+    // "Not now" all use it; focus returns to where it came from; the page behind cannot scroll.
+    function _mcGateShow(reading) {
+        return new Promise(resolve => {
+            const editorEl = canvasEditor && canvasEditor.options && canvasEditor.options.element;
+            const prior = document.querySelector('.swml-mc-gate-overlay');
+            if (prior && typeof prior.__swmlClose === 'function') prior.__swmlClose('stay');
+            const isAssess = reading.family === 'assessment';
+            const overlay = el('div', { className: 'swml-review-modal-overlay swml-mc-gate-overlay' });
+            const modal = el('div', { className: 'swml-review-modal swml-mc-gate' });
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-labelledby', 'swml-mc-gate-title');
+            const listIcon = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 5.5l1.5 1.5l2.5 -2.5"/><path d="M3.5 11.5l1.5 1.5l2.5 -2.5"/><path d="M3.5 17.5l1.5 1.5l2.5 -2.5"/><path d="M11 6l9 0"/><path d="M11 12l9 0"/><path d="M11 18l9 0"/></svg>';
+            modal.innerHTML =
+                '<div class="swml-review-modal-head">'
+              +   '<div class="swml-review-modal-icon">' + listIcon + '</div>'
+              +   '<div>'
+              +     '<div class="swml-review-modal-title" id="swml-mc-gate-title">'
+              +       (isAssess ? 'Your assessment isn’t finished yet' : 'This lesson isn’t finished yet') + '</div>'
+              +     '<div class="swml-review-modal-sub">'
+              +       (isAssess
+                          ? 'Sophia fills in these parts as your assessment goes on. Carry on from where you stopped, then mark the lesson complete.'
+                          : 'Mark Complete works once your document reaches <strong>100%</strong>.')
+              +     '</div>'
+              +   '</div>'
+              + '</div>';
+            const card = el('div', { className: 'swml-progress-card' });
+            try { if (editorEl) _renderProgressCardBody(card, editorEl, _progressComputeFor(state.task)); } catch (_) {}
+            modal.appendChild(card);
+            const actions = el('div', { className: 'swml-review-modal-actions swml-mc-gate-actions' });
+            const quiet = el('button', { className: 'swml-mc-gate-quiet', textContent: 'Not now' });
+            quiet.type = 'button';
+            const main = _swmlIncrediblesBtn(isAssess ? 'Carry on with Sophia' : 'Take me there', { className: 'swml-review-modal-btn' });
+            actions.appendChild(quiet);
+            actions.appendChild(main);
+            modal.appendChild(actions);
+            overlay.appendChild(modal);
+
+            const prevFocus = document.activeElement;
+            const prevOverflow = document.body.style.overflow;
+            let closed = false;
+            function onKeydown(e) {
+                if (e.key === 'Escape') { e.preventDefault(); close('stay'); return; }
+                if (e.key !== 'Tab') return;
+                const f = Array.prototype.filter.call(modal.querySelectorAll('button'), b => !b.disabled && b.offsetParent !== null);
+                if (!f.length) { e.preventDefault(); return; }
+                const i = f.indexOf(document.activeElement);
+                e.preventDefault();
+                const next = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === -1 || i === f.length - 1 ? 0 : i + 1);
+                f[next].focus();
+            }
+            function close(v) {
+                if (closed) return;
+                closed = true;
+                document.removeEventListener('keydown', onKeydown, true);
+                overlay.remove();
+                document.body.style.overflow = prevOverflow;
+                try { if (prevFocus && prevFocus.focus) prevFocus.focus({ preventScroll: true }); } catch (_) {}
+                resolve(v);
+            }
+            overlay.__swmlClose = close;
+            overlay.addEventListener('click', e => { if (e.target === overlay) close('stay'); });
+            // Scroll isolation (root CLAUDE.md §OVERLAY): the backdrop swallows wheel/touch; the
+            // card scrolls itself (CSS bound + overscroll-behavior on the family rules).
+            overlay.addEventListener('wheel', e => { if (e.target === overlay) e.preventDefault(); }, { passive: false });
+            overlay.addEventListener('touchmove', e => { if (e.target === overlay) e.preventDefault(); }, { passive: false });
+            // A chip jumps (its own handler, keyed on the full label) — and the pop-up gets out of the way.
+            card.addEventListener('click', e => {
+                if (e.target && e.target.closest && e.target.closest('.swml-progress-chip')) setTimeout(() => close('goto'), 0);
+            }, true);
+            quiet.addEventListener('click', () => close('stay'));
+            main.addEventListener('click', () => {
+                if (isAssess) { close('sophia'); _mcGateCarryOnWithSophia(); return; }
+                close('goto');
+                const first = (reading.missing || [])[0];
+                if (first && editorEl) _jumpToProgressSection(editorEl, first);
+            });
+            document.body.style.overflow = 'hidden';
+            document.body.appendChild(overlay);
+            document.addEventListener('keydown', onKeydown, true);
+            setTimeout(() => { try { main.focus({ preventScroll: true }); } catch (_) {} }, 50);
+        });
+    }
+    // The footer proxy's one call. Returns 'proceed' or 'blocked'. Every path out of here that is
+    // not a positive, eligible "incomplete" reading proceeds — including every error (safeguard 2).
+    async function _mcGateCheckBeforeComplete(ldMarkBtn) {
+        let reading = null;
+        try {
+            if (state.reviewMode) return 'proceed';
+            const mode = _mcGateMode();
+            if (mode === 'off') return 'proceed';
+            reading = _mcGateReading();
+            const decision = mcGateDecide(reading, mode);
+            if (decision.record) _mcGateRecord(decision.record, reading, decision, 'click');
+            if (decision.block) {
+                await _mcGateShow(reading);
+                return 'blocked';
+            }
+            await _mcGateFlushSave();
+            _mcGateVouch(ldMarkBtn);
+            return 'proceed';
+        } catch (e) {
+            try { console.warn('[WML mc-gate] check failed — completing anyway (fail-open):', e && e.message); } catch (_) {}
+            try { _mcGateRecord('error', Object.assign({}, reading || {}, { error: String((e && e.message) || e) }), { why: 'gate-error' }, 'click'); } catch (_) {}
+            try { _mcGateVouch(ldMarkBtn); } catch (_) {}
+            return 'proceed';
+        }
+    }
+    // The server refused a completion the page never saw (a click that did not come through the
+    // footer). It reloads the lesson with `refused` set — explain it here, once the document has
+    // settled (§4d: a refusal is half a change; the other half is what the student sees).
+    let _mcGateRefusalExplained = 0;
+    function _mcGateMaybeExplainRefusal() {
+        try {
+            const pid = (window.swmlEmbedConfig && window.swmlEmbedConfig.postId) || 0;
+            if (!_mcGateCfg().refused || !pid || _mcGateRefusalExplained === pid) return;
+            _mcGateRefusalExplained = pid;
+            let tries = 0;
+            const tick = () => {
+                const r = _mcGateReading();
+                if (r.verdict === 'unknown' && ++tries < 20) { setTimeout(tick, 500); return; }
+                const d = mcGateDecide(r, 'enforce');
+                if (d.block) _mcGateShow(r);
+            };
+            setTimeout(tick, 800);
+        } catch (_) {}
+    }
+    // PEDAGOGY §1 — the first-diagnostic leniency belongs to the student's very first attempt EVER.
+    // Asked once per lesson of the server, with the SAME parameters the page loads and saves the
+    // document with, so the server builds the key with its one builder (never a second derivation).
+    let _mcFirstEverAsked = '';
+    function _mcGateAskFirstEver() {
+        try {
+            if (!((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial')) return;
+            if (!state.board || !state.text || !API.mcGateFirstDiagnostic) return;
+            const scope = WML.canvasDocScope ? WML.canvasDocScope() : { text: state.text, topic: state.topicNumber };
+            const sig = state.board + '|' + scope.text + '|' + (scope.topic || '');
+            if (_mcFirstEverAsked === sig) return;
+            _mcFirstEverAsked = sig;
+            const url = API.mcGateFirstDiagnostic
+                + '?board=' + encodeURIComponent(state.board) + '&text=' + encodeURIComponent(scope.text || '')
+                + '&topicNumber=' + encodeURIComponent(scope.topic || '');
+            fetch(url, { headers }).then(r => r.json()).then(res => {
+                if (!res || !res.success || typeof res.first !== 'boolean') return;
+                state.mcFirstEverDiagnostic = res.first;
+                try { _scheduleCompletionRecompute(); } catch (_) {}
+            }).catch(function () {});
+        } catch (_) {}
+    }
+    try { window.WML = window.WML || {}; window.WML.mcGate = { decide: mcGateDecide, family: mcGateFamily, reading: _mcGateReading, show: _mcGateShow }; } catch (_) {}
 
     let canvasSignoffData = null;
     let canvasTimerInterval = null; // Module-scope declaration (was inside renderCanvasWorkspace — bug fix v7.12.62)
@@ -15684,7 +16087,7 @@
             // v7.19.698: single-essay Literature gets the same granular accordion, grouped
             // by paragraph, built from its pre-seeded Intro/Body/Conclusion feedback boxes.
             const _litAssess = !_langModel && !_langExpected && !_expectServerSidebar()
-                && !state.reviewMode && (state.task === 'assessment' || state.task === 'redraft_assessment');
+                && (state.task === 'assessment' || state.task === 'redraft_assessment');   // v7.20.634 (#586): tutor view too
             const _litModel = _litAssess ? _buildLitSidebarModel() : null;
             // v7.20.51: de-stitched planning gets the granular canvas-derived model after
             // the doc settles — hide at first paint instead of flashing the generic
@@ -35681,6 +36084,11 @@
         // v7.14.25: LD navigation proxy buttons — embedded mode only
         // Uses exact selectors from SPL footer (.spl-btn-prev, .learndash_mark_complete_button, .spl-btn-next)
         if (WML.isEmbedded) {
+            // v7.20.634: the Mark Complete gate's two per-lesson starts — ask the server whether this
+            // is the student's first diagnostic EVER (PEDAGOGY §1, also read by the progress card),
+            // and explain a completion the server refused (the pop-up, once the doc has settled).
+            _mcGateAskFirstEver();
+            _mcGateMaybeExplainRefusal();
             const ldNav = el('div', { className: 'swml-ld-nav' });
             // Previous lesson
             const ldPrevLink = document.querySelector('.spl-footer .spl-btn-prev, .ld-content-actions a.ld-button-reverse');
@@ -35730,6 +36138,14 @@
                                 markBtn.disabled = false;
                                 return;
                             }
+                        }
+                        // ⭐ v7.20.634 (#588): THE MARK COMPLETE GATE. An unfinished document gets the
+                        // pop-up and the button back — BEFORE any completion is recorded (the CW step
+                        // write below) and before LearnDash is asked. Anything uncertain proceeds.
+                        if (await _mcGateCheckBeforeComplete(ldMarkBtn) === 'blocked') {
+                            markBtn.innerHTML = _restLabel;
+                            markBtn.disabled = false;
+                            return;
                         }
                         const _cwPid  = (window.WML && WML.state && WML.state.cwProjectId) || '';
                         const _cwStep = _cwCurrentStepNumber();
@@ -60147,6 +60563,32 @@
                 ? window.location.href
                 : _buildWmlDeepLink({ board: snap.board, text: snap.text, topic: snap.topicNumber, task: snap.task }),
             cw_project_id: snap.cwProjectId,
+            // ⭐ v7.20.634 (#588): the Document Progress figure the student is LOOKING AT (the card's
+            // last paint), keyed to THIS lesson, with this file's own gate verdict on it. The server
+            // stores the verdict and never re-derives it (safeguard 6: one copy of the rule); the
+            // dashboard reads the same record to find "complete but unfinished" lessons.
+            ...(function () {
+                try {
+                    const r = _mcLastCardReading;
+                    const pid = (window.swmlEmbedConfig && window.swmlEmbedConfig.postId) || 0;
+                    if (!r || !pid || r.postId !== pid || r.task !== (snap.task || '') || !r.total) return {};
+                    const family = mcGateFamily(snap.task);
+                    const facts = {
+                        verdict: r.done >= r.total ? 'complete' : 'incomplete', family: family,
+                        exempt: _mcGateExempt(family),
+                        sessionFinished: family === 'assessment' ? _mcGateSessionFinished() : false,
+                        unmarked: family === 'assessment' ? _mcGateUnmarked() : [],
+                    };
+                    const verdict = mcGateDecide(facts, 'enforce');
+                    return { docProgress: {
+                        post_id: pid, task: snap.task || '', family: family,
+                        done: r.done, total: r.total, pct: r.pct,
+                        missing: r.incomplete.slice(0, 20).map(_progressChipLabel),
+                        unmarked: facts.unmarked.slice(0, 8), session_finished: facts.sessionFinished,
+                        exempt: facts.exempt || '', block: !!verdict.block, why: verdict.why,
+                    } };
+                } catch (e) { return {}; }
+            })(),
             // v7.19.286: persist the pristine-template baselines (set-once server-side)
             // so resume subtracts the TEMPLATE, not the student's own words. Captured by
             // snapshotTemplateBaseline at fresh inject; sent only when numeric. On resume
@@ -60594,6 +61036,13 @@
                         if (_currentUpdateCommentGutter) requestAnimationFrame(_currentUpdateCommentGutter);
                     }
                     console.log('WML Review: Loaded student canvas from server');
+                    // v7.20.634 (#586): the per-question sidebar is now built in tutor view too, and the
+                    // first paint hid the panel while this doc was still on its way — paint it now that
+                    // the student's marks are in the editor (twice: the nodeViews mount across frames).
+                    if (state.task === 'assessment' || state.task === 'redraft_assessment') {
+                        setTimeout(() => { try { _refreshLangSidebar(); } catch (_) {} }, 120);
+                        setTimeout(() => { try { _refreshLangSidebar(); } catch (_) {} }, 1200);
+                    }
                 } else {
                     const localContent = loadCanvasContent();
                     // v7.17.44: for CW tasks, always prefer server on mount. The local

@@ -258,6 +258,16 @@ class SWML_REST_API {
             'methods' => 'GET', 'callback' => [$this, 'list_canvas_documents'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
+        // v7.20.634 (#588): the Mark Complete gate — its record of every decision (watch mode's
+        // evidence), and PEDAGOGY §1's "is this the student's first diagnostic EVER?".
+        register_rest_route($namespace, '/mc-gate/log', [
+            'methods' => 'POST', 'callback' => [$this, 'mc_gate_log'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        register_rest_route($namespace, '/mc-gate/first-diagnostic', [
+            'methods' => 'GET', 'callback' => [$this, 'mc_gate_first_diagnostic'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
 
         // v7.19.200: Mastery Codex — user-scoped sectioned document for Grade 9
         // Core Skills induction. ONE doc per user, persists across all 9 units.
@@ -2368,6 +2378,14 @@ class SWML_REST_API {
         // wp_slash prevents WordPress's internal wp_unslash from stripping backslashes in JSON
         $result = update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
 
+        // v7.20.634 (#588): the Document Progress figure the student was looking at, with the page's
+        // OWN Mark Complete verdict on it, stored against the LESSON (LearnDash post) it was saved
+        // from — written in the same request as the document, so the two can never disagree. The
+        // server's half of the gate and the dashboard's "complete but unfinished" detector read it.
+        if (!empty($params['docProgress']) && is_array($params['docProgress'])) {
+            $this->mc_gate_store_doc_progress($user_id, $params['docProgress'], $meta_key);
+        }
+
         // v7.15.99: Mirror General Notes into a separate per-{board,text} blob so
         // content persists across FQ <-> CN attempts. Only relevant for the
         // conceptual-notes document family. Always mirrors (including empty) so
@@ -2416,6 +2434,147 @@ class SWML_REST_API {
             'savedAt' => $doc['savedAt'],
             'attempt' => $attempt,
         ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════════
+    // v7.20.634 (#585–#588) — THE MARK COMPLETE GATE, server half. The RULE lives once, in
+    // wml-assessment.js (mcGateDecide); this file stores its verdict and never re-derives it.
+    // ═══════════════════════════════════════════════════════════════════════════════════
+
+    /** A short list of short strings, from untrusted input. */
+    private static function mc_gate_str_list($v, $max) {
+        $out = [];
+        foreach ((array) $v as $s) {
+            if (count($out) >= $max) break;
+            if (!is_scalar($s)) continue;
+            $out[] = mb_substr(sanitize_text_field((string) $s), 0, 80);
+        }
+        return $out;
+    }
+
+    /** Store the saved figure + verdict for one lesson: user meta swml_docprog_{LearnDash post id}. */
+    private function mc_gate_store_doc_progress($user_id, $dp, $meta_key) {
+        $post_id = absint($dp['post_id'] ?? 0);
+        if ($post_id < 1 || get_post_type($post_id) !== 'sfwd-topic') return;
+        $rec = [
+            'at'               => current_time('c'),
+            'ts'               => time(),
+            'doc_key'          => $meta_key,
+            'task'             => sanitize_key($dp['task'] ?? ''),
+            'family'           => mb_substr(sanitize_text_field($dp['family'] ?? ''), 0, 60),
+            'done'             => absint($dp['done'] ?? 0),
+            'total'            => absint($dp['total'] ?? 0),
+            'pct'              => min(100, absint($dp['pct'] ?? 0)),
+            'missing'          => self::mc_gate_str_list($dp['missing'] ?? [], 20),
+            'unmarked'         => self::mc_gate_str_list($dp['unmarked'] ?? [], 8),
+            'session_finished' => !empty($dp['session_finished']),
+            'exempt'           => sanitize_key($dp['exempt'] ?? ''),
+            'block'            => !empty($dp['block']),
+            'why'              => mb_substr(sanitize_text_field($dp['why'] ?? ''), 0, 200),
+        ];
+        update_user_meta($user_id, 'swml_docprog_' . $post_id, wp_slash(wp_json_encode($rec)));
+    }
+
+    /** The saved figure for one lesson, or null (the gate's server half reads this). */
+    public static function mc_gate_doc_progress($user_id, $post_id) {
+        $raw = get_user_meta($user_id, 'swml_docprog_' . absint($post_id), true);
+        if (empty($raw)) return null;
+        $rec = is_array($raw) ? $raw : json_decode((string) $raw, true);
+        return is_array($rec) ? $rec : null;
+    }
+
+    /** Append one entry to the gate's per-student record (newest last, capped) + one log line. */
+    public static function mc_gate_append_log($user_id, array $entry) {
+        $log = get_user_meta($user_id, 'swml_mc_gate_log', true);
+        $log = is_string($log) ? json_decode($log, true) : $log;
+        if (!is_array($log)) $log = [];
+        $log[] = $entry;
+        if (count($log) > 100) $log = array_slice($log, -100);
+        update_user_meta($user_id, 'swml_mc_gate_log', wp_slash(wp_json_encode($log)));
+        error_log(sprintf('[WML mc-gate] user=%d post=%d kind=%s why=%s %d/%d mode=%s',
+            $user_id, (int) ($entry['post_id'] ?? 0), (string) ($entry['kind'] ?? ''), (string) ($entry['why'] ?? ''),
+            (int) ($entry['done'] ?? 0), (int) ($entry['total'] ?? 0), (string) ($entry['mode'] ?? '')));
+    }
+
+    /** POST /mc-gate/log — the page records each decision (watch mode's evidence). */
+    public function mc_gate_log($request) {
+        $user_id = get_current_user_id();
+        $p = $request->get_json_params();
+        if (!is_array($p)) $p = [];
+        $kind = sanitize_key($p['kind'] ?? '');
+        if (!in_array($kind, ['pass', 'exempt', 'unknown', 'sophia_gap', 'would_block', 'blocked', 'error'], true)) {
+            return rest_ensure_response(['success' => false, 'message' => 'Unknown record kind']);
+        }
+        self::mc_gate_append_log($user_id, [
+            'at'               => current_time('c'),
+            'kind'             => $kind,
+            'where'            => sanitize_key($p['where'] ?? 'click'),
+            'mode'             => sanitize_key($p['mode'] ?? ''),
+            'post_id'          => absint($p['post_id'] ?? 0),
+            'task'             => sanitize_key($p['task'] ?? ''),
+            'family'           => mb_substr(sanitize_text_field($p['family'] ?? ''), 0, 60),
+            'why'              => mb_substr(sanitize_text_field($p['why'] ?? ''), 0, 200),
+            'done'             => absint($p['done'] ?? 0),
+            'total'            => absint($p['total'] ?? 0),
+            'pct'              => min(100, absint($p['pct'] ?? 0)),
+            'missing'          => self::mc_gate_str_list($p['missing'] ?? [], 12),
+            'unmarked'         => self::mc_gate_str_list($p['unmarked'] ?? [], 8),
+            'session_finished' => !empty($p['session_finished']),
+            'exempt'           => sanitize_key($p['exempt'] ?? ''),
+            'error'            => mb_substr(sanitize_text_field($p['error'] ?? ''), 0, 200),
+            'version'          => defined('SWML_VERSION') ? SWML_VERSION : '',
+        ]);
+        return rest_ensure_response(['success' => true]);
+    }
+
+    /**
+     * GET /mc-gate/first-diagnostic — PEDAGOGY §1: is this the student's first diagnostic EVER?
+     * Takes the SAME board/text/topic the page loads and saves the document with, and builds the key
+     * with the ONE builder (canvas_meta_key) — never a second derivation of the key.
+     */
+    public function mc_gate_first_diagnostic($request) {
+        $board = sanitize_text_field((string) ($request->get_param('board') ?? ''));
+        $text  = $this->normalize_text_slug(sanitize_text_field((string) ($request->get_param('text') ?? '')));
+        $topic = absint($request->get_param('topicNumber') ?? 0);
+        if ($board === '' || $text === '' || $topic < 1) {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing board, text or topic']);
+        }
+        $bare = $this->canvas_meta_key($board, $text, $topic, '', 1, '');
+        return rest_ensure_response([
+            'success' => true,
+            'first'   => self::mc_gate_is_first_ever_diagnostic(get_current_user_id(), $bare),
+            'key'     => $bare,
+        ]);
+    }
+
+    /**
+     * The student's first ATTEMPTED diagnostic = the Phase-1 write document (a bare `…_t{N}` key:
+     * no stage suffix, no __aN) whose set-once startedAt — the moment it first held the student's
+     * own writing — is earliest. Stable by construction: an earlier start can never appear later,
+     * so the answer cannot flip mid-exercise (the objection PEDAGOGY §1's note raised against a
+     * live check). Nothing attempted yet → this one IS the first.
+     */
+    public static function mc_gate_is_first_ever_diagnostic($user_id, $bare_key) {
+        global $wpdb;
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, SUBSTRING(meta_value, LOCATE('startedAt', meta_value) - 1, 64) AS started
+               FROM {$wpdb->usermeta}
+              WHERE user_id = %d AND meta_key LIKE %s AND meta_key REGEXP %s",
+            $user_id, $wpdb->esc_like('swml_canvas_') . '%', '_t[0-9]+$'
+        ));
+        $earliest = null;
+        $earliest_key = '';
+        foreach ((array) $rows as $r) {
+            if (!preg_match('/^swml_canvas_.+_t\d+$/', (string) $r->meta_key)) continue;
+            $s = (string) $r->started;
+            // JSON ("startedAt":"…") or a serialized array ("startedAt";s:25:"…").
+            if (!preg_match('/"startedAt"\s*(?::\s*|;s:\d+:)"([^"]+)"/', $s, $m)) continue;
+            $t = strtotime($m[1]);
+            if (!$t) continue;
+            if ($earliest === null || $t < $earliest) { $earliest = $t; $earliest_key = (string) $r->meta_key; }
+        }
+        if ($earliest_key === '') return true;
+        return $earliest_key === $bare_key;
     }
 
     /**
