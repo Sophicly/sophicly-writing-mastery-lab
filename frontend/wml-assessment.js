@@ -20243,7 +20243,9 @@
                 // v7.20.89 (Neil B10): MSA — ask the target grade before round 1. The gate
                 // owns the turn (_captureGoal calls startRound when the pick lands).
                 if (quizType === 'mark_scheme_assessment' && !goalGrade) {
-                    awaitingGoal = true;
+                    // v7.20.636: active=true while the grade ask is open, exactly as the resume
+                    // path does — else a TYPED grade ("9") left the controller and reached the AI.
+                    awaitingGoal = true; active = true;
                     persist();
                     _askGoal();
                     return;
