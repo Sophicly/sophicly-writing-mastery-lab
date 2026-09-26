@@ -496,6 +496,14 @@ boundary — canvas load/save AND quiz start; FQ activation (`swmlConfig.fqBankT
    `$SLUG_ALIASES`. That is the only place slugs reconcile.
 4. **Never silent:** a `foundational_quiz` text with no matching bank `console.warn`s and falls back
    to the legacy AI quiz — that warning means "add an alias or a bank", never a code fork.
+5. ⭐⭐ **A GRADED QUIZ IS SCORED ONLY BY THE CODE CONTROLLER — never by the AI (v7.20.636).** Proof:
+   the AIC banks were filed `an_inspector_calls.md` while lessons send `inspector_calls`; the bank
+   lookup found 0 questions, the controller went inactive, and the student's next message reached
+   the AI, which narrated the WHOLE quiz and final and recorded no grade (1392, FIXLIST #592). Now:
+   every bank resolver (MSQ/MSA/FQ) walks `SWML_Quiz_Bank::slug_family()`; a failed load keeps the
+   turn (Try again); `sendCanvasMessage` CLAIMS any unrecorded controller-owned quiz. **Enforced:**
+   `bin/quiz-bank-reach-harness.js` (pre-ship) fails on a bank a live slug cannot reach and on the
+   controller wiring being removed. A text with no bank shows "can't load" — honest, never unscored.
 
 ### SOP — resolving a bank / template / protocol FILE by text (Neil 2026-07-08: "fix path/file/slug at the root")
 
