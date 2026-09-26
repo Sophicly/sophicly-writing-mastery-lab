@@ -8198,7 +8198,13 @@
                 bar.appendChild(el('button', { className: 'swml-quick-btn swml-sa-walk-btn', textContent: label,
                     onClick: function () { bar.remove(); onPick(label); } }));
             });
-            const host = document.querySelector('.swml-chat-messages');
+            // v7.20.638: the chips go in the SAME container the card was written into. The old
+            // '.swml-chat-messages' lookup matches NOTHING on a canvas page (that class belongs to
+            // the planning chat) — the chips never rendered, typing re-served the card, and the
+            // student was stuck on the Q2 calibration card (Neil's retest, 2026-09-26, #597).
+            const host = (_chatShell && _chatShell.messages)
+                || document.getElementById('swml-canvas-chat-messages')
+                || document.querySelector('.swml-chat-messages');
             const bubble = host && host.lastElementChild;
             if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(bar);
             else console.warn('WML calibration: no bubble to host the chips — the typed fallback still answers');

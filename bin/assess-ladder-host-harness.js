@@ -218,5 +218,15 @@ ok(/actual: _calibActualFor\(k\.q, k\.ao, k\.max\)/.test(JS), '_calibGroups asks
     ok(run("_calibActualFor('Q5', 'AO5', 24)") === null, 'Q5 box filled but the AO lines not yet → not ready (null), never the /40 total');
 }
 
+console.log('\nI · the calibration chips land where the card is (v7.20.638, #597)');
+{
+    const cc = (JS.match(/function _calibChips\(options, onPick\)\s*\{([\s\S]*?)\n    \}/) || [])[1] || '';
+    ok(!!cc, '_calibChips exists');
+    ok(/const host = \(_chatShell && _chatShell\.messages\)/.test(cc), 'the chips attach to the registered chat container — the one the card was written into');
+    ok(!/const host = document\.querySelector\('\.swml-chat-messages'\)/.test(cc), 'never the bare .swml-chat-messages lookup: it matches NOTHING on a canvas page (measured on staging), so the chips never rendered and the student was stuck');
+    ok(/swml-canvas-chat-messages/.test(cc), 'falls back to the canvas chat by id');
+    ok(/className: 'swml-canvas-chat-messages', id: 'swml-canvas-chat-messages'/.test(JS), 'CONTROL: the canvas chat really is .swml-canvas-chat-messages (not .swml-chat-messages)');
+}
+
 console.log('\n' + (fail ? '❌' : '✅') + ' assess-ladder-host-harness: ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
