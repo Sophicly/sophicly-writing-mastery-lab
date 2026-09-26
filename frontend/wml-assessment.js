@@ -17786,21 +17786,40 @@
             // mark-scheme quiz (mark_scheme_unit step 1) with an active controller —
             // every other task, including the live assessment/marking flow that
             // shares this function, falls straight through untouched.
+            // v7.20.636: ROOT FIX — a graded quiz is scored ONLY by the controller. If this is a
+            // controller-owned quiz task (an MSA Final only while unrecorded) and the controller is not
+            // running (questions failed to load, or a return visit on a device without the
+            // resume sidecar), the controller CLAIMS the turn and starts the quiz. Before this,
+            // the typed reply fell through to the AI, which narrated the whole quiz and recorded
+            // no grade (1392's AIC quiz + final, prod 2026-09-26). A silent send is never a
+            // student reply, so it is not claimed.
+            {
+                const _qt = (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme_unit' && (state.step === 1 || state.bridgeStep === 1)) ? 'mark_scheme'
+                          : (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme') ? 'mark_scheme_assessment'
+                          : _fqDeterministic() ? 'foundational' : null;
+                // MSQ/FQ are mastery loops (every round counts), so they claim even after a
+                // recorded round; only a RECORDED MSA Final is left alone (no unasked re-sit).
+                if (_qt && !canvasSilentSend && !_quizCtl.active && !_quizCtl.loadFailed
+                    && !(_qt === 'mark_scheme_assessment' && _quizRecorded)) {
+                    console.warn('WML quiz: ' + state.task + ' controller was not running and no result is recorded — the controller claims this turn (it will NOT go to the AI).');
+                    _quizCtl.claim({ quizType: _qt });
+                }
+            }
             if (QUIZ_CONTROLLER_ON
                 && state.task === 'mark_scheme_unit'
                 && (state.step === 1 || state.bridgeStep === 1)
-                && _quizCtl.active) {
+                && (_quizCtl.active || _quizCtl.loadFailed)) {
                 await _quizCtl.handleTurn(msg);
                 return;
             }
             // v7.19.579: FQ (banked text) — same deterministic controller owns the turn.
-            if (_fqDeterministic() && _quizCtl.active) {
+            if (_fqDeterministic() && (_quizCtl.active || _quizCtl.loadFailed)) {
                 await _quizCtl.handleTurn(msg);
                 return;
             }
             // v7.19.739: MSA Final (mark_scheme) — same deterministic controller owns the
             // turn while active (answers code-scored; "ask" routes to Sophia help).
-            if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme' && _quizCtl.active) {
+            if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme' && (_quizCtl.active || _quizCtl.loadFailed)) {
                 await _quizCtl.handleTurn(msg);
                 return;
             }
@@ -19124,6 +19143,12 @@
             let round = 0;        // 1-based round counter
             let roundResults = []; // [{ q, res, answer }] for the current round
             let active = false;
+            // v7.20.636: the questions failed to load. The controller KEEPS the turn: until a
+            // round loads, a typed reply retries the load and never reaches the AI. Before this,
+            // a failed load left the controller inactive and the student's next message went to
+            // the AI's narrated quiz, which records no grade (AIC finals, prod 2026-09-26).
+            let loadFailed = false;
+            let claimed = false;   // v7.20.636: claim() — the next turn runs start() (welcome + MSA goal ask), not a bare round
             let busy = false;
             let quizType = 'mark_scheme';  // v7.19.579: 'mark_scheme' | 'foundational' — same engine, different bank + copy
             let betweenRounds = false;     // v7.19.580 (FQ): round finished, awaiting Next / Ask / Finish — controller still owns the turn
@@ -19694,6 +19719,15 @@
 
             async function handleTurn(msg) {
                 if (busy) { return; }
+                if (loadFailed && !active) {
+                    // v7.20.636: no round is loaded — a typed reply is a retry, never an AI turn.
+                    addChatMessage(msg, 'user');
+                    chatTextarea.value = '';
+                    chatTextarea.style.height = '40px';
+                    if (claimed) { claimed = false; loadFailed = false; await start({ quizType }); }
+                    else await startRound();
+                    return;
+                }
                 addChatMessage(msg, 'user');
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: msg }, { durable: true, why: 'the student sent it — it happened, it stays' });
                 chatTextarea.value = '';
@@ -20157,9 +20191,10 @@
                     });
                     removeCanvasTyping();
                     if (!res || !res.success || !res.questions || !res.questions.length) {
-                        aiBubble(QUIZ_LOAD_ERR + " Please refresh — and if it keeps happening, let your tutor know.", { ephemeral: true });
+                        _loadFailed(res && res.code);
                         return;
                     }
+                    loadFailed = false;
                     qs = res.questions; total = res.total || qs.length; idx = 0; roundResults = []; active = true;
                     _syncFqSidebar();        // v7.19.954: sidebar steps follow the served round length
                     qs.forEach(_shuffleQ);   // v7.19.727: randomise option order for THIS round (persisted, so resume keeps it)
@@ -20167,10 +20202,21 @@
                     renderQ();
                 } catch (e) {
                     removeCanvasTyping();
-                    aiBubble(QUIZ_LOAD_ERR + " Please refresh and try again.", { ephemeral: true });
+                    _loadFailed('network');
                 } finally {
                     resetSend();
                 }
+            }
+
+            // v7.20.636: a failed load always leaves the student a control (§4d liveness) and
+            // keeps the controller as the owner of the next turn (see loadFailed).
+            function _loadFailed(code) {
+                loadFailed = true;
+                console.warn('WML quiz: questions did not load (' + (code || 'unknown') + ') — type=' + quizType
+                    + ' text=' + (state.text || '') + ' board=' + (state.board || '') + ' subject=' + (state.subject || '')
+                    + '. The controller keeps the turn; nothing is sent to the AI.');
+                aiBubble(QUIZ_LOAD_ERR + " Tap **Try again**. If it still won't load, please tell your tutor — I can't mark this quiz until the questions load.", { ephemeral: true });
+                appendQuickBar('Try again', () => { if (!active) startRound(); });
             }
 
             async function start(opts) {
@@ -20207,8 +20253,18 @@
 
             // v7.19.348: full reset for chat-clear — deactivate + wipe the localStorage
             // sidecar so a subsequent start() begins a fresh round 1 (not a stale mid-round).
+            // v7.20.636: take ownership of an unfinished graded quiz whose controller is not
+            // running. The caller then routes the turn here; handleTurn starts the quiz.
+            function claim(opts) {
+                if (active || loadFailed) return;
+                quizType = (opts && opts.quizType === 'foundational') ? 'foundational'
+                         : (opts && opts.quizType === 'mark_scheme_assessment') ? 'mark_scheme_assessment'
+                         : 'mark_scheme';
+                loadFailed = true; claimed = true;
+            }
+
             function reset() {
-                active = false; round = 1; roundResults = []; idx = 0; qs = [];
+                active = false; loadFailed = false; claimed = false; round = 1; roundResults = []; idx = 0; qs = [];
                 betweenRounds = false; lastMastered = false; msaAttempts = [];
                 predictedScore = null; awaitingPrediction = false;
                 goalGrade = null; awaitingGoal = false; // v7.20.89 (B10): fresh start re-asks
@@ -20237,13 +20293,14 @@
             }
 
             return {
-                start, reset, abandonRound, handleTurn, tryResume: rehydrate,
+                start, reset, abandonRound, handleTurn, claim, tryResume: rehydrate,
                 // v7.19.999: canonical quiz-session-id — the SAME string as the resume
                 // sidecar key, sent to the server (qsid) so accumulator + bank meta scope
                 // to this exact quiz session. Reflects the CURRENT quizType/stage at call
                 // time (quizType is set before any api call in start()/rehydrate()).
                 sessionId: lsKey,
                 get active() { return active; },
+                get loadFailed() { return loadFailed; },   // v7.20.636: owns the turn until a round loads
                 get midRound() { return active && qs.length > 0 && idx < qs.length; },
                 get answered() { return active ? roundResults.length : 0; },
                 get roundSize() { return active ? (qs.length || 0) : 0; },   // v7.19.751: total Qs this round (5 MSQ/FQ, 10 MSA)
@@ -60860,6 +60917,7 @@
     // in-doc Quiz Result card. Applied to the editor AFTER tryTopicTemplate so
     // the card survives the MSU template enforcer. Null when no result yet.
     let _pendingQuizResult = null;
+    let _quizRecorded = false;   // v7.20.636: set on canvas load; see sendCanvasMessage quiz claim
     let _pendingQuizResults = null; // v7.19.997: staged-FQ per-stage array from /canvas/load
     // v7.19.575: UNIVERSAL fresh-conversation lever (was FQ-only in v573). The MeowApps AI
     // Engine is the authoritative conversation keeper (keyed by chatId); clearing WML's
@@ -60970,6 +61028,9 @@
             }
             // v7.19.321: capture the persisted Quiz Result for the in-doc card.
             _pendingQuizResult = (res && res.quizResult) ? res.quizResult : null;
+            // v7.20.636: "this graded quiz already has a recorded result" — MSQ/FQ via quizResult,
+            // MSA via its own flag. Gates the controller's claim in sendCanvasMessage.
+            _quizRecorded = !!(res && (res.quizRecorded || res.quizResult));
             // v7.19.997: staged FQ — capture the per-stage array so EVERY stage's card
             // re-projects on load (one card above each stage), not just the latest.
             _pendingQuizResults = (res && Array.isArray(res.quizResults) && res.quizResults.length) ? res.quizResults : null;

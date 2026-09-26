@@ -48,6 +48,9 @@ class SWML_REST_API {
         'taste_of_honey'        => 'a_taste_of_honey',
         'merchant_venice'       => 'merchant_of_venice',
         'curious_incident_play' => 'curious_incident',
+        // v7.20.636: the AIC mark-scheme quiz + assessment banks are filed under the title
+        // form. No meta key uses it (prod sweep 2026-09-26), so this only makes them reachable.
+        'an_inspector_calls'    => 'inspector_calls',
     ];
 
     /**
@@ -3033,6 +3036,7 @@ class SWML_REST_API {
         // QUIZ identity (course text + lesson topic), which the client passes
         // as quiz=foundational + quiz_text/quiz_topic on FQ loads.
         $quiz_result  = null;
+        $quiz_recorded = null;  // v7.20.636: MSA-only "a result exists" flag
         $quiz_results = null; // v7.19.997: per-stage FQ results (one card per stage)
         $quiz_hint    = sanitize_text_field($request->get_param('quiz') ?? '');
         if (class_exists('SWML_Quiz_Engine')) {
@@ -3044,6 +3048,13 @@ class SWML_REST_API {
                 if ($suffix === '_fq') {
                     $quiz_results = SWML_Quiz_Engine::instance()->get_persisted_results_fq($user_id, $board, $text);
                 }
+            } elseif ($suffix === '_ms') {
+                // v7.20.636: has the MSA Final been RECORDED? A flag, not quizResult — the live
+                // finish writes a richer card that a load-time re-apply must not replace. The
+                // controller only claims the turn for a graded quiz that is NOT yet recorded.
+                $quiz_recorded = (bool) SWML_Quiz_Engine::instance()->get_persisted_result(
+                    $user_id, $board, $text, $topic_number, $attempt, 'mark_scheme_assessment'
+                );
             } elseif ($suffix === '_cn' && $quiz_hint === 'foundational') {
                 $q_text  = $this->normalize_text_slug(sanitize_text_field($request->get_param('quiz_text') ?? ''));
                 $q_topic = absint($request->get_param('quiz_topic') ?? 0);
@@ -3064,6 +3075,7 @@ class SWML_REST_API {
             // v7.19.992: scattered-siblings merge sidecar (poetry-CN family; [] otherwise).
             'mergeFields'         => $merge_fields,
             'quizResult'          => $quiz_result,
+            'quizRecorded'        => ($quiz_recorded === null) ? !empty($quiz_result) : $quiz_recorded,
             'quizResults'         => $quiz_results, // v7.19.997: per-stage FQ array (null elsewhere)
             // v7.19.263: drives the header "previous stage updated" dot.
             'pullUpdateAvailable' => $this->pull_update_available($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id),

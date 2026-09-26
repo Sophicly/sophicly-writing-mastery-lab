@@ -128,6 +128,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/mc-gate-harness.js || fail=1
 fi
 
+# v7.20.636: a graded quiz is scored ONLY when its bank is reachable from the slug the live lesson
+# sends, and the controller must never hand a graded quiz to the unscored AI (AIC finals, prod
+# 2026-09-26: bank filed as an_inspector_calls.md, lessons send inspector_calls). Fires on any bank
+# file, the resolver, the alias registry or the controller. Mutation-proven at .636.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACMDR 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|class-quiz-bank\.php|class-rest-api\.php|protocols/shared/(mark-scheme-quiz|mark-scheme-assessment|foundational-quiz)/|quiz-bank-reach-harness\.js'; then
+  node bin/quiz-bank-reach-harness.js >/tmp/quiz-bank-reach.out 2>&1 || { cat /tmp/quiz-bank-reach.out; fail=1; }
+  grep -E '^(✓|✗) quiz-bank-reach' /tmp/quiz-bank-reach.out
+fi
+
 # v7.20.252 (Fable F1): the JS build-stamp (frontend/wml-core.js WML_BUILD, logged on load for
 # stale-client diagnosis) must equal the plugin version, or the console log lies about freshness.
 JS_BUILD=$(grep -oE "var WML_BUILD = '[^']+'" frontend/wml-core.js 2>/dev/null | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")

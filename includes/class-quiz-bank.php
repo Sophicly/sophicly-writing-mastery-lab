@@ -77,7 +77,37 @@ class SWML_Quiz_Bank {
     }
 
     public static function parse_sections_fq($text) {
-        return self::parse_file(self::fq_dir() . sanitize_file_name((string) $text) . '.md');
+        foreach (self::slug_family($text) as $slug) {
+            $path = self::fq_dir() . $slug . '.md';
+            if (file_exists($path)) return self::parse_file($path);
+        }
+        return [];
+    }
+
+    /**
+     * v7.20.636 — THE slug family every bank resolver walks: the slug as sent, its canonical
+     * form, and every alias that canonicalises to the same text. A bank file named by ANY
+     * member is found from ANY member.
+     *
+     * ROOT CAUSE IT FIXES (measured on prod 2026-09-26): the live An Inspector Calls lessons
+     * send `inspector_calls` (canonical — the form every student's meta key uses) while its
+     * mark-scheme QUIZ and ASSESSMENT banks were authored as `an_inspector_calls.md`. Each
+     * resolver tried only {slug, canonical(slug)}, so both returned 0 questions, the
+     * deterministic controller never started, and every student's answers went to the
+     * unscored AI narration instead. Every AIC final ever sat (1392, 1363 ×2, 1264) recorded
+     * no grade. Walking the whole family makes a bank reachable whichever form it is filed
+     * under — one ladder, shared by MSQ, MSA and FQ.
+     */
+    public static function slug_family($text) {
+        $text = (string) $text;
+        if ($text === '') return [];
+        $aliases = class_exists('SWML_REST_API') ? SWML_REST_API::slug_aliases() : [];
+        $canon   = $aliases[$text] ?? $text;
+        $family  = [$text, $canon];
+        foreach ($aliases as $alias => $target) {
+            if ($target === $canon) $family[] = $alias;
+        }
+        return array_values(array_unique(array_filter(array_map('sanitize_file_name', $family))));
     }
 
     /**
@@ -360,6 +390,13 @@ class SWML_Quiz_Bank {
                 return self::pick_from_pool($tpool, 'msq:' . sanitize_key((string) $text) . ':' . sanitize_key($board), $n);
             }
         }
+        // v7.20.636: the generic bank is chosen by THE one family resolver (text first, then
+        // subject), never the raw subject. The AIC lessons send subject "20th_century", which is
+        // a course category, not a bank name — the raw lookup found nothing (measured, prod).
+        if (!self::parse_sections($subject) && class_exists('SWML_Protocol_Router')) {
+            $fam = SWML_Protocol_Router::resolve_mark_scheme_family($subject, $text);
+            if ($fam) $subject = $fam;
+        }
         $pool = self::questions_for($subject, $board);
         if (empty($pool)) return [];
         // v7.19.964 (Neil — "what about ALL the other texts?"): the engine already scales to every
@@ -383,15 +420,9 @@ class SWML_Quiz_Bank {
     public static function parse_sections_text($text) {
         $text = (string) $text;
         if ($text === '') return [];
-        $aliases = class_exists('SWML_REST_API') ? SWML_REST_API::slug_aliases() : [];
-        $canon   = $aliases[$text] ?? $text;
-        $slugs = array_values(array_unique(array_filter([
-            sanitize_file_name($text),
-            sanitize_file_name($text) . '_poetry',
-            sanitize_file_name($canon),
-            sanitize_file_name($canon) . '_poetry',
-        ])));
-        foreach ($slugs as $slug) {
+        $slugs = [];
+        foreach (self::slug_family($text) as $f) { $slugs[] = $f; $slugs[] = $f . '_poetry'; }
+        foreach (array_values(array_unique($slugs)) as $slug) {
             if ($slug === '') continue;
             $path = self::dir() . $slug . '.md';
             if (file_exists($path)) return self::parse_file($path);
@@ -543,7 +574,7 @@ class SWML_Quiz_Bank {
         // to the canonical basename via the shared subject_map, so state.text drift
         // still finds the bank instead of silently falling back to the legacy AI MSA
         // (Reeham AQA Lang P1, 2026-06-30 — only romeo_and_juliet.md existed). (v7.19.781)
-        $candidates = [sanitize_file_name((string) $text)];
+        $candidates = self::slug_family($text);   // v7.20.636: every form of the text (was: the literal slug only)
         if (isset(self::$subject_map[$text])) {
             $candidates[] = preg_replace('/\.md$/', '', self::$subject_map[$text]);
         }
