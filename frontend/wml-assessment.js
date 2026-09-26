@@ -20211,7 +20211,8 @@
             // v7.20.636: a failed load always leaves the student a control (§4d liveness) and
             // keeps the controller as the owner of the next turn (see loadFailed).
             function _loadFailed(code) {
-                loadFailed = true;
+                // No round is live (the MSA grade ask had set active=true) — the retry paths key on !active.
+                loadFailed = true; active = false;
                 console.warn('WML quiz: questions did not load (' + (code || 'unknown') + ') — type=' + quizType
                     + ' text=' + (state.text || '') + ' board=' + (state.board || '') + ' subject=' + (state.subject || '')
                     + '. The controller keeps the turn; nothing is sent to the AI.');
