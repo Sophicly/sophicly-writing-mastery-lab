@@ -114,7 +114,29 @@ ok(d.block === false, 'an unrecognised mode is OFF (fail-open)');
 console.log('\n5. "session finished" is the strict code word, never the loose detector');
 const sf = js.match(/function _mcGateSessionFinished\(\)\s*\{([\s\S]*?)\n    \}/);
 ok(!!sf, '_mcGateSessionFinished exists');
-ok(sf && /\\\[ASSESSMENT_COMPLETE\\\]/.test(sf[1]), 'it keys on [ASSESSMENT_COMPLETE] only');
+ok(sf && /sessionFinishedHere\(/.test(sf[1]), 'it asks core whether THIS lesson saw its own [ASSESSMENT_COMPLETE] (v7.20.637)');
+ok(sf && !/_phaseMarkedComplete/.test(sf[1]), 'it does NOT read _phaseMarkedComplete — that is an EARLIER attempt\'s database record (1355, staging 2026-09-26)');
+const ot = core.match(/function _observeTurn\(entry\)\s*\{([\s\S]*?)\n    \}/);
+ok(ot && /\\\[ASSESSMENT_COMPLETE\\\]/.test(ot[1]), 'core observes the strict [ASSESSMENT_COMPLETE] code word only');
+ok(/function recordTurn\([^)]*\)\s*\{\s*_observeTurn\(entry\)/.test(core) && /function rehydrateTurn\([^)]*\)\s*\{\s*_observeTurn\(entry\)/.test(core), 'every turn written OR restored is observed (recordTurn + rehydrateTurn)');
+// Behaviour, not presence: run core's own functions against a fake state.
+{
+    const grab = (n) => (core.match(new RegExp('function ' + n + '\\([^)]*\\)\\s*\\{[\\s\\S]*?\\n    \\}')) || [''])[0];
+    const src = ['_lessonFinishKey', '_observeTurn', 'markSessionFinished', 'clearSessionFinished', 'sessionFinishedHere'].map(grab).join('\n');
+    const st = { task: 'assessment', board: 'aqa', text: 'aqa_lang_paper_1', topicNumber: 1, phase: 'initial', attempt: 7, _phaseMarkedComplete: true };
+    const api = new Function('state', src + '; return { _observeTurn, markSessionFinished, clearSessionFinished, sessionFinishedHere };')(st);
+    ok(api.sessionFinishedHere() === false, 'BEHAVIOUR: an earlier attempt complete in the database (phase flag true) + no code word = NOT finished');
+    api._observeTurn({ role: 'assistant', content: 'Q2 Total: 5/8 … Grade 6' });
+    ok(api.sessionFinishedHere() === false, 'BEHAVIOUR: a per-question total is not the end');
+    api._observeTurn({ role: 'assistant', content: 'Final summary … [ASSESSMENT_COMPLETE]' });
+    ok(api.sessionFinishedHere() === true, 'BEHAVIOUR: this lesson\'s own [ASSESSMENT_COMPLETE] = finished');
+    st.attempt = 8;
+    ok(api.sessionFinishedHere() === false, 'BEHAVIOUR: a NEW attempt does not inherit the last one\'s "finished"');
+    st.attempt = 7; st.text = 'aqa_lang_paper_2';
+    ok(api.sessionFinishedHere() === false, 'BEHAVIOUR: another lesson (single-page navigation) does not inherit it');
+    st.text = 'aqa_lang_paper_1'; api.clearSessionFinished();
+    ok(api.sessionFinishedHere() === false, 'BEHAVIOUR: a cleared chat is a fresh attempt');
+}
 ok(sf && !/detectAssessmentStep/.test(sf[1]), 'it does NOT call detectAssessmentStep (which reads "Q2 Total: 5/8 … Grade 6" as the end)');
 // Prove the trap is real, so the check above is not decorative: Annaya's Q2 closing line.
 const das = core.match(/function detectAssessmentStep\(replyText\)\s*\{([\s\S]*?)\n    \}/);

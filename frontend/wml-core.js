@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.636';
+var WML_BUILD = '7.20.637';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -4157,7 +4157,28 @@ window.WML = (function() {
      * @param {Object} opts     { durable: boolean (REQUIRED), why: string (REQUIRED) }
      * @returns {Object|null}   the entry when stored, null when deliberately not stored
      */
+    // v7.20.637 — "has THIS lesson's assessment finished?" (the Mark Complete gate's
+    // sessionFinished). Observed here because every turn, live or restored, passes through
+    // recordTurn / rehydrateTurn — whichever history array holds it. Keyed to the lesson's
+    // identity so a single-page navigation can never carry one lesson's "finished" into another.
+    // It does NOT read the database's phase record: that marks a PREVIOUS attempt complete, and
+    // reading it let an unfinished re-sit through the gate (measured on staging, 2026-09-26).
+    function _lessonFinishKey() {
+        return [state.task, state.board, state.text, state.topicNumber || 0, state.phase || '', state.attempt || 1].join('|');
+    }
+    function _observeTurn(entry) {
+        try {
+            if (entry && entry.role === 'assistant' && /\[ASSESSMENT_COMPLETE\]/i.test(String(entry.content || ''))) {
+                state._assessFinishedKey = _lessonFinishKey();
+            }
+        } catch (e) { /* observation only — never blocks a write */ }
+    }
+    function markSessionFinished() { state._assessFinishedKey = _lessonFinishKey(); }
+    function clearSessionFinished() { state._assessFinishedKey = ''; }
+    function sessionFinishedHere() { return !!state._assessFinishedKey && state._assessFinishedKey === _lessonFinishKey(); }
+
     function recordTurn(history, entry, opts) {
+        _observeTurn(entry);
         const o = opts || {};
         const label = (entry && entry.role) || 'turn';
 
@@ -4208,6 +4229,7 @@ window.WML = (function() {
      * the decision belongs at the site that first wrote the turn.
      */
     function rehydrateTurn(history, entry) {
+        _observeTurn(entry);   // observation only (see _observeTurn) — not a decision
         if (Array.isArray(history) && entry) history.push(entry);
         return entry || null;
     }
@@ -5814,6 +5836,7 @@ window.WML = (function() {
         stripAIInternals, detectAssessmentStep, formatAI, svgifyStatusGlyphs, countWords,
         registerLiveValue, resolveLiveValues,   // v7.20.351 — the fossil cure (see formatAI)
         recordTurn, rehydrateTurn,              // v7.20.352 — the ONLY writers into chat history
+        markSessionFinished, clearSessionFinished, sessionFinishedHere,   // v7.20.637 — the gate's "this attempt finished"
         beginThemeSwap,                         // v7.20.429 — call BEFORE any theme write (#264)
         // v7.19.906: unified micro-progress beat-chip (canvas chat)
         parseProgressBeat, progressChipHTML, withProgressChip, lockIconSVG, setHaloLabel, approvalIconSVG, guideIconSVG, spineIconSVG, phoenixIconHTML, icon, techIcon, ICONS,

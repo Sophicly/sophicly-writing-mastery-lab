@@ -103,6 +103,14 @@ function attachWmlDeps(deps) {
     if (rhIdx < 0) throw new Error('rehydrateTurn not found in wml-core.js — replay restore would pass vacuously');
     const rhEnd = braceSliceFrom(CORE, rhIdx, '{', '}').end;
 
+    // v7.20.637 — recordTurn/rehydrateTurn call _observeTurn (the Mark Complete gate's "this
+    // attempt finished"). Sliced, never stubbed, for the same reason as recordTurn itself.
+    const obIdx = CORE.indexOf('function _lessonFinishKey()');
+    if (obIdx < 0) throw new Error('_lessonFinishKey not found in wml-core.js — recordTurn would reference an undefined observer');
+    const obLast = CORE.indexOf('function sessionFinishedHere()', obIdx);
+    if (obLast < 0) throw new Error('sessionFinishedHere not found in wml-core.js');
+    const obEnd = braceSliceFrom(CORE, obLast, '{', '}').end;
+
     const psIdx = CORE.indexOf('const PRESENT_STATE_RE =');
     if (psIdx < 0) throw new Error('PRESENT_STATE_RE not found in wml-core.js');
     const psEnd = CORE.indexOf('\n', psIdx);
@@ -119,8 +127,9 @@ function attachWmlDeps(deps) {
     const icoEnd = braceSliceFrom(CORE, icoFnIdx, '{', '}').end;
 
     // eslint-disable-next-line no-new-func
-    const mk = new Function('console', [
+    const mk = new Function('console', 'state', [
         'const _turnWarned = Object.create(null);',
+        CORE.slice(obIdx, obEnd),
         CORE.slice(psIdx, psEnd),
         CORE.slice(rtIdx, rtEnd),
         CORE.slice(rhIdx, rhEnd),
@@ -131,7 +140,7 @@ function attachWmlDeps(deps) {
         'return { recordTurn: recordTurn, rehydrateTurn: rehydrateTurn, icon: icon, ICONS: ICONS, phoenixIconHTML: phoenixIconHTML };',
     ].join('\n'));
 
-    const real = mk(deps.console || console);
+    const real = mk(deps.console || console, deps.state || {});
 
     // ⭐ IN A RIG, A CONTRACT VIOLATION IS FATAL — in production it is not.
     //

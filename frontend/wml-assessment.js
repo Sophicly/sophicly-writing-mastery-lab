@@ -15288,20 +15288,19 @@
     // (857's, with [ASSESSMENT_COMPLETE] in its stored chat) read `false` from the registered
     // chat-shell history alone — so neither signal is trusted as the only one.
     function _mcGateSessionFinished() {
-        if (state._phaseMarkedComplete === true) return true;
-        const h = (_chatShell && _chatShell.history) || [];
-        for (let i = h.length - 1; i >= 0; i--) {
-            const m = h[i];
-            if (m && m.role === 'assistant' && /\[ASSESSMENT_COMPLETE\]/i.test(String(m.content || ''))) return true;
-        }
-        return false;
+        // v7.20.637: THIS attempt's own [ASSESSMENT_COMPLETE] (observed on every turn written or
+        // restored, keyed to the lesson) or this page committing the grade. Never
+        // the phase-marked-complete flag — it means "the database has an EARLIER attempt
+        // complete", and it let an unfinished re-sit through (1355 on staging: attempt 6 was
+        // complete, the current attempt had Q3–Q5 unmarked, the gate read it as finished).
+        return !!(WML.sessionFinishedHere && WML.sessionFinishedHere());
     }
     // Read-only instrument (root §19): what the gate's "session finished" read actually sees.
     function _mcGateDebug() {
         const h = (_chatShell && _chatShell.history) || [];
         let marker = -1;
         for (let i = 0; i < h.length; i++) if (h[i] && /\[ASSESSMENT_COMPLETE\]/i.test(String(h[i].content || ''))) { marker = i; break; }
-        return { shellRegistered: !!_chatShell, shellHistoryLen: h.length, markerAt: marker, phaseMarked: state._phaseMarkedComplete === true };
+        return { shellRegistered: !!_chatShell, shellHistoryLen: h.length, markerAt: marker, phaseMarked: state._phaseMarkedComplete === true, finishedHere: !!(WML.sessionFinishedHere && WML.sessionFinishedHere()), finishedKey: state._assessFinishedKey || '' };
     }
     // Mark-bearing feedback boxes still reading "(— / N)" — the questions not marked yet. From the
     // ProseMirror doc (the stored truth), never from what happens to be painted.
@@ -16778,6 +16777,7 @@
                         chatMessages.innerHTML = '';
                         state.plan = {};
                         state._phaseMarkedComplete = false;
+                        try { WML.clearSessionFinished(); } catch (_) {}   // v7.20.637: a cleared chat is a fresh attempt
                         // v7.19.774: a fresh assessment chat must reset the Protocol Progress
                         // sidebar — which is content-gated on the doc's marks, so we clear the
                         // marking output (feedback boxes + Score Summary readout + predictions),
@@ -40482,6 +40482,7 @@
                                         chatMessages.innerHTML = '';
                                         state.plan = {};
                                         state._phaseMarkedComplete = false;
+                                        try { WML.clearSessionFinished(); } catch (_) {}   // v7.20.637: a cleared chat is a fresh attempt
                                         // v7.19.3: preserve state.step for mark_scheme_unit (bridge dispatch
                                         // 1=Quiz / 2=FYW). See twin guard at L2211.
                                         if (state.task !== 'mark_scheme_unit') state.step = 1;
@@ -51261,6 +51262,7 @@
                 if (res && res.success) {
                     state._phaseCommitted = true;
                     state._phaseMarkedComplete = true;
+                    try { WML.markSessionFinished(); } catch (_) {}   // v7.20.637: the gate's "this attempt finished"
                     console.log('WML: assessment auto-committed — grade=' + payload.grade + ' total=' + payload.total_score + ' attempt=' + payload.attempt_number + ' phase=' + phase);
                 } else {
                     console.warn('WML: assessment auto-commit failed (retries on next recalc)', res);
