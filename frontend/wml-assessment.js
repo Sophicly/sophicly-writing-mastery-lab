@@ -18984,10 +18984,15 @@
                             // [ASSESSMENT_COMPLETE] marker (protocol emits it ONLY after the final question)
                             // is the sole completion authority \u2014 mirroring how the quiz tracker trusts
                             // "Quiz Complete". Literature is untouched (single essay + server state machine).
-                            // Scoped to AQA Language for now: only AQA P1+P2 protocols emit the
-                            // whole-paper [ASSESSMENT_COMPLETE] marker. Gating other boards before
-                            // their protocols emit it would leave them unable to ever complete.
-                            const _isLangPaper = !!(WML && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject() && (state.board || '').toLowerCase() === 'aqa');
+                            // Scoped to papers whose protocol EMITS the whole-paper [ASSESSMENT_COMPLETE]
+                            // marker — gating a paper that cannot emit it would leave it unable to ever
+                            // complete. v7.20.642 (#620): that set is DERIVED server-side from the
+                            // manifests (swmlConfig.assessMarkerPapers, "board/languageN"); it was
+                            // `board === 'aqa'`, which ended the IGCSE Lang P2 assessment after Q1.
+                            const _markerPaperKey = String(state.board || '').toLowerCase().replace(/_/g, '-') + '/language'
+                                + ((String(state.subject || '').toLowerCase().match(/^lang(?:uage)?[_-]?(?:p|paper)?[_-]?([12])$/) || [])[1] || '');
+                            const _isLangPaper = !!(WML && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject()
+                                && ((window.swmlConfig && window.swmlConfig.assessMarkerPapers) || []).indexOf(_markerPaperKey) !== -1);
                             const _hasCompleteMarker = /\[ASSESSMENT_COMPLETE\]/i.test(res.reply);
                             if (_isLangPaper && !_hasCompleteMarker && (detected.step >= 8 || detected.isComplete)) {
                                 detected.step = 0;          // ignore the keyword-only step-8 false positive

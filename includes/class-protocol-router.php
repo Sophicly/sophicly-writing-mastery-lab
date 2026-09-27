@@ -5635,6 +5635,36 @@ TEMPLATE;
         'multiple_choice', 'retrieval', 'short_analysis', 'standard', 'thesis_only',
     ];
 
+    /**
+     * v7.20.642 (FIXLIST #620): which LANGUAGE papers' assessment protocols emit the whole-paper
+     * [ASSESSMENT_COMPLETE] code word — DERIVED from the manifests, never a board list. The client
+     * holds back keyword-only "complete" signals (Total + Grade after every question) ONLY for
+     * these papers; a paper whose protocol cannot emit the code word must keep the keyword
+     * fallback or it could never complete. Was `state.board === 'aqa'`, which ended the IGCSE
+     * Lang P2 assessment after Q1 (measured on staging). A new port opts in by emitting the word.
+     * Returns ["aqa/language1", …] — board slug / manifest group.
+     */
+    public static function assessment_marker_papers() {
+        static $out = null;
+        if ($out !== null) return $out;
+        $out = [];
+        $root = plugin_dir_path(dirname(__FILE__)) . 'protocols/';
+        foreach ((array) glob($root . '*/language*/manifest.json') as $mf) {
+            $m = json_decode((string) file_get_contents($mf), true);
+            $files = $m['assessment']['always'] ?? [];
+            if (!is_array($files) || !$files) continue;
+            $base = dirname($mf);
+            foreach ($files as $file) {
+                $p = file_exists($base . '/' . $file) ? $base . '/' . $file : $root . 'shared/' . $file;
+                if (file_exists($p) && strpos((string) file_get_contents($p), '[ASSESSMENT_COMPLETE]') !== false) {
+                    $out[] = basename(dirname($base)) . '/' . basename($base);
+                    break;
+                }
+            }
+        }
+        return $out;
+    }
+
     public function build_task_caps() {
         $marking_flow_tasks = ['assessment', 'redraft_assessment', 'feedback_discussion'];
         // assessmentSections: does migrateDocument inject the 5 post-assessment
