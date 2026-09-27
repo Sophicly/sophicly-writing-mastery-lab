@@ -731,6 +731,215 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **AO:** AO1
     * **WhyWrong:** Assuming both texts are unseen ignores the prepared Anthology text you study in advance.
 
+<!-- Questions 23-44 moved here 2026-09-27 from mark-scheme-quiz/language2.md, where they sat under a "Spec A Paper 1" heading and were being served to Paper 2 students (audit D2). Content unchanged; renumbered so ids stay unique within this section. -->
+
+23. **Type: Fill-in-the-Blank \[Tests AO3 Knowledge\]**
+   * **Question:** On Spec A's comparison question (Q5, AO3, 22 marks), Level 5 rewards a response that 'considers a \[BLANK\] and comprehensive range of comparisons between the texts'. What word completes this descriptor?
+   * **Answer:** varied
+   * **Feedback:** ✓ Correct. Spec A's AO3 ladder climbs by the RANGE of comparisons: obvious (Level 2), a range (Level 3), a wide range (Level 4), and 'a *varied* and comprehensive range of comparisons between the texts' at Level 5 — with analysis of ideas and perspectives and discriminating, balanced references.
+   * **AO:** AO3
+   * **WhyWrong:** Words like 'analytical' or 'integrated' sound top-band, but Spec A's Level 5 comparison phrase is a VARIED and comprehensive range of comparisons — 'analysis' names the second bullet (analysis of ideas and perspectives), not the comparison descriptor itself.
+
+24. **Type: MCQ \[Tests AO1 Application\]**
+   * **Question:** In IGCSE Spec A, which AO number assesses writing content/organisation?
+   * **Options:** A) AO3, B) AO4, C) AO5, D) AO6.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. In Spec A the writing content and communication sits under AO4 and technical accuracy under AO5 — different numbers from GCSE, where those are AO5 and AO6.
+   * **AO:** AO5
+   * **Why A:** AO3 is the comparison objective in Spec A — picking it confuses the reading AOs with the writing AOs.
+   * **Why C:** AO5 is the GCSE habit answer — but in Spec A's numbering, AO5 is technical accuracy, and the content/organisation marks sit under AO4.
+   * **Why D:** Spec A has no AO6 at all — carrying the GCSE label across specs means chasing criteria that do not exist on this paper.
+   * **Stretch (unscored):** Why remember that IGCSE numbers the AOs differently? Spec A AO4 = what GCSE calls AO5 (content); Spec A AO5 = GCSE's AO6 (technical). Mixing them up means chasing the wrong criteria.
+
+25. **Type: MCQ \[Tests AO2 Knowledge\]**
+   * **Question:** A student analysing non-fiction writes: "The writer uses statistics about refugee numbers." Thinking about increasing depth as a ladder — Identify → Comment → Explain → Explore → Analyse — what level is this?
+   * **Options:** A) Level 1 - Identifies, B) Level 2 - Comments, C) Level 3 - Explains, D) Level 4 - Explores.
+   * **Correct:** A
+   * **Feedback:** ✓ Correct. This only *identifies* a technique — no comment on effect, no explanation. It sits at the bottom of the progression.
+   * **AO:** AO2
+   * **Why B:** Commenting requires saying something about the effect — this sentence names the statistics but never tells us what they do to the reader, so it has not yet commented.
+   * **Why C:** Explaining means showing HOW the technique works — a bare statement that statistics exist is two rungs below that.
+   * **Why D:** Exploring develops implications and connections — mistaking identification for exploration shows how easily naming a device feels like analysis when no analysis has happened.
+
+26. **Type: MCQ \[Tests AO3 Application\]**
+   * **Question:** What does 'discriminating references' mean in IGCSE Spec A mark schemes?
+   * **Options:** A) Using lots of quotations, B) Choosing quotations that discriminate against others, C) Selecting the most precise and powerful evidence, D) Only using short quotations.
+   * **Correct:** C
+   * **Feedback:** ✓ Correct. 'Discriminating' means well-judged selection — choosing the most precise, powerful evidence, not the most or the shortest.
+   * **AO:** AO1
+   * **Why A:** Quantity is the classic misreading — 'discriminating' praises the JUDGEMENT behind each choice of reference, and piles of quotations usually show the opposite.
+   * **Why B:** This takes 'discriminating' in its everyday negative sense — in mark schemes it is a compliment meaning carefully selective, nothing to do with unfairness.
+   * **Why D:** Short quotations are often a good habit, but length is not the criterion — a well-judged longer reference can still be discriminating if it is the most telling evidence.
+
+27. **Type: MCQ \[Tests AO5 Knowledge\]**
+   * **Question:** A student comparing two non-fiction texts writes one paragraph about each technique in Text A, then one paragraph about each technique in Text B, then a conclusion comparing them. Using the five-level system, maximum achievable level?
+   * **Options:** A) Level 2, B) Level 3, C) Level 4, D) Level 5.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Handling each text in a separate block, with comparison left to the conclusion, keeps it in the middle bands — the higher levels need comparison woven throughout.
+   * **AO:** AO3
+   * **Why A:** Level 2 undervalues the response — covering both texts with a comparative conclusion is more than 'straightforward' points, even if the structure limits it.
+   * **Why C:** The comparative conclusion makes Level 4 look close, but 'thorough, integrated' means weaving the texts together throughout, not saving the comparison for the end.
+   * **Why D:** Level 5 demands perceptive, analytical comparison sustained across the response — block-by-block treatment is structurally the opposite of that.
+   * **Stretch (unscored):** What restructuring reaches Level 4-5? Integrate throughout — discuss both texts in each paragraph, showing how their different techniques create different effects on the same topic.
+
+28. **Type: MCQ \[Tests AO2 Application\]**
+   * **Question:** What type of writing is assessed in Paper 1 Section B?
+   * **Options:** A) Creative/descriptive writing, B) Transactional writing (article, letter, speech, etc.), C) Commentary on the texts, D) Personal narrative.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Spec A Paper 1 Section B is transactional writing — article, letter, speech and similar real-world forms.
+   * **AO:** AO5
+   * **Why A:** Creative/descriptive writing is Spec A's PAPER 2 writing task — putting it on Paper 1 swaps the two papers round and revises the wrong skills.
+   * **Why C:** Commenting on the texts is a reading skill assessed in Section A — Section B asks you to produce your own piece of writing.
+   * **Why D:** Personal narrative is imaginative writing, which belongs to Paper 2 — Paper 1's Section B wants real-world transactional forms.
+
+29. **Type: MCQ \[Tests AO3 Knowledge\]**
+   * **Question:** "The writer uses emotive language which makes the reader feel sad." Thinking of analytical depth as a ladder (Identify → Comment → Explain → Explore → Analyse), which level does this sentence reach?
+   * **Options:** A) Level 1 - Only identifies, B) Level 2 - Comments on effect, C) Level 3 - Explains clearly, D) Level 4 - Explores thoroughly.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. It names a technique and *comments* on an effect ("feel sad"), but doesn't explain *how* the language produces it — that's Level 2.
+   * **AO:** AO2
+   * **Why A:** The sentence does more than identify — 'makes the reader feel sad' is a comment on effect, however thin, which lifts it one rung above bare naming.
+   * **Why C:** Explaining requires showing HOW the emotive language creates the sadness — this sentence asserts the effect without unpacking the mechanism.
+   * **Why D:** Exploring develops implications across the text — a single vague emotion with no analysis is two rungs short of thorough exploration.
+
+30. **Type: Fill-in-the-Blank \[Tests AO5 Knowledge\]**
+   * **Question:** At Sophicly we picture analytical depth as a ladder: Identify → Comment → \[BLANK\] → Explore → Analyse. What's the missing step?
+   * **Answer:** Explain
+   * **Feedback:** ✓ Correct. The missing rung is *Explain* — after commenting on an effect you explain *how* it works, before going on to explore and analyse. The board doesn't mark this ladder; it rewards the output — perceptive analysis of methods and their effects on the reader.
+   * **AO:** AO2
+   * **WhyWrong:** Guesses like 'describe' or 'evaluate' miss the logic of the ladder — between commenting on an effect and exploring it, you must EXPLAIN how the language produces that effect.
+   * **Stretch (unscored):** Why does this way of thinking help? It's a ladder, not a leap — you can see where you are and what the next step requires.
+
+31. **Type: MCQ \[Tests AO5 Application\]**
+   * **Question:** A transactional writing response (formal letter) uses appropriate formal register throughout but makes no reference to the specific scenario given in the question. Maximum level for AO4 (content)?
+   * **Options:** A) Level 2, B) Level 3, C) Level 4, D) Level 5.
+   * **Correct:** B
+   * **Feedback:** ✓ Correct. Good register alone isn't enough — ignoring the set scenario means the task response is incomplete, which caps AO4 around Level 3.
+   * **AO:** AO5
+   * **Why A:** Level 2 is too low — sustained, appropriate formal register is real craft that keeps the response above 'some adaptation', even with the scenario missing.
+   * **Why C:** The polished register makes Level 4 tempting, but 'secure, well-adapted' writing must engage the actual task — a letter that ignores its scenario is not adapted to it.
+   * **Why D:** The top band requires sophisticated control of content AND purpose — drifting away from the set scenario rules out sophistication at the task level.
+
+32. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** A student's analysis states: "The writer explores how poverty affects children by using the metaphor 'chains of circumstance' which suggests they're trapped by factors beyond their control, linking to the article's wider argument about social mobility." On the depth ladder (Identify → Comment → Explain → Explore → Analyse), what level is this?
+    * **Options:** A) Level 2 - Comments, B) Level 3 - Explains, C) Level 4 - Explores, D) Level 5 - Analyses.
+    * **Correct:** C
+    * **Feedback:** ✓ Correct. It unpacks the metaphor's implication ('trapped') and links it to the wider argument — that's *exploring* connections and implications, Level 4.
+    * **AO:** AO2
+    * **Why A:** Commenting would stop at naming an effect — this sentence goes much further, unpacking the implication and linking it to the article's wider argument.
+    * **Why B:** It does explain, but it does not stop there — the link to the social-mobility argument pushes it beyond clear explanation into exploration of connections.
+    * **Why D:** Calling it Level 5 overshoots — perceptive analysis sustains subtle insight across a response; one strong exploratory sentence is not yet that.
+
+33. **Type: Fill-in-the-Blank \[Tests AO2 Knowledge\]**
+    * **Question:** On Spec A's language question (Q4, AO2), Level 5 (11–12 marks) requires '\[BLANK\] understanding and analysis of language and structure and how these are used by writers to achieve effects'. What word completes it?
+    * **Answer:** Perceptive
+    * **Feedback:** ✓ Correct. The AO2 ladder runs Basic (L1) → Some (L2) → Clear (L3) → Thorough (L4) → Perceptive understanding and analysis (L5). At the top the 'selection of references is discriminating and clarifies the points being made'.
+    * **AO:** AO2
+    * **WhyWrong:** Near-misses like 'Thorough' or 'Clear' name the levels below — Level 4 is 'thorough understanding and exploration', while Level 5 is PERCEPTIVE understanding and analysis.
+
+34. **Type: MCQ \[Tests AO2 Application\]**
+    * **Question:** On the AO2 language question, what lifts a response from Level 3 (5–7) to Level 4 (8–10)?
+    * **Options:** A) Writing about a second text, B) Moving from 'clear understanding and explanation' to 'thorough understanding and exploration' of how language and structure achieve effects, C) Adding a personal opinion, D) Quoting at greater length.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 is 'clear understanding and explanation of language and structure'; Level 4 is 'thorough understanding and exploration', with references that are 'detailed, appropriate and fully support the points being made'.
+    * **AO:** AO2
+    * **Why A:** The AO2 question analyses a single text — comparison across two texts is the separate AO3 question.
+    * **Why C:** Personal opinion is a writing habit — AO2 rewards analysis of the writer's linguistic and structural devices.
+    * **Why D:** Length of quotation is not a criterion; Level 4 references are judged 'detailed, appropriate' and fully supportive, not longer.
+
+35. **Type: MCQ \[Tests AO3 Application\]**
+    * **Question:** On Spec A's 22-mark comparison question, a response develops a range of comparisons across both texts, explaining ideas and perspectives with appropriate references, but is not yet a 'wide' or 'comprehensive' range. Which level fits?
+    * **Options:** A) Level 2 (5–8 marks), B) Level 3 (9–13 marks), C) Level 4 (14–18 marks), D) Level 5 (19–22 marks).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 is 'the response considers a range of comparisons between the texts' with 'explanation of writers' ideas and perspectives' and references 'appropriate and relevant to the points'. A wide range would be Level 4.
+    * **AO:** AO3
+    * **Why A:** Level 2 is 'obvious comparisons between the texts' — a range of developed comparisons sits above that.
+    * **Why C:** Level 4 needs 'a wide range of comparisons' with 'exploration' and references 'balanced across both texts' — beyond a plain range.
+    * **Why D:** Level 5 is 'a varied and comprehensive range' with 'analysis' and discriminating references — the top band.
+
+36. **Type: True/False \[Tests AO3 Application\]**
+    * **Question:** True or False: On Spec A's comparison question, a candidate who considers only ONE text can score no higher than the top of Level 2.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. The mark scheme states 'candidates who have considered only ONE text may only achieve a mark up to the top of Level 2'. Comparison, by definition, needs both texts in play.
+    * **AO:** AO3
+    * **WhyWrong:** Answering False assumes brilliant single-text work can still climb — but with only one text there is nothing to compare, so the scheme caps it at the top of Level 2.
+
+37. **Type: Fill-in-the-Blank \[Tests AO4 Knowledge\]**
+    * **Question:** On Spec A's transactional writing (AO4, Communication), Level 5 (23–27 marks) opens 'Communication is \[BLANK\] and subtle'. What word completes it?
+    * **Answer:** perceptive
+    * **Feedback:** ✓ Correct. AO4 climbs from 'basic' (L1) → 'broadly appropriate' (L2) → 'communicates clearly' (L3) → 'communicates successfully' (L4) → 'communication is perceptive and subtle' (L5), sharply focused on purpose with sophisticated use of form, tone and register.
+    * **AO:** AO4
+    * **WhyWrong:** Guesses like 'successful' or 'clear' name lower bands — 'communicates successfully' is Level 4 and 'communicates clearly' is Level 3; the top band is PERCEPTIVE and subtle.
+
+38. **Type: MCQ \[Tests AO4 Knowledge\]**
+    * **Question:** In Spec A, how is AO4 defined?
+    * **Options:** A) Explore links and connections between writers' ideas and perspectives, B) Communicate effectively and imaginatively, adapting form, tone and register for specific purposes and audiences, C) Write clearly, using a range of vocabulary and sentence structures with accurate spelling, D) Read and understand a variety of texts.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Spec A's AO4 is the WRITING communication objective: 'communicate effectively and imaginatively, adapting form, tone and register of writing for specific purposes and audiences'. Technical accuracy is the separate AO5.
+    * **AO:** AO4
+    * **Why A:** Exploring links and connections is AO3 — the reading comparison objective.
+    * **Why C:** Writing clearly with accurate spelling and punctuation is AO5, the technical-accuracy scale.
+    * **Why D:** Reading and understanding texts is AO1 — the reading objective, not writing communication.
+
+39. **Type: MCQ \[Tests AO5 Knowledge\]**
+    * **Question:** On Spec A's writing task, what distinguishes AO5 Level 5 (16–18) from Level 4 (12–15)?
+    * **Options:** A) Level 5 is simply longer, B) Level 5 'manipulates complex ideas' and 'uses extensive vocabulary strategically', where Level 4 'manages information and ideas' and 'uses a wide, selective vocabulary with only occasional spelling errors', C) Level 5 adds more persuasive devices, D) Level 5 needs no paragraphs.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 4 'manages information and ideas... uses a wide, selective vocabulary with only occasional spelling errors'; Level 5 'manipulates complex ideas... uses extensive vocabulary strategically' and 'punctuates writing with accuracy to aid emphasis and precision'.
+    * **AO:** AO5
+    * **Why A:** Length is not a criterion on the technical-accuracy scale — it measures vocabulary, punctuation and structural control.
+    * **Why C:** Persuasive devices belong to AO4 communication — AO5 is technical accuracy.
+    * **Why D:** Both levels use paragraphing and structural features — Level 5 uses them to 'support coherence and cohesion', not to abandon them.
+
+40. **Type: True/False \[Tests AO5 Knowledge\]**
+    * **Question:** True or False: Spec A's Paper 1 marks writing on AO4 (communication) and AO5 (technical accuracy), and there is no AO6 on this paper.
+    * **Answer:** True
+    * **Feedback:** ✓ Correct. Spec A runs AO1–AO5. Writing communication is AO4 and technical accuracy (vocabulary, sentence structures, paragraphing, spelling, grammar, punctuation) is AO5 — the GCSE labels AO5/AO6 do not apply here.
+    * **AO:** AO5
+    * **WhyWrong:** Answering False usually comes from carrying GCSE's AO6 across — but Spec A has no AO6; its technical-accuracy marks live under AO5.
+
+41. **Type: Select All That Apply \[Tests AO4 Knowledge\]**
+    * **Question:** Which of these belong to Spec A's AO4 Level 5 (23–27 marks) writing descriptor? (Select all that apply)
+    * **Options:** A) Communication is perceptive and subtle, B) Task is sharply focused on purpose and the expectations/requirements of the intended reader, C) Sophisticated use of form, tone and register, D) Uses extensive vocabulary strategically, with rare spelling errors, E) Punctuates writing with accuracy to aid emphasis and precision.
+    * **Correct:** A, B, C
+    * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
+    * **Feedback:** AO4 Level 5 rewards communication that is 'perceptive and subtle', 'sharply focused on purpose' and 'sophisticated use of form, tone and register'. Vocabulary, spelling and punctuation are AO5 technical descriptors on a separate scale.
+    * **AO:** AO4
+    * **Why D:** Extensive vocabulary used strategically is an AO5 technical descriptor, not AO4 communication.
+    * **Why E:** Punctuating to aid emphasis and precision is AO5 wording, marked on the technical-accuracy scale.
+
+42. **Type: MCQ \[Tests AO4 Application\]**
+    * **Question:** A Spec A review communicates clearly with a clear sense of purpose and appropriate use of form, tone and register, but is not yet a secure, fully successful realisation of the task. Which AO4 level fits?
+    * **Options:** A) Level 2 (6–11 marks), B) Level 3 (12–17 marks), C) Level 4 (18–22 marks), D) Level 5 (23–27 marks).
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. Level 3 'communicates clearly', with 'a clear sense of purpose' and 'appropriate use of form, tone and register'. Level 4 would 'communicate successfully' with a 'secure realisation of purpose'.
+    * **AO:** AO4
+    * **Why A:** Level 2 only 'communicates in a broadly appropriate way' with a 'straightforward' use of form — below clear communication.
+    * **Why C:** Level 4 'communicates successfully' with 'effective use of form, tone and register' — a step above clear.
+    * **Why D:** Level 5 is 'perceptive and subtle' communication, 'sharply focused on purpose' — the top band.
+
+43. **Type: MCQ \[Tests AO1 vs AO2 Knowledge\]**
+    * **Question:** In Spec A's Section A, what is the difference between the early short questions and Question 4?
+    * **Options:** A) The early questions are AO1 (read, understand, select and interpret information); Question 4 is AO2 (analyse how writers use linguistic and structural devices), B) The early questions are comparison and Question 4 is synthesis, C) The early questions are writing and Question 4 is reading, D) Both assess AO3 comparison.
+    * **Correct:** A
+    * **Feedback:** ✓ Correct. The short questions are AO1: 'read and understand a variety of texts, selecting and interpreting explicit and implicit information'. Question 4 is AO2: analysing how writers use linguistic and structural devices to achieve effects.
+    * **AO:** AO2
+    * **Why B:** Comparison is AO3 (Question 5), and there is no separate synthesis question in Spec A Paper 1 Section A.
+    * **Why C:** Both are reading questions on the source texts — the writing task is Section B.
+    * **Why D:** Only Question 5 assesses AO3 comparison — the early questions and Question 4 do not.
+
+44. **Type: MCQ \[Tests AO3 Knowledge\]**
+    * **Question:** How does Spec A define AO3, assessed by the 22-mark comparison question?
+    * **Options:** A) Read and understand a variety of texts, B) Explore links and connections between writers' ideas and perspectives, as well as how these are conveyed, C) Communicate effectively and imaginatively for specific purposes and audiences, D) Write clearly with accurate spelling and punctuation.
+    * **Correct:** B
+    * **Feedback:** ✓ Correct. AO3 is 'explore links and connections between writers' ideas and perspectives, as well as how these are conveyed' — comparison of both WHAT the writers think and HOW they convey it, across both texts.
+    * **AO:** AO3
+    * **Why A:** Reading and understanding texts is AO1 — the retrieval objective.
+    * **Why C:** Communicating imaginatively for purpose and audience is AO4 — the writing objective.
+    * **Why D:** Writing clearly with accurate spelling is AO5 — technical accuracy in writing.
+
+---
+
 ### **SECTION D: EDEXCEL IGCSE SPEC B (4EB1)**
 
 1. **Type: MCQ \[Tests Text Comparison\]**  

@@ -57,6 +57,7 @@ const parts = [
   slice('function buildIUMVCCOutlineSection(', '('),
   slice('function _iumvccFieldId(', '('),
   slice('function _iuPoint(', '('),
+  slice('function buildCreativeScenePlan(', '('),
 ];
 
 const captured = [];
@@ -225,6 +226,34 @@ const KNOWN_UNCOVERED = {
     failed = 1;
     console.log('  ❌ STALE KNOWN_UNCOVERED entr(ies) — now covered or gone, delete them: ' + stale.join(', '));
   }
+}
+
+// ── SCENE ROWS (v7.20.642, audit 2026-09-27 D8). Section B creative plans are single-emit
+// @FIELD_COMMITs into plan-scene-{qId}-* rows. They are excluded from the outline cases above, so
+// until now NOTHING compared them to the builder — IGCSE Lang P2 Section B filed nothing at all.
+// Whole-repo: every planning dir that emits a scene marker is checked against the REAL
+// buildCreativeScenePlan(qId) render, both ways (orphan write + unfilled row).
+{
+  const { resolvePlanningDirs, readProtocolDir } = require('./lib/protocol-planning-dirs.js');
+  let checked = 0;
+  for (const d of resolvePlanningDirs(ROOT).dirs) {
+    const text = readProtocolDir(d.dir);
+    const byQ = {};
+    for (const m of text.matchAll(/@FIELD_COMMIT\{"field":"(plan-scene-(Q\d)-[a-z]+)"\}/g)) {
+      (byQ[m[2]] = byQ[m[2]] || new Set()).add(m[1]);
+    }
+    for (const [q, tags] of Object.entries(byQ)) {
+      checked++;
+      const boxes = new Set(renderIds(() => sandbox.buildCreativeScenePlan(q)));
+      const orphans = [...tags].filter(t => !boxes.has(t));
+      const blank = [...boxes].filter(b => !tags.has(b));
+      if (orphans.length || blank.length) {
+        failed = 1;
+        console.log(`  ❌ SCENE ROWS ${d.rel} ${q}: orphan writes [${orphans.join(', ')}] · unfilled rows [${blank.join(', ')}]`);
+      }
+    }
+  }
+  console.log(`— SCENE ROWS: ${checked} protocol question(s) checked against buildCreativeScenePlan.`);
 }
 
 if (failed) {

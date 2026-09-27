@@ -74,16 +74,23 @@ When the doctors came they said she had died of heart disease--of the joy that k
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the extract from *The Story of an Hour* by Kate Chopin.
+Answer the question in this section.
 
-Explore how Chopin presents Mrs Mallard's response to the news of her husband's death.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the extract engages the reader.
+Remind yourself of The Story of an Hour, taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer present Mrs Mallard's response to the news of her husband's death in The Story of an Hour?
+
+In your answer, you should write about:
+
+- Mrs Mallard's thoughts and feelings when she is alone in her room
+
+- how the ending changes the way the reader sees her response
+
+- the use of language and structure.
+
+You should support your answer with close reference to the story, including brief quotations.
 
 [30 marks]
 
@@ -91,15 +98,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe a room in which someone has just received unexpected news. Focus on creating a strong sense of atmosphere and mood.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story about a character who discovers something surprising about themselves. You should consider how to create a vivid and engaging narrative.
+**Question 2:** Write about a time when you, or someone you know, received some unexpected news.
 
-**Option C:** Write a story that ends with the words: "And in that moment, everything changed."
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘A Surprising Discovery’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘Everything changed in that moment.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: a woman standing at an open window, looking out at a spring sky after rain]
+
+[IMAGE — Image 2: a folded note lying on a table beside an untouched cup of tea]
 
 [30 marks]
 
@@ -202,16 +227,23 @@ And put him into bed? Why don't they come?
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the poem *Disabled* by Wilfred Owen.
+Answer the question in this section.
 
-Explore how Owen presents the impact of war on the soldier.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the poem engages the reader.
+Remind yourself of Disabled, taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer present the impact of war on the soldier in Disabled?
+
+In your answer, you should write about:
+
+- the soldier's life before and after he is injured
+
+- how other people react to him
+
+- the use of language and structure.
+
+You should support your answer with close reference to the poem, including brief quotations.
 
 [30 marks]
 
@@ -219,15 +251,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe a place that holds painful memories. Focus on creating a strong sense of mood and atmosphere.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story about someone who is waiting. You should consider how to build tension and engage the reader.
+**Question 2:** Write about a time when you, or someone you know, had to wait for something.
 
-**Option C:** Write a story about a moment when everything changed for a character. You should consider how to create a vivid and engaging narrative.
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘The Place I Remember’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘Nothing would ever be the same again.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: an empty wheelchair beside a park bench at dusk]
+
+[IMAGE — Image 2: a football lying alone on a muddy pitch under floodlights]
 
 [30 marks]
 
@@ -296,16 +346,23 @@ Were not the one dead, turned to their affairs.
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the poem *"Out, Out—"* by Robert Frost.
+Answer the question in this section.
 
-Explore how Frost presents the boy's accident and the response to his death.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the poem engages the reader.
+Remind yourself of "Out, Out—", taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer present the boy's accident and the response to his death in "Out, Out—"?
+
+In your answer, you should write about:
+
+- how the saw and the accident are described
+
+- how the other people in the poem respond to the boy's death
+
+- the use of language and structure.
+
+You should support your answer with close reference to the poem, including brief quotations.
 
 [30 marks]
 
@@ -313,15 +370,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe a scene at the end of a working day. Focus on creating a strong sense of place and atmosphere.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story about a moment that happens too quickly for anyone to prevent. You should consider how to create a vivid and engaging narrative.
+**Question 2:** Write about a time when you, or someone you know, worked hard at a difficult job.
 
-**Option C:** Write a story in which something ordinary suddenly becomes dangerous. You should consider how to build tension and engage the reader.
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘Too Late’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘It happened so quickly.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: a farmyard at sunset with a pile of freshly cut logs]
+
+[IMAGE — Image 2: a quiet country kitchen with supper laid out on the table]
 
 [30 marks]
 
@@ -408,16 +483,23 @@ in the neon bazaar.
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the poem *An Unknown Girl* by Moniza Alvi.
+Answer the question in this section.
 
-Explore how Alvi presents the speaker's experience of cultural connection and identity.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the poem engages the reader.
+Remind yourself of An Unknown Girl, taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer present the speaker's experience of cultural connection and identity in An Unknown Girl?
+
+In your answer, you should write about:
+
+- how the writer describes the unknown girl and the henna
+
+- how the writer presents her feelings about India
+
+- the use of language and structure.
+
+You should support your answer with close reference to the poem, including brief quotations.
 
 [30 marks]
 
@@ -425,15 +507,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe a busy marketplace or bazaar. Focus on creating a vivid sense of place using all the senses.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story about someone who visits a place that feels both familiar and foreign. You should consider how to create a vivid and engaging narrative.
+**Question 2:** Write about a time when you, or someone you know, visited a busy market.
 
-**Option C:** Write a story about a brief encounter with a stranger that leaves a lasting impression.
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘A Brief Encounter’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘I never learned her name.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: a crowded night market lit by neon signs]
+
+[IMAGE — Image 2: a hand decorated with a detailed henna pattern]
 
 [30 marks]
 
@@ -517,16 +617,23 @@ behind AID flour sacks refilled with sand.
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the poem *The Bright Lights of Sarajevo* by Tony Harrison.
+Answer the question in this section.
 
-Explore how Harrison presents life and love in war-torn Sarajevo.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the poem engages the reader.
+Remind yourself of The Bright Lights of Sarajevo, taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer present life and love in war-torn Sarajevo in The Bright Lights of Sarajevo?
+
+In your answer, you should write about:
+
+- the living conditions of the people of Sarajevo
+
+- the relationship between the young couple
+
+- the use of language and structure.
+
+You should support your answer with close reference to the poem, including brief quotations.
 
 [30 marks]
 
@@ -534,15 +641,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe a city street at night. Focus on creating a strong sense of mood and atmosphere.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story about two people who meet in difficult or unusual circumstances. You should consider how to create a vivid and engaging narrative.
+**Question 2:** Write about a time when you, or someone you know, met someone new in difficult circumstances.
 
-**Option C:** Write a story in which a character finds beauty in an unexpected place.
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘Beauty in an Unexpected Place’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘The streets were dark, but we were not afraid.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: a candlelit café on a dark city street]
+
+[IMAGE — Image 2: two young people walking hand in hand past a damaged building at night]
 
 [30 marks]
 
@@ -625,16 +750,23 @@ I rise.
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the poem *Still I Rise* by Maya Angelou.
+Answer the question in this section.
 
-Explore how Angelou presents resilience and defiance in the face of oppression.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the poem engages the reader.
+Remind yourself of Still I Rise, taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer present resilience and defiance in the face of oppression in Still I Rise?
+
+In your answer, you should write about:
+
+- how the speaker responds to the people who try to keep her down
+
+- how the speaker feels about herself
+
+- the use of language and structure.
+
+You should support your answer with close reference to the poem, including brief quotations.
 
 [30 marks]
 
@@ -642,15 +774,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe a moment of triumph after a period of difficulty. Focus on creating a strong sense of emotion and atmosphere.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story about a character who refuses to be defeated. You should consider how to create a vivid and engaging narrative.
+**Question 2:** Write about a time when you, or someone you know, refused to give up.
 
-**Option C:** Write a story about someone who stands up for themselves when others expect them to stay silent.
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘Standing Up’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘They expected me to stay silent.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: a runner crossing a finish line with arms raised]
+
+[IMAGE — Image 2: a young woman at a microphone in front of a large crowd]
 
 [30 marks]
 
@@ -869,16 +1019,23 @@ Madame Forestier stopped. 'You mean you bought a diamond necklace to replace min
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the extract from *The Necklace* by Guy de Maupassant.
+Answer the question in this section.
 
-Explore how de Maupassant presents the consequences of vanity and social aspiration.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the extract engages the reader.
+Remind yourself of The Necklace, taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer present the consequences of vanity and social aspiration in The Necklace?
+
+In your answer, you should write about:
+
+- how Madame Loisel is presented before and after the loss of the necklace
+
+- how money and possessions affect the people in the story
+
+- the use of language and structure.
+
+You should support your answer with close reference to the story, including brief quotations.
 
 [30 marks]
 
@@ -886,15 +1043,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe an evening event where appearances matter. Focus on creating a strong sense of mood, setting, and atmosphere.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story with a surprising ending. You should consider how to build suspense and engage the reader.
+**Question 2:** Write about a time when you, or someone you know, borrowed something important.
 
-**Option C:** Write a story about someone whose life is transformed by a single decision.
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘One Decision’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘Nobody knew the truth.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: a sparkling diamond necklace in an open velvet box]
+
+[IMAGE — Image 2: a grand ballroom full of dancers in evening dress]
 
 [30 marks]
 
@@ -1009,16 +1184,23 @@ time is coming.
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the extract from *Significant Cigarettes* (from *The Road Home*) by Rose Tremain.
+Answer the question in this section.
 
-Explore how Tremain presents Lev's experience of leaving his homeland.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the extract engages the reader.
+Remind yourself of Significant Cigarettes, taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer present Lev's experience of leaving his homeland in Significant Cigarettes?
+
+In your answer, you should write about:
+
+- Lev's thoughts and feelings about the home he has left
+
+- how the journey is described
+
+- the use of language and structure.
+
+You should support your answer with close reference to the extract, including brief quotations.
 
 [30 marks]
 
@@ -1026,15 +1208,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe a long journey. Focus on creating a vivid sense of the passing of time and the traveller's thoughts and feelings.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story about someone leaving home to start a new life. You should consider how to create a vivid and engaging narrative.
+**Question 2:** Write about a time when you, or someone you know, left home.
 
-**Option C:** Write a story about a conversation between two strangers that reveals something important about each of them.
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘A New Life’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘The stranger beside me began to talk.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: a coach travelling along a motorway at dawn]
+
+[IMAGE — Image 2: a man looking out of a bus window at fields passing by]
 
 [30 marks]
 
@@ -1104,16 +1304,23 @@ It was Spider who brought me to my senses by scratching a little at my arm and t
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the extract from *Whistle and I'll Come to You* (from *The Woman in Black*) by Susan Hill.
+Answer the question in this section.
 
-Explore how Hill creates a sense of fear and supernatural presence.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the extract engages the reader.
+Remind yourself of Whistle and I'll Come to You, taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer create a sense of fear and supernatural presence in Whistle and I'll Come to You?
+
+In your answer, you should write about:
+
+- the narrator's thoughts and feelings
+
+- how the setting is described
+
+- the use of language and structure.
+
+You should support your answer with close reference to the extract, including brief quotations.
 
 [30 marks]
 
@@ -1121,15 +1328,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe a house during a storm at night. Focus on creating a strong sense of fear and atmosphere.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story about a character who is alone in an unfamiliar place and hears something they cannot explain. You should consider how to build tension and engage the reader.
+**Question 2:** Write about a time when you, or someone you know, felt afraid.
 
-**Option C:** Write a story in which a character becomes convinced they are not alone.
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘Not Alone’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘Then I heard it again.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: an old house on marshland, half hidden in fog]
+
+[IMAGE — Image 2: a single lit window in a dark house during a storm]
 
 [30 marks]
 
@@ -1327,16 +1552,23 @@ Never mind. From then on I could sleep.
 **Marks:** 30 (AO1 12 + AO2 18)
 **AOs:** AO1, AO2
 
-Read the extract from *Night* by Alice Munro.
+Answer the question in this section.
 
-Explore how Munro presents the narrator's experience of sleeplessness and intrusive thoughts.
+You should spend about 45 minutes on this section.
 
-You should consider:
-- the writer's choice of language
-- the writer's use of structure and form
-- how the extract engages the reader.
+Remind yourself of Night, taken from the Pearson Edexcel International GCSE English Anthology.
 
-Support your response with detailed reference to the text.
+How does the writer present the narrator's experience of sleeplessness and intrusive thoughts in Night?
+
+In your answer, you should write about:
+
+- the narrator's thoughts and feelings during the night
+
+- how her father responds when he finds her
+
+- the use of language and structure.
+
+You should support your answer with close reference to the extract, including brief quotations.
 
 [30 marks]
 
@@ -1344,15 +1576,33 @@ Support your response with detailed reference to the text.
 **Marks:** 30 (AO4 18 + AO5 12)
 **AOs:** AO4, AO5
 
-Choose ONE of the following writing tasks. Write between 250-350 words.
+Answer ONE question from this section.
 
-**Option A:** Describe a house and its surroundings in the early hours of the morning. Focus on creating a vivid sense of place and atmosphere.
+You should spend about 45 minutes on your chosen question.
 
-**Option B:** Write a story about a character who cannot sleep and decides to go outside. You should consider how to create a vivid and engaging narrative.
+**Question 2:** Write about a time when you, or someone you know, could not sleep.
 
-**Option C:** Write a story about a conversation between a parent and child that changes something important.
+Your response could be real or imagined.
 
-You will be assessed on the quality of your imaginative skills and the quality of your writing.
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 3:** Write a story with the title ‘An Important Conversation’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+**Question 4:** Look at the images provided.
+
+Write a story that begins ‘The house was silent.’
+
+Your response could be real or imagined. You may wish to base your response on one of the images.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+[IMAGE — Image 1: a quiet farmhouse and fields just before sunrise]
+
+[IMAGE — Image 2: a girl sitting alone on a porch step in the dark]
 
 [30 marks]
 

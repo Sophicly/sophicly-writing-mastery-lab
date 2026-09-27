@@ -17503,9 +17503,20 @@
             'D) Crafting persuasive transactional writing (AO5)',
             'E) Improving my technical accuracy (AO6)',
         ];
+        // v7.20.642 (audit 2026-09-27): Edexcel IGCSE Spec A Paper 2 (4EA1/02) shares the subject
+        // `language_p2` with AQA P2, so it was shown AQA's AO3/AO5/AO6 options — AOs its paper does
+        // not have. Paper-true set, byte-matched to protocols/edexcel-igcse/language2/modules/
+        // assessment-section-a.md step 2b. Twin in the training pipeline (keep IDENTICAL).
+        const PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P2 = [
+            'A) Understanding and interpreting the text’s ideas (AO1)',
+            'B) Analysing how the writer uses language and structure for effect (AO2)',
+            'C) Communicating imaginatively in the right form, tone and register (AO4)',
+            'D) Improving my vocabulary, sentences and technical accuracy (AO5)',
+        ];
+        const _preChainIsIgcse = () => String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse';
         const _preChainIsLang = () => (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject());
         const _preChainIsLangP2 = () => /^(language2|languagep2|languagepaper2|langp2)$/.test(String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
-        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? PRECHAIN_GOAL_OPTIONS_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG) : PRECHAIN_GOAL_OPTIONS);
+        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? (_preChainIsIgcse() ? PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG_P2) : PRECHAIN_GOAL_OPTIONS_LANG) : PRECHAIN_GOAL_OPTIONS);
         function _assessPreChainStage() {
             if (state.task !== 'assessment') return null;
             const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
@@ -41156,9 +41167,17 @@
                             'D) Crafting persuasive transactional writing (AO5)',
                             'E) Improving my technical accuracy (AO6)',
                         ];
+                        // v7.20.642: IGCSE Spec A P2 paper-true set — twin of the main-pipeline block.
+                        const PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P2 = [
+                            'A) Understanding and interpreting the text’s ideas (AO1)',
+                            'B) Analysing how the writer uses language and structure for effect (AO2)',
+                            'C) Communicating imaginatively in the right form, tone and register (AO4)',
+                            'D) Improving my vocabulary, sentences and technical accuracy (AO5)',
+                        ];
+                        const _preChainIsIgcse = () => String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse';
                         const _preChainIsLang = () => (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject());
                         const _preChainIsLangP2 = () => /^(language2|languagep2|languagepaper2|langp2)$/.test(String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
-                        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? PRECHAIN_GOAL_OPTIONS_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG) : PRECHAIN_GOAL_OPTIONS);
+                        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? (_preChainIsIgcse() ? PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG_P2) : PRECHAIN_GOAL_OPTIONS_LANG) : PRECHAIN_GOAL_OPTIONS);
                         function _assessPreChainStage() {
                             if (state.task !== 'assessment') return null;
                             const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
@@ -53093,7 +53112,7 @@
         aqa: { shakespeare: 34, modern_text: 34, '19th_century': 30, poetry_anthology: 30, unseen_poetry: 24, language1: 80, language2: 80, language_p1: 80, language_p2: 80 },
         eduqas: { shakespeare: 40, modern: 40, literature: 40, poetry: 40, unseen: 40, language1: 80, language2: 80, language_c1: 80, language_c2: 80 },
         edexcel: { shakespeare: 40, modern: 40, '19th_century': 40, poetry: 20, unseen: 20, language1: 64, language2: 96, language_p1: 64, language_p2: 96 },
-        'edexcel-igcse': { heritage: 30, literature: 30, modern: 30, 'modern-prose': 40, unseen: 20, language1: 80, language2: 80, language_p1: 80, language_p2: 80 },
+        'edexcel-igcse': { heritage: 30, literature: 30, modern: 30, 'modern-prose': 40, unseen: 20, language1: 90, language2: 60, language_p1: 90, language_p2: 60 },
         ocr: { literature: 40, poetry: 40, language1: 80, language2: 80, language_c1: 80, language_c2: 80 },
         sqa: { critical_reading: 20 },
         ccea: { prose: 40, 'unseen-prose': 20, drama: 40, poetry: 40, language1: 80, language2: 80, language_u1: 80, language_u4: 80 },

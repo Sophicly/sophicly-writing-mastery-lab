@@ -554,187 +554,194 @@ Edexcel marks Paper 2 on a FIVE-level scale. Q3 (AO2, 15) analyses persuasive la
 
 ### **SECTION D: Edexcel IGCSE Spec A (4EA1 — Paper 2)**
 
-Edexcel IGCSE Spec A Paper 2 reads ANTHOLOGY literary non-fiction (autobiography, travel writing, essays) and sets IMAGINATIVE writing, not transactional. Q4 (AO2, 20) analyses literary techniques on a five-level progression Identify → Comment → Explain → Explore → Analyse; Q5 (AO3, 20) compares anthology texts L1 "Simple" → L5 "Perceptive, analytical"; the writing task is a creative response (AO4, 30 content; AO5, 10 technical) — note the different AO numbering. Ranking questions use Spec A's own five-level indicative standards as rungs, one level apart.
+Edexcel IGCSE Spec A (4EA1) Paper 2 is "Poetry and Prose Texts and Imaginative Writing": 1 hour 30 minutes, 60 marks. Section A is ONE question, Question 1 (30 marks): "How does the writer present … in <anthology text>?", with two bullet prompts plus "the use of language and structure", on a poem or prose text from Part 3 of the Anthology, printed in full. It is marked AO1 (12 marks, four levels: 1–3 · 4–6 · 7–9 · 10–12) and AO2 (18 marks, five levels: 1–3 · 4–6 · 7–10 · 11–14 · 15–18). Section B is imaginative writing: the student answers ONE of Questions 2, 3 or 4 (30 marks), marked AO4 (18 marks: 1–3 · 4–7 · 8–11 · 12–15 · 16–18) and AO5 (12 marks: 1–2 · 3–4 · 5–7 · 8–10 · 11–12). Question 4 offers images. There is no AO3, no comparison and no short retrieval question on this paper. Descriptor wording is quoted from the June 2024 mark scheme (4EA1_02_2406_MS); quotations are from "An Unknown Girl" (Moniza Alvi) as printed on the June 2024 paper.
 
-1. **Type: MCQ [Tests AO2]**
-   * **Question:** For Paper 2 Question 4 (AO2 literary analysis, 20 marks), a student writes: "The writer uses a simile 'like a wound'. It is a simile." What is the Spec A ceiling?
-   * **Options:** A) Level 1 — basic identification of the technique, B) Level 2 — a comment on the effect, C) Level 3 — a clear explanation, D) Level 4 — a thorough exploration
-   * **Correct:** A
-   * **AO:** AO2
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO2 Level 1 = "Identifies" — basic identification. Naming the simile and repeating that it is a simile identifies without commenting on its effect. The progression is Identify → Comment → Explain → Explore → Analyse.
-   * **Why B:** Level 2 "Comments" needs a comment on the effect — there is none here.
-   * **Why C:** Level 3 "Explains" needs a clear explanation of how the image works.
-   * **Why D:** Level 4 "Explores" thoroughly explores the effect — well above bare identification.
-
-2. **Type: MCQ [Tests AO2]**
-   * **Question:** A Spec A answer explains a technique's effect clearly and consistently. Which single step lifts it from "Explains" to "Explores"?
-   * **Options:** A) Exploring the effect thoroughly — following its layers rather than stating it once, B) Explaining even more techniques at the same level, C) Comparing the extract with an anthology partner text, D) Identifying additional similes elsewhere in the passage
-   * **Correct:** A
-   * **AO:** AO2
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO2 progression: Identify → Comment → Explain → Explore → Analyse. Level 4 "Explores" is a thorough exploration — following an effect's layers, not restating a single clear explanation at Level 3.
-   * **Why B:** More clear explanations remain Level 3; thorough exploration is the lift.
-   * **Why C:** Comparing an anthology partner is AO3 at Question 5, not single-text AO2.
-   * **Why D:** Identifying more devices is Level 1 identification, not exploration.
-
-3. **Type: Fill [Tests AO2]**
-   * **Question:** The Spec A AO2 progression ends at Level 5 with perceptive, detailed [BLANK] — reading the effect's full significance.
-   * **Answer:** analysis
-   * **AO:** AO2
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO2 Level 5 = perceptive, detailed analysis — the end of the progression Identify → Comment → Explain → Explore → Analyse. Analysis reads the full significance of the writer's method.
-   * **WhyWrong:** The Spec A top word is "analysis" — Level 5 is perceptive, detailed analysis, the summit of the progression.
-
-4. **Type: MCQ [Tests AO3]**
-   * **Question:** For Paper 2 Question 5 (AO3 comparison, 20 marks), a student writes: "Both anthology texts are about journeys and both mention the sea." What is the Spec A ceiling?
-   * **Options:** A) Level 1 — basic similarities and differences, B) Level 2 — straightforward, clear points of comparison, C) Level 3 — developed comparative points, D) Level 4 — thorough, integrated comparison
-   * **Correct:** A
-   * **AO:** AO3
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO3 Level 1 = "Simple" — basic similarities/differences. Noting both are about journeys and both mention the sea is a basic similarity, not yet a point of comparison.
-   * **Why B:** Level 2 "Straightforward" needs clear points of comparison, drawn out rather than merely noted.
-   * **Why C:** Level 3 "Developed" develops comparative points across both texts.
-   * **Why D:** Level 4 "Thorough" is a thorough, integrated comparison.
-
-5. **Type: Fill [Tests AO3]**
-   * **Question:** Spec A AO3 Level 4 is a thorough, [BLANK] comparison — both texts handled together, not in turn.
-   * **Answer:** integrated
-   * **AO:** AO3
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO3 Level 4 = "Thorough" — thorough, integrated comparison. Integration means the two texts are compared together within the paragraph, not analysed one after the other.
-   * **WhyWrong:** The Spec A word is "integrated" — Level 4 handles both texts together in a thorough comparison.
-
-6. **Type: MCQ [Tests AO3]**
-   * **Question:** A Spec A comparison is thorough and integrated. To reach Level 5, what must it become?
-   * **Options:** A) A sophisticated comparative analysis — perceptive and analytical about how the texts differ, B) A longer answer covering more anthology texts, C) A neat paragraph on each text separately, D) A personal statement of which text the student prefers
-   * **Correct:** A
-   * **AO:** AO3
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO3 Level 5 = "Perceptive, analytical" — sophisticated comparative analysis. Above the thorough integration of Level 4, Level 5 analyses perceptively how the texts differ.
-   * **Why B:** More texts do not lift thorough to perceptive; analysis does.
-   * **Why C:** Separate paragraphs undo the integration the top bands require.
-   * **Why D:** A preference is not analytical comparison.
-
-7. **Type: MCQ [Tests AO1]**
-   * **Question:** Spec A Paper 2 reading is anthology literary non-fiction — autobiography, travel writing and essays using literary techniques. Which reading approach fits it?
-   * **Options:** A) Treating the autobiography and travel writing as crafted texts whose literary techniques carry meaning, B) Treating them as neutral information to be summarised, C) Treating them as newspaper articles to be fact-checked, D) Treating them as fiction with invented characters
+1. **Type: MCQ [Tests AO1]**
+   * **Question:** Paper 2 Question 1 is worth 30 marks. How are those marks split between the assessment objectives?
+   * **Options:** A) AO1 12 marks and AO2 18 marks, B) AO1 15 marks and AO2 15 marks, C) AO2 20 marks and AO3 10 marks, D) AO1 10 marks and AO2 20 marks
    * **Correct:** A
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A terminology: "Literary non-fiction" — autobiography, travel writing, essays using literary techniques. The anthology is read as crafted writing whose techniques make meaning, not as neutral information.
-   * **Why B:** Summarising information ignores the literary craft the paper assesses.
-   * **Why C:** The board's feature is a "literary non-fiction focus — not newspaper/magazine style."
-   * **Why D:** Literary non-fiction is real experience crafted with technique, not invented fiction.
+   * **Feedback:** ✓ Correct. The mark scheme gives AO1 (read and understand, 12 marks) and AO2 (analyse language and structure, 18 marks). So analysis of the writer's methods carries the larger share, but understanding the text still earns 12 of the 30.
+   * **Why B:** An even split is a guess. The grids are 12 marks for AO1 and 18 for AO2.
+   * **Why C:** AO3 (comparison) is not assessed on this paper at all. Question 1 is about one text.
+   * **Why D:** AO2 is 18, not 20, and AO1 is 12, not 10.
 
-8. **Type: MCQ [Tests AO4]**
-   * **Question:** Spec A Paper 2 writing (AO4, 30 marks) differs from other boards. What must the student produce?
-   * **Options:** A) Imaginative writing — a creative response, not a transactional or argumentative piece, B) A transactional letter or speech to a specified audience, C) A comparison of the two anthology texts, D) A factual report summarising the sources
+2. **Type: MCQ [Tests AO2]**
+   * **Question:** Which assessment objective is NOT assessed anywhere on Spec A Paper 2?
+   * **Options:** A) AO1 — read and understand a variety of texts, B) AO2 — analyse how writers use linguistic and structural devices, C) AO3 — compare writers' ideas and perspectives, D) AO5 — write clearly, with accurate spelling, grammar and punctuation
+   * **Correct:** C
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Paper 2 assesses AO1 and AO2 in Section A and AO4 and AO5 in Section B. There is no comparison question on this paper, so AO3 is not assessed. Comparison belongs to Paper 1.
+   * **Why A:** AO1 is assessed: it is 12 of the 30 marks on Question 1.
+   * **Why B:** AO2 is assessed: it is 18 of the 30 marks on Question 1.
+   * **Why D:** AO5 is assessed: it is 12 of the 30 marks on the Section B writing.
+
+3. **Type: Fill [Tests AO2]**
+   * **Question:** Complete the AO2 Level 5 (15–18 marks) descriptor from the mark scheme: "[BLANK] analysis of the effects of language and structure."
+   * **Answer:** Perceptive
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Level 5 reads: "Subtle and discriminating selection of language and structural devices", "Discriminating and assured use of textual references" and "Perceptive analysis of the effects of language and structure."
+   * **WhyWrong:** The word is "Perceptive". "Detailed exploration" is Level 4, and "Clear explanations" is Level 3.
+
+4. **Type: Fill [Tests AO1]**
+   * **Question:** Complete the AO1 Level 4 (10–12 marks) descriptor: "[BLANK] understanding of the text."
+   * **Answer:** Sustained
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. The AO1 ladder runs "Basic understanding" (Level 1) → "Some understanding" (Level 2) → "Sound understanding" (Level 3) → "Sustained understanding of the text" (Level 4). Sustained means the understanding holds across the whole answer, not in one good paragraph.
+   * **WhyWrong:** The Level 4 word is "Sustained". "Sound" is Level 3.
+
+5. **Type: MCQ [Tests AO2]**
+   * **Question:** A student writes about "An Unknown Girl": "The poet uses the word 'bazaar'. This is a word from India." Which AO2 level does this reach?
+   * **Options:** A) Level 1 (1–3) — limited identification, with a basic and simple comment, B) Level 2 (4–6) — some developing comment on the effect, C) Level 3 (7–10) — clear explanations of the effects, D) Level 4 (11–14) — detailed exploration of the effects
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. It picks out one word and says where it comes from, but says nothing about what the word does for the reader. That is Level 1: "Limited identification of language and/or structural devices" and "Basic and simple comment on the effect". The mark scheme's own point shows the next step: words like "bazaar", "rupees" and "kameez" show the writer's "acknowledgement of and respect for" the culture.
+   * **Why B:** Level 2 needs "some developing comment on the effect". There is no effect named here.
+   * **Why C:** Level 3 needs a clear explanation of the effect. Saying where a word comes from is not an effect.
+   * **Why D:** Level 4 needs detailed exploration. This is one short, simple comment.
+
+6. **Type: MCQ [Tests AO2]**
+   * **Question:** A student writes: "The metaphor 'She is icing my hand' clearly shows how smoothly and carefully the girl pipes the henna, as if she were decorating a cake, which shows the writer's admiration for her skill." Which AO2 level fits best?
+   * **Options:** A) Level 2 (4–6) — some developing comment, B) Level 3 (7–10) — clear explanations of the effects of language and structure, C) Level 4 (11–14) — detailed exploration of the effects, D) Level 5 (15–18) — perceptive analysis of the effects
+   * **Correct:** B
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. It selects a relevant device, quotes it accurately and clearly explains its effect (care, smoothness, admiration). That matches Level 3: "Clear and relevant selection", "Relevant and generally appropriate use of textual references" and "Clear explanations of the effects". To reach Level 4 it would need to explore the image further, for example how it links to the other images of craft and beauty in the poem.
+   * **Why A:** This goes beyond "some developing comment": the effect is explained clearly and linked to the quotation.
+   * **Why C:** Level 4 is "detailed exploration". Here one effect is explained once; nothing is developed across the poem.
+   * **Why D:** Level 5 needs "perceptive analysis" and a "subtle and discriminating" choice of devices. This is clear, not yet perceptive.
+
+7. **Type: Ranking [Tests AO2]**
+   * **Question:** Rank these four comments on "a peacock spreads its lines / across my palm" in "An Unknown Girl" from WEAKEST to STRONGEST by AO2 level (type the letters in order, weakest first).
+   * **Options:** A) "The peacock, a bird with deep meaning in Indian tradition, is drawn onto the writer's own palm, so the culture is literally marked on her body; yet 'It will fade in a week', and her 'clinging / to these firm peacock lines' becomes a perceptive image of a heritage she can only hold for a short time.", B) "Alvi describes a peacock on the writer's hand, which makes the henna sound pretty.", C) "The verb 'spreads' clearly shows the pattern opening out across the palm like a real peacock's tail, so the reader sees how beautiful and skilful the henna is.", D) "Alvi explores the peacock image in detail: 'spreads its lines' makes the pattern seem alive and growing, and when it returns as 'these firm peacock lines' the writer is 'clinging' to it, so the design changes from decoration into something she needs to hold on to."
+   * **Correct:** B, C, D, A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. The weakest gives "some developing comment" (pretty) with a loose reference, which is Level 2. The next gives a "clear explanation" of how the verb works, which is Level 3. The third follows the image through the poem in "detailed exploration", which is Level 4. The strongest connects the peacock, the palm and the fading henna into a "perceptive analysis" of what the poem is saying about culture, which is Level 5.
+   * **WhyWrong:** Each step up does more with the same image: a simple comment, then a clear explanation, then detailed exploration across the poem, then a perceptive reading of what the image means for the whole poem.
+
+8. **Type: Select All [Tests AO2]**
+   * **Question:** Which of these phrases come from the AO2 Level 5 (15–18 marks) descriptor? Select all that apply, and none that do not.
+   * **Options:** A) Subtle and discriminating selection of language and structural devices, B) Discriminating and assured use of textual references, C) Perceptive analysis of the effects of language and structure, D) Confident and detailed use of textual references
+   * **Correct:** A, B, C
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Those three bullet points make up Level 5. "Confident and detailed use of textual references" belongs to Level 4 (11–14), together with "Detailed exploration of the effects of language and structure."
+   * **Why D:** "Confident and detailed use of textual references" is the Level 4 wording, one level below the top.
+
+9. **Type: MCQ [Tests AO1]**
+   * **Question:** A response to Question 1 makes sensible points about the poem, and its quotations are accurate, but each point is left as a single statement and never developed. Which AO1 level fits?
+   * **Options:** A) Level 1 (1–3) — basic understanding, limited selection, B) Level 2 (4–6) — selection and interpretation "is valid, but not developed", C) Level 3 (7–9) — "appropriate and relevant to the points being made", D) Level 4 (10–12) — "detailed" and "fully supports the points being made"
+   * **Correct:** B
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. Level 2 is "Some understanding of the text", with selection that "is valid, but not developed" and references that are "valid, but not developed". Valid but undeveloped is exactly this answer. Developing each point, so that the references are "appropriate and relevant to the points being made", is the step to Level 3.
+   * **Why A:** The points are sensible and the references accurate, so this is more than "limited".
+   * **Why C:** Level 3 needs the points and references to be relevant and worked into the argument, not left as single statements.
+   * **Why D:** Level 4 needs "detailed" selection that "fully supports the points being made". Undeveloped points cannot do that.
+
+10. **Type: MCQ [Tests AO2]**
+   * **Question:** Question 1 always gives three bullet points under "In your answer, you should write about:". What is the third bullet point?
+   * **Options:** A) the use of language and structure, B) the writer's life and the time the text was written, C) how the text compares with another anthology text, D) your personal response to the text
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. The first two bullets change with each question (for example "how the writer presents feelings about the place"). The third is always "the use of language and structure", which points straight at AO2, worth 18 of the 30 marks.
+   * **Why B:** Background about the writer is not assessed on this paper. The marks come from understanding the text and analysing its methods.
+   * **Why C:** There is no comparison on Paper 2. Question 1 is about one text.
+   * **Why D:** A personal response is not what the bullet asks for. The bullet asks for the writer's methods.
+
+11. **Type: MCQ [Tests AO1]**
+   * **Question:** Question 1 ends: "You should support your answer with close reference to the poem, including brief quotations." At AO1 Level 4, how must those references work?
+   * **Options:** A) "The selection of references is detailed, appropriate and fully supports the points being made", B) As many quotations as possible, however long, C) One long quotation of a whole stanza, D) No quotations are needed if the points are strong
+   * **Correct:** A
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. That is the exact Level 4 wording. The question asks for BRIEF quotations, and the mark scheme rewards references that are chosen well and fully support each point, not the number of them.
+   * **Why B:** Quantity is not the test. Each reference must support the point it sits with.
+   * **Why C:** The question asks for brief quotations. Copying a stanza shows no selection.
+   * **Why D:** The question asks for close reference and brief quotations, and every AO1 level judges the references.
+
+12. **Type: MCQ [Tests AO2]**
+   * **Question:** What is the difference between AO2 Level 3 (7–10) and Level 4 (11–14)?
+   * **Options:** A) Level 3 gives "clear explanations of the effects"; Level 4 gives "detailed exploration of the effects", with "confident and detailed" references, B) Level 4 simply uses more quotations, C) Level 4 compares the text with another anthology text, D) Level 4 adds facts about the writer's life
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Level 3 explains an effect clearly. Level 4 explores it in detail, following it further, for example across the poem, with "thorough and confident selection" of devices and "confident and detailed use of textual references".
+   * **Why B:** More quotations do not lift the level. Detailed exploration does.
+   * **Why C:** There is no comparison on this paper.
+   * **Why D:** Background facts are not part of the AO2 grid.
+
+13. **Type: MCQ [Tests AO4]**
+   * **Question:** Section B prints three tasks, numbered Questions 2, 3 and 4. What does the student do?
+   * **Options:** A) Answer ONE of them, for 30 marks (AO4 18 + AO5 12), B) Answer all three, for 10 marks each, C) Answer two of them, for 15 marks each, D) Answer ONE of them, for 45 marks
    * **Correct:** A
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A terminology: "Imaginative writing" — a creative response, not transactional/argumentative. Unlike other boards' Paper 2, Spec A sets creative writing worth 30 marks.
-   * **Why B:** A transactional letter or speech is the other boards' task, not Spec A's imaginative brief.
-   * **Why C:** Comparing the texts is the reading question at Question 5.
-   * **Why D:** A factual report is neither imaginative nor the set task.
+   * **Feedback:** ✓ Correct. The paper says "Answer ONE question from this section." Whichever task is chosen is marked out of 30: AO4 (communication, 18 marks) and AO5 (technical accuracy, 12 marks), using the same grids for all three.
+   * **Why B:** Only one task is answered.
+   * **Why C:** Only one task is answered, and it carries all 30 marks.
+   * **Why D:** 45 marks is the Paper 1 writing task. Paper 2 writing is worth 30.
 
-9. **Type: MCQ [Tests AO5]**
-   * **Question:** Spec A AO5 (technical accuracy, 10 marks) is assessed on the imaginative writing. Which response best earns it?
-   * **Options:** A) Accurate spelling, punctuation and grammar with controlled, varied sentences, B) The most ambitious vocabulary available, regardless of spelling accuracy, C) A single very long sentence sustained across each paragraph, D) A deliberately fragmented style with no full stops
+14. **Type: Fill [Tests AO4]**
+   * **Question:** Complete the AO4 Level 5 (16–18 marks) descriptor: "Communication is perceptive and [BLANK]."
+   * **Answer:** subtle
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. Level 5 reads "Communication is perceptive and subtle", with the "Task … sharply focused on purpose and the expectations/requirements of the intended reader" and "Sophisticated use of form, tone and register."
+   * **WhyWrong:** The word is "subtle". "Communicates successfully" is Level 4 and "Communicates clearly" is Level 3.
+
+15. **Type: MCQ [Tests AO4]**
+   * **Question:** A story "communicates clearly", shows "a clear sense of purpose" and uses form, tone and register appropriately, but is not yet a "secure realisation" of the task. Which AO4 level fits?
+   * **Options:** A) Level 2 (4–7), B) Level 3 (8–11), C) Level 4 (12–15), D) Level 5 (16–18)
+   * **Correct:** B
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. Level 3 is "Communicates clearly", "Shows a clear sense of purpose and understanding of the expectations/requirements of the intended reader" and "Appropriate use of form, tone and register." Level 4 would "communicate successfully" with "A secure realisation of purpose" and "Effective use of form, tone and register."
+   * **Why A:** Level 2 "Communicates in a broadly appropriate way", which is below clear communication.
+   * **Why C:** Level 4 needs successful communication and a secure realisation of purpose.
+   * **Why D:** Level 5 needs communication that is "perceptive and subtle".
+
+16. **Type: MCQ [Tests AO5]**
+   * **Question:** On the AO5 grid, what separates Level 5 (11–12) from Level 4 (8–10)?
+   * **Options:** A) Level 5 "Manipulates complex ideas" and "Uses extensive vocabulary strategically"; Level 4 "Manages information and ideas" and "Uses a wide, selective vocabulary with only occasional spelling errors", B) Level 5 answers are simply longer, C) Level 5 uses more descriptive techniques, D) Level 5 has no paragraphs
    * **Correct:** A
    * **AO:** AO5
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO5 = technical accuracy (10 marks, "same criteria as Paper 1"). It rewards accurate spelling, punctuation and grammar with controlled, varied sentences.
-   * **Why B:** Misspelt ambition undercuts the accuracy the mark rewards.
-   * **Why C:** One sustained sentence is not controlled variety.
-   * **Why D:** Removing full stops collapses accurate demarcation.
+   * **Feedback:** ✓ Correct. Level 4 manages ideas and positions "a range of punctuation for clarity". Level 5 manipulates complex ideas, uses vocabulary strategically, and "Punctuates writing with accuracy to aid emphasis and precision, using a range of sentence structures accurately and selectively to achieve particular effects."
+   * **Why B:** Length is not in the grid.
+   * **Why C:** Descriptive techniques are judged under AO4 (communication), not AO5.
+   * **Why D:** Both levels use paragraphs and structural features. Level 5 uses them "to support coherence and cohesion".
 
-10. **Type: MCQ [Tests AO4]**
-   * **Question:** Spec A uses different AO numbering from GCSE. On Paper 2, what do AO4 and AO5 assess?
-   * **Options:** A) AO4 = writing content; AO5 = technical accuracy, B) AO4 = context; AO5 = comparison, C) AO4 = reading comprehension; AO5 = language analysis, D) AO4 = spelling only; AO5 = imaginative content
+17. **Type: MCQ [Tests AO5]**
+   * **Question:** Each Section B task ends with the same sentence. What does it tell the student?
+   * **Options:** A) "Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar." — technical accuracy (AO5) is 12 of the 30 marks, B) That spelling is not marked in imaginative writing, C) That the response must be between 250 and 350 words, D) That the response must be a true story
    * **Correct:** A
-   * **AO:** AO4
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A board feature: "Different AO numbering — AO4 = writing content, AO5 = technical." The writing content mark is AO4; technical accuracy is AO5.
-   * **Why B:** Context and comparison are not what these AOs assess on Spec A Language Paper 2.
-   * **Why C:** Reading and language analysis are AO1-AO3, not AO4/AO5.
-   * **Why D:** AO5 is technical accuracy across the whole piece, not spelling alone; AO4 is the content mark.
-
-11. **Type: MCQ [Tests Vocabulary]**
-   * **Question:** Spec A is "anthology-based." What does that change about what examiners expect?
-   * **Options:** A) Because the texts are studied in advance, deeper, better-prepared analysis is expected, B) Because the texts are unseen, only first impressions are expected, C) Because the texts are fiction, plot summary is enough, D) Because the texts are short, only one is analysed
-   * **Correct:** A
-   * **AO:** Vocabulary
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A terminology: "Anthology texts" — set texts studied in advance, allowing deeper analysis; the board expects "deeper analysis" precisely because the texts are known.
-   * **Why B:** The anthology is studied in advance, not unseen.
-   * **Why C:** Literary non-fiction is not fiction, and summary is not analysis.
-   * **Why D:** The comparison question sets two anthology texts, not one.
-
-12. **Type: MCQ [Tests Vocabulary]**
-   * **Question:** Spec A tops both reading AOs with "perceptive." A perceptive response is one that...
-   * **Options:** A) reads the implied significance of the writer's technique, beyond the surface effect, B) uses elaborate vocabulary to signal sophistication, C) lists the maximum number of techniques from the anthology, D) sustains a warm, personal tone throughout
-   * **Correct:** A
-   * **AO:** Vocabulary
-   * **Feedback:** ✓ Correct. "Perceptive" is Spec A's top reading word (AO2 perceptive, detailed analysis; AO3 perceptive, analytical comparison): it reads the implied significance behind the technique. It is insight, not vocabulary or tone.
-   * **Why B:** Elaborate wording is not perception.
-   * **Why C:** Listing techniques is Level 1 identification.
-   * **Why D:** Tone is not what "perceptive" credits.
-
-13. **Type: Select All [Tests AO2]**
-   * **Question:** Select ALL statements true of a Spec A Level 5 AO2 answer at Question 4 (and none that are not).
-   * **Options:** A) It offers perceptive, detailed analysis of the writer's techniques, B) It completes the progression from identifying to analysing, C) It reads the significance of an effect, not just its label, D) It names a technique and states that it is a technique
-   * **Correct:** A, B, C
-   * **AO:** AO2
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO2 Level 5 = perceptive, detailed analysis; it sits at the end of the progression Identify → Comment → Explain → Explore → Analyse; and analysis reads an effect's significance. Naming a device and restating its label is Level 1 identification.
-   * **Why D:** Naming a technique and repeating its label is Level 1 "Identifies" — the bottom band.
-
-14. **Type: Select All [Tests AO3]**
-   * **Question:** Select ALL statements true of a Spec A Level 5 AO3 comparison at Question 5 (and none that are not).
-   * **Options:** A) It is a sophisticated comparative analysis, B) It is perceptive and analytical about how the texts differ, C) It integrates both anthology texts within its comparison, D) It notes one basic similarity and stops
-   * **Correct:** A, B, C
-   * **AO:** AO3
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO3 Level 5 = "Perceptive, analytical" — sophisticated comparative analysis; the top bands are integrated (both texts handled together); and Level 5 analyses perceptively how the texts differ. One basic similarity is Level 1 "Simple."
-   * **Why D:** A single basic similarity is Level 1 "Simple" — basic similarities/differences.
-
-15. **Type: Ranking [Tests AO2]**
-   * **Question:** These four comments answer Question 4, analysing how a travel writer conveys the heat of a desert crossing in the anthology. Rank them WEAKEST to STRONGEST by Spec A AO2 Level (type the letters in order, weakest first).
-   * **Options:** A) The metaphor "the sun was a hammer" turns the heat into a physical assault, which clearly explains why the traveller feels beaten down and unable to resist the landscape, B) The writer uses a metaphor, "the sun was a hammer"; this is a metaphor, C) The metaphor "the sun was a hammer" recurs as the crossing wears on — first striking, then "still falling" — so the heat is explored as a relentless, wilful force, and the traveller's shrinking sentences enact the exhaustion, D) The writer uses the metaphor "the sun was a hammer", which makes the heat feel strong and heavy
-   * **Correct:** B, D, A, C
-   * **AO:** AO2
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO2 progression, one level apart. The weakest identifies the metaphor and repeats its label — Level 1 "Identifies." The next comments on the effect — Level 2 "Comments." The third clearly explains how the image works — Level 3 "Explains." The strongest explores the effect thoroughly as it recurs — Level 4 "Explores."
-   * **WhyWrong:** Weakest to strongest runs identifies (Level 1) → comments on effect (Level 2) → clear explanation (Level 3) → thorough exploration (Level 4) — the progression Identify → Comment → Explain → Explore.
-
-16. **Type: Ranking [Tests AO3]**
-   * **Question:** These four responses answer Question 5, comparing how two anthology writers present leaving home. Rank them WEAKEST to STRONGEST by Spec A AO3 Level (type the letters in order, weakest first).
-   * **Options:** A) Throughout, the first writer's backward-looking images, "the gate I would not latch again", are set against the second's forward momentum, "the road unrolling", and the contrast is sustained in both texts together — grief measured in thresholds against freedom measured in distance, B) The first writer is sad to leave home and the second writer is excited to leave; a clear point of comparison is that they feel differently about going, C) The two writers' methods encode opposite understandings of home: the first anchors identity in a place left behind, so the unlatched gate becomes a wound that will not close, whereas the second locates identity in movement, so the unrolling road erases the threshold altogether, D) The first writer lingers on what is lost, "the gate I would not latch again", while the second races towards what is ahead, "the road unrolling"; the comparison develops as each writer's chosen detail reveals whether home is a loss or a cage
-   * **Correct:** B, D, A, C
-   * **AO:** AO3
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO3 five-level, one level apart. The weakest makes straightforward, clear points of comparison — Level 2 "Straightforward." The next develops comparative points through each writer's chosen detail — Level 3 "Developed." The third sustains a thorough, integrated contrast across both texts — Level 4 "Thorough." The strongest analyses perceptively how each method encodes an opposite idea of home — Level 5 "Perceptive, analytical."
-   * **WhyWrong:** Weakest to strongest runs straightforward points (Level 2) → developed comparative points (Level 3) → thorough, integrated comparison (Level 4) → perceptive, analytical comparison (Level 5). Each rung climbs one Spec A level.
-
-17. **Type: MCQ [Tests AO2]**
-   * **Question:** Two Spec A answers both name the same image. One writes "it makes the scene feel tense"; the other writes "the short, stalled clauses make the scene feel tense because the reader is held in the pause with the character." Which level does the second reach that the first does not?
-   * **Options:** A) Level 3 — it clearly explains HOW the technique creates the effect, B) Level 1 — it identifies the technique, C) Level 2 — it comments that there is an effect, D) Level 5 — it is a perceptive, detailed analysis
-   * **Correct:** A
-   * **AO:** AO2
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO2: Level 2 "Comments" states that there is an effect ("feels tense"); Level 3 "Explains" clearly explains HOW the technique produces it. Naming the stalled clauses and linking them to the held pause is that explanation.
-   * **Why B:** Both answers go beyond bare identification at Level 1.
-   * **Why C:** The first answer only comments that an effect exists — Level 2.
-   * **Why D:** A single clear explanation is Level 3, not yet perceptive, detailed analysis.
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. That sentence is printed under every task, and the front of the paper repeats it for Section B. AO5 carries 12 of the 30 writing marks. The paper sets no word limit.
+   * **Why B:** Spelling, punctuation and grammar are marked. That is what AO5 assesses.
+   * **Why C:** The real paper gives no word limit, only a suggested time of about 45 minutes.
+   * **Why D:** Each task says "Your response could be real or imagined."
 
 18. **Type: MCQ [Tests AO4]**
-   * **Question:** A Spec A candidate answers the imaginative writing task with a persuasive speech arguing against plastic. Why does this limit the mark?
-   * **Options:** A) The task requires imaginative writing — a creative response, not a transactional or argumentative one, B) Persuasive speeches cannot contain any literary techniques, C) The candidate has not compared the two anthology texts, D) The speech is too short to be assessed
+   * **Question:** Question 4 says: "Look at the images provided. Write a story that begins 'Our eyes suddenly met'. … You may wish to base your response on one of the images." What is true about the images?
+   * **Options:** A) They are optional: the student may base the story on one of them, or not, B) The story must describe both images in detail, C) The images are marked separately from the story, D) Only a description of the image will be credited
    * **Correct:** A
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A terminology: "Imaginative writing" — creative response, not transactional/argumentative. A persuasive speech answers a different task; the paper sets a creative brief worth 30 marks.
-   * **Why B:** Speeches can use technique; the issue is that argument is the wrong mode for this task.
-   * **Why C:** Comparison is the reading question at Question 5, not the writing task.
-   * **Why D:** Length is not the reason; the mode is wrong.
+   * **Feedback:** ✓ Correct. "You may wish to" means it is a choice. The mark scheme says responses may "use the images to inspire writing". The story is marked on the same AO4 and AO5 grids as Questions 2 and 3.
+   * **Why B:** The task never asks for both images. It offers them as a starting point.
+   * **Why C:** There is no separate image mark. The whole response is marked out of 30.
+   * **Why D:** The task asks for a story that begins with the given words, not only a description.
 
-19. **Type: Fill [Tests AO2]**
-   * **Question:** In the Spec A progression, the level above bare identification — where the student first remarks on the effect — is "[BLANK] on effects".
-   * **Answer:** comments
-   * **AO:** AO2
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A AO2 Level 2 = "Comments" — comments on effects. It is the first step of the progression beyond identifying: remarking that an effect exists, before explaining how it works.
-   * **WhyWrong:** The Spec A Level 2 word is "comments" — the student comments on the effect before explaining it.
+19. **Type: MCQ [Tests AO4]**
+   * **Question:** Question 2 in June 2024 read: "Write about a time when you, or someone you know, decorated something. Your response could be real or imagined." What does the mark scheme allow?
+   * **Options:** A) The response can be real or imagined, and may "use the poem as inspiration", B) It must be a true event from the student's own life, C) It must be written as a formal essay, D) It must analyse the Section A poem
+   * **Correct:** A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. The task says "real or imagined", and the indicative content says responses may "use the poem as inspiration" and "may be narrative, descriptive or a monologue". Question 2 often links to the Section A text; that year the poem was about a girl hennaing a hand.
+   * **Why B:** "Real or imagined" means an invented event is just as acceptable.
+   * **Why C:** The form "may be narrative, descriptive or a monologue".
+   * **Why D:** Analysis belongs to Section A. Section B is the student's own imaginative writing.
 
-20. **Type: Fill [Tests Vocabulary]**
-   * **Question:** Spec A Paper 2 reads "[BLANK] non-fiction" — autobiography and travel writing that use the techniques of literature.
-   * **Answer:** literary
+20. **Type: MCQ [Tests Vocabulary]**
+   * **Question:** The mark scheme sums up each AO2 level with a few words. Which words sum up Level 4 (11–14)?
+   * **Options:** A) Thorough, Confident, Exploratory, B) Clear, Relevant, Explanatory, C) Discriminating, Perceptive, Analytical, D) Some, Developing
+   * **Correct:** A
    * **AO:** Vocabulary
-   * **Feedback:** ✓ Correct. Edexcel IGCSE Spec A terminology: "Literary non-fiction" — autobiography, travel writing, essays using literary techniques. The paper reads real experience crafted with literary method.
-   * **WhyWrong:** The Spec A phrase is "literary non-fiction" — autobiography and travel writing that use literary techniques.
+   * **Feedback:** ✓ Correct. The AO2 key words climb Limited/Basic (Level 1) → Some/Developing (Level 2) → Clear/Relevant/Explanatory (Level 3) → Thorough/Confident/Exploratory (Level 4) → Discriminating/Perceptive/Analytical (Level 5). Learning these words tells you what each level asks for.
+   * **Why B:** Clear, Relevant, Explanatory is Level 3.
+   * **Why C:** Discriminating, Perceptive, Analytical is Level 5.
+   * **Why D:** Some, Developing is Level 2.
 
 ### **SECTION E: Eduqas (C700U20 — Component 2)**
 

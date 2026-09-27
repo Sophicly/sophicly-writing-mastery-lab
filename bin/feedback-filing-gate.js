@@ -62,7 +62,9 @@ function walk(dir, out) {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, e.name);
         if (e.isDirectory()) { if (!p.includes('_superseded')) walk(p, out); }
-        else if (/^protocol-a-assessment.*\.md$/.test(e.name)) out.push(p);
+        // 2026-09-27: also assessment-section-*.md — Edexcel IGCSE Lang P2 splits its assessment
+        // protocol across two such files and was invisible to this gate until then.
+        else if (/^(?:protocol-a-assessment|assessment-section-).*\.md$/.test(e.name)) out.push(p);
     }
     return out;
 }
@@ -83,6 +85,9 @@ const MENTIONS_Q  = /\bQ(?:uestion)?\s*([1-9])\b/i;
 // ⛔ Never add a line here to silence a port you are building. Fix it: add @FB_BEGIN cards,
 //    anchors are protocols/aqa/{language1,language2,literature}/modules/protocol-a-assessment.md.
 const KNOWN_UNFILED = new Set([
+    // 2026-09-27: surfaced when the glob widened to assessment-section-*.md — pre-existing debt.
+    'protocols/cambridge-igcse/language2/modules/assessment-section-a.md',
+    'protocols/cambridge-igcse/language2/modules/assessment-section-b.md',
     'protocols/ccea/prose/modules/protocol-a-assessment.md',
     'protocols/ccea/unseen-prose/modules/protocol-a-assessment.md',
     'protocols/edexcel-igcse/heritage/modules/protocol-a-assessment.md',
@@ -187,7 +192,7 @@ if (nowPassing.length) {
     nowPassing.forEach(k => console.log('     ' + k));
 }
 const debt = rows.filter(r => r.known).length;
-console.log(`\n— DEBT: ${debt} protocol(s) still file nothing (known). Only AQA + Edexcel IGCSE Lang P1 file today.`);
+console.log(`\n— DEBT: ${debt} protocol(s) still file nothing (known). Only AQA + Edexcel IGCSE Lang P1 + P2 file today.`);
 console.log();
 if (fail) {
     console.error(`❌ feedback-filing-gate: ${fail} NEW or STALE finding(s). A protocol that marks in chat and files nothing is a silent defect — the student sees marks and the document stays empty.`);

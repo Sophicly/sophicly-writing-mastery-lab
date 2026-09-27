@@ -42,8 +42,8 @@ Legend: ✅ done+tested · 🟢 built, mechanical gates green, not driven · �
 | P1 | Q4 | language+structure, 3×TTECEA | 🟡 (2/10) | 🟡 (0 markers) | ⬜ monolith | ? | prod |
 | P1 | Q5 | comparative essay 22 | 🟡 | 🟡 | ⬜ | ? | prod |
 | P1 | Q6/7 | transactional 45, IUMVCC | 🟡 | 🟡 | ⬜ | ? | prod |
-| P2 | Q1 | anthology text analysis 30 | 🟡 (no protocol-a) | ⬜ (no planning dir) | ⬜ | ? | prod diag |
-| P2 | Q2–4 | imaginative writing 30 | 🟡 | ⬜ | ⬜ | ? | prod diag |
+| P2 | Q1 | anthology text analysis 30 | 🟡 (no protocol-a) | ✅ `steps/` 25 commits + 5 sets (plan-fanout) | ⬜ | ? | prod diag |
+| P2 | Q2–4 | imaginative writing 30 | 🟡 | ✅ 7 scene rows `plan-scene-Q2-*` (v7.20.642, keymatch-gated) | ⬜ | ? | prod diag |
 
 ## Edexcel GCSE English Language (1EN0) — port STARTED 2026-09-13 by a Fable agent, STOPPED before any report; partial work in `wml-port-agents-inflight-2026-09-13.patch` (FIXLIST #492)
 

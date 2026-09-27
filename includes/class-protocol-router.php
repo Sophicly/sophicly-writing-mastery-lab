@@ -2167,7 +2167,7 @@ class SWML_Protocol_Router {
             'unseen_poetry' => 'poetry_anthology',
             // Language papers — the paper lives in the text slug (§5d key-trace, 2026-09-07).
             'aqa_lang_paper_1' => 'language1', 'aqa_lang_paper_2' => 'language2',
-            'edexcel_igcse_lang_a' => 'language1',
+            'edexcel_igcse_lang_a' => 'language1', 'edexcel_igcse_lang_a_paper_2' => 'language2',
         ];
         if ($text !== '' && isset($by_text[$text])) return $by_text[$text];
 
@@ -2286,6 +2286,18 @@ class SWML_Protocol_Router {
             $msu_file = $msu_family . '.md';
             $msu_dir = ($step === 2) ? 'forging-your-weapon' : 'mark-scheme-quiz';
             $msu_path = $plugin_dir . 'protocols/shared/' . $msu_dir . '/' . $msu_file;
+            // v7.20.642 (audit 2026-09-27 D7): Forging Your Weapon prefers a PER-TEXT module,
+            // resolved through the ONE canonical slug ladder, over the family file. The IGCSE Lang
+            // A Paper 2 lesson resolved to the language2 family = the NON-FICTION module (wrong
+            // paper). Step 2 only; the family file still serves every text without its own module.
+            // Never add the text to resolve_mark_scheme_family() for this — that also re-routes
+            // the quiz + assessment banks (markscheme-route-gate requires a file in all three dirs).
+            if ($step === 2 && $text !== '' && class_exists('SWML_Quiz_Bank')) {
+                foreach (SWML_Quiz_Bank::slug_family($text) as $fyw_slug) {
+                    $fyw_path = $plugin_dir . 'protocols/shared/forging-your-weapon/' . $fyw_slug . '.md';
+                    if ($fyw_slug !== '' && file_exists($fyw_path)) { $msu_file = $fyw_slug . '.md'; $msu_path = $fyw_path; break; }
+                }
+            }
             if (file_exists($msu_path)) {
                 $content = file_get_contents($msu_path);
                 error_log("WML Router: Loaded mark_scheme_unit protocol: {$msu_dir}/{$msu_file} (" . strlen($content) . " chars) for subject={$subject}, step={$step}");

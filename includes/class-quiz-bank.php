@@ -583,13 +583,22 @@ class SWML_Quiz_Bank {
         // and the canvas slug ('aqa_lang_paper_1') — one canonical naming layer
         // (CLAUDE.md canvas rule #3). Requires the "lang" token so no Literature text
         // (none contain "lang_paper") can false-match.
-        if (preg_match('/(?:lang|language)_?paper[_-]?([12])/i', (string) $text, $mm)) {
+        // v7.20.642: `(?:_[ab])?` — Edexcel IGCSE spells the spec letter between "lang" and
+        // "paper" (edexcel_igcse_lang_a_paper_2). Without it the IGCSE P2 Mark Scheme Final and
+        // Assessment 2 lessons found NO bank (measured on prod, audit 2026-09-27 D3).
+        if (preg_match('/(?:lang|language)(?:_[ab])?_?paper[_-]?([12])/i', (string) $text, $mm)) {
             $candidates[] = 'language' . $mm[1];
         }
         foreach ($candidates as $slug) {
             if ($slug === '') continue;
             $path = $dir . $slug . '.md';
             if (file_exists($path)) return self::parse_file($path);
+        }
+        // Last rung, only on a miss: THE one family resolver (text map), the same one the MSQ
+        // generic path uses — so a text the router can name never silently misses its bank.
+        if (class_exists('SWML_Protocol_Router')) {
+            $fam = SWML_Protocol_Router::resolve_mark_scheme_family('', (string) $text);
+            if ($fam && file_exists($dir . $fam . '.md')) return self::parse_file($dir . $fam . '.md');
         }
         return [];
     }
