@@ -399,7 +399,7 @@
       "marks": 20,
       "spag_marks": null,
       "aos": [
-        "AO1",
+        "AO2",
         "AO3"
       ],
       "split": {
@@ -409,13 +409,13 @@
             "label": "comparison essay",
             "marks": 20,
             "aos": [
-              "AO1",
+              "AO2",
               "AO3"
             ]
           }
         ]
       },
-      "_split_note": "AO1 15 + AO3 5 = 20. Protocol currently 5-section summing 21 — reconcile to 20 (Phase 2).",
+      "_split_note": "AO2 15 + AO3 5 = 20. Protocol currently 5-section summing 21 — reconcile to 20 (Phase 2).",
       "extract": {
         "count": 1,
         "lines_min": 8,
@@ -425,7 +425,7 @@
         "source": "Edexcel 1ET0/02 Section B Part 1 — one anthology poem printed; student compares with second anthology poem"
       },
       "question_prefix": "Compare the ways...",
-      "_note": "v7.19.703 FIX: Edexcel 1ET0 Paper 2 Sec B Part 1 anthology poetry = AO1(15)+AO3(5) = 20, NO AO2. Verified vs official June 2024 MS AO grid."
+      "_note": "v7.20.641 CORRECTION of the v7.19.703 note: Edexcel 1ET0/02 Sec B Part 1 anthology poetry = AO2 15 + AO3 5 = 20, NO AO1. Read from the official June 2024 MS (Sophicly Etch Mark Scheme Resources/Edexcel Literature Mark Schemes/June 2024 MS - Paper 2…pdf): the AO grid p.4 puts Questions 8–11's 15 in the AO2 column (the same column as Qs 1a–7a's AO2 20), and the level descriptors read \"Bullets 2, 3 and 4 (15 marks) – AO2, Bullet 5 – AO3 (5 marks)\". The .703 note misread the grid column. The protocol already marks AO2 + AO3."
     },
     "unseen": {
       "shape": "poetry-unseen",
