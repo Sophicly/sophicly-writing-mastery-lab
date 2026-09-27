@@ -98,6 +98,7 @@ ok(/\|\| _srvWin\.wins;/.test(JS), 'the document mount gate lets a newer server 
 ok(/_serverCopyWins\(_docKey, res\.doc && res\.doc\.savedAt\)/.test(JS), 'it decides from the server document\'s savedAt');
 ok(/if \(res\.success\) \{\s*_syncWrite\(_syncKeyAtEnqueue, res\.savedAt, _syncTsAtEnqueue\)/.test(JS), 'a successful document save records which local edit the server now holds');
 ok(/if \(res\.success\) _syncWrite\(_chatKeyNow, res\.savedAt, _chatTsNow\)/.test(JS), 'a successful chat save records it too');
+ok(/sc\.history\.length > localChat\.history\.length\)\s*\n?\s*\? \{ wins: true/.test(JS), 'a local chat SHORTER than the server\'s always loses (the server refuses shorter saves, so it can only be behind) — how students whose chat failed to load get it back');
 ok((JS.match(/_serverChatWins\(savedChat, serverChat\)/g) || []).length === 2, 'BOTH chat resume pipelines use the one chat rule');
 ok(/if \(_needChat \|\| _wantSidebar \|\| savedChat\)/.test(JS) && /if \(_needChat2 \|\| _wantSidebar2 \|\| savedChat\)/.test(JS), 'both pipelines ask the server even when this browser holds a chat');
 ok(/'savedAt' => \$data\['savedAt'\],\s*\/\/ v7\.20\.639/.test(PHP), 'the chat save response returns the server\'s savedAt');

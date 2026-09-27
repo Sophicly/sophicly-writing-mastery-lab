@@ -15812,7 +15812,13 @@
         if (!sc || !Array.isArray(sc.history) || !sc.history.length) return null;
         if (!localChat || !Array.isArray(localChat.history) || !localChat.history.length) return null;
         const key = CHAT_SAVE_KEY();
-        const d = _serverCopyWins(key, sc.savedAt, localChat.savedAt);
+        // v7.20.640: a local chat SHORTER than the server's is always behind — the server refuses
+        // every shorter overwrite (v7.19.591), so it can never have been ahead. This is also how every
+        // student whose chat failed to load between 2026-07-27 and v7.20.640 gets it back: their
+        // browser stored the fresh greeting, the server kept the real conversation.
+        const d = (sc.history.length > localChat.history.length)
+            ? { wins: true, conflict: localChat.history.length > 1, why: 'server-longer(' + sc.history.length + '>' + localChat.history.length + ')' }
+            : _serverCopyWins(key, sc.savedAt, localChat.savedAt);
         if (!d.wins) return null;
         if (d.conflict) _stashConflict(key, JSON.stringify(localChat), d.why);
         else console.log('WML sync: the server chat is newer than this browser\'s (' + d.why + ') — loading the server chat');
