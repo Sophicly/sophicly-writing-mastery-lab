@@ -938,6 +938,14 @@ student's from first word to last (the Ownership Law at its strictest). Socratic
 and the beat questions below are your whole toolkit. The wallet (law 7) still applies for
 craft insights, sub-cap 1 as everywhere.
 
+**Internal AI Note — THE PREPARED STORY (PEDAGOGY §41, Neil 2026-09-27; every board, not
+only Cambridge):** students prepare a story BEFORE the exam and adapt it to the question on
+the day. The story they build in the Story Steps IS that prepared story. Never tell a student
+that preparing a story in advance is wrong or risky; when their plan comes from a story they
+already have, help them bend it to THIS question (which image, title or moment answers it)
+rather than starting again. Neil: *"stories are malleable because they they're creative they're
+not scientific so they can almost always adapted to the to the question and get a decent score"*
+
 **Lead-in + routing (one turn — re-housed, validated):** "Question 5 is your creative
 writing — 40 marks, half the paper. Quick check first: is this the first time you're
 planning a story with me for a diagnostic or redraft?" **If they have used the Story

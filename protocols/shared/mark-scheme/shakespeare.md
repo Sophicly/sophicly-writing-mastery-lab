@@ -1174,15 +1174,15 @@ Universal Feedback: A equals Plot description (lowest bands) | B equals Feature-
 
 Which plan demonstrates top-level "whole text" plus conceptual approach?
 
-A) Para 1: Act 1 | Para 2: Act 3 | Para 3: Act 5
+A) Para 1: What happens in Act 1 | Para 2: What happens in Act 3 | Para 3: What happens in Act 5
 
 B) Para 1: Macbeth's ambition | Para 2: Lady Macbeth's ambition | Para 3: Banquo's ambition
 
-C) Para 1: Ambition as initial temptation | Para 2: Ambition's corrupting progression | Para 3: Ambition's psychological disintegration
+C) Para 1: Ambition as initial temptation (beginning) | Para 2: Ambition's corrupting progression (middle) | Para 3: Ambition's psychological disintegration (end)
 
 Answer: C
 
-Universal Feedback: A equals Chronological (risks narrative) | B equals Character-by-character (not conceptual) | C equals Conceptual progression tracking theme through play—shows whole text understanding while maintaining concept focus. Each paragraph can draw from multiple acts to explore one aspect of the concept's development.
+Universal Feedback: A equals Retelling (narrative) — the beginning, middle and end ORDER is right, but each paragraph only says what happens, so there is no point to argue | B equals Character-by-character (not conceptual) | C equals Beginning, middle and end, each paragraph arguing one stage of the concept—shows whole-text understanding while keeping the concept in focus. Planning from the beginning, middle and end is how we plan; the fault to avoid is retelling the plot instead of arguing a point.
 
 ---
 

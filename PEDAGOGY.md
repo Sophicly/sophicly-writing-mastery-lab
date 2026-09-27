@@ -2423,3 +2423,72 @@ fixes: Annaya was asked *"Which ONE criterion do you think you rated more highly
 buttons *"Paragraph 1 / Paragraph 2"* — no button answered it, and she stopped there.
 
 Gates: `bin/mc-gate-harness.js` (the rule extracted from the shipped file; mutation-proven).
+
+---
+
+## §41. ⭐⭐ THE PREPARED STORY — we teach it on EVERY board, not only Cambridge (Neil, ruled 2026-09-27; FIXLIST #599)
+
+**His words** (source: `Blog Layout/research/idea-picks-2026-09-26/NEIL-RULINGS-AND-PICKS-2026-09-27.md`, item 3):
+*"in terms of prepared story you're not correct about that and again all of these things need to be
+documented somewhere right so we do actually get the students to prepare a story before the exam… we get
+them to prepare a story because generally speaking stories are just about imagination so it's sort of
+doesn't matter where the student decides to take the story they can take it anywhere they want really as
+long as it answers the question stories are malleable because they they're creative they're not scientific
+so they can almost always adapted to the to the question and get a decent score."*
+
+⚠️ The option line he was answering read "prepare the parts, never a whole story". **His note overrides
+it: the whole story is prepared.**
+
+**What it means in WML:** the story a student builds in the Creative Writing course (the Story Steps) IS
+their prepared story; on the day they adapt it to the question. Never tell a student preparing a story is
+wrong or risky. Documented in: Cambridge `method/WRITERS-CRAFT-cambridge-paper2-writing.md` ("the prepared
+story") and AQA Language P1 `planning/protocol-b-planning.md` Stage S6. ⬜ **STILL TO DO:** the other boards'
+creative-writing protocols (Edexcel, Eduqas, OCR, IGCSE) — same note, same place.
+
+## §42. ⭐⭐ BEGINNING, MIDDLE AND END IS THE ORDER — the fault is RETELLING, never the order (Neil, ruled 2026-09-27; FIXLIST #599)
+
+**His words** (same source, item 4, picking "The plan is right; fix the quiz"): *"well when you say
+chronological I mean beginning middle and end is chromological [chronological] right you can't write about every single
+act and seen [scene] it's not possible."*
+
+**The rule:** a Literature essay's three body paragraphs draw on the beginning, middle and end of the text,
+in that order (planning: `aqa/literature/.../protocol-a-assessment.md:213`, `planning/b4-anchors.md:21`).
+What caps a response is **retelling** — a paragraph that says what happens instead of arguing a point. Any
+quiz, feedback or model that marks the ORDER as the fault is wrong. Fixed 2026-09-27:
+`protocols/shared/mark-scheme/shakespeare.md` Q14 (its Act 1 / 3 / 5 plan was marked "Chronological (risks
+narrative)"; option A is now a retelling plan and the feedback says the order is right). The per-text
+mark-scheme-quiz banks already target "chronological RETELLING", which is correct and unchanged.
+
+## §43. ⭐⭐ EVENTS COUNT AS EVIDENCE — but we advise students to quote (Neil, ruled 2026-09-27; FIXLIST #599)
+
+**His words** (same source, item 2): *"right four events has evidence yes we accept it because of the
+examiners accepted but we advise students to quote you know referencing events and things like that can
+happen if a quote is not so important which is relatively rare and also the students can do that if for
+example they can't remember the quote right because ultimately it's not really the quote that gets the
+marks it's the quality of the whole analysis."*
+
+**The rule:** in Literature marking, a reference to an event is valid evidence (AQA AO1: "textual
+references, including quotations") and is never zeroed for being an event. Teaching still says **quote
+where you can**; events are the fallback (a quote that matters little, or one they cannot recall). The
+marks follow the quality of the analysis, not the presence of quotation marks.
+
+## §44. ⭐⭐ PREDICTIONS ARE PRACTICE, NEVER A PROMISE — understand the protagonist first (Neil, ruled 2026-09-27; FIXLIST #599)
+
+**His words** (same source, item 1): *"throughout the years I've actually been against predictions… no
+teacher can relyably predict the future… what you can predict with almost guaranteed certainty is… the
+question that will come up will be about theme and character… it is vital that they understand the
+protagonist first because they are the ones who reveal the meaning of the story their journey reveals the
+meaning of the story once you understand that then you just try and figure out how all the other themes and
+characters support that journey… one thing that did surprise us this year was the sign of the four question
+that was about setting so that is also possible as well… they really got to understand the text rather than
+relying on predictions right but we will try to publish a prediction bank for the students that they can
+practice with."*
+
+**The rule:** any prediction bank or prediction copy is framed as PRACTICE, never as what will come up.
+Revision order: the protagonist's journey first, then how the other themes and characters serve it. Expect
+theme or character; setting is possible (Sign of the Four, 2026).
+
+**Also recorded the same day (context, not new rules):** poetry — *"about five poems is the minimum that the
+students want to know well… any one of the 15 could come up"* (sits with CN-STANDARD "coverage is the
+strategy"); essays — *"priority is quality; however, if you can have quality and quantity it's even better"*;
+AQA Lang P2 Q3 → Q4 — *"if they want to reuse an idea there's no problem with that"* (different examiners).
