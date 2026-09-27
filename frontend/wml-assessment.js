@@ -15696,8 +15696,10 @@
 
     function saveCanvasChat(history, chatId) {
         // 1. Instant localStorage write (include step + task for resume and stale detection)
+        const _chatKeyNow = CHAT_SAVE_KEY(), _chatTsNow = Date.now();   // v7.20.639 (#598)
         try {
-            localStorage.setItem(CHAT_SAVE_KEY(), JSON.stringify({ history, chatId, step: state.step || 1, task: state.task, exerciseId: state.exerciseId || '', savedAt: new Date().toISOString(), count: history.length }));
+            localStorage.setItem(_chatKeyNow, JSON.stringify({ history, chatId, step: state.step || 1, task: state.task, exerciseId: state.exerciseId || '', savedAt: new Date().toISOString(), count: history.length }));
+            localStorage.setItem(_chatKeyNow + '__ts', String(_chatTsNow));
         } catch (e) { /* storage full */ }
         // 2. Debounced server write (every 8s — less frequent than doc save)
         clearTimeout(chatSaveTimer);
@@ -15711,6 +15713,7 @@
                 method: 'POST', headers,
                 body: JSON.stringify(body)
             }).then(r => r.json()).then(res => {
+                if (res.success) _syncWrite(_chatKeyNow, res.savedAt, _chatTsNow);   // v7.20.639 (#598)
                 if (res.success) console.log('WML: Chat saved to server', { count: res.count });
                 else console.warn('WML: Chat save failed', res);
             }).catch(e => console.warn('WML: Chat server save failed', e.message));
@@ -15799,6 +15802,22 @@
         console.warn('WML Fossil heal: rewrote ' + r.healed + ' frozen plot-structure turn(s) to the live token (' + (where || '?') + '). '
             + 'These were saved before v7.20.324 and would otherwise announce a structure the student has since changed.');
         return chat;
+    }
+
+    // v7.20.639 (#598): the chat twin of the document rule (see _serverCopyWins). Returns the
+    // server chat when it should replace this browser's stored one, else null. Both resume
+    // pipelines call this one function.
+    function _serverChatWins(localChat, serverChat) {
+        const sc = serverChat && serverChat.success && serverChat.chat;
+        if (!sc || !Array.isArray(sc.history) || !sc.history.length) return null;
+        if (!localChat || !Array.isArray(localChat.history) || !localChat.history.length) return null;
+        const key = CHAT_SAVE_KEY();
+        const d = _serverCopyWins(key, sc.savedAt, localChat.savedAt);
+        if (!d.wins) return null;
+        if (d.conflict) _stashConflict(key, JSON.stringify(localChat), d.why);
+        else console.log('WML sync: the server chat is newer than this browser\'s (' + d.why + ') — loading the server chat');
+        _syncWrite(key, sc.savedAt, Date.now());
+        return sc;
     }
 
     function loadCanvasChat() {
@@ -38587,7 +38606,7 @@
                 // immediately (chat field still only used when localStorage was empty).
                 const _needChat = !savedChat || !savedChat.history || savedChat.history.length === 0;
                 const _wantSidebar = !state.reviewMode && (state.task === 'assessment' || state.task === 'redraft_assessment');
-                if (_needChat || _wantSidebar) {
+                if (_needChat || _wantSidebar || savedChat) {   // v7.20.639 (#598): always ask the server — it may hold a newer chat
                     try {
                         const _chatSuffix = _chatStorageSuffix();
                         // Tutor review: load student's chat via review endpoint (v7.15.2)
@@ -38599,6 +38618,10 @@
                         if (_needChat && serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                             savedChat = _healLoadedChat(serverChat.chat, 'server');   // v7.20.351: heal pre-.324 fossils on the authoritative copy
                             console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Training: Chat loaded from server (localStorage empty)');
+                            if (!state.reviewMode && serverChat.chat.savedAt) _syncWrite(CHAT_SAVE_KEY(), serverChat.chat.savedAt, Date.now());
+                        } else if (!_needChat && !state.reviewMode) {
+                            const _newer = _serverChatWins(savedChat, serverChat);
+                            if (_newer) savedChat = _healLoadedChat(_newer, 'server');
                         }
                         if (serverChat.sidebar) {
                             try { if (!_expectLangSidebar()) _applyServerSidebar(serverChat.sidebar); } // v7.19.632 Phase 2c: P2 uses frontend sidebar
@@ -41940,7 +41963,7 @@
                                         // so a refresh paints the granular sidebar immediately.
                                         const _needChat2 = !savedChat || !savedChat.history || savedChat.history.length === 0;
                                         const _wantSidebar2 = !state.reviewMode && (state.task === 'assessment' || state.task === 'redraft_assessment');
-                                        if (_needChat2 || _wantSidebar2) {
+                                        if (_needChat2 || _wantSidebar2 || savedChat) {   // v7.20.639 (#598)
                                             try {
                                                 const _chatSuffix = _chatStorageSuffix();
                                                 const _chatAtt2 = _canvasAttempt(); // v7.20.78: pinned resolver (chat read = chat write key)
@@ -41952,6 +41975,10 @@
                                                 if (_needChat2 && serverChat.success && serverChat.chat && serverChat.chat.history && serverChat.chat.history.length > 0) {
                                                     savedChat = _healLoadedChat(serverChat.chat, 'server');   // v7.20.351: heal pre-.324 fossils on the authoritative copy
                                                     console.log(state.reviewMode ? 'WML Review: Student chat loaded from server' : 'WML Canvas: Chat loaded from server (localStorage empty)');
+                                                    if (!state.reviewMode && serverChat.chat.savedAt) _syncWrite(CHAT_SAVE_KEY(), serverChat.chat.savedAt, Date.now());
+                                                } else if (!_needChat2 && !state.reviewMode) {
+                                                    const _newer2 = _serverChatWins(savedChat, serverChat);
+                                                    if (_newer2) savedChat = _healLoadedChat(_newer2, 'server');
                                                 }
                                                 if (serverChat.sidebar) {
                                                     try { if (!_expectLangSidebar()) _applyServerSidebar(serverChat.sidebar); } // v7.19.632 Phase 2c: P2 uses frontend sidebar
@@ -60520,6 +60547,9 @@
         );
     }
 
+    // v7.20.639 (#598): the local key + __ts of the copy most recently written, captured by each
+    // server save at enqueue so its success records WHICH local edit the server now holds.
+    let _saveSyncKey = '', _saveSyncTs = 0;
     function saveCanvasContent() {
         if (!canvasEditor) return;
         // Tutor review mode: never save — read-only view of student's work (v7.15.2)
@@ -60571,10 +60601,11 @@
         try {
             const _key = CANVAS_SAVE_KEY();
             localStorage.setItem(_key, html);
+            _saveSyncKey = _key;   // v7.20.639 (#598)
             // v7.20.82: freshness stamp — the feed-forward mirror arbitrates local copy
             // vs server copy by timestamp (newest wins), so a downstream lesson can
             // never mirror stale content whichever side lags.
-            try { localStorage.setItem(_key + '__ts', String(Date.now())); } catch (_) {}
+            try { _saveSyncTs = Date.now(); localStorage.setItem(_key + '__ts', String(_saveSyncTs)); } catch (_) {}
             // v7.19.136 instrumentation — confirm localStorage write success + size
             try { console.log('[WML save-debug v7.19.136] localStorage written', { key: _key, size: html.length }); } catch (_) {}
         } catch (e) { /* storage full */
@@ -60728,6 +60759,7 @@
                 cw_project_id:    state.cwTrialScore.projectId || '',
             } : {}),
         };
+        const _syncKeyAtEnqueue = _saveSyncKey, _syncTsAtEnqueue = _saveSyncTs;   // v7.20.639 (#598)
         canvasSaveToServerTimer = setTimeout(() => {
             const body = _pendingCanvasSaveBody;
             _pendingCanvasSaveBody = null;
@@ -60746,6 +60778,7 @@
                 body: JSON.stringify(body)
             }).then(r => r.json()).then(res => {
                 if (res.success) {
+                    _syncWrite(_syncKeyAtEnqueue, res.savedAt, _syncTsAtEnqueue);   // v7.20.639 (#598): this device now matches that server version
                     console.log('WML: Canvas saved to server', { key: res.key, savedAt: res.savedAt, board: snap.board, text: snap.text, topic: snap.topicNumber, wc: wc });
                     try { console.log('[WML save-debug v7.19.136] server save OK', { serverKey: res.key, savedAt: res.savedAt }); } catch (_) {}
                 } else {
@@ -60901,6 +60934,50 @@
             w.querySelectorAll('.swml-seq-nav').forEach(n => { n.remove(); changed = true; });
             return changed ? w.innerHTML : html;
         } catch (e) { return html; }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════════
+    // v7.20.639 (#598) — WHICH COPY WINS ON LOAD: this browser's, or the server's.
+    // Before: for every task but CW and cribs, ANY local copy won and was then autosaved back
+    // over the server — no timestamps compared. Measured on staging (Neil, 2026-09-26): his
+    // browser's morning copies overwrote the server's newer documents, and the chat did the same.
+    // For a student that is: home Monday → school Tuesday → home Wednesday = Tuesday lost; and any
+    // server-side repair is undone by the next open.
+    // THE RULE (skew-proof — both timestamps below come from the SERVER's clock):
+    //   · each device records which server version it last matched  (key + '__sync')
+    //   · the server wins when it has CHANGED since then and this device has no unsaved edits
+    //   · changed + unsaved edits here = a conflict: the server still wins (it holds the other
+    //     device's saved work) and this device's copy is kept in key + '__conflict_bak'
+    //   · no record yet (first load after this ships): the server wins only if it is more than
+    //     two minutes newer than this device's last edit — the old behaviour otherwise.
+    // ══════════════════════════════════════════════════════════════════════════════
+    function _syncRead(key) {
+        try { return JSON.parse(localStorage.getItem(key + '__sync') || 'null'); } catch (_) { return null; }
+    }
+    function _syncWrite(key, serverSavedAt, localTs) {
+        try { if (key && serverSavedAt) localStorage.setItem(key + '__sync', JSON.stringify({ srv: String(serverSavedAt), localTs: localTs || Date.now() })); } catch (_) {}
+    }
+    function _serverCopyWins(key, serverSavedAt, localTsFallback) {
+        const srv = serverSavedAt ? (Date.parse(serverSavedAt) || 0) : 0;
+        if (!key || !srv) return { wins: false, conflict: false, why: 'no-server-time' };
+        let localTs = 0;
+        try { localTs = parseInt(localStorage.getItem(key + '__ts') || '0', 10) || 0; } catch (_) {}
+        if (!localTs && localTsFallback) localTs = Date.parse(localTsFallback) || 0;
+        const sync = _syncRead(key);
+        if (sync && sync.srv) {
+            const base = Date.parse(sync.srv) || 0;
+            if (srv <= base) return { wins: false, conflict: false, why: 'server-unchanged' };
+            const dirty = localTs > (sync.localTs || 0);
+            return { wins: true, conflict: dirty, why: dirty ? 'server-changed+local-unsaved' : 'server-changed' };
+        }
+        if (!localTs) return { wins: true, conflict: false, why: 'no-local-time' };
+        return srv > localTs + 120000
+            ? { wins: true, conflict: false, why: 'no-sync-record:server-newer' }
+            : { wins: false, conflict: false, why: 'no-sync-record:local-newer-or-close' };
+    }
+    function _stashConflict(key, localValue, why) {
+        try { if (localValue) localStorage.setItem(key + '__conflict_bak', localValue); } catch (_) {}
+        console.warn('WML sync: the server copy changed on another device while this one had unsaved edits (' + why + ') — the server copy is loaded; this device\'s copy is kept in ' + key + '__conflict_bak');
     }
 
     function loadCanvasContent() {
@@ -61171,7 +61248,17 @@
                             }
                         } catch (e) { console.warn('WML CW: could not compose the plot-update header —', e && e.message); }
                     }
-                    const _preferServer = _isSeed || isCwTaskHydrate || isCribHydrate || !localContent || localContent.length < 20;
+                    // v7.20.639 (#598): a newer SERVER copy wins over this browser's stored one.
+                    const _docKey = CANVAS_SAVE_KEY();
+                    const _srvWin = (!_isSeed && localContent && localContent.length >= 20)
+                        ? _serverCopyWins(_docKey, res.doc && res.doc.savedAt) : { wins: false, conflict: false, why: 'n/a' };
+                    if (_srvWin.wins) {
+                        if (_srvWin.conflict) _stashConflict(_docKey, localContent, _srvWin.why);
+                        else console.log('WML sync: the server copy is newer than this browser\'s (' + _srvWin.why + ') — loading the server copy');
+                    }
+                    const _preferServer = _isSeed || isCwTaskHydrate || isCribHydrate || !localContent || localContent.length < 20 || _srvWin.wins;
+                    // Whatever wins, this device now matches the server version it was shown.
+                    if (_preferServer && res.doc && res.doc.savedAt) _syncWrite(_docKey, res.doc.savedAt, Date.now());
                     // v7.19.136 instrumentation — prefer-server decision + editor doc size at this moment
                     // v7.19.858: gated — one more full-doc serialise per load.
                     let _editorDocSize = 0;

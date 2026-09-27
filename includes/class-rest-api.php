@@ -6703,6 +6703,7 @@ class SWML_REST_API {
             'success' => $result !== false,
             'key'     => $meta_key,
             'count'   => count($history),
+            'savedAt' => $data['savedAt'],   // v7.20.639 (#598): the device records which server version it matches
         ]);
     }
 

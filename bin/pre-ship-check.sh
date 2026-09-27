@@ -138,6 +138,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACMDR 2
   grep -E '^(✓|✗) quiz-bank-reach' /tmp/quiz-bank-reach.out
 fi
 
+# v7.20.639 (#598): which copy wins on load — a newer SERVER copy must beat a stale browser copy
+# (doc AND chat), and unsaved typing on this device must never be lost. Runs the shipped decision.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|class-rest-api\.php|sync-arbitration-harness\.js'; then
+  node bin/sync-arbitration-harness.js >/tmp/sync-arb.out 2>&1 || { cat /tmp/sync-arb.out; fail=1; }
+  tail -1 /tmp/sync-arb.out
+fi
+
 # v7.20.252 (Fable F1): the JS build-stamp (frontend/wml-core.js WML_BUILD, logged on load for
 # stale-client diagnosis) must equal the plugin version, or the console log lies about freshness.
 JS_BUILD=$(grep -oE "var WML_BUILD = '[^']+'" frontend/wml-core.js 2>/dev/null | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
