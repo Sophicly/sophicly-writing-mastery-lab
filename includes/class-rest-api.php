@@ -6721,71 +6721,10 @@ class SWML_REST_API {
             return new WP_Error('missing_params', 'board and text are required', ['status' => 400]);
         }
 
-        // ══════════════════════════════════════════════════════════════════════════════════════
-        // v7.20.313 — RUNAWAY-CHAT CEILING. The server is the ONLY thing that can stop a broken
-        // client, so it must be willing to. Applied in BOTH chat-save pipelines (WML CLAUDE.md
-        // §DUAL CHAT PIPELINE — a guard in one of them is a guard in neither).
-        //
-        // Rifat (uid 1386) hit a client-side loop in the CW Step-1 walk and this endpoint accepted
-        // every write it produced: 1,765 turns / 1.4 MB, then — after the fix was deployed but
-        // while his browser was still running the CACHED old bundle — another 2,626 turns / 2.1 MB.
-        // Nothing anywhere said "2,600 turns is not a session". The client bug was fixed twice over
-        // (v7.20.312) and a regression gate added, but BOTH of those live in the very code that was
-        // broken, and neither can reach a tab already open on the old bundle.
-        //
-        // So this guard is deliberately NOT about that loop. It is about the NEXT one, whose cause
-        // we do not yet know: any client writing a chat this size is malfunctioning, and the honest
-        // response is to refuse the write, keep the last good state, and say so loudly rather than
-        // silently persisting megabytes of garbage over a student's session.
-        // The ceiling is ~8× the largest genuine session ever recorded (65 turns / 24 KB).
-        // v7.20.314: and the SIGNATURE check, which trips in ~12 turns instead of 600. A loop
-        // repeats a small cycle forever, so the giveaway is not SIZE but SAMENESS: Rifat's cycle
-        // was 3 distinct messages (the canned line, the hidden context, the kick). Measured against
-        // every real chat on prod: a genuine conversation never scores below 9 distinct in its last
-        // 12 turns; the largest legitimate session is 212 turns / 214 KB. So <=3 distinct across 12
-        // consecutive turns cannot be a real conversation, and catching it here means a student on
-        // a stale bundle sees a dozen odd messages rather than hundreds.
-        $loop_window = 12;
-        $loop_distinct_floor = 3;
-        if (count($history) >= $loop_window) {
-            $sigs = [];
-            foreach (array_slice($history, -$loop_window) as $msg) {
-                $sigs[md5((string) (is_array($msg) ? ($msg['content'] ?? '') : $msg))] = 1;
-            }
-            if (count($sigs) <= $loop_distinct_floor) {
-                error_log(sprintf(
-                    'SWML: REFUSED a LOOPING chat save — user %d, only %d distinct message(s) in the '
-                    . 'last %d turns (%d total). board=%s text=%s suffix=%s. The client is cycling; '
-                    . 'the last good chat is preserved.',
-                    $user_id, count($sigs), $loop_window, count($history), $board, $text, $suffix
-                ));
-                return new WP_Error(
-                    'chat_looping',
-                    'The conversation appears to be repeating itself, so it has not been saved. '
-                    . 'Please reload the page — your saved work is safe.',
-                    ['status' => 409, 'distinct' => count($sigs)]
-                );
-            }
-        }
-
-        $chat_turn_ceiling = 600;      // ~3x the largest genuine session ever recorded (212 turns)
-        $chat_byte_ceiling = 768000;   // 750 KB — ~3.5x the largest genuine session (214 KB)
-        $incoming_bytes = strlen((string) wp_json_encode($history));
-        if (count($history) > $chat_turn_ceiling || $incoming_bytes > $chat_byte_ceiling) {
-            error_log(sprintf(
-                'SWML: REFUSED a runaway chat save — user %d, %d turns, %d bytes (ceiling %d/%d), '
-                . 'board=%s text=%s suffix=%s. The client is looping; the last good chat is '
-                . 'preserved. See the v7.20.312 CW Step-1 hand-off loop.',
-                $user_id, count($history), $incoming_bytes, $chat_turn_ceiling, $chat_byte_ceiling,
-                $board, $text, $suffix
-            ));
-            return new WP_Error(
-                'chat_runaway',
-                'This conversation is far longer than a real session, so it has not been saved. '
-                . 'Please reload the page — your saved work is safe.',
-                ['status' => 413, 'turns' => count($history), 'ceiling' => $chat_turn_ceiling]
-            );
-        }
+        // v7.20.639: the v7.20.313/.314 runaway + loop guards were pasted HERE as well as into
+        // save_canvas_chat. Here there is no $history, so count(null) threw a TypeError and EVERY chat
+        // load returned an empty 200 — since 2026-07-27, on prod too (measured 2026-09-27). The guards
+        // live in save_canvas_chat, the only chat-save endpoint (both client pipelines post to it).
 
         // v7.15.12: Resolve attempt
         if ($attempt < 1) {

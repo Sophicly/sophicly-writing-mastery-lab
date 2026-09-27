@@ -61253,6 +61253,10 @@
                     const _srvWin = (!_isSeed && localContent && localContent.length >= 20)
                         ? _serverCopyWins(_docKey, res.doc && res.doc.savedAt) : { wins: false, conflict: false, why: 'n/a' };
                     if (_srvWin.wins) {
+                        // A mount re-writes the local copy without a server save, so "unsaved edits" can
+                        // be the same text as the server's. Only a real difference is a conflict.
+                        const _txt = (h) => { try { const d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); } catch (_) { return ''; } };
+                        if (_srvWin.conflict && _txt(localContent) === _txt(res.doc && res.doc.html)) _srvWin.conflict = false;
                         if (_srvWin.conflict) _stashConflict(_docKey, localContent, _srvWin.why);
                         else console.log('WML sync: the server copy is newer than this browser\'s (' + _srvWin.why + ') — loading the server copy');
                     }

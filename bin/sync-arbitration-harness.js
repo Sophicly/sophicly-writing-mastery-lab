@@ -102,5 +102,14 @@ ok((JS.match(/_serverChatWins\(savedChat, serverChat\)/g) || []).length === 2, '
 ok(/if \(_needChat \|\| _wantSidebar \|\| savedChat\)/.test(JS) && /if \(_needChat2 \|\| _wantSidebar2 \|\| savedChat\)/.test(JS), 'both pipelines ask the server even when this browser holds a chat');
 ok(/'savedAt' => \$data\['savedAt'\],\s*\/\/ v7\.20\.639/.test(PHP), 'the chat save response returns the server\'s savedAt');
 
+console.log('\nC · the server chat can actually be loaded (v7.20.639)');
+{
+    const body = (name) => { const i = PHP.indexOf('    public function ' + name + '('); const j = PHP.indexOf('\n    public function ', i + 10); return i < 0 ? '' : PHP.slice(i, j); };
+    const load = body('load_canvas_chat'), save = body('save_canvas_chat');
+    ok(!!load && !/count\(\$history\)/.test(load.split('$data = $raw')[0]), 'load_canvas_chat never counts $history before it exists (the pasted guard made every chat load a TypeError since 2026-07-27)');
+    ok(!/chat_turn_ceiling|chat_looping/.test(load), 'the runaway / loop guards are NOT in the load function');
+    ok(/chat_turn_ceiling = 600/.test(save) && /chat_looping/.test(save), 'they ARE still in save_canvas_chat, the one chat-save endpoint');
+}
+
 console.log('\n' + (fail ? '❌' : '✅') + ' sync-arbitration-harness: ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
