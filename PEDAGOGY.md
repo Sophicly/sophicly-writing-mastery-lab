@@ -2488,6 +2488,11 @@ practice with."*
 Revision order: the protagonist's journey first, then how the other themes and characters serve it. Expect
 theme or character; setting is possible (Sign of the Four, 2026).
 
+**What to STUDY (not what the question will be):** his pick #13 ("Character or Theme?", same source):
+*"students need to know both plus setting; I would also say they should understand relationships"*.
+So revision covers character, theme, setting AND relationships, even though the question itself
+is expected on theme or character.
+
 **Also recorded the same day (context, not new rules):** poetry — *"about five poems is the minimum that the
 students want to know well… any one of the 15 could come up"* (sits with CN-STANDARD "coverage is the
 strategy"); essays — *"priority is quality; however, if you can have quality and quantity it's even better"*;
