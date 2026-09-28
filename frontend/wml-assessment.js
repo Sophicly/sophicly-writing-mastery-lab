@@ -48975,6 +48975,8 @@
             // v7.20.629: a REDRAFT doc seeded from a post-.110 diagnostic carries ONE plan box per
             // question — upgrade it to the redraft scaffold the planning protocol files into (#569).
             _migrateStep('healDiagnosticPlanScaffold', _healDiagnosticPlanScaffold);
+            // v7.20.644 (#625): the question's "Aim for …" hint = the marking target.
+            _migrateStep('healWordTargetHints', _healWordTargetHints);
             // v7.20.49: AQA P2 planning — Predictions section (S1d commits file here).
             // v7.20.65: also the Phase-1 write doc (student self-fills; no chain there).
             _migrateStep('ensurePredictionsSection', _ensurePredictionsSection);
@@ -58243,6 +58245,16 @@
      * Returns { target, label } or null for list-format questions.
      * v7.14.16
      */
+    // v7.20.644 (#625): the MARKING target as a hint — null when this paper has no canonical table
+    // (falls back to the marks-derived guide), { target: 0 } when the question is not written.
+    function _canonicalWordHint(qId) {
+        const key = (typeof _multiqTargetKey === 'function') ? _multiqTargetKey() : null;
+        const row = key && MULTIQ_RESPONSE_TARGETS[key];
+        if (!row || !(String(qId) in row)) return null;
+        const t = row[qId];
+        return { target: t, label: `~${t} words` };
+    }
+
     function getQuestionWordTarget(qType, marks) {
         switch (qType) {
             case 'multiple_choice': return null;
@@ -58430,8 +58442,12 @@
             if (qMarks) qInner += `<p><em>[${qMarks} marks]</em></p>`;
             if (q.aos) qInner += `<p><em>${escapeHTML(q.aos)}</em></p>`;
             // Per-question word target hint
-            const wordTarget = qType ? getQuestionWordTarget(qType, qMarks) : null;
-            if (wordTarget) qInner += `<p><em>Aim for ${wordTarget.label}.</em></p>`;
+            // v7.20.644 (#625, §5d): the hint a student READS and the target the marker PENALISES
+            // were two tables (marks-derived here vs MULTIQ_RESPONSE_TARGETS) — AQA P1 Q5 said
+            // "~450–600" and was capped below 650. One source: the marking target wins wherever
+            // it exists (0 = nothing written, e.g. AQA P2 Q1's tick-box → no hint).
+            const wordTarget = _canonicalWordHint(qId) || (qType ? getQuestionWordTarget(qType, qMarks) : null);
+            if (wordTarget && wordTarget.target > 0) qInner += `<p><em>Aim for ${wordTarget.label}.</em></p>`;
             html += sectionHTML('question', `${qId}`, false, null, qInner);
 
             // v7.15.35: Plan for all AO2/AO3+ questions (>=5 marks), excluding retrieval & multiple_choice
@@ -65016,6 +65032,38 @@
      * Paragraph 1's box" — the approved plan then lands beneath them, the v7.20.217 append rule).
      * Idempotent: after one run no `Plan — Qn` section remains. Never runs in tutor/review view.
      */
+    // v7.20.644 (#625): existing docs carry the OLD marks-derived hint baked into each read-only
+    // question section. Rewrite it to the marking target (idempotent; untouched when it already
+    // matches or the paper has no canonical table). Never from a tutor's review view.
+    function _healWordTargetHints() {
+        if (!canvasEditor || state.reviewMode) return;
+        if (typeof _multiqTargetKey !== 'function' || !_multiqTargetKey()) return;
+        const html = canvasEditor.getHTML();
+        if (html.indexOf('Aim for ') === -1) return;
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        let changed = false;
+        tmp.querySelectorAll('[data-section-type="question"]').forEach(sec => {
+            const qId = (sec.getAttribute('data-section-label') || '').trim();
+            if (!/^Q\d$/.test(qId)) return;
+            const hint = _canonicalWordHint(qId);
+            if (!hint) return;
+            sec.querySelectorAll('em').forEach(em => {
+                const t = (em.textContent || '').trim();
+                if (!/^Aim for .*words\.$/.test(t)) return;
+                const want = `Aim for ${hint.label}.`;
+                if (hint.target > 0 && t === want) return;
+                const p = em.closest('p');
+                if (hint.target > 0) em.textContent = want;
+                else if (p) p.remove(); else em.remove();
+                changed = true;
+            });
+        });
+        if (!changed) return;
+        canvasEditor.commands.setContent(tmp.innerHTML, false);
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+    }
+
     function _healDiagnosticPlanScaffold() {
         if (!canvasEditor || state.reviewMode) return;
         const redraft = state.phase === 'redraft' || (state.draftType && state.draftType.includes('redraft'));
