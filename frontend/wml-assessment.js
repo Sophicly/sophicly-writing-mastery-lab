@@ -8187,9 +8187,22 @@
     }
     // Typed answers: the WHY line and the GOAL line. Consumed ONLY while the stage is live and the
     // question is on the screen, so ordinary chat after the assessment is never swallowed (§4d).
+    // v7.20.649 (#630 — Qamar 857 + Annaya 1398, measured): the stage "sits AFTER marking", but its
+    // typed consumer never checked that. With marks on both sides for ONE question it was already
+    // "eligible", so it ate (a) the silent "begin marking" hand-off — stored flagless, drawn as a
+    // student bubble, never sent (Qamar's prod chat ×3), and (b) the student's answer to Sophia's
+    // own per-question calibration question ("B) Paragraph 2" filed as the calibration GOAL, then
+    // "calibration filed" and marking stalled after Q2). Open = this chat has reached the closing
+    // [ASSESSMENT_COMPLETE] turn (the one place _maybeOpenCalibration opens it).
+    function _calibStageOpen() {
+        const h = (_chatShell && _chatShell.history) || [];
+        return h.some(function (m) { return m && m.role === 'assistant' && /\[ASSESSMENT_COMPLETE\]/i.test(String(m.content || '')); });
+    }
     function _calibHostConsumeTyped(msg) {
         const text = String(msg || '').trim();
         if (!text) return false;
+        if (canvasSilentSend) return false;          // a machine send is never a student's answer
+        if (!_calibStageOpen()) return false;        // mid-marking: every turn belongs to Sophia
         if (!_calibHostEligible() || _calibHostComplete()) return false;
         const groups = _calibGroups().filter((x) => x.mineNum !== null && x.actual);
         const pendingWhy = groups.find((x) => x.done && !x.answered);
@@ -17815,6 +17828,11 @@
                 const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
                     && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
                 if (marked) return;
+                // v7.20.649: re-send ONLY when the last hand-off got no reply — Sophia's first answer
+                // (recall feedback) carries no marker, and a reload after it must not send a second one.
+                let _lastHand = -1;
+                canvasChatHistory.forEach((m, i) => { if (m && m.role === 'user' && /SYSTEM \(not from the student\): the student has completed/.test(String(m.content || ''))) _lastHand = i; });
+                if (_lastHand !== -1 && canvasChatHistory.slice(_lastHand + 1).some(m => m && m.role === 'assistant')) return;
                 console.warn('WML assess-chain: setup complete but marking never started — re-sending the hand-off (liveness)');
                 _ladderHostHandBack();
             } catch (e) { console.warn('WML assess-chain: resume failed (non-fatal)', e && e.message); }
@@ -41435,6 +41453,11 @@
                                 const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
                                     && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
                                 if (marked) return;
+                                // v7.20.649: re-send ONLY when the last hand-off got no reply — Sophia's first answer
+                                // (recall feedback) carries no marker, and a reload after it must not send a second one.
+                                let _lastHand = -1;
+                                canvasChatHistory.forEach((m, i) => { if (m && m.role === 'user' && /SYSTEM \(not from the student\): the student has completed/.test(String(m.content || ''))) _lastHand = i; });
+                                if (_lastHand !== -1 && canvasChatHistory.slice(_lastHand + 1).some(m => m && m.role === 'assistant')) return;
                                 console.warn('WML assess-chain: setup complete but marking never started — re-sending the hand-off (liveness)');
                                 _ladderHostHandBack();
                             } catch (e) { console.warn('WML assess-chain: resume failed (non-fatal)', e && e.message); }

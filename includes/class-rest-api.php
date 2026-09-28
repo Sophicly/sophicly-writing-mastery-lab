@@ -5828,6 +5828,15 @@ class SWML_REST_API {
 
     public static function reset_marking_output($html) {
         if (empty($html) || strpos($html, 'data-section-label="Feedback: ') === false) return $html;
+        // v7.20.649: the rest of the marking OUTPUT a fresh marking stage must not inherit — the
+        // calibration rows (they drive the calibration stage: carried Phase-1 decisions made it
+        // think a redraft calibration was already done) and the Overall Feedback body.
+        $html = preg_replace('/(<div[^>]*data-field-id="calib-[^"]+"[^>]*>)(.*?)(<\/div>)/s', '$1$3', $html);
+        $html = preg_replace(
+            '/(<div[^>]*data-section-type="feedback"[^>]*data-section-label="Overall Feedback"[^>]*>)(.*?)(<\/div>)(?=\s*<div[^>]*data-section-type=|\s*$)/s',
+            '$1<p><em>Your examiner’s overall summary — holistic evaluation, key strength, and priority targets — will appear here once your assessment is complete.</em></p>$3',
+            $html
+        );
         return preg_replace_callback(
             '/(<div[^>]*data-section-type="feedback"[^>]*data-section-label="Feedback: )([^"(]*?)\s*\(\s*[^"\/]*\/\s*(\d+)\s*\)("[^>]*>)(.*?)(<\/div>)(?=\s*<div[^>]*data-section-type=|\s*$)/s',
             function ($m) {
