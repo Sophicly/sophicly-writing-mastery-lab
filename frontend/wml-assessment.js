@@ -4472,6 +4472,20 @@
 
         var anyBox = false, active = null, activeQ = '', reg = null;
         var _qOrder = _ladderQuestionOrder();
+        // v7.20.645 (#627, Anam 1298, measured on prod): CROSS-QUESTION implication — the same
+        // "the chat moved past it" rule the synthetic els use below, one level up. A question with
+        // empty filing boxes that sits BEFORE a question already holding filed work is not the
+        // active one: her Q2 was planned in June in the old shape (plan boxes only, no inference
+        // outline rows), so the cursor pinned every Q3 verdict to `outline-body-1-inf1-topic-q2`
+        // while Sophia walked — and filed — Q3 correctly.
+        var _laterFilled = {}, _seenFilled = false;
+        for (var qb = _qOrder.length - 1; qb >= 0; qb--) {
+            _laterFilled[_qOrder[qb]] = _seenFilled;
+            var rb = _ladderRegistry(_qOrder[qb]);
+            for (var ib = 0; ib < rb.length && !_seenFilled; ib++) {
+                if (rb[ib].resolveBy !== 'stamp' && _ladderFieldState(rb[ib].resolveBy) === 'filled') _seenFilled = true;
+            }
+        }
         for (var qi = 0; qi < _qOrder.length && !active; qi++) {
             var qk = _qOrder[qi];
             var r = _ladderRegistry(qk);
@@ -4485,6 +4499,7 @@
             }
             if (!present) continue;                    // question not planned in this doc → skip whole
             anyBox = true;
+            if (_laterFilled[qk]) continue;            // v7.20.645: a later question holds filed work → moved past
             // Pass 2: first unresolved element. Synthetic (stamp) els also resolve by IMPLICATION:
             // if any LATER element of this question is already filled/resolved, the chat moved past
             // the synthetic beat (missed marker / legacy mid-plan doc) — never pin the TELL to a

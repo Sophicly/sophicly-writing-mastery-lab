@@ -141,6 +141,12 @@ mkDoc(monolithDoc({ 'outline-body-1-inf1-topic-q2': 'their filed idea' }));
 stA = call('deriveLadderState', []);
 ok(stA && stA.el === 'outline-body-1-inf1-evidence-q2',
    'A7: synthetic unstamped but LATER box filled → implied resolved, active moves on (no wedge)', stA && stA.el);
+// v7.20.645 (#627, Anam 1298 measured on prod): Q2 boxes EMPTY (planned in June in the old shape)
+// while Q3 already holds filed work → the cursor must be on Q3, not pinned to Q2's first el.
+mkDoc(monolithDoc({ 'outline-body-1-topic-q3': 'filed', 'outline-body-1-evidence-q3': 'filed', 'outline-body-1-analysis-q3': 'filed', 'outline-body-1-effects-q3': 'filed', 'outline-body-1-effects2-q3': 'filed', 'outline-body-1-purpose-q3': 'filed', 'outline-body-2-topic-q3': 'filed' }));
+stA = call('deriveLadderState', []);
+ok(stA && stA.question === 'q3' && !/q2/.test(String(stA.el)),
+   'A7b: earlier question empty but a LATER question holds filed work → active follows the work (Q3), never pinned to Q2', stA && `${stA.el}/${stA.question}`);
 // All-absent (legacy pre-outline bake) → dormant + warn, NEVER done-on-empty:
 warns.length = 0;
 mkDoc([{ fieldId: 'some-legacy-box', text: '' }]);
