@@ -5816,6 +5816,16 @@ class SWML_REST_API {
      * the stored HTML, so a box's body ends at the `</div>` that is followed by the next section
      * (or the end). Public so a one-off repair runs the exact same transform.
      */
+    /** v7.20.648 (#630): the student's own pre-marking rows in a marking-stage doc, fid → text. */
+    private static function self_marking_fields($html) {
+        $out = [];
+        if (empty($html) || (strpos($html, 'sa-ms-') === false && strpos($html, 'calib-') === false)) return $out;
+        if (preg_match_all('/data-field-id="((?:sa-ms|calib)-[^"]+)"[^>]*>(.*?)<\/div>/s', $html, $m, PREG_SET_ORDER)) {
+            foreach ($m as $x) $out[$x[1]] = trim(preg_replace('/\s+/', ' ', html_entity_decode(wp_strip_all_tags($x[2]), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+        }
+        return $out;
+    }
+
     public static function reset_marking_output($html) {
         if (empty($html) || strpos($html, 'data-section-label="Feedback: ') === false) return $html;
         return preg_replace_callback(
@@ -6008,6 +6018,21 @@ class SWML_REST_API {
             // doc is still caught by the label guard above (labels carry "(N / M)" incl.
             // zeros) and by the attempt-index stamp below.
             if (preg_match('/Total Marks:\s*(?:<[^>]+>\s*)*([\d.]+)/', $html, $tm) && (float) $tm[1] > 0) return true;
+        }
+        // 1b. v7.20.648 (FIXLIST #630, Qamar 857): PRE-MARKING WORK GUARD. A marking stage holds
+        //     work the student does BEFORE any mark exists — the self-marking walk writes sa-ms-*
+        //     rows (and the calibration writes calib-*) into THIS doc. Reseed-until-marked would
+        //     replace those with the upstream copy on the next load. Protect them: if any such
+        //     field holds a value the upstream seed would not bring, the student worked here → frozen.
+        if ($signal === 'marked' && $html !== '' && $canvas_meta_key !== '') {
+            $mine = self::self_marking_fields($html);
+            if (!empty($mine)) {
+                $up = $this->seed_from_sibling_stage($user_id, $board, $text, $topic_number, $canvas_meta_key, $suffix, $attempt);
+                $theirs = self::self_marking_fields((string) $up);
+                foreach ($mine as $fid => $val) {
+                    if ($val !== '' && (string) ($theirs[$fid] ?? '') !== $val) return true;
+                }
+            }
         }
         // 2. Graded stages — attempt-index stamp.
         if ($signal === 'marked') {

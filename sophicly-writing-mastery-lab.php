@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.647
+ * Version: 7.20.648
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.647');
+define('SWML_VERSION', '7.20.648');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -692,7 +692,7 @@ class Sophicly_Writing_Mastery_Lab {
             // task-name string checks. Same builder feeds BOTH localize sites so they
             // cannot drift. A dev-only parity guard asserts new===old before any conversion.
             'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
-            // v7.20.647 (#620): papers whose assessment emits [ASSESSMENT_COMPLETE] — derived.
+            // v7.20.648 (#620): papers whose assessment emits [ASSESSMENT_COMPLETE] — derived.
             'assessMarkerPapers' => SWML_Protocol_Router::assessment_marker_papers(),
             // v7.19.823: server-derived FQ activation — bank basenames + alias forms.
             'fqBankTexts' => $this->get_fq_bank_texts(),
@@ -1278,7 +1278,7 @@ class Sophicly_Writing_Mastery_Lab {
                 // v7.19.x Commit 1: server-owned canonical task-caps (same builder as the
                 // standalone-page localize site above so the two payloads cannot drift).
                 'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
-                // v7.20.647 (#620): papers whose assessment emits [ASSESSMENT_COMPLETE] — derived.
+                // v7.20.648 (#620): papers whose assessment emits [ASSESSMENT_COMPLETE] — derived.
                 'assessMarkerPapers' => SWML_Protocol_Router::assessment_marker_papers(),
                 // v7.19.823: server-derived FQ activation (same builder as the standalone site).
                 'fqBankTexts' => $this->get_fq_bank_texts(),
