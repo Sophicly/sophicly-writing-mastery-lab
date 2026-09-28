@@ -16199,8 +16199,8 @@
         const r = _healFossilTurns(chat.history);
         if (!r.healed) return chat;
         chat.history = r.history;
-        console.warn('WML Fossil heal: rewrote ' + r.healed + ' frozen plot-structure turn(s) to the live token (' + (where || '?') + '). '
-            + 'These were saved before v7.20.324 and would otherwise announce a structure the student has since changed.');
+        console.warn('WML Fossil heal: rewrote ' + r.healed + ' stored turn(s) (' + (where || '?') + ') — a frozen plot-structure name → '
+            + 'the live token (saved before v7.20.324), or the assessment wrap line’s raw <strong> → markdown (saved before v7.20.650).');
         return chat;
     }
 
