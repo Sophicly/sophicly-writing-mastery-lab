@@ -128,6 +128,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/mc-gate-harness.js || fail=1
 fi
 
+# v7.20.650 (FIXLIST #635–#637): the feedback cards' Previous · Best line and the per-paragraph
+# pop-out. The comparison rule and the quote→paragraph matcher are extracted from the shipped file
+# and driven through the measured document shapes; the server half's decode/dedupe/access contract
+# and the chip's LearnChip mold are checked at the source.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-canvas\.css|class-rest-api\.php|para-pop-harness\.js|question-history-harness\.js'; then
+  node bin/para-pop-harness.js || fail=1
+  node bin/question-history-harness.js || fail=1
+fi
+
 # v7.20.636: a graded quiz is scored ONLY when its bank is reachable from the slug the live lesson
 # sends, and the controller must never hand a graded quiz to the unscored AI (AIC finals, prod
 # 2026-09-26: bank filed as an_inspector_calls.md, lessons send inspector_calls). Fires on any bank

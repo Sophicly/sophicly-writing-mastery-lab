@@ -199,6 +199,7 @@ ok(/actual: _calibActualFor\(k\.q, k\.ao, k\.max\)/.test(JS), '_calibGroups asks
     };
     vm.createContext(ctx);
     vm.runInContext(kbSrc + sl('_ladderFids') + sl('_ladderRowText') + sl('_ladderHostGroups') + sl('_paraKey') + sl('_calibDocKey') + sl('_predKey')
+        + sl('_predFromDoc') + sl('_predFromChat')
         + sl('_getPredicted') + sl('_setPredicted') + sl('_ladderFeedPrediction') + sl('_calibActualFor'), ctx);
     const run = (code) => vm.runInContext(code, ctx);
     run("_ladderFeedPrediction('Q2', 'aqa_lang1_q2_ao2', 6)");
@@ -208,6 +209,20 @@ ok(/actual: _calibActualFor\(k\.q, k\.ao, k\.max\)/.test(JS), '_calibGroups asks
     rows['sa-ms-aqa_lang1_q5_ao5-mark'] = '18 / 24';
     run("_ladderFeedPrediction('Q5', 'aqa_lang1_q5_ao6', 14)");
     ok(run("_getPredicted('5')") === 32, 'Q5 after AO6: prediction = 18 + 14 = 32 (the sum, against the /40 box) — got ' + run("_getPredicted('5')"));
+    // v7.20.650 (#634): the prediction is READ FROM THE DOCUMENT — the tutor's browser (and any
+    // other device) has no localStorage entry, which is exactly why Neil saw "Predicted —".
+    rows['sa-ms-aqa_lang1_q3_ao2-mark'] = '6 / 8';
+    ok(run("_getPredicted('3')") === 6, 'Q3 with NO cached prediction: 6 read straight from the document row (tutor view / another device)');
+    rows['sa-ms-aqa_lang1_q5_ao6-mark'] = '12 / 16';
+    ok(run("_getPredicted('5')") === 30, 'Q5 both rows in the document: 18 + 12 = 30 — the document outranks this browser\'s cached 32');
+    store['swml_pred:/t:a1:Q1'] = '4';
+    ctx.state.reviewMode = true;
+    ok(run("_getPredicted('1')") === null, 'review mode never reads this browser\'s cache (a tutor would be shown another student\'s prediction)');
+    ctx.state.reviewMode = false;
+    ok(run("_getPredicted('1')") === 4, 'CONTROL: outside review mode the cached value still serves');
+    ctx._canvasHistoryHook = () => [{ role: 'user', content: 'Predicted Q4 mark: 12/20. Self-rating: 3/5.' }];
+    ok(run("_getPredicted('4')") === 12, 'no ladder rows for Q4 → the transcript\'s own reflect line "Predicted Q4 mark: 12/20" (server-held)');
+    ctx._canvasHistoryHook = null;
     secs.push({ label: 'Feedback: Q2 (5 / 8)', text: 'Mark Breakdown …' });
     secs.push({ label: 'Feedback: Q5 (30 / 40)', text: 'Holistic marks: Content & Organisation (AO5): 17/24 — sits in the upper band. Technical Accuracy (AO6): 13/16 — Level 3.' });
     const a2 = run("_calibActualFor('Q2', 'AO2', 8)"), a5 = run("_calibActualFor('Q5', 'AO5', 24)"), a6 = run("_calibActualFor('Q5', 'AO6', 16)");

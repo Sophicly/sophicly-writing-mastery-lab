@@ -6534,7 +6534,59 @@
         try { return location.pathname + ':a' + ((state && state.attempt) || ''); } catch (_) { return 'wml'; }
     }
     function _predKey(qNum) { return 'swml_pred:' + _calibDocKey() + ':Q' + qNum; }
+    // ⭐ v7.20.650 (#634 — Neil: "we replaced it with the mark scheme self-assessment, which
+    // includes the prediction. But that's not showing"). MEASURED on 1938's reassessment
+    // (staging): the document holds the student's own marks (sa-ms Q2 5/8 · Q3 6/8 · Q4 13/20 ·
+    // Q5 15/24 + 12/16) while every card read "Predicted —", because this function read ONLY
+    // localStorage — which lives in the student's own browser (never a tutor's, never another
+    // device) and is keyed without a user id (a tutor could be shown ANOTHER student's
+    // prediction for the same lesson). The prediction is now DERIVED from what the server holds:
+    //   1. the document's Mark-Scheme Self-Assessment rows — the SUM of every scheme of that
+    //      question, only once all of them are marked (_ladderFeedPrediction's own rule);
+    //   2. the chat transcript's code-composed reflect line "Predicted Qn mark: X/Y" (boards
+    //      without the ladder — the in-chat reflect panel, v7.19.608);
+    //   3. this browser's cache — never in review mode.
+    // Every reader (card readout, Feedback pad, sidebar beat, calibration) goes through here.
+    let _canvasHistoryHook = null;   // set by both canvas chat pipelines (closure-local history)
+    function _predFromDoc(qKey) {
+        try {
+            const schemes = _ladderSchemeKeysFor().filter(k => _paraKey(k.q) === qKey);
+            if (!schemes.length) return null;
+            // _paraKey folds "Q27.1" and "Q27.2" (AQA unseen) into '27' — summing across two
+            // questions would be a wrong number, so an ambiguous key predicts nothing.
+            if (schemes.some(k => k.q !== schemes[0].q)) return null;
+            let sum = 0;
+            for (const k of schemes) {
+                const m = /(\d+(?:\.\d+)?)/.exec(_ladderRowText(_ladderFids(k.key).mark));
+                if (!m) return null;                        // not every scheme of this question is marked yet
+                sum += parseFloat(m[1]);
+            }
+            return Math.round(sum);
+        } catch (e) { return null; }
+    }
+    function _predFromChat(qKey) {
+        try {
+            const h = typeof _canvasHistoryHook === 'function' ? _canvasHistoryHook() : null;
+            if (!Array.isArray(h)) return null;
+            for (let i = h.length - 1; i >= 0; i--) {
+                const t = h[i];
+                if (!t || t.role !== 'user' || typeof t.content !== 'string' || t.content.indexOf('Predicted ') === -1) continue;
+                const re = /Predicted (.+?) mark: (\d+)\/\d+\./g;
+                let x, found = null;
+                while ((x = re.exec(t.content))) { if (_paraKey(x[1]) === qKey) found = parseInt(x[2], 10); }
+                if (found != null) return found;
+            }
+        } catch (e) {}
+        return null;
+    }
     function _getPredicted(qNum) {
+        const qKey = String(qNum == null ? '' : qNum);
+        if (!qKey) return null;
+        const fromDoc = _predFromDoc(qKey);
+        if (fromDoc != null) return fromDoc;
+        const fromChat = _predFromChat(qKey);
+        if (fromChat != null) return fromChat;
+        if (state && state.reviewMode) return null;   // never this browser's cache for someone else's doc
         try { const v = parseInt(localStorage.getItem(_predKey(qNum)), 10); return (isNaN(v) || v < 0) ? null : v; } catch (_) { return null; }
     }
     function _setPredicted(qNum, val) {
@@ -6548,6 +6600,102 @@
             const prefix = 'swml_pred:' + (docKey || _calibDocKey()) + ':';
             Object.keys(localStorage).filter(k => k.indexOf(prefix) === 0).forEach(k => localStorage.removeItem(k));
         } catch (_) {}
+    }
+    // ⭐ v7.20.650 (#635/#636 — Neil: "predicted versus actual versus previous… in the redraft to
+    // see how that compares to the diagnostic. What was improved and what wasn't… what about
+    // versus best… for each question"). Under each feedback card's Predicted · Actual · Δ:
+    //   Previous = this question's mark on the LATEST earlier attempt at this paper
+    //              (a redraft → its own diagnostic; Topic 2's diagnostic → Topic 1's redraft);
+    //   Best     = the HIGHEST earlier mark for this question — shown only when it is a
+    //              different attempt from Previous;
+    //   ▲ / = / ▼ = what this attempt improved, kept or dropped.
+    // Marks come from /canvas/question-history (the saved documents' own box labels). Boxes are
+    // keyed with _paraKey — the SAME builder that keys the card — and compared only at the same
+    // maximum (which also separates AQA's Q27.1 /24 from Q27.2 /8 that _paraKey folds together).
+    let _qHist = { id: '', status: 'idle', attempts: [] };
+    let _overlaysOnlyRefresh = null;   // buildDropdownOverlays alone — set in the canvas closure
+    function _qHistIdentity() {
+        let text = state.text || '';
+        try { const sc = WML.canvasDocScope && WML.canvasDocScope(); if (sc && sc.text) text = sc.text; } catch (_) {}
+        return [state.board || '', text, (state.reviewMode && state.reviewStudentId) || 0].join('|');
+    }
+    function _qHistEnsure() {
+        const id = _qHistIdentity();
+        if (_qHist.id === id && _qHist.status !== 'idle') return;
+        const parts = id.split('|');
+        if (!parts[0] || !parts[1]) { _qHist = { id: id, status: 'error', attempts: [] }; return; }
+        _qHist = { id: id, status: 'loading', attempts: [] };
+        const url = config.restUrl + 'canvas/question-history?board=' + encodeURIComponent(parts[0])
+            + '&text=' + encodeURIComponent(parts[1]) + (parts[2] && parts[2] !== '0' ? '&student_id=' + encodeURIComponent(parts[2]) : '');
+        fetch(url, { headers }).then(r => (r.ok ? r.json() : null)).then(res => {
+            if (_qHist.id !== id) return;                       // the lesson changed mid-flight
+            _qHist = { id: id, status: 'ready', attempts: (res && res.success && Array.isArray(res.attempts)) ? res.attempts : [] };
+            try { if (typeof _overlaysOnlyRefresh === 'function') _overlaysOnlyRefresh(); } catch (_) {}
+        }).catch(() => { if (_qHist.id === id) _qHist.status = 'error'; });
+    }
+    function _qHistSig() { return _qHist.id + ':' + _qHist.status + ':' + _qHist.attempts.length; }
+    // Which phase this document belongs to: 'redraft' (Phase 2) or 'initial' (Phase 1).
+    function _docPhase() {
+        let sfx = '';
+        try { sfx = (WML.resolveCanvasSuffix && WML.resolveCanvasSuffix(state.task, state.phase)) || ''; } catch (_) {}
+        return (sfx === '_reassessment' || sfx === '_redraft' || state.phase === 'redraft') ? 'redraft' : 'initial';
+    }
+    function _qHistCurrent() {
+        let topic = state.topicNumber;
+        try { const sc = WML.canvasDocScope && WML.canvasDocScope(); if (sc && sc.topic) topic = sc.topic; } catch (_) {}
+        return { topic: parseInt(topic, 10) || 0, phase: _docPhase(), attempt: _canvasAttempt() || 1 };
+    }
+    // ── @QHIST-PURE (bin/question-history-harness.js drives these; keep them pure) ──
+    function _qHistOrder(a) { return [parseInt(a.topic, 10) || 0, a.phase === 'redraft' ? 1 : 0, parseInt(a.attempt, 10) || 1]; }
+    function _qHistBefore(a, b) {
+        const x = _qHistOrder(a), y = _qHistOrder(b);
+        for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] < y[i];
+        return false;
+    }
+    function _qHistCompare(attempts, cur, qKey, max, keyFn) {
+        let prev = null, best = null;
+        (attempts || []).forEach(a => {
+            if (!a || !_qHistBefore(a, cur)) return;              // strictly earlier attempts only
+            let box = null;
+            Object.keys(a.boxes || {}).forEach(name => {
+                const b = a.boxes[name];
+                if (!box && b && keyFn(name) === qKey && +b.max === +max) box = b;
+            });
+            if (!box) return;
+            const e = { mark: +box.mark, max: +box.max, topic: parseInt(a.topic, 10) || 0, phase: a.phase, attempt: parseInt(a.attempt, 10) || 1 };
+            if (!prev || _qHistBefore(prev, e)) prev = e;
+            if (!best || e.mark > best.mark || (e.mark === best.mark && _qHistBefore(best, e))) best = e;
+        });
+        return { prev: prev, best: best };
+    }
+    // ── @QHIST-PURE-END ──
+    function _qHistLabel(e) {
+        return 'Topic ' + e.topic + ' ' + (e.phase === 'redraft' ? 'redraft' : 'diagnostic') + (e.attempt > 1 ? ', attempt ' + e.attempt : '');
+    }
+    function _qHistDelta(now, then) {
+        const d = Math.round((now - then) * 2) / 2;
+        if (d > 0) return '<span class="swml-hist-up">▲ +' + d + '</span>';
+        if (d < 0) return '<span class="swml-hist-down">▼ −' + Math.abs(d) + '</span>';
+        return '<span class="swml-hist-same">= same</span>';
+    }
+    // ONE builder for both surfaces (the card row and the Feedback-pad rebuild). '' = nothing earlier.
+    function _qHistReadoutHTML(qKey, currentMarks, maxMarks) {
+        try {
+            if (!qKey) return '';
+            _qHistEnsure();
+            if (_qHist.status !== 'ready') return '';
+            const h = _qHistCompare(_qHist.attempts, _qHistCurrent(), String(qKey), maxMarks, _paraKey);
+            if (!h.prev) return '';
+            const marked = currentMarks != null && currentMarks >= 0;
+            let out = '<span>Previous <strong>' + h.prev.mark + '</strong> <span class="swml-hist-src">(' + _qHistLabel(h.prev) + ')</span>'
+                + (marked ? ' ' + _qHistDelta(currentMarks, h.prev.mark) : '') + '</span>';
+            const same = h.best && h.best.topic === h.prev.topic && h.best.phase === h.prev.phase && h.best.attempt === h.prev.attempt;
+            if (h.best && !same) {
+                out += '<span style="opacity:0.3">·</span><span>Best <strong>' + h.best.mark + '</strong> <span class="swml-hist-src">(' + _qHistLabel(h.best) + ')</span>'
+                    + (marked ? ' ' + _qHistDelta(currentMarks, h.best.mark) : '') + '</span>';
+            }
+            return out;
+        } catch (e) { return ''; }
     }
     function _toleranceFor(max) { const m = parseInt(max, 10); if (!m || m <= 8) return 1; if (m <= 20) return 2; return 3; }
     function _calibVerdict(pred, act, max) {
@@ -7094,6 +7242,7 @@
                 // v7.19.949: chip the just-filed penalty lines in place (idempotent txn pass;
                 // runs BEFORE the scroll so the target rect maths sees final content).
                 try { _healLearnChips(); } catch (_) { /* heal is best-effort */ }
+                try { _healParaPopChips(); } catch (_) { /* heal is best-effort */ }
                 try {
                     // v7.19.758: match by the canonical _paraKey, NOT the first digit —
                     // Intro/Conclusion have no digit and silently never scrolled.
@@ -7780,6 +7929,9 @@
     // v7.20.556 (#426): the CW trial's draft pad — same hook shape as the essay pad above,
     // because the pads live in the canvas closure and the trial walk is module-scope.
     let _openTrialDraftPadHook = null;
+    // v7.20.650 (#637): the per-paragraph pop-out pads — same hook shape (the pads live in the
+    // canvas closure; the chip click is module-scope).
+    let _openParaPadHook = null;
     // ⭐ v7.20.558 (#430) — the marking LEVELS pad. Same hook shape; a close hook too, because
     // the pad is ephemeral: it exists only while an element is being judged.
     let _openLadderPadHook = null;
@@ -8271,12 +8423,55 @@
         if (_calibHandBack._fired) return;
         _calibHandBack._fired = true;
         _calibPersist();
-        const done = 'That is your calibration filed — your own judgement, mine, and what you decided after seeing both. It travels with you into your planning and your polishing.';
+        // v7.20.650 (#632): phase-aware — after a redraft, planning and polishing are already
+        // behind the student, so the calibration travels into the NEXT assessment.
+        const into = _docPhase() === 'redraft' ? 'your next assessment' : 'your planning and your polishing';
+        const done = 'That is your calibration filed — your own judgement, mine, and what you decided after seeing both. It travels with you into ' + into + '.';
         try {
             _chatShell.addMsg(formatAI(done), 'ai', done, { suppressActions: true });
             WML.recordTurn(_chatShell.history, { role: 'assistant', content: done }, { durable: true, why: 'a past-event report — the calibration was filed' });
             try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (e) {}
+            _calibOfferFinish();
         } catch (e) {}
+    }
+    // v7.20.650 (#632, §4d): the hand-back ENDS ON A BUTTON. The closing row it followed
+    // ("✓ Nothing to revisit — finish" …) was cleared by the calibration's own bubbles, so the
+    // staging driver met a screen with no question and no chip. Also re-offered by the resume
+    // hook when a reload lands here (chips are never saved).
+    function _calibOfferFinish() {
+        try {
+            if (!_chatShell || !_chatShell.messages) return;
+            const bar = el('div', { className: 'swml-quick-actions' });
+            bar.appendChild(el('button', {
+                className: 'swml-quick-btn', textContent: '✓ Nothing to revisit — finish',
+                onClick: () => { bar.remove(); _assessFinishNow(); },
+            }));
+            bar.appendChild(el('button', {
+                className: 'swml-quick-btn', textContent: '🔁 Revisit a question',
+                onClick: () => {
+                    bar.remove();
+                    if (_chatShell.textarea && _chatShell.send) { _chatShell.textarea.value = 'I’d like to revisit a question.'; _chatShell.send(); }
+                },
+            }));
+            const last = _chatShell.messages.lastElementChild;
+            ((last && (last.querySelector('.swml-bubble-content') || last)) || _chatShell.messages).appendChild(bar);
+        } catch (e) { console.warn('WML calibration: finish offer skipped —', e && e.message); }
+    }
+    // The assessment's terminal wrap — ONE routine for the closing row's finish button and the
+    // hand-back's. Markdown, rendered through formatAI exactly as every replay renders it (#638).
+    const _ASSESS_DONE_LINE = 'Perfect — that wraps your assessment. When you’re ready, click **Mark Complete** to save it.';
+    // refs = the calling pipeline's own { addMsg, history, getChatId }; default = the active shell.
+    function _assessFinishNow(refs) {
+        try {
+            const sh = refs || _chatShell;
+            if (!sh || !sh.addMsg || !sh.history) return;
+            const u = 'Nothing to revisit — let’s finish.';
+            sh.addMsg(u, 'user');
+            WML.recordTurn(sh.history, { role: 'user', content: u }, { durable: true, why: 'the student sent it — it happened, it stays' });
+            sh.addMsg(formatAI(_ASSESS_DONE_LINE), 'ai', _ASSESS_DONE_LINE, { suppressActions: true });
+            WML.recordTurn(sh.history, { role: 'assistant', content: _ASSESS_DONE_LINE }, { durable: true, why: 'a real turn that closed the session' });
+            try { saveCanvasChat(sh.history, sh.getChatId ? sh.getChatId() : ''); } catch (e) {}
+        } catch (e) { console.warn('WML assess-finish: skipped —', e && e.message); }
     }
     // The document section — ONE producer, used by the templates AND the on-load heal, exactly as
     // the ladder section is. A NEW section (not extra rows inside the ladder's) precisely so the
@@ -8954,6 +9149,7 @@
                     const present = {};
                     for (let k = child.childCount - 1; k >= 0; k--) {
                         const inl = child.child(k);
+                        if (inl.type.name === 'paraPop') continue;   // v7.20.650: a pop-out chip is not the end of the learn-chip run
                         if (inl.type.name !== 'learnChip') break;
                         present[inl.attrs.dest + ':' + inl.attrs.arg] = true;
                     }
@@ -8982,6 +9178,171 @@
         } catch (e) { console.warn('WML learn-chip heal: skipped —', e && e.message); }
     }
     try { window.WML.healLearnChips = _healLearnChips; } catch (_) {}
+
+    // ⭐ v7.20.650 (#637): POP-OUT CHIPS — the _healLearnChips shape (PM transactions only,
+    // idempotent, same cadence). In a MARKED question feedback box, every "Your paragraph: "…""
+    // line (also introduction / conclusion / response / answer) gets a 'para' chip; a marked box
+    // with no such line, whose question has a single-field prose answer (Q5's holistic block),
+    // gets ONE 'whole' chip on its first line. Content-driven — never a task or question name.
+    const PARA_POP_LINE_RE = /^\s*Your\s+(?:paragraph|introduction|intro|conclusion|response|answer|opening|ending)\s*:\s*["“‘']/i;
+    function _healParaPopChips() {
+        try {
+            if (!canvasEditor || canvasEditor.isDestroyed) return;
+            if (!(canvasEditor.schema && canvasEditor.schema.nodes && canvasEditor.schema.nodes.paraPop)) return;
+            const doc = canvasEditor.state.doc;
+            const responses = [];
+            doc.descendants((node) => {
+                if (node.type.name !== 'sectionBlock') return true;
+                if (((node.attrs && node.attrs.sectionType) || '') === 'response') {
+                    let fields = 0, filled = 0;
+                    node.descendants(c => {
+                        if (c.type.name !== 'inputField') return true;
+                        fields++;
+                        if ((c.textContent || '').trim()) filled++;
+                        return false;
+                    });
+                    responses.push({ label: (node.attrs && node.attrs.label) || '', fields: fields, filled: filled });
+                }
+                return false;
+            });
+            const proseAnswer = (base) => {
+                const r = responses.length === 1 ? responses[0]
+                    : (responses.find(x => _paraKey(x.label) === _paraKey(base)) || null);
+                return !!(r && r.fields === 1 && r.filled === 1);
+            };
+            const inserts = [];
+            doc.descendants((node, pos) => {
+                if (node.type.name !== 'sectionBlock') return true;
+                if (((node.attrs && node.attrs.sectionType) || '') !== 'feedback') return false;
+                const m = /^Feedback:\s*(.+?)\s*\((\d+(?:\.\d+)?)\s*\/\s*\d+\)$/.exec((node.attrs && node.attrs.label) || '');
+                if (!m) return false;                       // unmarked box, Overall Feedback, Analytics
+                let quoteLines = 0, hasWhole = false, first = null;
+                node.descendants((child, childPos) => {
+                    if (!child.isTextblock) return true;
+                    const endAt = pos + 1 + childPos + child.nodeSize - 1;
+                    let has = false;
+                    child.forEach(inl => {
+                        if (inl.type.name !== 'paraPop') return;
+                        has = true;
+                        if (inl.attrs && inl.attrs.mode === 'whole') hasWhole = true;
+                    });
+                    const text = child.textContent || '';
+                    if (!first && text.trim()) first = { endAt: endAt };
+                    if (PARA_POP_LINE_RE.test(text)) {
+                        quoteLines++;
+                        if (!has) inserts.push({ at: endAt, mode: 'para' });
+                    }
+                    return false;
+                });
+                if (!quoteLines && !hasWhole && first && proseAnswer(m[1])) inserts.push({ at: first.endAt, mode: 'whole' });
+                return false;
+            });
+            if (!inserts.length) return;
+            inserts.sort((a, b) => b.at - a.at);          // descending: earlier positions stay valid
+            inserts.forEach(i => {
+                canvasEditor.commands.insertContentAt(i.at, { type: 'paraPop', attrs: { mode: i.mode } });
+            });
+            console.log('[WML para-pop] healed ' + inserts.length + ' pop-out chip(s)');
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) { console.warn('WML para-pop heal: skipped —', e && e.message); }
+    }
+    // The student's own answer to a question, as paragraphs — read from the DOCUMENT MODEL (a
+    // response is one inline input field whose paragraphs are separated by a blank line of hard
+    // breaks), never from Sophia's quote, which she shortens with "…". One response section →
+    // it is the answer for every box (literature essays); several → matched by question key.
+    function _responseParagraphs(base) {
+        try {
+            if (!canvasEditor || canvasEditor.isDestroyed) return [];
+            const rs = [];
+            canvasEditor.state.doc.descendants(node => {
+                if (node.type.name !== 'sectionBlock') return true;
+                if (((node.attrs && node.attrs.sectionType) || '') === 'response') rs.push(node);
+                return false;
+            });
+            const r = rs.length === 1 ? rs[0] : (rs.find(n => _paraKey((n.attrs && n.attrs.label) || '') === _paraKey(base)) || null);
+            if (!r) return [];
+            const out = [];
+            r.descendants(c => {
+                if (c.type.name !== 'inputField') return true;
+                const t = c.textBetween(0, c.content.size, '\n', leaf => (leaf.type.name === 'hardBreak' ? '\n' : ''));
+                t.split(/\n[ \t]*\n+/).map(s => s.trim()).filter(Boolean).forEach(s => out.push(s));
+                return false;
+            });
+            return out;
+        } catch (e) { return []; }
+    }
+    // ── @PARA-POP-PURE (bin/para-pop-harness.js drives these three; keep them pure) ──
+    function _paraPopNorm(s) {
+        return String(s || '').toLowerCase().replace(/[‘’“”"'`´]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    // The quoted text after "Your …:", cut at Sophia's first ellipsis (what follows it is a
+    // later sentence, not a continuation).
+    function _paraPopQuote(line) {
+        const m = /:\s*["“‘']?([\s\S]*)$/.exec(String(line || ''));
+        const q = (m ? m[1] : String(line || '')).split(/\.\.\.|…/)[0];
+        return q.replace(/["”’']\s*$/, '');
+    }
+    // Index of the paragraph whose text contains the longest run of the quote's opening words
+    // (≥4, or the whole quote when shorter). null = no confident match — the caller falls back
+    // to the line's position, never to a guess dressed as a match.
+    function _paraPopMatch(quote, paras) {
+        const qw = _paraPopNorm(quote).split(' ').filter(Boolean).slice(0, 12);
+        if (qw.length < 3 || !Array.isArray(paras)) return null;
+        let best = null, bestScore = 0;
+        paras.forEach((p, i) => {
+            const pn = ' ' + _paraPopNorm(p) + ' ';
+            let k = 0;
+            while (k < qw.length && pn.indexOf(' ' + qw.slice(0, k + 1).join(' ') + ' ') !== -1) k++;
+            if (k > bestScore) { bestScore = k; best = i; }
+        });
+        return bestScore >= Math.min(4, qw.length) ? best : null;
+    }
+    // ── @PARA-POP-PURE-END ──
+    function _paraPopOpenFromChip(chip) {
+        try {
+            const box = chip.closest('[data-section-label]');
+            const bm = /^Feedback:\s*(.+?)\s*\(/.exec(box ? (box.getAttribute('data-section-label') || '') : '');
+            const base = bm ? bm[1] : '';
+            const whole = chip.getAttribute('data-para-pop') === 'whole';
+            const line = chip.closest('p, h1, h2, h3, h4, li');
+            const paras = _responseParagraphs(base);
+            // The block heading above this line ("Q2 — Paragraph 1") names the pad.
+            let heading = '';
+            if (box && line) {
+                box.querySelectorAll('h2, h3, h4').forEach(h => {
+                    if (h === line || (h.compareDocumentPosition(line) & 4)) heading = (h.textContent || '').trim();
+                });
+            }
+            let idx = null, ord = -1;
+            if (!whole && line && box) {
+                idx = _paraPopMatch(_paraPopQuote(line.textContent || ''), paras);
+                ord = Array.from(box.querySelectorAll('p, li')).filter(n => PARA_POP_LINE_RE.test(n.textContent || '')).indexOf(line);
+                if (idx == null && ord >= 0 && ord < paras.length) idx = ord;   // positional fallback
+            }
+            const title = (heading || base || 'Your answer') + ' · your writing';
+            const key = base + '|' + (whole ? 'whole' : (idx != null ? 'p' + idx : 'l' + ord));
+            if (typeof _openParaPadHook === 'function') _openParaPadHook({ key: key, title: title, paras: paras, idx: whole ? null : idx });
+            else console.warn('WML para-pop: pad system not mounted — chip ignored');
+        } catch (e) { console.warn('WML para-pop: open failed —', e && e.message); }
+    }
+    // ONE delegated click (+ Enter/Space) for every pop-out chip — doc AND Feedback-pad clones
+    // (a clone keeps its section label and line, and the paragraphs come from the live doc).
+    if (typeof document !== 'undefined' && !window.__swmlParaPopBound) {
+        window.__swmlParaPopBound = true;
+        document.addEventListener('click', function (e) {
+            const b = e.target && e.target.closest && e.target.closest('.swml-para-pop-node');
+            if (!b) return;
+            e.preventDefault(); e.stopPropagation();
+            _paraPopOpenFromChip(b);
+        }, true);
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            const b = e.target && e.target.closest && e.target.closest('.swml-para-pop-node');
+            if (!b) return;
+            e.preventDefault(); e.stopPropagation();
+            _paraPopOpenFromChip(b);
+        }, true);
+    }
     function _fireClosingFiling() {
         if (_closingFilingFired) return;
         _closingFilingFired = true;
@@ -15783,6 +16144,12 @@
         let healed = 0;
         const out = history.map(function (m) {
             if (!m || m.role !== 'assistant' || typeof m.content !== 'string') return m;
+            // v7.20.650 (#638): the assessment wrap line was stored with raw <strong> tags, which
+            // replay (formatAI) shows as literal text. Only that one code-authored phrase.
+            if (m.content.indexOf('click <strong>Mark Complete</strong> to save it.') !== -1) {
+                healed++;
+                return Object.assign({}, m, { content: m.content.replace('click <strong>Mark Complete</strong> to save it.', 'click **Mark Complete** to save it.') });
+            }
             if (m.content.indexOf('Step 5') === -1) return m;
             const next = m.content.replace(reA, '$1' + TOKEN + '$3').replace(reB, '$1' + TOKEN + '$3');
             if (next === m.content) return m;
@@ -16338,6 +16705,7 @@
 
         // Canvas Chat — AI Engine Wiring
         const canvasChatHistory = [];
+        _canvasHistoryHook = () => canvasChatHistory;   // v7.20.650 (#634): module-scope readers (predictions)
         let canvasChatId = '';
         let canvasChatLoading = false;
         // v7.19.926 (Neil Run 9): a quick-action/widget/timer click must NEVER die silently.
@@ -17827,7 +18195,13 @@
                 if (!_ladderHostEligible() || !_ladderHostComplete()) return;
                 const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
                     && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
-                if (marked) return;
+                if (marked) {
+                    // v7.20.650 (#632, §4d): a reload that lands on the calibration hand-back gets
+                    // its Finish / Revisit buttons back (chips are never saved).
+                    const _lastA = canvasChatHistory.slice().reverse().find(m => m && m.role === 'assistant' && !m.hidden);
+                    if (_lastA && /^That is your calibration filed/.test(String(_lastA.content || ''))) _calibOfferFinish();
+                    return;
+                }
                 // v7.20.649: re-send ONLY when the last hand-off got no reply — Sophia's first answer
                 // (recall feedback) carries no marker, and a reload after it must not send a second one.
                 let _lastHand = -1;
@@ -18837,13 +19211,8 @@
                                 textContent: '✓ Nothing to revisit — finish',
                                 onClick: () => {
                                     rowBar.remove();
-                                    const _uMsg = 'Nothing to revisit — let’s finish.';
-                                    addChatMessage(_uMsg, 'user');
-                                    WML.recordTurn(canvasChatHistory, { role: 'user', content: _uMsg }, { durable: true, why: 'the student sent it — it happened, it stays' });
-                                    const _done = 'Perfect — that wraps your assessment. When you’re ready, click <strong>Mark Complete</strong> to save it.';
-                                    addChatMessage(_done, 'ai', _done, { suppressActions: true });
-                                    WML.recordTurn(canvasChatHistory, { role: 'assistant', content: _done }, { durable: true, why: 'a real turn that closed the session' });
-                                    try { saveCanvasChat(canvasChatHistory, canvasChatId); } catch (_) {}
+                                    // v7.20.650 (#632/#638): ONE finish routine, this pipeline's own refs.
+                                    _assessFinishNow({ addMsg: addChatMessage, history: canvasChatHistory, getChatId: () => canvasChatId });
                                 }
                             }));
                             rowBar.appendChild(_mkClose('🔁 Revisit a question', 'I’d like to revisit a question.'));
@@ -33935,9 +34304,12 @@
             const _eye = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
             const _rbName = (state.reviewStudentName || 'this student').replace(/[\s ]+/g, ' ').trim().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
             const _rbText = el('span', { className: 'swml-tutor-banner-text' });
+            // v7.20.650 (#639): the words sit in ONE span — .swml-tutor-banner-text is inline-flex
+            // with a 6px gap, so a bare <strong> and the text after it were separate flex items
+            // ("Neil ’s progress").
             _rbText.innerHTML = state.reviewRole === 'live_modelling'
-                ? _eye + ' Live modelling \u2014 <strong>' + _rbName + '</strong> is writing this document'
-                : _eye + ' Reviewing <strong>' + _rbName + '</strong>’s progress';
+                ? _eye + '<span>Live modelling \u2014 <strong>' + _rbName + '</strong> is writing this document</span>'
+                : _eye + '<span>Reviewing <strong>' + _rbName + '</strong>’s progress</span>';
             rb.appendChild(_rbText);
             const _rbParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
             if (!_rbParent) {
@@ -36866,6 +37238,14 @@
                                     : '<span>Actual <strong>' + act + ' / ' + maxM + '</strong></span>')
                                 + sep + dTxt;
                             body.appendChild(row);
+                            // v7.20.650 (#635/#636): Previous · Best — the SAME builder as the card row.
+                            const _hh = _qHistReadoutHTML(qk, act == null ? -1 : act, maxM);
+                            if (_hh) {
+                                const hr = el('div', { className: 'swml-hist-readout swml-pad-hist' });
+                                hr.style.margin = '0 0 6px';
+                                hr.innerHTML = _hh;
+                                body.appendChild(hr);
+                            }
                         }
                     } catch (_) { /* pad preview is best-effort */ }
                     const cloned = _stripChipsFromClone(f.cloneNode(true));
@@ -37287,6 +37667,46 @@
             document.body.appendChild(panel);
             _makePanelInteractive(panel);   // drag + 8-way resize (shared, v7.20.59)
             _trialDraftPad = panel;
+        };
+
+        // ⭐ v7.20.650 (#637) — PARAGRAPH PADS. Neil: *"a detachable paragraph wherever there is a
+        // paragraph."* The trial-draft shell above (⛔ never the docked rail shell), one pad per
+        // paragraph, several open at once, cascading so none hides another; the chip that opened a
+        // pad closes it (toggle, like every pad). Body = the student's own words, read-only.
+        const _paraPads = {};
+        _openParaPadHook = (o) => {
+            const key = String((o && o.key) || '');
+            if (_paraPads[key] && _paraPads[key].parentNode) { _paraPads[key].remove(); delete _paraPads[key]; return; }
+            const panel = el('div', { className: 'swml-extract-panel swml-para-pad' });
+            const header = el('div', { className: 'swml-extract-panel-header' });
+            header.appendChild(el('span', { className: 'swml-prior-pad-title', textContent: (o && o.title) || 'Your writing' }));
+            header.appendChild(el('button', {
+                className: 'swml-extract-panel-close', textContent: '✕',
+                onClick: () => { panel.remove(); delete _paraPads[key]; },
+            }));
+            panel.appendChild(header);
+            const body = el('div', { className: 'swml-extract-panel-body swml-para-pad-body' });
+            const paras = (o && Array.isArray(o.paras)) ? o.paras : [];
+            const idx = (o && o.idx != null && paras[o.idx] != null) ? o.idx : null;
+            if (!paras.length) {
+                // FAIL LOUD, never an empty pad (§4d).
+                body.appendChild(el('p', { textContent: 'This answer is not in the document yet, so there is nothing to show here.' }));
+            } else if (idx != null) {
+                body.appendChild(el('p', { className: 'swml-para-pad-meta', textContent: 'Paragraph ' + (idx + 1) + ' of ' + paras.length }));
+                body.appendChild(el('p', { className: 'swml-para-pad-text', textContent: paras[idx] }));
+            } else {
+                paras.forEach((t, i) => {
+                    body.appendChild(el('p', { className: 'swml-para-pad-meta', textContent: 'Paragraph ' + (i + 1) }));
+                    body.appendChild(el('p', { className: 'swml-para-pad-text', textContent: t }));
+                });
+            }
+            panel.appendChild(body);
+            const open = Object.keys(_paraPads).filter(k => _paraPads[k] && _paraPads[k].parentNode).length;
+            panel.style.top = (110 + 28 * (open % 6)) + 'px';
+            panel.style.right = (48 + 28 * (open % 6)) + 'px';
+            document.body.appendChild(panel);
+            _makePanelInteractive(panel);
+            _paraPads[key] = panel;
         };
 
         // ⭐ v7.20.558 (#430) — THE MARKING LEVELS PAD. Neil, 2026-08-24, testing .557: *"you can't
@@ -41162,6 +41582,7 @@
 
                         // ── Canvas Chat — AI Engine Wiring ──
                         const canvasChatHistory = [];
+                        _canvasHistoryHook = () => canvasChatHistory;   // v7.20.650 (#634): module-scope readers (predictions)
                         let canvasChatId = '';
                         let canvasChatLoading = false;
                         // v7.19.926 (Neil Run 9): a quick-action/widget/timer click must NEVER die silently.
@@ -43089,6 +43510,44 @@
                     // the chip an atomic island the selection can stop after, the standard
                     // PM/TipTap mention-chip shape. The chip still copies as an empty span
                     // (zero textContent by construction).
+                    contenteditable: 'false',
+                })];
+            },
+        });
+
+        // ⭐ v7.20.650 (#637 — Neil: "there need to be a detachable button in the feedback section
+        // for each paragraph… a detachable paragraph wherever there is a paragraph"). The LearnChip
+        // mold exactly: an inline atom healed in by PM transactions (_healParaPopChips), zero
+        // textContent (label via CSS ::before), contenteditable=false island, ONE delegated
+        // click handler. mode 'para' = at the end of a "Your paragraph: "…"" line (the pad shows
+        // THAT paragraph, whole, from the student's own response); mode 'whole' = on a holistic
+        // block (Q5) with no per-paragraph lines (the pad shows every paragraph of the answer).
+        const ParaPop = Node.create({
+            name: 'paraPop',
+            inline: true,
+            group: 'inline',
+            atom: true,
+            selectable: false,
+            draggable: false,
+            addAttributes() {
+                return {
+                    mode: {
+                        default: 'para',
+                        parseHTML: el => (el.getAttribute('data-para-pop') === 'whole' ? 'whole' : 'para'),
+                        renderHTML: attrs => ({ 'data-para-pop': attrs.mode === 'whole' ? 'whole' : 'para' }),
+                    },
+                };
+            },
+            parseHTML() { return [{ tag: 'span[data-para-pop]' }]; },
+            renderHTML({ HTMLAttributes }) {
+                const whole = HTMLAttributes['data-para-pop'] === 'whole';
+                return ['span', Object.assign({}, HTMLAttributes, {
+                    class: 'swml-para-pop-node',
+                    role: 'button',
+                    tabindex: '0',
+                    'aria-label': whole ? 'Pop out the whole answer' : 'Pop out this whole paragraph',
+                    title: whole ? 'Pop out the whole answer — drag it beside the feedback'
+                        : 'Pop out the whole paragraph — drag it beside the feedback',
                     contenteditable: 'false',
                 })];
             },
@@ -46596,6 +47055,7 @@
                 FbGlyph, // v7.19.898: feedback status-badge inline node (SVG in cards)
                 SwmlFigure, // v7.20.414: teaching graphics (the Step-7 virtue scale) — the canvas has no image node
                 LearnChip, // v7.19.949: in-context Fix→Learn chip inline node (penalty lines)
+                ParaPop, // v7.20.650 (#637): pop-out-this-paragraph chip inline node (Your paragraph lines)
                 // v7.14.76: PaginationPlus DISABLED — continuous scroll mode.
                 // Eliminates scroll-jump bugs, criteria splitting across page breaks,
                 // and NodeView recreation issues. Pages added no pedagogical value
@@ -47097,8 +47557,8 @@
                 // server doc (tryServerLoad → setContent, which fires AFTER onCreate) lands
                 // first. Idempotent + txn-based, so a double-fire on an already-chipped doc
                 // is a no-op. Covers stale pre-949 marked docs and reseeded fbdiscuss copies.
-                setTimeout(() => { try { _healLearnChips(); } catch (_) {} }, 1500);
-                setTimeout(() => { try { _healLearnChips(); } catch (_) {} }, 3500);
+                setTimeout(() => { try { _healLearnChips(); _healParaPopChips(); } catch (_) {} }, 1500);
+                setTimeout(() => { try { _healLearnChips(); _healParaPopChips(); } catch (_) {} }, 3500);
                 // v7.19.976: poetry-CN heal chain — same staggered/idempotent shape
                 // (second pass covers the async server setContent replacing the first-pass doc).
                 // v7.19.992: ONE orchestrator (_runPoetryCnHeals) — shape rebuild first, then
@@ -50376,7 +50836,9 @@
                     if (_qForCalib) _pred = _getPredicted(_qForCalib);
                 } catch (_) { /* readout degrades to placeholders */ }
 
-                const sig = 'fb|' + baseName + '|' + currentMarks + '/' + maxMarks + '|' + _pred + '|' + _halfMarks;
+                // v7.20.650 (#635/#636): the history line rides the sig too — the card redraws when it lands.
+                const _histHtml = _qForCalib ? _qHistReadoutHTML(_qForCalib, currentMarks, maxMarks) : '';
+                const sig = 'fb|' + baseName + '|' + currentMarks + '/' + maxMarks + '|' + _pred + '|' + _halfMarks + '|' + _qHistSig() + '|' + _histHtml.length;
                 if (row.dataset.sig === sig) return;
                 _rowFillStart(row);
 
@@ -50481,6 +50943,13 @@
                 } catch (e) { console.warn('[WML calib] readout error', e && e.message); }
 
                 row.appendChild(widget);
+                // v7.20.650 (#635/#636): Previous · Best — its own line (flex-basis 100%) under the readout.
+                if (_histHtml) {
+                    const histEl = document.createElement('div');
+                    histEl.className = 'swml-hist-readout';
+                    histEl.innerHTML = _histHtml;
+                    row.appendChild(histEl);
+                }
                 _rowFillEnd(row, sig);
             });
 
@@ -50782,6 +51251,7 @@
             // v7.19.608: expose recompute+rebuild to the top-level calibration auto-set
             // (recalculateScoreSummary + buildDropdownOverlays are nested here, out of its scope).
             _scoreOverlaysRefresh = function () { try { recalculateScoreSummary(); } catch (_) {} try { buildDropdownOverlays(); } catch (_) {} };
+            _overlaysOnlyRefresh = function () { try { buildDropdownOverlays(); } catch (_) {} };   // v7.20.650: redraw only — no score recalc side effects
 
             // v7.19.951: widgets render into each section's in-flow PM-firewalled control row
             // (see _renderControlRows above) — there is no absolute layer and no positioning
@@ -50803,6 +51273,7 @@
             // rebuild so it tracks new marks at the old cadence. No absolute overlay.
             _renderSectionStrips();   // v7.19.920: fills every headline strip (self-guarding), not just Analytics
             _healLearnChips();        // v7.19.949: in-context chips heal at the same cadence (idempotent, txn-based)
+            _healParaPopChips();      // v7.20.650 (#637): pop-out chips, same cadence
 
             // ── Tutor Sign-off UI (v7.19.828: IN-FLOW — the progress-card technique) ──
             // The old .swml-dropdown-overlay-signoff lived in the absolute dropdown layer

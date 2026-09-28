@@ -448,6 +448,13 @@ class SWML_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
 
+        // v7.20.650 (#635/#636): per-question marks of every MARKED attempt on one paper — the
+        // Previous · Best line under each feedback card. Read-only; verify_viewer_access-gated.
+        register_rest_route($namespace, '/canvas/question-history', [
+            'methods' => 'GET', 'callback' => [$this, 'get_question_history'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+
         // v7.15.51: Topic-scoped "resume" resolver — given (board, text, topic),
         // returns the URL of the first not-complete LD lesson in that topic's
         // WML-task sequence. Used by the diagnostic attempt overlay's Continue
@@ -5832,6 +5839,15 @@ class SWML_REST_API {
         // calibration rows (they drive the calibration stage: carried Phase-1 decisions made it
         // think a redraft calibration was already done) and the Overall Feedback body.
         $html = preg_replace('/(<div[^>]*data-field-id="calib-[^"]+"[^>]*>)(.*?)(<\/div>)/s', '$1$3', $html);
+        // v7.20.650 (#632): …and the Action Plan + Analytics rows. The closing chain files them
+        // (_AP_FILE_FIELDS — the student's own aim grade wins at filing) and treated carried
+        // Phase-1 values as already answered, so a redraft never got an action plan of its own
+        // (measured: every action-*/analytics-* value after the staging run == before it).
+        $html = preg_replace('/(<div[^>]*data-field-id="(?:action|analytics)-[^"]+"[^>]*>)(.*?)(<\/div>)/s', '$1$3', $html);
+        // …and the Score Summary dates, which are BAKED into the html (heal_score_summary_dates):
+        // a seeded doc showed the earlier stage's "Date Completed" all through its own marking.
+        // This doc's own set-once stamps re-bake them on load.
+        $html = preg_replace('/(<em>\s*(?:Date Started|Date Completed|Days Elapsed):\s*<\/em>)[^<]*/u', '${1} —', $html);
         $html = preg_replace(
             '/(<div[^>]*data-section-type="feedback"[^>]*data-section-label="Overall Feedback"[^>]*>)(.*?)(<\/div>)(?=\s*<div[^>]*data-section-type=|\s*$)/s',
             '$1<p><em>Your examiner’s overall summary — holistic evaluation, key strength, and priority targets — will appear here once your assessment is complete.</em></p>$3',
@@ -7640,6 +7656,86 @@ class SWML_REST_API {
      * the standalone feedback-discussion picker. Admin/tutor/SSS may pass
      * ?student_id= to query a specific student.
      */
+    /**
+     * v7.20.650 (#635/#636 — Neil: "predicted versus actual versus previous… what about versus
+     * best… for each question"). Every MARKED attempt this student has on one paper, with the
+     * mark of each feedback box, read from the saved documents themselves (the grade source).
+     * Phase records cannot serve this: prod held 5 in total on 2026-09-28, none older than a week.
+     *
+     * Phase 1 = `_tN_assessment` (legacy: the bare `_tN`, where older docs were marked);
+     * Phase 2 = `_tN_reassessment` (legacy: `_tN_redraft`); `__aN` = attempt N. One entry per
+     * (topic, phase, attempt), the canonical key winning over its legacy copy — measured: Reeham
+     * 1352 holds both `_t1` and `_t1_assessment`, and both `_t1_reassessment` and `_t1_redraft`.
+     * A document with no marked box is not an attempt yet and is skipped. Stored as JSON, so the
+     * labels are read from the DECODED html (raw meta holds `\/`, which a text search misses).
+     *
+     * Box names are returned VERBATIM ("Feedback: Q2") — the client keys them with the same
+     * _paraKey that keys the card (§5d: one key builder), and the comparison rule lives in ONE
+     * place, client-side (_qHistCompare).
+     */
+    public function get_question_history($request) {
+        $viewer_id  = get_current_user_id();
+        $student_id = absint($request->get_param('student_id') ?? 0);
+        $user_id    = $viewer_id;
+        if ($student_id && $student_id !== $viewer_id) {
+            $auth = $this->verify_viewer_access($student_id);
+            if (is_wp_error($auth)) return $auth;
+            $user_id = $student_id;
+        }
+        $board = sanitize_text_field((string) ($request->get_param('board') ?? ''));
+        $text  = $this->normalize_text_slug(sanitize_text_field((string) ($request->get_param('text') ?? '')));
+        if ($board === '' || $text === '') {
+            return rest_ensure_response(['success' => false, 'message' => 'Missing board or text']);
+        }
+
+        $prefix = 'swml_canvas_' . $board . '_' . $text . '_t';
+        global $wpdb;
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->usermeta}
+              WHERE user_id = %d AND meta_key LIKE %s AND meta_key REGEXP %s",
+            $user_id,
+            $wpdb->esc_like($prefix) . '%',
+            '^' . preg_quote($prefix) . '[0-9]+(_assessment|_reassessment|_redraft)?(__a[0-9]+)?$'
+        ));
+
+        $key_re = '/^' . preg_quote($prefix, '/') . '(\d+)(_assessment|_reassessment|_redraft)?(?:__a(\d+))?$/';
+        $by = [];
+        foreach ((array) $rows as $r) {
+            if (!preg_match($key_re, (string) $r->meta_key, $m)) continue;
+            $sfx   = isset($m[2]) ? $m[2] : '';
+            $phase = ($sfx === '_reassessment' || $sfx === '_redraft') ? 'redraft' : 'initial';
+            $att   = !empty($m[3]) ? (int) $m[3] : 1;
+            $rank  = ($sfx === '_assessment' || $sfx === '_reassessment') ? 2 : 1;
+            $id    = (int) $m[1] . '|' . $phase . '|' . $att;
+            if (isset($by[$id]) && $by[$id]['rank'] >= $rank) continue;   // the canonical copy is already in
+            $doc  = self::decode_canvas_json((string) $r->meta_value);
+            $html = (is_array($doc) && isset($doc['html'])) ? (string) $doc['html'] : '';
+            if ($html === '') continue;
+            if (!preg_match_all('/data-section-label="(Feedback:[^"(]*?)\s*\((\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\)"/', $html, $mm, PREG_SET_ORDER)) continue;
+            $boxes = [];
+            foreach ($mm as $x) {
+                $boxes[trim($x[1])] = ['mark' => (float) $x[2], 'max' => (float) $x[3]];
+            }
+            $by[$id] = [
+                'rank'    => $rank,
+                'topic'   => (int) $m[1],
+                'phase'   => $phase,
+                'attempt' => $att,
+                'savedAt' => (is_array($doc) && isset($doc['savedAt'])) ? (string) $doc['savedAt'] : '',
+                'boxes'   => $boxes,
+            ];
+        }
+        $out = array_values($by);
+        usort($out, function ($a, $b) {
+            if ($a['topic'] !== $b['topic']) return $a['topic'] - $b['topic'];
+            if ($a['phase'] !== $b['phase']) return $a['phase'] === 'initial' ? -1 : 1;
+            return $a['attempt'] - $b['attempt'];
+        });
+        foreach ($out as &$o) unset($o['rank']);
+        unset($o);
+        return rest_ensure_response(['success' => true, 'attempts' => $out]);
+    }
+
     public function get_all_attempts($request) {
         $viewer_id = get_current_user_id();
         $student_id = absint($request->get_param('student_id') ?? 0);

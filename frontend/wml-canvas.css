@@ -16478,6 +16478,64 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-trial-draft-pad .swml-extract-panel-body p { margin: 0 0 12px; }
 .swml-trial-draft-pad .swml-extract-panel-body p:last-child { margin-bottom: 0; }
 
+/* ⭐ v7.20.650 (#637) — POP-OUT CHIP + PARAGRAPH PADS. The chip is the learnChip mold (inline
+   atom at the end of a "Your paragraph: …" line, zero textContent, label from ::before) in the
+   learn chip's own palette, so every in-card action reads as one family. The pad is the
+   trial-draft reading surface, a little narrower (one paragraph, not a whole draft). */
+.swml-para-pop-node {
+    display: inline-flex; align-items: center;
+    margin-left: 8px; padding: 2px 9px 3px;
+    border-radius: 999px; cursor: pointer;
+    font-size: 11px; font-weight: 600; line-height: 1.4; font-style: normal;
+    vertical-align: baseline; white-space: nowrap;
+    color: #a99cf5; background: rgba(139, 123, 247, 0.16);
+    transition: background 0.15s ease;
+}
+.swml-para-pop-node::before { content: 'Pop out \2197'; }
+.swml-para-pop-node[data-para-pop="whole"]::before { content: 'Pop out your writing \2197'; }
+.swml-para-pop-node:hover { background: rgba(139, 123, 247, 0.26); }
+.swml-canvas-light .swml-para-pop-node,
+[data-swml-theme="light"] .swml-para-pop-node { color: var(--swml-purple, #5333ed); background: rgba(83, 51, 237, 0.10); }
+.swml-canvas-light .swml-para-pop-node:hover,
+[data-swml-theme="light"] .swml-para-pop-node:hover { background: rgba(83, 51, 237, 0.18); }
+.swml-para-pad { width: 440px; max-height: 60vh; max-height: 60dvh; display: flex; flex-direction: column; }
+.swml-para-pad .swml-extract-panel-body {
+    flex: 1 1 auto; min-height: 0;
+    padding: 16px 20px 20px;
+    font-size: 14px; line-height: 1.75;
+}
+.swml-para-pad .swml-para-pad-meta {
+    margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; opacity: 0.55;
+}
+.swml-para-pad .swml-para-pad-text { margin: 0 0 16px; white-space: pre-wrap; }
+.swml-para-pad .swml-para-pad-text:last-child { margin-bottom: 0; }
+
+/* ⭐ v7.20.650 (#635/#636) — PREVIOUS · BEST, the line under a feedback card's Predicted ·
+   Actual · Δ (in-doc row AND the Feedback-pad rebuild). flex-basis 100% puts it on its own
+   line inside the wrapping control row. Theme-owned colours, like .swml-calib-readout. */
+.swml-hist-readout {
+    flex-basis: 100%;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px;
+    font-size: 11px; font-weight: 600;
+    color: rgba(255,255,255,0.6);
+}
+.swml-hist-readout strong { color: rgba(255,255,255,0.85); }
+.swml-hist-readout .swml-hist-src { font-weight: 500; opacity: 0.8; }
+.swml-hist-readout .swml-hist-up { color: #1CD991; }
+.swml-hist-readout .swml-hist-same { color: #F1C40F; }
+.swml-hist-readout .swml-hist-down { color: #ff5470; }
+[data-swml-theme="light"] .swml-hist-readout,
+.swml-canvas-light .swml-hist-readout { color: rgba(20,22,28,0.55); }
+[data-swml-theme="light"] .swml-hist-readout strong,
+.swml-canvas-light .swml-hist-readout strong { color: rgba(20,22,28,0.82); }
+[data-swml-theme="light"] .swml-hist-readout .swml-hist-up,
+.swml-canvas-light .swml-hist-readout .swml-hist-up { color: #0f8a5f; }
+[data-swml-theme="light"] .swml-hist-readout .swml-hist-same,
+.swml-canvas-light .swml-hist-readout .swml-hist-same { color: #a86f00; }
+[data-swml-theme="light"] .swml-hist-readout .swml-hist-down,
+.swml-canvas-light .swml-hist-readout .swml-hist-down { color: #c8283f; }
+
 /* ⭐ v7.20.558 (#430) — THE MARKING LEVELS PAD. The ladder card left the document (one scroll
    position could not show card + judgement row + draft) for the same floating shell as the
    draft pad. Every `.swml-ladder-*` style carries over untouched — only the container moved.
