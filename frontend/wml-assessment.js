@@ -51523,8 +51523,18 @@
                 // the commit until _initTrainingChat (the terminal every load path funnels
                 // through, AFTER attempt resolution) flips this true and re-runs recalc →
                 // commit then carries the genuine on-screen attempt_number, never the seed.
+                // v7.20.646 (#630, Qamar 857, prod 2026-09-28): the marks must have been produced IN
+                // THIS CHAT. Her reassessment doc carried the Phase-1 boxes (39/80), allSet was true
+                // on load, and the REDRAFT was committed as complete with the Phase-1 score before a
+                // word of it was marked — then the marking never started. Evidence = a feedback card
+                // or a question/section total in an assistant turn of this doc's own chat.
+                const _markedHere = ((_chatShell && _chatShell.history) || []).some(function (m) {
+                    if (!m || m.role !== 'assistant') return false;
+                    const c = String(m.content || '');
+                    return c.indexOf('@FB_BEGIN') !== -1 || /Total[^\n]{0,30}\d+(?:\.\d+)?\s*\/\s*\d+/.test(c);
+                });
                 if (_isEssay && !state.reviewMode && state._attemptSettled && allSet && _fbCount >= 5 && maxTotal > 0
-                    && !state._phaseCommitted && !state._phaseCommitting) {
+                    && _markedHere && !state._phaseCommitted && !state._phaseCommitting) {
                     _autoCommitAssessment(totalMarks, maxTotal, (grade === 'U' ? '1' : String(grade)));
                 }
             } catch (_) {}

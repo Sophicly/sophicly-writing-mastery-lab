@@ -5809,6 +5809,25 @@ class SWML_REST_API {
      * over time (e.g. polishing is new) — reorder THIS array only; nothing else encodes
      * the sequence. Longer-term option: derive per-course order from the bridge picker.
      */
+    /**
+     * v7.20.646 (#630): empty every per-question Feedback box of a marking-stage doc back to the
+     * template state — header "(— / N)" and the untouched placeholder — so marks carried from an
+     * EARLIER stage can never be read as this stage's result. Sections are top-level siblings in
+     * the stored HTML, so a box's body ends at the `</div>` that is followed by the next section
+     * (or the end). Public so a one-off repair runs the exact same transform.
+     */
+    public static function reset_marking_output($html) {
+        if (empty($html) || strpos($html, 'data-section-label="Feedback: ') === false) return $html;
+        return preg_replace_callback(
+            '/(<div[^>]*data-section-type="feedback"[^>]*data-section-label="Feedback: )([^"(]*?)\s*\(\s*[^"\/]*\/\s*(\d+)\s*\)("[^>]*>)(.*?)(<\/div>)(?=\s*<div[^>]*data-section-type=|\s*$)/s',
+            function ($m) {
+                return $m[1] . rtrim($m[2]) . ' (— / ' . $m[3] . ')' . $m[4]
+                    . '<p><em>Feedback and revised answer will appear after assessment.</em></p>' . $m[6];
+            },
+            $html
+        );
+    }
+
     private static function stage_seed_chain() {
         return ['', '_assessment', '_fbdiscuss', '_planning', '_outlining', '_polishing', '_reassessment', '_redraft'];
     }
@@ -6057,9 +6076,17 @@ class SWML_REST_API {
                 // _planning meant _outlining/_polishing seeded raw Phase-1 responses —
                 // phase boundaries are attempt boundaries, student prose never crosses).
                 $crosses_boundary = ($phase2_start !== false && $i >= $phase2_start && $j < $phase2_start);
-                return (strpos($exclude_key, '_planning') !== false || $crosses_boundary)
+                $seed = (strpos($exclude_key, '_planning') !== false || $crosses_boundary)
                     ? self::strip_responses_for_planning($d['html'])
                     : $d['html'];
+                // v7.20.646 (FIXLIST #630, Qamar 857, prod 2026-09-28): the REASSESSMENT is a marking
+                // stage — it must open with EMPTY marks. The Phase-2 chain carried the Phase-1
+                // Feedback boxes (with their marks) all the way down from planning, so on load the
+                // score summary read "39/80, Grade 5", auto-committed the REDRAFT as complete with
+                // the Phase-1 score, and the marking never started. Neil's law: Phase 2 inherits
+                // no Phase-1 text (feedback_wml_forward_snapshot_doc_chain).
+                if ($chain[$i] === '_reassessment') $seed = self::reset_marking_output($seed);
+                return $seed;
             }
             return null; // no earlier stage has content — frontend seeds its own template
         }
