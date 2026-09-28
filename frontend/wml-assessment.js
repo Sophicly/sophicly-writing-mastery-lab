@@ -7994,9 +7994,14 @@
         _ladderHostHandBack._fired = true;
         const done = 'Your own marks are filed. Now let us see how they compare with mine — beginning marking…';
         try {
-            _chatShell.addMsg(formatAI(done), 'ai', done, { suppressActions: true });
-            WML.recordTurn(_chatShell.history, { role: 'assistant', content: done }, { durable: true, why: 'a past-event report — the marks were filed' });
-            try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (e) {}
+            // v7.20.646 (#630): a re-sent hand-off (resume) must not stack the same line again —
+            // Qamar's chat carried it three times.
+            const _prevA = (_chatShell.history || []).slice().reverse().find(m => m && m.role === 'assistant' && !m.hidden);
+            if (!(_prevA && _prevA.content === done)) {
+                _chatShell.addMsg(formatAI(done), 'ai', done, { suppressActions: true });
+                WML.recordTurn(_chatShell.history, { role: 'assistant', content: done }, { durable: true, why: 'a past-event report — the marks were filed' });
+                try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (e) {}
+            }
         } catch (e) {}
         _silentSystemSend('SYSTEM (not from the student): the student has completed the pre-marking setup and marked their OWN response against the board\'s level descriptors. '
             + 'THE STUDENT\'S OWN MARKS (their level, their mark, the criteria they judged met, their reason):\n' + _ladderHostSummary()
@@ -17795,6 +17800,26 @@
         };
         // v7.20.52: resume hook for the restore blocks (they live outside this closure).
         window.__swmlPlanChainResume = _resumePlanChainActions;
+        // v7.20.646 (#630, Qamar 857 — measured on staging with her exact data): the ASSESSMENT setup
+        // chain had no resume hook (planning has one, above). A reload after the self-marking walk
+        // but before Sophia's first marking reply left the student on their own last message with no
+        // question and no button — the liveness law (§4d). Re-derive from history + document:
+        // mid-walk → re-ask the pending item; walk complete, nothing marked yet → re-send the hand-off.
+        function _resumeAssessChain() {
+            try {
+                if (state.task !== 'assessment' || state.reviewMode) return;
+                const stage = _assessPreChainStage();
+                if (stage === 'ladder' || stage === 'selfassess') { _renderPreChainQuestion(stage); return; }   // the one renderer
+                if (stage) return;   // grade / goal / key-aspects: their chips ride the replayed ask
+                if (!_ladderHostEligible() || !_ladderHostComplete()) return;
+                const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
+                    && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
+                if (marked) return;
+                console.warn('WML assess-chain: setup complete but marking never started — re-sending the hand-off (liveness)');
+                _ladderHostHandBack();
+            } catch (e) { console.warn('WML assess-chain: resume failed (non-fatal)', e && e.message); }
+        }
+        window.__swmlAssessChainResume = _resumeAssessChain;
         // Piece 2 (v7.20.250): poetry teaching-sequence resume hook. Chips are DOM-only
         // (never saved), so on reload mid-teaching the restore block re-offers the current
         // beat's chips against the replayed bubbles. No-ops off poetry / when no seq is live.
@@ -39114,6 +39139,10 @@
                     if (_planPreChainActive()) {
                         setTimeout(() => { try { if (window.__swmlPlanChainResume) window.__swmlPlanChainResume(); } catch (_) {} }, 400);
                     }
+                    // v7.20.646 (#630): assessment setup resume (after any ladder sidecar has restored).
+                    if (state.task === 'assessment') {
+                        setTimeout(() => { try { if (window.__swmlAssessChainResume) window.__swmlAssessChainResume(); } catch (_) {} }, 900);
+                    }
                     // Piece 2 (v7.20.250): poetry teaching-sequence resume — chips are DOM-only
                     // (never saved), so re-offer the current beat after replay. No-ops off poetry
                     // / when no sequence is mid-play (guarded inside the hook).
@@ -41391,6 +41420,26 @@
                         window.__swmlCanvasChatHistory = () => canvasChatHistory;
                         // v7.20.52: resume hook for the restore blocks (twin registration).
                         window.__swmlPlanChainResume = _resumePlanChainActions;
+                        // v7.20.646 (#630, Qamar 857 — measured on staging with her exact data): the ASSESSMENT setup
+                        // chain had no resume hook (planning has one, above). A reload after the self-marking walk
+                        // but before Sophia's first marking reply left the student on their own last message with no
+                        // question and no button — the liveness law (§4d). Re-derive from history + document:
+                        // mid-walk → re-ask the pending item; walk complete, nothing marked yet → re-send the hand-off.
+                        function _resumeAssessChain() {
+                            try {
+                                if (state.task !== 'assessment' || state.reviewMode) return;
+                                const stage = _assessPreChainStage();
+                                if (stage === 'ladder' || stage === 'selfassess') { _renderPreChainQuestion(stage); return; }   // the one renderer
+                                if (stage) return;   // grade / goal / key-aspects: their chips ride the replayed ask
+                                if (!_ladderHostEligible() || !_ladderHostComplete()) return;
+                                const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
+                                    && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
+                                if (marked) return;
+                                console.warn('WML assess-chain: setup complete but marking never started — re-sending the hand-off (liveness)');
+                                _ladderHostHandBack();
+                            } catch (e) { console.warn('WML assess-chain: resume failed (non-fatal)', e && e.message); }
+                        }
+                        window.__swmlAssessChainResume = _resumeAssessChain;
                         // Piece 2 (v7.20.250): poetry teaching-sequence resume hook (twin).
                         window.__swmlPoetrySeqResume = function () {
                             _poetryResumeCodeTurn({
@@ -42172,6 +42221,10 @@
                                             // buttons after replay (DOM-only — twin of pipeline 1).
                                             if (_planPreChainActive()) {
                                                 setTimeout(() => { try { _resumePlanChainActions(); } catch (_) {} }, 400);
+                                            }
+                                            // v7.20.646 (#630): assessment setup resume — twin of pipeline 1.
+                                            if (state.task === 'assessment') {
+                                                setTimeout(() => { try { _resumeAssessChain(); } catch (_) {} }, 900);
                                             }
 
                                             // ── Unified assessment state init (v7.12.32) ──
