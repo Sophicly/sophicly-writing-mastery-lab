@@ -64,14 +64,23 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-rsync -avz --delete \
-  --exclude="deploy-staging.sh" \
-  --exclude="deploy-production.sh" \
-  --exclude=".git" \
-  --exclude=".claude" \
-  --exclude=".gitignore" \
+# v7.20.665 (FIXLIST #667): ALLOW-LIST deploy. The plugin folder is served as-is by OpenLiteSpeed
+# (which ignores .htaccess access rules), so anything shipped here is downloadable by anyone.
+# 2026-09-29: CLAUDE.md, PEDAGOGY.md (real students' names/ids/grades), student screenshots,
+# research/, bin/ and a .claude settings file carrying a live API token were all public. Ship ONLY
+# what the plugin runs (PHP reads protocols/ templates/ tools/ resources/ from disk; the browser
+# loads frontend/). --delete-excluded removes everything else from the server on every deploy.
+rsync -avz --delete --delete-excluded \
   --exclude=".DS_Store" \
   --exclude="*.log" \
+  --include="/sophicly-writing-mastery-lab.php" \
+  --include="/frontend/***" \
+  --include="/includes/***" \
+  --include="/protocols/***" \
+  --include="/templates/***" \
+  --include="/tools/***" \
+  --include="/resources/***" \
+  --exclude="*" \
   -e "ssh -i $SSH_KEY" \
   "$LOCAL_PATH" \
   "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH"
