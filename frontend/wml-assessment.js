@@ -36064,7 +36064,12 @@
                     if (s.label === 'Analytics') {
                         return _assessSectionComplete(domSection, 'Analytics') ? ' ✓' : '';
                     }
-                    return '';
+                    // v7.20.651 (#643): a feedback box with no mark in its label (Overall
+                    // Feedback, CW feedback) — the nodeView owns its rule ("holds real,
+                    // non-placeholder feedback", wml-section-block.js ~306) and stamps it on every
+                    // render. Returning '' here overwrote that with 'false' on every pass, so a
+                    // filled Overall Feedback showed a grey tick for student and tutor alike.
+                    return domSection.getAttribute('data-section-complete') === 'true' ? ' ✓' : '';
                 }
                 // Action Plan / Action sections: check for student text beyond prompts
                 if (s.type === 'action') {
