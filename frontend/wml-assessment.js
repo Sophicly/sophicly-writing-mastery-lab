@@ -8683,8 +8683,10 @@
         if (_saWalkHandBack._fired) return;   // once per doc load
         _saWalkHandBack._fired = true;
         try {
-            if (_chatShell && _chatShell.addMsg) {
-                const done = 'Thanks — that’s your blind self-assessment saved. Now let’s see how it compares. Beginning marking…';
+            const done = 'Thanks — that’s your blind self-assessment saved. Now let’s see how it compares. Beginning marking…';
+            // v7.20.657 (#644.3): a re-sent hand-off (resume) must not stack the same line again.
+            const _prevA = (_chatShell && _chatShell.history || []).slice().reverse().find(m => m && m.role === 'assistant' && !m.hidden);
+            if (_chatShell && _chatShell.addMsg && !(_prevA && _prevA.content === done)) {
                 _chatShell.addMsg(formatAI(done), 'ai', done, { suppressActions: true });
                 _chatShell.history.push({ role: 'assistant', content: done });
                 try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
@@ -18225,7 +18227,12 @@
                 const stage = _assessPreChainStage();
                 if (stage === 'ladder' || stage === 'selfassess') { _renderPreChainQuestion(stage); return; }   // the one renderer
                 if (stage) return;   // grade / goal / key-aspects: their chips ride the replayed ask
-                if (!_ladderHostEligible() || !_ladderHostComplete()) return;
+                // v7.20.657 (#644.3, measured on staging AQA Lit): the setup ends in ONE of two
+                // hand-offs — the mark-scheme ladder (AQA Language) or the blind self-assessment walk
+                // (AQA Literature). Resume whichever this paper uses. A paper with neither hands off by
+                // the student's own key-aspects answer, whose question is still on screen after a reload.
+                const _viaLadder = _ladderHostEligible();
+                if (_viaLadder ? !_ladderHostComplete() : !(_saWalkEligible() && _saWalkRows().length > 0 && _saWalkComplete())) return;
                 const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
                     && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
                 if (marked) {
@@ -18241,7 +18248,7 @@
                 canvasChatHistory.forEach((m, i) => { if (m && m.role === 'user' && /SYSTEM \(not from the student\): the student has completed/.test(String(m.content || ''))) _lastHand = i; });
                 if (_lastHand !== -1 && canvasChatHistory.slice(_lastHand + 1).some(m => m && m.role === 'assistant')) return;
                 console.warn('WML assess-chain: setup complete but marking never started — re-sending the hand-off (liveness)');
-                _ladderHostHandBack();
+                if (_viaLadder) _ladderHostHandBack(); else _saWalkHandBack();
             } catch (e) { console.warn('WML assess-chain: resume failed (non-fatal)', e && e.message); }
         }
         window.__swmlAssessChainResume = _resumeAssessChain;
@@ -41917,7 +41924,9 @@
                                 const stage = _assessPreChainStage();
                                 if (stage === 'ladder' || stage === 'selfassess') { _renderPreChainQuestion(stage); return; }   // the one renderer
                                 if (stage) return;   // grade / goal / key-aspects: their chips ride the replayed ask
-                                if (!_ladderHostEligible() || !_ladderHostComplete()) return;
+                                // v7.20.657 (#644.3): twin of pipeline 1 — resume the ladder OR the blind walk hand-off.
+                                const _viaLadder = _ladderHostEligible();
+                                if (_viaLadder ? !_ladderHostComplete() : !(_saWalkEligible() && _saWalkRows().length > 0 && _saWalkComplete())) return;
                                 const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
                                     && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
                                 if (marked) {
@@ -41933,7 +41942,7 @@
                                 canvasChatHistory.forEach((m, i) => { if (m && m.role === 'user' && /SYSTEM \(not from the student\): the student has completed/.test(String(m.content || ''))) _lastHand = i; });
                                 if (_lastHand !== -1 && canvasChatHistory.slice(_lastHand + 1).some(m => m && m.role === 'assistant')) return;
                                 console.warn('WML assess-chain: setup complete but marking never started — re-sending the hand-off (liveness)');
-                                _ladderHostHandBack();
+                                if (_viaLadder) _ladderHostHandBack(); else _saWalkHandBack();
                             } catch (e) { console.warn('WML assess-chain: resume failed (non-fatal)', e && e.message); }
                         }
                         window.__swmlAssessChainResume = _resumeAssessChain;
