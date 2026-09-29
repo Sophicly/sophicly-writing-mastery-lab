@@ -686,6 +686,11 @@ node bin/feedback-filing-gate.js || fail=1
 # business and AI Engine records none of it. Proves the accounting without spending on the API.
 php bin/api-usage-gate.php >/dev/null || { php bin/api-usage-gate.php; fail=1; }
 
+# FEEDBACK RESET, EVERY LABEL FAMILY (v7.20.653, #644 — Neil: "all of this stuff should be
+# universal"). The reassessment seed's reset matched only labels beginning "Feedback: ", so every
+# Part-A/Part-B paper redrafted on top of its Phase-1 marks and Q1(a) lost its letter.
+php bin/feedback-reset-gate.php >/dev/null || { php bin/feedback-reset-gate.php; fail=1; }
+
 # MARK-SCHEME ROUTING (v7.20.623, Neil): 9 of 11 live mark-scheme lessons loaded NO protocol at
 # all for a month — the router keyed on a subject map of BANK-FILE names while every shortcode
 # emits a subject FAMILY. The model then ran a quiz with no marker contract and printed a score

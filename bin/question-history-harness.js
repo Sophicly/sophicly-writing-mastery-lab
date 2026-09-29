@@ -86,6 +86,24 @@ ok(ctx._paraKey('Feedback: Q27.1') === ctx._paraKey('Feedback: Q27.2'), 'CONTROL
 h = cmp([unseen], { topic: 2, phase: 'initial', attempt: 1 }, ctx._paraKey('Feedback: Q27.2'), 8);
 ok(h.prev && h.prev.mark === 6, '…so the maximum keeps them apart: the /8 box compares with Q27.2 (6), never Q27.1 (15)');
 ok(ctx._qHistBefore({ topic: 1, phase: 'redraft', attempt: 1 }, { topic: 2, phase: 'initial', attempt: 1 }), 'order: Topic 1 redraft < Topic 2 diagnostic');
+// v7.20.653 (#644): the EXACT key — every family's label shape, and the folds it must NOT make.
+const K = ctx._fbHistKey;
+ok(typeof K === 'function', '_fbHistKey lives inside @QHIST-PURE');
+[['Feedback: Q2', '2'], ['Feedback: Question 2', '2'], ['Feedback: Body 2', '2'], ['Feedback: Introduction', 'Intro'], ['Feedback: Conclusion', 'Conclusion'],
+ ['Part A Feedback: Introduction', 'a:Intro'], ['Part B Feedback: Body 3', 'b:3'], ['Feedback: Q1(a)', '1a'], ['Feedback: Q7b', '7b'], ['Feedback: Q27.1', '27.1'],
+ ['Feedback: Q2 (4 / 8)', '2'], ['Overall Feedback', '']].forEach(([l, want]) => ok(K(l) === want, '_fbHistKey(' + JSON.stringify(l) + ') = ' + JSON.stringify(want) + ' (got ' + JSON.stringify(K(l)) + ')'));
+const dual = { topic: 1, phase: 'initial', attempt: 1, boxes: { 'Part A Feedback: Introduction': { mark: 2, max: 3 }, 'Part B Feedback: Introduction': { mark: 3, max: 3 } } };
+const cmpX = (attempts, cur, label, max) => ctx._qHistCompare(attempts, cur, K(label), max, K);
+h = cmpX([dual], { topic: 1, phase: 'redraft', attempt: 1 }, 'Part B Feedback: Introduction', 3);
+ok(h.prev && h.prev.mark === 3, 'Part B Introduction compares with Part B (3), never Part A (2) — same max, so only the key keeps them apart');
+ok(ctx._paraKey('Part A Feedback: Introduction') === ctx._paraKey('Part B Feedback: Introduction'), 'CONTROL: _paraKey folds Part A / Part B (why history needs its own key)');
+const lettered = { topic: 1, phase: 'initial', attempt: 1, boxes: { 'Feedback: Q1(a)': { mark: 1, max: 1 }, 'Feedback: Q1(b)': { mark: 0, max: 1 } } };
+h = cmpX([lettered], { topic: 1, phase: 'redraft', attempt: 1 }, 'Feedback: Q1(b)', 1);
+ok(h.prev && h.prev.mark === 0, 'Q1(b) compares with Q1(b) (0), never Q1(a) (1)');
+h = cmpX([unseen], { topic: 2, phase: 'initial', attempt: 1 }, 'Feedback: Q27.2', 8);
+ok(h.prev && h.prev.mark === 6, 'Q27.2 still compares with Q27.2 under the exact key');
+h = cmpX(hist, { topic: 1, phase: 'redraft', attempt: 1 }, 'Feedback: Q2', 8);
+ok(h.prev && h.prev.mark === 3, 'AQA Lang Q2 unchanged under the exact key (3/8)');
 ok(!ctx._qHistBefore({ topic: 1, phase: 'redraft', attempt: 3 }, { topic: 1, phase: 'redraft', attempt: 3 }), 'order: an attempt is never before itself');
 
 console.log('\n2 · the server half');
@@ -98,20 +116,23 @@ ok(/verify_viewer_access\(\$student_id\)/.test(fn), 'another student’s history
 ok(/self::decode_canvas_json\(/.test(fn), 'labels are read from the DECODED document (raw meta holds `\\/`)');
 ok(/\$rank\s*=\s*\(\$sfx === '_assessment' \|\| \$sfx === '_reassessment'\) \? 2 : 1;/.test(fn) && /\$by\[\$id\]\['rank'\] >= \$rank\) continue;/.test(fn), 'the canonical key outranks its legacy copy (bare _tN, _tN_redraft)');
 ok(/if \(!preg_match_all\([\s\S]{0,160}\$mm, PREG_SET_ORDER\)\) continue;/.test(fn), 'a document with no marked box is not an attempt');
-ok(/meta_key REGEXP %s/.test(fn), 'only the three marking suffixes are fetched (not every planning/outlining doc of the paper)');
+ok(!/meta_key REGEXP/.test(fn) && /SELECT meta_key FROM[\s\S]{0,200}LIKE %s/.test(fn) && /array_filter\([\s\S]{0,120}preg_match\(\$key_re/.test(fn) && /meta_key IN \(\$in\)/.test(fn), 'keys first, filtered by the PHP key pattern, THEN only those values are loaded (v7.20.653 — no SQL REGEXP dialect; never every planning/outlining doc)');
 ok(/\$boxes\[trim\(\$x\[1\]\)\]/.test(fn) && !/_paraKey|para_key/.test(fn), 'box names returned VERBATIM — the client keys both sides with one _paraKey');
 // the label regex, run in node against a decoded-shape label
 const reM = fn.match(/preg_match_all\('(\/data-section-label[^']+\/)'/);
 if (reM) {
     const re = new RegExp(reM[1].slice(1, -1).replace(/\\\//g, '/'), 'g');
-    const html = '<div data-section-type="feedback" data-section-label="Feedback: Q2 (4 / 8)"></div><div data-section-label="Feedback: Q3 (— / 8)"></div><div data-section-label="Feedback: Introduction (2.5 / 3)"></div>';
+    const html = '<div data-section-type="feedback" data-section-label="Feedback: Q2 (4 / 8)"></div><div data-section-label="Feedback: Q3 (— / 8)"></div><div data-section-label="Feedback: Introduction (2.5 / 3)"></div><div data-section-label="Part A Feedback: Introduction (3 / 5)"></div><div data-section-label="Feedback: Q1(a) (1 / 1)"></div><div data-section-label="Overall Feedback"></div>';
     const found = []; let m;
     while ((m = re.exec(html))) found.push(m[1].trim() + '=' + m[2] + '/' + m[3]);
-    ok(found.join(',') === 'Feedback: Q2=4/8,Feedback: Introduction=2.5/3', 'label regex: marked boxes only, half marks kept, "—" skipped — got ' + found.join(','));
+    ok(found.join(',') === 'Feedback: Q2=4/8,Feedback: Introduction=2.5/3,Part A Feedback: Introduction=3/5,Feedback: Q1(a)=1/1', 'label regex: marked boxes only, half marks kept, "—" skipped, Part prefix + sub-part kept (v7.20.653) — got ' + found.join(','));
 } else ok(false, 'label regex found in get_question_history');
 
 console.log('\n3 · the surfaces');
 ok((js.match(/_qHistReadoutHTML\(/g) || []).length >= 3, 'ONE builder feeds the card row AND the Feedback pad');
+ok(/_qHistCompare\(_qHist\.attempts, _qHistCurrent\(\), qKey, maxMarks, _fbHistKey\)/.test(js) && /const qKey = _fbHistKey\(label\);/.test(js), 'the readout keys BOTH sides with the exact _fbHistKey (v7.20.653), never the folding _paraKey');
+ok(/_qHistReadoutHTML\(baseName, /.test(js) && /_qHistReadoutHTML\(mLbl\[1\], /.test(js), 'card and pad pass the LABEL, not a pre-folded key');
+ok(/label\.match\(\/\^\(\.\*\?Feedback:/.test(js), 'the card row accepts a Part-prefixed label (dual / either-or literature)');
 ok(/const sig = 'fb\|'[^\n]*_qHistSig\(\)/.test(js), 'the card sig carries the history, so it redraws when the history lands');
 ok(/_overlaysOnlyRefresh = function \(\) \{ try \{ buildDropdownOverlays\(\); \} catch \(_\) \{\} \};/.test(js) && /if \(typeof _overlaysOnlyRefresh === 'function'\) _overlaysOnlyRefresh\(\);/.test(js), 'history arrival redraws overlays ONLY — never recalculateScoreSummary (auto-commit side effects)');
 ok(/const same = h\.best && h\.best\.topic === h\.prev\.topic && h\.best\.phase === h\.prev\.phase && h\.best\.attempt === h\.prev\.attempt;/.test(js), '"Best" is hidden when it is the same attempt as "Previous"');

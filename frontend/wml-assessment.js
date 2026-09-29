@@ -6668,6 +6668,21 @@
         });
         return { prev: prev, best: best };
     }
+    // v7.20.653 (#644): the EXACT history key for a feedback-box label. _paraKey folds on
+    // purpose (Q2 → '2', Introduction → 'Intro') so markers and labels meet — but for history it
+    // merged boxes that are different questions: Part A vs Part B Introduction (dual/either-or
+    // literature), Q7(a) vs Q7(b), Q27.1 vs Q27.2. Keeps the part letter and the sub-part:
+    //   'Part A Feedback: Introduction' → 'a:Intro' · 'Feedback: Q1(a)' → '1a' · 'Feedback: Q27.1' → '27.1'
+    //   'Feedback: Q2' → '2' · 'Feedback: Body 2' → '2'  (unchanged where nothing was folded)
+    function _fbHistKey(label) {
+        const t = String(label == null ? '' : label).toLowerCase()
+            .replace(/\(\s*[^()\/]*\/\s*[\d.]+\s*\)\s*$/, '').trim();
+        const pm = t.match(/\bpart\s+([a-z])\b/);
+        const rest = t.replace(/^.*?feedback:\s*/, '');
+        const qm = rest.match(/\bq(?:uestion)?\s*(\d+(?:\.\d+)?)\s*(?:\(\s*([a-z])\s*\)|([a-z]))?(?![a-z])/);
+        const q = qm ? qm[1] + (qm[2] || qm[3] || '') : _paraKey(rest);
+        return q ? (pm ? pm[1] + ':' : '') + q : '';
+    }
     // ── @QHIST-PURE-END ──
     function _qHistLabel(e) {
         return 'Topic ' + e.topic + ' ' + (e.phase === 'redraft' ? 'redraft' : 'diagnostic') + (e.attempt > 1 ? ', attempt ' + e.attempt : '');
@@ -6679,12 +6694,15 @@
         return '<span class="swml-hist-same">= same</span>';
     }
     // ONE builder for both surfaces (the card row and the Feedback-pad rebuild). '' = nothing earlier.
-    function _qHistReadoutHTML(qKey, currentMarks, maxMarks) {
+    // v7.20.653: takes the box LABEL (its base, before "(x / N)") and keys both sides with the
+    // exact _fbHistKey — a folded key showed Part B the Part A history.
+    function _qHistReadoutHTML(label, currentMarks, maxMarks) {
         try {
+            const qKey = _fbHistKey(label);
             if (!qKey) return '';
             _qHistEnsure();
             if (_qHist.status !== 'ready') return '';
-            const h = _qHistCompare(_qHist.attempts, _qHistCurrent(), String(qKey), maxMarks, _paraKey);
+            const h = _qHistCompare(_qHist.attempts, _qHistCurrent(), qKey, maxMarks, _fbHistKey);
             if (!h.prev) return '';
             const marked = currentMarks != null && currentMarks >= 0;
             let out = '<span>Previous <strong>' + h.prev.mark + '</strong> <span class="swml-hist-src">(' + _qHistLabel(h.prev) + ')</span>'
@@ -37253,7 +37271,7 @@
                                 + sep + dTxt;
                             body.appendChild(row);
                             // v7.20.650 (#635/#636): Previous · Best — the SAME builder as the card row.
-                            const _hh = _qHistReadoutHTML(qk, act == null ? -1 : act, maxM);
+                            const _hh = _qHistReadoutHTML(mLbl[1], act == null ? -1 : act, maxM);
                             if (_hh) {
                                 const hr = el('div', { className: 'swml-hist-readout swml-pad-hist' });
                                 hr.style.margin = '0 0 6px';
@@ -41887,7 +41905,13 @@
                                 if (!_ladderHostEligible() || !_ladderHostComplete()) return;
                                 const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
                                     && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
-                                if (marked) return;
+                                if (marked) {
+                                    // v7.20.653 (#644): twin of pipeline 1's v7.20.650 re-offer — a reload on the
+                                    // calibration hand-back gets its Finish / Revisit buttons back (§4d).
+                                    const _lastA = canvasChatHistory.slice().reverse().find(m => m && m.role === 'assistant' && !m.hidden);
+                                    if (_lastA && /^That is your calibration filed/.test(String(_lastA.content || ''))) _calibOfferFinish();
+                                    return;
+                                }
                                 // v7.20.649: re-send ONLY when the last hand-off got no reply — Sophia's first answer
                                 // (recall feedback) carries no marker, and a reload after it must not send a second one.
                                 let _lastHand = -1;
@@ -50828,7 +50852,9 @@
             const feedbackSections = editor.querySelectorAll('[data-section-type="feedback"]');
             feedbackSections.forEach((section) => {
                 const label = section.getAttribute('data-section-label') || '';
-                const match = label.match(/^(Feedback:\s*.+?)\s*\((?:—|(\d+(?:\.\d+)?))\s*\/\s*(\d+)\)$/);
+                // v7.20.653 (#644): prefix-tolerant — "Part A Feedback: Introduction (— / 5)"
+                // (dual / either-or literature) got NO mark row, no Predicted, no Previous.
+                const match = label.match(/^(.*?Feedback:\s*.+?)\s*\((?:—|(\d+(?:\.\d+)?))\s*\/\s*(\d+)\)$/);
                 // Non-mark boxes (Overall Feedback, CW feedback, Analytics) are NOT this
                 // family's rows — leave them untouched (Analytics is filled by the opt-outs
                 // family below; the rest stay hidden).
@@ -50851,7 +50877,7 @@
                 } catch (_) { /* readout degrades to placeholders */ }
 
                 // v7.20.650 (#635/#636): the history line rides the sig too — the card redraws when it lands.
-                const _histHtml = _qForCalib ? _qHistReadoutHTML(_qForCalib, currentMarks, maxMarks) : '';
+                const _histHtml = _qForCalib ? _qHistReadoutHTML(baseName, currentMarks, maxMarks) : '';
                 const sig = 'fb|' + baseName + '|' + currentMarks + '/' + maxMarks + '|' + _pred + '|' + _halfMarks + '|' + _qHistSig() + '|' + _histHtml.length;
                 if (row.dataset.sig === sig) return;
                 _rowFillStart(row);

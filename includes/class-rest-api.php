@@ -5833,8 +5833,19 @@ class SWML_REST_API {
         return $out;
     }
 
+    /**
+     * v7.20.653 (#644): THE feedback-box label grammar, shared by the reset and the question
+     * history. A mark-bearing box is any feedback label containing "Feedback:" and ending in
+     * "(x / N)" — "Feedback: Q2 (4 / 8)" (AQA Lang), "Feedback: Body 2 (— / 8)" (essays),
+     * "Part A Feedback: Introduction (2 / 5)" (dual/either-or literature), "Feedback: Q1(a) (1 / 1)"
+     * (lettered sub-parts). The old patterns demanded the label BEGIN "Feedback: " and stopped the
+     * name at the first "(", so every Part-prefixed box was skipped and Q1(a) became "Q1".
+     * Groups: 1 = the full label before the mark, 2 = the maximum.
+     */
+    const FB_LABEL_MARK_RE = '([^"]*?Feedback:[^"]*?)\s*\(\s*[^"()\/]*\/\s*(\d+(?:\.\d+)?)\s*\)';
+
     public static function reset_marking_output($html) {
-        if (empty($html) || strpos($html, 'data-section-label="Feedback: ') === false) return $html;
+        if (empty($html) || strpos($html, 'data-section-type="feedback"') === false || strpos($html, 'Feedback:') === false) return $html;
         // v7.20.649: the rest of the marking OUTPUT a fresh marking stage must not inherit — the
         // calibration rows (they drive the calibration stage: carried Phase-1 decisions made it
         // think a redraft calibration was already done) and the Overall Feedback body.
@@ -5854,7 +5865,7 @@ class SWML_REST_API {
             $html
         );
         return preg_replace_callback(
-            '/(<div[^>]*data-section-type="feedback"[^>]*data-section-label="Feedback: )([^"(]*?)\s*\(\s*[^"\/]*\/\s*(\d+)\s*\)("[^>]*>)(.*?)(<\/div>)(?=\s*<div[^>]*data-section-type=|\s*$)/s',
+            '/(<div[^>]*data-section-type="feedback"[^>]*data-section-label=")' . self::FB_LABEL_MARK_RE . '("[^>]*>)(.*?)(<\/div>)(?=\s*<div[^>]*data-section-type=|\s*$)/s',
             function ($m) {
                 return $m[1] . rtrim($m[2]) . ' (— / ' . $m[3] . ')' . $m[4]
                     . '<p><em>Feedback and revised answer will appear after assessment.</em></p>' . $m[6];
@@ -7689,16 +7700,27 @@ class SWML_REST_API {
         }
 
         $prefix = 'swml_canvas_' . $board . '_' . $text . '_t';
-        global $wpdb;
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT meta_key, meta_value FROM {$wpdb->usermeta}
-              WHERE user_id = %d AND meta_key LIKE %s AND meta_key REGEXP %s",
-            $user_id,
-            $wpdb->esc_like($prefix) . '%',
-            '^' . preg_quote($prefix) . '[0-9]+(_assessment|_reassessment|_redraft)?(__a[0-9]+)?$'
-        ));
-
         $key_re = '/^' . preg_quote($prefix, '/') . '(\d+)(_assessment|_reassessment|_redraft)?(?:__a(\d+))?$/';
+        global $wpdb;
+        // v7.20.653 (#644): keys first, values second. The SQL REGEXP this replaces was built from
+        // preg_quote(), which escapes '-' as '\-' — whether MySQL/MariaDB read that as a literal
+        // depends on the server's regex engine, and edexcel-igcse / cambridge-igcse carry hyphens.
+        // Filtering the (small) key list in PHP needs no regex dialect and still never loads the
+        // planning/outlining/polishing documents' values.
+        $keys = $wpdb->get_col($wpdb->prepare(
+            "SELECT meta_key FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
+            $user_id,
+            $wpdb->esc_like($prefix) . '%'
+        ));
+        $keys = array_values(array_filter((array) $keys, function ($k) use ($key_re) { return (bool) preg_match($key_re, (string) $k); }));
+        $rows = [];
+        if ($keys) {
+            $in = implode(',', array_fill(0, count($keys), '%s'));
+            $rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key IN ($in)",
+                array_merge([$user_id], $keys)
+            ));
+        }
         $by = [];
         foreach ((array) $rows as $r) {
             if (!preg_match($key_re, (string) $r->meta_key, $m)) continue;
@@ -7711,7 +7733,10 @@ class SWML_REST_API {
             $doc  = self::decode_canvas_json((string) $r->meta_value);
             $html = (is_array($doc) && isset($doc['html'])) ? (string) $doc['html'] : '';
             if ($html === '') continue;
-            if (!preg_match_all('/data-section-label="(Feedback:[^"(]*?)\s*\((\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\)"/', $html, $mm, PREG_SET_ORDER)) continue;
+            // v7.20.653 (#644): same label grammar as FB_LABEL_MARK_RE, but only MARKED boxes (a
+            // number, not "—"): "Part A Feedback: Introduction (3 / 5)" and "Feedback: Q1(a) (1 / 1)"
+            // were skipped before — the key is the full label, prefix and sub-part included.
+            if (!preg_match_all('/data-section-label="([^"]*?Feedback:[^"]*?)\s*\(\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*\)"/', $html, $mm, PREG_SET_ORDER)) continue;
             $boxes = [];
             foreach ($mm as $x) {
                 $boxes[trim($x[1])] = ['mark' => (float) $x[2], 'max' => (float) $x[3]];
