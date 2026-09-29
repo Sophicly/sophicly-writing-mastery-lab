@@ -2517,3 +2517,14 @@ every later lesson — never asked again). It offers two paths, and neither is a
 2. **My school set my topic** — they type the topic their teacher gave them, as given.
 Both paths store the same thing: the speech's subject in the student's own words. **Never re-ask; a change of subject
 is the student's deliberate edit, not a new question.**
+
+## §46. ⭐⭐ A MARK SCHEME ASSESSMENT TICKED WITHOUT BEING TAKEN IS FLAGGED — but only when it was never attempted (Neil, ruled 2026-09-29; FIXLIST #652, #657)
+
+**The case:** Anam 1298 had "Mark Scheme Assessment 2" ticked complete in LearnDash (16 Jun) while its quiz stood at
+0 of 10 answered, so it showed as done with no grade and nothing told her. Neil: *"We also need to systematise it
+somehow so she sees a modal, toast, notification"*, then ruled on the Actions page: *"Yes — but only when it was
+never attempted."*
+⇒ WML Mark Scheme Assessments join the existing §16 "ticked but not done" alarm (the persistent toast, the Focus lesson
+bell, the report's "What to work on next") **only when the MSA was never attempted** — a ticked MSA with no recorded
+score. An attempted MSA below Grade 9 is **not** chased by this alarm (deliberately unlike component exercises, which
+are chased until Grade 9). Reuse the existing alarm; never a new modal. Build: dashboard lane (`build_todo_lists`).
