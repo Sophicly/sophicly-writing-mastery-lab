@@ -4188,7 +4188,7 @@
             // v7.20.659 (#645b): stepped, not sliding — its first message holds for 12 turns so the cache hits.
             const trimmedHistory = WML.steppedHistory(state.chatHistory, MAX_HISTORY_MESSAGES);
 
-            const response = await fetch(API.chat, { method: 'POST', headers, body: JSON.stringify({
+            const response = await WML.chatFetch(API.chat, { method: 'POST', headers, body: JSON.stringify({
                 prompt: redirectMsg,
                 botId: 'wml-claude',
                 chatId: state.chatId,
@@ -6780,7 +6780,7 @@
             // v7.20.659 (#645b): stepped, not sliding — its first message holds for 12 turns so the cache hits.
             const trimmedHistory = WML.steppedHistory(fullHistory, MAX_HISTORY_MESSAGES);
             
-            const response = await fetch(API.chat, { method: 'POST', headers, body: JSON.stringify({
+            const response = await WML.chatFetch(API.chat, { method: 'POST', headers, body: JSON.stringify({
                 prompt: text,
                 botId: 'wml-claude',
                 chatId: state.chatId,
@@ -7003,7 +7003,7 @@ Before marking the introduction, ask the student to confirm their essay structur
         ].join('\n');
 
         try {
-            const response = await fetch(API.chat, { method: 'POST', headers, body: JSON.stringify({ prompt: greeting, botId: 'wml-claude', chatId: state.chatId, planState: state.plan, step: state.step, board: state.board, subject: state.subject, task: state.task }) });
+            const response = await WML.chatFetch(API.chat, { method: 'POST', headers, body: JSON.stringify({ prompt: greeting, botId: 'wml-claude', chatId: state.chatId, planState: state.plan, step: state.step, board: state.board, subject: state.subject, task: state.task }) });
             const res = await response.json();
             hideTyping();
             // If user navigated away (resume, portfolio) while waiting, discard this response

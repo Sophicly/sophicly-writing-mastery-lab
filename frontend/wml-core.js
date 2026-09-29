@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.669';
+var WML_BUILD = '7.20.670';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -3316,9 +3316,50 @@ window.WML = (function() {
         }
         return r;
     }
+    // v7.20.670 (#679, Zayan): SUBMIT-THEN-POLL transport for /chat — EVERY chat call goes
+    // through here. Production is behind Cloudflare, which cuts a request at 100 s and returns
+    // an HTML page ("Unexpected token '<'"); long marking turns take longer than that. So the
+    // server answers the POST at once with a job id and we collect the reply from /chat/result.
+    // Returns a Response carrying exactly the JSON the old single request returned, so every
+    // caller's `await response.json()` is unchanged. If the server ran the turn inline (kill
+    // switch `swml_chat_async=off`), or answered with anything that is not a job, the first
+    // response is returned untouched — callers see what they always saw.
+    const _sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    const _jsonResponse = (obj, status) => new Response(JSON.stringify(obj), { status: status || 200, headers: { 'Content-Type': 'application/json' } });
+    async function chatFetch(url, opts) {
+        const o = Object.assign({}, opts || {}, { method: 'POST' });
+        o.headers = o.headers || headers;
+        try { const b = JSON.parse(o.body || '{}'); b.async = 1; o.body = JSON.stringify(b); } catch (_) {}
+        const first = await _fetchAuth(url, o);
+        let j = null;
+        try { j = await first.clone().json(); } catch (_) { return first; }
+        if (!j || !j.pending || !j.job) return first;
+
+        const resultUrl = config.restUrl + 'chat/result';
+        const started = Date.now();
+        let misses = 0;
+        await _sleep(1500);
+        while (Date.now() - started < 9 * 60 * 1000) {
+            try {
+                const r = await _fetchAuth(resultUrl, { method: 'POST', headers: o.headers, body: JSON.stringify({ job: j.job }) });
+                const p = await r.json();
+                if (p && p.done) return _jsonResponse(p.payload, p.status);
+                if (p && !p.pending) return _jsonResponse(p, 200);   // job_missing — say so, never wait forever
+                misses = 0;
+            } catch (e) {
+                // A single failed poll (network blip, gateway page) is not the end of the reply.
+                if (++misses >= 8) break;
+            }
+            await _sleep(2000);
+        }
+        return _jsonResponse({ success: false, code: 'job_timeout', reply: null,
+            message: 'Sophia is taking much longer than usual. Please send your message again.' }, 200);
+    }
     async function apiPost(url, body) {
         try {
-            const r = await _fetchAuth(url, { method: 'POST', headers, body: JSON.stringify(body) });
+            const r = (url === API.chat)
+                ? await chatFetch(url, { method: 'POST', headers, body: JSON.stringify(body) })
+                : await _fetchAuth(url, { method: 'POST', headers, body: JSON.stringify(body) });
             const text = await r.text();
             return text ? JSON.parse(text) : { success: false, message: 'Empty server response' };
         } catch (e) { console.error('WML apiPost error:', e); return { success: false, message: e.message }; }
@@ -5820,7 +5861,7 @@ window.WML = (function() {
         // Revision map
         REVISION_MAP,
         // Utilities
-        $, $$, ucfirst, el, apiPost, apiGet,
+        $, $$, ucfirst, el, apiPost, apiGet, chatFetch,
         // UI modals & toasts
         showConfirm, showToast, maybeTriggerToast,
         // UI components

@@ -162,6 +162,11 @@ class SWML_REST_API {
             'methods' => 'POST', 'callback' => [$this, 'handle_chat'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
+        // v7.20.670 (#679): collect a /chat reply started in submit-then-poll mode.
+        register_rest_route($namespace, '/chat/result', [
+            'methods' => 'POST', 'callback' => [$this, 'chat_job_result'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
 
         // Deterministic code-scored quiz (v7.19.323 — Phase 1). Server picks
         // the questions, holds the keys, and scores in code; the AI is never
@@ -1457,7 +1462,99 @@ class SWML_REST_API {
         return is_array($d) ? $d : null;
     }
 
+    /**
+     * v7.20.670 (#679, Zayan): SUBMIT-THEN-POLL for /chat.
+     *
+     * WHY. Production sits behind Cloudflare, which cuts any origin request at 100 s and hands
+     * the browser its own HTML error page — the student sees "Unexpected token '<'". A
+     * Literature body-paragraph marking turn is ~9–12k output tokens (thinking included), and
+     * claude-sonnet-5 was measured from this server at 84.8 tok/s (72.7 s for 6,167 tokens),
+     * so those turns run past 100 s: the AI finished, AI Engine logged it, the student got an
+     * error, and every "?" they typed paid for the same marking again. Staging resolves
+     * straight to the origin (no Cloudflare), which is why it never showed there.
+     *
+     * HOW. Answer the POST at once with a job id, close the connection
+     * (litespeed_finish_request — measured on this server: PHP keeps running well past 100 s
+     * after it), run the UNCHANGED handle_chat in the same process, and store its payload for
+     * the client to collect from /chat/result. No request lives long enough to be cut.
+     *
+     * Returns null when async is unavailable or switched off — the caller then runs inline,
+     * exactly as before, and the client accepts both shapes.
+     * KILL SWITCH (no deploy): `wp option update swml_chat_async off`.
+     */
+    private function start_chat_job($request) {
+        if (get_option('swml_chat_async', 'on') === 'off') return null;
+        $finish = function_exists('litespeed_finish_request') ? 'litespeed_finish_request'
+                : (function_exists('fastcgi_finish_request') ? 'fastcgi_finish_request' : null);
+        $uid = get_current_user_id();
+        if (!$finish || !$uid) return null;
+
+        $job = wp_generate_password(24, false, false);
+        $key = 'swml_chatjob_' . $uid . '_' . $job;
+        set_transient($key, ['state' => 'pending'], 30 * MINUTE_IN_SECONDS);
+        $GLOBALS['swml_chat_job'] = $key;
+        ignore_user_abort(true);
+        @set_time_limit(600);
+
+        // If PHP dies mid-job, the poller must be TOLD, never left waiting (WML §4d liveness).
+        register_shutdown_function(function () use ($key) {
+            $cur = get_transient($key);
+            if (is_array($cur) && ($cur['state'] ?? '') === 'pending') {
+                set_transient($key, ['state' => 'done', 'status' => 200, 'payload' => [
+                    'success' => false, 'code' => 'job_died', 'reply' => null,
+                    'message' => 'Sophia hit a problem while writing that reply. Please send your message again.',
+                ]], 30 * MINUTE_IN_SECONDS);
+            }
+        });
+
+        $body = wp_json_encode(['success' => true, 'pending' => true, 'job' => $job]);
+        while (ob_get_level()) ob_end_clean();
+        if (!headers_sent()) {
+            status_header(200);
+            header('Content-Type: application/json; charset=UTF-8');
+            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+            header('Content-Length: ' . strlen($body));
+        }
+        echo $body;
+        flush();
+        $finish();
+
+        $resp = $this->handle_chat($request);
+        if (is_wp_error($resp)) {
+            $d = $resp->get_error_data();
+            $status  = (is_array($d) && isset($d['status'])) ? (int) $d['status'] : 500;
+            $payload = ['success' => false, 'code' => $resp->get_error_code(), 'reply' => null, 'message' => $resp->get_error_message()];
+        } else {
+            $r = rest_ensure_response($resp);
+            $status  = (int) $r->get_status();
+            $payload = $r->get_data();
+        }
+        set_transient($key, ['state' => 'done', 'status' => $status, 'payload' => $payload], 30 * MINUTE_IN_SECONDS);
+        exit;   // the response already went out above; nothing more may be sent
+    }
+
+    /** v7.20.670 (#679): the poll half of submit-then-poll. Read-only, per user. */
+    public function chat_job_result($request) {
+        nocache_headers();
+        $job = preg_replace('/[^A-Za-z0-9]/', '', (string) $request->get_param('job'));
+        $key = 'swml_chatjob_' . get_current_user_id() . '_' . $job;
+        $cur = ($job === '') ? false : get_transient($key);
+        if (!is_array($cur)) {
+            return rest_ensure_response(['success' => false, 'code' => 'job_missing', 'reply' => null,
+                'message' => 'I lost track of that reply. Please send your message again.']);
+        }
+        if (($cur['state'] ?? '') !== 'done') return rest_ensure_response(['pending' => true]);
+        // Keep it briefly, not forever: a poll answer lost in transit can still be re-collected.
+        set_transient($key, $cur, 2 * MINUTE_IN_SECONDS);
+        return rest_ensure_response(['done' => true, 'status' => (int) ($cur['status'] ?? 200), 'payload' => $cur['payload']]);
+    }
+
     public function handle_chat($request) {
+        // v7.20.670 (#679): submit-then-poll when the client asks for it (see start_chat_job).
+        if (!empty($request->get_param('async')) && empty($GLOBALS['swml_chat_job'])) {
+            $this->start_chat_job($request);   // exits when it ran the job; returns null → inline
+        }
+
         // v7.15.91: reject AI chat writes when viewing another student read-only.
         $gate = $this->check_viewer_write_allowed($request);
         if (is_wp_error($gate)) return $gate;

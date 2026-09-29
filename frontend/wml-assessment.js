@@ -6736,12 +6736,14 @@
     // recovered by a manual Try-again). A fetch that THROWS never delivered a reply, so ONE
     // automatic retry is exactly what the Try-again button does — automated. HTTP error
     // statuses (a real 4xx/5xx response) still flow through unchanged.
+    // v7.20.670 (#679): via WML.chatFetch (submit-then-poll) — a long turn can no longer be cut
+    // by Cloudflare's 100 s limit. The one retry still covers a failed SUBMIT only.
     async function _fetchChatWithRetry(url, opts) {
-        try { return await fetch(url, opts); }
+        try { return await WML.chatFetch(url, opts); }
         catch (e) {
             console.warn('WML chat fetch failed (' + (e && e.message) + ') — auto-retrying once in 1.5s');
             await new Promise(r => setTimeout(r, 1500));
-            return fetch(url, opts);
+            return WML.chatFetch(url, opts);
         }
     }
 
@@ -68463,7 +68465,7 @@ ${html}
 
             try {
                 const docContent = canvasEditor ? canvasEditor.getHTML() : '';
-                const res = await fetch(API.chat, {
+                const res = await WML.chatFetch(API.chat, {
                     method: 'POST', headers,
                     body: JSON.stringify({
                         prompt: msg,
