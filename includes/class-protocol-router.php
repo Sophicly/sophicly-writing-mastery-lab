@@ -819,6 +819,17 @@ class SWML_Protocol_Router {
         } else {
             $row['unobserved']++;   // streamed past us — the totals here are a FLOOR
         }
+        // v7.20.660: the same numbers split by ACTIVITY ("planning|language_p1"), so "what does a
+        // planning session cost?" is read, not estimated. Task + paper come from the request context
+        // the REST handler set for this same PHP request; anything else is 'other'.
+        global $swml_request_context;
+        $act = (string) ($swml_request_context['task'] ?? '');
+        $act = ($act === '' ? 'other' : $act) . '|' . (string) ($swml_request_context['subject'] ?? ($swml_request_context['text'] ?? ''));
+        if (!isset($row['by']) || !is_array($row['by'])) $row['by'] = [];
+        if (empty($row['by'][$act])) $row['by'][$act] = ['reqs' => 0, 'input' => 0, 'output' => 0, 'cache_read' => 0, 'cache_write' => 0, 'unobserved' => 0];
+        $row['by'][$act]['reqs']++;
+        if ($seen) { foreach (['input', 'output', 'cache_read', 'cache_write'] as $k) $row['by'][$act][$k] += $u[$k]; }
+        else $row['by'][$act]['unobserved']++;
         unset($row);
 
         // keep 60 days, never let this option grow without bound

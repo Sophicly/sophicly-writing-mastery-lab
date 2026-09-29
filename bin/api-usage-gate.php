@@ -165,6 +165,20 @@ ok(preg_match('/\$dynamic_parts\[\]\s*=\s*\$this->dynamic_profile;/', $src) === 
 ok(strpos($bp, "\$this->dynamic_profile = '';") !== false, 'build_preamble resets dynamic_profile (one request = one profile block)');
 ok(substr_count($bp, '$this->dynamic_profile .=') === 2, 'both profile blocks (assessment history + universal profile) feed dynamic_profile');
 
+echo "\n9. COST BY ACTIVITY (v7.20.660) — \"what does a planning session cost?\" is read, not estimated\n";
+$GLOBALS['__opts']['swml_api_usage_daily'] = [];
+$GLOBALS['swml_request_context'] = ['task' => 'planning', 'subject' => 'language_p1'];
+$r->record_anthropic_usage(['body' => json_encode(['model' => 'claude-sonnet-5', 'usage' => ['input_tokens' => 10, 'output_tokens' => 20, 'cache_read_input_tokens' => 30, 'cache_creation_input_tokens' => 40]])], [], $URL);
+$GLOBALS['swml_request_context'] = ['task' => 'redraft_assessment', 'subject' => 'language_p1'];
+$r->record_anthropic_usage(['body' => json_encode(['model' => 'claude-sonnet-5', 'usage' => ['input_tokens' => 1, 'output_tokens' => 2, 'cache_read_input_tokens' => 3, 'cache_creation_input_tokens' => 4]])], [], $URL);
+unset($GLOBALS['swml_request_context']);
+$r->record_anthropic_usage(['body' => 'streamed'], ['body' => json_encode(['model' => 'claude-sonnet-5'])], $URL);
+$x = row();
+ok($x && $x['reqs'] === 3 && $x['output'] === 22, 'day totals unchanged by the split (3 requests, output 22)');
+ok(($x['by']['planning|language_p1']['cache_write'] ?? null) === 40 && ($x['by']['planning|language_p1']['reqs'] ?? null) === 1, 'planning|language_p1 carries its own tokens');
+ok(($x['by']['redraft_assessment|language_p1']['output'] ?? null) === 2, 'redraft_assessment|language_p1 carries its own tokens');
+ok(($x['by']['other|']['unobserved'] ?? null) === 1, 'no request context + unseen usage → other|, counted unobserved');
+
 echo "\n";
 if ($fail) { fwrite(STDERR, "❌ api-usage-gate: $fail failed, $pass passed\n"); exit(1); }
 echo "✅ api-usage-gate passed ($pass assertions) — usage accounting is correct, and an unseen request is reported as unobserved rather than as zero.\n";
