@@ -1507,6 +1507,10 @@ class SWML_REST_API {
         $swml_active_bot_id = $bot_id;
         global $swml_chat_history;
         $swml_chat_history = $history;
+        // v7.20.663: the turn being sent. The ladder hand-off carries THE STUDENT'S OWN MARKS as the
+        // CURRENT message, so a history-only check missed it on that first marking turn.
+        global $swml_current_message;
+        $swml_current_message = (string) $prompt;
         global $swml_plan_state, $swml_current_step, $swml_current_subject;
         $swml_plan_state = $params['planState'] ?? [];
         $swml_current_step = absint($params['step'] ?? 1);

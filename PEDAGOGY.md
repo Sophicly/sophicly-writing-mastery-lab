@@ -2335,8 +2335,10 @@ such rule; the only cap it names is for analysing OUTSIDE the given lines (→ L
 **Under §37 this is mechanical:** the student keeps Attempt + Evidence/inference (+ Perceptive if
 earned) and loses only the Technique rung — 0.75 of 1.0.
 
-⬜ **STILL TO DO:** write this into every board's language-question assessment protocol (it binds
-AQA P1/P2, Edexcel, Eduqas, OCR, IGCSE, Cambridge the same way). Tracked: FIXLIST #541.
+✅ **AQA WRITTEN (v7.20.663, 2026-09-29):** `protocols/aqa/language1/modules/protocol-a-assessment.md`
+(Q2 STEP 2b) + `protocols/aqa/language2/modules/protocol-a-assessment.md` (Q3, the language question).
+⬜ **STILL TO DO:** Edexcel, Eduqas, OCR, IGCSE, Cambridge language-question protocols (it binds them
+the same way). Tracked: FIXLIST #541.
 
 ---
 

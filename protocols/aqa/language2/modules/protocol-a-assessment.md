@@ -537,6 +537,14 @@ card → Y → ¶3 card → Q3 Total + calibration → Q-GATE), with these swaps
   features, techniques, sentence forms. Analysis from outside the given lines is placed per AQA's
   rule (bottom of the quality level) — say so kindly in feedback, once, without citing the rule's
   source.
+- **A STRUCTURAL LABEL ON A LANGUAGE POINT (PEDAGOGY §38, Neil 2026-09-14).** If the paragraph is
+  anchored on a WORD or PHRASE from the given lines with a real inference, but names the device with
+  a structural term (e.g. *"this word foreshadows…"*), it is still a language answer: award the
+  evidence + inference (and perceptive analysis if earned) and withhold ONLY the precise-terminology
+  credit on criterion 2 (0.75 of 1.0). Never zero it. In the feedback, teach the rename (the
+  language device actually on the page — metaphor, imagery, word class, sentence form) and the rule:
+  *a language question names what is ON THE PAGE; if the technique only makes sense by pointing at
+  WHERE it sits, it is structure.*
 - Golds: TTECEA order (Gold rule 4); Level Alignment quotes the Q3 descriptors from
   knowledge-mark-scheme-lang2.md.
 - Calibration options: `A) Paragraph 1` `B) Paragraph 2` `C) Paragraph 3`. Q-GATE next:

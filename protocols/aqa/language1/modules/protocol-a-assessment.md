@@ -455,6 +455,14 @@ Output `@FB_BEGIN{"q":"Q2","para":"1","title":"Paragraph 1"}` on its own line, t
   NO penalty, and a penalised fault is never also docked in a criterion — the same words are
   never charged twice. **C1 is clarity/flow ONLY** — relevance faults are M1; stance/structure
   shortfalls live in the criteria, never in C1.
+- **A STRUCTURAL LABEL ON A LANGUAGE POINT (PEDAGOGY §38, Neil 2026-09-14).** If the paragraph is
+  anchored on a WORD or PHRASE from the given lines with a real inference, but names the device with
+  a structural term (e.g. *"the word 'adrift' suggests foreshadowing"*), it is still a Q2 answer:
+  award the evidence + inference (and perceptive analysis if earned) and withhold ONLY the precise-
+  terminology credit on criterion 2 (0.75 of 1.0). Never zero it — AQA's mark scheme caps only
+  analysis OUTSIDE the given lines. In the feedback, teach the rename (here: metaphor / nautical
+  imagery; the anticipation it creates is foreboding) and the rule: *Q2 names what is ON THE PAGE
+  (word class, imagery, sentence form); Q3 names what is in the ORDER (pivot, shift, pace).*
 - Totals: `Total penalties: −X`, then on its own line: `Total Mark for Paragraph 1: X/4`
   (X = elements + bonus − penalties, decimal allowed e.g. `2.3/4` — NEVER rounded here, no
   "→ rounded" suffix, no "Base total" line; rounding happens once at the `Q2 Total` line.)

@@ -3673,7 +3673,12 @@ TEMPLATE;
      * server-side twin of the client's scheme-key builder (§5d — one builder), no board literal.
      */
     private function ladder_marks_in_history() {
-        global $swml_chat_history;
+        global $swml_chat_history, $swml_current_message;
+        // v7.20.663 (CACHE + behaviour): the hand-off turn that CARRIES the own-marks line is the
+        // current message, not history — measured staging run B 2026-09-29: request 1 got the old
+        // reflection mandate (201,985 ch), request 2 the ladder block (197,804 ch) = a second full
+        // cache write every session, and Sophia's first marking turn was told to run reflection.
+        if (strpos((string) $swml_current_message, "THE STUDENT'S OWN MARKS") !== false) return true;
         if (empty($swml_chat_history) || !is_array($swml_chat_history)) return false;
         foreach ($swml_chat_history as $m) {
             if (is_array($m) && ($m['role'] ?? '') === 'user'
@@ -5253,11 +5258,10 @@ TEMPLATE;
             // the cached instructions it invalidated the prefix on each confirm. For
             // planning it rides the uncached context block instead (consumed in
             // inject_session_context's dynamic assembly). Other tasks unchanged.
-            if ($task === 'planning') {
-                $this->dynamic_plan_state = $ps;
-            } else {
-                $preamble .= $ps;
-            }
+            // v7.20.663: EVERY task now — measured staging run B 2026-09-29: this block appeared in a
+            // marking session's cached instructions at the closing stage (11:09) and re-wrote the
+            // whole prefix. It is per-turn state by nature; it never belongs in the cached block.
+            $this->dynamic_plan_state = $ps;
         }
 
         // ── v7.20.205 C-LADDER TELL block (planning only; code owns the ladder state) ──

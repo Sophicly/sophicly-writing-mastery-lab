@@ -164,6 +164,10 @@ ok(!$leak, 'no profile line is written to $preamble' . ($leak ? ' — LEAK: ' . 
 ok(preg_match('/\$dynamic_parts\[\]\s*=\s*\$this->dynamic_profile;/', $src) === 1, 'dynamic_profile is pushed into the per-turn LIVE SESSION DIRECTIVES');
 ok(strpos($bp, "\$this->dynamic_profile = '';") !== false, 'build_preamble resets dynamic_profile (one request = one profile block)');
 ok(substr_count($bp, '$this->dynamic_profile .=') === 2, 'both profile blocks (assessment history + universal profile) feed dynamic_profile');
+// v7.20.663 — the two leaks staging run B measured (2026-09-29).
+ok(strpos($bp, '$preamble .= $ps;') === false, 'ESTABLISHED SESSION STATE never enters the cached preamble, for ANY task');
+$lm = substr($src, strpos($src, 'private function ladder_marks_in_history('), 900);
+ok(strpos($lm, '$swml_current_message') !== false, 'the ladder check reads the CURRENT message too (the hand-off turn carries the own-marks line)');
 
 echo "\n9. COST BY ACTIVITY (v7.20.660) — \"what does a planning session cost?\" is read, not estimated\n";
 $GLOBALS['__opts']['swml_api_usage_daily'] = [];
