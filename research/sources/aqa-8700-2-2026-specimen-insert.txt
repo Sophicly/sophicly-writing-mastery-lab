@@ -1,0 +1,152 @@
+# AQA GCSE English Language 8700/2 — Paper 2 Writers’ viewpoints and perspectives — INSERT
+# Sample assessment material for the 2026 specification ("First exam in June 2026"). Copyright © 2025 AQA and its licensors.
+# Source PDF: sophicly-etchwp-package v2.6/Sophicly Etch Mark Scheme Resources/AQA Lang P2 Insert 2026 Spec.pdf
+# Extracted with `pdftotext -layout`, 2026-09-29. Words, punctuation and curly quotes exactly as printed; page furniture removed.
+# Left gutter = the line number PRINTED in the insert (AQA prints only some). Each source counts its own lines from 1;
+# blank lines are paragraph breaks and are not counted. Source A = 39 lines, Source B = 45 lines.
+# Used to verify every quotation in protocols/aqa/language2/modules/knowledge-mark-scheme.md.
+
+First exam in June 2026
+
+GCSE
+ENGLISH LANGUAGE
+Paper 2 Writers’ viewpoints and perspectives
+
+Insert
+The two sources that follow are:
+
+Source A:     20th Century literary non-fiction
+
+One’s Company by Peter Fleming
+
+An extract from a travel book, published in 1933
+
+Source B:     19th Century non-fiction
+
+Records of a Girlhood by Fanny Kemble
+
+An extract from a letter, published in 1878
+
+Source A
+
+Source A is an extract from a travel book in which Peter Fleming describes his train journey on the
+Trans-Siberian Railway in 1933. The journey is over nine thousand kilometres and takes more
+than a week to complete.
+
+ 1  And now the journey was almost over. There is no more luxurious sensation than what may
+    be described as the ‘end of term’ feeling. I felt very content. After tomorrow there would be
+    no more trips to the dining-car; no more of that black bread, in consistency and flavour
+    suggesting rancid peat; no more of that equally earthy tea; no more of a monk’s existence; no
+ 5  more days entirely blank of action. It was true that I did not know what I was going to do,
+    that I had nothing very specific to look forward to. But I knew what I was going to stop
+ 7  doing, and that, for the moment, was enough.
+
+    I wandered along the train to my compartment, undressed
+    and got into my bed. As I did so, I noticed for the first time
+10  that the number on my berth was thirteen. For a long time,
+    I could not sleep but eventually I drifted off.
+
+12  All of a sudden there was a frightful jarring, followed by a crash. I sat up in my berth. From the
+    rack above me my heaviest suitcase was cannonaded down, catching me with fearful force on
+    either knee-cap. This is the end of the world, I thought, and in addition they have broken both
+15  my legs. My little world was tilted drunkenly. The window showed me nothing except a few
+    fields. It was six o’clock. I began to dress. I felt very much annoyed. But I climbed out of the
+    carriage into a refreshingly spectacular world and the annoyance passed. The Trans-Siberian
+    Express train sprawled foolishly down the embankment. The mail van and the dining-car,
+    which had been in front, lay on their sides at the bottom. Behind them the five sleeping cars,
+20  headed by my own, were disposed in attitudes which became less and less grotesque until you
+    got to the last, which had remained, primly, on the rails. Fifty yards down the line, the engine,
+    which had parted company with the train, was dug in, snorting steam, on top of the
+23  embankment. It had a defiant and naughty look; it was definitely conscious of indiscretion.
+
+    It would be difficult to imagine a nicer sort of railway accident. No one was hurt. The
+25  weather was ideal. And the whole thing was done in just the right sort of theatrical manner,
+    with lots of twisted steel and splintered woodwork and turf scarred deeply with demoniac
+    force.
+
+    This was great fun: a comical and violent climax to an interlude in which comedy and
+    violence had been altogether too lacking for my tastes. It was good to lie back in the long
+30  grass on a little hill and meditate upon that sprawling scrap-heap. There she lay, in the middle
+    of the wide green plain; the fastest train, the Trans-Siberian Luxury Express. For more than a
+    week she had bullied us. She had knocked us about when we went to clean our teeth in the
+    little bathroom, she had jogged our elbows when we wrote, and when we read, she made the
+    print dance tiresomely before our eyes. Her windows we might not open on account of the
+35  dust, and when closed they had proved a perpetual attraction to small, sabotaging boys with
+    stones. She had annoyed us in a hundred little ways: by spilling tea in our laps, by running
+    out of butter, by regulating our life. She had been our prison. We had not liked her.
+    Now she was down and out. We left her lying there, a broken, buckled toy, a thick black
+    worm without a head, awkwardly twisted: a thing of no use.
+
+Source B
+
+Source B is an extract from a letter written by Fanny Kemble to a friend about her first ride on a
+steam train in 1830, when she was 21. The steam engine had recently been invented by George
+Stephenson and he was also on this ride.
+
+    A normal sheet of writing paper is enough for love, but only a large sheet can contain my
+    raptures about my railroad journey. And now I will give you an account of my excursion
+    yesterday…
+
+    A party of sixteen persons was ushered into a courtyard where there stood a carriage of a
+ 5  peculiar construction, prepared for our reception. It was a long-bodied vehicle with seats
+    placed across it, back-to-back; the one we were in had six of these benches and was a sort of
+    uncovered carriage. The carriage was set in motion by only a push and rolled with us down a
+    slope into a tunnel which forms the entrance to the railroad.
+
+    Here, we were introduced to the little train engine which
+10  was to drag us along the rails. She (for they make these
+    curious little fire-horses all mares*) consisted of a boiler, a
+    stove, a small platform, a bench, and behind the bench a
+    barrel containing enough water to prevent her being thirsty
+    on our journey. She goes upon wheels which are her feet
+15  and are moved by bright steel legs called pistons which are
+    propelled by steam. The reins of this wonderful beast are a
+    small steel handle, which applies or withdraws the steam from its legs or pistons, so that a
+    child might manage it. The coals, which are its oats, were under the bench. This snorting little
+    animal, which I felt rather inclined to pat, was then harnessed to our carriage. Mr Stephenson
+20  and I took our seats on the bench of the train engine and we set off at about ten miles an hour.
+
+    As the steam-horse was unable to go up and down hill, the railroad was kept at a certain level,
+    and appeared sometimes to sink below the surface of the earth, and sometimes to rise above
+    it. It was most incredible. Almost from the start the track was cut through the solid rock
+    which formed a wall on either side of it, about sixty feet high.
+
+25  You can’t imagine how strange it seemed to be journeying on thus, without any visible cause of
+    progress other than the magical machine, with its flying white breath and rhythmical,
+    unvarying pace, between these rocky walls. Then, when I reflected that these great masses of
+    stone had been cut asunder to allow our passage far below the surface of the earth, I felt as if
+    no fairy tale was ever half so wonderful as what I saw. Bridges were thrown from side to side
+30  across the top of these cliffs, and the people looking down upon us from them seemed like
+    dolls standing in the sky. You cannot conceive what that sensation of cutting the air was; the
+    motion is as smooth as possible. I could either have read or written; and as it was, I stood up,
+    and with my bonnet off, drank the air before me. When I closed my eyes this sensation of
+    flying was quite delightful, and strange beyond description. Yet, strange as it was, I had a
+35  perfect sense of security and not the slightest fear, as this brave little she-dragon of ours
+    flew on.
+
+    We had now come fifteen miles and stopped where the railroad traversed a wide and deep
+    valley. Mr. Stephenson escorted me from the train down to the bottom of this ravine, over
+    which, to keep the track level, he has thrown a magnificent viaduct of nine arches, the middle
+40  one of which is seventy feet high, through which we saw the whole of this beautiful little
+    valley. It was lovely and wonderful beyond all words.
+
+    We then re-joined the rest of the passengers and the carriage set off at its utmost speed,
+    thirty-five miles an hour, swifter than a bird flies, on our return journey.
+
+    When I add that this pretty little creature can run either backward or forward, I believe I have
+45  given you an account of all the train’s abilities.
+
+Glossary
+* female horses
+
+END OF SOURCES
+
+Copyright information
+
+Source A From One's Company by Peter Fleming published by Pimlico. Copyright © The Estate of Peter Fleming, 1934, 2004. Reprinted by permission of
+The Random House Group Limited.
+
+Permission to reproduce all copyright material has been applied for. In some cases, efforts to contact copyright-holders may have been unsuccessful and
+AQA will be happy to rectify any omissions of acknowledgements. If you have any queries please contact the Copyright Team.
+
+Copyright © 2025 AQA and its licensors. All rights reserved.
