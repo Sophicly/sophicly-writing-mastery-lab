@@ -37,16 +37,20 @@ const count = (re) => (JS.match(re) || []).length;
 console.log('\nA · the dataset carries every key the host derives');
 const data = require(path.join(ROOT, 'frontend', 'wml-markscheme-data.js'));
 const keysFor = (paper) => Object.keys(data).filter((k) => k.indexOf('aqa_' + paper + '_') === 0 && data[k] && Array.isArray(data[k].levels));
-const l1 = keysFor('lang1'), l2 = keysFor('lang2'), us = keysFor('unseen');
+const l1 = keysFor('lang1'), l2 = keysFor('lang2'), us = keysFor('unseen'), po = keysFor('poetry');
 ok(l1.length === 5, 'AQA Lang P1: 5 schemes (Q2 AO2 · Q3 AO2 · Q4 AO4 · Q5 AO5 · Q5 AO6) — got ' + l1.length);
 ok(l2.length === 5, 'AQA Lang P2: 5 schemes (Q2 AO1 · Q3 AO2 · Q4 AO3 · Q5 AO5 · Q5 AO6) — got ' + l2.length);
 ok(us.length === 2, 'AQA unseen: 2 schemes (Q27.1 · Q27.2) — got ' + us.length);
-[].concat(l1, l2, us).forEach((k) => {
+ok(po.length === 1, 'AQA poetry anthology: 1 scheme (Q25–26, #473/#539) — got ' + po.length);
+[].concat(l1, l2, us, po).forEach((k) => {
     const s = data[k];
     ok(s.levels.length >= 4 && s.maxMarks > 0 && s.question && s.ao, k + ': ' + s.levels.length + ' levels, /' + s.maxMarks + ', ' + s.question + ' ' + s.ao);
 });
 ok(data.aqa_unseen_q271 && data.aqa_unseen_q271.levels.every((l) => l.bands.length === 1 && l.bands[0].strands.length === 2),
     'unseen Q27.1 is ONE ladder with an AO1 + AO2 strand per level (never two 24-mark ladders)');
+ok(data.aqa_poetry_q25_26 && data.aqa_poetry_q25_26.maxMarks === 30 && data.aqa_poetry_q25_26.levels.length === 6
+    && data.aqa_poetry_q25_26.levels.every((l) => l.bands.length === 1 && l.bands[0].strands.length === 3),
+    'poetry Q25–26 is ONE six-level /30 ladder with an AO1 + AO2 + AO3 strand per level (never three ladders)');
 
 // The host's key builder, executed against a fake state/window — the real function, sliced whole.
 const kbSrc = JS.slice(JS.indexOf('    function _ladderSchemeKeysFor(topicData) {'), JS.indexOf('    function _ladderFids(key) {'));
@@ -71,6 +75,28 @@ ok(keysUnder('aqa', 'unseen_poetry', { questions: [{ id: 'Q27.1' }, { id: 'Q27.2
     'unseen with Q27.2 posed → both ladders (a real past-paper sitting)');
 ok(keysUnder('edexcel', 'language1').length === 0, 'no keys for a board with no scheme data (edexcel) — the section never renders there');
 ok(keysUnder('aqa', 'shakespeare').length === 0, 'no keys for AQA Literature yet (its 6-level shape is not in the dataset) — honest empty, not a guess');
+// §5d KEY TRACE — the poetry anthology (FIXLIST #473/#539). Real slug forms: the bridge/course-map
+// text (`*_poetry`, router resolve_mark_scheme_family), the picker id (wml-core
+// POETRY_ANTHOLOGY_BY_BOARD.aqa), subject `poetry_anthology` (main plugin subject_from_course_category)
+// or the raw course category `poetry`.
+const onlyPoetry = (ks) => ks.length === 1 && ks[0].key === 'aqa_poetry_q25_26';
+[['poetry_anthology', 'love_relationships_poetry'], ['poetry_anthology', 'power_conflict_poetry'], ['poetry_anthology', 'worlds_lives_poetry'],
+ ['poetry', 'love_relationships_poetry'], ['poetry', 'power-conflict-poetry'], ['poetry_anthology', 'worlds_lives'],
+ ['poetry_anthology', 'love_relationships'], ['literature', 'power_conflict'], ['poetry_anthology', '']].forEach(([s, t]) => {
+    ok(onlyPoetry(keysUnder('aqa', s, null, t)), 'poetry anthology: subject=' + s + ' text=' + (t || '(none)') + ' → aqa_poetry_q25_26 only');
+});
+// Unseen always wins — on the text OR the subject — and never borrows the anthology ladder.
+[['unseen_poetry', 'unseen_poetry'], ['poetry', 'unseen_poetry'], ['poetry_anthology', 'unseen_poetry'], ['unseen_poetry', 'love_relationships_poetry'], ['unseen_poetry', '']].forEach(([s, t]) => {
+    const ks = keysUnder('aqa', s, null, t);
+    ok(ks.length >= 1 && ks.every((k) => k.key.indexOf('aqa_unseen_') === 0), 'unseen wins: subject=' + s + ' text=' + (t || '(none)') + ' → ' + ks.map((k) => k.key).join(','));
+});
+// No Language form is caught, and nothing guesses a paper from a bare `poetry`.
+[['language', 'aqa_lang_paper_1', 'aqa_lang1_'], ['language', 'aqa_lang_paper_2', 'aqa_lang2_'], ['language_p1', '', 'aqa_lang1_'], ['language2', '', 'aqa_lang2_']].forEach(([s, t, pre]) => {
+    const ks = keysUnder('aqa', s, null, t);
+    ok(ks.length === 5 && ks.every((k) => k.key.indexOf(pre) === 0), 'language stays language: subject=' + s + ' text=' + (t || '(none)') + ' → ' + pre + '*');
+});
+ok(keysUnder('aqa', 'poetry', null, '').length === 0, 'subject=poetry with NO text → nothing (never guess a paper)');
+ok(keysUnder('edexcel', 'poetry_anthology', null, 'power_conflict_poetry').length === 0, 'another board\'s anthology → nothing (AQA data only)');
 
 // ── B · DOC ──────────────────────────────────────────────────────────────────────────────────
 console.log('\nB · the document section');
@@ -140,7 +166,7 @@ console.log('\nE · the marker is handed the student\'s own marks');
 ok(/THE STUDENT\\'S OWN MARKS \(their level, their mark, the criteria they judged met, their reason\)/.test(JS), 'hand-back directive carries the own-marks summary');
 ok(/Use these in every Calibration Check/.test(JS), 'directive tells the marker to use them in the Calibration Check');
 ok(/_ladderFeedPrediction\(next\.q, next\.key, res\.mark\)/.test(JS) && /_setPredicted\(key, Math\.round\(sum\)\)/.test(JS), 'the own mark feeds the existing calibration path (_ladderFeedPrediction → _setPredicted, summed per question — v7.20.633)');
-['protocols/aqa/language1/modules/protocol-a-assessment.md', 'protocols/aqa/language2/modules/protocol-a-assessment.md', 'protocols/aqa/unseen/modules/protocol-a-assessment-unseen.md'].forEach((rel) => {
+['protocols/aqa/language1/modules/protocol-a-assessment.md', 'protocols/aqa/language2/modules/protocol-a-assessment.md', 'protocols/aqa/unseen/modules/protocol-a-assessment-unseen.md', 'protocols/aqa/poetry/modules/protocol-a-assessment-poetry.md'].forEach((rel) => {
     const md = fs.readFileSync(path.join(ROOT, rel), 'utf8').replace(/\s+/g, ' ');
     ok(/THE STUDENT'S OWN MARKS/.test(md) && /never let their mark move yours/.test(md), rel.split('/')[2] + ' protocol: own marks supersede the panel prediction; their mark never moves Sophia\'s');
 });
@@ -172,8 +198,28 @@ ok(/REFLECTION — \{\$current\}: there is NO reflection panel in this session/.
     ok(/AND THERE IS NO REFLECTION PANEL IN THAT SESSION/.test(md), rel.split('/')[2] + ': the OWN-MARKS note carries the no-panel law');
     ok(/Metacognitive journey[^\n]*their own level \+ mark per question vs actual/.test(md), rel.split('/')[2] + ': the Final Summary journey reads their own marks, not a self-rating pattern');
 });
-// The panel STAYS where no ladder exists: lit + poetry keep every gate untouched.
-['protocols/aqa/literature/modules/protocol-a-assessment.md', 'protocols/aqa/poetry/modules/protocol-a-assessment-poetry.md'].forEach((rel) => {
+// The poetry anthology (#473/#539) — its own protocol shape: five explicit sections, each with a
+// "## **STEP 1: Student Metacognitive Reflection**" heading, a STEP 2 precondition, a STEP 3
+// Calibration Moment and a 4-button precondition. Every one must know about the own marks, and the
+// panel must stay for sessions WITHOUT them (#539: other boards' pattern).
+{
+    const rel = 'protocols/aqa/poetry/modules/protocol-a-assessment-poetry.md';
+    const md = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    const all = (re) => (md.match(re) || []).length;
+    const s1 = all(/^## \*\*STEP 1: Student Metacognitive Reflection\*\*/gm);
+    ok(s1 === 5 && all(/^## \*\*STEP 1: Student Metacognitive Reflection\*\*[^\n]*Skipped entirely when THE STUDENT'S OWN MARKS are present/gm) === s1, 'poetry: every STEP 1 (' + s1 + ') is marked skipped when the own marks are present');
+    ok(all(/With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark[^\n]*SAY: "Thank you\. You rated yourself/g) === 5, 'poetry: every STEP 2a acknowledges their own level and mark instead');
+    ok(all(/not applicable when THE STUDENT'S OWN MARKS are present[^\n]*STEP 1 reflection reply for /g) === 5, 'poetry: every STEP 2 precondition waives the (absent) reflection reply — no panel re-demanded (§4d)');
+    ok(all(/^## \*\*STEP 3: Calibration Moment\*\*[^\n]*THE STUDENT'S OWN MARKS/gm) === 5, 'poetry: every STEP 3 Calibration compares against their own marks');
+    ok(all(/\(1\) the STEP 1 reflection reply \(absent by design when THE STUDENT'S OWN MARKS are present\)/g) === 5, 'poetry: every 4-button precondition waives the reflection reply');
+    ok(/AND THERE IS NO REFLECTION PANEL IN THAT SESSION/.test(md), 'poetry: the OWN-MARKS note carries the no-panel law');
+    ok(/Metacognitive Journey block\*\* \*\(with THE STUDENT'S OWN MARKS present: their own level \+ mark per question vs actual/.test(md), 'poetry: the Final Summary journey reads their own marks, not a self-rating pattern');
+    ok(all(/^@REFLECT_GATE\{/gm) === 5, 'poetry: the five panels STAY for sessions without own marks (#539)');
+    const man = JSON.parse(fs.readFileSync(path.join(ROOT, 'protocols/aqa/poetry/manifest.json'), 'utf8'));
+    ok(man.assessment.always.indexOf('modules/knowledge-mark-scheme-poetry.md') !== -1, 'poetry: the board\'s level descriptors are loaded for marking (the unseen manifest pattern)');
+}
+// The panel STAYS where no ladder exists: lit keeps every gate untouched.
+['protocols/aqa/literature/modules/protocol-a-assessment.md'].forEach((rel) => {
     const md = fs.readFileSync(path.join(ROOT, rel), 'utf8');
     ok(/@REFLECT_GATE\{/.test(md) && !/Skipped entirely when THE STUDENT'S OWN MARKS/.test(md), rel.split('/')[2] + ': no ladder → the reflection panel stays (untouched)');
 });

@@ -8006,6 +8006,15 @@
             else if (/^lang(uage)?_?p?(aper_?)?1$/.test(subj) || subj === 'language_p1') paper = 'lang1';
             else if (/^lang(uage)?_?p?(aper_?)?2$/.test(subj) || subj === 'language_p2') paper = 'lang2';
             else if (/unseen/.test(subj)) paper = 'unseen';
+            // FIXLIST #473/#539 — the poetry ANTHOLOGY (Lit P2 Section B, Q25–26). Tested LAST so
+            // unseen (above, on text OR subject) and every Language form always win. §5d trace:
+            // text = the bridge/course-map slug (`love_relationships_poetry` · `power_conflict_poetry`
+            // · `worlds_lives_poetry`, router resolve_mark_scheme_family) or the picker id without
+            // `_poetry` (wml-core POETRY_ANTHOLOGY_BY_BOARD.aqa); subject = `poetry_anthology`
+            // (main plugin subject_from_course_category), or the raw course category `poetry`
+            // only with an anthology text (a bare `poetry` never guesses a paper).
+            else if (/^(love_relationships|power_conflict|worlds_lives)(_poetry)?$/.test(text)) paper = 'poetry';
+            else if (subj === 'poetry_anthology') paper = 'poetry';
             if (!paper) return [];
             const prefix = 'aqa_' + paper + '_';
             let keys = Object.keys(all).filter(k => k.indexOf(prefix) === 0 && all[k] && Array.isArray(all[k].levels));

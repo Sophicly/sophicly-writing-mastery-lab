@@ -24,6 +24,7 @@
 const L1 = 'protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md';
 const L2 = 'protocols/aqa/language2/modules/knowledge-mark-scheme-lang2.md';
 const US = 'protocols/aqa/unseen/modules/knowledge-mark-scheme-unseen.md';
+const PO = 'protocols/aqa/poetry/modules/knowledge-mark-scheme-poetry.md';
 
 const SOURCES = [
     // ── AQA Language Paper 1 (8700/1) ────────────────────────────────────────────────────────
@@ -54,6 +55,11 @@ const SOURCES = [
       header: /^## QUESTION 27\.1 — (AO1 \+ AO2 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false },
     { key: 'aqa_unseen_q272', source: US, board: 'aqa', paper: 'unseen', question: 'Q27.2', ao: 'AO2',
       header: /^## QUESTION 27\.2 — (AO2 [^(]+?) \((\d+) marks\)[^\n]*$/m, banded: false },
+    // ── AQA Literature Paper 2 Section B — poetry anthology (8702/2, FIXLIST #473/#539) ─────
+    // The board bands Questions 25–26 on the whole 30 with an AO1 + AO2 + AO3 strand per level —
+    // ONE ladder, the unseen Q27.1 shape with a third strand.
+    { key: 'aqa_poetry_q25_26', source: PO, board: 'aqa', paper: 'poetry', question: 'Q25–26', ao: 'AO1 + AO2 + AO3',
+      header: /^## QUESTIONS 25–26 — (AO1 \+ AO2 \+ AO3 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false },
 ];
 
 module.exports = { SOURCES };

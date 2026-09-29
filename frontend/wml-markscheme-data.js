@@ -1717,13 +1717,244 @@
             ],
             "level0": "Nothing worthy of credit/nothing written.",
             "notes": []
+        },
+        "aqa_poetry_q25_26": {
+            "board": "aqa",
+            "paper": "poetry",
+            "question": "Q25–26",
+            "ao": "AO1 + AO2 + AO3",
+            "title": "AO1 + AO2 + AO3 Compare the named poem with one other poem from the anthology",
+            "maxMarks": 30,
+            "levels": [
+                {
+                    "level": 6,
+                    "name": "Convincing, critical analysis and exploration",
+                    "min": 26,
+                    "max": 30,
+                    "lead": "AO1",
+                    "bands": [
+                        {
+                            "name": "Level 6",
+                            "min": 26,
+                            "max": 30,
+                            "strands": [
+                                {
+                                    "name": null,
+                                    "descriptors": [
+                                        "Critical, exploratory comparison.",
+                                        "Judicious use of precise references to support interpretation(s)."
+                                    ]
+                                },
+                                {
+                                    "name": "AO2",
+                                    "descriptors": [
+                                        "Analysis of writer’s methods with subject terminology used judiciously.",
+                                        "Exploration of effects of writer’s methods to create meanings."
+                                    ]
+                                },
+                                {
+                                    "name": "AO3",
+                                    "descriptors": [
+                                        "Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task."
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "level": 5,
+                    "name": "Thoughtful, developed consideration",
+                    "min": 21,
+                    "max": 25,
+                    "lead": "AO1",
+                    "bands": [
+                        {
+                            "name": "Level 5",
+                            "min": 21,
+                            "max": 25,
+                            "strands": [
+                                {
+                                    "name": null,
+                                    "descriptors": [
+                                        "Thoughtful, developed comparison.",
+                                        "Apt references integrated into interpretation(s)."
+                                    ]
+                                },
+                                {
+                                    "name": "AO2",
+                                    "descriptors": [
+                                        "Examination of writer’s methods with subject terminology used effectively to support consideration of methods.",
+                                        "Examination of effects of writer’s methods to create meanings."
+                                    ]
+                                },
+                                {
+                                    "name": "AO3",
+                                    "descriptors": [
+                                        "Thoughtful consideration of ideas/perspectives/contextual factors shown by examination of detailed links between context/text/task."
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "level": 4,
+                    "name": "Clear understanding",
+                    "min": 16,
+                    "max": 20,
+                    "lead": "AO1",
+                    "bands": [
+                        {
+                            "name": "Level 4",
+                            "min": 16,
+                            "max": 20,
+                            "strands": [
+                                {
+                                    "name": null,
+                                    "descriptors": [
+                                        "Clear comparison.",
+                                        "Effective use of references to support explanation."
+                                    ]
+                                },
+                                {
+                                    "name": "AO2",
+                                    "descriptors": [
+                                        "Clear explanation of writer’s methods with appropriate use of relevant subject terminology.",
+                                        "Understanding of effects of writer’s methods to create meanings."
+                                    ]
+                                },
+                                {
+                                    "name": "AO3",
+                                    "descriptors": [
+                                        "Clear understanding of ideas/perspectives/contextual factors shown by specific links between context/text/task."
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "level": 3,
+                    "name": "Explained, structured comments",
+                    "min": 11,
+                    "max": 15,
+                    "lead": "AO1",
+                    "bands": [
+                        {
+                            "name": "Level 3",
+                            "min": 11,
+                            "max": 15,
+                            "strands": [
+                                {
+                                    "name": null,
+                                    "descriptors": [
+                                        "Some explained comparison.",
+                                        "References used to support a range of relevant comments."
+                                    ]
+                                },
+                                {
+                                    "name": "AO2",
+                                    "descriptors": [
+                                        "Explained/relevant comments on writer’s methods with some relevant use of subject terminology.",
+                                        "Identification of effects of writer’s methods to create meanings."
+                                    ]
+                                },
+                                {
+                                    "name": "AO3",
+                                    "descriptors": [
+                                        "Some understanding of implicit ideas/perspectives/contextual factors shown by links between context/text/task."
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "level": 2,
+                    "name": "Supported, relevant comments",
+                    "min": 6,
+                    "max": 10,
+                    "lead": "AO1",
+                    "bands": [
+                        {
+                            "name": "Level 2",
+                            "min": 6,
+                            "max": 10,
+                            "strands": [
+                                {
+                                    "name": null,
+                                    "descriptors": [
+                                        "Supported comparison.",
+                                        "Comments on references."
+                                    ]
+                                },
+                                {
+                                    "name": "AO2",
+                                    "descriptors": [
+                                        "Identification of writer’s methods.",
+                                        "Some reference to subject terminology."
+                                    ]
+                                },
+                                {
+                                    "name": "AO3",
+                                    "descriptors": [
+                                        "Some awareness of implicit ideas/contextual factors."
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "level": 1,
+                    "name": "Simple, explicit comments",
+                    "min": 1,
+                    "max": 5,
+                    "lead": "AO1",
+                    "bands": [
+                        {
+                            "name": "Level 1",
+                            "min": 1,
+                            "max": 5,
+                            "strands": [
+                                {
+                                    "name": null,
+                                    "descriptors": [
+                                        "Simple comments relevant to comparison.",
+                                        "Reference to relevant detail(s)."
+                                    ]
+                                },
+                                {
+                                    "name": "AO2",
+                                    "descriptors": [
+                                        "Awareness of writer making choices.",
+                                        "Possible reference to subject terminology."
+                                    ]
+                                },
+                                {
+                                    "name": "AO3",
+                                    "descriptors": [
+                                        "Simple comment on explicit ideas/contextual factors."
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "level0": "Nothing worthy of credit/nothing written.",
+            "notes": [
+                "The board bands Questions 25–26 on the whole 30 marks: each level carries an AO1 strand, an AO2 strand and an AO3 strand (12 + 12 + 6). They are ONE ladder, not three — a response sits in one level for all three."
+            ]
         }
     };
     WML_MARK_SCHEMES.__sourceSha1 = 'ffeb81d6c5981c89afce651f2669a63cb6edc780';
     WML_MARK_SCHEMES.__sources = {
         "protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md": "ffeb81d6c5981c89afce651f2669a63cb6edc780",
         "protocols/aqa/language2/modules/knowledge-mark-scheme-lang2.md": "081186c2c022d46535b2480014e2fc307f1261a6",
-        "protocols/aqa/unseen/modules/knowledge-mark-scheme-unseen.md": "aa6deccde24faafacfe73813fa24decdf89478b9"
+        "protocols/aqa/unseen/modules/knowledge-mark-scheme-unseen.md": "aa6deccde24faafacfe73813fa24decdf89478b9",
+        "protocols/aqa/poetry/modules/knowledge-mark-scheme-poetry.md": "e57e52d3f2ec70340f0bdd9bb12257df2b8731f7"
     };
     if (typeof window !== 'undefined') { window.WML_MARK_SCHEMES = WML_MARK_SCHEMES; }
     if (typeof module !== 'undefined' && module.exports) { module.exports = WML_MARK_SCHEMES; }
