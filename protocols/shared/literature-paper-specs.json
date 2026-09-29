@@ -69,7 +69,7 @@
         "AO3"
       ],
       "split": null,
-      "_split_note": "SIBLING (Phase 2): no dedicated protocol — currently marked by aqa/literature's 34-shape, which over-marks a 30 paper. Needs own 30-split (or template substitution). Tracked separately.",
+      "_split_note": "Marked /30 since v7.20.239 by the router's code-owned override in load_modular_protocol() on the shared aqa/literature grid: Intro 3 + Body 7 x3 + Conclusion 6, no AO4/SPaG (Neil-approved element deltas 2026-07-21); the final-summary twin gives the /30 headline. AQA-only since v7.20.668 (it had leaked to Edexcel/Eduqas/OCR). Verified vs AQA Literature Paper 1 June 2024 MS: Q1-13 30 marks, AO1 12 / AO2 12 / AO3 6; AO4 Section A only.",
       "extract": {
         "count": 1,
         "lines_min": 20,

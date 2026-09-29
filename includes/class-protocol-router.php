@@ -2958,7 +2958,14 @@ class SWML_Protocol_Router {
         // AUTHORITATIVE (loads last, so the model weights it over the Shakespeare grid;
         // WML playbook §PROTOCOL ROUTER rule 6). The final Total/34→/30 twin lives in
         // assessment_lit_final_summary_mandate(). Neil-approved element deltas 2026-07-21.
-        if ($subject === '19th_century' && $task === 'assessment') {
+        // v7.20.668: AQA ONLY. Every board's 19th-century course resolves to subject
+        // '19th_century' (course map category), and this block had no board check — so
+        // Edexcel (20+20), Eduqas and OCR (40) 19th-century essays were told "out of 30"
+        // with AQA's element worths, appended last so it outranked their own schemes.
+        // Measured by calling this loader for each board (WML 317 A); no such essay had
+        // been marked on prod yet. The final-summary twin is already AQA-only (the state
+        // machine returns false for any other board).
+        if ($subject === '19th_century' && $task === 'assessment' && $board === 'aqa') {
             // Fail-loud: if the Shakespeare grid the override references ever drifts
             // (element renamed / worth changed), the override silently references dead
             // text. Surface it — never a silent generic /34 for a 19th-century essay.

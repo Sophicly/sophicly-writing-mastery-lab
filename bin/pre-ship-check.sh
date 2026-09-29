@@ -743,6 +743,11 @@ php bin/feedback-reset-gate.php >/dev/null || { php bin/feedback-reset-gate.php;
 # nothing could capture, so a student's 10/10 recorded as in_progress. Silent by construction.
 php bin/markscheme-route-gate.php >/dev/null || { php bin/markscheme-route-gate.php; fail=1; }
 
+# 19th-CENTURY /30 OVERRIDE IS AQA-ONLY (v7.20.668). Every board's 19th-century course resolves
+# to subject '19th_century', and the override had no board check — Edexcel/Eduqas/OCR essays were
+# told "out of 30" with AQA's worths, appended last. Behaviour twin: bin/lit-19c-override-probe.php.
+php bin/lit-19c-override-gate.php >/dev/null || { php bin/lit-19c-override-gate.php; fail=1; }
+
 
 if [ "$fail" -ne 0 ]; then
   echo ""

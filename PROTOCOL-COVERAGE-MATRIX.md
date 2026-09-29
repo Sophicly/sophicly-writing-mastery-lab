@@ -29,7 +29,7 @@ Legend: ✅ done+tested · 🟢 built, mechanical gates green, not driven · �
 | paper | task | assessment | planning | polishing | gold | reachable |
 |---|---|---|---|---|---|---|
 | P1 §A Shakespeare | extract + whole play, 34 | 🟢 B 10/10 | 🟢 C 8/8 | 🟢 ENV v7.20.610 (gate green; R&J journeys ✅ staging) | knowledge-model-answer (Macbeth) + exemplars; R&J has no context-bank section | staging (R&J) |
-| P1 §B 19th-c novel | 30, no AO4 | 🟢 (marked by the 34-shape — known over-mark) | 🟢 | 🟢 ENV v7.20.610 | same | prod planning only |
+| P1 §B 19th-c novel | 30, no AO4 | 🟢 /30 via the router override (v7.20.239; AQA-only v7.20.668) | 🟢 | 🟢 ENV v7.20.610 | same | prod: ACC planning + outlining only — NO 19th-c assessment lesson on prod, 0 essays ever marked (measured 2026-09-29) |
 | P2 §A modern text | 34 | 🟢 | 🟢 | 🟢 ENV v7.20.610 | same | staging (inspector_calls outlining) |
 | P2 §B anthology poetry | comparison 30 | 🟢 | 🟢 | 🟢 ENV v7.20.610 | model-answers-poetry | prod (planning) |
 | P2 §C unseen 27.1 / 27.2 | 24 / 8 | 🟢 | 🟢 | 🟢 ENV v7.20.610 | knowledge-unseen | prod diag |
