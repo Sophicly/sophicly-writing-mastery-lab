@@ -525,11 +525,27 @@ class SWML_Topic_Questions {
         $stored = get_option(self::option_key($board, $text), []);
         if (is_array($stored) && !empty($stored)) {
             $template_numbers = [];
-            foreach ($parsed as $t) { $template_numbers[(int) ($t['topic_number'] ?? 0)] = true; }
-            $carried = 0;
+            // v7.20.655 (#648): a RENUMBERED template (AQA Lang P2 dropped Conceptual Notes, T3..T10
+            // became T2..T9 — Neil 2026-09-29; Edexcel/Eduqas/OCR follow) leaves its old highest
+            // number in the store, and the merge below carried it: a ghost "Topic 10" duplicating
+            // the new Topic 9. A stored topic whose LABEL is a template topic's label is that topic
+            // under an old number — never carry it. Installed past papers and admin-authored topics
+            // have their own labels and are carried exactly as before.
+            $template_labels = [];
+            foreach ($parsed as $t) {
+                $template_numbers[(int) ($t['topic_number'] ?? 0)] = true;
+                $lbl = strtolower(trim((string) ($t['label'] ?? '')));
+                if ($lbl !== '') $template_labels[$lbl] = true;
+            }
+            $carried = 0; $ghosts = 0;
             foreach ($stored as $t) {
                 $n = (int) ($t['topic_number'] ?? 0);
-                if ($n && !isset($template_numbers[$n])) { $parsed[] = $t; $carried++; }
+                if (!$n || isset($template_numbers[$n])) continue;
+                if (isset($template_labels[strtolower(trim((string) ($t['label'] ?? '')))])) { $ghosts++; continue; }
+                $parsed[] = $t; $carried++;
+            }
+            if ($ghosts) {
+                error_log(sprintf('[WML] topics: template re-import for %s/%s dropped %d renumbered duplicate(s)', $board, $text, $ghosts));
             }
             if ($carried) {
                 usort($parsed, function ($a, $b) { return ($a['topic_number'] ?? 0) - ($b['topic_number'] ?? 0); });

@@ -142,18 +142,7 @@ For this question, you need to refer to the whole of Source A, together with the
 
 ---
 
-# Topic 2: Conceptual Notes
-**Type:** conceptual-notes
-**Teaching Point:** Key concepts for AQA Language Paper 2 — non-fiction reading skills (identifying true statements, inference about differences between sources, language analysis, comparing writers' perspectives) and transactional writing skills (articles, speeches, letters, leaflets using IUMVCC structure). These notes support both Phase 1 (first draft) and Phase 2 (redraft) across all practice papers.
-**Marks:** 0
-**AOs:** none
-
-## Question
-N/A — Conceptual Notes topic.
-
----
-
-# Topic 3: Transactional Writing — Article
+# Topic 2: Transactional Writing — Article
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** Standalone transactional writing exercise — Article form. Practice crafting a persuasive article using IUMVCC structure (Introduction, Umbrella statement, Main arguments, Vivid examples, Counter-argument, Conclusion). 40 marks: 24 for content/organisation (AO5) and 16 for technical accuracy (AO6). Phase 1 (first draft) focuses on structure and argument; Phase 2 (redraft) refines style, vocabulary, and technical accuracy.
@@ -168,7 +157,7 @@ N/A — Conceptual Notes topic.
 
 ---
 
-# Topic 4: Practice Paper 2 — The Crossing / Idle Days in Patagonia
+# Topic 3: Practice Paper 2 — The Crossing / Idle Days in Patagonia
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** AQA Language Paper 2 Practice — Writers' Viewpoints and Perspectives. Two non-fiction sources about perilous sea voyages, five questions, 80 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
@@ -319,7 +308,7 @@ For this question, you need to refer to the whole of Source A, together with the
 
 ---
 
-# Topic 5: Transactional Writing — Speech
+# Topic 4: Transactional Writing — Speech
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** Standalone transactional writing exercise — Speech form. Practice crafting a persuasive speech with rhetorical techniques (direct address, tricolon, rhetorical questions, anecdote, emotive language). 40 marks: 24 for content/organisation (AO5) and 16 for technical accuracy (AO6). Phase 1 (first draft) focuses on voice and rhetorical structure; Phase 2 (redraft) sharpens persuasive techniques and technical accuracy.
@@ -334,7 +323,7 @@ For this question, you need to refer to the whole of Source A, together with the
 
 ---
 
-# Topic 6: Practice Paper 3 — London Riots / Eastern Penitentiary
+# Topic 5: Practice Paper 3 — London Riots / Eastern Penitentiary
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** AQA Language Paper 2 Practice — Writers' Viewpoints and Perspectives. Two non-fiction sources about social injustice and punishment, five questions, 80 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
@@ -489,7 +478,7 @@ For this question, you need to refer to the whole of Source A, together with the
 
 ---
 
-# Topic 7: Transactional Writing — Letter
+# Topic 6: Transactional Writing — Letter
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** Standalone transactional writing exercise — Letter form. Practice crafting a formal persuasive letter with appropriate register, conventions (addresses, greeting, sign-off), and structured argumentation. 40 marks: 24 for content/organisation (AO5) and 16 for technical accuracy (AO6). Phase 1 (first draft) focuses on tone and formal register; Phase 2 (redraft) strengthens argument and technical precision.
@@ -504,7 +493,7 @@ For this question, you need to refer to the whole of Source A, together with the
 
 ---
 
-# Topic 8: Practice Paper 4 — Cosmetics / Arts of Beauty
+# Topic 7: Practice Paper 4 — Cosmetics / Arts of Beauty
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** AQA Language Paper 2 Practice — Writers' Viewpoints and Perspectives. Two non-fiction sources about cosmetics and beauty standards, five questions, 80 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.
@@ -643,7 +632,7 @@ For this question, you need to refer to the whole of Source A, together with the
 
 ---
 
-# Topic 9: Transactional Writing — Leaflet
+# Topic 8: Transactional Writing — Leaflet
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** Standalone transactional writing exercise — Leaflet form. Practice crafting a persuasive leaflet with engaging subheadings, direct address, facts/statistics, and a clear call to action. 40 marks: 24 for content/organisation (AO5) and 16 for technical accuracy (AO6). Phase 1 (first draft) focuses on layout-awareness and persuasive content; Phase 2 (redraft) refines tone, audience targeting, and technical accuracy.
@@ -658,7 +647,7 @@ For this question, you need to refer to the whole of Source A, together with the
 
 ---
 
-# Topic 10: Practice Paper 5 — Scientific Proof / Humane Understanding
+# Topic 9: Practice Paper 5 — Scientific Proof / Humane Understanding
 **Type:** language_paper
 **Format:** multi_question
 **Teaching Point:** AQA Language Paper 2 Practice — Writers' Viewpoints and Perspectives. Two non-fiction sources about the nature of knowledge and understanding, five questions, 80 marks total. Section A tests reading (Q1-Q4), Section B tests transactional writing (Q5). Phase 1 (first draft) and Phase 2 (redraft) target specific improvements identified in assessment.

@@ -6848,11 +6848,16 @@
 
         // Fetch fixed topic question if in Mastery Programme with a topic number
         let topicQuestion = null;
-        if (state.topicNumber > 0 && !(state.topicNumber === 2 && state.subject !== 'unseen_poetry')) { // Topic 2 = CN (except unseen poetry)
+        // v7.20.655 (#648): was `!(topicNumber === 2 && subject !== 'unseen_poetry')` — "Topic 2 is
+        // Conceptual Notes" hard-coded for every paper. AQA Lang P2 dropped CN (Neil 2026-09-29: T2 is
+        // now the Article), so its T2 planning would have loaded no question. The topic row itself says
+        // what it is: a CN row carries topic_type 'conceptual-notes' and has no question to load.
+        if (state.topicNumber > 0) {
             try {
                 const tqRes = await fetch(`${config.restUrl}topic-question?board=${state.board}&text=${state.text}&topic=${state.topicNumber}`, { headers });
                 if (tqRes.ok) {
                     topicQuestion = await tqRes.json();
+                    if (topicQuestion && topicQuestion.topic_type === 'conceptual-notes') topicQuestion = null;
                     console.log('WML: Loaded topic question:', topicQuestion);
                 }
             } catch (e) {
