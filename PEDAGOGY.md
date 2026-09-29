@@ -2497,3 +2497,23 @@ is expected on theme or character.
 students want to know well… any one of the 15 could come up"* (sits with CN-STANDARD "coverage is the
 strategy"); essays — *"priority is quality; however, if you can have quality and quantity it's even better"*;
 AQA Lang P2 Q3 → Q4 — *"if they want to reuse an idea there's no problem with that"* (different examiners).
+
+## §45. ⭐⭐ THE SPOKEN LANGUAGE BONUS — the speech subject is the student's own, asked ONCE, with examples, and a school-set topic is always allowed (Neil, ruled 2026-09-29; FIXLIST #649, #656)
+
+**The unit** (ruled earlier the same day, relayed by the LD lane): a bonus unit for the GCSE Spoken Language
+endorsement, built like the non-fiction units — diagnostic → assessment → feedback → redraft (planning, outlining,
+polishing) → reassessment — where the task is a **speech**, and it is **marked on that board's own Section B scheme**:
+AQA Paper 2 Section B = 40 (AO5 24 + AO6 16, verified AQA-87002-MS-JUN22). Other boards' tariffs come from their own
+mark-scheme PDFs when built (Neil's recollection: Edexcel GCSE 40, Edexcel IGCSE ~45; Eduqas = ONE 40-mark scheme as a
+deliberate exception, because its Section B is two tasks — name which scheme the 40 is based on).
+
+**The subject — ruled today, verbatim:** *"Free choice, with a few example subjects to help"* and *"I usually recommend
+they write something they find interesting or is important to them. Sometimes, the school might tell them what to write
+about so we have to provide for that as well."*
+⇒ The ask is ONE code-served question (paste-wall law: a genuine unknown, asked once, stored per student, read back into
+every later lesson — never asked again). It offers two paths, and neither is a menu of topics to pick from:
+1. **Choose your own** — the guidance *"something you find interesting, or something that matters to you"* first, then
+   a few worked example subjects (WML §4c.2 — Neil: *"examples really help students"*), then free text.
+2. **My school set my topic** — they type the topic their teacher gave them, as given.
+Both paths store the same thing: the speech's subject in the student's own words. **Never re-ask; a change of subject
+is the student's deliberate edit, not a new question.**
