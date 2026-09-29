@@ -8719,6 +8719,50 @@
         ap3: '**3. Where to next?** One specific sentence: what will you do differently in your next attempt to close that gap?',
         transfer: 'Last question — **transfer**. How could you apply that skill to another subject you study? One specific example.'
     };
+    // ⭐ v7.20.658 (#653 — measured on prod, Anam 1298): a message typed at an action-plan question
+    // is only an ANSWER when it is one. Her four "answers" were "can u squeeze in one more mark
+    // please" · "I have a question" · "wait" · "waittt"; each was filed, her question got no reply,
+    // and the filing turn then wrote her plan in her voice. Now: a hold gets a nudge, "I have a
+    // question" gets an invitation, a real question goes to Sophia, and the SAME ask comes back.
+    // ── @CC-ANSWER-PURE (bin/closing-chain-answer-harness.js drives these; keep them pure) ──
+    const _CC_ASK_RE = { ap1: /Where am I going\?/i, ap2: /How am I going\?/i, ap3: /Where to next\?/i, transfer: /apply that skill to another subject/i };
+    // kind of a message sent while an action-plan question is waiting: 'answer' | 'hold' | 'ask' | 'question'.
+    // afterAsk = the student's previous message was "I have a question", so this one IS the question.
+    function _ccClassify(msg, afterAsk) {
+        const t = String(msg == null ? '' : msg).trim();
+        const low = t.toLowerCase().replace(/[’']/g, "'");
+        if (!t) return 'hold';
+        if (afterAsk) return 'question';
+        if (/^(w+a+i+t+|hold on|hang on|one sec(ond)?|one moment|just a (sec|second|minute|moment)|h+m+|u+m+|u+h+|e+r+m+|ok wait|brb)[\s.!]*$/i.test(low)) return 'hold';
+        if (/^(i have a question|i've got a question|i got a question|can i ask( you)?( something| a question)?|quick question|question)[\s.!?:]*$/i.test(low)) return 'ask';
+        if (/\b(re-?mark(ed|ing|s)?|one more mark|extra marks?|more marks|squeeze|real mark|change (my|the) (mark|grade)|higher (mark|grade))\b/i.test(low)) return 'question';
+        if (/\?\s*$/.test(t) && /^(what|why|how|can|could|would|will|is|are|am|do|does|did|should|when|where|who|which)\b/i.test(low)) return 'question';
+        return 'answer';
+    }
+    // the action-plan question still waiting for an answer ('ap1'…'transfer'), or null.
+    function _ccPendingIn(history) {
+        const h = Array.isArray(history) ? history : [];
+        for (let i = h.length - 1; i >= 0; i--) {
+            const m = h[i];
+            if (!m) continue;
+            if (m.role === 'user' && m.closingChain) return null;          // the latest ask was answered
+            if (m.role === 'assistant') {
+                for (const k in _CC_ASK_RE) if (_CC_ASK_RE[k].test(String(m.content || ''))) return k;
+            }
+        }
+        return null;
+    }
+    // the ACCEPTED answer to each question — what the filing turn must use, in the student's words.
+    function _ccAnswersIn(history) {
+        const out = {}; let cur = null;
+        (Array.isArray(history) ? history : []).forEach(m => {
+            if (!m) return;
+            if (m.role === 'assistant') { for (const k in _CC_ASK_RE) if (_CC_ASK_RE[k].test(String(m.content || ''))) cur = k; }
+            else if (m.role === 'user' && m.closingChain && cur) out[cur] = String(m.content || '').trim();
+        });
+        return out;
+    }
+    // ── @CC-ANSWER-PURE-END ──
     function _closingChainStage() {
         try {
             if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return null;
@@ -8735,14 +8779,14 @@
             return 'file';
         } catch (_) { return null; }
     }
-    function _renderClosingQuestion(stage) {
+    function _renderClosingQuestion(stage, again) {
         if (!_chatShell || !_chatShell.addMsg) return;
         let plain;
         if (stage === 'ap1') {
             const opts = (typeof _chatShell.goalOptions === 'function' ? (_chatShell.goalOptions() || []) : []);
-            plain = _CC_Q.ap1Head + '\n\n' + _CC_Q.ap1 + '\n\n' + opts.join('\n') + (opts.length ? '\n' : '') + 'F) Something else (type it below)';
+            plain = (again ? 'Back to your action plan.' : _CC_Q.ap1Head) + '\n\n' + _CC_Q.ap1 + '\n\n' + opts.join('\n') + (opts.length ? '\n' : '') + 'F) Something else (type it below)';
         } else {
-            plain = _CC_Q[stage];
+            plain = _CC_Q[stage] ? (again ? 'Back to your action plan. ' : '') + _CC_Q[stage] : '';
         }
         if (!plain) return;
         // v7.19.921 (Neil): the beat-chip rides the closing chain to the very END — students
@@ -9440,7 +9484,16 @@
                 }
             }
         } catch (_) {}
-        _silentSystemSend('SYSTEM (not from the student): the student has now answered the three action-plan questions and the transfer question (recorded above — the system asked them). Close the assessment in ONE turn, in this exact order: (1) one or two lines acknowledging and, where useful, sharpening their action-plan answers and transfer example — never re-ask them; (2) the @FIELD_SET filing markers exactly as the protocol’s filing step specifies (every field, one marker per line, values derived from this assessment and their answers); (3) the one-line filing confirmation; (4) a brief, warm session conclusion naming one real moment from this session; (5) [ASSESSMENT_COMPLETE] on its own line; (6) end with exactly: "That wraps the assessment. Anything you’d like to revisit before you mark this complete?" Ask no other questions.' + _facts);
+        // v7.20.658 (#653): hand Sophia the ACCEPTED answers verbatim and forbid writing words the
+        // student never said — Anam's plan was filed in her voice from "wait" and "I have a question".
+        let _ccWords = '';
+        try {
+            const _a = _ccAnswersIn(_chatShell && _chatShell.history);
+            const _nm = { ap1: 'Where am I going', ap2: 'How am I going', ap3: 'Where to next', transfer: 'Transfer' };
+            const _ls = Object.keys(_nm).filter(k => _a[k]).map(k => _nm[k] + ': «' + _a[k].replace(/\s+/g, ' ').slice(0, 400) + '»');
+            if (_ls.length) _ccWords = ' THE STUDENT’S OWN ANSWERS (authoritative — these, and nothing else they typed, are their answers): ' + _ls.join(' | ') + '.';
+        } catch (_) {}
+        _silentSystemSend('SYSTEM (not from the student): the student has now answered the three action-plan questions and the transfer question (recorded above — the system asked them). Close the assessment in ONE turn, in this exact order: (1) one or two lines acknowledging their action-plan answers and transfer example — never re-ask them; you may suggest a sharper version in these lines, but the FILED fields keep their words; (2) the @FIELD_SET filing markers exactly as the protocol’s filing step specifies (every field, one marker per line, values derived from this assessment and their answers). THE STUDENT’S WORDS ARE THEIRS: any field that records what the student said (their focus, where they are now, what they will do next, their transfer example — Short-term Aims included) carries THEIR answer, tidied for spelling and grammar only. Never add ideas to it and never write first-person sentences (“I can…”, “I’ll…”) they did not say. If an answer is not a real answer, file their words as they are — never invent one.' + _ccWords + ' Then: (3) the one-line filing confirmation; (4) a brief, warm session conclusion naming one real moment from this session; (5) [ASSESSMENT_COMPLETE] on its own line; (6) end with exactly: "That wraps the assessment. Anything you’d like to revisit before you mark this complete?" Ask no other questions.' + _facts);
     }
     // Runs on every AI canvas reply (both pipelines — same call sites as the AP-FILE
     // repair). Advances the chain whenever an AI turn lands mid-chain.
@@ -9454,6 +9507,10 @@
                 _silentSystemSend('SYSTEM (not from the student): the Overall Feedback document section was NOT filled. Re-emit the full summary suite inside @SECTION_BEGIN{"section":"Overall Feedback"} … @SECTION_END markers now, exactly as the protocol’s Final Summary step specifies, then @SUMMARY_COMPLETE on its own line. Do not repeat the summary outside the markers and do not ask any questions.');
                 return;
             }
+            // v7.20.658 (#653): Sophia just answered a question the student asked mid-plan — the
+            // question they were answering comes back, never the next one (that would skip it).
+            const _pend = _ccPendingIn(_chatShell && _chatShell.history);
+            if (_pend) { _renderClosingQuestion(_pend, true); console.log('WML closing-chain: re-asked "' + _pend + '" after a mid-plan question'); return; }
             if (stage === 'file') { _fireClosingFiling(); return; }
             _renderClosingQuestion(stage);
             console.log('WML closing-chain: code-asked "' + stage + '" (no AI turn)');
@@ -9465,6 +9522,33 @@
         try {
             const stage = _closingChainStage();
             if (!stage || !_chatShell) return false;
+            // v7.20.658 (#653): is this an ANSWER to the question on screen? A hold, an "I have a
+            // question" or a real question is recorded as the student's turn but never filed.
+            const _pend = _ccPendingIn(_chatShell.history);
+            if (_pend) {
+                const _prevU = (_chatShell.history || []).slice().reverse().find(m => m && m.role === 'user' && !m.hidden);
+                const kind = _ccClassify(msg, !!(_prevU && _prevU.closingHold === 'ask'));
+                if (kind !== 'answer') {
+                    _chatShell.addMsg(msg, 'user');
+                    WML.recordTurn(_chatShell.history, { role: 'user', content: msg, closingHold: kind }, { durable: true, why: 'the student sent it — it happened, it stays (not an answer, so never filed)' });
+                    _chatShell.textarea.value = '';
+                    try { _chatShell.textarea.style.height = '40px'; } catch (_) {}
+                    if (kind === 'question') {
+                        try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
+                        _silentSystemSend('SYSTEM (not from the student): the student asked the question above in the middle of the action-plan step. Answer it in two or three lines, kindly and plainly. Do NOT ask any action-plan question, do NOT emit @FIELD_SET, @SECTION or [ASSESSMENT_COMPLETE] — the system asks the action-plan question again after your reply. If they ask for marks to change, explain that the marks follow the evidence in what they wrote, in one line.');
+                        console.log('WML closing-chain: mid-plan question at "' + _pend + '" → Sophia answers, then the same ask returns');
+                    } else {
+                        const say = kind === 'ask'
+                            ? 'Of course — ask me your question now, and we will come back to this one afterwards.'
+                            : 'No rush — take your time. When you are ready, answer the question above.';
+                        _chatShell.addMsg(formatAI(say), 'ai', say, { suppressActions: true });
+                        WML.recordTurn(_chatShell.history, { role: 'assistant', content: say }, { durable: false, why: 'a present-state nudge — the question above still waits; re-derived, never stored' });
+                        try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
+                        console.log('WML closing-chain: "' + kind + '" at "' + _pend + '" — not filed, question stays open');
+                    }
+                    return true;
+                }
+            }
             _chatShell.addMsg(msg, 'user');
             _chatShell.history.push({ role: 'user', content: msg, closingChain: true });
             _chatShell.textarea.value = '';

@@ -30,8 +30,8 @@ unset($d['docCompletedAt']);
 $c = json_decode($bak['chat'], true); if (!is_array($c)) $c = json_decode(wp_unslash($bak['chat']), true);
 $hist = (is_array($c) && isset($c['history']) && is_array($c['history'])) ? $c['history'] : [];
 $n0 = count($hist); $keep = ($trim === null) ? $hist : array_slice($hist, 0, $trim);
-echo ($dry ? '[DRY RUN — nothing written] ' : '') . "user $u: sections $before→$after; boxes: " . implode(' | ', $fm[1])
-    . "; docCompletedAt " . ($hadCompleted ? "'$hadCompleted' removed" : 'absent') . "; chat $n0→" . count($keep)
+echo ($dry ? '[DRY RUN — nothing written] ' : '') . "user $u: sections {$before}→{$after}; boxes: " . implode(' | ', $fm[1])
+    . "; docCompletedAt " . ($hadCompleted ? "'$hadCompleted' removed" : 'absent') . "; chat {$n0}→" . count($keep)
     . ($trim !== null && $keep ? ' (last kept: ' . substr((string) ($keep[count($keep) - 1]['content'] ?? ''), 0, 40) . ')' : '')
     . "; phase record " . ($delPhase ? ($bak['phase'] ? 'DELETED (was ' . substr((string) $bak['phase'], 0, 60) . ')' : 'absent') : 'kept') . "\n";
 if ($dry) return;
