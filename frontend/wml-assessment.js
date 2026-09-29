@@ -65882,8 +65882,12 @@
      * Docs saved before v7.20.49 carry 4 generic "Plan: Paragraph i — Q4" fields
      * (plan-Q4-para-1..4); the protocol files plan-Q4-intro/body-1..3/conclusion —
      * a write-key≠read-key fork on every pre-existing doc (visible in Neil's one-shot).
-     * Swap ONLY when every legacy Q4 field is EMPTY — student words are never destroyed;
-     * a doc with content keeps its legacy ids and warns loudly.
+     * v7.20.671 (#681 D2): a legacy box holding the student's words no longer blocks the swap.
+     * Refusing kept the doc on ids the protocol never files to, so EVERY Q4 approval was dropped
+     * (Anam 1298: her diagnostic Q4 notes, carried forward in June, pinned her doc to the old
+     * shape). Neil's #571 ruling — "Leave them in Paragraph 1's box" — is applied exactly as
+     * _upgradeDiagnosticPlanAreas applies it: the notes move, in order, into the FIRST box of the
+     * new shape. Student words are still never destroyed.
      */
     function _healP2Q4ComparativePlan() {
         if (!canvasEditor || !_planPreChainActive()) return;
@@ -65892,28 +65896,36 @@
         if (html.indexOf('plan-Q4-intro') !== -1) return;   // both shapes present — leave alone
         const tmp = document.createElement('div');
         tmp.innerHTML = html;
-        const legacyFields = tmp.querySelectorAll('[data-field-id^="plan-Q4-para-"]');
-        if (!legacyFields.length) return;
-        for (let i = 0; i < legacyFields.length; i++) {
-            if ((legacyFields[i].textContent || '').trim()) {
-                console.warn('WML heal: legacy Q4 plan holds student content — comparative swap skipped (protocol Q4 filings will not land on this doc)');
-                return;
-            }
-        }
+        const n = _swapLegacyQ4Plan(tmp);
+        if (n < 0) return;
+        canvasEditor.commands.setContent(tmp.innerHTML, false);
+        if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        console.log('WML heal: Q4 plan re-shaped to comparative (intro + 3 bodies + conclusion)'
+            + (n ? '; ' + n + ' legacy box(es) of notes kept in plan-Q4-intro' : ''));
+    }
+
+    // The DOM half, split out so bin/p2-planning-heal-probe.mjs drives the SHIPPED code on a real
+    // copied-forward doc. Mutates `root`; returns -1 (nothing to do) or the number of legacy
+    // boxes whose notes were carried into the first new box.
+    function _swapLegacyQ4Plan(root) {
+        const legacyFields = root.querySelectorAll('[data-field-id^="plan-Q4-para-"]');
+        if (!legacyFields.length) return -1;
+        const notes = [];
+        legacyFields.forEach(f => { if ((f.textContent || '').trim()) notes.push(f.innerHTML); });
         const sections = [];
         legacyFields.forEach(f => {
             const s = f.closest('[data-section-type="plan"]');
             if (s && sections.indexOf(s) === -1) sections.push(s);
         });
-        if (!sections.length) return;
+        if (!sections.length) return -1;
         const frag = document.createElement('div');
         frag.innerHTML = buildComparativePlanSection('Q4');
+        const firstField = frag.querySelector('[data-field-id]');
+        if (notes.length && firstField) firstField.innerHTML = notes.join('<br><br>');
         const anchor = sections[0];
         while (frag.firstChild) anchor.parentNode.insertBefore(frag.firstChild, anchor);
         sections.forEach(s => s.remove());
-        canvasEditor.commands.setContent(tmp.innerHTML, false);
-        if (typeof saveCanvasContent === 'function') saveCanvasContent();
-        console.log('WML heal: Q4 plan re-shaped to comparative (intro + 3 bodies + conclusion)');
+        return notes.length;
     }
 
     /**
@@ -66088,8 +66100,19 @@
             add(raw.replace(/\s*—\s*Q\d+\s*$/, ''), m ? m[1] : (_poetryPlanActive() ? 'Essay Plan' : ''), done);
         });
         add('Final Review', '', false);
+        // v7.20.671 (#681 D3): the ladder's v7.20.645 cross-question rule, applied to the pointer.
+        // An unfiled row of a question that sits BEFORE a question already holding filed work is
+        // not where the student is — the chat moved past it (Anam 1298: a June Q2 plan with no
+        // markers in this chat parked "current" on Q2 ¶1 while she was filing Q3 ¶2, and her
+        // screen was read as "planning Q2"). Rows keep their honest unticked state.
+        const _qGroup = (g) => /^Q\d+$/.test(g || '');
         let current = steps.length;
-        for (let i = 0; i < steps.length; i++) { if (!steps[i]._done) { current = i + 1; break; } }
+        for (let i = 0; i < steps.length; i++) {
+            if (steps[i]._done) continue;
+            const g = steps[i].group;
+            if (_qGroup(g) && steps.some((s, j) => j > i && s._done && _qGroup(s.group) && s.group !== g)) continue;
+            current = i + 1; break;
+        }
         return { steps: steps, current: current };
     }
     // v7.20.52: the model is TRANSIENTLY null while the editor/doc mounts (async) — a
@@ -66599,7 +66622,21 @@
             // null from the body-only resolver, so it needs its own admission (mirrors the render gate).
             const _isInf = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
                 && _specSubjectKey() === 'language_p2' && qType === 'short_analysis';
-            if (!shape && !_isComp && !_isInf) return;
+            // v7.20.671 (#681 D1): Section B transactional writing (IUMVCC). A planning doc copied
+            // forward from the diagnostic carries this question's IUMVCC PLAN boxes but never gained
+            // its OUTLINE rows — the only other producers are the fresh-doc render branch and
+            // _healIumvccOutlineShape, which reshapes rows that already exist — so every Q5
+            // @FIELD_COMMIT was dropped and the ladder skipped Q5 and called the plan done (measured:
+            // 0 of 3 AQA P2 planning docs on prod held an outline-iumvcc- row). The family is READ
+            // FROM THE DOC, not re-derived from question text: the question's own plan boxes are
+            // `iumvcc-*` exactly when the builders routed it to IUMVCC, and the outline must follow
+            // the plan (key-match law) — creative writing never has them, so it can never match.
+            const _isIumvcc = !shape && !_isComp && !_isInf
+                && !tmp.querySelector('[data-field-id^="outline-iumvcc-"]')
+                && Array.from(tmp.querySelectorAll('[data-section-type="plan"]'))
+                    .some(s => (s.getAttribute('data-section-label') || '').endsWith(`— ${qId}`)
+                        && !!s.querySelector('[data-field-id^="iumvcc-"]'));
+            if (!shape && !_isComp && !_isInf && !_isIumvcc) return;
 
             // Already has this question's outline?
             let _staleOutlineToRemove = null;
@@ -66674,8 +66711,11 @@
                             focus: 'comparative',
                             stampAO: 'AO3',
                         })
-                        // Q2 inference: byte-identical to the render branch.
-                        : buildInferenceOutlineSection(qId, 2));
+                        // Section B IUMVCC: byte-identical to the render branch (v7.20.671).
+                        : _isIumvcc
+                            ? buildIUMVCCOutlineSection(qId)
+                            // Q2 inference: byte-identical to the render branch.
+                            : buildInferenceOutlineSection(qId, 2));
 
             let after = anchor;
             while (frag.firstChild) {
@@ -66685,7 +66725,7 @@
             changed = true;
             healed.push(shape
                 ? `${qId}(${shape.bodies}¶/${shape.ao}${shape.focus ? '/' + shape.focus : ''})`
-                : _isComp ? `${qId}(comparison/AO3)` : `${qId}(inference/AO1)`);
+                : _isComp ? `${qId}(comparison/AO3)` : _isIumvcc ? `${qId}(IUMVCC)` : `${qId}(inference/AO1)`);
         });
 
         if (!changed) return;

@@ -118,6 +118,21 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/plan-file-repair-harness.js || fail=1
 fi
 
+# v7.20.671 (#681): THE COPIED-FORWARD P2 PLANNING DOC. Every planning gate above builds a BRAND-NEW
+# redraft doc; real planning docs are copied forward from the diagnostic and healed on load, and two
+# defects lived only there (Q5 outline rows never added → every Q5 filing dropped and the ladder
+# called the plan done; legacy Q4 boxes holding notes blocked the reshape → every Q4 approval
+# dropped). Drives the SHIPPED heals on both real starting shapes; mutant-proven for both defects.
+# Needs a browser — skipped LOUDLY when playwright-core is not installed, never silently.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|protocols/aqa/language2/planning/.*\.md|p2-planning-heal-probe\.mjs'; then
+  if [ -d "$HOME/.sophicly/probe/node_modules/playwright-core" ]; then
+    node bin/p2-planning-heal-probe.mjs || fail=1
+  else
+    echo "⚠️  p2-planning-heal-probe SKIPPED — playwright-core missing in ~/.sophicly/probe"
+  fi
+fi
+
 # v7.20.634 (FIXLIST #585–#588): THE MARK COMPLETE GATE. Neil's condition, both directions: a student
 # who followed the process ALWAYS completes; one who did not gets the pop-up. The rule is extracted
 # from the shipped file and driven through Annaya's case, Sophia's-gap cases, the exceptions, every
