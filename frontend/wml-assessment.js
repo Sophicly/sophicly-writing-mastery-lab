@@ -36231,8 +36231,17 @@
                         // dropped and the badge pins left. No attr → no badge on read-only
                         // sections → that collision (which was also destroying the hatch
                         // overlay) can't arise.
-                        const _roSec = domSection.getAttribute('data-readonly') === 'true'
-                            || domSection.getAttribute('data-editable') === 'false';
+                        // v7.20.651 (#643, Neil: Feedback cards lost their tick in tutor view,
+                        // Analytics' tick sat hard-left): a FEEDBACK section's read-only state is
+                        // never authored — renderHTML derives it from _feedbackEditable(), which is
+                        // false for every tutor/parent viewer. Reading it here as "instruction
+                        // section" stripped the real tick off every marked Feedback card for the
+                        // reviewer only. The v7.19.500 law is about AUTHORED read-only (the
+                        // nodeView reads node.attrs for exactly that reason), so feedback is exempt:
+                        // the reviewer sees the ticks the student sees.
+                        const _roSec = s.type !== 'feedback'
+                            && (domSection.getAttribute('data-readonly') === 'true'
+                                || domSection.getAttribute('data-editable') === 'false');
                         if (_roSec) {
                             // Idempotent, same reason as the write below (PM law rule 4).
                             if (domSection.hasAttribute('data-section-complete')) domSection.removeAttribute('data-section-complete');

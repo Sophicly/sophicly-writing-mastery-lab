@@ -24,6 +24,7 @@ if (!function_exists('apply_filters')) { function apply_filters($t, $v) { return
 if (!function_exists('add_filter'))    { function add_filter() { return true; } }
 if (!function_exists('add_action'))    { function add_action() { return true; } }
 if (!function_exists('is_wp_error'))   { function is_wp_error($t) { return false; } }
+if (!function_exists('wp_json_encode')) { function wp_json_encode($v) { return json_encode($v); } }
 
 $file = __DIR__ . '/../includes/class-protocol-router.php';
 $src  = file_get_contents($file);
@@ -42,8 +43,10 @@ function slice_method($src, $name) {
     }
     fwrite(STDERR, "❌ api-usage-gate: unbalanced braces slicing $name\n"); exit(1);
 }
-$code = "class SWML_Protocol_Router {\n"
+$code = "class SWML_Protocol_Router {\n    public \$is_wml_outbound = true;\n"
       . slice_method($src, 'record_anthropic_usage') . "\n"
+      . slice_method($src, 'extend_anthropic_cache_ttl') . "\n"
+      . slice_method($src, 'register_claude_sonnet_5_5') . "\n"
       . slice_method($src, '_accumulate_usage') . "\n"
       . slice_method($src, 'token_prices') . "\n}";
 eval($code);
@@ -100,15 +103,40 @@ ok(json_encode($GLOBALS['__opts']['swml_api_usage_daily']) === $before, 'OpenAI 
 
 echo "\n5. PRICES — the 10x that makes the cache worth having\n";
 $p = SWML_Protocol_Router::token_prices('claude-sonnet-5');
-ok($p['input'] == 3.00 && $p['cache_read'] == 0.30, 'sonnet: fresh input $3.00/M vs cache read $0.30/M (10x)');
+// v7.20.651: Sonnet 5 / 5.5 list at $2 in, $0.20 cache read, $4 1h cache write (was asserted at the
+// Sonnet 4 rate of $3 / $0.30, which overstated every recorded estimate by 1.5x).
+ok($p['input'] == 2.00 && $p['cache_read'] == 0.20 && $p['cache_write'] == 4.00, 'sonnet 5: fresh input $2.00/M vs cache read $0.20/M (10x), 1h write $4.00/M');
+ok(SWML_Protocol_Router::token_prices('claude-sonnet-5-5')['output'] == 10.00, 'sonnet 5.5 priced as sonnet 5 ($10/M output)');
 ok(SWML_Protocol_Router::token_prices('claude-haiku-4-5')['input'] == 1.00, 'haiku priced separately');
 ok(SWML_Protocol_Router::token_prices('claude-opus-5')['input'] == 15.00,   'opus priced separately');
 
 // the worked example that motivated the whole thing
-$cached   = (136000 * 0.30) / 1000000;
-$uncached = (136000 * 3.00) / 1000000;
+$cached   = (136000 * 0.20) / 1000000;
+$uncached = (136000 * 2.00) / 1000000;
 printf("\n   worked example — 2 turns x 68k protocol prefix: cached $%.2f vs uncached $%.2f (%.0fx)\n",
     $cached, $uncached, $uncached / $cached);
+
+echo "\n6. REQUEST SHAPE (v7.20.651) — the only cache breakpoint is the instructions block\n";
+// The rolling history breakpoint could never be read back (sliding 24-message window + the per-turn
+// context prepended to the last message), so it bought a 2x cache WRITE of the history every turn —
+// 74% of prod spend, 22-28 Sep. Re-adding one fails here; a stable-prefix design must change this test.
+$req = ['model' => 'claude-sonnet-5', 'system' => [
+    ['type' => 'text', 'text' => 'PROTOCOL', 'cache_control' => ['type' => 'ephemeral']],
+    ['type' => 'text', 'text' => 'WML LIVE SESSION DIRECTIVES: this turn']],
+    'messages' => [['role' => 'user', 'content' => 'hi'], ['role' => 'assistant', 'content' => 'hello'], ['role' => 'user', 'content' => 'mark it']]];
+$o = $r->extend_anthropic_cache_ttl(['body' => json_encode($req)], $URL);
+$j = json_decode($o['body'], true);
+ok(substr_count($o['body'], '"cache_control"') === 1, 'exactly one cache_control in the request');
+ok(($j['system'][0]['cache_control']['ttl'] ?? '') === '1h' && count($j['system']) === 1, 'instructions block keeps its 1h breakpoint; live context left the system array');
+$lastm = end($j['messages']);
+ok(is_array($lastm['content']) && strpos($lastm['content'][0]['text'] ?? '', 'LIVE SESSION DIRECTIVES') !== false, 'live context rides the current user turn');
+
+echo "\n7. SONNET 5.5 REGISTRATION (v7.20.651) — AI Engine 3.8.2 throws on an unlisted model\n";
+$cat = [['model' => 'claude-sonnet-5', 'name' => 'Claude Sonnet 5', 'tags' => ['core', 'no-temperature']]];
+$cat2 = $r->register_claude_sonnet_5_5($cat);
+ok(count($cat2) === 2 && $cat2[1]['model'] === 'claude-sonnet-5-5' && in_array('no-temperature', $cat2[1]['tags'], true), 'claude-sonnet-5-5 added, cloned from claude-sonnet-5, no-temperature kept');
+ok(count($r->register_claude_sonnet_5_5($cat2)) === 2, 'never added twice (a later AI Engine entry wins)');
+ok($r->register_claude_sonnet_5_5([['model' => 'claude-haiku-4-5']]) === [['model' => 'claude-haiku-4-5']], 'no sonnet-5 base → catalogue untouched');
 
 echo "\n";
 if ($fail) { fwrite(STDERR, "❌ api-usage-gate: $fail failed, $pass passed\n"); exit(1); }

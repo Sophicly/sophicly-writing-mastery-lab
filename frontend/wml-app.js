@@ -323,7 +323,14 @@
     // no Sophia spend — that is Bronze's entitlement (live modelling without the platform), and the
     // server has already resolved the grant (reviewRole 'live_modelling'). The upgrade wall must not
     // stand between a paying student and the lesson they are enrolled on.
-    const hasWMLAccess = ['silver', 'gold', 'platinum'].includes(userTier) || config.reviewRole === 'live_modelling';
+    // v7.20.651 (#646): the same holds for EVERY server-authorised reviewer. The wall read the
+    // VIEWER's own tier, so a tutor opening a student's work got "Upgrade to unlock" — measured on
+    // prod: 4/4 tutors, the specialist and 179/180 parents are tier 'free'; only admins got
+    // through. The server resolves reviewRole only for a viewer it has authorised
+    // (resolve_review_context), and review mode is read-only with no Sophia input, so the
+    // entitlement is the student's, whose work it is.
+    const hasWMLAccess = ['silver', 'gold', 'platinum'].includes(userTier) || config.reviewRole === 'live_modelling'
+        || (!!config.reviewMode && ['tutor', 'specialist', 'admin', 'parent'].includes(config.reviewRole));
     const hasProgrammeAccess = ['gold', 'platinum'].includes(userTier);
 
     // ── URL Sync (v7.12.62) ──

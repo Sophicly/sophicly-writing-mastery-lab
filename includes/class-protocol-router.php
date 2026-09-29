@@ -580,6 +580,10 @@ class SWML_Protocol_Router {
         // it here (update-safe, never edits AI Engine). Runs at 20, after
         // inject_session_context.
         add_filter('mwai_ai_query', [$this, 'strip_temperature_for_claude5'], 20, 2);
+        // v7.20.651 (#645): AI Engine 3.8.2's catalogue has no claude-sonnet-5-5, and its
+        // final_checks() THROWS "The model '…' is not available" for any id it cannot find —
+        // so the bot could not be switched to Sonnet 5.5 at all. Register it (update-safe).
+        add_filter('mwai_anthropic_models', [$this, 'register_claude_sonnet_5_5'], 10, 1);
         // Route embeddings to the correct vector store based on subject
         add_filter('mwai_context_search', [$this, 'route_vector_store'], 10, 2);
         // Lock-discipline gate: strip/swap ban-list phrasings from retrieved chunks
@@ -644,9 +648,8 @@ class SWML_Protocol_Router {
         //      cached instructions and the messages, into the CURRENT user turn
         //      (which is fresh every turn anyway). A changing block sitting before
         //      the history defeats any prefix cache over the history (cache wall).
-        //   2. Add a rolling ephemeral 1h cache_control breakpoint on the LAST
-        //      message. Anthropic then caches instructions + the entire history;
-        //      each turn reads the prior cache and only the new turn is fresh.
+        //   2. (REMOVED v7.20.651 — measured never to hit; see the note below.) Was: a
+        //      rolling ephemeral 1h cache_control breakpoint on the LAST message.
         // Update-safe (never edits AI Engine); scoped to WML + Anthropic /v1/messages.
         if ($this->is_wml_outbound && !empty($payload['messages']) && is_array($payload['messages'])) {
             // 1. Pull our dynamic context out of the system array (detected by the
@@ -671,7 +674,7 @@ class SWML_Protocol_Router {
             }
 
             // 2. Normalise the LAST message content to block-array form, prepend the
-            //    relocated context (if any), and stamp the rolling cache breakpoint.
+            //    relocated context (if any). No cache breakpoint here (v7.20.651).
             $last_i = count($payload['messages']) - 1;
             $last_msg = $payload['messages'][$last_i];
             if (is_array($last_msg) && isset($last_msg['content'])) {
@@ -683,12 +686,19 @@ class SWML_Protocol_Router {
                     if ($relocated_ctx !== '') {
                         array_unshift($content, ['type' => 'text', 'text' => $relocated_ctx . "\n\n"]);
                     }
-                    // cache_control rides the FINAL content block of the message.
-                    $end = count($content) - 1;
-                    if ($end >= 0 && is_array($content[$end]) && empty($content[$end]['cache_control'])) {
-                        $content[$end]['cache_control'] = ['type' => 'ephemeral', 'ttl' => '1h'];
-                        $changed = true;
-                    }
+                    // v7.20.651 (COST, #645 — MEASURED): the rolling history breakpoint is GONE.
+                    // It could never be read back, so it only ever bought 1h cache WRITES
+                    // (2x the input price) of the whole history on every turn:
+                    //   · the browser sends a SLIDING window (last 24 messages), so from the
+                    //     25th message on the history's first message changes every turn;
+                    //   · the relocated context above is prepended to THIS message, and the next
+                    //     turn re-sends this message WITHOUT it — the prefix breaks here anyway.
+                    // swml_api_usage_daily, prod 22–28 Sep: cache_read per request flat at the
+                    // instructions' size (51–59k), cache_write 24–50k per request, never re-read —
+                    // $21.01 of $28.28 (74%). Without the stamp the history bills as plain input
+                    // (1x). Nothing the model sees changes. The instructions breakpoint (system)
+                    // is untouched and still hits. Caching history needs a STABLE prefix (a
+                    // stepped window + the breakpoint before this turn) — tracked in the handoff.
                     $payload['messages'][$last_i]['content'] = $content;
                 }
             }
@@ -819,7 +829,12 @@ class SWML_Protocol_Router {
     public static function token_prices($model = '') {
         $m = strtolower((string) $model);
         $p = ['input' => 3.00, 'output' => 15.00, 'cache_read' => 0.30, 'cache_write' => 6.00];
-        if (strpos($m, 'haiku') !== false) {
+        // v7.20.651: the Claude 5 Sonnets (claude-sonnet-5, claude-sonnet-5-5) list at $2 / $10,
+        // cache read $0.20, 1h cache write $4 — the 4.x default above overstated every
+        // estimate by 1.5x. (Claude API model reference, cached 2026-09-25.)
+        if (preg_match('/^claude-sonnet-5(?:-|$)/', $m)) {
+            $p = ['input' => 2.00, 'output' => 10.00, 'cache_read' => 0.20, 'cache_write' => 4.00];
+        } elseif (strpos($m, 'haiku') !== false) {
             $p = ['input' => 1.00, 'output' => 5.00, 'cache_read' => 0.10, 'cache_write' => 2.00];
         } elseif (strpos($m, 'opus') !== false) {
             $p = ['input' => 15.00, 'output' => 75.00, 'cache_read' => 1.50, 'cache_write' => 30.00];
@@ -1004,6 +1019,33 @@ class SWML_Protocol_Router {
             $query->temperature = null;
         }
         return $query;
+    }
+
+    /**
+     * v7.20.651 (#645): add claude-sonnet-5-5 to AI Engine's Anthropic catalogue when the
+     * installed AI Engine does not list it yet. Cloned from its own claude-sonnet-5 entry —
+     * same prices ($2/$10), same tokenizer, same 1M context, and the same 'no-temperature'
+     * tag (Sonnet 5.5 400s on a non-default temperature; strip_temperature_for_claude5 also
+     * covers it, since its pattern matches claude-sonnet-5-5). A later AI Engine that ships
+     * its own entry wins: we never add a duplicate. Adding an entry switches nothing — the
+     * model a bot uses is still chosen in AI Engine's settings.
+     */
+    public function register_claude_sonnet_5_5($models) {
+        if (!is_array($models)) return $models;
+        $base = null;
+        foreach ($models as $m) {
+            if (!is_array($m) || !isset($m['model'])) continue;
+            if ($m['model'] === 'claude-sonnet-5-5') return $models;
+            if ($m['model'] === 'claude-sonnet-5') $base = $m;
+        }
+        if ($base === null) return $models;   // unknown catalogue shape — change nothing
+        $base['model'] = 'claude-sonnet-5-5';
+        $base['name']  = 'Claude Sonnet 5.5';
+        if (isset($base['tags']) && is_array($base['tags']) && !in_array('no-temperature', $base['tags'], true)) {
+            $base['tags'][] = 'no-temperature';
+        }
+        $models[] = $base;
+        return $models;
     }
 
     public function inject_session_context($query, $params = null) {
