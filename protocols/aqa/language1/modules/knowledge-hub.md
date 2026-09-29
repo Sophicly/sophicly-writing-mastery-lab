@@ -24,7 +24,17 @@
 
 **(Paragraph 2 \- 4 Marks)**
 
-Lessing intensifies the oppressive atmosphere by presenting the African landscape as a hostile, almost predatory presence that gradually erodes Mary's sense of stability. This effect is crafted through the use of metaphor in the description of the veldt as "a furnace breathing over the land," which infuses the natural environment with a suffocating vitality. The metaphor "furnace" connotes not only unbearable heat but also entrapment, as though Mary is imprisoned within an industrial mechanism designed to consume and weaken her. For the reader, this creates a heightened awareness of Mary's physical and psychological fragility, inviting us to imagine the crushing intensity of such an environment. At the same time, this imagery prompts the audience to interpret the setting as a symbolic antagonist, deepening our emotional investment in Mary's struggle against forces beyond her control. By transforming the landscape into an active threat, Lessing underscores her wider purpose: to suggest that colonial existence is not merely challenged by external social pressures but by a natural world that resists and destabilises the colonial presence itself.
+(T)opic Sentence: Lessing then shows that the heat cannot be escaped, presenting it as a force that swallows even the small relief Mary tries to give herself.
+
+(T)echnique, (E)vidence, (I)nference: To achieve this, the writer uses onomatopoeia and personification when the water Mary pours over herself falls on 'the porous brick, which hissed with dryness', suggesting that the house is so parched it consumes her only comfort the moment it lands.
+
+(C)lose Analysis: Specifically, the verb 'hissed' gives the brick a hostile, almost snake-like voice, while the adjective 'porous' implies a surface that absorbs everything, so that the noun 'dryness' becomes the sound's cause, as though the heat itself were answering her.
+
+(E)ffect on Reader: As a consequence, the reader hears the relief vanish, which makes Mary's careful ritual feel futile and deepens the sense that her suffering will continue.
+
+(E)ffect on Reader 2: Furthermore, the menace in the snake-like 'hissed' positions an audience to sense that the land is not simply hot but actively resisting her, turning an ordinary act of washing into a small defeat.
+
+(A)uthor's Purpose: Ultimately, Lessing uses this detail to suggest that Mary's struggle is not with discomfort alone but with an environment that will not yield to her, hinting at how completely she is losing control of her new life.
 
 **Gold Standard Model – Question 3 (AO2 \- 8 Marks Total)**
 
@@ -44,59 +54,71 @@ Lessing intensifies the oppressive atmosphere by presenting the African landscap
 
 **(Paragraph 2 \- 4 Marks)**
 
-\[Similar TTECEA structure for second paragraph\]
+(T)opic Sentence: The writer then shifts the focus outward, turning Mary's private battle with the heat into open conflict with Dick, so that the pressure building in her mind breaks into the marriage.
+
+(T)echnique, (E)vidence, (I)nference: This structural shift is signalled when the long descriptive paragraphs give way to dialogue: "'The water is going very quickly,' said Dick, one day, frowning." Set apart as its own short paragraph, the line marks the moment the heat stops being Mary's burden alone and becomes a source of tension between them.
+
+(C)lose Analysis: The move from long sentences of sensory description to clipped exchanges such as "'What, wasting it like that?'" quickens the pace, and the water Mary poured over herself earlier returns as the cause of the quarrel, binding the two halves of the extract together.
+
+(E)ffect on Reader: As a result, the reader feels the pressure rise suddenly and recognises that the heat has been building towards this confrontation from the opening line.
+
+(E)ffect on Reader 2: Moreover, because the extract ends in reconciliation, 'he apologising, blaming himself, and she forgiving him', and calls it 'another of those little scenes', an audience is left uneasy, seeing a repeated pattern rather than a real resolution.
+
+(A)uthor's Purpose: Ultimately, Lessing structures the extract this way to suggest that the harsh land is slowly wearing down the marriage itself, each quarrel smoothed over but never solved.
 
 **Gold Standard Model – Question 4 (AO4 \- 20 Marks Total)**
 
-**(Introduction \- 2 Marks)**
+*(Statement, June 2024, lines 18 to the end: "Dick's anger towards Mary is really unfair. The writer makes it clear that Mary is totally powerless in this relationship.")*
 
-While a reader can certainly agree that the extract portrays Alexander as a character struggling with his mother's illness, a more perceptive evaluation would argue that Allende presents a complex and multifaceted portrait of adolescent grief. My analysis will therefore explore how Allende first uses Alexander's internal conflict to establish his struggle, then examines his external actions as a manifestation of this turmoil, before finally evaluating how his profound love for his mother reveals a deeper resilience beneath the surface of his pain.
+**(Introduction \- 1 Mark)**
+
+While a reader can agree that Dick's outburst is harsh, a more perceptive evaluation would argue that Lessing presents his anger as understandable in its cause but unfair in its force, and Mary as far from totally powerless within the marriage, even though she is powerless before the land itself. This response will first consider the practical pressure that explains Dick's anger, then the disproportion that makes it unjust, and finally the limited but real power Mary holds in their quarrels.
 
 **(Body Paragraph 1 \- 6 Marks)**
 
-(T)opic Sentence: Initially, Allende constructs a narrative that focuses intensely on Alexander's internal world to convey the chaotic and overwhelming nature of his struggle.
+(T)opic Sentence: To some extent, Lessing suggests that Dick's anger is not simply unfair, because it grows from a genuine fear of losing what the farm cannot afford.
 
-(T)echnique, (E)vidence, (I)nference: In order to achieve this, the writer employs a powerful metaphor when describing the 'silent storm that raged inside him,' immediately suggesting his suffering is not a quiet sadness but a violent, uncontrollable force.
+(T)echnique, (E)vidence, (I)nference: The writer gives Dick a listing sentence of costs: 'it means a driver, and two workers, and two oxen off other work for a whole morning', implying that every bucket of water represents labour and money the farm can barely spare.
 
-(C)lose Analysis: Allende's specific choice of the noun 'storm' carries connotations of natural disaster and destruction, effectively externalising his internal pain and framing it as an overwhelming event beyond his capacity to manage.
+(C)lose Analysis: The repeated 'and' piles up each loss, so the list sounds as heavy as the burden it describes, while the blunt short sentence that follows, 'It costs money to fetch water', reduces his argument to hard fact.
 
-(E)ffect on Reader 1: By forcing the reader to focus on the sheer scale of Alexander's internal turmoil, Allende cultivates a powerful emotion of empathy for a character who is being torn apart from within.
+(E)ffect on Reader: As a result, a reader may feel some sympathy for Dick, seeing his outburst as the strain of a poor farmer rather than cruelty for its own sake.
 
-(E)ffect on Reader 2: Such powerful empathy invites the reader to perceive his 'struggle' as a visceral, almost physical battle, thereby deepening their appreciation for the psychological weight he carries.
+(E)ffect on Reader 2: Furthermore, the detail that he 'swallowed, trying to keep calm' before speaking suggests an effort at restraint, which complicates the student's view that his anger is purely unfair.
 
-(A)uthor's Purpose: Through this internal focus, Allende's purpose is arguably to represent adolescent grief in a raw, authentic way, highlighting how a young person's sense of identity can be fragmented by familial trauma.
+(A)uthor's Purpose: Arguably, Lessing wants the reader to understand that poverty and a hostile climate shape Dick's temper, so the statement is only partly convincing: his anger has a real cause, even if its expression is harsh.
 
 **(Body Paragraph 2 \- 6 Marks)**
 
-(T)opic Sentence: Furthermore, Allende demonstrates how Alexander's internal battle manifests in his external behaviour, linking his psychological struggle to destructive and escapist impulses.
+(T)opic Sentence: However, Lessing also makes the force of Dick's reaction feel unjust, out of all proportion to what Mary has actually done.
 
-(T)echnique, (E)vidence, (I)nference: Allende powerfully crystallises this connection through the symbolic action of him wanting to 'smash his flute,' an instrument that represents creativity and harmony, but which he now sees as a 'mockery of the silence in his house.'
+(T)echnique, (E)vidence, (I)nference: The writer uses a simile to describe his response: he looked at her 'in incredulous horror, as if she had committed a crime', suggesting that he treats a woman cooling herself in the heat as though she were guilty of a serious offence.
 
-(C)lose Analysis: Use of the violent verb 'smash' reveals the depth of his rage, while the personification of music as a 'mockery' suggests his worldview has been poisoned by grief, turning sources of joy into reminders of his loss.
+(C)lose Analysis: The noun 'horror' is extreme for a matter of water, and the word 'crime' turns a domestic choice into a moral wrong, while 'His face darkened' shows the anger arriving before any explanation is given.
 
-(E)ffect on Reader 1: A deeply unsettling emotion arises in the reader as their focus is drawn to his internal pain spilling into the physical world, creating a palpable sense of tension and fear for his wellbeing.
+(E)ffect on Reader: Consequently, the reader is likely to side with Mary at this moment, feeling the unfairness of being judged so severely for trying to survive the heat described in the first half of the extract.
 
-(E)ffect on Reader 2: Such a moment prompts an immediate evaluation of the wider consequences of his struggle, leading an audience to recognise that his suffering actively isolates him from his own passions and talents.
+(E)ffect on Reader 2: Moreover, the detail that he spoke 'in a voice he had never before used to her' signals that something has broken in the marriage, making his anger feel threatening as well as unfair.
 
-(A)uthor's Purpose: In crafting this scene, Allende's intention is likely to explore how trauma can sever a person's connection to their own identity, showing that the struggle is not just with sadness but with the loss of self.
+(A)uthor's Purpose: Here, Lessing seems to agree with the student's first claim, showing how pressure can make even a gentle husband unjust towards the person closest to him.
 
 **(Body Paragraph 3 \- 6 Marks)**
 
-(T)opic Sentence: However, Allende subtly contrasts these moments of destructive struggle with quiet instances of profound love, suggesting his turmoil is not a sign of weakness but a measure of his deep connection to his mother.
+(T)opic Sentence: Nevertheless, the claim that Mary is 'totally powerless' is too absolute, because Lessing shows her resisting Dick and holding a quiet kind of power in their quarrels.
 
-(T)echnique, (E)vidence, (I)nference: A shift in tone is achieved through the use of gentle, tactile imagery when he 'held her hand, tracing the lines on her palm as if memorising a map,' an action that foregrounds tenderness over anger.
+(T)echnique, (E)vidence, (I)nference: Mary answers his accusation directly: 'I am not wasting it,' she said coldly, suggesting that she refuses to accept his judgement and meets his anger with her own.
 
-(C)lose Analysis: Allende’s deliberate verbs 'tracing' and 'memorising,' combined with the 'map' metaphor, imply a desperate attempt to hold onto his mother, suggesting his journey through grief is guided by love, not just rage.
+(C)lose Analysis: The adverb 'coldly' gives her a controlled, distancing authority, and the later reconciliation, 'he apologising, blaming himself, and she forgiving him', places the power of forgiveness in her hands rather than his.
 
-(E)ffect on Reader 1: Such a poignant image makes the reader focus on Alexander's capacity for tenderness, prompting the thought that he is far more complex than a merely destructive or angry young man.
+(E)ffect on Reader: As a result, the reader sees that Dick needs Mary's approval, since it is he who becomes 'suddenly sorry' before she can even shout at him.
 
-(E)ffect on Reader 2: As a result of this revised thinking, an emotion of admiration for his resilience begins to build, allowing an audience to conclude that his overt struggle and quiet love are two sides of the same coin.
+(E)ffect on Reader 2: Yet the phrase 'another of those little scenes' warns an audience that this power is small and repeated, while her deeper helplessness lies elsewhere: earlier, her 'body and mind were subservient to the slow movement of the seasons'.
 
-(A)uthor's Purpose: Ultimately, Allende's purpose here is to offer a more hopeful perspective on suffering, suggesting that true resilience is found not in the absence of struggle, but in the ability to maintain human connection in spite of it.
+(A)uthor's Purpose: Ultimately, Lessing suggests that Mary is not powerless against Dick but is powerless against the land, and it is the land, not her husband, that is slowly defeating her.
 
-**(Conclusion \- 2 Marks)**
+**(Conclusion \- 1 Mark)**
 
-In conclusion, Allende crafts a character whose struggle with grief is undeniable, yet to simply agree with the statement would be to overlook the sophistication of the portrayal. His internal storm and external anger are powerfully rendered, but they exist alongside a profound capacity for love. By presenting this complex duality, Allende masterfully demonstrates that Alexander's struggle is not defined by his pain alone, but by the love that makes that pain so significant.
+Overall, I agree with the statement only in part: Dick's anger is unfair in its severity, but Lessing makes clear it springs from the farm's real hardship, and Mary, far from totally powerless, controls the outcome of each quarrel. Lessing's achievement is to show that the true source of both characters' suffering is the heat and poverty that surround them, so that the marriage becomes a small, repeating battle inside a much larger one they cannot win.
 
 **Gold Standard Model – Question 5 (AO5/AO6 \- 40 Marks Total)**
 
