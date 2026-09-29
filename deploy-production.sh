@@ -68,6 +68,7 @@ rsync -avz --delete \
   --exclude="deploy-staging.sh" \
   --exclude="deploy-production.sh" \
   --exclude=".git" \
+  --exclude=".claude" \
   --exclude=".gitignore" \
   --exclude=".DS_Store" \
   --exclude="*.log" \

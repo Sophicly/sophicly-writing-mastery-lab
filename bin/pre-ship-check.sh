@@ -153,6 +153,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/outline-harness.js >/dev/null 2>&1 || { node bin/outline-harness.js | tail -20; fail=1; }
 fi
 
+# v7.20.665 (#666): every quotation in a gold-standard model must exist in the source it claims —
+# AQA Lang P1/P2 golds had carried invented quotations for months ("a furnace breathing over the land").
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'knowledge-hub\.md|knowledge-mark-scheme\.md|gold-quote-gate\.js|^research/sources/'; then
+  node bin/gold-quote-gate.js || fail=1
+fi
+
 # v7.20.663: AQA protocols may not slip below the standard they reached (every AQA cell measured
 # 10/10 assessment + 8/8 planning on 2026-09-29). protocol-standard-audit is a report that always
 # exits 0, so the floor is asserted here.

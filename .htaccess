@@ -1,0 +1,18 @@
+# v7.20.665 (FIXLIST #667): this plugin's internal documents, research, source texts, tooling and
+# editor settings are read from disk by PHP or by us — none of it is web content. Measured
+# 2026-09-29: CLAUDE.md, PEDAGOGY.md (names real students) and a .claude settings file carrying a
+# live API token were downloadable from www.sophicly.com. Runtime needs only PHP, frontend/ assets
+# and tools/ (run from disk), so everything below is refused over HTTP.
+<FilesMatch "\.(md|txt|log|sh|mjs|py|bak|sql|lock)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(bin|research|\.claude|\.deploy|tools)(/|$) - [F,L]
+</IfModule>
