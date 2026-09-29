@@ -61505,33 +61505,53 @@
     // per-project artifact that _loadCWProjectIntoEditor reads on the next mount. onBlur
     // populates these snapshots before the nav; this dispatches them before they can be
     // overwritten. Registered once per module load.
+    // v7.20.656 (#650 — MEASURED in Playwright WebKit on staging, 1938's P1 reassessment): a
+    // keepalive request body is capped at 64KB (Fetch spec). WebKit — every iPad — REFUSED every
+    // flush of a real assessment doc (the POST body is ~487KB: html + sectionData), logging
+    // "Reached maximum amount of queued data of 64Kb for keepalive requests"; nothing left the
+    // browser. The old code then nulled the pending body and cleared the 5s debounce, so the save
+    // was DROPPED: a load-time save queued at 10.4s never reached the server (no request until an
+    // unrelated edit 30s later). The flushes that exist to GUARANTEE persistence — right after
+    // Sophia files marks (v7.19.714), the first save of a seeded assessment doc, the feed-forward
+    // before the next lesson reads — all run with the page ALIVE, where a plain request completes.
+    // So: keepalive only when the body fits (both engines, spec-safe); otherwise a normal request;
+    // a failed send retries once, then says so. A real page-close over the cap keeps its copy in
+    // this browser's storage, which the next load saves (v7.20.639: the newer local copy wins).
+    const _KEEPALIVE_MAX_BYTES = 60000;
+    function _postFlushed(url, bodyObj, label) {
+        const body = JSON.stringify(bodyObj);
+        let bytes = body.length;
+        try { bytes = new Blob([body]).size; } catch (_) {}
+        const send = (keep) => fetch(url, { method: 'POST', headers, body, keepalive: !!keep })
+            .then(r => { if (!r.ok && r.status >= 500) throw new Error('HTTP ' + r.status); return r; });
+        const retry = () => new Promise(res => setTimeout(res, 4000)).then(() => send(false));
+        let p;
+        try { p = send(bytes <= _KEEPALIVE_MAX_BYTES); } catch (e) { p = Promise.reject(e); }
+        return p.catch(retry).catch(function (e) {
+            console.warn('WML flush: ' + label + ' save did not reach the server (' + bytes + ' bytes) — kept in this browser; the next save carries it.', e && e.message);
+        });
+    }
     function _flushPendingSaves() {
         try {
             if (_pendingCanvasSaveBody) {
-                // v7.19.702: .catch the async rejection — try/catch only traps sync throws, so a
-                // fetch that rejects mid-SPA-nav ("Failed to fetch") escaped as an unhandled rejection.
                 // v7.20.79: capture the promise — the incoming lesson's feed-forward mirror
                 // awaits it so its head-doc GET can never beat this POST's server write.
-                try { _lastCanvasFlushPromise = fetch(API.canvasSave, { method: 'POST', headers, body: JSON.stringify(_pendingCanvasSaveBody), keepalive: true }).catch(function(){}); } catch (_) {}
+                try { _lastCanvasFlushPromise = _postFlushed(API.canvasSave, _pendingCanvasSaveBody, 'document'); } catch (_) {}
                 _pendingCanvasSaveBody = null;
                 clearTimeout(canvasSaveToServerTimer);
             }
             if (_pendingChatSaveBody) {
-                try { fetch(API.chatSave, { method: 'POST', headers, body: JSON.stringify(_pendingChatSaveBody), keepalive: true }).catch(function(){}); } catch (_) {}
+                try { _postFlushed(API.chatSave, _pendingChatSaveBody, 'chat'); } catch (_) {}
                 _pendingChatSaveBody = null;
                 clearTimeout(chatSaveTimer);
             }
             if (_pendingCwArtifact) {
                 try {
-                    fetch(API.cwArtifact, {
-                        method: 'POST', headers,
-                        body: JSON.stringify({
-                            project_id: _pendingCwArtifact.projectId,
-                            key: _pendingCwArtifact.artifactKey,
-                            value: _pendingCwArtifact.html,
-                        }),
-                        keepalive: true,
-                    }).catch(function(){}); // v7.19.702: swallow async rejection on SPA-nav flush
+                    _postFlushed(API.cwArtifact, {
+                        project_id: _pendingCwArtifact.projectId,
+                        key: _pendingCwArtifact.artifactKey,
+                        value: _pendingCwArtifact.html,
+                    }, 'creative-writing');
                 } catch (_) {}
                 _pendingCwArtifact = null;
                 clearTimeout(_cwArtifactSaveTimer);
