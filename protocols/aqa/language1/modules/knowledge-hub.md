@@ -122,9 +122,41 @@ Overall, I agree with the statement only in part: Dick's anger is unfair in its 
 
 **Gold Standard Model – Question 5 (AO5/AO6 \- 40 Marks Total)**
 
-**Prompt:** Write a story about a disagreement.
+**Prompt:** Write a story about a disagreement. *(June 2024 Paper 1, Question 5, second task.)*
 
-**Model Snippet:** The silence in the car was a physical thing, a heavy blanket smothering the space between them. Elias stared at the road, his knuckles white on the steering wheel. Each flicker of a passing streetlight illuminated the rigid set of his jaw. Beside him, Clara watched the city lights smear into long, sorrowful streaks through the rain-spattered window. The argument had ended ten minutes ago, but its ghost remained, conducting the tense orchestra of the wiper blades' rhythmic sweep and the engine's low hum. It wasn't the words themselves that echoed, but the chasm they had opened. A disagreement over something as trivial as a forgotten set of keys had somehow become a referendum on their entire life together, and neither of them knew how to bridge the divide.
+**Complete model — the seven taught scene beats (Hook · Setup · Reaction · Epiphany · Proaction · Climax · Denouement, planning Stage S6) labelled in bold where each begins; above the 650-word target:**
+
+**[Hook]** The silence in the car was a physical thing, a heavy blanket smothering the space between them. Elias stared at the road, his knuckles white on the steering wheel. Each flicker of a passing streetlight illuminated the rigid set of his jaw. Beside him, Clara watched the city lights smear into long, sorrowful streaks through the rain-spattered window.
+
+**[Setup]** The argument had ended ten minutes ago, but its ghost remained, conducting the tense orchestra of the wiper blades' rhythmic sweep and the engine's low hum. It wasn't the words themselves that echoed, but the chasm they had opened. A disagreement over something as trivial as a forgotten set of keys had somehow become a referendum on their entire life together, and neither of them knew how to bridge the divide.
+
+They had spent the whole of Sunday at his father's house, filling boxes. Forty years of a life, wrapped in newspaper: the chipped blue mugs, the fishing reels, the tartan slippers still shaped to his feet. The estate agent was coming at nine. All Clara had asked, at the very end, was whether Elias had locked up. He had not. The keys, he admitted, were still hanging in the front door, and that was when the quarrel began — about carelessness, then about the agent, then about whether they should be selling at all.
+
+"It's just a house," she had said.
+
+"It's not just anything," he had said.
+
+**[Reaction]** Now he drove as if the road might shatter. Thirty miles an hour. Mirror. Indicator. Mirror. He counted the streetlights because counting was easier than thinking, and he rehearsed arguments he would never make: that she had never liked the place; that she wanted it gone because it smelled of damp and pipe smoke; that she did not understand. Clara pretended to sleep. He pretended to believe her. Every so often his thumb found the gap on his key ring where his father's key usually hung, and pressed it, the way a tongue keeps returning to a missing tooth.
+
+**[Epiphany]** At the red light by the petrol station, the truth arrived quietly, the way damp arrives in an empty house. He had not forgotten the keys. He had left them. Some stubborn part of him had refused to be the man who turned the lock for the last time, because once the door was locked, his father would be gone twice: once in March, and once tonight. His anger at Clara had never been anger at all. It was grief, wearing anger's clothes.
+
+**[Proaction]** When the light turned green, he did not drive on. He swung the car round the roundabout and headed back the way they had come.
+
+"Elias." Clara sat up. "What are you doing?"
+
+"Fixing it." He meant the keys; she heard the argument. Her face closed like a door. By the time they pulled up outside the dark house, the silence had hardened into something worse than before — and the front door, when he reached it, was bare. No keys. Only the brass lock, gleaming wetly under the streetlight, and the rain drumming on the porch roof like impatient fingers.
+
+**[Climax]** Panic rose in his throat. Anyone could have taken them. Anyone could walk in — through the hall, past the boxes, into the kitchen where his father had taught him to make terrible tea. He turned, and Clara was standing at the gate with her hand held out. On her palm lay the keys.
+
+"I took them," she said. "When you weren't looking. I didn't think you could do it tonight, and I didn't want you to have to."
+
+The rain fell between them. For a long moment he could not speak; then everything he had not said for six months arrived at once. "I'm not ready," he whispered. "If I lock it, he's really gone."
+
+"Then you won't lock it alone," she said.
+
+**[Denouement]** They stood together on the step, his hand over hers, her hand around the key. It turned with a small, final click, no louder than a clock. Neither of them let go at once.
+
+Driving home, the silence in the car was a different thing: not a blanket but a shelter. The wipers no longer conducted anything; they simply kept time. Clara's hand rested on his knee, and between them, in the cup holder, the key lay small and ordinary — just a key again.
 
 ### **2.B. Aspirational Style Models**
 
@@ -170,7 +202,7 @@ This resource is to be used during the **Prose Polishing** stage to model profes
 
 #### **For Creative Writing Style (Q5)**
 
-**Student Model (100%):**
+**Student Model (100%) — opening extract only (a style reference; a complete answer runs past the 650-word target — see the complete model in 2.A):**
 
 Somewhere behind her eyes, a whisper claws for attention—a warning simmering just under Elena's skin, waiting to erupt.
 

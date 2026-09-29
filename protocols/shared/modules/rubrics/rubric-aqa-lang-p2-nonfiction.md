@@ -56,7 +56,8 @@ the first thing to fix for them, never run the whole paper, never grade.
 ## ASSESSMENT OBJECTIVES (AQA 8700 Paper 2 — AO3 here means COMPARISON, never historical context)
 
 Section A (reading, Q1–Q4) = 40 marks · Section B (writing, Q5) = 40 marks · 1 hour 45 minutes. Two
-sources: Source A (21st century) and Source B (19th century), both non-fiction on a shared topic.
+sources, both non-fiction or literary non-fiction on a shared topic: one from the 19th century and one
+from either the 20th or the 21st century (AQA 8700 specification; the pairing changes each series).
 
 - **Q1** — AO1, 4 marks, choose four true statements. Retrieval; **no polishing** (right or wrong).
 - **Q2** — AO1, 8 marks, the differences between the two sources, inferred and supported.

@@ -133,7 +133,7 @@
 * **Source B \- (T) Technique, (E) Evidence, (I) Inference:** opens with a comparative discourse marker ("However," "In contrast," "Whereas," "Unlike"), then the Source B writer's method + embedded quotation + inference  
 * **(E) Effect on Reader \- Source B:** one detailed sentence, tied to Source B's method — never two floating generic effects  
 * **(C) Close Analysis:** word-level analysis of the sharpest quotation, and how it differs from the other source  
-* **(A) Authors' Purposes Compared:** each writer's purpose in tentative language ("perhaps," "arguably"), compared against the question focus
+* **(A) Authors' Purposes Compared:** each writer's purpose in tentative language ("perhaps," "arguably"), compared against the question focus, then closing on a JUDGEMENT of which writer's approach is more effective for this aspect, and why — the judgement is what earns the top band
 
 **Sentence-Level Rules:**
 
@@ -167,7 +167,7 @@ Source B — (T)echnique, (E)vidence, (I)nference: In contrast, Kemble opens her
 
 (C)lose Analysis: Most tellingly, Kemble's noun 'raptures', with its connotations of religious ecstasy, finds an ironic twin in Fleming's 'monk’s', since both writers reach for the language of faith yet draw opposite meanings from it: one describes a miracle, the other a penance.
 
-(A)uthors' Purposes Compared: Fleming perhaps writes to amuse a public readership with the familiar grumbles of a seasoned traveller, whereas Kemble writes privately to share a marvel with a friend, so their purposes sharpen the contrast between a journey endured and a journey treasured.
+(A)uthors' Purposes Compared: Fleming perhaps writes to amuse a public readership with the familiar grumbles of a seasoned traveller, whereas Kemble writes privately to share a marvel with a friend, so their purposes sharpen the contrast between a journey endured and a journey treasured. Of the two, Fleming's approach is perhaps the more effective here, because the dragging rhythm of his list makes the reader live through the monotony, whereas Kemble announces her joy before she has shown it.
 
 **(Body Paragraph 2 \- 5 Marks)**
 
@@ -183,7 +183,7 @@ Source B — (T)echnique, (E)vidence, (I)nference: By contrast, Kemble turns the
 
 (C)lose Analysis: Most revealingly, the verb 'bullied' belongs to the playground and casts the passengers as helpless children, whereas 'pat' is the gesture an owner offers a favourite horse, so the same personification positions one writer as the train's victim and the other as its fond keeper.
 
-(A)uthors' Purposes Compared: Arguably, Fleming wishes to puncture the glamour of luxury rail travel by exposing its daily tyranny, whereas Kemble seeks to help her friend picture an unfamiliar machine through the familiar figure of a horse, so their opposite personifications carry opposite verdicts on the experience of travelling by train.
+(A)uthors' Purposes Compared: Arguably, Fleming wishes to puncture the glamour of luxury rail travel by exposing its daily tyranny, whereas Kemble seeks to help her friend picture an unfamiliar machine through the familiar figure of a horse, so their opposite personifications carry opposite verdicts on the experience of travelling by train. Kemble's approach is arguably the more effective, since one tactile image, the urge to 'pat', makes an unfamiliar machine instantly familiar, whereas Fleming's complaint depends on the reader already sharing his irritation.
 
 **(Body Paragraph 3 \- 5 Marks)**
 
@@ -199,7 +199,7 @@ Source B — (T)echnique, (E)vidence, (I)nference: Whereas Fleming takes pleasur
 
 (C)lose Analysis: Sharpest of all, Fleming's paired adjectives 'comical and violent' yoke laughter to destruction, capturing a traveller so starved of excitement that he welcomes the machine's ruin, whereas Kemble's absolute 'not the slightest fear' admits no shadow of doubt.
 
-(A)uthors' Purposes Compared: Above all, Fleming perhaps wants to entertain readers who take trains for granted, turning his crash into the adventure a hardened traveller craves, whereas Kemble conveys the thrill of a new invention to a friend who can only imagine it, so their purposes crystallise the gap between experience and innocence.
+(A)uthors' Purposes Compared: Above all, Fleming perhaps wants to entertain readers who take trains for granted, turning his crash into the adventure a hardened traveller craves, whereas Kemble conveys the thrill of a new invention to a friend who can only imagine it, so their purposes crystallise the gap between experience and innocence. Fleming's approach is perhaps the more effective, because calling a wreck 'great fun' jolts the reader into questioning his perspective, whereas Kemble's reassurance asks only to be believed.
 
 ---
 
@@ -317,7 +317,7 @@ So here's my challenge to you: stop treating education as preparation for life a
 * ✓ Evidence from BOTH sources with comparative transitions  
 * ✓ Close analysis zooming into BOTH sources' specific details  
 * ✓ ONE effect sentence for Source A and ONE for Source B, each tied to that source's method (v7.19.854 — never two floating generic effects)  
-* ✓ Author's purpose for BOTH sources with comparative evaluation  
+* ✓ Author's purpose for BOTH sources with comparative evaluation, closing on a judgement of which writer's approach is more effective  
 * ✓ Perceptive development of the difference or similarity as a PAIR
 
 **Quality Indicators:**

@@ -30,21 +30,21 @@ fi
 # how .371 shipped a stylesheet whose comment closed early, leaving six lines of English prose as
 # raw CSS tokens — the parser resyncs by discarding, so it ate the rules after it and Neil opened
 # Step 6 to an unstyled dynamic island. CSS now owes an answer whether or not any JS is staged.
-CSS_STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -cE '\.css$' || true)
-if [ ${#FILES[@]} -eq 0 ]; then
-  if [ "${CSS_STAGED:-0}" -eq 0 ]; then
-    echo "pre-ship: no JS/PHP/CSS staged — nothing to check."; exit 0
-  fi
-  node bin/css-lint.js || { echo ""; echo "pre-ship gate FAILED — fix before shipping."; exit 1; }
-  # v7.20.474 (#343): a student on an iPad could not reach the chat input. Whole-repo by
-  # nature — a scroller in ANY stylesheet can strand a control, so this never keys on staging.
-  node bin/reachability-lint.js || { echo ""; echo "pre-ship gate FAILED — fix before shipping."; exit 1; }
-  echo "pre-ship gate passed (CSS only)."
-  exit 0
+#
+# ⚠️ v7.20.666 — AND A PROTOCOL-ONLY CHANGE SKIPPED EVERY CONTENT GATE, the same hole one layer
+# down. This block used to exit when no JS/PHP/CSS was staged, so a commit of protocol .md files
+# alone — exactly the commit that changes a gold, a planning step or a rubric — never reached the
+# gold-quote gate, the AQA floor or any planning harness below, all of which key on .md paths.
+# Found 2026-09-29: the AQA Lang P2 golds (b2d27977, .md + .txt only) were committed ungated.
+# Now the only early exit is "nothing staged at all"; everything else runs the full gate, and
+# css-lint + reachability-lint run in the main flow (whole-repo, unconditional).
+ANY_STAGED=$(git diff --cached --name-only --diff-filter=ACMDR | grep -c . || true)
+if [ "${1:-}" != "--all" ] && [ "${ANY_STAGED:-0}" -eq 0 ]; then
+  echo "pre-ship: nothing staged — nothing to check."; exit 0
 fi
 
 fail=0
-for f in "${FILES[@]}"; do
+for f in ${FILES[@]+"${FILES[@]}"}; do   # bash 3.2 + set -u: an empty array is "unbound" (v7.20.666)
   [ -f "$f" ] || continue
   case "$f" in
     *.js)
