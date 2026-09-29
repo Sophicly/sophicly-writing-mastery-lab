@@ -116,20 +116,33 @@ $uncached = (136000 * 2.00) / 1000000;
 printf("\n   worked example — 2 turns x 68k protocol prefix: cached $%.2f vs uncached $%.2f (%.0fx)\n",
     $cached, $uncached, $uncached / $cached);
 
-echo "\n6. REQUEST SHAPE (v7.20.651) — the only cache breakpoint is the instructions block\n";
-// The rolling history breakpoint could never be read back (sliding 24-message window + the per-turn
-// context prepended to the last message), so it bought a 2x cache WRITE of the history every turn —
-// 74% of prod spend, 22-28 Sep. Re-adding one fails here; a stable-prefix design must change this test.
+echo "\n6. REQUEST SHAPE (v7.20.659) — a STABLE history prefix: instructions + the message BEFORE this turn\n";
+// v7.20.651 removed the rolling breakpoint on the LAST message: it could never be read back (the per-turn
+// context is prepended to that message and absent from it next turn; non-marking chats also slid their
+// window) — a 2x cache WRITE of the history every turn, 74% of prod spend 22-28 Sep. v7.20.659 (#645b)
+// puts the breakpoint on the message BEFORE this turn, which the next turn re-sends byte-identical.
 $req = ['model' => 'claude-sonnet-5', 'system' => [
     ['type' => 'text', 'text' => 'PROTOCOL', 'cache_control' => ['type' => 'ephemeral']],
     ['type' => 'text', 'text' => 'WML LIVE SESSION DIRECTIVES: this turn']],
     'messages' => [['role' => 'user', 'content' => 'hi'], ['role' => 'assistant', 'content' => 'hello'], ['role' => 'user', 'content' => 'mark it']]];
 $o = $r->extend_anthropic_cache_ttl(['body' => json_encode($req)], $URL);
 $j = json_decode($o['body'], true);
-ok(substr_count($o['body'], '"cache_control"') === 1, 'exactly one cache_control in the request');
+ok(substr_count($o['body'], '"cache_control"') === 2, 'exactly two cache points: the instructions and the message before this turn');
 ok(($j['system'][0]['cache_control']['ttl'] ?? '') === '1h' && count($j['system']) === 1, 'instructions block keeps its 1h breakpoint; live context left the system array');
 $lastm = end($j['messages']);
 ok(is_array($lastm['content']) && strpos($lastm['content'][0]['text'] ?? '', 'LIVE SESSION DIRECTIVES') !== false, 'live context rides the current user turn');
+ok(strpos(json_encode($lastm), 'cache_control') === false, 'the CURRENT turn carries no cache point (it changes next turn)');
+$prevm = $j['messages'][count($j['messages']) - 2];
+ok(($prevm['content'][count($prevm['content']) - 1]['cache_control']['ttl'] ?? '') === '1h', 'the message before this turn is the 1h cache point');
+ok(strpos(json_encode($prevm), 'LIVE SESSION DIRECTIVES') === false, '…and it never holds the per-turn context (so it repeats byte-identical)');
+// NEXT TURN: the browser re-sends the history as stored (no per-turn context) + the reply + a new message.
+$req2 = $req; $req2['messages'] = [['role' => 'user', 'content' => 'hi'], ['role' => 'assistant', 'content' => 'hello'], ['role' => 'user', 'content' => 'mark it'], ['role' => 'assistant', 'content' => 'Q1: 4/4'], ['role' => 'user', 'content' => 'next']];
+$j2 = json_decode($r->extend_anthropic_cache_ttl(['body' => json_encode($req2)], $URL)['body'], true);
+$strip = function ($m) { $c = $m['content']; if (is_string($c)) return $c; return implode('', array_map(function ($b) { return (string) ($b['text'] ?? ''); }, $c)); };
+$same = true; for ($i = 0; $i < 2; $i++) { if ($strip($j['messages'][$i]) !== $strip($j2['messages'][$i]) || $j['messages'][$i]['role'] !== $j2['messages'][$i]['role']) $same = false; }
+ok($same, 'next turn: every message up to the old cache point is byte-identical in text (the prefix can be read back)');
+$j1 = json_decode($r->extend_anthropic_cache_ttl(['body' => json_encode(['model' => 'claude-sonnet-5', 'system' => [['type' => 'text', 'text' => 'PROTOCOL', 'cache_control' => ['type' => 'ephemeral']]], 'messages' => [['role' => 'user', 'content' => 'first']]])], $URL)['body'], true);
+ok(substr_count(json_encode($j1), 'cache_control') === 1, 'a first turn (no earlier message) keeps only the instructions cache point');
 
 echo "\n7. SONNET 5.5 REGISTRATION (v7.20.651) — AI Engine 3.8.2 throws on an unlisted model\n";
 $cat = [['model' => 'claude-sonnet-5', 'name' => 'Claude Sonnet 5', 'tags' => ['core', 'no-temperature']]];

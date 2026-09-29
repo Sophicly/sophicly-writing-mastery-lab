@@ -698,8 +698,27 @@ class SWML_Protocol_Router {
                     // $21.01 of $28.28 (74%). Without the stamp the history bills as plain input
                     // (1x). Nothing the model sees changes. The instructions breakpoint (system)
                     // is untouched and still hits. Caching history needs a STABLE prefix (a
-                    // stepped window + the breakpoint before this turn) — tracked in the handoff.
+                    // stepped window + the breakpoint before this turn) — built in v7.20.659, below.
                     $payload['messages'][$last_i]['content'] = $content;
+                }
+            }
+
+            // 3. v7.20.659 (#645b, Neil approved 2026-09-29): a STABLE history prefix. The
+            //    breakpoint sits on the message BEFORE this turn. That message never carries the
+            //    relocated context, so the next turn re-sends it byte-identical and reads everything
+            //    up to it back at 0.1x; only the new tail is written (1h = 2x). Marking flows send
+            //    the whole conversation (already stable); shorter chats send a STEPPED window
+            //    (WML.steppedHistory) whose first message moves only every 12 turns.
+            if ($last_i >= 1) {
+                $prev_c = $payload['messages'][$last_i - 1]['content'] ?? null;
+                if (is_string($prev_c) && $prev_c !== '') $prev_c = [['type' => 'text', 'text' => $prev_c]];
+                if (is_array($prev_c) && !empty($prev_c)) {
+                    $pb = count($prev_c) - 1;
+                    if (is_array($prev_c[$pb]) && ($prev_c[$pb]['type'] ?? '') === 'text' && (string) ($prev_c[$pb]['text'] ?? '') !== '') {
+                        $prev_c[$pb]['cache_control'] = ['type' => 'ephemeral', 'ttl' => '1h'];
+                        $payload['messages'][$last_i - 1]['content'] = $prev_c;
+                        $changed = true;
+                    }
                 }
             }
         }

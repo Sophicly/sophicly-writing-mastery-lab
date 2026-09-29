@@ -145,6 +145,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/closing-chain-answer-harness.js || fail=1
 fi
 
+# v7.20.659 (#645b): the history window keeps its first message fixed between 12-turn steps, so the
+# server's cache point can be read back (a sliding window cost 74% of prod spend, 22–28 Sep).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-core\.js|wml-assessment\.js|wml-app\.js|stepped-history-harness\.js'; then
+  node bin/stepped-history-harness.js || fail=1
+fi
+
 # v7.20.636: a graded quiz is scored ONLY when its bank is reachable from the slug the live lesson
 # sends, and the controller must never hand a graded quiz to the unscored AI (AIC finals, prod
 # 2026-09-26: bank filed as an_inspector_calls.md, lessons send inspector_calls). Fires on any bank

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.658';
+var WML_BUILD = '7.20.659';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -2128,6 +2128,17 @@ window.WML = (function() {
         const c = caps(task);
         if (c) return !!c.markingFlow;
         return ['assessment', 'redraft_assessment', 'feedback_discussion'].includes(task);
+    }
+    // v7.20.659 (#645b, Neil approved 2026-09-29): the history window for chats that do NOT send the
+    // whole conversation. A SLIDING last-24 window changed its first message every turn, so the
+    // server's cache point could never be read back (74% of prod spend, 22–28 Sep). A STEPPED window
+    // keeps its first message fixed for 12 turns at a time: Sophia sees 24–35 messages, and every turn
+    // in between re-reads the stored prefix at a tenth of the price.
+    function steppedHistory(arr, base, step) {
+        const a = Array.isArray(arr) ? arr : [];
+        const b = base || 24, s = step || 12;
+        if (a.length <= b) return a;
+        return a.slice(Math.floor((a.length - b) / s) * s);
     }
     // hasAssessmentSections: does migrateDocument inject the 5 post-assessment
     // sections? Reads server caps; the fallback (stale-page HTML + new JS)
@@ -5862,7 +5873,7 @@ window.WML = (function() {
         // v7.20.615: the element → reference map, and the ONE producer of the link line.
         ELEMENT_TOOLKIT_MAP, elementToolkitLines, RESOURCE_TOOLKIT_IDS,
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
-        caps, cap, isMarkingFlow, hasAssessmentSections, isLiveModelling,
+        caps, cap, isMarkingFlow, steppedHistory, hasAssessmentSections, isLiveModelling,
         // v7.20.129: the ONE outline-row completion rule — all three consumers call it
         // (row nodeView, checkSectionComplete DOM reader, section nodeView PM-attr reader).
         outlineRow,

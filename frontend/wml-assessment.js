@@ -18952,7 +18952,7 @@
                 const _wmlMarkingFlow = WML.isMarkingFlow(state.task); // v7.19.655: caps-driven (was literal dup)
                 const historyToSend = _liveHistory(_wmlMarkingFlow
                     ? canvasChatHistory.slice(0, -1)
-                    : canvasChatHistory.slice(0, -1).slice(-24));   // v7.20.351: resolve live values for the model
+                    : WML.steppedHistory(canvasChatHistory.slice(0, -1)));   // v7.20.351: resolve live values for the model
 
                 // v7.20.205 C-LADDER (pipeline 1). Derive from the FULL history (prior turns'
                 // stamps) — NOT historyToSend (the -24 slice the LLM sees). Dormant off AQA P2
@@ -38805,7 +38805,7 @@
 
                 try {
                     const docContent = canvasEditor ? canvasEditor.getHTML() : '';
-                    const historyToSend = _liveHistory(epChatHistory.slice(0, -1).slice(-24));   // v7.20.351
+                    const historyToSend = _liveHistory(WML.steppedHistory(epChatHistory.slice(0, -1)));   // v7.20.351
                     const res = await WML.apiPost(WML.API.chat, {
                         message: msg,
                         history: historyToSend,
@@ -42316,7 +42316,7 @@
                                 const _wmlMarkingFlow = WML.isMarkingFlow(state.task); // v7.19.655: caps-driven (was literal dup)
                                 const historyToSend = _liveHistory(_wmlMarkingFlow
                                     ? canvasChatHistory.slice(0, -1)
-                                    : canvasChatHistory.slice(0, -1).slice(-24));   // v7.20.351
+                                    : WML.steppedHistory(canvasChatHistory.slice(0, -1)));   // v7.20.351
 
                                 // v7.20.205 C-LADDER (pipeline 2 / twin). Same derive as pipeline 1 —
                                 // FULL history, dormant off AQA P2 planning.
@@ -68469,7 +68469,7 @@ ${html}
                         prompt: msg,
                         botId: config.botId,
                         chatId: chatId || state.sessionId,
-                        history: chatHistory.slice(0, -1).slice(-24),
+                        history: WML.steppedHistory(chatHistory.slice(0, -1)),
                         planState: {},
                         step: state.step,
                         board: state.board,

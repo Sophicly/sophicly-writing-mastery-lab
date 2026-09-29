@@ -4185,9 +4185,8 @@
         // Send the redirect as a user message (hidden from display, sent to AI)
         setLoading(true); showTyping();
         try {
-            const trimmedHistory = state.chatHistory.length > MAX_HISTORY_MESSAGES
-                ? state.chatHistory.slice(-MAX_HISTORY_MESSAGES)
-                : state.chatHistory;
+            // v7.20.659 (#645b): stepped, not sliding — its first message holds for 12 turns so the cache hits.
+            const trimmedHistory = WML.steppedHistory(state.chatHistory, MAX_HISTORY_MESSAGES);
 
             const response = await fetch(API.chat, { method: 'POST', headers, body: JSON.stringify({
                 prompt: redirectMsg,
@@ -6778,9 +6777,8 @@
         try {
             // Sliding window: send only the last N messages, plus established plan state
             const fullHistory = state.chatHistory.slice(0, -1); // exclude current msg (sent as prompt)
-            const trimmedHistory = fullHistory.length > MAX_HISTORY_MESSAGES
-                ? fullHistory.slice(-MAX_HISTORY_MESSAGES)
-                : fullHistory;
+            // v7.20.659 (#645b): stepped, not sliding — its first message holds for 12 turns so the cache hits.
+            const trimmedHistory = WML.steppedHistory(fullHistory, MAX_HISTORY_MESSAGES);
             
             const response = await fetch(API.chat, { method: 'POST', headers, body: JSON.stringify({
                 prompt: text,
