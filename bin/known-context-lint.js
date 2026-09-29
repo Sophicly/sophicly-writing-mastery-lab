@@ -28,9 +28,11 @@ const ROOT = path.join(__dirname, '..');
 // Phase-1 b1 poem-picker lands and flips aqa/poetry/planning + aqa/literature/planning clean.
 // v7.20.246: aqa/poetry/planning CONVERTED — b1 opens code-served (focus poem + question from
 // topicData, comparison poem from the b1 theme-chip picker; the router injects both texts).
-// aqa/literature/planning is NOT converted yet (single-text essays need a different fix — its b1
-// still asks for the text title + question; separate, tracked work).
-const CONVERTED = ['aqa/poetry/planning'];
+// aqa/literature/planning was converted at v7.20.669 (below).
+// v7.20.669: aqa/literature/planning CONVERTED — the router injects the topic's question +
+// printed extract (build_lit_planning_injection); b1 confirms, never asks; only a session with
+// no topic question runs the picker, whose paste option is the marked off-bank fallback.
+const CONVERTED = ['aqa/poetry/planning', 'aqa/literature/planning'];
 
 // Demand-phrases: asking the student to hand over context the system holds. Case-insensitive.
 // Each carries a short label for the failure message.

@@ -1257,6 +1257,12 @@ class SWML_Protocol_Router {
                 // (roster + selected text + nf_{text}_{slug} fields + done list), but no full
                 // text injected (in-copyright; student quotes from their own anthology).
                 $skip_block = $this->build_nonfiction_cn_injection($context);
+            } else if ($task === 'planning' && self::normalize_board($board) === 'aqa'
+                       && in_array($subject, ['shakespeare', '19th_century', 'modern_text', 'literature'], true)) {
+                // v7.20.669: AQA Literature essay PLANNING (b1) — the paste-wall law for single-
+                // text essays. The topic's question + printed extract resolve server-side from
+                // topicData, so b1 never asks for the title, author, question or extract.
+                $skip_block = $this->build_lit_planning_injection($context);
             } else if (!empty($poem) || !empty($poem_title)) {
                 $text_name = $poem_title ?: $poem;
 
@@ -1723,6 +1729,60 @@ class SWML_Protocol_Router {
             $b .= "\nNo poem selected yet — present the picker (two-step disclosure: ~5 recommended if a recommended list is provided, then \"See all poems…\") and wait for the student's choice.\n";
         }
 
+        return $b;
+    }
+
+    /**
+     * v7.20.669: Literature essay PLANNING injection — the paste-wall law (WML CLAUDE.md #3) for
+     * single-text essays; twin of build_poetry_planning_injection().
+     *
+     * b1 used to ask the student for the text's title, the author, the essay question and (for
+     * Shakespeare / 19th-century) the extract — all of which a topic lesson already holds. This
+     * resolves the topic's question + printed extract from topicData and hands them over as
+     * authoritative session data. It walks the whole slug family (SWML_Quiz_Bank::slug_family):
+     * AQA J&H topics are filed as `jekyll_hyde` while lessons send `jekyll_and_hyde`, which
+     * {slug, canonical} alone never reaches. A session with no topic question — the Conceptual
+     * Notes topic ("N/A"), or a free "plan a new essay" session — says so explicitly, and only
+     * then does b1 run its question picker. Fails loud on a topic number that does not resolve.
+     */
+    private function build_lit_planning_injection($context) {
+        $board = sanitize_key($context['board'] ?? '');
+        $text  = (string) ($context['text'] ?? '');
+        $topic_number = absint($context['topic_number'] ?? 0);
+        $fields = $this->resolve_session_fields($context, '');
+        $title  = (string) ($fields['text_display'] ?? '');
+
+        $topic = null;
+        if (class_exists('SWML_Topic_Questions') && $topic_number > 0) {
+            $family = class_exists('SWML_Quiz_Bank') ? SWML_Quiz_Bank::slug_family($text) : [$text];
+            foreach ($family as $c) {
+                $t = SWML_Topic_Questions::get_topic($board, $c, $topic_number);
+                if ($t) { $topic = $t; break; }
+            }
+            if (!$topic) {
+                error_log("WML Lit-Planning: NO TOPIC board={$board} text={$text} topic={$topic_number} (tried " . implode(',', $family) . ") — b1 falls back to the question picker");
+            }
+        }
+        $question = $topic ? trim((string) ($topic['question_text'] ?? '')) : '';
+        if ($topic && (($topic['topic_type'] ?? '') === 'conceptual-notes' || stripos($question, 'N/A') === 0)) {
+            $question = '';
+        }
+        $extract = ($question !== '') ? trim((string) ($topic['extract_text'] ?? '')) : '';
+        $where   = ($question !== '') ? trim((string) ($topic['extract_location'] ?? '')) : '';
+
+        $b  = "\n\n## ⚠️ LITERATURE ESSAY — SESSION DATA (read before anything else) ⚠️\n\n";
+        $b .= "**Text:** " . ($title !== '' ? $title : $text) . "\n";
+        if ($question === '') {
+            $b .= "**NO TOPIC QUESTION IS BOUND to this session.** The text is still known — never ask for its title or author. Only the essay question is unknown: run B.1 Step 4 (the question picker).\n";
+            return $b;
+        }
+        $b .= "**Topic {$topic_number} — the essay question (authoritative, from the topic bank):**\n{$question}\n\n";
+        if ($extract !== '') {
+            $b .= "**The printed extract" . ($where !== '' ? " ({$where})" : '') . " — already in the student's document:**\n{$extract}\n\n";
+        } else {
+            $b .= "**No printed extract** — this is a whole-text question.\n\n";
+        }
+        $b .= "⛔ The text, the question" . ($extract !== '' ? ' and the extract are' : ' are') . " KNOWN. Never ask the student for the title, the author, the essay question or the extract, and never ask them to type or paste any of them (WML CLAUDE.md #3 — the paste-wall law). Quote the extract only in these exact words.\n";
         return $b;
     }
 
