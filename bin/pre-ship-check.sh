@@ -145,6 +145,31 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/closing-chain-answer-harness.js || fail=1
 fi
 
+# v7.20.663 (#661, Neil: "AQA language working in all senses"): the outline harness drives the REAL
+# outline builders against the real paper specs. It had rotted (a new helper it did not slice →
+# ReferenceError on line 1), which is why it sat outside this gate — repaired, now in.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|outline-harness\.js|language-paper-specs\.json'; then
+  node bin/outline-harness.js >/dev/null 2>&1 || { node bin/outline-harness.js | tail -20; fail=1; }
+fi
+
+# v7.20.663: AQA protocols may not slip below the standard they reached (every AQA cell measured
+# 10/10 assessment + 8/8 planning on 2026-09-29). protocol-standard-audit is a report that always
+# exits 0, so the floor is asserted here.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE '^protocols/aqa/|protocol-standard-audit\.js'; then
+  node bin/protocol-standard-audit.js --json --board aqa | node -e '
+    let s = ""; process.stdin.on("data", d => s += d).on("end", () => {
+      const bad = [];
+      for (const r of JSON.parse(s)) {
+        if (r.assessment && r.assessment.total && r.assessment.pass < r.assessment.total) bad.push(r.subject + " assessment " + r.assessment.pass + "/" + r.assessment.total);
+        if (r.planning && r.planning.total && r.planning.pass < r.planning.total) bad.push(r.subject + " planning " + r.planning.pass + "/" + r.planning.total);
+      }
+      if (bad.length) { console.error("❌ AQA protocol floor: " + bad.join(" · ")); process.exit(1); }
+      console.log("✅ AQA protocol floor held (every cell at its full B/C score)");
+    });' || fail=1
+fi
+
 # v7.20.659 (#645b): the history window keeps its first message fixed between 12-turn steps, so the
 # server's cache point can be read back (a sliding window cost 74% of prod spend, 22–28 Sep).
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \

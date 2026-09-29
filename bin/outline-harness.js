@@ -27,7 +27,19 @@ function slice(marker, opener) {
   return src.slice(i, end);
 }
 
+// v7.20.663: the control helpers OUTLINE_CRITERIA now calls (declared as functions "so the pre-ship
+// harness can slice them" — wml-assessment.js). Missing, the harness died on its first line with
+// ReferenceError: _iuVerbCtl, which is why it had been left out of pre-ship-check.
+const lineSlice = (marker) => { const i = src.indexOf(marker); if (i < 0) throw new Error('marker not found: ' + marker); const j = src.indexOf('];', i); return src.slice(i, j + 2); };
 const parts = [
+  // the whole family, found by pattern, so a new list or helper can never rot the harness again
+  ...[...src.matchAll(/const (_IU_[A-Z0-9_]+) = \[/g)].map(m => lineSlice(m[0])),
+  ...[...new Set([...src.matchAll(/function (_iu[A-Za-z0-9]*)\(/g)].map(m => m[1]))].map(n => slice('function ' + n + '(', '{')),
+  (() => { const i = src.indexOf('var LIT_ESSAY_BODY_COUNT ='); if (i < 0) throw new Error('marker not found: LIT_ESSAY_BODY_COUNT'); return src.slice(i, src.indexOf(';', i) + 1); })(),
+  // v7.20.625 paper gate the resolvers now consult (real code, driven by the stubbed state below)
+  slice('const OUTLINE_VERIFIED_PAPERS = {', '{'),
+  slice('function _outlinePaperKey(', '{'),
+  slice('function _outlinePaperVerified(', '{'),
   slice('const OUTLINE_BODY_ONLY_OVERRIDES = {', '{'),
   slice('const OUTLINE_BODY_FOCUS = {', '{'),
   slice('const OUTLINE_CRITERIA = {', '{'),
