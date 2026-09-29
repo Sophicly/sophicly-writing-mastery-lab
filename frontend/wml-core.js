@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.660';
+var WML_BUILD = '7.20.661';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -5008,7 +5008,10 @@ window.WML = (function() {
         H1: { dest: 'toolkit', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
         P1: { dest: 'toolkit', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
         G1: { dest: 'toolkit', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
-        C1: { dest: 'toolkit', arg: 'cohesion', label: 'Coherence & Cohesion' },
+        // v7.20.661 (#654a): C1 = clarity lapse ("prose is genuinely unclear"). `cohesion` is a
+        // connectives list and never answered it; Notes' `final-read` (reading the answer back to
+        // catch the unclear sentence) does — live on notes prod 2.6.234, verified 2026-09-29.
+        C1: { dest: 'toolkit', arg: 'final-read', label: 'The Final Read' },
         T2: { dest: 'toolkit', arg: 'cohesion', label: 'Coherence & Cohesion' },
         R1: { dest: 'toolkit', arg: 'cohesion', label: 'Coherence & Cohesion' },
         S2: { dest: 'toolkit', arg: 'word-budget', label: 'Word Count & Length' },
@@ -5133,6 +5136,8 @@ window.WML = (function() {
         'fix-sentence-starters', 'fix-punctuation', 'fix-evidence', 'fix-effects',
         'fix-authors-purpose', 'fix-context', 'fix-structure', 'fix-technical-terms',
         'fix-topic-sentence', 'fix-close-analysis', 'fix-creative-writing', 'word-budget',
+        'final-read',   // v7.20.661 (#654a) — notes 2.6.234, Fix My Writing
+
         // The Analysis Engine + Essay Structure — the shapes we teach
         'ttecea', 'conceptual', 'effects', 'cohesion', 'essay', 'intro', 'body', 'conclusion',
         'iumvcc', 'creative', 'thesis', 'controlling',
