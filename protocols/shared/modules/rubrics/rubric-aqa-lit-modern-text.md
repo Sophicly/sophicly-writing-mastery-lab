@@ -67,12 +67,12 @@ For modern texts, all 7 TTECEA elements compulsory, in the protocol's order (T Â
 ### Blood Brothers (Russell)
 - Act 1: Mrs Johnstone's bargain / Mickey vs Edward childhood.
 - Act 2: separation widens / class divergence.
-- Act 2 ending: dual deaths / Narrator's "did you ever hear the tale of the Johnstone twins?".
+- Act 2 ending: dual deaths / Narrator's "So did y' hear the story of the Johnstone twins?".
 
 ### Animal Farm (Orwell, 1945)
 - Ch 1: Old Major's vision.
 - Ch 7: Boxer's "I will work harder."
-- Ch 10: pigs walking on two legs / "all animals are equal but some are more equal than others."
+- Ch 10: pigs walking on two legs / "all animals are equal but some animals are more equal than others."
 
 ### Lord of the Flies (Golding, 1954)
 - Ch 1: conch + Ralph elected.

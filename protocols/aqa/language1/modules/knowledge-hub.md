@@ -198,7 +198,7 @@ This resource is to be used during the **Prose Polishing** stage to model profes
     "Macbeth both explains, then, and obscures his meaning, just as the repeated use of 'but' or 'besides' as conjunctions makes his argument proceed by negatives and contractions... The syntax thus enacts that impossibility of finality with which the speech opens..."  
       
 12. Emma Smith on the Witches in Macbeth  
-    "...by crafting the witches so they seemingly occupy a space where linguistic, historical, and mythological allusions intersect, Shakespeare strongly points to them as symbols that blur the boundaries between prediction and control."
+    "The witches seem to interpose in a chain of human actions, rather than to direct actions themselves."
 
 #### **For Creative Writing Style (Q5)**
 

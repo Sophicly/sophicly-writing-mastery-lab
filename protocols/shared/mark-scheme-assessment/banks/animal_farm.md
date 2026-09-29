@@ -121,7 +121,7 @@ holistic); Cambridge IGCSE 0475 = AO1 (knowledge) + AO2 (understanding) + AO3 (a
     * **WhyWrong:** The AQA word is "links" — context, text and task must be linked, not listed separately.
 
 13. **Type: Select All [Tests AO3]**
-    * **Question:** A response argues: "Stalin's cult of personality (context) drives Orwell's idea that a revolution's language is captured by its new elite (concept), which drives his choice to have 'all animals are equal' amended to 'but some are more equal than others' (method)." Select ALL AQA AO3 strengths this shows.
+    * **Question:** A response argues: "Stalin's cult of personality (context) drives Orwell's idea that a revolution's language is captured by its new elite (concept), which drives his choice to have 'all animals are equal' amended to 'but some animals are more equal than others' (method)." Select ALL AQA AO3 strengths this shows.
     * **Options:** A) Context is used to drive a concept rather than bolted on as a fact, B) There are specific, detailed links between context, text and task, C) It explores ideas and perspectives opened up by the context, D) It lists a standalone historical date with no link to text or task
     * **Correct:** A, B, C
     * **AO:** AO3
@@ -149,7 +149,7 @@ holistic); Cambridge IGCSE 0475 = AO1 (knowledge) + AO2 (understanding) + AO3 (a
     * **Why D:** Critical means evaluating the text, not other students.
 
 16. **Type: MCQ [Tests Vocabulary]**
-    * **Question:** Two students support the idea that equality is hollowed out in Animal Farm. One quotes a whole paragraph of the pigs' pronouncements. The other selects the single amended clause "but some are more equal than others" to pin the point. Whose reference is "judicious" — and what does "judicious" mean?
+    * **Question:** Two students support the idea that equality is hollowed out in Animal Farm. One quotes a whole paragraph of the pigs' pronouncements. The other selects the single amended clause "but some animals are more equal than others" to pin the point. Whose reference is "judicious" — and what does "judicious" mean?
     * **Options:** A) The first — judicious means marshalling as much supporting evidence as possible, B) The second — judicious means a well-judged, selective reference chosen to do the most argumentative work, C) Both equally — judicious simply means quoting the text accurately and in full, D) Neither — judicious means choosing the longest, most detailed quotation available
     * **Correct:** B
     * **AO:** Vocabulary
@@ -386,7 +386,7 @@ holistic); Cambridge IGCSE 0475 = AO1 (knowledge) + AO2 (understanding) + AO3 (a
    * **Why D:** Paraphrase can feel like understanding, but it stays on the surface; the top band demands evaluation and probing of implication.
 
 6. **Type: MCQ [Tests AO2]**
-   * **Question:** Which fits the Eduqas AO2 top band on the maxim "all animals are equal but some are more equal than others"?
+   * **Question:** Which fits the Eduqas AO2 top band on the maxim "all animals are equal but some animals are more equal than others"?
    * **Options:** A) Naming as many techniques as possible in the sentence, B) Making assured reference to meanings and effects — exploring how the amended maxim's bathetic contradiction exposes the regime's hypocrisy, C) Copying the maxim without comment, D) Describing the plot of the wider text
    * **Correct:** B
    * **AO:** AO2

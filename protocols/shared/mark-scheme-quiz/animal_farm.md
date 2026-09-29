@@ -9,7 +9,7 @@ any other modern text).
 **Mark-scheme facts are reused VERBATIM from the vetted AQA Modern Texts grid** (30 marks: AO1 12 /
 AO2 12 / AO3 6; six levels; verbatim AQA band descriptors) plus AO4 technical accuracy (4 marks on a
 separate strand). Only the EXAMPLES are scoped to Animal Farm: Napoleon, Snowball, Boxer, Squealer,
-Old Major, the Seven Commandments, "all animals are equal but some are more equal than others", the
+Old Major, the Seven Commandments, "all animals are equal but some animals are more equal than others", the
 allegory of the Russian Revolution, and Orwell's themes of power and corruption.
 
 Parsed deterministically (keys + feedback stripped before reaching the client). All questions worth

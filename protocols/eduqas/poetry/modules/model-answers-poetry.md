@@ -451,7 +451,7 @@ This essay has compared how Owen and Hughes reinvent poetic form, structure, and
 **Emma Smith on the Witches in Macbeth**
 *From This is Shakespeare*
 
-"...by crafting the witches so they seemingly occupy a space where linguistic, historical, and mythological allusions intersect, Shakespeare strongly points to them as symbols that blur the boundaries between prediction and control. The result is three symbolic figures that act as a proxy for the question of fate and an interrogative atmosphere that compels the audience to ponder the nature of fate itself."
+"The witches seem to interpose in a chain of human actions, rather than to direct actions themselves."
 
 ---
 

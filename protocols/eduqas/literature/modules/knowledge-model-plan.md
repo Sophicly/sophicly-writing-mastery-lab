@@ -26,7 +26,7 @@ This is the essay plan that was used to construct the Gold Standard Model Answer
 * **Topic Sentence (AO1):** Shakespeare highlights the artificiality of the witches.  
 * **Supporting Sentences (AO1/AO2):**  
   * **Technical Terminology (AO2):** Metatheatre, stage directions.  
-  * **Evidence (Quote \- AO1):** 'You should be women, yet your beards forbid me' (Act 1, Scene 3).  
+  * **Evidence (Quote \- AO1):** 'You should be women, / And yet your beards forbid me to interpret / That you are so' (Act 1, Scene 3).  
   * **Close Analysis (AO2):** Reference to 'beards' breaks the fourth wall, calling attention to the actors and the fictional nature of the witches.  
   * **Effects (AO2):** Metatheatre invites the audience to question not just the witches' reality but also society's belief in witchcraft.  
 * **Concluding Sentence(s): AUTHOR'S PURPOSE/CONTEXT (AO1/AO3):** Shakespeare may subtly critique King James's belief in witches, aligning with Reginald Scot's skepticism.

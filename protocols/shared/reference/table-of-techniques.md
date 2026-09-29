@@ -3075,7 +3075,7 @@ The third of the four effects: what the writer leads us to think — the ideas, 
 
 **The concept:** Think is the effect that turns feeling into judgement: through irony, contrast and symbolism the writer sends the reader beneath the surface to weigh ideas rather than simply receive them. It is the route by which a story argues its theme, so a reader made to think has been guided to reach the writer's conclusion as though it were their own.
 
-**Examples:** the gap between the Duke's smooth courtesy and 'I gave commands; then all smiles stopped' positions us to judge him a murderer he cannot see himself to be — My Last Duchess; the secretly altered commandment, 'all animals are equal but some are more equal than others', leads us to recognise the betrayal of the revolution — Animal Farm; Pip's shame at Joe's manners on the London visit positions us to judge the snobbery that ambition has bred in him — Great Expectations
+**Examples:** the gap between the Duke's smooth courtesy and 'I gave commands; then all smiles stopped' positions us to judge him a murderer he cannot see himself to be — My Last Duchess; the secretly altered commandment, 'all animals are equal but some animals are more equal than others', leads us to recognise the betrayal of the revolution — Animal Farm; Pip's shame at Joe's manners on the London visit positions us to judge the snobbery that ambition has bred in him — Great Expectations
 
 **Effect on the reader** — Focus: Raise the question the theme depends on. · Feel: Let unease open the reader to thinking. · Think: Use irony and contrast to provoke judgement. · Act: Leave the idea unresolved so it follows them out.
 

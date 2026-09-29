@@ -25,7 +25,7 @@ aspect's pre-authored note (`romeo_and_juliet.concept-notes.md`) into the CN doc
    * **Options:** A) She is a rebellious daughter from the first scene and never really changes, B) She grows from an obedient, sheltered child into a decisive woman who defies her family and dies by her own hand — driven by her own choice to love Romeo across the feud, C) She stays a passive girl throughout and is simply carried along by others, D) She is controlled by fate and has no say in what she becomes
    * **Correct:** B
    * **Feedback:** ✓ Correct. The tragedy is the *change*: a dutiful child who will "look to like" whom her parents choose becomes a woman who marries in secret, defies her father and takes the potion — and the engine is her own decision to love, not fate alone.
-   * **Why A:** At the start she is obedient and untried ("I'll look no more than your consent gives strength"); the drama lies in her transformation into defiance, not in fixed rebellion.
+   * **Why A:** At the start she is obedient and untried ("I'll look to like, if looking liking move … Than your consent gives strength to make it fly"); the drama lies in her transformation into defiance, not in fixed rebellion.
    * **Why C:** She is not passive — she proposes marriage, drinks the potion and chooses death; treating her as merely carried along erases the agency that makes her fall tragic.
    * **Why D:** Fate presses on the lovers, but Juliet weighs and chooses at every turn; removing her agency turns a tragic heroine into a puppet.
 

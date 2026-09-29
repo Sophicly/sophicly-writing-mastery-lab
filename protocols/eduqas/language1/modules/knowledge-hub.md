@@ -122,7 +122,7 @@ This resource is to be used during the **Prose Polishing** stage to model profes
       
 12. Emma Smith on the Witches in Macbeth  
       
-    "...by crafting the witches so they seemingly occupy a space where linguistic, historical, and mythological allusions intersect, Shakespeare strongly points to them as symbols that blur the boundaries between prediction and control."
+    "The witches seem to interpose in a chain of human actions, rather than to direct actions themselves."
 
 #### **For Creative Writing Style (Section B)**
 

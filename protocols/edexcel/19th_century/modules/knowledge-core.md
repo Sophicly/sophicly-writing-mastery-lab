@@ -104,7 +104,7 @@ This is the essay plan that was used to construct the Gold Standard Model Answer
 * **Topic Sentence (AO2):** the author highlights the artificiality of the witches.  
 * **Supporting Sentences (AO2):**  
   * **Technical Terminology (AO2):** Metatheatre, stage directions.  
-  * **Evidence (Quote \- AO2):** 'You should be women, yet your beards forbid me' (Act 1, Scene 3).  
+  * **Evidence (Quote \- AO2):** 'You should be women, / And yet your beards forbid me to interpret / That you are so' (Act 1, Scene 3).  
   * **Close Analysis (AO2):** Reference to 'beards' breaks the fourth wall, calling attention to the actors and the fictional nature of the witches.  
   * **Effects (AO2):** Metatheatre invites the audience to question not just the witches' reality but also their own perceptions of supernatural belief.  
 * **Author's Purpose (AO2):** the author encourages critical questioning of accepted beliefs through theatrical artifice.
@@ -235,9 +235,9 @@ This resource is to be used during the **Prose Polishing** stage to model profes
      
 10. Mikhail Bakhtin on the Carnivalesque From Rabelais and His World "Carnival is not a spectacle seen by the people; they live in it, and everyone participates because its very idea embraces all the people. While carnival lasts, there is no other life outside it... It has a universal spirit; it is a special condition of the entire world, of the world's revival and renewal..."  
       
-11. Emma Smith on the protagonist's Syntax of Indecision From This is the author "the protagonist both explains, then, and obscures his meaning, just as the repeated use of 'but' or 'besides' as conjunctions makes his argument proceed by negatives and contractions... The syntax thus enacts that impossibility of finality with which the speech opens... the protagonist seems caught up in the sounds of his words as an escape from their true meaning..."  
+11. Emma Smith on Macbeth's Syntax of Indecision From Macbeth: Language and Writing (Arden Student Skills) "Macbeth both explains, then, and obscures his meaning, just as the repeated use of 'but' or 'besides' as conjunctions makes his argument proceed by negatives and contractions... The syntax thus enacts that impossibility of finality with which the speech opens... Macbeth seems caught up in the sounds of his words as an escape from their true meaning..."  
       
-12. Emma Smith on the Witches in the protagonist From This is the author "...by crafting the witches so they seemingly occupy a space where linguistic, historical, and mythological allusions intersect, the author strongly points to them as symbols that blur the boundaries between prediction and control. The result is three symbolic figures that act as a proxy for the question of fate and an interrogative atmosphere that compels the audience to ponder the nature of fate itself."
+12. Emma Smith on the Witches in Macbeth From This is Shakespeare "The witches seem to interpose in a chain of human actions, rather than to direct actions themselves."
 
 Looking at the original, here are the surgical edits to section 2e:
 

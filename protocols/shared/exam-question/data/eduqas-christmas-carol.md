@@ -5,7 +5,7 @@
 | Year | Question | Extract | Stave |
 |------|----------|---------|-------|
 | 2017 | How Dickens presents the importance of family | Stave 3 — Fred's Christmas party, or Cratchit family dinner | 3 |
-| 2018 | How Dickens presents Scrooge as selfish | Stave 1 — Charity collectors: "Are there no prisons? Are there no workhouses?" | 1 |
+| 2018 | How Dickens presents Scrooge as selfish | Stave 1 — Charity collectors: "Are there no prisons?" … "And the Union workhouses?" | 1 |
 | 2019 | How Dickens presents the supernatural | Stave 1 — Marley's Ghost: chains, warning of three spirits | 1 |
 | 2022 | How Dickens presents Scrooge's transformation | Stave 4 — The gravestone: "Spirit! hear me! I am not the man I was!" | 4 |
 | 2023 | How Dickens presents the suffering of the poor | Stave 3 — Ignorance and Want, or the Cratchit dinner | 3 |
