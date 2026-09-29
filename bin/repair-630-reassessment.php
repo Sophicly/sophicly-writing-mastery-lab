@@ -20,7 +20,11 @@ $trim = getenv('RTRIM') !== false && getenv('RTRIM') !== '' ? (int) getenv('RTRI
 $delPhase = getenv('RPHASE') === '1';
 if (!$live && strpos(get_userdata($u)->user_email, 'neilson248+') !== 0) die("refuse\n");
 $ck = 'swml_canvas_aqa_aqa_lang_paper_1_t1_reassessment'; $hk = 'swml_chat_aqa_aqa_lang_paper_1_t1_reassessment'; $pk = 'swml_phase_aqa_aqa_lang_paper_1_t1_redraft';
-$bak = ['canvas' => get_user_meta($u, $ck, true), 'chat' => get_user_meta($u, $hk, true), 'phase' => get_user_meta($u, $pk, true)];
+// v7.20.661: the marking LEDGER too. load_canvas heal_feedback_labels_from_ledger() backfills every
+// "—" box from questions_scored on load, so a doc reset alone is undone the moment the page opens
+// (measured staging 2026-09-29: reset doc served back with the previous run's marks → false commit).
+$ledger = SWML_Session_Manager::get_assessment_state($u, 'aqa', 'aqa_lang_paper_1', 1, '_reassessment', 1);
+$bak = ['canvas' => get_user_meta($u, $ck, true), 'chat' => get_user_meta($u, $hk, true), 'phase' => get_user_meta($u, $pk, true), 'ledger' => $ledger];
 $d = json_decode($bak['canvas'], true); if (!is_array($d)) $d = json_decode(wp_unslash($bak['canvas']), true);
 if (!is_array($d) || empty($d['html'])) die("user $u: no reassessment doc — nothing to do\n");
 $before = substr_count($d['html'], 'data-section-type='); $d['html'] = SWML_REST_API::reset_marking_output($d['html']); $after = substr_count($d['html'], 'data-section-type=');
@@ -33,7 +37,8 @@ $n0 = count($hist); $keep = ($trim === null) ? $hist : array_slice($hist, 0, $tr
 echo ($dry ? '[DRY RUN — nothing written] ' : '') . "user $u: sections {$before}→{$after}; boxes: " . implode(' | ', $fm[1])
     . "; docCompletedAt " . ($hadCompleted ? "'$hadCompleted' removed" : 'absent') . "; chat {$n0}→" . count($keep)
     . ($trim !== null && $keep ? ' (last kept: ' . substr((string) ($keep[count($keep) - 1]['content'] ?? ''), 0, 40) . ')' : '')
-    . "; phase record " . ($delPhase ? ($bak['phase'] ? 'DELETED (was ' . substr((string) $bak['phase'], 0, 60) . ')' : 'absent') : 'kept') . "\n";
+    . "; phase record " . ($delPhase ? ($bak['phase'] ? 'DELETED (was ' . substr((string) $bak['phase'], 0, 60) . ')' : 'absent') : 'kept')
+    . "; ledger questions_scored " . (empty($ledger['questions_scored']) ? 'empty' : 'CLEARED (' . implode(',', array_keys((array) $ledger['questions_scored'])) . ')') . "\n";
 if ($dry) return;
 $bk = 'swml_bak_20260928_630_reassess_repair';
 if (get_user_meta($u, $bk, true)) $bk .= '_' . gmdate('YmdHis');   // a re-run never overwrites the ORIGINAL backup
@@ -45,4 +50,5 @@ if ($trim !== null && is_array($c)) {
     update_user_meta($u, $hk, wp_slash(wp_json_encode($c)));
 }
 if ($delPhase) delete_user_meta($u, $pk);
+SWML_Session_Manager::reset_assessment_state($u, 'aqa', 'aqa_lang_paper_1', 1, '_reassessment', 1);
 echo "written.\n";

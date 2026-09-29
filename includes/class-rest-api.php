@@ -6919,7 +6919,10 @@ class SWML_REST_API {
             $user_id
         ));
 
-        if (empty($rows)) return null;
+        // v7.20.661: no results left → the STORED profile goes too. Returning early used to keep the
+        // old one, so a deleted false record lived on in Sophia's prompt (Qamar 857 prod: profile
+        // still counted the removed 39/80 redraft, 2026-09-29).
+        if (empty($rows)) { delete_user_meta($user_id, 'swml_learning_profile'); return null; }
 
         $assessments = [];
         $all_targets = [];
@@ -6965,7 +6968,7 @@ class SWML_REST_API {
             if (!empty($data['total_score'])) $score_history[] = $data['total_score'];
         }
 
-        if (empty($assessments)) return null;
+        if (empty($assessments)) { delete_user_meta($user_id, 'swml_learning_profile'); return null; }   // v7.20.661: same as above
 
         // Count recurring targets (top patterns)
         $target_counts = array_count_values(array_map('strtolower', $all_targets));
