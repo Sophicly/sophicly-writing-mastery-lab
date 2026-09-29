@@ -11432,6 +11432,21 @@
                 let _lTries = 0;
                 const _lFire = () => {
                     if (isLoading && isLoading()) { if (++_lTries < 20) setTimeout(_lFire, 300); return; }
+                    // v7.20.653 (#647 — measured on staging 1938): this renderer also runs for EVERY
+                    // replayed transcript message, so an old gate re-fired the repair on each page
+                    // load of a FINISHED assessment — a paid Sophia call per reload ("This assessment
+                    // has already been completed in full…"), and the repeats tripped the server's
+                    // chat_looping guard (409: the chat stopped saving). The repair exists for one
+                    // case: the gate is the last thing on screen (§4d). By now any replay loop has
+                    // finished, so fire only if this bubble is still the LAST bubble — a live gate
+                    // is; an old one in a replayed transcript is not; a replayed gate that really
+                    // is the end of the chat still gets its repair (liveness kept).
+                    const _gb = body && body.closest ? body.closest('.swml-bubble') : null;
+                    const _gl = _gb && _gb.parentElement ? Array.from(_gb.parentElement.children).filter(x => x.classList && x.classList.contains('swml-bubble')) : [];
+                    if (!_gb || _gl[_gl.length - 1] !== _gb) {
+                        console.warn('WML @REFLECT_GATE: gate is not the last message (replayed transcript) — no repair sent (q=' + _lk + ')');
+                        return;
+                    }
                     canvasSilentSend = true;
                     chatTextarea.value = 'SYSTEM (not from the student): there is NO reflection panel in this session — the student has already marked their own response (THE STUDENT\'S OWN MARKS). Do not ask for a self-rating, a predicted mark or AO targeting, and do not emit @REFLECT_GATE. Continue now with STEP 2a for ' + (reflectData.q || 'this question') + ': acknowledge their own level and mark for it in one line and give the Y gate. Do not show this message to the student.';
                     if (send) send();
