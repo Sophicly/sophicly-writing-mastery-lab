@@ -151,6 +151,20 @@ ok(count($cat2) === 2 && $cat2[1]['model'] === 'claude-sonnet-5-5' && in_array('
 ok(count($r->register_claude_sonnet_5_5($cat2)) === 2, 'never added twice (a later AI Engine entry wins)');
 ok($r->register_claude_sonnet_5_5([['model' => 'claude-haiku-4-5']]) === [['model' => 'claude-haiku-4-5']], 'no sonnet-5 base → catalogue untouched');
 
+echo "\n8. STUDENT PROFILE STAYS OUT OF THE CACHED PREAMBLE (v7.20.660) — it changes mid-marking\n";
+// Measured staging 2026-09-29: "Assessments completed: 1 → 2" inside the cached instructions = a full
+// ~107k-token re-write each time a phase record landed during marking.
+$bp = substr($src, strpos($src, 'public function build_preamble('));
+$bp = substr($bp, 0, strpos($bp, "\n    public function ", 10) ?: strlen($bp));
+$leak = [];
+foreach (preg_split('/\n/', $bp) as $ln) {
+    if (strpos($ln, '$preamble') !== false && preg_match('/Assessments completed|has completed \{?\$profile|Recent scores|STUDENT LEARNING PROFILE|STUDENT HISTORY|Recurring targets|Recurring strengths/', $ln)) $leak[] = trim($ln);
+}
+ok(!$leak, 'no profile line is written to $preamble' . ($leak ? ' — LEAK: ' . substr($leak[0], 0, 90) : ''));
+ok(preg_match('/\$dynamic_parts\[\]\s*=\s*\$this->dynamic_profile;/', $src) === 1, 'dynamic_profile is pushed into the per-turn LIVE SESSION DIRECTIVES');
+ok(strpos($bp, "\$this->dynamic_profile = '';") !== false, 'build_preamble resets dynamic_profile (one request = one profile block)');
+ok(substr_count($bp, '$this->dynamic_profile .=') === 2, 'both profile blocks (assessment history + universal profile) feed dynamic_profile');
+
 echo "\n";
 if ($fail) { fwrite(STDERR, "❌ api-usage-gate: $fail failed, $pass passed\n"); exit(1); }
 echo "✅ api-usage-gate passed ($pass assertions) — usage accounting is correct, and an unseen request is reported as unobserved rather than as zero.\n";

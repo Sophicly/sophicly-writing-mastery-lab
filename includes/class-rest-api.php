@@ -6935,7 +6935,9 @@ class SWML_REST_API {
             $board = $parts[0] ?? '';
             // Text may contain underscores — everything between board and _t{N}_{phase}
             $key_remainder = str_replace('swml_phase_' . $board . '_', '', $row->meta_key);
-            preg_match('/^(.+)_t(\d+)_(initial|redraft)$/', $key_remainder, $m);
+            // v7.20.660: attempt 2+ records are keyed `…_redraft__a2` (session-manager attempt suffix);
+            // without the optional suffix they parsed as text '' and Sophia read "Texts: x, .".
+            preg_match('/^(.+)_t(\d+)_(initial|redraft)(?:__a\d+)?$/', $key_remainder, $m);
             $text  = $m[1] ?? '';
             $topic = (int) ($m[2] ?? 0);
             $phase = $m[3] ?? '';

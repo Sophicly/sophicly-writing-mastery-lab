@@ -40,6 +40,11 @@ class SWML_Protocol_Router {
     // turn — built uncached each turn from the frontend-derived state, injected beside
     // dynamic_plan_state under WML LIVE SESSION DIRECTIVES so it always beats the cached preamble.
     private $dynamic_ladder = '';
+    // v7.20.660 (CACHE): the student's learning profile (assessment count, texts, scores, targets).
+    // It changes whenever a phase record is written — which happens MID-MARKING — so inside the
+    // cached preamble it re-wrote the whole ~107k-token prefix (measured, staging run A 2026-09-29:
+    // "Assessments completed: 1 → 2" = two full misses). Rides LIVE SESSION DIRECTIVES instead.
+    private $dynamic_profile = '';
 
     // v7.19.593 (CACHE): set true once inject_session_context confirms a WML query,
     // so the outbound http_request_args filter knows it owns this Anthropic request
@@ -1476,6 +1481,10 @@ class SWML_Protocol_Router {
         if (!empty($this->dynamic_plan_state)) {
             $dynamic_parts[] = $this->dynamic_plan_state;
             $this->dynamic_plan_state = '';
+        }
+        if (!empty($this->dynamic_profile)) {
+            $dynamic_parts[] = $this->dynamic_profile;
+            $this->dynamic_profile = '';
         }
         if (!empty($wml_dynamic_quiz)) {
             $dynamic_parts[] = $wml_dynamic_quiz;
@@ -3663,6 +3672,7 @@ TEMPLATE;
     }
 
     public function build_preamble($context, $user_id) {
+        $this->dynamic_profile = '';   // v7.20.660: one request = one profile block
         // v7.15.38: normalize board slug upstream so all downstream $board references
         // work with the hyphenated canonical form (edexcel-igcse, cambridge-igcse).
         if (isset($context['board'])) {
@@ -5101,17 +5111,19 @@ TEMPLATE;
             }
 
             // ── Compact learning profile (v7.12.5) — assessment only, minimal tokens ──
+            // v7.20.660: built into $this->dynamic_profile (uncached per-turn context), never $preamble.
             if ($profile && !empty($profile['assessment_count'])) {
-                $preamble .= "\n### STUDENT HISTORY (reference only — do NOT change your assessment workflow)\n";
-                $preamble .= "Assessments completed: {$profile['assessment_count']}. ";
-                $preamble .= "Texts: " . implode(', ', $profile['texts_assessed'] ?? []) . ". ";
+                $pf  = "### STUDENT HISTORY (reference only — do NOT change your assessment workflow)\n";
+                $pf .= "Assessments completed: {$profile['assessment_count']}. ";
+                $pf .= "Texts: " . implode(', ', array_values(array_filter($profile['texts_assessed'] ?? [], 'strlen'))) . ". ";
                 if (!empty($profile['recurring_targets'])) {
-                    $preamble .= "Recurring targets: " . implode('; ', $profile['recurring_targets']) . ". ";
+                    $pf .= "Recurring targets: " . implode('; ', $profile['recurring_targets']) . ". ";
                 }
                 if (!empty($profile['recurring_strengths'])) {
-                    $preamble .= "Recurring strengths: " . implode('; ', $profile['recurring_strengths']) . ". ";
+                    $pf .= "Recurring strengths: " . implode('; ', $profile['recurring_strengths']) . ". ";
                 }
-                $preamble .= "If a target or strength from a previous text reappears, briefly mention the pattern. Do NOT let this profile alter your step-by-step assessment workflow.\n";
+                $pf .= "If a target or strength from a previous text reappears, briefly mention the pattern. Do NOT let this profile alter your step-by-step assessment workflow.\n";
+                $this->dynamic_profile .= $pf;
             }
         } elseif ($task === 'polishing') {
             $preamble .= "Call `save_session_element` for each of these as they are determined:\n";
@@ -5290,58 +5302,62 @@ TEMPLATE;
 
         // ── Universal learning profile injection (v7.14.52, v7.14.61: subject-aware AO labels) ──
         // Inject student's learning profile into ALL tasks so the AI can reference prior work
+        // v7.20.660: built into $this->dynamic_profile (uncached per-turn context), never $preamble.
         if ($profile && !empty($profile['assessment_count']) && $profile['assessment_count'] > 0) {
-            $preamble .= "\n### STUDENT LEARNING PROFILE\n\n";
+            $pf  = "### STUDENT LEARNING PROFILE\n\n";
 
             // v7.14.61: AO definitions differ between Language and Literature — tell the AI which subject
             $subject = $context['subject'] ?? '';
             $is_language = (strpos($subject, 'language') !== false);
             if ($is_language) {
-                $preamble .= "**Subject: English Language.** AO definitions for Language:\n";
-                $preamble .= "- AO1 = Identify and interpret explicit and implicit information; synthesise ideas from different texts\n";
-                $preamble .= "- AO2 = Explain, comment, analyse how writers use language and structure for effect\n";
-                $preamble .= "- AO3 = Compare writers' ideas and perspectives across texts (NOT historical context)\n";
-                $preamble .= "- AO4 = (Section B only) Use vocabulary, sentence structures, spelling, punctuation accurately\n";
-                $preamble .= "- AO5 = (Section B only) Communicate clearly, effectively, imaginatively; organise information\n";
-                $preamble .= "- AO6 = (Section B only) Technical accuracy (some boards merge AO6 into AO4)\n\n";
-                $preamble .= "IMPORTANT: In Language, AO3 means COMPARISON, not historical/social context. There is NO context assessment in Language papers (except Edexcel IGCSE anthology).\n\n";
+                $pf .= "**Subject: English Language.** AO definitions for Language:\n";
+                $pf .= "- AO1 = Identify and interpret explicit and implicit information; synthesise ideas from different texts\n";
+                $pf .= "- AO2 = Explain, comment, analyse how writers use language and structure for effect\n";
+                $pf .= "- AO3 = Compare writers' ideas and perspectives across texts (NOT historical context)\n";
+                $pf .= "- AO4 = (Section B only) Use vocabulary, sentence structures, spelling, punctuation accurately\n";
+                $pf .= "- AO5 = (Section B only) Communicate clearly, effectively, imaginatively; organise information\n";
+                $pf .= "- AO6 = (Section B only) Technical accuracy (some boards merge AO6 into AO4)\n\n";
+                $pf .= "IMPORTANT: In Language, AO3 means COMPARISON, not historical/social context. There is NO context assessment in Language papers (except Edexcel IGCSE anthology).\n\n";
             } else {
-                $preamble .= "**Subject: English Literature.** AO definitions for Literature:\n";
-                $preamble .= "- AO1 = Read, respond, develop a critical and personal interpretation of the text\n";
-                $preamble .= "- AO2 = Analyse language, form and structure used by the writer to create meanings and effects\n";
-                $preamble .= "- AO3 = Show understanding of the relationships between texts and the contexts they were written/received in\n";
-                $preamble .= "- AO4 = (Comparison questions only) Use a range of vocabulary and sentence structures for clarity; accurate spelling and punctuation\n\n";
+                $pf .= "**Subject: English Literature.** AO definitions for Literature:\n";
+                $pf .= "- AO1 = Read, respond, develop a critical and personal interpretation of the text\n";
+                $pf .= "- AO2 = Analyse language, form and structure used by the writer to create meanings and effects\n";
+                $pf .= "- AO3 = Show understanding of the relationships between texts and the contexts they were written/received in\n";
+                $pf .= "- AO4 = (Comparison questions only) Use a range of vocabulary and sentence structures for clarity; accurate spelling and punctuation\n\n";
             }
 
-            $preamble .= "This student has completed {$profile['assessment_count']} assessment(s). ";
+            $pf .= "This student has completed {$profile['assessment_count']} assessment(s). ";
 
             if (!empty($profile['recurring_targets'])) {
                 $targets = array_slice($profile['recurring_targets'], 0, 4);
-                $preamble .= "Recurring targets: " . implode(', ', $targets) . ". ";
+                $pf .= "Recurring targets: " . implode(', ', $targets) . ". ";
             }
             if (!empty($profile['recurring_strengths'])) {
                 $strengths = array_slice($profile['recurring_strengths'], 0, 4);
-                $preamble .= "Recurring strengths: " . implode(', ', $strengths) . ". ";
+                $pf .= "Recurring strengths: " . implode(', ', $strengths) . ". ";
             }
             if (!empty($profile['score_history'])) {
                 $recent = array_slice($profile['score_history'], -3);
-                $scores = array_map(function($s) { return ($s['score'] ?? '?') . '/' . ($s['total'] ?? '?'); }, $recent);
-                $preamble .= "Recent scores: " . implode(', ', $scores) . ". ";
+                // v7.20.660: rebuild_learning_profile stores each entry as the phase record's
+                // total_score STRING ("54/80"); reading ['score']/['total'] off it sent "?/?" every time.
+                $scores = array_map(function($s) { return is_array($s) ? (($s['score'] ?? '?') . '/' . ($s['total'] ?? '?')) : (string) $s; }, $recent);
+                $pf .= "Recent scores: " . implode(', ', $scores) . ". ";
             }
 
-            $preamble .= "\n\n";
+            $pf .= "\n\n";
 
             // Task-specific instructions for how to USE the profile
             $task = $context['task'] ?? '';
             if (in_array($task, ['assessment', 'redraft_assessment'], true)) {
-                $preamble .= "**Profile usage:** Reference targets when giving feedback. Do NOT alter the assessment workflow or skip any steps based on this profile.\n\n";
+                $pf .= "**Profile usage:** Reference targets when giving feedback. Do NOT alter the assessment workflow or skip any steps based on this profile.\n\n";
             } elseif (in_array($task, ['planning', 'polishing', 'essay_plan'], true)) {
-                $preamble .= "**Profile usage:** Reference the student's prior targets when setting goals. If a recurring weakness appears, address it proactively in the plan.\n\n";
+                $pf .= "**Profile usage:** Reference the student's prior targets when setting goals. If a recurring weakness appears, address it proactively in the plan.\n\n";
             } elseif ($task === 'mark_scheme') {
-                $preamble .= "**Profile usage:** If the student's profile shows recurring weaknesses in specific AOs, note them when giving feedback on quiz answers.\n\n";
+                $pf .= "**Profile usage:** If the student's profile shows recurring weaknesses in specific AOs, note them when giving feedback on quiz answers.\n\n";
             } else {
-                $preamble .= "**Profile usage:** Tailor examples and difficulty to the student's demonstrated level. Reference their strengths to build confidence and their targets to focus improvement. Do NOT skip protocol steps based on this profile.\n\n";
+                $pf .= "**Profile usage:** Tailor examples and difficulty to the student's demonstrated level. Reference their strengths to build confidence and their targets to focus improvement. Do NOT skip protocol steps based on this profile.\n\n";
             }
+            $this->dynamic_profile .= ($this->dynamic_profile !== '' ? "\n" : '') . $pf;
         }
 
         // v7.15.78: Append standalone feedback-discussion note if applicable.
