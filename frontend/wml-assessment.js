@@ -55039,6 +55039,73 @@
             return fallback;
         }
 
+        // Paragraph-faithful text extraction: InputField content separates
+        // paragraphs with <br>/block boundaries that textContent flattens —
+        // convert them to newlines BEFORE reading text.
+        // ⭐⭐ v7.20.548 (#418, Neil: *"it mustn't falsely detect them"*). A HARD break and a
+        // SOFT break are different intentions and must stop being flattened into the same
+        // newline. Enter closes a block (</p>, </div>, </h*>, </li>) and IS a new paragraph;
+        // Shift+Enter emits a <br> INSIDE one and is not. The old rule turned both into
+        // newlines and then used "is this line 20+ words?" as a PROXY for which the student
+        // meant — and a proxy is wrong in both directions, both measured on real shapes in
+        // bin/paragraph-count-harness.js BEFORE this change:
+        //   • FALSE SPLIT — a soft-wrapped paragraph whose halves are each 20+ words became
+        //     TWO paragraphs, so the marker marked a paragraph the student never wrote and
+        //     told them their structure was wrong when it was not.
+        //   • MISS — a deliberate short paragraph (a one-line dramatic beat, a two-sentence
+        //     conclusion) was glued onto its neighbour and vanished as a unit, so the
+        //     universal per-paragraph rule silently under-delivered.
+        // The student's own block break is now the authority. The only thing still merged is
+        // a fragment of three words or fewer, which is a stray line rather than a paragraph —
+        // and it is MERGED, never dropped, because the old rule DELETED such a line from the
+        // payload outright (a three-word answer arrived at the marker as "NOT ATTEMPTED").
+        // ⭐⭐ v7.20.672 (#682, Zayan — Neil: *"if there's a natural break, it should just use the
+        // natural break"*). ONE rule for every reader of an answer — the Literature essay path below
+        // now uses it too (it read each block's textContent, which welds). Three changes, each measured
+        // on Zayan's real document, where FOUR paragraphs sat in one <p> separated by blank lines and
+        // Sophia was sent "2 paragraphs — PARAGRAPH 1 = BODY 1 (712 words)", so his Introduction was
+        // marked "not submitted":
+        //   1. A BLANK LINE (two or more <br> in a row) is the student's own paragraph break. Only a
+        //      SINGLE <br> is the soft wrap #418 protects — nobody leaves a blank line mid-paragraph.
+        //   2. The section's NodeView chrome is not the answer: the collapsed-only "Preview" strip
+        //      repeats the essay's opening words, and a button carries UI text (measured in the live
+        //      DOM, 2026-09-30). Read without them, or the teaser becomes a paragraph.
+        //   3. A short OPENING line with no full stop — a title, the question copied out — joins the
+        //      first paragraph instead of standing alone as the "Introduction" (v7.19.808 kept this for
+        //      Literature; it now holds everywhere). A short line that ENDS a sentence stays a
+        //      paragraph, so a one-sentence introduction or conclusion is no longer swallowed.
+        // keepEm: the Literature path never stripped <em> (a student's italics are their words).
+        const _mqParas = (section, keepEm) => {
+            const clone = section.cloneNode(true);
+            clone.querySelectorAll('[data-checklist-item], .swml-ana-strip, .swml-ctl-row, button').forEach(el => el.remove());
+            if (!keepEm) clone.querySelectorAll('em').forEach(el => el.remove());
+            const raw = clone.innerHTML || '';
+            const hasBlocks = /<\/(p|div|h[1-6]|li)>/i.test(raw);
+            // An inputField holds plain text whose ONLY separator is <br>, so there the soft
+            // break is all the student has and it stays a paragraph boundary.
+            const h = hasBlocks
+                ? raw.replace(/(?:<br\b[^>]*>(?:\s|&nbsp;| )*){2,}/gi, '\n').replace(/<br\b[^>]*>/gi, ' ').replace(/<\/(p|div|h[1-6]|li)>/gi, '\n')
+                : raw.replace(/<br\b[^>]*>/gi, '\n');
+            const tmp = document.createElement('div');
+            tmp.innerHTML = h;
+            const text = (tmp.textContent || '').replace(/ /g, ' ');
+            const paras = [];
+            let lead = '';
+            text.split(/\n+/).map(s => s.trim()).filter(Boolean).forEach(line => {
+                const wc = line.split(/\s+/).filter(Boolean).length;
+                // Closing quotes/brackets after the full stop still count as "ends a sentence". Kept as a
+                // STRING, not a regex class: the repo's brace-slicing harnesses read string literals
+                // correctly but not quote characters inside a regex.
+                let _end = line;
+                while (_end && '"\'”’)]'.indexOf(_end[_end.length - 1]) !== -1) _end = _end.slice(0, -1);
+                const titleLike = !paras.length && wc < 20 && !/[.!]$/.test(_end);
+                if (wc > 3 && !titleLike) { paras.push(lead ? lead + ' ' + line : line); lead = ''; }
+                else if (paras.length) paras[paras.length - 1] += ' ' + line;
+                else lead += (lead ? ' ' : '') + line;   // merged forward, never dropped
+            });
+            if (lead) paras.push(lead);                  // the whole answer was one short line
+            return paras;
+        };
         // Multiple response sections (e.g. EDUQAS Part A/B, language papers) — label each
         if (responseSections.length > 1) {
             // v7.19.826: LANGUAGE papers get per-question paragraph pre-labelling +
@@ -55047,48 +55114,6 @@
             // the injected labels/counts and never re-detects or re-counts.
             const _mqLang = /^language/.test((state.subject || '').toLowerCase());
             const _mqFirstDiag = ((state.topicNumber === 1 || state.topicNumber === '1') && state.phase === 'initial');
-            // Paragraph-faithful text extraction: InputField content separates
-            // paragraphs with <br>/block boundaries that textContent flattens —
-            // convert them to newlines BEFORE reading text.
-            // ⭐⭐ v7.20.548 (#418, Neil: *"it mustn't falsely detect them"*). A HARD break and a
-            // SOFT break are different intentions and must stop being flattened into the same
-            // newline. Enter closes a block (</p>, </div>, </h*>, </li>) and IS a new paragraph;
-            // Shift+Enter emits a <br> INSIDE one and is not. The old rule turned both into
-            // newlines and then used "is this line 20+ words?" as a PROXY for which the student
-            // meant — and a proxy is wrong in both directions, both measured on real shapes in
-            // bin/paragraph-count-harness.js BEFORE this change:
-            //   • FALSE SPLIT — a soft-wrapped paragraph whose halves are each 20+ words became
-            //     TWO paragraphs, so the marker marked a paragraph the student never wrote and
-            //     told them their structure was wrong when it was not.
-            //   • MISS — a deliberate short paragraph (a one-line dramatic beat, a two-sentence
-            //     conclusion) was glued onto its neighbour and vanished as a unit, so the
-            //     universal per-paragraph rule silently under-delivered.
-            // The student's own block break is now the authority. The only thing still merged is
-            // a fragment of three words or fewer, which is a stray line rather than a paragraph —
-            // and it is MERGED, never dropped, because the old rule DELETED such a line from the
-            // payload outright (a three-word answer arrived at the marker as "NOT ATTEMPTED").
-            const _mqParas = (section) => {
-                const clone = section.cloneNode(true);
-                clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
-                clone.querySelectorAll('em').forEach(el => el.remove());
-                const raw = clone.innerHTML || '';
-                const hasBlocks = /<\/(p|div|h[1-6]|li)>/i.test(raw);
-                // An inputField holds plain text whose ONLY separator is <br>, so there the soft
-                // break is all the student has and it stays a paragraph boundary.
-                const h = hasBlocks
-                    ? raw.replace(/<br\s*\/?>/gi, ' ').replace(/<\/(p|div|h[1-6]|li)>/gi, '\n')
-                    : raw.replace(/<br\s*\/?>/gi, '\n');
-                const tmp = document.createElement('div');
-                tmp.innerHTML = h;
-                const text = (tmp.textContent || '').replace(/ /g, ' ');
-                const paras = [];
-                text.split(/\n+/).map(s => s.trim()).filter(Boolean).forEach(line => {
-                    const wc = line.split(/\s+/).filter(Boolean).length;
-                    if (wc > 3 || !paras.length) paras.push(line);
-                    else paras[paras.length - 1] += ' ' + line;
-                });
-                return paras;
-            };
             const parts = [];
             responseSections.forEach(section => {
                 const label = section.getAttribute('data-section-label') || '';
@@ -55186,33 +55211,14 @@
         // returned empty in some attempt-reload scenarios. Now we treat input-field divs
         // as block elements alongside p/h*.
         const section = responseSections[0];
-        const blockEls = section.querySelectorAll('p, h1, h2, h3, h4, h5, h6, div[data-input-field]');
-
-        // Extract substantial text blocks (20+ words = essay paragraph)
-        const MIN_WORDS = 20;
-        const blocks = [];
-        // v7.19.808: short LEADING text (e.g. a one-sentence opening under 20 words) was
-        // silently DROPPED — the merge rule only glued backwards and there was no previous
-        // block. Hold it as a pending prefix and glue it FORWARD onto the first real block.
-        let pendingLead = '';
-        blockEls.forEach(el => {
-            const text = el.textContent?.trim() || '';
-            if (!text) return;
-            const wordCount = text.split(/\s+/).length;
-            if (wordCount >= MIN_WORDS) {
-                blocks.push(pendingLead ? pendingLead + ' ' + text : text);
-                pendingLead = '';
-            } else if (blocks.length > 0 && wordCount > 3) {
-                // Short but non-trivial text — append to previous block
-                blocks[blocks.length - 1] += ' ' + text;
-            } else if (wordCount > 3) {
-                // Short but non-trivial text BEFORE any real block — glue forward
-                pendingLead += (pendingLead ? ' ' : '') + text;
-            }
-            // Skip very short fragments (≤3 words) — likely empty line artefacts
-        });
-        // All-short essay (every block under 20 words): the pending text IS the essay
-        if (pendingLead && blocks.length === 0) blocks.push(pendingLead);
+        // v7.20.672 (#682): the SAME paragraph rule as the per-question path (_mqParas) — the
+        // student's own breaks (a new block OR a blank line) are the authority. This used to read
+        // each block's textContent, which welds <br><br> paragraphs together: Zayan's five
+        // paragraphs reached Sophia as two, labelled BODY 1 + CONCLUSION, and his Introduction was
+        // marked "not submitted". It also glued any paragraph under 20 words onto its neighbour,
+        // so a short conclusion vanished — the proxy #418 retired for Language. The v7.19.808
+        // short-opener glue (a title never becomes the Introduction) now lives in _mqParas.
+        const blocks = _mqParas(section, true);
 
         // Robust fallback chain — empty blocks → section.textContent → editor.getText().
         // v7.17.50: previously a stale canvasEditor reference after attempt reload could
