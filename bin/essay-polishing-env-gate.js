@@ -673,6 +673,8 @@ console.log('\nEvery taught element has a reference, and the link is a LATE rung
         const FAMS = Object.keys(M.ELEMENT_TOOLKIT_MAP);
         ok('the map covers the four kinds of writing we teach',
             ['analytical', 'iumvcc', 'creative', 'comparison'].every((f) => FAMS.includes(f)), FAMS);
+        // v7.20.680 (#694): the Language answer shapes, and the P2 Q2 paired-inference set.
+        ok('…plus the Language answer shapes and the P2 Q2 paired-inference set', ['language', 'paired'].every((f) => FAMS.includes(f)), FAMS);
 
         // ⭐ EVERY destination must be a REAL section AND in the allowlist. Either half failing
         // makes the chip render nothing at all, which is invisible to the student and to Neil.
@@ -700,7 +702,13 @@ console.log('\nEvery taught element has a reference, and the link is a LATE rung
             'Technique + Evidence + Inference': 'fix-evidence', 'Effect 1 on Reader': 'fix-effects',
             'Effect 2 on Reader': 'fix-effects', "Author's Central Purpose": 'purposes',
             'Introduction': 'intro', 'Conclusion': 'conclusion',
+            // v7.20.680 (#694): the four P2 Q2 boxes — closed by the notes lane's `paired-inference`.
+            'Source A — Perceptive Topic Sentence': 'paired-inference', 'Source A — Evidence + Developed Inference': 'paired-inference',
+            'Source B — Discourse Marker + Perceptive Topic Sentence': 'paired-inference', 'Source B — Evidence + Developed Inference': 'paired-inference',
         };
+        ok('every container a taught element is credited to is a REAL row in the map',
+            Object.values(COVERED_BY_CONTAINER).every((a) => blob.includes('"arg":"' + a + '"')),
+            Object.values(COVERED_BY_CONTAINER).filter((a) => !blob.includes('"arg":"' + a + '"')));
         const uncovered = taught.filter((l) => {
             const key = l.toLowerCase().replace(/[^a-z ]/g, '').trim();
             if (blob.includes(key)) return false;
@@ -709,8 +717,6 @@ console.log('\nEvery taught element has a reference, and the link is a LATE rung
         console.log('    ' + taught.length + ' taught element labels checked against the map');
         // The known gaps are NAMED, so a new one cannot hide among them (§10 fail loud).
         const KNOWN_GAPS = [
-            'Source A — Perceptive Topic Sentence', 'Source A — Evidence + Developed Inference',
-            'Source B — Discourse Marker + Perceptive Topic Sentence', 'Source B — Evidence + Developed Inference',
             'Hook technique', 'Devices', 'Urgency', 'Emotional appeal', 'Methodology', 'Vision', 'Emotion',
             'Tone', 'Counter-Argument', 'Objection family', 'Rebuttal technique', 'Rebuttal verb family',
             'Closing approach',
@@ -730,8 +736,16 @@ console.log('\nEvery taught element has a reference, and the link is a LATE rung
         ok('…and so does the paragraph shape itself, which is what he was really asking for', /"arg":"body"/.test(lines.join('\n')));
         ok('a row whose section only CONTAINS the element says so, rather than implying its own page',
             /this section also covers/.test(lines.join('\n')));
-        ok('the creative set does NOT claim to teach the seven scene elements (it holds the Story Spine)',
-            !/seven scene/i.test(JSON.stringify(M.ELEMENT_TOOLKIT_MAP.creative)));
+        // v7.20.680 (#694): the seven-scene gap is CLOSED — `scene` teaches our seven, in our order.
+        {
+            const cr = M.ELEMENT_TOOLKIT_MAP.creative;
+            const seven = ['Hook', 'Setup', 'Reaction', 'Epiphany', 'Proaction', 'Climax', 'Denouement'];
+            const at = seven.map((w) => cr[0].el.indexOf(w));
+            ok('⭐ the creative set LEADS with the seven-element scene, all seven named in order (#694)',
+                cr[0].arg === 'scene' && at.every((i) => i !== -1) && at.every((i, k) => k === 0 || i > at[k - 1]), cr[0]);
+            ok('…and the Story Spine row claims only the whole story, never the single scene',
+                cr.some((r) => r.arg === 'creative' && /whole story/.test(r.el) && !/scene/i.test(r.el)));
+        }
         ok('no duplicate destination inside one family (a menu of two links gets skipped)',
             Object.values(M.ELEMENT_TOOLKIT_MAP).every((f) => new Set(f.map((r) => r.arg)).size === f.length));
     }
@@ -740,8 +754,17 @@ console.log('\nEvery taught element has a reference, and the link is a LATE rung
     const RF = WML.SelectionChip.referenceFamilies;
     ok('the chip exposes the family resolver', typeof RF === 'function');
     if (typeof RF === 'function') {
-        ok('a reading question on a fiction paper gets the analytical set',
-            RF({ text: 'aqa_lang_paper_1', subject: 'language1', task: 'polishing' }, { question: 'Q2' }).join() === 'analytical');
+        ok('a reading question on a fiction paper gets the analytical set plus the answer shapes',
+            RF({ text: 'aqa_lang_paper_1', subject: 'language1', task: 'polishing' }, { question: 'Q2' }).join() === 'analytical,language');
+        // v7.20.680 (#694)
+        ok('⭐ AQA P2 Q2 (paired inference) gets its OWN set — never the TTECEA pages it does not use',
+            RF({ text: 'aqa_lang_paper_2', subject: 'language2', task: 'polishing' }, { question: 'Q2' }).join() === 'paired,comparison');
+        ok('⭐ AQA P2 Q4 does NOT get the answer shapes (the page says "no introduction"; our protocol marks one)',
+            RF({ text: 'aqa_lang_paper_2', subject: 'language2', task: 'polishing' }, { question: 'Q4' }).join() === 'analytical,comparison');
+        ok('AQA P2 Q3 gets the analytical set plus the answer shapes',
+            RF({ text: 'aqa_lang_paper_2', subject: 'language2', task: 'polishing' }, { question: 'Q3' }).join() === 'analytical,language');
+        ok('a Literature essay gets the analytical set only (its shape is `essay`, not the Language shapes)',
+            RF({ text: 'macbeth', subject: 'shakespeare', task: 'polishing' }, { question: null }).join() === 'analytical');
         ok('⭐ the WRITING question on a FICTION paper gets the creative set, not the essay set',
             RF({ text: 'aqa_lang_paper_1', subject: 'language1', task: 'polishing' }, { question: 'Q5' }).join() === 'creative');
         ok('⭐ the WRITING question on a NON-FICTION paper gets IUMVCC',

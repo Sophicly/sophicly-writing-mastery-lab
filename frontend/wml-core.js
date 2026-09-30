@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.679';
+var WML_BUILD = '7.20.680';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -5187,6 +5187,12 @@ window.WML = (function() {
         'purposes', 'universal', 'worked',
         // Word Banks — what the student picks a replacement FROM
         'wb-connectives', 'wb-tone', 'wb-goals', 'wb-symbol',
+        // v7.20.680 (#694) — the notes lane's answer to the three gaps (Notes Plugin 44, 2026-09-30),
+        // plus two it added since. Each read against what WML teaches before it got a row:
+        // `scene` = our seven CW7 elements, word for word · `paired-inference` = OUTLINE_CRITERIA
+        // .inference's four boxes · `interpretation-ladder` = rubric-base.md's 0–3 ladder · `answer-shapes`
+        // (see the `language` family for the one question it must not reach) · `tense-control`.
+        'scene', 'answer-shapes', 'paired-inference', 'interpretation-ladder', 'tense-control',
     ];
     // ═══════════════════════════════════════════════════════════════════════════════════════
     // ⭐⭐ v7.20.615 (Neil, 2026-09-15) — THE ELEMENT → REFERENCE MAP.
@@ -5233,6 +5239,10 @@ window.WML = (function() {
             // The whole answer, and the qualities that cut across every element.
             { el: 'the whole-essay shape', arg: 'essay', label: 'The Full Essay' },
             { el: 'a conceptual claim instead of description', arg: 'conceptual', label: 'Conceptual Thinking' },
+            // v7.20.680: the SAME four rungs rubric-base.md marks with (0 Identify · 1 Explain literally ·
+            // 2 Open an implication · 3 Build a supported interpretation) — the page for "rung N" feedback.
+            // ⛔ Not `sp-inference-clarity-depth`: its six-step depth scale clashes with these four (notes hold).
+            { el: 'how far an interpretation goes — the Interpretation Ladder, rungs 0 to 3', arg: 'interpretation-ladder', label: 'The Interpretation Ladder' },
             { el: 'fine-grained rather than merely detailed', arg: 'finegrained', label: 'Fine-Grained vs Detailed' },
             { el: 'flow from one sentence to the next', arg: 'cohesion', label: 'Coherence & Cohesion' },
             { el: 'repeated sentence openers', arg: 'fix-sentence-starters', label: 'Sentence Starters' },
@@ -5249,11 +5259,13 @@ window.WML = (function() {
             { el: 'naming the writer’s attitude precisely', arg: 'wb-tone', label: 'Tone & Feeling Words' },
             { el: 'how long the answer should be', arg: 'word-budget', label: 'Word Count & Length' },
         ],
-        // Narrative / descriptive. ⚠️ The seven scene elements we TEACH have no section — the
-        // Toolkit's `creative` page carries the six-beat Story Spine and a three-part single-scene
-        // shape instead. The row says what is actually there; it does not pretend.
+        // Narrative / descriptive. v7.20.680 (#694): the seven scene elements we TEACH and MARK now
+        // have their own page (`scene`, notes 2026-09-30) — same seven, same order, same wording as
+        // our CW7 rows, and the 650-word floor. `creative` keeps the Story Spine: the whole story.
         creative: [
-            { el: 'the Story Spine and shaping a single scene', arg: 'creative', label: 'Creative Writing Structure' },
+            { el: 'the seven scene elements, in order (Hook, Setup, Reaction, Epiphany, Proaction, Climax, Denouement), and the 650-word floor', arg: 'scene', label: 'The Seven-Element Scene' },
+            { el: 'the Story Spine — the shape of a whole story', arg: 'creative', label: 'Creative Writing Structure' },
+            { el: 'keeping to one tense, and shifting only on purpose', arg: 'tense-control', label: 'Tense Control' },
             { el: 'control in your own writing', arg: 'fix-creative-writing', label: 'Creative & Persuasive Writing' },
             { el: 'the words for a character’s Want and Need', arg: 'wb-goals', label: 'Character Goals' },
             { el: 'symbols writers reach for', arg: 'wb-symbol', label: 'Symbolism' },
@@ -5262,6 +5274,24 @@ window.WML = (function() {
         // Comparison work rides the analytical set plus the connectives bank.
         comparison: [
             { el: 'connectives for comparing two texts', arg: 'wb-connectives', label: 'Comparison Connectives' },
+        ],
+        // v7.20.680 (#694) — AQA Language reading questions: how long each answer is, and that a
+        // reading answer has no introduction or conclusion. ⛔ NOT offered on the P2 Q4 comparison
+        // (the family resolver keeps it off): our protocol marks a short introduction and conclusion
+        // there (protocol-a-assessment.md lines 526–596), and the page currently says comparison is
+        // "body paragraphs only" — sent to the notes lane to correct; lift the exclusion when it is.
+        language: [
+            { el: 'how many paragraphs this question takes, and why a reading answer has no introduction or conclusion', arg: 'answer-shapes', label: 'Answer Shapes' },
+        ],
+        // v7.20.680 (#694) — AQA Lang P2 Q2, the inference question. NOT a TTECEA paragraph: four parts,
+        // Source A then Source B, no technique, no close analysis, no effect on the reader
+        // (OUTLINE_CRITERIA.inference · PROTOCOL-QUESTION-STRUCTURE-MAP P2 Q2). It REPLACES the
+        // analytical set for that question, whose pages teach elements this answer does not have.
+        paired: [
+            { el: 'the paired-inference paragraph — Source A, then Source B, in four parts', arg: 'paired-inference', label: 'Paired Inference' },
+            { el: 'choosing and embedding the quotation', arg: 'fix-evidence', label: 'Evidence & Quotes' },
+            { el: 'the inference verb (never "shows")', arg: 'wb-verbs', label: 'Inference Verbs' },
+            { el: 'how long the answer should be', arg: 'word-budget', label: 'Word Count & Length' },
         ],
     };
     // The literal line the model copies. ONE producer, so the marker's shape can never drift.

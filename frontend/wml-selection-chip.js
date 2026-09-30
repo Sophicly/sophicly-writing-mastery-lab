@@ -1047,7 +1047,15 @@
             const NF = ['aqa_lang_paper_2', 'eduqas_lang_paper_2', 'edexcel_lang_paper_2', 'ocr_lang_paper_1', 'edexcel_igcse_lang_a'];
             return NF.indexOf(text) !== -1 ? ['iumvcc'] : ['creative'];
         }
+        // v7.20.680 (#694): AQA Lang P2 Q2 is a paired Source-A-then-Source-B inference in four parts —
+        // no technique, no close analysis, no effect on the reader. The analytical set would offer a
+        // stuck student pages for elements this answer does not have, so it gets its own set.
+        if (q === 'Q2' && text === 'aqa_lang_paper_2') return ['paired', 'comparison'];
         const fams = ['analytical'];
+        // v7.20.680 (#694): AQA Language reading questions get the answer-shapes page — except the
+        // P2 Q4 comparison, whose short introduction and conclusion our protocol marks but the page
+        // currently tells the student to leave out (notes lane asked to correct it; lift this then).
+        if (/^aqa_lang_paper_[12]$/.test(text) && !(q === 'Q4' && text === 'aqa_lang_paper_2')) fams.push('language');
         // Comparison work (anthology poetry, and the cross-source question on a non-fiction paper)
         // adds the connectives bank on top of the analytical set.
         if (/poetry|anthology/.test(subject) || (q === 'Q4' && text === 'aqa_lang_paper_2')) fams.push('comparison');
