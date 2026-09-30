@@ -8184,8 +8184,9 @@
         WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain }, { durable: false, why: 'a present-state ask — re-derived from the document on entry, never stored' });
         try {
             const bar = el('div', { className: 'swml-quick-actions swml-sa-walk-bar' });
+            const _confWords = ['Not at all', 'Not very', 'Somewhat', 'Fairly', 'Very'];
             for (let v = 1; v <= 5; v++) {
-                bar.appendChild(el('button', { className: 'swml-quick-btn swml-sa-walk-btn', textContent: String(v), onClick: function () {
+                bar.appendChild(el('button', { className: 'swml-quick-btn swml-sa-walk-btn', textContent: v + ' — ' + _confWords[v - 1], onClick: function () {
                     bar.remove();
                     WML.recordTurn(_chatShell.history, { role: 'user', content: 'Confidence: ' + v + '/5' }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                     _chatShell.addMsg('Confidence: ' + v + '/5', 'user');
