@@ -698,6 +698,10 @@ node bin/marking-payload-harness.js || fail=1
 node bin/examiner-ladder-harness.js || fail=1
 # v7.20.604 (#462): the mark-scheme self-assessment host — data, doc, both pipelines, §35 copy bans, Sophia feed, §4d.
 node bin/assess-ladder-host-harness.js || fail=1
+# v7.20.674 (#686): the paragraph-by-paragraph self-assessment check (Literature). Pure core sliced from
+# its sentinels; proven RED against six injected defects (a widened tolerance, a dropped mapping rule,
+# the gate skipping the check, no tie-break, broken entity decoding, the summary guard removed).
+node bin/para-gap-check-harness.js || fail=1
 # v7.20.547 (CW trials slice 2b): the examiner-ladder WALK, driven on the real rig with the real
 # engine and the real generated mark scheme under it. Liveness is checked automatically inside
 # say()/tap() (§4d, no opt-out). Proven RED against a top-down climb, an accumulate cycle on the

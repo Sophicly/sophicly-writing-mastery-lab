@@ -2572,3 +2572,52 @@ Literature card out entirely, flip it: the card, the router's instructions and t
 
 **NOT decided, recorded for him:** poetry anthology's comparison grid (the next data job); whether the blind 19-skill
 walk should itself shrink now that the mark scheme follows it (#472).
+
+---
+
+## §48. ⭐⭐ THE SELF-ASSESSMENT MUST BE USED, PARAGRAPH BY PARAGRAPH — their rating beside the mark, one question about the biggest gap, and no new mark prediction (Neil, ruled 2026-09-30; FIXLIST #686, #687)
+
+**His words:** *"should we also get them to think about the marks per paragraph? … the students have done a self-rating,
+right? A self-assessment. So does that get reflected on in the feedback? … I don't want them to just do it and move on
+from it. I want them to think, okay, let's say when Sophia gives the feedback on the introduction, you know, how similar or
+different is that to the student's own self-reflection? … I don't want them just to do it just for the sake of doing it.
+It has to mean something in the end."* Then, on the recommendation below: *"happy for you to build it that way."*
+
+**MEASURED FIRST (#686):** the skills ratings reached nobody. The walk writes them only into the document; its taps make no
+chat turn; neither hand-off carries them; no server path reads that section. The real marking turn on staging (30 Sep,
+`wp_mwai_chats` 11404) held the essay, the goal and the context — and zero ratings. So .673's per-section "Element Check"
+asked Sophia to compare ratings she could not see. What DID use them was only the end-of-assessment average (self % vs
+actual %) and the blind-spot line — never a paragraph, and never a question the student answered.
+
+**1. THE RULE — after each paragraph's marks, the student's own ratings sit beside Sophia's marks for that paragraph's
+parts, the biggest gap is named, and ONE question is asked about it.** Rated higher than it scored → *"What do you think it
+is missing?"*; lower → *"What do you think made it work?"*; within one step everywhere → *"Which part are you surest about,
+and what in your writing earned it?"* Then Sophia's own reason from her mark table is shown, both are filed under
+Calibration, and only THEN do the continue buttons come back (§18 serial — a question they can skip is one they skip).
+
+**2. NO PER-PARAGRAPH MARK PREDICTION.** The element ratings ARE the student's judgement of each paragraph, and a finer one
+than a mark (three Introduction ratings say WHERE they think it is strong or weak; one predicted mark does not). A
+predicted mark would be a third judgement of the same paragraph beside the ratings and the mark scheme — Neil's own
+objection, *"they might end up giving two different ratings for the same thing."*
+
+**3. IT MEANS SOMETHING AT THE END — and the research is why the end matters most.** Andrade's review of 76 studies (2019)
+found self-assessment helps when it is followed by the chance to revise — accuracy for its own sake is not what helps. So the
+gap is carried FORWARD, not just reported: the filed gaps ride the closing turn (Overall Feedback names the part misjudged
+most; a part rated higher than it scored is named inside the first Action-Plan priority as the first thing to check in the
+redraft), and they travel onto the phase record the polishing lesson reads. Nederhand, Tabbers & Rikers (2019): seeing the
+standard after a self-estimate makes the NEXT estimate more accurate too, and helps weaker students most.
+
+**4. ALL CODE, ZERO EXTRA CALLS (#687 — Neil: "I am really concerned about token usage").** The comparison, the biggest gap,
+the question, the reveal and the filing are deterministic (WML CLAUDE.md §4 programmatic-first); the student's own words
+reach Sophia inside turns that already happen. Sophia is told NOT to compare ratings herself. Measured the same day: ~90% of
+a marking turn's output tokens are hidden thinking, so trimming feedback wording or dropping a gold model saves ~1–2% of
+spend — the recommendation to him was to keep both golds (his float, NOT ruled: *"maybe we should keep those"*).
+
+**MECHANICS (v7.20.674):** `@GAP-CHECK-PURE` core in wml-assessment.js (criterion → skill map, one scale: rating (v−1)/4
+against mark/worth, tolerance one step, tie → the part worth more marks); host `_gapCheckTakeOver` / `_gapAnswer` /
+`_gapCheckResume`; the continue gate is ONE builder (`_buildAssessConfirmBar`, on the chat shell as `confirmBar`); rows
+`calib-gap-<intro|body1|body2|body3|conclusion>` (+ `-why`) in the Literature Calibration template; closing fact
+`_gapCheckFact`; phase record `calibration.gaps`. Gate: `bin/para-gap-check-harness.js` (pre-ship).
+
+**NOT decided, recorded for him:** Language papers — their skills ratings are still used only at the end (their per-question
+comparison is the ladder mark). Whether they get the same per-question skills check is his call.

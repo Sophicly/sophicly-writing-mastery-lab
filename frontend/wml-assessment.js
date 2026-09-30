@@ -8541,6 +8541,9 @@
                     q: g.q, ao: g.ao, max: g.max, mine: g.mineNum, sophia: g.actual.mark,
                     decision: _ladderRowText(g.fids.decision), why: _ladderRowText(g.fids.why),
                 })),
+                // v7.20.674 (#686): the paragraph gaps travel too — polishing knows what they misjudged.
+                gaps: GAP_SECTIONS.map((s) => ({ section: s.label, gap: _ladderRowText(_gapFids(s.key).gap), said: _ladderRowText(_gapFids(s.key).why).replace(/^—$/, '') }))
+                    .filter((x) => x.gap && !/^Not compared/.test(x.gap)),
             };
             const apiPost = WML && WML.apiPost, API = WML && WML.API;
             if (!apiPost || !API || !API.phaseCalibration) { console.warn('WML calibration: no API handle — document record kept, phase record not updated'); return; }
@@ -8603,6 +8606,335 @@
             try { saveCanvasChat(sh.history, sh.getChatId ? sh.getChatId() : ''); } catch (e) {}
         } catch (e) { console.warn('WML assess-finish: skipped —', e && e.message); }
     }
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.674 (#686 — Neil, 2026-09-30) — THE PARAGRAPH-BY-PARAGRAPH SELF-ASSESSMENT CHECK.
+    //
+    // His words: "does that get reflected on in the feedback? … when Sophia gives the feedback on the
+    // introduction, how similar or different is that to the student's own self-reflection? … I don't
+    // want them just to do it just for the sake of doing it. It has to mean something in the end."
+    //
+    // MEASURED before this (#686): the skill ratings were written ONLY into the document — the walk's
+    // taps make no chat turn, neither hand-off carries them, and no server path reads that section —
+    // so Sophia never saw them (staging wp_mwai_chats 11404: zero ratings in the marking turn), and
+    // .673's per-section "Element Check" asked her to compare ratings she could not see.
+    //
+    // THE SHAPE — all CODE, zero extra API calls (#687, Neil's cost ask). After each paragraph's marks
+    // land: the student's OWN ratings for that paragraph's parts beside my element scores (from the
+    // mark table in my marking reply), the biggest gap named, ONE question about it. They type a line
+    // (or "not sure"); my own reason from the table is shown; both are filed under Calibration; THEN
+    // the continue buttons come back (serial, §18 — a question they can skip is one they skip).
+    // No per-paragraph mark prediction: the ratings ARE the per-paragraph judgement, finer-grained.
+    // "In the end": the filed gaps ride the closing turn as a code-derived fact (Final Summary +
+    // Action Plan) and travel into polishing on the phase record, as the calibration does.
+    // Pure core between the sentinels — driven by bin/para-gap-check-harness.js.
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // @GAP-CHECK-PURE-BEGIN
+    const GAP_SECTIONS = [
+        { key: 'intro', label: 'Introduction', group: 'Introduction' },
+        { key: 'body1', label: 'Body 1', group: 'Body Paragraphs' },
+        { key: 'body2', label: 'Body 2', group: 'Body Paragraphs' },
+        { key: 'body3', label: 'Body 3', group: 'Body Paragraphs' },
+        { key: 'conclusion', label: 'Conclusion', group: 'Conclusion' },
+    ];
+    // Mark-table criterion (the AQA Literature protocol's wording, or the model's shortening of it) →
+    // the skill the student rated in the walk. Ordered, first match wins: [match, skill, unless].
+    // A criterion no rated skill describes stays UNMAPPED ("Analysis links to topic sentence",
+    // "Links to question") — an honest hole in the comparison beats a forced pairing.
+    const GAP_SKILL_RULES = {
+        'Introduction': [[/hook/i, 'Hook'], [/building/i, 'Building Sentences'], [/thesis/i, 'Thesis']],
+        'Body Paragraphs': [
+            [/topic\s*sentence/i, 'Topic Sentence', /analys/i],
+            [/terminolog|technical\s*term/i, 'Technical Terms'],
+            [/quot|evidence/i, 'Evidence'],
+            [/close\s*analysis|interplay/i, 'Close Analysis'],
+            [/reader|effect/i, 'Effects on Reader'],
+            [/purpose/i, "Author's Purpose"],
+            [/context/i, 'Context'],
+        ],
+        'Conclusion': [[/restat/i, 'Restated Thesis'], [/controlling|concept/i, 'Controlling Concept'],
+            [/purpose/i, 'Central Purpose'], [/moral|message|universal/i, 'Universal Message']],
+    };
+    const GAP_WORDS = ['Basic', 'Developing', 'Secure', 'Good', 'Perceptive'];
+    const GAP_TOL = 0.25;   // one step on the five-step scale: closer than that is agreement
+    function _gapSectionFor(label) {
+        const t = String(label || '').toLowerCase();
+        if (/introduc/.test(t)) return GAP_SECTIONS[0];
+        if (/conclu/.test(t)) return GAP_SECTIONS[4];
+        const m = /body(?:\s*paragraph)?\s*(\d)/.exec(t);
+        return m ? (GAP_SECTIONS.filter((s) => s.key === 'body' + m[1])[0] || null) : null;
+    }
+    function _gapSkillFor(group, criterion) {
+        const c = String(criterion || '');
+        const rules = GAP_SKILL_RULES[group] || [];
+        for (let i = 0; i < rules.length; i++) {
+            if (rules[i][0].test(c) && !(rules[i][2] && rules[i][2].test(c))) return rules[i][1];
+        }
+        return null;
+    }
+    // Stored replies carry HTML entities ("quotes &amp; supporting evidence" — measured on prod).
+    function _gapUnent(s) {
+        return String(s || '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"').replace(/&#0?39;|&#x27;/g, "'");
+    }
+    // The paragraph a marking reply marked, and ITS card: the card's own q first
+    // (@FB_BEGIN{"q":"Body 1"}), then the canonical total line ("Total Mark for Body Paragraph 1:").
+    function _gapCardOf(reply) {
+        const s = String(reply || '');
+        const fb = /@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)(?=@FB_END|@FB_BEGIN|$)/.exec(s);
+        if (fb) {
+            let meta = null;
+            try { meta = JSON.parse(fb[1]); } catch (e) { meta = null; }
+            const sec = meta && (_gapSectionFor(meta.q) || _gapSectionFor(meta.title));
+            if (sec) return { section: sec, body: fb[2] };
+        }
+        // The closing summary lists every paragraph's total too — it is not a paragraph's marking.
+        if (/\[ASSESSMENT_COMPLETE\]|Final Summary|Grand Total/i.test(s)) return null;
+        const tm = /Total Mark for ([^:\n]+):/i.exec(s);
+        const sec2 = tm ? _gapSectionFor(tm[1]) : null;
+        return sec2 ? { section: sec2, body: s } : null;
+    }
+    // The card's mark table: | criterion | worth | your score | why |. Header, separator and bonus
+    // (+worth) rows are skipped — the same row shape the arithmetic auditor reads.
+    function _gapRowsFrom(body) {
+        const rows = [];
+        String(body || '').split('\n').forEach((line) => {
+            const t = line.trim();
+            if (t.charAt(0) !== '|') return;
+            const cells = t.split('|').slice(1, -1).map((c) => _gapUnent(c.trim()));
+            if (cells.length < 3) return;
+            if (!/^\d+(\.\d+)?$/.test(cells[1]) || !/^\+?\d+(\.\d+)?$/.test(cells[2])) return;
+            const worth = parseFloat(cells[1]), score = parseFloat(cells[2].replace('+', ''));
+            if (!(worth > 0) || isNaN(score)) return;
+            rows.push({ criterion: cells[0].replace(/\*\*/g, '').trim(), worth: worth,
+                score: Math.max(0, Math.min(score, worth)), why: String(cells[3] || '').replace(/\*\*/g, '').trim() });
+        });
+        return rows;
+    }
+    function _gapR2(x) { return Math.round(x * 100) / 100; }
+    // ratings = the document's Self-Assessment rows [{group, skill, value}]; rows = the card's table.
+    // Both sides on ONE scale: a rating 1–5 → 0–1 by its step (Basic 0 … Perceptive 1); a mark → its
+    // share of what the part is worth. The biggest gap is the largest difference; ties go to the part
+    // worth more marks. Within one step either way is agreement.
+    function _gapCompare(section, ratings, rows) {
+        if (!section) return null;
+        const agg = {};
+        (rows || []).forEach((r) => {
+            const sk = _gapSkillFor(section.group, r.criterion);
+            if (!sk) return;
+            if (!agg[sk]) agg[sk] = { score: 0, worth: 0, parts: [] };
+            agg[sk].score += r.score; agg[sk].worth += r.worth;
+            agg[sk].parts.push({ criterion: r.criterion, score: r.score, worth: r.worth, why: r.why });
+        });
+        const items = [];
+        (ratings || []).forEach((x) => {
+            if (!x || x.group !== section.group || !(x.value >= 1 && x.value <= 5) || !agg[x.skill]) return;
+            const a = agg[x.skill];
+            const self = (x.value - 1) / 4, mine = a.worth > 0 ? a.score / a.worth : 0;
+            items.push({ skill: x.skill, rating: x.value, word: GAP_WORDS[x.value - 1], score: _gapR2(a.score),
+                worth: _gapR2(a.worth), self: self, sophia: mine, diff: self - mine, parts: a.parts });
+        });
+        if (!items.length) return null;
+        const big = items.slice().sort((p, q) => (Math.abs(q.diff) - Math.abs(p.diff)) || (q.worth - p.worth))[0];
+        const dir = big.diff > GAP_TOL + 1e-9 ? 'over' : (big.diff < -GAP_TOL - 1e-9 ? 'under' : 'close');
+        return { key: section.key, label: section.label, items: items, biggest: big, dir: dir };
+    }
+    function _gapMarksText(it) {
+        if (it.score >= it.worth) return 'full marks (' + it.worth + ' of ' + it.worth + ')';
+        if (it.score <= 0) return 'no marks (0 of ' + it.worth + ')';
+        return it.score + ' of ' + it.worth;
+    }
+    function _gapRatingText(it) { return it.word + ' (' + it.rating + ' of 5)'; }
+    // The ask — the comparison, then ONE question, ending on the question (§4c.4). First-person
+    // Sophia (§4c.5). The table's first header cell is never empty (the formatAI row-split, v7.20.631).
+    function _gapQuestionText(cmp) {
+        let out = '**Your ratings beside my marks — ' + cmp.label + '**\n\n';
+        out += '| Part | Your rating | My mark |\n|---|---|---|\n';
+        cmp.items.forEach((it) => { out += '| ' + it.skill + ' | ' + _gapRatingText(it) + ' | ' + _gapMarksText(it) + ' |\n'; });
+        out += '\n';
+        const b = cmp.biggest;
+        if (cmp.dir === 'over') {
+            out += 'The biggest gap is your **' + b.skill + '**: you rated it higher than I marked it.\n\n'
+                + '**What do you think it is missing?** Type one line below. Then I will show you why I marked it that way.';
+        } else if (cmp.dir === 'under') {
+            out += 'The biggest gap is your **' + b.skill + '**: you rated it lower than I marked it.\n\n'
+                + '**What do you think made it work?** Type one line below. Then I will show you why I marked it that way.';
+        } else {
+            out += 'Your ratings and my marks agree for this paragraph.\n\n'
+                + '**Which part are you surest about, and what in your writing earned it?** Type one line below.';
+        }
+        return out;
+    }
+    // The document row (third person — the document is the student's record, not my voice).
+    function _gapFiledLine(cmp) {
+        const b = cmp.biggest;
+        if (cmp.dir === 'close') return 'Your ratings and Sophia’s marks agreed on every part of this paragraph.';
+        return b.skill + ' — you: ' + _gapRatingText(b) + ' · Sophia: ' + _gapMarksText(b)
+            + ' · you rated it ' + (cmp.dir === 'over' ? 'higher' : 'lower') + ' than it scored';
+    }
+    function _gapRevealText(cmp) {
+        const b = cmp.biggest;
+        const whys = b.parts.filter((p) => p.why).map((p) => '“' + p.why + '”');
+        return whys.length ? '**Why I gave your ' + b.skill + ' that mark:** ' + whys.join(' · ') : '';
+    }
+    // The durable turn: a PAST-EVENT report (§4c.7 — tense decides; it stays true after a re-mark).
+    function _gapPastLine(cmp) {
+        return cmp.dir === 'close'
+            ? 'Filed under **Calibration**: your ratings and my marks agreed on the **' + cmp.label + '**.'
+            : 'Filed under **Calibration**: on the **' + cmp.label + '**, the biggest gap was your **' + cmp.biggest.skill
+                + '** — you had rated it ' + (cmp.dir === 'over' ? 'higher' : 'lower') + ' than I marked it.';
+    }
+    // The closing-turn fact — the filed rows, in the student's own words, for the Final Summary and
+    // the Action Plan (no extra call: it rides the closing turn that already happens).
+    function _gapFactText(entries) {
+        const done = (entries || []).filter((e) => e && e.gap && !/^Not compared/.test(e.gap));
+        if (!done.length) return '';
+        return ' CODE-DERIVED PARAGRAPH SELF-ASSESSMENT (after each paragraph the student saw their own skill ratings beside your element scores and answered one question about the biggest gap — authoritative, do not recompute): '
+            + done.map((e) => e.label + ': ' + e.gap + (e.said ? ' — they said: "' + e.said + '"' : '')).join(' | ')
+            + '. Use it: in the Overall Feedback, ONE sentence on the part they misjudged most and what it actually rewards; where they rated a part HIGHER than it scored, name that part inside the FIRST Action-Plan priority as the first thing to check in the redraft. Do NOT add a priority, change any mark, or re-list these rows.';
+    }
+    // @GAP-CHECK-PURE-END
+
+    function _gapFids(key) { return { gap: 'calib-gap-' + key, why: 'calib-gap-' + key + '-why' }; }
+    let _gapOpen = null;   // { cmp, nextLabel, docKey } — ONLY while the question is on the screen
+    // A Literature mark-scheme session whose document carries the paragraph rows. An older document
+    // (Calibration built before .674) has no rows → the check simply does not run there.
+    function _gapCheckEligible() {
+        try {
+            if (!state || (state.task !== 'assessment' && state.task !== 'redraft_assessment') || state.reviewMode) return false;
+            if (!_ladderIsLit() || !_ladderMarksInHistory()) return false;
+            return !!document.querySelector('#swml-tiptap-editor [data-field-id="calib-gap-intro"]');
+        } catch (e) { return false; }
+    }
+    function _gapNextLabelOf(reply) {
+        const m = /continue with\s*\*{0,2}\s*([^*?\n]+?)\s*\*{0,2}\s*\?/i.exec(String(reply || ''));
+        return m ? m[1].trim() : null;
+    }
+    // A paragraph marked with no readable table (Zayan's "Introduction not submitted" card, prod
+    // 29 Sep) is filed honestly — never left as an empty row, never a question about nothing.
+    function _gapFileUnreadable(section) {
+        const f = _gapFids(section.key);
+        if (_ladderRowText(f.why)) return;
+        console.warn('WML gap-check: no readable mark table for', section.label, '— comparison skipped, filed as not compared');
+        try { _writeOutlineRowField(f.gap, 'Not compared — there was no mark table for this paragraph.', { replace: true }); } catch (e) {}
+        try { _writeOutlineRowField(f.why, '—', { replace: true }); } catch (e) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) {}
+    }
+    // Live entry (the marking reply's continue gate) and resume entry. TRUE = the check took the turn
+    // and the continue buttons come AFTER the answer; FALSE = nothing owed — render them now.
+    function _gapCheckTakeOver(reply, nextLabel) {
+        try {
+            if (!_gapCheckEligible() || !_chatShell || !_chatShell.addMsg) return false;
+            const card = _gapCardOf(reply);
+            if (!card) return false;
+            if (_ladderRowText(_gapFids(card.section.key).why)) return false;   // already answered (re-mark, reload)
+            const cmp = _gapCompare(card.section, _saWalkRows().filter((r) => r.value != null), _gapRowsFrom(card.body));
+            if (!cmp) { _gapFileUnreadable(card.section); return false; }
+            _gapAsk(cmp, nextLabel || _gapNextLabelOf(reply));
+            return true;
+        } catch (e) { console.warn('WML gap-check: skipped —', e && e.message); return false; }
+    }
+    function _gapAsk(cmp, nextLabel) {
+        _gapOpen = { cmp: cmp, nextLabel: nextLabel || null, docKey: _assessDocKey() };
+        const plain = _gapQuestionText(cmp);
+        _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
+        WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain },
+            { durable: false, why: 'a present-state comparison of the ratings and the filed marks — re-derived from the document and the stored marking reply on entry, never stored (§4c.7 VALUE fossil)' });
+        // §4c.10 — the question is about this paragraph's feedback, so the document goes there.
+        try {
+            const fb = document.querySelector('#swml-tiptap-editor [data-section-label^="Feedback: ' + cmp.label + ' "]');
+            if (fb && typeof _swmlScrollToTop === 'function') _swmlScrollToTop(fb);
+        } catch (e) {}
+        _calibChips(['🤷 Not sure — show me why'], function () { _gapAnswer('Not sure', true); });
+    }
+    function _gapAnswer(text, notSure) {
+        const g = _gapOpen;
+        if (!g) return false;
+        _gapOpen = null;
+        const cmp = g.cmp, f = _gapFids(cmp.key);
+        try { _chatShell.addMsg(text, 'user'); } catch (e) {}
+        WML.recordTurn(_chatShell.history, { role: 'user', content: text },
+            { durable: true, why: 'the student answered it — it happened, it stays' });
+        try { _writeOutlineRowField(f.gap, _gapFiledLine(cmp), { replace: true }); } catch (e) {}
+        try { _writeOutlineRowField(f.why, notSure ? 'Not sure' : text, { replace: true }); } catch (e) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) {}
+        const past = _gapPastLine(cmp);
+        const reveal = _gapRevealText(cmp);
+        const shown = (reveal ? reveal + '\n\n' : '') + past;
+        _chatShell.addMsg(formatAI(shown), 'ai', shown, { suppressActions: true });
+        WML.recordTurn(_chatShell.history, { role: 'assistant', content: past },
+            { durable: true, why: 'a past-event report — the gap and the answer were filed' });
+        try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (e) {}
+        _gapOfferContinue(g.nextLabel);
+        return true;
+    }
+    // The SAME continue buttons the marking reply would have shown (the training shell registers its
+    // builder as confirmBar); a shell without one gets one plain continue — never nothing (§4d).
+    function _gapOfferContinue(nextLabel) {
+        try {
+            if (!_chatShell || !_chatShell.messages) return;
+            let bar = (nextLabel && typeof _chatShell.confirmBar === 'function') ? _chatShell.confirmBar(nextLabel) : null;
+            if (!bar) {
+                const plainBar = el('div', { className: 'swml-quick-actions' });
+                plainBar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: '✓ Got it — continue',
+                    onClick: function () {
+                        plainBar.remove();
+                        if (_chatShell.textarea && _chatShell.send) { _chatShell.textarea.value = 'Yes — I’ve reviewed this feedback. Please continue.'; _chatShell.send(); }
+                    },
+                }));
+                bar = plainBar;
+            }
+            const last = _chatShell.messages.lastElementChild;
+            ((last && (last.querySelector('.swml-bubble-content') || last)) || _chatShell.messages).appendChild(bar);
+        } catch (e) { console.warn('WML gap-check: continue offer skipped —', e && e.message); }
+    }
+    // Typed answer — consumed ONLY while the question is on the screen, in the same document, so no
+    // ordinary message is ever swallowed (the #630 lesson of the calibration consumer).
+    function _gapConsumeTyped(msg) {
+        const text = String(msg || '').trim();
+        if (!text || !_gapOpen || canvasSilentSend) return false;
+        if (_gapOpen.docKey !== _assessDocKey() || !_gapCheckEligible()) { _gapOpen = null; return false; }
+        return _gapAnswer(text, false);
+    }
+    // §4d on re-entry. A reload after a paragraph's marks lands on either the unanswered question
+    // (asked again) or the filed answer (the continue buttons come back — chips are never saved).
+    function _gapCheckResume() {
+        try {
+            if (!_gapCheckEligible() || !_chatShell || !_chatShell.history) return false;
+            const h = _chatShell.history;
+            let lastA = -1;
+            for (let i = h.length - 1; i >= 0; i--) { if (h[i] && h[i].role === 'assistant' && !h[i].hidden) { lastA = i; break; } }
+            if (lastA === -1) return false;
+            const a = String(h[lastA].content || '');
+            if (/^Filed under \*\*Calibration\*\*:/.test(a)) {
+                for (let j = lastA - 1; j >= 0; j--) {
+                    const m = h[j];
+                    if (m && m.role === 'assistant' && !m.hidden && _gapCardOf(m.content)) { _gapOfferContinue(_gapNextLabelOf(m.content)); return true; }
+                }
+                _gapOfferContinue(null);
+                return true;
+            }
+            if (h.slice(lastA + 1).some((m) => m && m.role === 'user')) return false;
+            return _gapCheckTakeOver(a, _gapNextLabelOf(a));
+        } catch (e) { console.warn('WML gap-check: resume skipped —', e && e.message); return false; }
+    }
+    // A marking reply that came WITHOUT its continue gate (the model dropped it) still gets the check.
+    function _gapCheckNoGate(reply) {
+        try {
+            if (_gapOpen || /\[\s*✓\s*Got it\s*—\s*continue\s*\]/i.test(String(reply || ''))) return;
+            _gapCheckTakeOver(reply, null);
+        } catch (e) {}
+    }
+    function _gapCheckFact() {
+        try {
+            if (!document.querySelector('#swml-tiptap-editor [data-field-id="calib-gap-intro"]')) return '';
+            return _gapFactText(GAP_SECTIONS.map((s) => {
+                const f = _gapFids(s.key);
+                return { label: s.label, gap: _ladderRowText(f.gap), said: _ladderRowText(f.why).replace(/^—$/, '') };
+            }));
+        } catch (e) { return ''; }
+    }
+
     // The document section — ONE producer, used by the templates AND the on-load heal, exactly as
     // the ladder section is. A NEW section (not extra rows inside the ladder's) precisely so the
     // existing section-level heal carries it into documents that already exist.
@@ -8615,6 +8947,15 @@
         const _rows = _ladderIsLit()
             ? [{ key: LIT_CALIB_KEY, head: 'Your essay — the whole mark (/' + keys.reduce((s, k) => s + (k.max || 0), 0) + ')' }]
             : keys.map((k) => ({ key: k.key, head: k.q + ' — ' + k.ao + ' (/' + k.max + ')' }));
+        // v7.20.674 (#686): Literature — the paragraph-by-paragraph check files here, above the whole mark.
+        if (_ladderIsLit()) {
+            inner += '<h3>Paragraph by paragraph — your ratings beside Sophia’s marks</h3>';
+            GAP_SECTIONS.forEach((s) => {
+                const gf = _gapFids(s.key);
+                inner += inputHTML(s.label + ' — the biggest gap', gf.gap);
+                inner += inputHTML(s.label + ' — what you said about it', gf.why);
+            });
+        }
         _rows.forEach((r) => {
             const f = _calibFids(r.key);
             inner += '<h3>' + escapeHTML(r.head) + '</h3>';
@@ -9589,6 +9930,7 @@
                 _facts += ' CODE-DERIVED BLIND SPOT (authoritative — the student rated themselves high here yet scored low): ' + bs.label + (bs.ao ? ' (' + bs.ao + ')' : '') + ' — rated ' + bs.selfPct + '%, scored ' + bs.actualPct + '%. BLEND this into the FIRST Action-Plan Priority Target together with the biggest mark loss (do NOT add a fourth priority — the first priority names BOTH the biggest-loss area AND this blind spot as why it matters most), and name this blind spot in the Overall Feedback / Analytics as a calibration insight to self-monitor. Do NOT change any mark, grade, or the number of priorities.';
             }
         } catch (_) {}
+        _facts += _gapCheckFact();   // v7.20.674 (#686): the paragraph-by-paragraph gaps, in the student's own words
         // v7.19.921 (Neil Run 8): CODE-TALLIED penalty trend. The filed "Trend: Repeated
         // Errors" said F1 ×5 while the ledgers actually deducted F1 ×8 — the model recalled
         // instead of counting. Counts + instances now come from _penLedgerCards (the SAME
@@ -16348,7 +16690,8 @@
     // shell registers its live refs here; the LAST registration is the active chat. All
     // module-scope sends go through _silentSystemSend — never a bare chatTextarea again.
     let _chatShell = null;
-    function _registerChatShell(refs) { _chatShell = refs; }
+    // v7.20.674: a new shell is a new chat — a paragraph question left open in the old one is closed.
+    function _registerChatShell(refs) { _chatShell = refs; _gapOpen = null; }
     function _silentSystemSend(text) {
         try {
             if (!_chatShell || !_chatShell.textarea || !_chatShell.send) {
@@ -18456,6 +18799,49 @@
         };
         // v7.20.52: resume hook for the restore blocks (they live outside this closure).
         window.__swmlPlanChainResume = _resumePlanChainActions;
+        // v7.19.709 → v7.20.674: the marking reply's continue gate (✓ continue · Still confused ·
+        // Different question · Pause), moved VERBATIM out of the reply handler into ONE named builder so
+        // the paragraph self-assessment check (#686) can bring the same buttons back after its answer
+        // (registered on the chat shell as confirmBar). Behaviour unchanged.
+        function _buildAssessConfirmBar(nextLabel) {
+            const confirmBar = el('div', { className: 'swml-quick-actions' });
+            const _mkBtn = (label, payload) => el('button', {
+                className: 'swml-quick-btn',
+                textContent: label,
+                onClick: () => {
+                    confirmBar.remove();
+                    canvasSilentSend = false;
+                    chatTextarea.value = payload;
+                    sendCanvasMessageQueued();
+                }
+            });
+            // ✓ continue: REMEMBER the target (so a re-emitted gate is caught as a loop above)
+            // and send the advance directive SILENTLY — the verbose directive must not show in
+            // chat (Neil flagged it as leaked "code"). The other three buttons stay visible.
+            const _continueBtn = el('button', {
+                className: 'swml-quick-btn',
+                textContent: '✓ Got it — continue',
+                onClick: () => {
+                    confirmBar.remove();
+                    _assessConfirmedTarget = nextLabel;
+                    canvasSilentSend = true;
+                    // v7.20.632 (#577): in a ladder session there is no STEP 1 — the directive
+                    // must not demand a panel the renderer will refuse.
+                    chatTextarea.value = _ladderReplacesReflect()
+                        ? `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}. There is NO reflection panel in this session (the student's own marks are filed — THE STUDENT'S OWN MARKS): do not emit @REFLECT_GATE or ask for a self-rating, prediction or AO targeting. Go straight to ${nextLabel}'s STEP 2a — ${_isLitEssay() ? 'the Y gate (their own mark is for the whole essay — do not restate it for this paragraph)' : 'acknowledge their own level and mark for it in one line and give the Y gate'}. Do NOT repeat this confirmation or re-ask whether to continue.`
+                        : `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now${_reflectAoOnly() ? ' (this session\'s card asks ONLY which AO(s) the paragraph aimed for and what it was trying to show — no self-rating, no predicted mark)' : ''}. Do NOT repeat this confirmation or re-ask whether to continue.`;
+                    sendCanvasMessageQueued();
+                }
+            });
+            confirmBar.appendChild(_continueBtn);
+            confirmBar.appendChild(_mkBtn('🤔 Still confused',
+                `I'm still not clear — could you explain again?`));
+            confirmBar.appendChild(_mkBtn('💬 Different question',
+                `Actually, I have a different question first.`));
+            confirmBar.appendChild(_mkBtn('⏸ Pause here',
+                `I need to pause — we'll continue later.`));
+            return confirmBar;
+        }
         // v7.20.646 (#630, Qamar 857 — measured on staging with her exact data): the ASSESSMENT setup
         // chain had no resume hook (planning has one, above). A reload after the self-marking walk
         // but before Sophia's first marking reply left the student on their own last message with no
@@ -18476,6 +18862,9 @@
                 const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
                     && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
                 if (marked) {
+                    // v7.20.674 (#686, §4d): a reload mid paragraph-check re-asks it, or gives the
+                    // continue buttons back once it was answered.
+                    if (_gapCheckResume()) return;
                     // v7.20.650 (#632, §4d): a reload that lands on the calibration hand-back gets
                     // its Finish / Revisit buttons back (chips are never saved).
                     const _lastA = canvasChatHistory.slice().reverse().find(m => m && m.role === 'assistant' && !m.hidden);
@@ -18763,6 +19152,7 @@
             // ⭐ v7.20.614: the CALIBRATION stage sits AFTER marking, so it is not a pre-chain
             // stage — but its typed answers are consumed the same way. It only ever consumes while
             // its own question is on the screen unanswered, so ordinary chat is never swallowed.
+            if (!_pcStage && _gapConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }   // v7.20.674 (#686)
             if (!_pcStage && _calibHostConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
             if (_pcStage) {
                 // v7.19.810: respect silent sends (mirrors the main path below) — a
@@ -19417,43 +19807,11 @@
                                 return;
                             }
 
-                            const confirmBar = el('div', { className: 'swml-quick-actions' });
-                            const _mkBtn = (label, payload) => el('button', {
-                                className: 'swml-quick-btn',
-                                textContent: label,
-                                onClick: () => {
-                                    confirmBar.remove();
-                                    canvasSilentSend = false;
-                                    chatTextarea.value = payload;
-                                    sendCanvasMessageQueued();
-                                }
-                            });
-                            // ✓ continue: REMEMBER the target (so a re-emitted gate is caught as a loop above)
-                            // and send the advance directive SILENTLY — the verbose directive must not show in
-                            // chat (Neil flagged it as leaked "code"). The other three buttons stay visible.
-                            const _continueBtn = el('button', {
-                                className: 'swml-quick-btn',
-                                textContent: '✓ Got it — continue',
-                                onClick: () => {
-                                    confirmBar.remove();
-                                    _assessConfirmedTarget = nextLabel;
-                                    canvasSilentSend = true;
-                                    // v7.20.632 (#577): in a ladder session there is no STEP 1 — the directive
-                                    // must not demand a panel the renderer will refuse.
-                                    chatTextarea.value = _ladderReplacesReflect()
-                                        ? `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}. There is NO reflection panel in this session (the student's own marks are filed — THE STUDENT'S OWN MARKS): do not emit @REFLECT_GATE or ask for a self-rating, prediction or AO targeting. Go straight to ${nextLabel}'s STEP 2a — ${_isLitEssay() ? 'the Y gate (their own mark is for the whole essay — do not restate it for this paragraph)' : 'acknowledge their own level and mark for it in one line and give the Y gate'}. Do NOT repeat this confirmation or re-ask whether to continue.`
-                                        : `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now${_reflectAoOnly() ? ' (this session\'s card asks ONLY which AO(s) the paragraph aimed for and what it was trying to show — no self-rating, no predicted mark)' : ''}. Do NOT repeat this confirmation or re-ask whether to continue.`;
-                                    sendCanvasMessageQueued();
-                                }
-                            });
-                            confirmBar.appendChild(_continueBtn);
-                            confirmBar.appendChild(_mkBtn('🤔 Still confused',
-                                `I'm still not clear — could you explain again?`));
-                            confirmBar.appendChild(_mkBtn('💬 Different question',
-                                `Actually, I have a different question first.`));
-                            confirmBar.appendChild(_mkBtn('⏸ Pause here',
-                                `I need to pause — we'll continue later.`));
-                            if (bc) bc.appendChild(confirmBar);
+                            // v7.20.674 (#686): the paragraph self-assessment check comes FIRST in a
+                            // Literature mark-scheme session — its answer brings these same buttons back
+                            // (serial, §18). Nothing owed → the buttons now, exactly as before.
+                            if (_gapCheckTakeOver(res.reply, nextLabel)) return;
+                            if (bc) bc.appendChild(_buildAssessConfirmBar(nextLabel));
                         }, 50);
                     }
                     // v7.19.842: END-OF-ASSESSMENT closing row renderer. v839 put the row in
@@ -19620,6 +19978,7 @@
                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
                             setTimeout(() => _maybeOpenCalibration(_r), 1600);   // v7.20.614 — step 6 opens on the closing turn
+                            setTimeout(() => _gapCheckNoGate(_r), 1650);   // v7.20.674 (#686) — a marking reply that lost its gate still gets the check
                             // v7.19.854: engine-owned closing chain — after section fills settle
                             setTimeout(() => _driveClosingChain(_r), 600);
                         }
@@ -19838,7 +20197,8 @@
         // (silent-SYSTEM repairs + the engine-owned closing chain).
         _registerChatShell({ textarea: chatTextarea, send: sendCanvasMessage,
             addMsg: addChatMessage, history: canvasChatHistory, messages: chatMessages,
-            goalOptions: _preChainGoalOptions, getChatId: () => canvasChatId });
+            goalOptions: _preChainGoalOptions, getChatId: () => canvasChatId,
+            confirmBar: _buildAssessConfirmBar });   // v7.20.674 (#686): the gap check brings these buttons back
         chatTextarea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -42193,6 +42553,8 @@
                                 const marked = canvasChatHistory.some(m => m && m.role === 'assistant'
                                     && /@REFLECT_GATE|@FB_BEGIN|Total Mark for|Q\d\s*Total\s*:|\[ASSESSMENT_COMPLETE\]/i.test(m.content || ''));
                                 if (marked) {
+                                    // v7.20.674 (#686): twin of pipeline 1 — the paragraph check re-asks or re-offers.
+                                    if (_gapCheckResume()) return;
                                     // v7.20.653 (#644): twin of pipeline 1's v7.20.650 re-offer — a reload on the
                                     // calibration hand-back gets its Finish / Revisit buttons back (§4d).
                                     const _lastA = canvasChatHistory.slice().reverse().find(m => m && m.role === 'assistant' && !m.hidden);
@@ -42251,6 +42613,7 @@
             // ⭐ v7.20.614: the CALIBRATION stage sits AFTER marking, so it is not a pre-chain
             // stage — but its typed answers are consumed the same way. It only ever consumes while
             // its own question is on the screen unanswered, so ordinary chat is never swallowed.
+            if (!_pcStage && _gapConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }   // v7.20.674 (#686)
             if (!_pcStage && _calibHostConsumeTyped(msg)) { chatTextarea.value = ''; chatTextarea.style.height = '40px'; return; }
                             if (_pcStage) {
                                 // v7.19.810: respect silent sends (mirrors primary pipeline).
@@ -42631,6 +42994,7 @@
                                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
                             setTimeout(() => _maybeOpenCalibration(_r), 1600);   // v7.20.614 — step 6 opens on the closing turn
+                            setTimeout(() => _gapCheckNoGate(_r), 1650);   // v7.20.674 (#686) — a marking reply that lost its gate still gets the check
                                             // v7.19.854: engine-owned closing chain — after section fills settle
                                             setTimeout(() => _driveClosingChain(_r), 600);
                                         }

@@ -58,6 +58,7 @@ function sliceName(name) {
 }
 const NAMES = ['LADDER_SA_LABEL', 'CALIB_LABEL', 'LIT_CALIB_KEY', 'escapeHTML', 'sectionHTML', 'inputHTML', 'dividerHTML',
     '_isLitEssay', '_ladderSchemeKeysFor', '_ladderFids', 'buildMarkSchemeSelfAssessSection', '_calibFids', '_ladderIsLit',
+    'GAP_SECTIONS', '_gapFids',   // v7.20.674 (#686): the Literature Calibration template carries the paragraph rows
     'buildCalibrationSection', 'healLadderSectionsUnderSelfAssessment'];
 const CODE = NAMES.map((n) => { const s = sliceName(n); if (!s) throw new Error('cannot slice ' + n); return s; }).join('\n');
 

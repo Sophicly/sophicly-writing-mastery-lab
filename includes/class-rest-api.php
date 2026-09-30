@@ -5430,9 +5430,22 @@ class SWML_REST_API {
                 'why'      => sanitize_textarea_field($row['why'] ?? ''),
             ];
         }
+        // v7.20.674 (#686): Literature's paragraph-by-paragraph self-assessment gaps travel too.
+        $gaps = [];
+        foreach ((array) ($params['gaps'] ?? []) as $g) {
+            if (!is_array($g)) continue;
+            $gap = sanitize_text_field($g['gap'] ?? '');
+            if ($gap === '') continue;
+            $gaps[] = [
+                'section' => sanitize_text_field($g['section'] ?? ''),
+                'gap'     => $gap,
+                'said'    => sanitize_textarea_field($g['said'] ?? ''),
+            ];
+        }
         $latest['calibration'] = [
             'goal'       => sanitize_textarea_field($params['goal'] ?? ''),
             'questions'  => $rows,
+            'gaps'       => array_slice($gaps, 0, 5),
             'decided_at' => current_time('mysql'),
         ];
 
