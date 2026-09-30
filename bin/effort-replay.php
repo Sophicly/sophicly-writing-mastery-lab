@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) exit;
 @set_time_limit(0);
 $DIR     = '/home/runcloud/wml-capture-20260930';
 $LEVELS  = ['medium', 'low'];
-$MAX_USD = 4.50;
+$MAX_USD = (float) (getenv("EFFORT_MAX_USD") ?: 25.0); // Neil 2026-09-30: cost is no object, get it right; 25 = runaway guard only
 $DRY     = getenv('EFFORT_DRY') === '1';
 $P = ['in' => 2e-6, 'out' => 10e-6, 'cr' => 0.2e-6, 'cw' => 4e-6];   // claude-sonnet-5 list; 1h cache write
 
