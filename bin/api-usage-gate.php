@@ -45,6 +45,7 @@ function slice_method($src, $name) {
 }
 $code = "class SWML_Protocol_Router {\n    public \$is_wml_outbound = true;\n"
       . slice_method($src, 'record_anthropic_usage') . "\n"
+      . slice_method($src, 'maybe_capture_exchange') . "\n"   // v7.20.675: called by the recorder
       . slice_method($src, 'extend_anthropic_cache_ttl') . "\n"
       . slice_method($src, 'register_claude_sonnet_5_5') . "\n"
       . slice_method($src, '_accumulate_usage') . "\n"
@@ -182,6 +183,42 @@ ok($x && $x['reqs'] === 3 && $x['output'] === 22, 'day totals unchanged by the s
 ok(($x['by']['planning|language_p1']['cache_write'] ?? null) === 40 && ($x['by']['planning|language_p1']['reqs'] ?? null) === 1, 'planning|language_p1 carries its own tokens');
 ok(($x['by']['redraft_assessment|language_p1']['output'] ?? null) === 2, 'redraft_assessment|language_p1 carries its own tokens');
 ok(($x['by']['other|']['unobserved'] ?? null) === 1, 'no request context + unseen usage → other|, counted unobserved');
+
+echo "\n10. THE OPT-IN EXCHANGE RECORDER (v7.20.675) — off by default, never in the web root, never the key\n";
+// It rides the usage filter, which sees EVERY Anthropic response, so its safety rules are proven here.
+if (!function_exists('get_current_user_id')) { function get_current_user_id() { return $GLOBALS['__uid'] ?? 0; } }
+$tmp = sys_get_temp_dir() . '/swml-capgate-' . getmypid();
+$web = $tmp . '/webroot'; $out = $tmp . '/outside'; $inWeb = $web . '/capture';
+@mkdir($inWeb, 0700, true); @mkdir($out, 0700, true);
+if (!defined('ABSPATH')) define('ABSPATH', $web . '/');
+$files = function ($d) { return array_values(array_filter((array) @scandir($d), function ($f) { return substr($f, -5) === '.json'; })); };
+$reqArgs = ['body' => json_encode(['model' => 'claude-sonnet-5', 'system' => [['type' => 'text', 'text' => 'protocol']], 'messages' => [['role' => 'user', 'content' => 'mark it']]]),
+            'headers' => ['x-api-key' => 'sk-ant-SECRET-NEVER-WRITTEN']];
+$resp = ['body' => json_encode(['model' => 'claude-sonnet-5', 'usage' => ['input_tokens' => 5, 'output_tokens' => 6]])];
+$GLOBALS['__uid'] = 1355;
+unset($GLOBALS['__opts']['swml_capture_anthropic']);
+$r->record_anthropic_usage($resp, $reqArgs, $URL);
+ok(count($files($out)) === 0 && count($files($inWeb)) === 0, 'no option → nothing written anywhere (off by default)');
+$GLOBALS['__opts']['swml_capture_anthropic'] = ['user' => 1355, 'until' => time() + 600, 'dir' => $inWeb];
+$r->record_anthropic_usage($resp, $reqArgs, $URL);
+ok(count($files($inWeb)) === 0, 'a directory INSIDE the web root is refused (OpenLiteSpeed would serve it)');
+$GLOBALS['__opts']['swml_capture_anthropic'] = ['user' => 1355, 'until' => time() - 5, 'dir' => $out];
+$r->record_anthropic_usage($resp, $reqArgs, $URL);
+ok(count($files($out)) === 0, 'an expired switch records nothing');
+$GLOBALS['__opts']['swml_capture_anthropic'] = ['user' => 999, 'until' => time() + 600, 'dir' => $out];
+$r->record_anthropic_usage($resp, $reqArgs, $URL);
+ok(count($files($out)) === 0, 'another user\'s requests are never recorded');
+$GLOBALS['__opts']['swml_capture_anthropic'] = ['user' => 1355, 'until' => time() + 600, 'dir' => $out];
+$back = $r->record_anthropic_usage($resp, $reqArgs, $URL);
+$got = $files($out);
+$rec = $got ? json_decode(file_get_contents($out . '/' . $got[0]), true) : null;
+ok(count($got) === 1 && $rec && $rec['request'] === $reqArgs['body'] && $rec['response'] === $resp['body'], 'the named user, in date, outside the web root → ONE file with the final request body and the response');
+ok($got && strpos(file_get_contents($out . '/' . $got[0]), 'SECRET') === false, 'the API key (a header) is never written');
+ok($back === $resp, 'the response passes through unchanged');
+ok($got && (fileperms($out . '/' . $got[0]) & 0777) === 0600, 'the file is private (0600)');
+foreach (array_merge($files($out), $files($inWeb)) as $f) { @unlink($out . '/' . $f); @unlink($inWeb . '/' . $f); }
+@rmdir($inWeb); @rmdir($web); @rmdir($out); @rmdir($tmp);
+unset($GLOBALS['__opts']['swml_capture_anthropic']);
 
 echo "\n";
 if ($fail) { fwrite(STDERR, "❌ api-usage-gate: $fail failed, $pass passed\n"); exit(1); }

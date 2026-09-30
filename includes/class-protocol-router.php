@@ -747,6 +747,34 @@ class SWML_Protocol_Router {
     }
 
     /**
+     * v7.20.675 (#687 — Neil approved a ~$5 test of Sophia's thinking setting, 2026-09-30) — an
+     * OPT-IN EXCHANGE RECORDER. Replaying a REAL marking turn at a lower effort needs the exact body
+     * that turn sent (the instructions are assembled per turn and cannot be rebuilt by hand), so this
+     * writes the FINAL request body (after every WML filter) and the response body to one file per
+     * exchange. It is OFF unless the option `swml_capture_anthropic` names the CURRENT user with an
+     * expiry in the future: ['user' => id, 'until' => unix time, 'dir' => absolute path].
+     * ⛔ The directory must sit OUTSIDE the web root (OpenLiteSpeed ignores .htaccess, so anything
+     * under ABSPATH is downloadable) — refused otherwise. Headers are never written (the API key lives
+     * there). Files are 0600. It never throws and never changes the request or the response.
+     */
+    private function maybe_capture_exchange($args, $response) {
+        try {
+            $cfg = get_option('swml_capture_anthropic', null);
+            if (!is_array($cfg) || empty($cfg['user']) || empty($cfg['until']) || empty($cfg['dir'])) return;
+            if ((int) $cfg['until'] < time() || (int) $cfg['user'] !== (int) get_current_user_id()) return;
+            $real = realpath((string) $cfg['dir']);
+            $root = realpath(ABSPATH);
+            if (!$real || !$root || strpos($real . '/', rtrim($root, '/') . '/') === 0) return;   // never inside the web root
+            $req = (is_array($args) && isset($args['body']) && is_string($args['body'])) ? $args['body'] : '';
+            if ($req === '') return;
+            $res = (is_array($response) && isset($response['body']) && is_string($response['body'])) ? $response['body'] : '';
+            $file = $real . '/' . gmdate('Ymd-His') . '-' . substr(md5($req), 0, 8) . '.json';
+            @file_put_contents($file, wp_json_encode(['t' => time(), 'request' => $req, 'response' => $res]), LOCK_EX);
+            @chmod($file, 0600);
+        } catch (\Throwable $e) { /* a recorder never breaks a request */ }
+    }
+
+    /**
      * v7.20.622 (COST) — RECORD WHAT ANTHROPIC ACTUALLY BILLED US.
      *
      * WHY THIS EXISTS (Neil, 2026-09-14, deciding spend while short of API money):
@@ -773,6 +801,7 @@ class SWML_Protocol_Router {
         if (!is_string($url) || strpos($url, 'api.anthropic.com') === false) return $response;
         if (strpos($url, '/v1/messages') === false) return $response;
         if (is_wp_error($response)) return $response;
+        $this->maybe_capture_exchange($args, $response);   // v7.20.675 (#687): opt-in, off by default
 
         $body = '';
         if (is_array($response) && isset($response['body']) && is_string($response['body'])) $body = $response['body'];
