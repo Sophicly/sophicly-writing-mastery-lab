@@ -63,7 +63,7 @@ const NAMES = ['LADDER_SA_LABEL', 'CALIB_LABEL', 'LIT_CALIB_KEY', 'escapeHTML', 
     // v7.20.677 (#691): the wording heal + the one-ask confidence fix, both driven below
     'LADDER_SA_INTRO', 'LADDER_SA_PROMPTS', 'LADDER_SA_OLD', '_setParagraphContentViaPM', 'healLadderSaWording', '_ladderHostAskConfidence',
     // v7.20.678: the Section Guard's own node count — the guard reverted the first cut of the heal
-    '_PROTECTED_NODE_TYPES', 'countSections'];
+    '_PROTECTED_NODE_TYPES', 'countSections', '_ladderOneSentence'];
 const CODE = NAMES.map((n) => { const s = sliceName(n); if (!s) throw new Error('cannot slice ' + n); return s; }).join('\n');
 
 const browser = await chromium.launch();
@@ -155,6 +155,7 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
     if (FIX === 'LIT-NEW') {
         ok('an existing Literature doc GAINS the Paper 1 AO1–AO3 rows and the AO4 rows',
             ['sa-ms-aqa_lit_p1_ao123-mark', 'sa-ms-aqa_lit_p1_ao123-reason', 'sa-ms-aqa_lit_ao4-mark', 'sa-ms-confidence'].every((f) => r.fids.indexOf(f) !== -1));
+        ok('…with a criteria box for AO1–AO3 and NONE for AO4 (one-sentence levels — #691)', r.fids.indexOf('sa-ms-aqa_lit_p1_ao123-met') !== -1 && r.fids.indexOf('sa-ms-aqa_lit_ao4-met') === -1);
         ok('…and ONE whole-essay Calibration group, not one per scheme', r.fids.indexOf('calib-aqa_lit_essay-decision') !== -1
             && r.fids.filter((f) => /^calib-.*-decision$/.test(f)).length === 1);
     }
@@ -238,6 +239,27 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
         api.heal();
         const tx2 = tx - tx1;
 
+        // OLD-LIT (#691, v7.20.679): Neil's own shape — a Macbeth doc saved before .677. AO4's empty
+        // criteria box must go (one-sentence levels); AO1–AO3's FILLED one must stay, relabelled.
+        state.subject = 'shakespeare'; state.text = 'macbeth';
+        const lkeys = api._ladderSchemeKeysFor(null);
+        let linner = '<p><em>' + api.OLD.intro + '</em></p>';
+        lkeys.forEach((k) => {
+            const f = { level: 'sa-ms-' + k.key + '-level', met: 'sa-ms-' + k.key + '-met', mark: 'sa-ms-' + k.key + '-mark', reason: 'sa-ms-' + k.key + '-reason' };
+            linner += '<h3>' + k.q + '</h3>' + api.inputHTML(api.OLD.level, f.level) + api.inputHTML(api.OLD.met, f.met)
+                + api.inputHTML(api.OLD.mark, f.mark) + api.inputHTML(api.OLD.reason, f.reason) + api.inputHTML(api.OLD.band, 'sa-ms-' + k.key + '-band');
+        });
+        document.getElementById('ed').innerHTML = '';
+        const led = new T.Editor({ element: document.getElementById('ed'), extensions: [T.StarterKit, SectionBlock, InputField],
+            content: api.sectionHTML('action', 'Mark-Scheme Self-Assessment', true, null, linner), onTransaction: ({ editor: e, transaction }) => api.guardTx(e, transaction) });
+        api.setEd(led);
+        const lfill = (fid, text) => { let at = null; led.state.doc.descendants((n, p) => { if (at === null && n.type.name === 'inputField' && n.attrs.fieldId === fid) at = p; }); if (at !== null) led.view.dispatch(led.state.tr.insertText(text, at + 1)); };
+        lfill('sa-ms-aqa_lit_p1_ao123-met', '✓ Thoughtful, developed response to task and whole text.');
+        lfill('sa-ms-aqa_lit_ao4-level', 'Level 3 — High performance');
+        api.heal();
+        const lrows = {}; led.state.doc.descendants((n) => { if (n.type.name === 'inputField' && n.attrs.fieldId) lrows[n.attrs.fieldId] = { t: n.textContent, p: n.attrs.prompt }; });
+        const litOld = { keys: lkeys.map((k) => k.key), rows: lrows, reverted: api.reverted() };
+
         // CONFIDENCE — the measured order: wrap bubble, route A asks, route B asks after it.
         shell.addMsg('Your own mark for Essay — AO4: 4 / 4');
         api.ask();
@@ -252,7 +274,7 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
         const asks2 = Array.from(chat.children).filter((n) => /One last tap/.test(n.textContent));
         const last2 = chat.lastElementChild;
         const btns = (n) => (n && n.querySelectorAll('.swml-sa-walk-btn').length) || 0;
-        return { r1, p1, tx1, tx2, saves1, filled, reverted: api.reverted(), keys: keys.map((k) => k.key), NEW: api.NEW, OLD: api.OLD, INTRO: api.INTRO,
+        return { r1, p1, tx1, tx2, saves1, filled, reverted: api.reverted(), litOld, keys: keys.map((k) => k.key), NEW: api.NEW, OLD: api.OLD, INTRO: api.INTRO,
             asks: asks.length, lastIsAsk: last === asks[asks.length - 1], lastBtns: btns(last), btnText: last ? Array.from(last.querySelectorAll('.swml-sa-walk-btn')).map((b) => b.textContent) : [],
             asks2: asks2.length, last2IsAsk: last2 === asks2[asks2.length - 1], last2Btns: btns(last2),
             freshHasBand: /-band"/.test(api.buildMarkSchemeSelfAssessSection(null)) };
@@ -272,6 +294,11 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
     ok('the heal changed the document and saved it', r.tx1 > 0 && r.saves1 === 1, 'tx=' + r.tx1 + ' saves=' + r.saves1);
     ok('a second run changes nothing (idempotent — no transaction)', r.tx2 === 0);
     ok('a NEW document is built with no Band box at all', r.freshHasBand === false);
+    const L = r.litOld.rows;
+    ok('OLD-LIT: the old Macbeth doc has both schemes (AO1–AO3 + AO4)', r.litOld.keys.join(',') === 'aqa_lit_p1_ao123,aqa_lit_ao4', r.litOld.keys.join(','));
+    ok('OLD-LIT: AO4\'s empty criteria box is removed (its levels are one sentence)', !L['sa-ms-aqa_lit_ao4-met']);
+    ok('OLD-LIT: AO1–AO3\'s filled criteria box is KEPT and relabelled', L['sa-ms-aqa_lit_p1_ao123-met'] && /^✓ Thoughtful/.test(L['sa-ms-aqa_lit_p1_ao123-met'].t) && L['sa-ms-aqa_lit_p1_ao123-met'].p === r.NEW.met);
+    ok('OLD-LIT: no band boxes left, AO4\'s level untouched, and the guard never reverted', !Object.keys(L).some((f) => /-band$/.test(f)) && L['sa-ms-aqa_lit_ao4-level'].t === 'Level 3 — High performance' && r.litOld.reverted === 0);
     ok('reload race (wrap → ask → ask): ONE confidence ask, last in the chat, with 5 buttons', r.asks === 1 && r.lastIsAsk && r.lastBtns === 5, 'asks=' + r.asks + ' buttons=' + r.lastBtns);
     ok('reload race (ask → wrap → ask): still ONE ask, last, with 5 buttons', r.asks2 === 1 && r.last2IsAsk && r.last2Btns === 5, 'asks=' + r.asks2 + ' buttons=' + r.last2Btns);
     ok('the buttons carry words (#690)', r.btnText.join('|') === '1 — Not at all|2 — Not very|3 — Somewhat|4 — Fairly|5 — Very', r.btnText.join('|'));

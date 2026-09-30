@@ -8038,8 +8038,22 @@
     // and the band the student picks is already written into the LEVEL box ("Level 4 · Upper Level 4
     // · Top of this level"); _ladderBandOf reads it back from there.
     function _ladderFids(key) {
-        return { level: 'sa-ms-' + key + '-level', met: 'sa-ms-' + key + '-met',
-                 mark: 'sa-ms-' + key + '-mark', reason: 'sa-ms-' + key + '-reason' };
+        const f = { level: 'sa-ms-' + key + '-level', met: 'sa-ms-' + key + '-met',
+                    mark: 'sa-ms-' + key + '-mark', reason: 'sa-ms-' + key + '-reason' };
+        if (_ladderOneSentence(key)) delete f.met;   // v7.20.679 — nothing to tick, no box
+        return f;
+    }
+    // v7.20.679 (#691 — Neil, on AO4's "Criteria you judged met": "I have no idea what that means").
+    // AQA prints each Literature AO4 level as ONE sentence (High / Intermediate / Threshold
+    // performance — 8702 mark scheme, "Assessment of AO4"), so there is no list of criteria to tick;
+    // the box could only ever sit empty. A scheme whose every level is one sentence gets no criteria
+    // box — the level box already names the sentence. Today that is aqa_lit_ao4 alone.
+    function _ladderOneSentence(key) {
+        try {
+            const s = window.WML_MARK_SCHEMES && window.WML_MARK_SCHEMES[key];
+            if (!s || !Array.isArray(s.levels) || !s.levels.length) return false;
+            return s.levels.every(l => (l.bands || []).reduce((n, b) => n + (b.strands || []).reduce((m, x) => m + ((x.descriptors || []).length), 0), 0) <= 1);
+        } catch (e) { return false; }
     }
     // ⭐ v7.20.677 (#691 — Neil, reading the section: "is that what I've given myself? I think so.
     // But the wording is not clear… and at the bottom it shows what Sophia is going to give me or
@@ -8061,7 +8075,7 @@
             const f = _ladderFids(k.key);
             inner += '<h3>' + escapeHTML(k.q + ' — ' + k.ao + ' (/' + k.max + ')') + '</h3>';
             inner += inputHTML(LADDER_SA_PROMPTS.level, f.level);
-            inner += inputHTML(LADDER_SA_PROMPTS.met, f.met);
+            if (f.met) inner += inputHTML(LADDER_SA_PROMPTS.met, f.met);
             inner += inputHTML(LADDER_SA_PROMPTS.mark, f.mark);
             inner += inputHTML(LADDER_SA_PROMPTS.reason, f.reason);
         });
@@ -30603,7 +30617,14 @@
                     // st.stoppedAt; left null, a top-out filed "Level null", no mark, and the host
                     // re-opened the same question from Level 1 (the row it checks was empty).
                     const _r = engine().rungs(scheme());
-                    if (_r.length && _r[_r.length - 1].level === step.level.level) st.stoppedAt = step.level.level;
+                    if (_r.length && _r[_r.length - 1].level === step.level.level) {
+                        st.stoppedAt = step.level.level;
+                        // v7.20.679 (#691): better than the top level = every one of its criteria met.
+                        // The per-criterion pass is never asked on a top-out, so without this the
+                        // criteria box sat empty beside a top-level mark.
+                        const _all = (step.descriptors || []).map(function (d) { return '✓ ' + (d && d.text ? d.text : d); }).filter(function (t) { return t !== '✓ '; });
+                        if (_all.length) writeRow(fid('met'), _all.join('\n'), { replace: true });
+                    }
                     persist();
                     advance();
                     return;
@@ -65191,6 +65212,10 @@
         const tr = canvasEditor.state.tr;
         let relabelled = 0, removed = 0;
         rows.sort((a, b) => b.pos - a.pos).forEach(r => {
+            // v7.20.679: a one-sentence scheme (Literature AO4) has no criteria — its empty box goes.
+            if (r.kind === 'met' && _ladderOneSentence(r.key) && !(r.node.textContent || '').trim()) {
+                tr.delete(r.pos, r.pos + r.node.nodeSize); removed++; return;
+            }
             if (r.kind === 'band') {
                 const t = (r.node.textContent || '').trim();
                 if (!t || (levelText[r.key] || '').indexOf(t) !== -1) { tr.delete(r.pos, r.pos + r.node.nodeSize); removed++; }
@@ -65225,7 +65250,7 @@
                 && _oldLabels.indexOf(n.attrs.prompt) !== -1) _stale++;
         });
         if (_stale) { console.warn('WML ladder wording heal: ' + _stale + ' old label(s) still in the document after the heal — something reverted it'); return; }
-        console.warn('WML ladder wording heal: ' + relabelled + ' label(s) rewritten, ' + removed + ' band box(es) removed' + (intro ? ', intro rewritten' : ''));
+        console.warn('WML ladder wording heal: ' + relabelled + ' label(s) rewritten, ' + removed + ' unfillable box(es) removed' + (intro ? ', intro rewritten' : ''));
         try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
     }

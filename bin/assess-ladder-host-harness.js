@@ -109,9 +109,9 @@ ok(keysUnder('edexcel', 'shakespeare').length === 0, 'Edexcel Shakespeare → no
 console.log('\nB · the document section');
 const bsSrc = JS.slice(JS.indexOf('    function buildMarkSchemeSelfAssessSection(topicData) {'), JS.indexOf('    function _ladderRowText(fid) {'));
 const fidSrc = JS.slice(JS.indexOf('    function _ladderFids(key) {'), JS.indexOf('    // The document section'));
-function sectionUnder(board, subject) {
+function sectionUnder(board, subject, text) {
     const ctx = {
-        window: { WML_MARK_SCHEMES: data }, state: { board, subject }, console,
+        window: { WML_MARK_SCHEMES: data }, state: { board, subject, text: text || '' }, console,
         escapeHTML: (x) => String(x), inputHTML: (p, f) => '<row fid="' + f + '" p="' + p + '"/>',
         sectionHTML: (t, l, e, p, inner) => '<sec label="' + l + '">' + inner + '</sec>',
         LADDER_SA_LABEL: 'Mark-Scheme Self-Assessment',
@@ -134,6 +134,20 @@ ok(!/-band"/.test(p1), 'no Band box — only AQA Lang Q5 content prints Upper/Lo
     ok(!prompts.some((x) => /band|placement/i.test(x)), 'no label mentions band or placement');
     ok(/Every box here holds what you decided\./.test(p1) && /Sophia’s marks go in the Feedback sections\./.test(p1) && /Calibration section then puts your marks and hers side by side/.test(p1),
         'the intro says the boxes are the student\'s, and where Sophia\'s marks go instead');
+}
+{
+    // v7.20.679 (#691 — Neil, on AO4's criteria box: "I have no idea what that means"): AQA prints each
+    // Literature AO4 level as ONE sentence, so it has no criteria to tick — and no box. Every other
+    // scheme keeps its criteria box.
+    const osCtx = { window: { WML_MARK_SCHEMES: data } };
+    vm.createContext(osCtx);
+    vm.runInContext(fidSrc + '\nthis.one = _ladderOneSentence; this.fids = _ladderFids;', osCtx);
+    const oneSentence = Object.keys(data).filter((k) => data[k] && Array.isArray(data[k].levels) && osCtx.one(k));
+    ok(oneSentence.join(',') === 'aqa_lit_ao4', 'only Literature AO4 has one-sentence levels — got ' + (oneSentence.join(',') || 'none'));
+    ok(!('met' in osCtx.fids('aqa_lit_ao4')) && osCtx.fids('aqa_lit_p1_ao123').met === 'sa-ms-aqa_lit_p1_ao123-met', 'AO4 has no criteria fid; AO1–AO3 keeps its own');
+    const lit = sectionUnder('aqa', 'shakespeare', 'macbeth');
+    ok(/fid="sa-ms-aqa_lit_p1_ao123-met"/.test(lit) && !/fid="sa-ms-aqa_lit_ao4-met"/.test(lit) && /fid="sa-ms-aqa_lit_ao4-mark"/.test(lit),
+        'a Macbeth document: AO1–AO3 has a criteria box, AO4 has none (and still its level, mark and reason)');
 }
 {
     const bandSrc = JS.slice(JS.indexOf('    function _ladderBandOf(key, levelText) {'), JS.indexOf('    function _ladderHostEligible() {'));
@@ -205,6 +219,7 @@ ok(/try \{ healLadderSaWording\(\); \} catch \(_\) \{\}/.test(JS), 'the wording 
         'the Section Guard still has the shape ladder-sections-heal-probe replays (migration bypass; undo on a lower count)');
 }
 ok(/\(step\.level\.name \? ' — ' \+ step\.level\.name : ''\) \+ \(st\.bandName \? ' · ' \+ st\.bandName : ''\)/.test(JS), 'a one-mark level still writes the band into the level box (the band box is gone)');
+ok(/if \(_all\.length\) writeRow\(fid\('met'\), _all\.join\('\\n'\), \{ replace: true \}\);/.test(JS), 'better than the top level files every top-level criterion as met — the criteria box is never left empty beside a top mark (#691)');
 ok(/_ladderOpenHook = function \(o\) \{ return _examinerLadderCtl\.open\(o\); \};/.test(JS), 'the closure-local ladder is reached through a module-scope hook (the .898 lesson)');
 
 // ── D · REGIME + COPY BANS (PEDAGOGY §35) ───────────────────────────────────────────────────
@@ -293,7 +308,7 @@ ok(/actual: _calibActualFor\(k\.q, k\.ao, k\.max\)/.test(JS), '_calibGroups asks
         },
     };
     vm.createContext(ctx);
-    vm.runInContext(kbSrc + sl('_ladderFids') + sl('_ladderRowText') + sl('_ladderHostGroups') + sl('_paraKey') + sl('_calibDocKey') + sl('_predKey')
+    vm.runInContext(kbSrc + sl('_ladderFids') + sl('_ladderOneSentence') + sl('_ladderRowText') + sl('_ladderHostGroups') + sl('_paraKey') + sl('_calibDocKey') + sl('_predKey')
         + sl('_predFromDoc') + sl('_predFromChat')
         + sl('_getPredicted') + sl('_setPredicted') + sl('_ladderFeedPrediction') + sl('_calibActualFor'), ctx);
     const run = (code) => vm.runInContext(code, ctx);
@@ -355,7 +370,7 @@ console.log('\nJ · Literature under the mark scheme — one comparison, the AO-
     };
     vm.createContext(ctx);
     vm.runInContext(constLine('LIT_CALIB_KEY') + kbSrc
-        + ['_litLadderKeepsAoCard', '_ladderFids', '_ladderRowText', '_calibFids', '_calibActualFor', '_ladderMarksInHistory', '_reflectAoOnly',
+        + ['_litLadderKeepsAoCard', '_ladderFids', '_ladderOneSentence', '_ladderRowText', '_calibFids', '_calibActualFor', '_ladderMarksInHistory', '_reflectAoOnly',
            '_ladderReplacesReflect', '_ladderIsLit', '_litEssayActual', '_litCalibGroup', '_calibGroups'].map(sl).join('\n'), ctx);
     const run = (code) => vm.runInContext(code, ctx);
 
@@ -414,7 +429,7 @@ console.log('\nJ · Literature under the mark scheme — one comparison, the AO-
     ok(/\(_pred == null && _ladderIsLit\(\)\) \? actTxt/.test(JS), 'a Literature card with no paragraph prediction shows Actual only — no five "Predicted —" placeholders');
     ok(/g\.key === LIT_CALIB_KEY \? 'five paragraph marks, added up'/.test(JS), 'the comparison card says how Sophia\'s number was made');
     ok(/if \(r && r\.min === r\.max\) \{/.test(JS), 'a one-mark level (AO4 High / Threshold) is filed without a pointless top/middle/bottom question');
-    ok(/if \(_r\.length && _r\[_r\.length - 1\]\.level === step\.level\.level\) st\.stoppedAt = step\.level\.level;/.test(JS),
+    ok(/if \(_r\.length && _r\[_r\.length - 1\]\.level === step\.level\.level\) \{?\s*st\.stoppedAt = step\.level\.level;/.test(JS),
         'a top-out ("better than the top level") records WHERE it stopped — it used to file "Level null", no mark, and re-open the same question');
 }
 
