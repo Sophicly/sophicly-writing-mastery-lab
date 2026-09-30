@@ -3739,6 +3739,21 @@ TEMPLATE;
      * first marking turn on. Chat-truth, like the @REFLECT_GATE scan in the state block: no
      * server-side twin of the client's scheme-key builder (§5d — one builder), no board literal.
      */
+    /**
+     * v7.20.673 (#683 — Neil, 2026-09-30: "maybe we take out the self-rating and keep the AO
+     * targeting"). In a LITERATURE mark-scheme session the per-paragraph card keeps ONE question:
+     * which AO(s) the paragraph was aiming for and what it was trying to show (no 1–5 rating, no
+     * predicted mark). THE ONE SWITCH: it reaches the browser as swmlConfig.litLadderAoCard, so
+     * flipping it to false removes the Literature card on both sides at once (§39 full removal).
+     */
+    const LIT_LADDER_AO_CARD = true;
+
+    /** v7.20.673: the AQA Literature ESSAY family — server twin of the client's _isLitEssay(). */
+    public static function is_lit_essay_subject($subject) {
+        $s = preg_replace('/[^a-z0-9]/', '', strtolower((string) $subject));
+        return in_array($s, ['shakespeare', 'moderntext', '19thcentury', 'nineteenthcentury'], true);
+    }
+
     private function ladder_marks_in_history() {
         global $swml_chat_history, $swml_current_message;
         // v7.20.663 (CACHE + behaviour): the hand-off turn that CARRIES the own-marks line is the
@@ -5018,7 +5033,15 @@ TEMPLATE;
                 // in-chat reflection panel is REMOVED — the three reflection mandates below would re-impose
                 // it (the universal cycle, verbatim emission, per-paragraph cycle), so a ladder session gets
                 // the replacement block and none of them. Non-ladder boards are untouched.
-                if ($this->ladder_marks_in_history()) {
+                $is_lit_ladder = $this->ladder_marks_in_history() && self::is_lit_essay_subject($context['subject'] ?? '');
+                if ($is_lit_ladder && self::LIT_LADDER_AO_CARD) {
+                    // v7.20.673 (#683): Literature keeps ONE per-paragraph question — the aim.
+                    $preamble .= "### ⛔ MARK-SCHEME SESSION — THE CARD ASKS ONLY FOR THE AIM (v7.20.673)\n\n";
+                    $preamble .= "The student has ALREADY rated every element of their essay (the skills self-assessment — the document's Self-Assessment section) and marked the WHOLE essay against AQA's level descriptors — the SYSTEM line headed THE STUDENT'S OWN MARKS. So each section's STEP 1 `@REFLECT_GATE` panel now asks ONE thing: which AO(s) that paragraph was aiming for and what it was trying to show. Emit the panel exactly as the protocol gives it; the reply arrives as `AO targeting: … What I was trying to show: …`. NEVER ask for, or mention, a 1–5 self-rating or a predicted section mark — the student was not asked for either. STEP 2a: acknowledge their aim for this paragraph in one line, then the Y gate. STEP 3 Calibration: there is NO predicted section mark — compare the mark with what they said the paragraph was trying to show, and with their own Self-Assessment ratings for this section's elements. Their whole-essay mark (THE STUDENT'S OWN MARKS) is compared with your total ONCE, in the Final Summary's metacognitive journey (over / under / accurate, and the confidence they declared); the document's Calibration stage follows it.\n\n";
+                } elseif ($is_lit_ladder) {
+                    $preamble .= "### ⛔ NO IN-CHAT REFLECTION IN THIS SESSION (v7.20.673, Literature)\n\n";
+                    $preamble .= "The student has ALREADY rated every element of their essay (the skills self-assessment) and marked the WHOLE essay against AQA's level descriptors — the SYSTEM line headed THE STUDENT'S OWN MARKS. That REPLACES every self-rating, predicted-mark and AO-targeting ask: NEVER emit `@REFLECT_GATE`, never ask the student to rate, predict or target anything, and never say they have not yet reflected. Each section opens at its STEP 2a: go straight to the Y gate (their mark is for the whole essay — do not restate it for each paragraph). STEP 3 Calibration compares the section's mark with their own Self-Assessment ratings for its elements. The Final Summary's metacognitive journey compares their whole-essay mark with your total (over / under / accurate) and the confidence they declared.\n\n";
+                } elseif ($this->ladder_marks_in_history()) {
                     $preamble .= "### ⛔ NO IN-CHAT REFLECTION IN THIS SESSION (v7.20.632)\n\n";
                     $preamble .= "The student has ALREADY marked their own response against the board's level descriptors — the SYSTEM line headed THE STUDENT'S OWN MARKS. That REPLACES every self-rating, predicted-mark and AO-targeting ask: NEVER emit `@REFLECT_GATE`, never run a metacognitive reflection cycle, never ask the student to rate, predict or target anything, and never say they have not yet reflected. Each question opens at its STEP 2a: acknowledge THEIR own level and mark for it in one line, then the Y gate. The Calibration Check after each `Qn Total` compares THEIR mark with yours (their marks ARE the prediction). The Final Summary's metacognitive journey reads their own marks against the actual marks (over / under / accurate per question) and the confidence they declared.\n\n";
                 } else {
@@ -7339,7 +7362,7 @@ TEMPLATE;
                 }
             }
             if ($last_user !== ''
-                && preg_match('/^(?:y\s*$|yes\b|continue\b|got it\b|ready\b|ok(?:ay)?\b|advance\b|next\b|carry on\b|keep going\b|✓)|^predicted\b|^self-rating\s*:/iu', $last_user)) {
+                && preg_match('/^(?:y\s*$|yes\b|continue\b|got it\b|ready\b|ok(?:ay)?\b|advance\b|next\b|carry on\b|keep going\b|✓)|^predicted\b|^self-rating\s*:|^ao targeting\s*:/iu', $last_user)) {   // v7.20.673: "AO targeting:" = the Lit mark-scheme card's whole reply
                 $state = SWML_Session_Manager::update_assessment_state(
                     $user_id, $board, $text, $topic, $suffix, $attempt,
                     ['pending_resume_confirm' => false]
@@ -7793,7 +7816,7 @@ TEMPLATE;
                 }
             }
             if ($last_user !== ''
-                && preg_match('/^(?:y\s*$|yes\b|continue\b|got it\b|ready\b|ok(?:ay)?\b|advance\b|next\b|carry on\b|keep going\b|✓)|^predicted\b|^self-rating\s*:/iu', $last_user)) {
+                && preg_match('/^(?:y\s*$|yes\b|continue\b|got it\b|ready\b|ok(?:ay)?\b|advance\b|next\b|carry on\b|keep going\b|✓)|^predicted\b|^self-rating\s*:|^ao targeting\s*:/iu', $last_user)) {   // v7.20.673: "AO targeting:" = the Lit mark-scheme card's whole reply
                 $state = SWML_Session_Manager::update_assessment_state(
                     $user_id, $board, $text, $topic, $suffix, $attempt,
                     ['pending_resume_confirm' => false]
@@ -7867,6 +7890,10 @@ TEMPLATE;
                 }
             }
         }
+        // v7.20.673 (#683): with the Literature card switched OFF there is no @REFLECT_GATE for the
+        // scan above to find — the mark-scheme hand-back ends setup instead (the #577 twin at the
+        // questions-mode block). With the card ON, the Introduction's card still ends it as before.
+        if ($setup_phase && !self::LIT_LADDER_AO_CARD && $this->ladder_marks_in_history()) $setup_phase = false;
 
         $block  = "\n\n---\n\n";
         if ($setup_phase) {
@@ -7912,7 +7939,15 @@ TEMPLATE;
             // v7.19.809: rule 1 now follows the protocol's per-section sequence —
             // the old flat "NEXT output MUST be the mark table" contradicted the
             // @REFLECT_GATE reflection-panel-first rule on every section.
-            $block .= "1. Follow the protocol's per-section sequence for **{$current_label}**: if the student's reflection-panel reply for {$current_label} (arrives as \"Self-rating: N/5 …\") is NOT yet in the conversation, emit {$current_label}'s STEP 1 reflection lead-in + `@REFLECT_GATE` marker and WAIT. Once their reflection reply IS in, your NEXT output MUST be the granular mark table for **{$current_label}** UNLESS the student asked a clarifying question.\n";
+            // v7.20.673 (#683): a Literature mark-scheme session's card reply has no self-rating — it
+            // arrives as "AO targeting: …". Recognising only "Self-rating: N/5" would re-demand the card
+            // after it was answered (a loop); with no card at all there is nothing to wait for.
+            $lit_ladder_now = $this->ladder_marks_in_history() && self::is_lit_essay_subject($context['subject'] ?? '');
+            if ($lit_ladder_now && !self::LIT_LADDER_AO_CARD) {
+                $block .= "1. There is NO reflection panel in this session (the student's own marks stand in for it) — open **{$current_label}** at its STEP 2a (the Y gate). Once they reply, your NEXT output MUST be the granular mark table for **{$current_label}** UNLESS the student asked a clarifying question.\n";
+            } else {
+                $block .= "1. Follow the protocol's per-section sequence for **{$current_label}**: if the student's reflection-panel reply for {$current_label} (arrives as " . ($lit_ladder_now ? "\"AO targeting: …\" — this session's card asks ONLY for the aim" : "\"Self-rating: N/5 …\"") . ") is NOT yet in the conversation, emit {$current_label}'s STEP 1 reflection lead-in + `@REFLECT_GATE` marker and WAIT. Once their reflection reply IS in, your NEXT output MUST be the granular mark table for **{$current_label}** UNLESS the student asked a clarifying question.\n";
+            }
             // v7.19.854: ONE canonical card table — the auditor parses `| Criterion |
             // Worth | Your Score | Why |` (numeric cols 2+3); the old `Element | AO |…`
             // 5-col shape here contradicted the protocol AND broke the row parse.

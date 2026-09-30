@@ -8008,6 +8008,19 @@
             else if (/^lang(uage)?_?p?(aper_?)?1$/.test(subj) || subj === 'language_p1') paper = 'lang1';
             else if (/^lang(uage)?_?p?(aper_?)?2$/.test(subj) || subj === 'language_p2') paper = 'lang2';
             else if (/unseen/.test(subj)) paper = 'unseen';
+            // v7.20.673 (#473/#683 — Neil: "there's nothing about the mark scheme at all"): the AQA
+            // Literature ESSAY family, via the ONE predicate its other consumers use (_isLitEssay —
+            // real lessons carry shakespeare / modern_text / 19th_century). ONE six-level AO1–AO3
+            // ladder per paper (Paper 2's grid differs in six AO2 wordings), plus AO4 where the paper
+            // assesses it: Shakespeare and modern texts, never the 19th-century novel ("AO4 will be
+            // assessed on Section A only"). The maxes then equal the essay's own total (34 / 30).
+            if (!paper && _isLitEssay()) {
+                const litKeys = /^modern_?text$/.test(subj) ? ['aqa_lit_p2_ao123', 'aqa_lit_ao4']
+                    : subj === 'shakespeare' ? ['aqa_lit_p1_ao123', 'aqa_lit_ao4']
+                    : ['aqa_lit_p1_ao123'];
+                return litKeys.filter(k => all[k] && Array.isArray(all[k].levels))
+                    .map(k => ({ key: k, q: all[k].question, ao: all[k].ao, max: all[k].maxMarks, title: all[k].title || '' }));
+            }
             if (!paper) return [];
             const prefix = 'aqa_' + paper + '_';
             let keys = Object.keys(all).filter(k => k.indexOf(prefix) === 0 && all[k] && Array.isArray(all[k].levels));
@@ -8063,7 +8076,43 @@
     // #539's gate: only where the ladder exists — other boards keep the panel until their
     // descriptors are authored. ONE predicate, read by the renderer, the ✓-continue directive and
     // the ledger reset, so the three cannot disagree.
-    function _ladderReplacesReflect() { try { return _ladderHostEligible(); } catch (e) { return false; } }
+    // v7.20.673 (#684): "is this a mark-scheme session?" is now CHAT-TRUTH — the hand-off turn headed
+    // THE STUDENT'S OWN MARKS is in the transcript — the SAME evidence the server's
+    // ladder_marks_in_history() reads, so the client and the router can no longer disagree. It was
+    // document-STRUCTURE truth (the section exists in the live editor DOM), which is (a) true for a
+    // session that began before the ladder existed, whose student never marked themselves, and
+    // (b) able to read FALSE after the ladder ran — measured on prod (Mishel 1237, 28 Sep): after
+    // walking the ladder she was still sent the old panel for Q2. Which of its three conditions
+    // failed (task, the section in the live DOM, the scheme keys) is NOT measured; chat-truth
+    // depends on none of them.
+    function _ladderMarksInHistory() {
+        try {
+            const h = typeof _canvasHistoryHook === 'function' ? _canvasHistoryHook() : null;
+            return Array.isArray(h) && h.some(m => m && m.role === 'user' && typeof m.content === 'string'
+                && m.content.indexOf("THE STUDENT'S OWN MARKS") !== -1);
+        } catch (e) { return false; }
+    }
+    // v7.20.673 (#683 — Neil, 2026-09-30: "maybe we take out the self-rating and keep the AO
+    // targeting"): in a LITERATURE mark-scheme session the per-paragraph card keeps ONE question —
+    // which AO(s) the paragraph was aiming for and what it was trying to show. The whole-essay mark
+    // is already the student's own (the ladder), and every element is already rated (the skills
+    // walk), so the per-paragraph mark prediction and the 1–5 rating go. Literature only: a Language
+    // question IS one AO, which its ladder names, so Language keeps no card (§39). THE ONE SWITCH is
+    // the server's SWML_Protocol_Router::LIT_LADDER_AO_CARD, delivered as swmlConfig.litLadderAoCard
+    // ('1' / '0' — wp_localize_script stringifies), so the router's instructions and this card can
+    // never disagree. Absent config (tests, standalone) = the ruled default, the card kept.
+    function _litLadderKeepsAoCard() {
+        try {
+            const v = (typeof window !== 'undefined' && window.swmlConfig) ? window.swmlConfig.litLadderAoCard : undefined;
+            return v === undefined || v === null ? true : (v === true || v === '1' || v === 1);
+        } catch (e) { return true; }
+    }
+    // The paper under assessment is an AQA Literature essay AND its mark-scheme data exists — the
+    // doc-structure question ("does this essay have a whole-essay mark scheme?"), used by the
+    // readouts and the calibration stage. Session-state questions use _ladderMarksInHistory.
+    function _ladderIsLit() { try { return _isLitEssay() && _ladderSchemeKeysFor().some(k => k.key.indexOf('aqa_lit_') === 0); } catch (e) { return false; } }
+    function _reflectAoOnly() { try { return _litLadderKeepsAoCard() && _isLitEssay() && _ladderMarksInHistory(); } catch (e) { return false; } }
+    function _ladderReplacesReflect() { try { return _ladderMarksInHistory() && !_reflectAoOnly(); } catch (e) { return false; } }
     function _ladderHostGroups() {
         return _ladderSchemeKeysFor().map(k => Object.assign({}, k, { fids: _ladderFids(k.key), done: !!_ladderRowText(_ladderFids(k.key).mark) }));
     }
@@ -8245,7 +8294,61 @@
             return found;
         } catch (e) { return null; }
     }
+    // ⭐ v7.20.673 (#683 — Neil: "our theory behind marking paragraph by paragraph is that they will
+    // arrive essentially at the same mark as a holistic mark, but they'll also understand exactly
+    // where their strengths and weaknesses are"). A Literature essay is ONE question, so its
+    // calibration is ONE comparison: the student's own whole-essay mark (every scheme they walked —
+    // AO1–AO3, plus AO4 where the paper assesses it) against Sophia's five paragraph marks added up.
+    // The maxima are equal by construction (Shakespeare/modern 34 = 30 + 4; 19th century 30 = 30 —
+    // literature-paper-specs.json), so the numbers sit side by side with no conversion.
+    const LIT_CALIB_KEY = 'aqa_lit_essay';
+    function _litEssayActual() {
+        try {
+            const editorEl = document.getElementById('swml-tiptap-editor');
+            if (!editorEl) return null;
+            let sum = 0, max = 0, n = 0, pending = false;
+            editorEl.querySelectorAll('[data-section-type="feedback"]').forEach((sec) => {
+                const lbl = sec.getAttribute('data-section-label') || '';
+                const m = /^Feedback\s*[:\-]?\s*(Introduction|Body\s*\d+|Conclusion)\s*\(\s*([\d.]+|—)\s*\/\s*([\d.]+)\s*\)/i.exec(lbl);
+                if (!m) return;
+                n++; max += parseFloat(m[3]);
+                if (m[2] === '—') { pending = true; return; }
+                sum += parseFloat(m[2]);
+            });
+            // Every paragraph must be marked — an unmarked one is "not ready", never a zero.
+            if (!n || pending) return null;
+            return { mark: Math.round(sum), max: max };   // section totals stay decimal; the total rounds ONCE
+        } catch (e) { return null; }
+    }
+    function _litCalibGroup() {
+        const schemes = _ladderSchemeKeysFor();
+        let mine = 0, max = 0, ok = schemes.length > 0;
+        schemes.forEach((k) => {
+            max += k.max;
+            const mm = /(\d+(?:\.\d+)?)/.exec(_ladderRowText(_ladderFids(k.key).mark));
+            if (!mm) ok = false; else mine += parseFloat(mm[1]);
+        });
+        const main = schemes[0] || { key: '' };        // the AO1–AO3 ladder carries the level + reason
+        const cf = _calibFids(LIT_CALIB_KEY);
+        let actual = _litEssayActual();
+        if (actual && actual.max !== max) {
+            // The maxima are equal for every AQA Literature paper, so a mismatch means a paragraph box
+            // is missing or mis-labelled (or a pre-v7.20.239 19th-century doc still out of 34). Never
+            // rescale: a converted number would hide the defect behind a plausible mark (the mutation
+            // test found exactly that). No comparison is honest; a wrong one is not.
+            console.warn('WML calib: essay boxes total /' + actual.max + ' but the mark scheme is /' + max + ' — whole-essay calibration withheld');
+            actual = null;
+        }
+        return {
+            key: LIT_CALIB_KEY, q: 'Your essay', ao: 'the whole mark', max: max, fids: cf,
+            mine: ok ? mine + ' / ' + max : '', mineNum: ok ? mine : null,
+            myLevel: _ladderRowText(_ladderFids(main.key).level), myWhy: _ladderRowText(_ladderFids(main.key).reason),
+            actual: actual,
+            done: !!_ladderRowText(cf.decision), answered: !!_ladderRowText(cf.why),
+        };
+    }
     function _calibGroups() {
+        if (_ladderIsLit()) return [_litCalibGroup()];
         return _ladderSchemeKeysFor().map((k) => {
             const lf = _ladderFids(k.key), cf = _calibFids(k.key);
             const mine = _ladderRowText(lf.mark);
@@ -8297,7 +8400,11 @@
         // a stray "|" line and a two-column table.
         out += '| Who | Level | Mark |\n|---|---|---|\n';
         out += '| **You** | ' + (g.myLevel || '—') + ' | **' + g.mineNum + ' / ' + g.max + '** |\n';
-        out += '| **Sophia** | see your feedback for ' + g.q + ' | **' + g.actual.mark + ' / ' + g.max + '** |\n\n';
+        out += '| **Sophia** | ' + (g.key === LIT_CALIB_KEY ? 'five paragraph marks, added up' : 'see your feedback for ' + g.q) + ' | **' + g.actual.mark + ' / ' + g.max + '** |\n\n';
+        if (g.key === LIT_CALIB_KEY) {
+            // Neil's reconciliation, said to the student in plain words (#683).
+            out += 'You judged the whole essay against the exam board’s levels. I marked it one paragraph at a time and added the marks up. When both methods are working, they land close together — and the paragraph marks show exactly where the difference comes from.\n\n';
+        }
         if (g.myWhy) out += 'Your reason at the time: *"' + g.myWhy + '"*\n\n';
         out += agree
             ? 'That is **' + (ad === 0 ? 'the same mark' : ad + ' mark' + (ad === 1 ? '' : 's') + ' apart') + '** — inside what two examiners would differ by on a question worth ' + g.max + '. Your judgement is calibrated here.'
@@ -8325,7 +8432,10 @@
         // §4c.10 — the chat points at a document surface, so the document goes there. A missing
         // box is a silent no-op, never an error.
         try {
-            const fb = document.querySelector('#swml-tiptap-editor [data-section-label^="Feedback: ' + g.q + ' "]');
+            // v7.20.673: a Literature essay's comparison is the whole essay — its surface is the Score Summary.
+            const fb = g.key === LIT_CALIB_KEY
+                ? document.querySelector('#swml-tiptap-editor [data-section-label="Score Summary"]')
+                : document.querySelector('#swml-tiptap-editor [data-section-label^="Feedback: ' + g.q + ' "]');
             if (fb && typeof _swmlScrollToTop === 'function') _swmlScrollToTop(fb);
         } catch (e) {}
         _calibChips([CALIB_KEEP, CALIB_TAKE, CALIB_BETWEEN], function (label) {
@@ -8352,7 +8462,7 @@
     function _calibAskGoal(groups) {
         const worst = groups.slice().sort((a, b) => Math.abs(b.mineNum - b.actual.mark) - Math.abs(a.mineNum - a.actual.mark))[0];
         const plain = 'Last one. **What is the ONE thing you will do differently in your next answer** because of this?'
-            + (worst ? '\n\nYour judgement and mine were furthest apart on **' + worst.q + '** — that is the honest place to aim.' : '')
+            + (worst && groups.length > 1 ? '\n\nYour judgement and mine were furthest apart on **' + worst.q + '** — that is the honest place to aim.' : '')
             + '\n\nType it below, as something you would actually do, not something you would like to be.';
         _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
         WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain }, { durable: false, why: 'a present-state ask — re-derived from the document on entry' });
@@ -8501,9 +8611,13 @@
         if (!keys.length) return '';
         let inner = '<p><em>You marked your own answer before I did. Here both marks sit side by side. '
             + 'Where they differ, the gap is the lesson — and you may keep your own mark if you can say what carries it.</em></p>';
-        keys.forEach((k) => {
-            const f = _calibFids(k.key);
-            inner += '<h3>' + escapeHTML(k.q + ' — ' + k.ao + ' (/' + k.max + ')') + '</h3>';
+        // v7.20.673 (#683): a Literature essay is ONE comparison — the whole mark (see _litCalibGroup).
+        const _rows = _ladderIsLit()
+            ? [{ key: LIT_CALIB_KEY, head: 'Your essay — the whole mark (/' + keys.reduce((s, k) => s + (k.max || 0), 0) + ')' }]
+            : keys.map((k) => ({ key: k.key, head: k.q + ' — ' + k.ao + ' (/' + k.max + ')' }));
+        _rows.forEach((r) => {
+            const f = _calibFids(r.key);
+            inner += '<h3>' + escapeHTML(r.head) + '</h3>';
             inner += inputHTML("Sophia's mark", f.sophia);
             inner += inputHTML('What you decided after seeing both', f.decision);
             inner += inputHTML('Why — in your own words', f.why);
@@ -8682,6 +8796,23 @@
         return true;
     }
     function _saWalkHandBack() {
+        // v7.20.673 (#683): the skills walk now runs BEFORE the mark-scheme ladder. When a ladder
+        // follows, this is a BRIDGE, not the marking hand-off — prod told students "Beginning
+        // marking…" after the ladder and then gave them 19 more self-assessment questions. The
+        // ladder's own hand-back (_ladderHostHandBack) is the ONE marking hand-off.
+        try {
+            if (_ladderHostEligible() && !_ladderHostComplete()) {
+                const bridge = 'That’s your skills self-assessment saved. Now the mark scheme itself — you will place your own writing on the exam board’s levels, the way an examiner does.';
+                const _pa = (_chatShell && _chatShell.history || []).slice().reverse().find(m => m && m.role === 'assistant' && !m.hidden);
+                if (_chatShell && _chatShell.addMsg && !(_pa && _pa.content === bridge)) {
+                    _chatShell.addMsg(formatAI(bridge), 'ai', bridge, { suppressActions: true });
+                    WML.recordTurn(_chatShell.history, { role: 'assistant', content: bridge }, { durable: true, why: 'a past-event report — the skills self-assessment was saved' });
+                    try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (_) {}
+                }
+                setTimeout(function () { try { _ladderHostRenderCurrent(); } catch (e) {} }, 300);
+                return;
+            }
+        } catch (_) {}
         if (_saWalkHandBack._fired) return;   // once per doc load
         _saWalkHandBack._fired = true;
         try {
@@ -11536,7 +11667,10 @@
                         return;
                     }
                     canvasSilentSend = true;
-                    chatTextarea.value = 'SYSTEM (not from the student): there is NO reflection panel in this session — the student has already marked their own response (THE STUDENT\'S OWN MARKS). Do not ask for a self-rating, a predicted mark or AO targeting, and do not emit @REFLECT_GATE. Continue now with STEP 2a for ' + (reflectData.q || 'this question') + ': acknowledge their own level and mark for it in one line and give the Y gate. Do not show this message to the student.';
+                    chatTextarea.value = 'SYSTEM (not from the student): there is NO reflection panel in this session — the student has already marked their own response (THE STUDENT\'S OWN MARKS). Do not ask for a self-rating, a predicted mark or AO targeting, and do not emit @REFLECT_GATE. Continue now with STEP 2a for ' + (reflectData.q || 'this question') + (_isLitEssay()
+                        // v7.20.673: a Literature mark is for the WHOLE essay — never restate it per paragraph.
+                        ? ': go straight to the Y gate (their own mark is for the whole essay — do not restate it for this paragraph).'
+                        : ': acknowledge their own level and mark for it in one line and give the Y gate.') + ' Do not show this message to the student.';
                     if (send) send();
                 };
                 setTimeout(_lFire, 400);
@@ -11740,17 +11874,22 @@
         // v7.19.706: prefer the marker-carried max (deterministic) over the canvas-box lookup,
         // which returned null at panel-render time for lit → the predict-mark row never showed.
         const predictMax = (parsed && parsed.max != null) ? parsed.max : (predictQ ? _feedbackMaxForQ(predictQ) : null);
-        const showPredict = !!(predictQ && predictMax && _getPredicted(predictQ) == null);
+        // v7.20.673 (#683): a Literature mark-scheme session asks ONE thing per paragraph — which
+        // AO(s) it aimed for and what it was trying to show. No mark prediction (the student's own
+        // whole-essay mark is already filed from the mark scheme) and no 1–5 rating (every element
+        // was already rated in the skills walk). See _reflectAoOnly.
+        const aoOnly = _reflectAoOnly();
+        const showPredict = !aoOnly && !!(predictQ && predictMax && _getPredicted(predictQ) == null);
         // v7.19.773: fail loud — an essay reflection that resolved NEITHER a section nor a max
         // is the silent-skip Neil hit (predict-mark row vanishes). Warn unless it's a legit
         // already-predicted hide. Surfaces any residual board/paper gap instead of hiding it.
-        if (!showPredict && !(predictQ && _getPredicted(predictQ) != null)) {
+        if (!aoOnly && !showPredict && !(predictQ && _getPredicted(predictQ) != null)) {
             console.warn('WML reflect: predict-mark row hidden (section/max unresolved)',
                 { q: parsed && parsed.q, predictQ: predictQ, predictMax: predictMax });
         }
 
         const refreshSubmit = () => {
-            const ok = rating != null
+            const ok = (aoOnly || rating != null)
                 && (selectedAO.size > 0 || ta.value.trim().length > 0)
                 && (!showPredict || predicted != null);
             submit.style.opacity = ok ? '1' : '0.4';
@@ -11795,8 +11934,10 @@
         aoWrap.style.cssText = 'display:flex;flex-direction:column;gap:7px;';
         const aoLabel = el('div', {});
         aoLabel.style.cssText = 'font-size:13px;line-height:1.4;';
-        aoLabel.appendChild(el('strong', { textContent: '2. AO targeting' }));
-        aoLabel.appendChild(document.createTextNode(' — which did you aim for, and what were you trying to show?'));
+        aoLabel.appendChild(el('strong', { textContent: aoOnly ? 'Your aim for this paragraph' : '2. AO targeting' }));
+        aoLabel.appendChild(document.createTextNode(aoOnly
+            ? ' — which assessment objective(s) was it aiming for, and what were you trying to show?'
+            : ' — which did you aim for, and what were you trying to show?'));
         const chipRow = el('div', {});
         chipRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
         parsed.ao.forEach(code => {
@@ -11834,13 +11975,24 @@
         submit.type = 'button';
         submit.style.cssText = 'align-self:flex-end;padding:9px 18px;border-radius:9px;border:none;background:#5333ed;color:#fff;font-size:13px;font-weight:600;cursor:pointer;opacity:0.4;pointer-events:none;transition:opacity .15s;';
         const doSubmit = () => {
-            if (rating == null) return;
+            if (!aoOnly && rating == null) return;
             // v7.19.617: close the AO-targeting mic on submit so it doesn't linger live until
             // the next message lands (Neil). No-op if not recording.
             if (mic && mic._swmlStopMic) mic._swmlStopMic();
             const aoStr = Array.from(selectedAO).join(', ');
             const detail = ta.value.trim();
             let msg = '';
+            if (aoOnly) {
+                // One line, labelled, so Sophia can acknowledge the aim without guessing which part
+                // is which (the protocol's MARK-SCHEME SESSION rule reads exactly this shape).
+                msg = 'AO targeting: ' + (aoStr || 'not chosen') + '.' + (detail ? ' What I was trying to show: ' + detail : '');
+                const _aoKey = _paraKey(parsed && parsed.q ? parsed.q : '');
+                if (_aoKey) _reflectDone[_aoKey] = true;
+                _reflectPending = _aoKey || '?';
+                wrap.style.opacity = '0.5'; wrap.style.pointerEvents = 'none';
+                onSubmit(msg);
+                return;
+            }
             if (showPredict && predicted != null) {
                 _setPredicted(predictQ, predicted);
                 // show the prediction in the box's calibration row immediately (before the mark).
@@ -11931,7 +12083,8 @@
         }
 
         if (predWrap) wrap.appendChild(predWrap);
-        wrap.appendChild(rateWrap); wrap.appendChild(aoWrap); wrap.appendChild(submit);
+        if (!aoOnly) wrap.appendChild(rateWrap);
+        wrap.appendChild(aoWrap); wrap.appendChild(submit);
         return wrap;
     }
 
@@ -18051,11 +18204,12 @@
             if (!askedBy(/what grade are you aiming for/i)) return null;
             if (!askedBy(/headline goal/i)) return 'headline';
             if (!askedBy(/key aspects/i)) return 'keyword';
-            // v7.20.604 (#469): the mark-scheme ladder — the student marks their own response
-            // against the board's level descriptors BEFORE the blind skill walk and before marking.
-            if (_ladderHostEligible() && !_ladderHostComplete()) return 'ladder';
-            // v7.19.879: blind self-assessment walk — the final pre-marking stage (AQA anchors).
+            // v7.20.673 (#683 — Neil: "the self-assessment comes first… [the mark scheme] should come
+            // underneath the self-assessment"): the blind SKILLS walk first — each part of the answer
+            // judged on its own — then the mark-scheme ladder, which asks the student to weigh it all
+            // into ONE level (the paragraph-to-holistic step), then marking. Was ladder-first (.604).
             if (_saWalkEligible() && !_saWalkComplete()) return 'selfassess';
+            if (_ladderHostEligible() && !_ladderHostComplete()) return 'ladder';
             return null;
         }
         function _renderPreChainQuestion(stage) {
@@ -19287,8 +19441,8 @@
                                     // v7.20.632 (#577): in a ladder session there is no STEP 1 — the directive
                                     // must not demand a panel the renderer will refuse.
                                     chatTextarea.value = _ladderReplacesReflect()
-                                        ? `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}. There is NO reflection panel in this session (the student's own marks are filed — THE STUDENT'S OWN MARKS): do not emit @REFLECT_GATE or ask for a self-rating, prediction or AO targeting. Go straight to ${nextLabel}'s STEP 2a — acknowledge their own level and mark for it in one line and give the Y gate. Do NOT repeat this confirmation or re-ask whether to continue.`
-                                        : `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now. Do NOT repeat this confirmation or re-ask whether to continue.`;
+                                        ? `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}. There is NO reflection panel in this session (the student's own marks are filed — THE STUDENT'S OWN MARKS): do not emit @REFLECT_GATE or ask for a self-rating, prediction or AO targeting. Go straight to ${nextLabel}'s STEP 2a — ${_isLitEssay() ? 'the Y gate (their own mark is for the whole essay — do not restate it for this paragraph)' : 'acknowledge their own level and mark for it in one line and give the Y gate'}. Do NOT repeat this confirmation or re-ask whether to continue.`
+                                        : `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now${_reflectAoOnly() ? ' (this session\'s card asks ONLY which AO(s) the paragraph aimed for and what it was trying to show — no self-rating, no predicted mark)' : ''}. Do NOT repeat this confirmation or re-ask whether to continue.`;
                                     sendCanvasMessageQueued();
                                 }
                             });
@@ -29885,9 +30039,13 @@
                 ];
             }
 
+            // v7.20.673: a one-mark level (AQA Lit AO4 — High 4, Threshold 1) reads "(4 marks)", never "(4–4 marks)".
+            function marksText(min, max) {
+                return min === max ? min + (min === 1 ? ' mark' : ' marks') : min + '–' + max + ' marks';
+            }
             function levelHeading(level) {
                 const label = 'Level ' + level.level + (level.name ? ' — ' + level.name : '');
-                return '**' + label + '** *(' + level.min + '–' + level.max + ' marks)*';
+                return '**' + label + '** *(' + marksText(level.min, level.max) + ')*';
             }
             function descriptorList(descriptors) {
                 let lastStrand = null, out = '';
@@ -29929,7 +30087,9 @@
                     ? 'You have placed your writing at **Level ' + step.level.level + '**. Now say which of its criteria your writing actually meets — one at a time. This is what you will point to in your reason.'
                     : 'You stopped at **Level ' + step.level.level + '**. Let us find out which parts you did meet — one at a time.')
                     + '\n\n*(' + (critIdx + 1) + ' of ' + list.length + ')*\n\n'
-                    + '> ' + d.text + '\n\n**Did your writing do that?**';
+                    // v7.20.673: name the strand a criterion belongs to (AQA Literature puts AO1, AO2 and
+                    // AO3 in one level — the student should see which objective each line is about).
+                    + '> ' + (d.strand ? '**' + d.strand + '** — ' : '') + d.text + '\n\n**Did your writing do that?**';
                 const attach = function () {
                     chipBarOrRetry([MET, UNMET], onWhich, '**Did your writing do that?**');
                     resetSend();
@@ -29960,6 +30120,18 @@
             function servePlacement(step, opts) {
                 _walkSlot.clear(WALK);
                 const r = step.range;
+                // v7.20.673: a one-mark range (AQA Lit AO4: High = 4, Threshold = 1) has no inside to
+                // place in — top, middle and bottom are the same mark. File it and move straight on;
+                // no chip is owed, and the next step is served at once (§4d — never a silent screen).
+                if (r && r.min === r.max) {
+                    st.placement = 'top';
+                    st.stoppedAt = step.level.level;
+                    writeRow(fid('level'), 'Level ' + step.level.level + (step.level.name ? ' — ' + step.level.name : ''), { replace: true });
+                    writeRow(fid('mark'), r.min + ' / ' + scheme().maxMarks, { replace: true });
+                    persist();
+                    advance();
+                    return;
+                }
                 const where = st.bandName ? st.bandName : ('Level ' + step.level.level);
                 const text = 'You have placed yourself in **' + where + '** — that is **' + r.min + '–' + r.max
                     + ' marks**.\n\nAn examiner then decides *where inside it*. Top means you meet the level '
@@ -30032,6 +30204,11 @@
                     st.metAll[step.level.level] = true;
                     // Climbing past the top level is a real outcome, not an error — the student
                     // who meets everything is placed in the top level rather than left nowhere.
+                    // v7.20.673: and the top level IS where they stopped. onPlacement / serveWrap read
+                    // st.stoppedAt; left null, a top-out filed "Level null", no mark, and the host
+                    // re-opened the same question from Level 1 (the row it checks was empty).
+                    const _r = engine().rungs(scheme());
+                    if (_r.length && _r[_r.length - 1].level === step.level.level) st.stoppedAt = step.level.level;
                     persist();
                     advance();
                     return;
@@ -41815,10 +41992,10 @@
                             if (!askedBy(/what grade are you aiming for/i)) return null;
                             if (!askedBy(/headline goal/i)) return 'headline';
                             if (!askedBy(/key aspects/i)) return 'keyword';
-                            // v7.20.604 (#469): the mark-scheme ladder precedes the blind walk (twin pipeline).
-                            if (_ladderHostEligible() && !_ladderHostComplete()) return 'ladder';
-                            // v7.19.879: blind self-assessment walk — final pre-marking stage (AQA anchors).
+                            // v7.20.673 (#683): skills walk FIRST, then the mark-scheme ladder (twin pipeline —
+                            // keep IDENTICAL to the primary _assessPreChainStage).
                             if (_saWalkEligible() && !_saWalkComplete()) return 'selfassess';
+                            if (_ladderHostEligible() && !_ladderHostComplete()) return 'ladder';
                             return null;
                         }
                         function _renderPreChainQuestion(stage) {
@@ -49667,6 +49844,8 @@
             // v7.19.887: move Self-Assessment above the Feedback boundary on existing docs (all
             // boards). After migrateDividers so the FEEDBACK divider anchor exists; idempotent.
             _migrateStep('healSelfAssessmentAboveFeedback', healSelfAssessmentAboveFeedback);
+            // v7.20.673 (#683): Mark-Scheme SA + Calibration directly under the SA (insert or move).
+            _migrateStep('healLadderSectionsUnderSelfAssessment', healLadderSectionsUnderSelfAssessment);
             // v7.19.619: after dividers exist (RESULTS anchor), heal-in the Overall Feedback section.
             _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
             _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
@@ -49690,6 +49869,8 @@
             _migrateStep('prewriteSettledPass', () => setTimeout(() => {
                 try { _ensurePredictionsSection(true); } catch (_) {}
                 try { _healPhase1PrewriteCarry(); } catch (_) {}
+                // v7.20.673: the scheme keys read state.subject/state.text — settled-state second pass.
+                try { healLadderSectionsUnderSelfAssessment(); } catch (_) {}
             }, 1800));
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
             // inject the Reflection section once it resolves (record-gated; the filing
@@ -51086,7 +51267,12 @@
                             deltaTxt = '<span style="' + dim + '">Δ —</span>';
                         }
                         const sep = '<span style="opacity:0.3">·</span>';
-                        calibEl.innerHTML = predTxt + sep + actTxt + sep + deltaTxt;
+                        // v7.20.673 (#683): a Literature essay under the mark scheme has no per-paragraph
+                        // prediction BY DESIGN (the student's own mark is for the whole essay — the
+                        // Calibration section compares it). Five "Predicted —" placeholders would read
+                        // as something the student forgot to do, so those cards show the actual only.
+                        // A pre-ladder Literature doc that DID predict still shows the full readout.
+                        calibEl.innerHTML = (_pred == null && _ladderIsLit()) ? actTxt : (predTxt + sep + actTxt + sep + deltaTxt);
                         row.appendChild(calibEl);
                         if (window.SWML_DEBUG) console.log('[WML calib] readout Q' + _qForCalib + ' pred=' + _pred + ' act=' + currentMarks); // v7.20.88: gated — was flooding every console (Neil)
                     }
@@ -60261,9 +60447,10 @@
             html += buildFeedbackSection(getMarkSplit(marks));
             html += dividerHTML('RESULTS');
             html += buildScoresSection(marks);
+            html += buildSelfAssessmentSection(false);
+            // v7.20.673 (#683): the mark scheme sits UNDER the skills self-assessment — the order the student does them.
             html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#469) — exam-prep template: no topic data in scope; the key builder reads state
             html += buildCalibrationSection(null);           // v7.20.614 — step 6: the two judgements, side by side
-            html += buildSelfAssessmentSection(false);
             html += buildAnalyticsSection();
             html += buildActionPlanSection('diagnostic');
         } else if (exerciseType === 'model_answer') {
@@ -60296,9 +60483,10 @@
             html += buildFeedbackSection(getMarkSplit(marks));
             html += dividerHTML('RESULTS');
             html += buildScoresSection(marks);
+            html += buildSelfAssessmentSection(false);
+            // v7.20.673 (#683): the mark scheme sits UNDER the skills self-assessment — the order the student does them.
             html += buildMarkSchemeSelfAssessSection(null);   // v7.20.604 (#469) — exam-prep template: no topic data in scope; the key builder reads state
             html += buildCalibrationSection(null);           // v7.20.614 — step 6: the two judgements, side by side
-            html += buildSelfAssessmentSection(false);
             html += buildActionPlanSection('diagnostic');
         } else if (exerciseType === 'verbal_rehearsal' || exerciseType === 'quote_analysis') {
             // ── RANDOM QUOTE ANALYSIS ──
@@ -60776,9 +60964,10 @@
             const questions = meta.questions || [];
             let totalMarks = 0;
             html += dividerHTML('FEEDBACK');
+            html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
+            // v7.20.673 (#683): the mark scheme sits UNDER the skills self-assessment — the order the student does them.
             html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#469)
             html += buildCalibrationSection(topicData);            // v7.20.614 — step 6: the two judgements, side by side
-            html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             questions.forEach(function(q) {
                 const qMarks = parseInt(q.marks) || 0;
                 totalMarks += qMarks;
@@ -60792,9 +60981,10 @@
             const marksA = parseInt(topicData.part_a_marks) || 15;
             const marksB = parseInt(topicData.part_b_marks) || 25;
             html += dividerHTML('FEEDBACK — PART A');
+            html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
+            // v7.20.673 (#683): the mark scheme sits UNDER the skills self-assessment — the order the student does them.
             html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#469)
             html += buildCalibrationSection(topicData);            // v7.20.614 — step 6: the two judgements, side by side
-            html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(marksA), 'Part A');
             html += dividerHTML('FEEDBACK — PART B');
             html += buildFeedbackSection(getMarkSplit(marksB), 'Part B');
@@ -60804,9 +60994,10 @@
             // Single format
             const feedbackMarks = parseInt(topicData.marks) || getDefaultMarks(state.board, state.subject);
             html += dividerHTML('FEEDBACK');
+            html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
+            // v7.20.673 (#683): the mark scheme sits UNDER the skills self-assessment — the order the student does them.
             html += buildMarkSchemeSelfAssessSection(topicData);   // v7.20.604 (#469)
             html += buildCalibrationSection(topicData);            // v7.20.614 — step 6: the two judgements, side by side
-            html += buildSelfAssessmentSection(isDual);   // v7.19.889: first part of Feedback
             html += buildFeedbackSection(getMarkSplit(feedbackMarks));
             html += dividerHTML('RESULTS');
             html += buildScoresSection(feedbackMarks);
@@ -64519,6 +64710,59 @@
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
     }
 
+    // ⭐ v7.20.673 (#683 — Neil: "if we're gonna do that it should come underneath the
+    // self-assessment, shouldn't it"): the Mark-Scheme Self-Assessment and its Calibration sit
+    // DIRECTLY under the Self-Assessment, in that order — the order the student does them (skills
+    // walk → mark scheme → marking → calibration). MEASURED on prod 2026-09-30: of 31 documents
+    // carrying the section, 20 had it at the BOTTOM (below Analytics and the Action Plan) because
+    // migrateDocument added it as a missing section just above Tutor Sign-off, by setContent.
+    // This heal INSERTS a missing section (targeted insertContentAt — migrateDocument's own v818
+    // law: never setContent from a heal) and MOVES a misplaced one (a node move — filled rows
+    // intact, never a rebuild). Idempotent: a document already in order returns before any change.
+    function healLadderSectionsUnderSelfAssessment() {
+        if (!canvasEditor || state.reviewMode) return;
+        if (!WML.hasAssessmentSections(state.task)) return;
+        if (!_ladderSchemeKeysFor().length) return;
+        const find = (label) => {
+            let hit = null;
+            canvasEditor.state.doc.descendants((n, p) => {
+                if (hit) return false;
+                if (n.type.name !== 'sectionBlock') return true;
+                if (String((n.attrs && n.attrs.label) || '') === label) hit = { pos: p, node: n };
+                return false;   // section blocks never nest — do not descend
+            });
+            return hit;
+        };
+        let changed = 0;
+        const chain = [['Self-Assessment', LADDER_SA_LABEL, buildMarkSchemeSelfAssessSection],
+                       [LADDER_SA_LABEL, CALIB_LABEL, buildCalibrationSection]];
+        for (const [anchorLabel, label, build] of chain) {
+            const anchor = find(anchorLabel);
+            if (!anchor) return;                              // no Self-Assessment → nothing to anchor to
+            const target = anchor.pos + anchor.node.nodeSize;
+            const cur = find(label);
+            if (cur && cur.pos === target) continue;          // already directly after its anchor
+            try {
+                if (!cur) {
+                    const html = build();
+                    if (!html) continue;
+                    canvasEditor.chain().insertContentAt(target, html).run();
+                } else {
+                    const tr = canvasEditor.state.tr;
+                    tr.delete(cur.pos, cur.pos + cur.node.nodeSize);
+                    tr.insert(tr.mapping.map(target), cur.node);
+                    canvasEditor.view.dispatch(tr);
+                }
+                changed++;
+            } catch (e) { console.warn('WML ladder-sections heal skipped —', e && e.message); return; }
+        }
+        if (!changed) return;
+        console.warn('WML ladder-sections heal: placed ' + changed + ' section(s) directly under Self-Assessment');
+        try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
+        try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+    }
+
     function migrateDocument() {
         if (!canvasEditor) return;
         // v7.19.657: the four old skip conditions (mark_scheme, mark_scheme_unit,
@@ -64547,8 +64791,9 @@
         // Post-assessment sections that should exist (in order)
         const requiredSections = [
             { label: 'Score Summary', build: () => buildScoresSection(getDefaultMarks(state.board, state.subject)) },
-            ...(_ladderSchemeKeysFor().length ? [{ label: LADDER_SA_LABEL, build: () => buildMarkSchemeSelfAssessSection() }] : []),   // v7.20.604 (#469): healed into existing docs where scheme data exists
-            ...(_ladderSchemeKeysFor().length ? [{ label: CALIB_LABEL, build: () => buildCalibrationSection() }] : []),   // v7.20.614: same heal — a NEW section precisely so existing docs gain it
+            // v7.20.673 (#683): the Mark-Scheme Self-Assessment + Calibration are no longer added HERE
+            // (setContent, just above Tutor Sign-off — which put them at the bottom of 20 of 31 live
+            // docs). healLadderSectionsUnderSelfAssessment inserts them in place, under the SA.
             { label: 'Self-Assessment', build: () => buildSelfAssessmentSection() },
             { label: 'Analytics', build: () => buildAnalyticsSection() },
             { label: 'Action Plan', build: () => buildActionPlanSection(state.draftType?.includes('redraft') ? 'redraft' : 'diagnostic') },

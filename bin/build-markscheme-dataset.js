@@ -105,7 +105,10 @@ function parseSection(md, entry) {
         // copy prints "Content" with no colon, so the colon is optional. In a FLAT level an
         // "AO1:" / "AO2:" line names the strand the following bullets belong to (AQA Literature
         // prints both AOs' descriptors inside ONE level); the band is then the level itself.
-        if ((m = line.match(/^([A-Z][A-Za-z0-9 ]{0,24}):?$/)) && (band || (level && !entry.banded && !expectLead))) {
+        // v7.20.673: an "AO1:" line STRAIGHT after a flat level line is that first strand, not the
+        // level's lead-in — it used to be read as `lead: "AO1"`, so AO1's bullets landed in an
+        // unnamed strand and only AO2/AO3 were labelled (AQA unseen; AQA Literature has three).
+        if ((m = line.match(/^([A-Z][A-Za-z0-9 ]{0,24}):?$/)) && (band || (level && !entry.banded && (!expectLead || /^AO\d+:?$/.test(line))))) {
             inTypical = false;
             if (!band) { band = { name: 'Level ' + level.level, min: level.min, max: level.max, strands: [] }; level.bands.push(band); }
             strand = { name: m[1].trim(), descriptors: [] };

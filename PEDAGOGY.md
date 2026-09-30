@@ -2364,6 +2364,9 @@ Y gate). The per-question **Calibration Check** and the end-of-assessment **cali
 **THE GATE (#539):** removed only where the ladder exists. AQA Literature and poetry (no
 descriptors in the dataset yet) keep the panel until their ladder data is authored; then the same
 removal applies by construction — the predicate is the ladder's presence, never a board literal.
+⭐ **AMENDED for AQA Literature essays, v7.20.673 — see §47:** Literature now HAS its ladder, and its
+per-paragraph card keeps ONE question (the AO(s) the paragraph aimed for) rather than disappearing.
+Poetry anthology still keeps the full panel (its comparison grid is not in the dataset yet).
 
 **MECHANICS (v7.20.632):** one client predicate `_ladderReplacesReflect()` (renderer refuses the
 panel and fires ONE continue directive per question — §4d; the ✓-continue directive stops demanding
@@ -2530,3 +2533,42 @@ never attempted."*
 bell, the report's "What to work on next") **only when the MSA was never attempted** — a ticked MSA with no recorded
 score. An attempted MSA below Grade 9 is **not** chased by this alarm (deliberately unlike component exercises, which
 are chased until Grade 9). Reuse the existing alarm; never a new modal. Build: dashboard lane (`build_todo_lists`).
+
+## §47. ⭐⭐ SELF-ASSESS IN THE ORDER THE STUDENT THINKS: every part first, then the mark scheme, then the marks — and never the same question twice (Neil, 2026-09-30; FIXLIST #683)
+
+**His words**, testing Zayan's Macbeth assessment on staging: *"there's nothing about the mark scheme. Right?
+Because remember with the language one we also asked the students to think about their marks in terms of the mark
+scheme. So they have to place themselves where they think they are in the mark scheme… we mark paragraph by
+paragraph. And then add up the marks to get the total marks for the entire question. Whereas obviously when they're
+looking at the mark scheme, the mark scheme is going to place them at a certain level in the mark scheme and give a
+holistic mark. So our theory behind marking paragraph by paragraph is that they will arrive essentially at the same
+mark as a holistic mark, but they'll also understand exactly where their strengths and weaknesses are… I want them to
+engage with the mark scheme."* And: *"the self-assessment comes first which is fine… it should come underneath the
+self-assessment, shouldn't it"* · *"I don't want the students to do the same thing multiple times"* · *"maybe we take
+out the self-rating and keep the AO targeting."*
+
+**1. THE ORDER — skills self-assessment → mark-scheme self-assessment → marking → calibration.** In the chat AND in the
+document (the Mark-Scheme Self-Assessment and its Calibration sit directly under the Self-Assessment). Rating each part
+first makes the student look at every part of their work; the mark scheme then asks them to weigh it all into ONE
+level — the paragraph-to-holistic step, done by the student before Sophia does it for them. ⚠️ Before this, AQA
+Language ran the ladder FIRST (v7.20.604) and told students "beginning marking…" before 19 more self-assessment
+questions (measured on prod chats 1237, 1398); 20 of 31 live documents had the section at the BOTTOM.
+
+**2. LITERATURE GETS THE MARK SCHEME** — AQA's own June 2024 descriptors, verbatim and gated: ONE six-level AO1–AO3
+ladder per paper (Paper 2's grid differs in six wordings, so each paper keeps its own), plus AO4 for Shakespeare and
+modern texts (never the 19th-century novel). The student's whole-essay mark and Sophia's five paragraph marks added up
+sit on the SAME scale (34 = 30 + 4; 30 = 30), so the calibration is one comparison, no conversion — Neil's theory made
+visible: *"when both methods are working, they land close together, and the paragraph marks show exactly where the
+difference comes from."*
+
+**3. NEVER THE SAME QUESTION TWICE — the Literature per-paragraph card keeps ONE thing: the aim.** The mark prediction
+goes (the student's own whole-essay mark already exists) and the 1–5 rating goes (every element was already rated in
+the skills walk). **AO targeting + "what were you trying to show?" stays** — Neil's float, adopted with the reason it is
+right for Literature specifically: the mark scheme judges the WHOLE essay, so this is the only question that asks what
+each paragraph was FOR, and the protocol's AO Targeting Reflection teaches which AOs each section should serve. In
+Language a question IS one AO, which its ladder already names, so Language keeps no card (§39 unchanged).
+⚙️ **One switch** — `SWML_Protocol_Router::LIT_LADDER_AO_CARD` (→ `swmlConfig.litLadderAoCard`). If Neil rules the
+Literature card out entirely, flip it: the card, the router's instructions and the protocol's no-panel branch all follow.
+
+**NOT decided, recorded for him:** poetry anthology's comparison grid (the next data job); whether the blind 19-skill
+walk should itself shrink now that the mark scheme follows it (#472).

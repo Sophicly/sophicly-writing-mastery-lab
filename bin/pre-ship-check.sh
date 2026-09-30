@@ -132,6 +132,17 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
     echo "⚠️  p2-planning-heal-probe SKIPPED — playwright-core missing in ~/.sophicly/probe"
   fi
 fi
+# v7.20.673 (#683): the Mark-Scheme Self-Assessment + Calibration sit DIRECTLY under the Self-Assessment
+# — driven on a REAL TipTap editor (the shipped bundle): moves keep the student's filled rows, a
+# Literature doc gains its rows, an in-order doc is untouched, a second run changes nothing. Mutant-proven.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-markscheme-data\.js|ladder-sections-heal-probe\.mjs'; then
+  if [ -d "$HOME/.sophicly/probe/node_modules/playwright-core" ]; then
+    node bin/ladder-sections-heal-probe.mjs || fail=1
+  else
+    echo "⚠️  ladder-sections-heal-probe SKIPPED — playwright-core missing in ~/.sophicly/probe"
+  fi
+fi
 
 # v7.20.634 (FIXLIST #585–#588): THE MARK COMPLETE GATE. Neil's condition, both directions: a student
 # who followed the process ALWAYS completes; one who did not gets the pop-up. The rule is extracted

@@ -24,6 +24,7 @@
 const L1 = 'protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md';
 const L2 = 'protocols/aqa/language2/modules/knowledge-mark-scheme-lang2.md';
 const US = 'protocols/aqa/unseen/modules/knowledge-mark-scheme-unseen.md';
+const LT = 'protocols/aqa/literature/modules/knowledge-mark-scheme.md';
 
 const SOURCES = [
     // ── AQA Language Paper 1 (8700/1) ────────────────────────────────────────────────────────
@@ -54,6 +55,17 @@ const SOURCES = [
       header: /^## QUESTION 27\.1 — (AO1 \+ AO2 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false },
     { key: 'aqa_unseen_q272', source: US, board: 'aqa', paper: 'unseen', question: 'Q27.2', ao: 'AO2',
       header: /^## QUESTION 27\.2 — (AO2 [^(]+?) \((\d+) marks\)[^\n]*$/m, banded: false },
+    // ── AQA Literature essays (8702/1 A+B, 8702/2 A) — v7.20.673, FIXLIST #473/#683 ─────────
+    // ONE six-level ladder per paper (AO1 + AO2 + AO3 strands, like unseen Q27.1). Paper 2's grid
+    // differs from Paper 1's in six AO2 wordings, so each paper keeps its own verbatim section.
+    // AO4 is identical on both papers and applies to Shakespeare + modern texts only — the key
+    // builder (_ladderSchemeKeysFor) decides which of these a lesson gets, never this file.
+    { key: 'aqa_lit_p1_ao123', source: LT, board: 'aqa', paper: 'literature_p1', question: 'Essay', ao: 'AO1 + AO2 + AO3',
+      header: /^## PAPER 1 ESSAY — (AO1 \+ AO2 \+ AO3 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false },
+    { key: 'aqa_lit_p2_ao123', source: LT, board: 'aqa', paper: 'literature_p2', question: 'Essay', ao: 'AO1 + AO2 + AO3',
+      header: /^## PAPER 2 ESSAY — (AO1 \+ AO2 \+ AO3 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false },
+    { key: 'aqa_lit_ao4', source: LT, board: 'aqa', paper: 'literature', question: 'Essay', ao: 'AO4',
+      header: /^## ESSAY AO4 — ([^(]+?) — Shakespeare and modern texts only \((\d+) marks\)[^\n]*$/m, banded: false },
 ];
 
 module.exports = { SOURCES };

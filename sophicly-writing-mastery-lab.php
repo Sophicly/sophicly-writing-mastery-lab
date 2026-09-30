@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.672
+ * Version: 7.20.673
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.672');
+define('SWML_VERSION', '7.20.673');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -694,6 +694,8 @@ class Sophicly_Writing_Mastery_Lab {
             'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
             // v7.20.649 (#620): papers whose assessment emits [ASSESSMENT_COMPLETE] — derived.
             'assessMarkerPapers' => SWML_Protocol_Router::assessment_marker_papers(),
+            // v7.20.673 (#683): the ONE switch for the Literature mark-scheme card (AO targeting only).
+            'litLadderAoCard' => SWML_Protocol_Router::LIT_LADDER_AO_CARD ? '1' : '0',
             // v7.19.823: server-derived FQ activation — bank basenames + alias forms.
             'fqBankTexts' => $this->get_fq_bank_texts(),
             // v7.19.960: per-anthology poem lists for the poetry CN ONE-DOC template.
@@ -1280,6 +1282,8 @@ class Sophicly_Writing_Mastery_Lab {
                 'taskCaps' => SWML_Protocol_Router::instance()->build_task_caps(),
                 // v7.20.649 (#620): papers whose assessment emits [ASSESSMENT_COMPLETE] — derived.
                 'assessMarkerPapers' => SWML_Protocol_Router::assessment_marker_papers(),
+                // v7.20.673 (#683): the ONE switch for the Literature mark-scheme card (AO targeting only).
+                'litLadderAoCard' => SWML_Protocol_Router::LIT_LADDER_AO_CARD ? '1' : '0',
                 // v7.19.823: server-derived FQ activation (same builder as the standalone site).
                 'fqBankTexts' => $this->get_fq_bank_texts(),
                 // v7.19.960: per-anthology poem lists for the poetry CN ONE-DOC template.

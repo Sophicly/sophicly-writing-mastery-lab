@@ -611,8 +611,11 @@ console.log('\nStep 6 — the calibration stage compares the two judgements and 
 {
     const A = read('frontend/wml-assessment.js');
     ok('there is a Calibration document section with ONE producer', /function buildCalibrationSection\(topicData\)/.test(A));
+    // v7.20.673 (#683): existing documents gain it through the TARGETED heal that places it directly
+    // under the Mark-Scheme Self-Assessment (insertContentAt) — no longer migrateDocument's setContent.
     ok('…it is a NEW section, so the existing section-level heal carries it into existing documents',
-        /\{ label: CALIB_LABEL, build: \(\) => buildCalibrationSection\(\) \}/.test(A));
+        /\[LADDER_SA_LABEL, CALIB_LABEL, buildCalibrationSection\]/.test(A)
+        && /function healLadderSectionsUnderSelfAssessment\(\)/.test(A));
     ok('…it holds all three records distinctly (their mark, Sophia\'s, what they decided and why)',
         /inputHTML\("Sophia's mark", f\.sophia\)/.test(A) && /inputHTML\('What you decided after seeing both', f\.decision\)/.test(A)
         && /inputHTML\('Why — in your own words', f\.why\)/.test(A));

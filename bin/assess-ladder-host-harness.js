@@ -48,8 +48,31 @@ ok(us.length === 2, 'AQA unseen: 2 schemes (Q27.1 · Q27.2) — got ' + us.lengt
 ok(data.aqa_unseen_q271 && data.aqa_unseen_q271.levels.every((l) => l.bands.length === 1 && l.bands[0].strands.length === 2),
     'unseen Q27.1 is ONE ladder with an AO1 + AO2 strand per level (never two 24-mark ladders)');
 
+// v7.20.673 (#473/#683): AQA Literature — one six-level AO1–AO3 ladder per paper + AO4.
+const lit = Object.keys(data).filter((k) => k.indexOf('aqa_lit_') === 0);
+ok(lit.length === 3 && ['aqa_lit_p1_ao123', 'aqa_lit_p2_ao123', 'aqa_lit_ao4'].every((k) => lit.indexOf(k) !== -1),
+    'AQA Literature: 3 schemes (Paper 1 AO1–AO3 · Paper 2 AO1–AO3 · AO4) — got ' + lit.join(', '));
+['aqa_lit_p1_ao123', 'aqa_lit_p2_ao123'].forEach((k) => {
+    const s = data[k];
+    ok(s && s.maxMarks === 30 && s.levels.length === 6 && s.levels.every((l) => l.bands.length === 1
+        && l.bands[0].strands.map((x) => x.name).join(',') === 'AO1,AO2,AO3'),
+        k + ': ONE six-level /30 ladder, every level carrying named AO1 · AO2 · AO3 strands (never a lead-in "AO1")');
+});
+ok(data.aqa_lit_ao4 && data.aqa_lit_ao4.maxMarks === 4 && data.aqa_lit_ao4.levels.length === 3,
+    'AO4: three performance levels out of 4 (Threshold 1 · Intermediate 2–3 · High 4)');
+ok(data.aqa_unseen_q271.levels.every((l) => l.lead === null && l.bands[0].strands[0].name === 'AO1'),
+    'unseen Q27.1: "AO1:" is a named strand, not the level lead-in (v7.20.673 parser fix)');
+// Paper 2 prints "writer’s methods" where Paper 1 prints "the writer’s methods" — kept apart, verbatim.
+const _descs = (k) => [].concat.apply([], data[k].levels.map((l) => [].concat.apply([], l.bands[0].strands.map((x) => x.descriptors))));
+ok(_descs('aqa_lit_p1_ao123').indexOf('Identification of the writer’s methods.') !== -1
+    && _descs('aqa_lit_p2_ao123').indexOf('Identification of writers’ methods.') !== -1,
+    'each paper keeps its OWN wording (P1 "the writer’s" · P2 "writers’")');
+
 // The host's key builder, executed against a fake state/window — the real function, sliced whole.
-const kbSrc = JS.slice(JS.indexOf('    function _ladderSchemeKeysFor(topicData) {'), JS.indexOf('    function _ladderFids(key) {'));
+const kbSrc = JS.slice(JS.indexOf('    function _ladderSchemeKeysFor(topicData) {'), JS.indexOf('    function _ladderFids(key) {'))
+    // v7.20.673: the builder calls _isLitEssay — the REAL predicate, sliced too. Without it the
+    // sandbox threw, the builder's try/catch returned [], and "no keys for Literature" passed on a crash.
+    + JS.slice(JS.indexOf('    function _isLitEssay() {'), JS.indexOf('    function _isPoetryLadder() {'));
 ok(kbSrc.length > 200 && /return keys\.map/.test(kbSrc), 'sliced the real _ladderSchemeKeysFor whole');
 function keysUnder(board, subject, topicData, text) {
     const ctx = { window: { WML_MARK_SCHEMES: data }, state: { board, subject, text: text || '' }, console };
@@ -70,7 +93,17 @@ ok(keysUnder('aqa', 'unseen_poetry').length === 1 && keysUnder('aqa', 'unseen_po
 ok(keysUnder('aqa', 'unseen_poetry', { questions: [{ id: 'Q27.1' }, { id: 'Q27.2' }] }).length === 2,
     'unseen with Q27.2 posed → both ladders (a real past-paper sitting)');
 ok(keysUnder('edexcel', 'language1').length === 0, 'no keys for a board with no scheme data (edexcel) — the section never renders there');
-ok(keysUnder('aqa', 'shakespeare').length === 0, 'no keys for AQA Literature yet (its 6-level shape is not in the dataset) — honest empty, not a guess');
+const _kk = (s, t) => keysUnder('aqa', s, null, t || '').map((k) => k.key).join(',');
+ok(_kk('shakespeare', 'macbeth') === 'aqa_lit_p1_ao123,aqa_lit_ao4', 'Shakespeare (Zayan\'s real lesson: subject=shakespeare text=macbeth) → Paper 1 ladder + AO4 — got ' + _kk('shakespeare', 'macbeth'));
+ok(_kk('modern_text', 'inspector_calls') === 'aqa_lit_p2_ao123,aqa_lit_ao4', 'modern text → Paper 2 ladder + AO4 — got ' + _kk('modern_text', 'inspector_calls'));
+ok(_kk('19th_century', 'christmas_carol') === 'aqa_lit_p1_ao123', '19th-century novel → Paper 1 ladder, NO AO4 ("AO4 will be assessed on Section A only") — got ' + _kk('19th_century', 'christmas_carol'));
+ok(_kk('poetry_anthology', 'love_relationships_poetry') === '', 'poetry anthology → nothing yet (its comparison grid is the next batch — honest empty, not a guess)');
+ok(keysUnder('edexcel', 'shakespeare').length === 0, 'Edexcel Shakespeare → nothing (AQA data only)');
+{
+    const m = keysUnder('aqa', 'shakespeare', null, 'macbeth');
+    ok(m.reduce((s, k) => s + k.max, 0) === 34, 'Shakespeare maxima sum to 34 = the essay\'s own total (3 + 8×3 + 7) — no conversion needed');
+    ok(keysUnder('aqa', '19th_century').reduce((s, k) => s + k.max, 0) === 30, '19th-century maxima sum to 30 = its essay total (3 + 7×3 + 6)');
+}
 
 // ── B · DOC ──────────────────────────────────────────────────────────────────────────────────
 console.log('\nB · the document section');
@@ -102,8 +135,34 @@ ok(count(/_pcStage === 'ladder' && _ladderHostConsumeTyped\(msg\)/g) === 2, 'typ
 const idxL = [], idxS = [];
 JS.replace(/return 'ladder';/g, (m, o) => { idxL.push(o); return m; });
 JS.replace(/return 'selfassess';/g, (m, o) => { idxS.push(o); return m; });
-ok(idxL.length === 2 && idxS.length === 2 && idxL[0] < idxS[0] && idxL[1] < idxS[1], 'the ladder precedes the blind walk at both sites');
-ok(/label: LADDER_SA_LABEL, build: \(\) => buildMarkSchemeSelfAssessSection\(\)/.test(JS), 'healed into existing documents (requiredSections)');
+// v7.20.673 (#683, Neil): the skills walk FIRST, then the mark scheme — at BOTH sites.
+ok(idxL.length === 2 && idxS.length === 2 && idxS[0] < idxL[0] && idxS[1] < idxL[1], 'the blind skills walk precedes the ladder at both sites');
+// …and the skills walk hands to the ladder, never to marking, while a ladder is still owed.
+{
+    const hb = JS.slice(JS.indexOf('    function _saWalkHandBack() {'), JS.indexOf('    function _saWalkHandBack() {') + 2600);
+    const iBridge = hb.indexOf('if (_ladderHostEligible() && !_ladderHostComplete())');
+    const iMark = hb.indexOf('Beginning marking');
+    ok(iBridge !== -1 && iMark !== -1 && iBridge < iMark && /_ladderHostRenderCurrent\(\)/.test(hb.slice(iBridge, iMark)),
+        'the skills walk BRIDGES to the ladder before any "Beginning marking" line (one marking hand-off, not two)');
+}
+// v7.20.673: the section is placed by a targeted heal UNDER the Self-Assessment — never by
+// migrateDocument's setContent above Tutor Sign-off (20 of 31 live docs had it at the bottom).
+ok(!/label: LADDER_SA_LABEL, build: \(\) => buildMarkSchemeSelfAssessSection\(\)/.test(JS), 'migrateDocument no longer adds it (setContent, above Tutor Sign-off)');
+ok(/_migrateStep\('healSelfAssessmentAboveFeedback', healSelfAssessmentAboveFeedback\);\s*\n\s*\/\/[^\n]*\n\s*_migrateStep\('healLadderSectionsUnderSelfAssessment', healLadderSectionsUnderSelfAssessment\);/.test(JS),
+    'healLadderSectionsUnderSelfAssessment runs straight after the Self-Assessment reposition');
+ok(/try \{ healLadderSectionsUnderSelfAssessment\(\); \} catch \(_\) \{\}/.test(JS), '…and again in the settled-state pass (the keys read state.subject)');
+{
+    const heal = JS.slice(JS.indexOf('    function healLadderSectionsUnderSelfAssessment() {'), JS.indexOf('    function migrateDocument() {'));
+    ok(/insertContentAt\(target, html\)/.test(heal) && !/setContent/.test(heal), 'the heal INSERTS in place (insertContentAt) — never setContent (the v818 law)');
+    ok(/tr\.delete\(cur\.pos, cur\.pos \+ cur\.node\.nodeSize\);\s*\n\s*tr\.insert\(tr\.mapping\.map\(target\), cur\.node\);/.test(heal), 'a misplaced section is MOVED as the same node (filled rows kept)');
+    ok(/if \(cur && cur\.pos === target\) continue;/.test(heal), 'idempotent: already in place → no transaction');
+}
+// New documents are BUILT in that order — Self-Assessment, then the mark scheme, then Calibration.
+{
+    const sites = [];
+    JS.replace(/html \+= buildSelfAssessmentSection\([^)]*\);[^\n]*\n[^\n]*\n\s*html \+= buildMarkSchemeSelfAssessSection\([^)]*\);[^\n]*\n\s*html \+= buildCalibrationSection\(/g, (m) => { sites.push(m); return m; });
+    ok(sites.length === 5, 'all 5 templates build SA → Mark-Scheme SA → Calibration — got ' + sites.length);
+}
 // v7.20.614: the Calibration section joined both lists — it is the student's own record, not
 // their writing, so marking must never read it and the ledger must never scan it.
 ok(/STRIP_LABELS = new Set\(\['Analytics', 'Self-Assessment', 'Mark-Scheme Self-Assessment', 'Calibration', 'Action Plan'\]\)/.test(JS), 'stripped from the marking payload (incl. Calibration)');
@@ -241,6 +300,86 @@ console.log('\nI · the calibration chips land where the card is (v7.20.638, #59
     ok(!/const host = document\.querySelector\('\.swml-chat-messages'\)/.test(cc), 'never the bare .swml-chat-messages lookup: it matches NOTHING on a canvas page (measured on staging), so the chips never rendered and the student was stuck');
     ok(/swml-canvas-chat-messages/.test(cc), 'falls back to the canvas chat by id');
     ok(/className: 'swml-canvas-chat-messages', id: 'swml-canvas-chat-messages'/.test(JS), 'CONTROL: the canvas chat really is .swml-canvas-chat-messages (not .swml-chat-messages)');
+}
+
+// ── J · v7.20.673 (#683/#684) — Literature: one whole-essay calibration; the AO-only card ─────
+console.log('\nJ · Literature under the mark scheme — one comparison, the AO-only card, chat-truth sessions');
+{
+    const sl = (name) => { const i = JS.indexOf('    function ' + name + '('); if (i === -1) return ''; let d = 0; for (let k = JS.indexOf('{', i); k < JS.length; k++) { if (JS[k] === '{') d++; else if (JS[k] === '}') { d--; if (!d) return JS.slice(i, k + 1); } } return ''; };
+    const constLine = (name) => (JS.match(new RegExp('    const ' + name + ' = [^\\n]*\\n')) || [''])[0];
+    const rows = {}, secs = [];
+    let history = [];
+    const ctx = {
+        window: { WML_MARK_SCHEMES: data }, state: { board: 'aqa', subject: 'shakespeare', text: 'macbeth' }, console,
+        document: {
+            querySelector: (sel) => { const m = /data-field-id="([^"]+)"/.exec(sel); return (m && m[1] in rows) ? { textContent: rows[m[1]] } : null; },
+            getElementById: () => ({ querySelectorAll: () => secs.map((x) => ({ getAttribute: () => x.label, textContent: x.text || '' })) }),
+        },
+        _canvasHistoryHook: () => history,
+    };
+    vm.createContext(ctx);
+    vm.runInContext(constLine('LIT_CALIB_KEY') + kbSrc
+        + ['_litLadderKeepsAoCard', '_ladderFids', '_ladderRowText', '_calibFids', '_calibActualFor', '_ladderMarksInHistory', '_reflectAoOnly',
+           '_ladderReplacesReflect', '_ladderIsLit', '_litEssayActual', '_litCalibGroup', '_calibGroups'].map(sl).join('\n'), ctx);
+    const run = (code) => vm.runInContext(code, ctx);
+
+    rows['sa-ms-aqa_lit_p1_ao123-mark'] = '22 / 30';
+    rows['sa-ms-aqa_lit_p1_ao123-level'] = 'Level 5 · Middle of this level';
+    rows['sa-ms-aqa_lit_p1_ao123-reason'] = 'my thesis runs through every paragraph';
+    rows['sa-ms-aqa_lit_ao4-mark'] = '3 / 4';
+    [['Introduction', '2.5 / 3'], ['Body 1', '6 / 8'], ['Body 2', '6.5 / 8'], ['Body 3', '5 / 8'], ['Conclusion', '5 / 7']]
+        .forEach(([s, m]) => secs.push({ label: 'Feedback: ' + s + ' (' + m + ')' }));
+    let g = run('_calibGroups()');
+    ok(g.length === 1 && g[0].key === 'aqa_lit_essay', 'Literature calibrates ONCE, for the whole essay — got ' + g.length + ' group(s)');
+    ok(g[0].mineNum === 25 && g[0].max === 34, 'the student\'s own mark = AO1–AO3 22 + AO4 3 = 25 / 34 — got ' + g[0].mineNum + ' / ' + g[0].max);
+    ok(g[0].actual && g[0].actual.mark === 25 && g[0].actual.max === 34, 'Sophia\'s = 2.5 + 6 + 6.5 + 5 + 5 = 25 / 34, same scale, no conversion — got ' + JSON.stringify(g[0].actual));
+    ok(g[0].myLevel === 'Level 5 · Middle of this level' && /thesis/.test(g[0].myWhy), 'the level and reason shown are the AO1–AO3 ladder\'s');
+    secs[3].label = 'Feedback: Body 3 (— / 8)';
+    ok(run('_calibGroups()')[0].actual === null, 'one paragraph still unmarked → Sophia\'s total is NOT ready (null), never a partial sum');
+    secs[3].label = 'Feedback: Body 3 (5 / 8)';
+    const _conc = secs.pop();
+    ok(run('_calibGroups()')[0].actual === null, 'a paragraph box MISSING (boxes total /27, scheme /34) → no comparison, never a rescaled "plausible" mark');
+    secs.push(_conc);
+    ctx.state.subject = '19th_century'; ctx.state.text = 'christmas_carol';
+    secs.length = 0;
+    [['Introduction', '2 / 3'], ['Body 1', '5 / 7'], ['Body 2', '5 / 7'], ['Body 3', '4.5 / 7'], ['Conclusion', '4 / 6']]
+        .forEach(([s, m]) => secs.push({ label: 'Feedback: ' + s + ' (' + m + ')' }));
+    g = run('_calibGroups()');
+    ok(g[0].max === 30 && g[0].mineNum === 22 && g[0].actual && g[0].actual.max === 30 && g[0].actual.mark === 21,
+        '19th century: 22 / 30 vs 20.5 → 21 / 30 — the AO4 row is not in its sum — got ' + JSON.stringify({ mine: g[0].mineNum, max: g[0].max, act: g[0].actual }));
+    ctx.state.subject = 'language'; ctx.state.text = 'aqa_lang_paper_1';
+    ok(run('_calibGroups()').length === 5, 'CONTROL: Language still calibrates per question × AO (5 groups)');
+
+    // the session predicates — chat-truth, the same evidence as the server's ladder_marks_in_history()
+    const handOff = { role: 'user', hidden: true, content: "SYSTEM (not from the student): … THE STUDENT'S OWN MARKS (their level, their mark…):\n- Essay AO1 + AO2 + AO3: Level 5 · 22 / 30" };
+    ctx.state.subject = 'shakespeare'; ctx.state.text = 'macbeth'; history = [];
+    ok(run('_ladderMarksInHistory()') === false && run('_reflectAoOnly()') === false && run('_ladderReplacesReflect()') === false,
+        'no hand-off in the chat (a session that began before the ladder) → the OLD card, exactly what the server still expects');
+    history = [handOff];
+    ok(run('_reflectAoOnly()') === true && run('_ladderReplacesReflect()') === false, 'Literature after the hand-off → the AO-only card (not removed)');
+    ctx.state.subject = 'language'; ctx.state.text = 'aqa_lang_paper_1';
+    ok(run('_reflectAoOnly()') === false && run('_ladderReplacesReflect()') === true, 'Language after the hand-off → no card at all (§39, unchanged)');
+    ok(/function _ladderReplacesReflect\(\) \{ try \{ return _ladderMarksInHistory\(\) && !_reflectAoOnly\(\); \}/.test(JS),
+        '_ladderReplacesReflect no longer reads the live editor DOM (Mishel 1237: it read FALSE after she had walked the ladder)');
+    // THE ONE SWITCH (server LIT_LADDER_AO_CARD → swmlConfig.litLadderAoCard): off → Literature gets NO card.
+    ctx.state.subject = 'shakespeare'; ctx.state.text = 'macbeth';
+    ctx.window.swmlConfig = { litLadderAoCard: '0' };
+    ok(run('_reflectAoOnly()') === false && run('_ladderReplacesReflect()') === true, "switch '0' → the Literature card is removed entirely (§39 path)");
+    ctx.window.swmlConfig = { litLadderAoCard: '1' };
+    ok(run('_reflectAoOnly()') === true, "switch '1' → the AO-only card");
+    delete ctx.window.swmlConfig;
+
+    const panel = JS.slice(JS.indexOf('    function _renderReflectPanel('), JS.indexOf('    function _renderReflectPanel(') + 16000);
+    ok(/const aoOnly = _reflectAoOnly\(\);/.test(panel) && /const showPredict = !aoOnly && /.test(panel), 'the card: no mark-prediction row in a Literature mark-scheme session');
+    ok(/if \(!aoOnly\) wrap\.appendChild\(rateWrap\);/.test(panel), 'the card: no 1–5 self-rating row either');
+    ok(/const ok = \(aoOnly \|\| rating != null\)/.test(panel), 'the card: Submit needs only an AO or a line of text (no rating to wait for)');
+    ok(/msg = 'AO targeting: ' \+ \(aoStr \|\| 'not chosen'\) \+ '\.' \+ \(detail \? ' What I was trying to show: ' \+ detail : ''\);/.test(panel),
+        'the card sends ONE labelled line — the shape the protocol\'s MARK-SCHEME SESSION rule reads');
+    ok(/\(_pred == null && _ladderIsLit\(\)\) \? actTxt/.test(JS), 'a Literature card with no paragraph prediction shows Actual only — no five "Predicted —" placeholders');
+    ok(/g\.key === LIT_CALIB_KEY \? 'five paragraph marks, added up'/.test(JS), 'the comparison card says how Sophia\'s number was made');
+    ok(/if \(r && r\.min === r\.max\) \{/.test(JS), 'a one-mark level (AO4 High / Threshold) is filed without a pointless top/middle/bottom question');
+    ok(/if \(_r\.length && _r\[_r\.length - 1\]\.level === step\.level\.level\) st\.stoppedAt = step\.level\.level;/.test(JS),
+        'a top-out ("better than the top level") records WHERE it stopped — it used to file "Level null", no mark, and re-open the same question');
 }
 
 console.log('\n' + (fail ? '❌' : '✅') + ' assess-ladder-host-harness: ' + pass + ' passed, ' + fail + ' failed');
