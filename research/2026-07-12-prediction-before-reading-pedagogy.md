@@ -1,5 +1,10 @@
 # Prediction-Before-Reading Pedagogy — Research Findings (P2 Planning §10a / D2)
 
+> ⚠️ **CORRECTIONS (2026-09-30, WML FIXLIST #688)** — from Blog Layout/research/TEACHING-SEQUENCE-RESEARCH-2026-09-30.md (blog lane, sources read at source, 2026-09-30). Read before citing this note:
+> - Bertsch d=.40 and the g .66/.54/.01/.04 figures are UNVERIFIED (the source was not reached).
+> - Richland d=1.1, 75% v 56%, 95% wrong, 90% v 78% are CONFIRMED.
+> See PEDAGOGY.md §49 for the constraint list.
+
 **Date:** 2026-07-12
 **Method:** deep-research harness — 5 search angles, 22 sources fetched, 79 claims extracted,
 25 verified by 3-vote adversarial panels → 21 confirmed, 4 refuted, 0 unverified.

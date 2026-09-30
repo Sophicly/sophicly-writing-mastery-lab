@@ -1,4 +1,9 @@
 # Scaffolding Escalation & Socratic Tutoring — Research Basis for the Planning Ladder
+
+> ⚠️ **CORRECTIONS (2026-09-30, WML FIXLIST #688)** — from Blog Layout/research/TEACHING-SEQUENCE-RESEARCH-2026-09-30.md (blog lane, sources read at source, 2026-09-30). Read before citing this note:
+> - Productive failure helps CONCEPTUAL understanding and transfer, not procedures, and the evidence is STEM only;
+> - it reverses for 2nd–5th graders and for domain-general skills (Sinha & Kapur 2021).
+> See PEDAGOGY.md §49 for the constraint list.
 **Date:** 2026-07-18 · **For:** the WML planning-protocol scaffolding ladder (applied design in `PLANNING-PROTOCOL-AUDIT-AND-PLAN-2026-07-18.md` §2).
 **Question:** how hard do we push a student to think before we help, what do the scaffolding levels look like, and how does even the weakest student get unstuck without endless frustrating questioning?
 

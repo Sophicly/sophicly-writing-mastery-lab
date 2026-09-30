@@ -1,5 +1,10 @@
 # Front-loading vs spreading the anthology texts — what the research supports
 
+> ⚠️ **CORRECTIONS (2026-09-30, WML FIXLIST #688)** — from Blog Layout/research/TEACHING-SEQUENCE-RESEARCH-2026-09-30.md (blog lane, sources read at source, 2026-09-30). Read before citing this note:
+> - "spaced beat massed at every retention interval" is NOT in Cepeda 2006 — the paper says massing is "normally inferior".
+> - "more than a letter grade" (Rawson 2013) is UNVERIFIED (abstract only).
+> See PEDAGOGY.md §49 for the constraint list.
+
 **Date:** 2026-09-19 · **Asked by:** Neil (WML FIXLIST #560) · **Status:** recommendation, awaiting his ruling
 
 ## The question

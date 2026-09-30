@@ -2621,3 +2621,76 @@ against mark/worth, tolerance one step, tie → the part worth more marks); host
 
 **NOT decided, recorded for him:** Language papers — their skills ratings are still used only at the end (their per-question
 comparison is the ladder mark). Whether they get the same per-question skills check is his call.
+
+---
+
+## §49. ⭐⭐ THE CYCLE EACH TEXT GOES THROUGH — diagnostic-as-test, supported redraft, switch, return, then mixed papers — and what the research does and does not back (Neil, 2026-09-30; blog FIXLIST B568 → WML FIXLIST #688)
+
+**Why it is recorded here:** Neil, to the blog lane: *"make sure this is documented — we have gone through this before."*
+§32 holds WHAT is taught, in order (humanity → criteria → structure → strengths/weaknesses → redraft → portfolio →
+routine). This section holds HOW each text is cycled. The two are one design, not rivals.
+
+**His words (voice, 30 Sep 2026, as captured by the blog lane):** *"they initially do it by themselves and then they do a
+redraft that has a lot of support… they also have to build up patterns… in their mind that they can easily recognize…
+understanding who their main protagonist is first… how all the other themes and characters link to that… we're trying to
+build layers of understanding to improve automaticity and then in the last few months before the exam, last three months,
+that's when we focus purely on things like random past papers… diagnostic which is completely by themselves and then
+feedback and then redraft and then feedback again… the redraft… practice planning and then outlining polishing to a 100%
+level… model answers help from tutors… switch to a different text… eventually come back to that previous text so then
+we're also practicing spaced repetition… they have to be able to analyze text they haven't seen before but they also have
+to have very strong foundational skills and also a wide and deep range of knowledge for easy pattern recognition and
+automaticity."*
+
+**THE RULING — the cycle:**
+1. **Diagnostic-as-test** — written completely alone. It is a TEST and a MEASUREMENT (it tells us what support to fit), not
+   a lesson (the existing "diagnostic tests, redraft trains" rule, §3 area).
+2. **Feedback.**
+3. **Redraft with heavy support** — planning → outlining → polishing "to a 100% level", model answers, tutor help.
+4. **Feedback again.**
+5. **Switch to a different text** (and to Language).
+6. **Return to the earlier text later** — spaced repetition.
+7. **The last ~three months: random past papers.**
+
+**THE AIM:** very strong foundations plus a wide, deep range of knowledge → pattern recognition and automaticity — while
+the student can still analyse a text they have never seen. **Protagonist first**, then every theme and character linked to
+it (whole → parts).
+
+**WHAT THE RESEARCH SUPPORTS** — read at source by the blog lane (four agents, PDFs, quotes copied from the text; one
+re-checked independently). Full notes: `Blog Layout/research/TEACHING-SEQUENCE-RESEARCH-2026-09-30.md` and
+`teaching-sequence-2026-09-30/{A,B,C,D}-*.md`. ⚠️ **No study tests this sequence, or any part of it, on GCSE English**
+— the evidence is adults learning facts, school maths and a few writing studies. Say that whenever it is cited.
+- ✅ **Alone first, then feedback** — the attempt helps only when feedback follows and builds on it (Kornell, Hays & Bjork
+  2009, p.995; adults, facts).
+- ✅ **Heavy support for novices, faded as they improve** (Kirschner, Sweller & Clark 2006, p.75; Kalyuga et al. 2003,
+  pp.26–27, the expertise-reversal effect).
+- ✅ **Expert reading rests on stored patterns** (Peskin 1998, unseen poems); automaticity frees working memory.
+- ✅ **Returning after a gap is spacing — IF the return is retrieval, not re-reading** (Cepeda 2006/2008; Roediger &
+  Karpicke 2006).
+- ✅ **Focused feedback plus a redraft beats comments alone** (Hillocks 1982 via 1986, pupils ~12–14).
+
+**CONSTRAINTS — where the research pushes back. Each is a design question, not a ruling:**
+1. **"Random past papers only in the last three months."** The only school trials (Rohrer 2015/2020, maths, 7th grade)
+   mixed practice THROUGH the course; blocked-all-term with a mixed review at the end lost **38% v 61%**. The same paper
+   keeps a small blocked start for each new skill. No study tests essays, or mixed-only-at-the-end — an inference from
+   maths, not a finding. ⬜ **OPEN FOR NEIL:** short mixed unseen-question sets earlier (after each text)? If he keeps the
+   current design, record it here as "researched, kept" so it is not re-argued.
+2. **Switching text does not transfer by itself.** Learners "tend not to spontaneously compare" (Gentner, Loewenstein &
+   Thompson 2003, p.400): 48% transfer when asked to compare v 19% studied apart. ⬜ **Not yet checked:** whether any
+   protocol asks "how is this like the earlier text?" on the return. Check the protocols before claiming the gap.
+3. **Support needs a FADE rule.** Research measures learning by the next UNAIDED attempt, not the polished redraft. Nothing
+   in the cycle says help is reduced on text 2 or before the next diagnostic. (Weak writers learned more from models,
+   strong writers from practice alone — Rijlaarsdam et al. 2008.) This is the same principle as §1 (help calibrated to the
+   instruction received).
+4. ⛔ **Never claim** "some skills can only be practised on unseen material" — no source says it. And never cite Ericsson
+   1993 for "being told does not work": the paper builds a teacher into deliberate practice; what fails is repetition
+   WITHOUT feedback (p.367).
+5. **Deliberate practice has weak school evidence** (Macnamara et al. 2014). Borrow the design principles; never promise a
+   result.
+
+**SILENT — say so, never fill:** the whole sequence as one design; redrafting the same piece v writing new ones;
+"protagonist first"; retrieval practice for essay SKILL (it is fine for quotations and terms); portfolios of best drafts.
+
+**CORRECTIONS the blog lane found in OUR notes** — each note now carries a dated correction block (§20: mark what could not
+be confirmed): `research/2026-09-19-front-loading-vs-spreading-anthology-texts.md` · `research/2026-07-18-scaffolding-
+escalation-and-socratic-tutoring.md` · `research/2026-07-12-prediction-before-reading-pedagogy.md` · `research/2026-07-18-
+context-knowledge-and-concept-driven-interpretation.md`.

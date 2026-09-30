@@ -1,4 +1,9 @@
 # Context Knowledge & Concept-Driven Interpretation — Research Basis
+
+> ⚠️ **CORRECTIONS (2026-09-30, WML FIXLIST #688)** — from Blog Layout/research/TEACHING-SEQUENCE-RESEARCH-2026-09-30.md (blog lane, sources read at source, 2026-09-30). Read before citing this note:
+> - The baseball "out-comprehended" wording is UNVERIFIED (the study measured RECALL);
+> - "situation model cannot form" overstates it (the source says "less effective"); the Willingham 2009 claim is from a book not read.
+> See PEDAGOGY.md §49 for the constraint list.
 **Date:** 2026-07-18 · **For:** the WML context/concept design (applied in `PLANNING-PROTOCOL-AUDIT-AND-PLAN-2026-07-18.md` §8).
 **Claim being grounded:** students must build interpretations OUT OF understanding the text's context; most arrive knowing almost nothing; we ASK-FIRST, then build knowledge (expert insight + Library reading), then have them derive the concept themselves (ownership preserved).
 
