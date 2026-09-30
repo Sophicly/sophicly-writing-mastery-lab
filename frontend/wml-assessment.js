@@ -65201,10 +65201,30 @@
                 relabelled++;
             }
         });
-        try { if (tr.docChanged) canvasEditor.view.dispatch(tr); }
-        catch (e) { console.warn('WML ladder wording heal skipped —', e && e.message); return; }
+        // ⭐ v7.20.678 (#691 — MEASURED on staging with Neil's own browser state, a document already in
+        // localStorage): removing the band boxes lowers the protected-node count (70 → 68), so the
+        // Section Guard in onTransaction undid the WHOLE heal ("Section deletion blocked — reverting")
+        // a moment after it logged success. A load-time heal is a migration: run it under
+        // _migrationActive, as the other structural heals do, and keep it out of the student's undo.
+        if (tr.docChanged) {
+            tr.setMeta('addToHistory', false);
+            _migrationActive = true;
+            try { canvasEditor.view.dispatch(tr); }
+            catch (e) { console.warn('WML ladder wording heal skipped —', e && e.message); return; }
+            finally { _migrationActive = false; }
+        }
         const intro = _setParagraphContentViaPM(t => t.trim() === LADDER_SA_OLD.intro, [{ text: LADDER_SA_INTRO, italic: true }]);
         if (!relabelled && !removed && !intro) return;
+        // Fail loud if anything put the old wording back — a success line for a reverted edit is how
+        // this shipped the first time.
+        // (A band box KEPT because it holds the student's own text keeps its label — not counted.)
+        const _oldLabels = [LADDER_SA_OLD.level, LADDER_SA_OLD.met, LADDER_SA_OLD.mark, LADDER_SA_OLD.reason];
+        let _stale = 0;
+        canvasEditor.state.doc.descendants(n => {
+            if (n.type.name === 'inputField' && n.attrs && /^sa-ms-.+-(level|met|mark|reason)$/.test(n.attrs.fieldId || '')
+                && _oldLabels.indexOf(n.attrs.prompt) !== -1) _stale++;
+        });
+        if (_stale) { console.warn('WML ladder wording heal: ' + _stale + ' old label(s) still in the document after the heal — something reverted it'); return; }
         console.warn('WML ladder wording heal: ' + relabelled + ' label(s) rewritten, ' + removed + ' band box(es) removed' + (intro ? ', intro rewritten' : ''));
         try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}

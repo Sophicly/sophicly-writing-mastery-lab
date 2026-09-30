@@ -61,7 +61,9 @@ const NAMES = ['LADDER_SA_LABEL', 'CALIB_LABEL', 'LIT_CALIB_KEY', 'escapeHTML', 
     'GAP_SECTIONS', '_gapFids',   // v7.20.674 (#686): the Literature Calibration template carries the paragraph rows
     'buildCalibrationSection', 'healLadderSectionsUnderSelfAssessment',
     // v7.20.677 (#691): the wording heal + the one-ask confidence fix, both driven below
-    'LADDER_SA_INTRO', 'LADDER_SA_PROMPTS', 'LADDER_SA_OLD', '_setParagraphContentViaPM', 'healLadderSaWording', '_ladderHostAskConfidence'];
+    'LADDER_SA_INTRO', 'LADDER_SA_PROMPTS', 'LADDER_SA_OLD', '_setParagraphContentViaPM', 'healLadderSaWording', '_ladderHostAskConfidence',
+    // v7.20.678: the Section Guard's own node count — the guard reverted the first cut of the heal
+    '_PROTECTED_NODE_TYPES', 'countSections'];
 const CODE = NAMES.map((n) => { const s = sliceName(n); if (!s) throw new Error('cannot slice ' + n); return s; }).join('\n');
 
 const browser = await chromium.launch();
@@ -194,9 +196,20 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
             chat.querySelectorAll('.swml-quick-actions').forEach((q) => q.remove());
             const b = document.createElement('div'); b.className = 'bubble'; b.innerHTML = '<div class="swml-bubble-content">' + html + '</div>'; chat.appendChild(b); return b; } };
         const el = (tag, o) => { const n = document.createElement(tag); if (o && o.className) n.className = o.className; if (o && o.textContent) n.textContent = o.textContent; if (o && o.onClick) n.addEventListener('click', o.onClick); return n; };
+        // THE SECTION GUARD (wml-assessment.js onTransaction, v7.13.92) — the same rule, on the same
+        // sliced countSections / _migrationActive the shipped heal sets. MEASURED 2026-09-30: without
+        // _migrationActive the guard undid the whole heal on a document loaded from localStorage, while
+        // this probe (which had no guard) passed. assess-ladder-host-harness pins the shipped guard's shape.
+        const GUARD = '\nlet _undoGuardActive = false, _sectionCount = 0, _reverted = 0;\n'
+            + 'function guardTx(editor, transaction) {\n'
+            + '  if (!transaction.docChanged || _sectionCount <= 0) return;\n'
+            + '  if (_migrationActive || _undoGuardActive) { _sectionCount = countSections(editor.state.doc); return; }\n'
+            + '  const newCount = countSections(editor.state.doc);\n'
+            + '  if (newCount < _sectionCount) { _reverted++; _undoGuardActive = true; editor.commands.undo(); _undoGuardActive = false; _sectionCount = countSections(editor.state.doc); return; }\n'
+            + '  _sectionCount = newCount;\n}\n';
         const api = new Function('state', 'WML', '_scoreOverlaysRefresh', '_recomputeAllCompletion', 'saveCanvasContent', '_chatShell', 'formatAI', 'el', '_writeOutlineRowField', 'saveCanvasChat', '_ladderHostRenderCurrent',
-            'let canvasEditor = null;\n' + CODE
-            + '\nreturn { setEd: (e) => { canvasEditor = e; }, sectionHTML, inputHTML, heal: healLadderSaWording, ask: _ladderHostAskConfidence, _ladderFids, _ladderSchemeKeysFor, OLD: LADDER_SA_OLD, NEW: LADDER_SA_PROMPTS, INTRO: LADDER_SA_INTRO, buildMarkSchemeSelfAssessSection };')(
+            'let canvasEditor = null; let _migrationActive = false;\n' + CODE + GUARD
+            + '\nreturn { setEd: (e) => { canvasEditor = e; _sectionCount = countSections(e.state.doc); }, guardTx, reverted: () => _reverted, sectionHTML, inputHTML, heal: healLadderSaWording, ask: _ladderHostAskConfidence, _ladderFids, _ladderSchemeKeysFor, OLD: LADDER_SA_OLD, NEW: LADDER_SA_PROMPTS, INTRO: LADDER_SA_INTRO, buildMarkSchemeSelfAssessSection };')(
             state, { hasAssessmentSections: () => true, recordTurn: () => null }, () => {}, () => {}, () => { saves++; },
             shell, (x) => x, el, () => true, () => {}, () => { rendered++; });
 
@@ -211,7 +224,8 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
         inner += '<h3>Confidence</h3>' + api.inputHTML('How confident are you in your own marks? (1 = not at all · 5 = very)', 'sa-ms-confidence');
         const html = api.sectionHTML('action', 'Self-Assessment', true, null, '<p>SA</p>') + api.sectionHTML('action', 'Mark-Scheme Self-Assessment', true, null, inner)
             + api.sectionHTML('feedback', 'Feedback: Q2 (5 / 8)', true, null, '<p>fb</p>');
-        const editor = new T.Editor({ element: document.getElementById('ed'), extensions: [T.StarterKit, SectionBlock, InputField], content: html });
+        const editor = new T.Editor({ element: document.getElementById('ed'), extensions: [T.StarterKit, SectionBlock, InputField], content: html,
+            onTransaction: ({ editor: e, transaction }) => api.guardTx(e, transaction) });
         api.setEd(editor);
         const fill = (fid, text) => { let at = null; editor.state.doc.descendants((n, p) => { if (at === null && n.type.name === 'inputField' && n.attrs.fieldId === fid) at = p; }); if (at !== null) editor.view.dispatch(editor.state.tr.insertText(text, at + 1)); return at !== null; };
         const filled = fill('sa-ms-aqa_lang1_q5_ao5-level', 'Level 4 · Upper Level 4 · Top of this level') && fill('sa-ms-aqa_lang1_q5_ao5-band', 'Upper Level 4')
@@ -238,13 +252,14 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
         const asks2 = Array.from(chat.children).filter((n) => /One last tap/.test(n.textContent));
         const last2 = chat.lastElementChild;
         const btns = (n) => (n && n.querySelectorAll('.swml-sa-walk-btn').length) || 0;
-        return { r1, p1, tx1, tx2, saves1, filled, keys: keys.map((k) => k.key), NEW: api.NEW, OLD: api.OLD, INTRO: api.INTRO,
+        return { r1, p1, tx1, tx2, saves1, filled, reverted: api.reverted(), keys: keys.map((k) => k.key), NEW: api.NEW, OLD: api.OLD, INTRO: api.INTRO,
             asks: asks.length, lastIsAsk: last === asks[asks.length - 1], lastBtns: btns(last), btnText: last ? Array.from(last.querySelectorAll('.swml-sa-walk-btn')).map((b) => b.textContent) : [],
             asks2: asks2.length, last2IsAsk: last2 === asks2[asks2.length - 1], last2Btns: btns(last2),
             freshHasBand: /-band"/.test(api.buildMarkSchemeSelfAssessSection(null)) };
     }, { CODE });
 
     const bandLeft = Object.keys(r.r1).filter((f) => /-band$/.test(f));
+    ok('the Section Guard did NOT revert the heal (it runs as a migration)', r.reverted === 0, 'reverted=' + r.reverted);
     ok('the Band box already inside its level box is removed ("Upper Level 4")', r.filled && !r.r1['sa-ms-aqa_lang1_q5_ao5-band']);
     ok('every EMPTY Band box is removed', bandLeft.every((f) => r.r1[f].t.trim() !== ''), bandLeft.join(', '));
     ok('a Band box holding something the level box does not is KEPT — nothing typed is ever lost', bandLeft.length === 1 && r.r1['sa-ms-aqa_lang1_q2_ao2-band'] && r.r1['sa-ms-aqa_lang1_q2_ao2-band'].t === 'my own note');

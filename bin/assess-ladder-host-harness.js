@@ -194,6 +194,16 @@ ok(/band: _ladderBandOf\(g\.key, _ladderRowText\(g\.fids\.level\)\) \|\| null,/.
 ok(/querySelectorAll\('\[data-swml-ask="ladder-confidence"\]'\)\.forEach\(n => n\.remove\(\)\)/.test(JS) && /_ab\.setAttribute\('data-swml-ask', 'ladder-confidence'\)/.test(JS),
     'the confidence ask removes an earlier copy and tags itself — ONE ask after a reload, with its buttons (#691)');
 ok(/try \{ healLadderSaWording\(\); \} catch \(_\) \{\}/.test(JS), 'the wording heal runs in the settled-state pass, beside the section heal (#691)');
+{
+    // v7.20.678: the heal removes protected nodes, so it must run as a migration or the Section Guard
+    // undoes it (MEASURED on staging). The probe replays the guard's rule — pin the shipped shape here.
+    const wh = JS.slice(JS.indexOf('    function healLadderSaWording() {'), JS.indexOf('    function migrateDocument() {'));
+    ok(/tr\.setMeta\('addToHistory', false\);\s*_migrationActive = true;\s*try \{ canvasEditor\.view\.dispatch\(tr\); \}[\s\S]{0,160}finally \{ _migrationActive = false; \}/.test(wh),
+        'the wording heal dispatches under _migrationActive and outside undo history (#691)');
+    ok(/if \(_migrationActive \|\| _undoGuardActive\) \{\s*_sectionCount = countSections\(editor\.state\.doc\);\s*return;\s*\}/.test(JS)
+        && /if \(newCount < _sectionCount\) \{[\s\S]{0,240}editor\.commands\.undo\(\);/.test(JS),
+        'the Section Guard still has the shape ladder-sections-heal-probe replays (migration bypass; undo on a lower count)');
+}
 ok(/\(step\.level\.name \? ' — ' \+ step\.level\.name : ''\) \+ \(st\.bandName \? ' · ' \+ st\.bandName : ''\)/.test(JS), 'a one-mark level still writes the band into the level box (the band box is gone)');
 ok(/_ladderOpenHook = function \(o\) \{ return _examinerLadderCtl\.open\(o\); \};/.test(JS), 'the closure-local ladder is reached through a module-scope hook (the .898 lesson)');
 
