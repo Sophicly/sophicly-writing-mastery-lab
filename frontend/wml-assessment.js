@@ -8034,24 +8034,36 @@
             return keys.map(k => ({ key: k, q: all[k].question, ao: all[k].ao, max: all[k].maxMarks, title: all[k].title || '' }));
         } catch (e) { return []; }
     }
+    // v7.20.677 (#691): no `band` box. The ladder writes a band only where the host hands it a fid,
+    // and the band the student picks is already written into the LEVEL box ("Level 4 · Upper Level 4
+    // · Top of this level"); _ladderBandOf reads it back from there.
     function _ladderFids(key) {
-        return { level: 'sa-ms-' + key + '-level', band: 'sa-ms-' + key + '-band', met: 'sa-ms-' + key + '-met',
+        return { level: 'sa-ms-' + key + '-level', met: 'sa-ms-' + key + '-met',
                  mark: 'sa-ms-' + key + '-mark', reason: 'sa-ms-' + key + '-reason' };
     }
+    // ⭐ v7.20.677 (#691 — Neil, reading the section: "is that what I've given myself? I think so.
+    // But the wording is not clear… and at the bottom it shows what Sophia is going to give me or
+    // something?"). Every box in this section is the STUDENT'S own decision, so every label says so,
+    // and the intro says where Sophia's marks go instead. The "Band (where the board prints one)"
+    // box is gone: only AQA Language Q5 content prints Upper/Lower halves, so on every other scheme
+    // it could never be filled — and he read the empty box as Sophia's. Measured on prod 2026-09-30:
+    // 155 band boxes in 31 docs, 149 empty, the other 6 already inside their own level box.
+    const LADDER_SA_INTRO = 'This section is your own marking. Before Sophia marks your answer, you mark it yourself, using the exam board’s level descriptors. Every box here holds what you decided. Sophia’s marks go in the Feedback sections. The Calibration section then puts your marks and hers side by side.';
+    const LADDER_SA_PROMPTS = { level: 'The level you gave yourself', met: 'The criteria you said your answer meets', mark: 'The mark you gave yourself', reason: 'Your reason — the evidence in your own answer' };
+    // The wording every document saved before .677 carries. healLadderSaWording replaces EXACTLY these.
+    const LADDER_SA_OLD = { intro: 'Before Sophia marks, you mark — against the exam board’s own level descriptors, one question at a time. Your level, the criteria you judged met, your mark and your reason are filed here, and Sophia sees them before she gives you hers.', level: 'Your level (and band / placement)', met: 'Criteria you judged met', mark: 'Your mark', reason: 'Why — the evidence in your own response', band: 'Band (where the board prints one)' };
     // The document section — ONE producer, used by the template AND the on-load heal.
     function buildMarkSchemeSelfAssessSection(topicData) {
         const keys = _ladderSchemeKeysFor(topicData);
         if (!keys.length) return '';
-        let inner = '<p><em>Before Sophia marks, you mark — against the exam board’s own level descriptors, one question at a time. '
-            + 'Your level, the criteria you judged met, your mark and your reason are filed here, and Sophia sees them before she gives you hers.</em></p>';
+        let inner = '<p><em>' + LADDER_SA_INTRO + '</em></p>';
         keys.forEach(k => {
             const f = _ladderFids(k.key);
             inner += '<h3>' + escapeHTML(k.q + ' — ' + k.ao + ' (/' + k.max + ')') + '</h3>';
-            inner += inputHTML('Your level (and band / placement)', f.level);
-            inner += inputHTML('Criteria you judged met', f.met);
-            inner += inputHTML('Your mark', f.mark);
-            inner += inputHTML('Why — the evidence in your own response', f.reason);
-            inner += inputHTML('Band (where the board prints one)', f.band);
+            inner += inputHTML(LADDER_SA_PROMPTS.level, f.level);
+            inner += inputHTML(LADDER_SA_PROMPTS.met, f.met);
+            inner += inputHTML(LADDER_SA_PROMPTS.mark, f.mark);
+            inner += inputHTML(LADDER_SA_PROMPTS.reason, f.reason);
         });
         inner += '<h3>Confidence</h3>';
         inner += inputHTML('How confident are you in your own marks? (1 = not at all · 5 = very)', 'sa-ms-confidence');
@@ -8062,6 +8074,19 @@
             const elx = document.querySelector('#swml-tiptap-editor [data-field-id="' + fid + '"]');
             return elx ? String(elx.textContent || '').trim() : '';
         } catch (e) { return ''; }
+    }
+    // v7.20.677 (#691): the band the student picked, read back from the level box — only a level the
+    // board splits into Upper/Lower (more than one band) can name one. '' where there is none.
+    function _ladderBandOf(key, levelText) {
+        try {
+            const s = window.WML_MARK_SCHEMES && window.WML_MARK_SCHEMES[key];
+            if (!s || !levelText) return '';
+            for (const l of (s.levels || [])) {
+                if (!Array.isArray(l.bands) || l.bands.length < 2) continue;
+                for (const b of l.bands) if (b && b.name && String(levelText).indexOf(b.name) !== -1) return b.name;
+            }
+        } catch (e) {}
+        return '';
     }
     function _ladderHostEligible() {
         if (!state || state.task !== 'assessment' || state.reviewMode) return false;
@@ -8180,7 +8205,15 @@
     }
     function _ladderHostAskConfidence() {
         const plain = 'That is every question marked by you. **One last tap — how confident are you in your own marks?**\n\n1 = not at all · 5 = very';
+        // ⭐ v7.20.677 (#691 — MEASURED, staging probe 2026-09-30: a reload after the last scheme drew
+        // this ask TWICE, the first copy with no buttons). Two routes reach here on a reload — the
+        // chat's own resume (_renderPreChainQuestion 'ladder') and the finished ladder's re-served
+        // wrap, whose onDone did not survive JSON — and every new bubble strips the older bubbles'
+        // buttons. The ask is never stored (durable:false), so an earlier copy is simply removed and
+        // ONE is drawn at the bottom, with its buttons, whichever route arrives last (§4d).
+        try { if (_chatShell.messages) _chatShell.messages.querySelectorAll('[data-swml-ask="ladder-confidence"]').forEach(n => n.remove()); } catch (e) {}
         _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
+        try { const _ab = _chatShell.messages && _chatShell.messages.lastElementChild; if (_ab) _ab.setAttribute('data-swml-ask', 'ladder-confidence'); } catch (e) {}
         WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain }, { durable: false, why: 'a present-state ask — re-derived from the document on entry, never stored' });
         try {
             const bar = el('div', { className: 'swml-quick-actions swml-sa-walk-bar' });
@@ -30487,7 +30520,8 @@
                 if (r && r.min === r.max) {
                     st.placement = 'top';
                     st.stoppedAt = step.level.level;
-                    writeRow(fid('level'), 'Level ' + step.level.level + (step.level.name ? ' — ' + step.level.name : ''), { replace: true });
+                    // v7.20.677: the level box is where the band now lives (#691) — never drop it here.
+                    writeRow(fid('level'), 'Level ' + step.level.level + (step.level.name ? ' — ' + step.level.name : '') + (st.bandName ? ' · ' + st.bandName : ''), { replace: true });
                     writeRow(fid('mark'), r.min + ' / ' + scheme().maxMarks, { replace: true });
                     persist();
                     advance();
@@ -50211,6 +50245,7 @@
             _migrateStep('healSelfAssessmentAboveFeedback', healSelfAssessmentAboveFeedback);
             // v7.20.673 (#683): Mark-Scheme SA + Calibration directly under the SA (insert or move).
             _migrateStep('healLadderSectionsUnderSelfAssessment', healLadderSectionsUnderSelfAssessment);
+            _migrateStep('healLadderSaWording', healLadderSaWording);   // v7.20.677 (#691)
             // v7.19.619: after dividers exist (RESULTS anchor), heal-in the Overall Feedback section.
             _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
             _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
@@ -50236,6 +50271,7 @@
                 try { _healPhase1PrewriteCarry(); } catch (_) {}
                 // v7.20.673: the scheme keys read state.subject/state.text — settled-state second pass.
                 try { healLadderSectionsUnderSelfAssessment(); } catch (_) {}
+                try { healLadderSaWording(); } catch (_) {}   // v7.20.677 (#691)
             }, 1800));
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
             // inject the Reflection section once it resolves (record-gated; the filing
@@ -62065,7 +62101,7 @@
                 try {
                     const items = _ladderHostGroups().map(g => ({
                         key: g.key, question: g.q, ao: g.ao, out_of: g.max,
-                        level: _ladderRowText(g.fids.level) || null, band: _ladderRowText(g.fids.band) || null,
+                        level: _ladderRowText(g.fids.level) || null, band: _ladderBandOf(g.key, _ladderRowText(g.fids.level)) || null,
                         met: _ladderRowText(g.fids.met) || null, mark: _ladderRowText(g.fids.mark) || null,
                         reason: _ladderRowText(g.fids.reason) || null,
                     }));
@@ -65124,6 +65160,52 @@
         if (!changed) return;
         console.warn('WML ladder-sections heal: placed ' + changed + ' section(s) directly under Self-Assessment');
         try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
+        try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+    }
+
+    // ⭐ v7.20.677 (#691): a document saved before .677 carries the old Mark-Scheme Self-Assessment
+    // wording and a Band box per scheme. This rewrites EXACTLY the old strings (a box whose label is
+    // anything else is left alone) and removes a Band box ONLY when it is empty or its text is already
+    // in the same scheme's level box — so nothing a student typed is ever lost. Targeted transactions
+    // only (no whole-document rewrite — the PM law), rows edited back to front so no position shifts under a later
+    // edit, idempotent: a document already on the new wording makes no transaction and no save.
+    function healLadderSaWording() {
+        if (!canvasEditor || state.reviewMode) return;
+        let sec = null;
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (sec) return false;
+            if (n.type.name !== 'sectionBlock') return true;
+            if (String((n.attrs && n.attrs.label) || '') === LADDER_SA_LABEL) sec = { pos: p, node: n };
+            return false;   // section blocks never nest
+        });
+        if (!sec) return;
+        const rows = [], levelText = {};
+        sec.node.descendants((n, rel) => {
+            const m = n.type.name === 'inputField' && n.attrs && /^sa-ms-(.+)-(level|met|mark|reason|band)$/.exec(n.attrs.fieldId || '');
+            if (!m) return true;
+            rows.push({ pos: sec.pos + 1 + rel, node: n, key: m[1], kind: m[2] });
+            if (m[2] === 'level') levelText[m[1]] = (n.textContent || '').trim();
+            return false;
+        });
+        const tr = canvasEditor.state.tr;
+        let relabelled = 0, removed = 0;
+        rows.sort((a, b) => b.pos - a.pos).forEach(r => {
+            if (r.kind === 'band') {
+                const t = (r.node.textContent || '').trim();
+                if (!t || (levelText[r.key] || '').indexOf(t) !== -1) { tr.delete(r.pos, r.pos + r.node.nodeSize); removed++; }
+                return;
+            }
+            if (r.node.attrs.prompt === LADDER_SA_OLD[r.kind]) {
+                tr.setNodeMarkup(r.pos, undefined, Object.assign({}, r.node.attrs, { prompt: LADDER_SA_PROMPTS[r.kind] }));
+                relabelled++;
+            }
+        });
+        try { if (tr.docChanged) canvasEditor.view.dispatch(tr); }
+        catch (e) { console.warn('WML ladder wording heal skipped —', e && e.message); return; }
+        const intro = _setParagraphContentViaPM(t => t.trim() === LADDER_SA_OLD.intro, [{ text: LADDER_SA_INTRO, italic: true }]);
+        if (!relabelled && !removed && !intro) return;
+        console.warn('WML ladder wording heal: ' + relabelled + ' label(s) rewritten, ' + removed + ' band box(es) removed' + (intro ? ', intro rewritten' : ''));
         try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
     }

@@ -59,7 +59,9 @@ function sliceName(name) {
 const NAMES = ['LADDER_SA_LABEL', 'CALIB_LABEL', 'LIT_CALIB_KEY', 'escapeHTML', 'sectionHTML', 'inputHTML', 'dividerHTML',
     '_isLitEssay', '_ladderSchemeKeysFor', '_ladderFids', 'buildMarkSchemeSelfAssessSection', '_calibFids', '_ladderIsLit',
     'GAP_SECTIONS', '_gapFids',   // v7.20.674 (#686): the Literature Calibration template carries the paragraph rows
-    'buildCalibrationSection', 'healLadderSectionsUnderSelfAssessment'];
+    'buildCalibrationSection', 'healLadderSectionsUnderSelfAssessment',
+    // v7.20.677 (#691): the wording heal + the one-ask confidence fix, both driven below
+    'LADDER_SA_INTRO', 'LADDER_SA_PROMPTS', 'LADDER_SA_OLD', '_setParagraphContentViaPM', 'healLadderSaWording', '_ladderHostAskConfidence'];
 const CODE = NAMES.map((n) => { const s = sliceName(n); if (!s) throw new Error('cannot slice ' + n); return s; }).join('\n');
 
 const browser = await chromium.launch();
@@ -154,6 +156,110 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
         ok('…and ONE whole-essay Calibration group, not one per scheme', r.fids.indexOf('calib-aqa_lit_essay-decision') !== -1
             && r.fids.filter((f) => /^calib-.*-decision$/.test(f)).length === 1);
     }
+    await page.close();
+}
+// ── v7.20.677 (#691) ─────────────────────────────────────────────────────────────────────────────
+// OLD-WORDING: a document saved before .677 (old intro, old labels, a Band box per scheme). The heal
+// must rewrite exactly the old strings, remove every Band box that is empty or already inside its
+// level box, KEEP one a student typed something else into, leave filled rows alone, and be idempotent.
+// CONFIDENCE: the reload race MEASURED on staging — two routes each ask, and every new bubble strips
+// the older bubbles' buttons. Exactly one ask may remain, last, with its five buttons.
+{
+    console.log('\n== OLD-WORDING + CONFIDENCE (#691)');
+    const page = await browser.newPage();
+    page.on('pageerror', (e) => console.log('  page error:', e.message));
+    await page.setContent('<!doctype html><html><body><div id="ed"></div><div id="chat"></div></body></html>');
+    await page.addScriptTag({ content: TIPTAP });
+    await page.addScriptTag({ content: DATA });
+    const r = await page.evaluate(({ CODE }) => {
+        const T = window.TipTap;
+        const SectionBlock = T.Node.create({
+            name: 'sectionBlock', group: 'block', content: 'block+', defining: true,
+            addAttributes() { return { sectionType: { default: 'response' }, label: { default: '' } }; },
+            parseHTML() { return [{ tag: 'div[data-section-type]', getAttrs: (d) => ({ sectionType: d.getAttribute('data-section-type'), label: d.getAttribute('data-section-label') || '' }) }]; },
+            renderHTML({ HTMLAttributes: a }) { return ['div', { 'data-section-type': a.sectionType, 'data-section-label': a.label }, 0]; },
+        });
+        // The shipped inputField's attrs: fieldId + prompt (data-prompt), same parse rules.
+        const InputField = T.Node.create({
+            name: 'inputField', group: 'block', content: 'inline*',
+            addAttributes() { return { fieldId: { default: null }, prompt: { default: '' } }; },
+            parseHTML() { return [{ tag: 'div[data-input-field]', getAttrs: (d) => ({ fieldId: d.getAttribute('data-field-id'), prompt: d.getAttribute('data-prompt') || '' }) }]; },
+            renderHTML({ HTMLAttributes: a }) { return ['div', { 'data-input-field': 'true', 'data-field-id': a.fieldId, 'data-prompt': a.prompt }, 0]; },
+        });
+        const state = { board: 'aqa', subject: 'language', text: 'aqa_lang_paper_1', task: 'assessment', reviewMode: false };
+        let saves = 0, rendered = 0;
+        const chat = document.getElementById('chat');
+        // The chat shell as the real addChatMessage behaves: EVERY new bubble strips all older button rows.
+        const shell = { messages: chat, history: [], addMsg: (html) => {
+            chat.querySelectorAll('.swml-quick-actions').forEach((q) => q.remove());
+            const b = document.createElement('div'); b.className = 'bubble'; b.innerHTML = '<div class="swml-bubble-content">' + html + '</div>'; chat.appendChild(b); return b; } };
+        const el = (tag, o) => { const n = document.createElement(tag); if (o && o.className) n.className = o.className; if (o && o.textContent) n.textContent = o.textContent; if (o && o.onClick) n.addEventListener('click', o.onClick); return n; };
+        const api = new Function('state', 'WML', '_scoreOverlaysRefresh', '_recomputeAllCompletion', 'saveCanvasContent', '_chatShell', 'formatAI', 'el', '_writeOutlineRowField', 'saveCanvasChat', '_ladderHostRenderCurrent',
+            'let canvasEditor = null;\n' + CODE
+            + '\nreturn { setEd: (e) => { canvasEditor = e; }, sectionHTML, inputHTML, heal: healLadderSaWording, ask: _ladderHostAskConfidence, _ladderFids, _ladderSchemeKeysFor, OLD: LADDER_SA_OLD, NEW: LADDER_SA_PROMPTS, INTRO: LADDER_SA_INTRO, buildMarkSchemeSelfAssessSection };')(
+            state, { hasAssessmentSections: () => true, recordTurn: () => null }, () => {}, () => {}, () => { saves++; },
+            shell, (x) => x, el, () => true, () => {}, () => { rendered++; });
+
+        // Build the pre-.677 section byte-for-byte from the OLD strings.
+        const keys = api._ladderSchemeKeysFor(null);
+        let inner = '<p><em>' + api.OLD.intro + '</em></p>';
+        keys.forEach((k) => {
+            const f = api._ladderFids(k.key), b = 'sa-ms-' + k.key + '-band';
+            inner += '<h3>' + k.q + ' — ' + k.ao + '</h3>' + api.inputHTML(api.OLD.level, f.level) + api.inputHTML(api.OLD.met, f.met)
+                + api.inputHTML(api.OLD.mark, f.mark) + api.inputHTML(api.OLD.reason, f.reason) + api.inputHTML(api.OLD.band, b);
+        });
+        inner += '<h3>Confidence</h3>' + api.inputHTML('How confident are you in your own marks? (1 = not at all · 5 = very)', 'sa-ms-confidence');
+        const html = api.sectionHTML('action', 'Self-Assessment', true, null, '<p>SA</p>') + api.sectionHTML('action', 'Mark-Scheme Self-Assessment', true, null, inner)
+            + api.sectionHTML('feedback', 'Feedback: Q2 (5 / 8)', true, null, '<p>fb</p>');
+        const editor = new T.Editor({ element: document.getElementById('ed'), extensions: [T.StarterKit, SectionBlock, InputField], content: html });
+        api.setEd(editor);
+        const fill = (fid, text) => { let at = null; editor.state.doc.descendants((n, p) => { if (at === null && n.type.name === 'inputField' && n.attrs.fieldId === fid) at = p; }); if (at !== null) editor.view.dispatch(editor.state.tr.insertText(text, at + 1)); return at !== null; };
+        const filled = fill('sa-ms-aqa_lang1_q5_ao5-level', 'Level 4 · Upper Level 4 · Top of this level') && fill('sa-ms-aqa_lang1_q5_ao5-band', 'Upper Level 4')
+            && fill('sa-ms-aqa_lang1_q5_ao5-mark', '24 / 24') && fill('sa-ms-aqa_lang1_q2_ao2-band', 'my own note') && fill('sa-ms-aqa_lang1_q2_ao2-reason', 'precise quotes');
+        const rows = () => { const o = {}; editor.state.doc.descendants((n) => { if (n.type.name === 'inputField' && n.attrs.fieldId) o[n.attrs.fieldId] = { t: n.textContent, p: n.attrs.prompt }; }); return o; };
+        const paras = () => { const o = []; editor.state.doc.descendants((n) => { if (n.type.name === 'paragraph') o.push(n.textContent); }); return o; };
+        let tx = 0; const orig = editor.view.dispatch.bind(editor.view); editor.view.dispatch = (t) => { if (t.docChanged) tx++; return orig(t); };
+        api.heal();
+        const r1 = rows(), p1 = paras(), tx1 = tx, saves1 = saves;
+        api.heal();
+        const tx2 = tx - tx1;
+
+        // CONFIDENCE — the measured order: wrap bubble, route A asks, route B asks after it.
+        shell.addMsg('Your own mark for Essay — AO4: 4 / 4');
+        api.ask();
+        api.ask();
+        const asks = Array.from(chat.children).filter((n) => /One last tap/.test(n.textContent));
+        const last = chat.lastElementChild;
+        // …and the other order: route A asks BEFORE the wrap is re-served, then route B asks.
+        chat.innerHTML = '';
+        api.ask();
+        shell.addMsg('Your own mark for Essay — AO4: 4 / 4');
+        api.ask();
+        const asks2 = Array.from(chat.children).filter((n) => /One last tap/.test(n.textContent));
+        const last2 = chat.lastElementChild;
+        const btns = (n) => (n && n.querySelectorAll('.swml-sa-walk-btn').length) || 0;
+        return { r1, p1, tx1, tx2, saves1, filled, keys: keys.map((k) => k.key), NEW: api.NEW, OLD: api.OLD, INTRO: api.INTRO,
+            asks: asks.length, lastIsAsk: last === asks[asks.length - 1], lastBtns: btns(last), btnText: last ? Array.from(last.querySelectorAll('.swml-sa-walk-btn')).map((b) => b.textContent) : [],
+            asks2: asks2.length, last2IsAsk: last2 === asks2[asks2.length - 1], last2Btns: btns(last2),
+            freshHasBand: /-band"/.test(api.buildMarkSchemeSelfAssessSection(null)) };
+    }, { CODE });
+
+    const bandLeft = Object.keys(r.r1).filter((f) => /-band$/.test(f));
+    ok('the Band box already inside its level box is removed ("Upper Level 4")', r.filled && !r.r1['sa-ms-aqa_lang1_q5_ao5-band']);
+    ok('every EMPTY Band box is removed', bandLeft.every((f) => r.r1[f].t.trim() !== ''), bandLeft.join(', '));
+    ok('a Band box holding something the level box does not is KEPT — nothing typed is ever lost', bandLeft.length === 1 && r.r1['sa-ms-aqa_lang1_q2_ao2-band'] && r.r1['sa-ms-aqa_lang1_q2_ao2-band'].t === 'my own note');
+    const kinds = ['level', 'met', 'mark', 'reason'];
+    ok('every level / criteria / mark / reason box now carries the new label', r.keys.every((k) => kinds.every((kd) => r.r1['sa-ms-' + k + '-' + kd] && r.r1['sa-ms-' + k + '-' + kd].p === r.NEW[kd])));
+    ok('the student\'s filled rows are untouched', r.r1['sa-ms-aqa_lang1_q5_ao5-level'].t === 'Level 4 · Upper Level 4 · Top of this level'
+        && r.r1['sa-ms-aqa_lang1_q5_ao5-mark'].t === '24 / 24' && r.r1['sa-ms-aqa_lang1_q2_ao2-reason'].t === 'precise quotes');
+    ok('the confidence box is left exactly as it was', r.r1['sa-ms-confidence'] && /^How confident/.test(r.r1['sa-ms-confidence'].p));
+    ok('the old intro is replaced by the new one', r.p1.indexOf(r.OLD.intro) === -1 && r.p1.indexOf(r.INTRO) !== -1);
+    ok('the heal changed the document and saved it', r.tx1 > 0 && r.saves1 === 1, 'tx=' + r.tx1 + ' saves=' + r.saves1);
+    ok('a second run changes nothing (idempotent — no transaction)', r.tx2 === 0);
+    ok('a NEW document is built with no Band box at all', r.freshHasBand === false);
+    ok('reload race (wrap → ask → ask): ONE confidence ask, last in the chat, with 5 buttons', r.asks === 1 && r.lastIsAsk && r.lastBtns === 5, 'asks=' + r.asks + ' buttons=' + r.lastBtns);
+    ok('reload race (ask → wrap → ask): still ONE ask, last, with 5 buttons', r.asks2 === 1 && r.last2IsAsk && r.last2Btns === 5, 'asks=' + r.asks2 + ' buttons=' + r.last2Btns);
+    ok('the buttons carry words (#690)', r.btnText.join('|') === '1 — Not at all|2 — Not very|3 — Somewhat|4 — Fairly|5 — Very', r.btnText.join('|'));
     await page.close();
 }
 await browser.close();

@@ -112,7 +112,7 @@ const fidSrc = JS.slice(JS.indexOf('    function _ladderFids(key) {'), JS.indexO
 function sectionUnder(board, subject) {
     const ctx = {
         window: { WML_MARK_SCHEMES: data }, state: { board, subject }, console,
-        escapeHTML: (x) => String(x), inputHTML: (p, f) => '<row fid="' + f + '"/>',
+        escapeHTML: (x) => String(x), inputHTML: (p, f) => '<row fid="' + f + '" p="' + p + '"/>',
         sectionHTML: (t, l, e, p, inner) => '<sec label="' + l + '">' + inner + '</sec>',
         LADDER_SA_LABEL: 'Mark-Scheme Self-Assessment',
     };
@@ -122,8 +122,29 @@ function sectionUnder(board, subject) {
 }
 const p1 = sectionUnder('aqa', 'language1');
 ok(/label="Mark-Scheme Self-Assessment"/.test(p1), 'P1 section carries the host\'s label');
-ok((p1.match(/<row fid="sa-ms-aqa_lang1_/g) || []).length === 25, 'P1: 5 keys × 5 rows = 25 rows — got ' + (p1.match(/<row fid="sa-ms-aqa_lang1_/g) || []).length);
+ok((p1.match(/<row fid="sa-ms-aqa_lang1_/g) || []).length === 20, 'P1: 5 keys × 4 rows = 20 rows — got ' + (p1.match(/<row fid="sa-ms-aqa_lang1_/g) || []).length);
 ok(/fid="sa-ms-confidence"/.test(p1), 'P1: the confidence row exists');
+// v7.20.677 (#691 — Neil: "is that what I've given myself?… at the bottom it shows what Sophia is
+// going to give me or something?"): every box is the student's own, and says so; no Band box.
+ok(!/-band"/.test(p1), 'no Band box — only AQA Lang Q5 content prints Upper/Lower, and there the level box already carries it (#691)');
+{
+    const prompts = (p1.match(/ p="([^"]*)"/g) || []).map((x) => x.slice(4, -1)).filter((x) => !/^How confident/.test(x));
+    ok(prompts.length === 20 && prompts.every((x) => /you gave yourself|you said your answer|^Your reason/.test(x)),
+        'every box names it as the student\'s own decision — ' + Array.from(new Set(prompts)).join(' | '));
+    ok(!prompts.some((x) => /band|placement/i.test(x)), 'no label mentions band or placement');
+    ok(/Every box here holds what you decided\./.test(p1) && /Sophia’s marks go in the Feedback sections\./.test(p1) && /Calibration section then puts your marks and hers side by side/.test(p1),
+        'the intro says the boxes are the student\'s, and where Sophia\'s marks go instead');
+}
+{
+    const bandSrc = JS.slice(JS.indexOf('    function _ladderBandOf(key, levelText) {'), JS.indexOf('    function _ladderHostEligible() {'));
+    const bctx = { window: { WML_MARK_SCHEMES: data } };
+    vm.createContext(bctx);
+    vm.runInContext(bandSrc + '\nthis.f = _ladderBandOf;', bctx);
+    ok(bctx.f('aqa_lang1_q5_ao5', 'Level 4 · Upper Level 4 · Top of this level') === 'Upper Level 4', 'the saved band is read back from the level box (Lang Q5 AO5 → "Upper Level 4")');
+    ok(bctx.f('aqa_lang1_q5_ao5', 'Level 2 · Lower Level 2 · Middle of this level') === 'Lower Level 2', '…and the lower half');
+    ok(bctx.f('aqa_lit_p1_ao123', 'Level 5 · Bottom of this level') === '' && bctx.f('aqa_lang1_q3_ao2', 'Level 3 · Top of this level') === '',
+        'a scheme that prints no halves reads back no band (a one-band level named "Level 5" is not a band)');
+}
 ok(sectionUnder('edexcel', 'language1') === '', 'no scheme data → empty string (no orphan section)');
 
 // ── C · WIRING ───────────────────────────────────────────────────────────────────────────────
@@ -169,6 +190,11 @@ ok(/STRIP_LABELS = new Set\(\['Analytics', 'Self-Assessment', 'Mark-Scheme Self-
 ok(/SKIP = \/\^\(Overall Feedback\|Analytics\|Self-Assessment\|Mark-Scheme Self-Assessment\|Calibration\|Action Plan\|Score Summary\)\/i/.test(JS), 'skipped by the ledger scan (incl. Calibration)');
 ok(count(/html \+= buildMarkSchemeSelfAssessSection\((?:topicData|null)\);/g) === 5, 'composed at all 5 document sites (2 exam-prep + 3 literature/dual) — got ' + count(/html \+= buildMarkSchemeSelfAssessSection\((?:topicData|null)\);/g));
 ok(/self_assessment: \{ regime: 'bestfit', confidence: _ladderHostConfidence\(\) \|\| null, items: items \}/.test(JS), 'the canvas save carries self_assessment {regime, confidence, items[]}');
+ok(/band: _ladderBandOf\(g\.key, _ladderRowText\(g\.fids\.level\)\) \|\| null,/.test(JS), 'the save still carries `band` — now read from the level box (#691)');
+ok(/querySelectorAll\('\[data-swml-ask="ladder-confidence"\]'\)\.forEach\(n => n\.remove\(\)\)/.test(JS) && /_ab\.setAttribute\('data-swml-ask', 'ladder-confidence'\)/.test(JS),
+    'the confidence ask removes an earlier copy and tags itself — ONE ask after a reload, with its buttons (#691)');
+ok(/try \{ healLadderSaWording\(\); \} catch \(_\) \{\}/.test(JS), 'the wording heal runs in the settled-state pass, beside the section heal (#691)');
+ok(/\(step\.level\.name \? ' — ' \+ step\.level\.name : ''\) \+ \(st\.bandName \? ' · ' \+ st\.bandName : ''\)/.test(JS), 'a one-mark level still writes the band into the level box (the band box is gone)');
 ok(/_ladderOpenHook = function \(o\) \{ return _examinerLadderCtl\.open\(o\); \};/.test(JS), 'the closure-local ladder is reached through a module-scope hook (the .898 lesson)');
 
 // ── D · REGIME + COPY BANS (PEDAGOGY §35) ───────────────────────────────────────────────────
