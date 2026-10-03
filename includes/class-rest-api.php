@@ -5409,7 +5409,7 @@ class SWML_REST_API {
         $latest_ts = '';
         for ($n = $attempt; $n < $attempt + 50; $n++) {
             $rec = SWML_Session_Manager::get_phase_result($user_id, $board, $text, $topic, $phase, $n);
-            if (!$rec) break;
+            if (!$rec) continue;   // v7.20.682: step over a gap, as get_latest_phase_result does (the 3 Oct 404)
             $ts = (string) ($rec['completed_at'] ?? '');
             if ($latest === null || $ts >= $latest_ts) { $latest = $rec; $latest_ts = $ts; $target_n = $n; }
         }

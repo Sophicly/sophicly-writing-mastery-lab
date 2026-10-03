@@ -816,7 +816,10 @@ class SWML_Session_Manager {
         $latest_ts = '';
         for ($n = $base; $n < $base + 50; $n++) {
             $rec = self::get_phase_result($user_id, $board, $text, $topic, $phase, $n);
-            if (!$rec) break;
+            // v7.20.682 (MEASURED, staging 1355, 3 Oct): a GAP in the attempt rows (attempt 1 moved aside,
+            // the re-mark fork filed attempt 4) stopped this walk at the gap, so the newest record was never
+            // found and the calibration POST 404'd. Step over a missing row — never stop at one.
+            if (!$rec) continue;
             $ts = (string) ($rec['completed_at'] ?? '');
             if ($latest === null || $ts >= $latest_ts) {
                 $latest    = $rec;

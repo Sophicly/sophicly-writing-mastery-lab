@@ -211,5 +211,16 @@ if (chipFn) {
 } else ok(false, '_progressChipLabel exists');
 ok(/chip\.textContent = _progressChipLabel\(name\);/.test(js) && /_jumpToProgressSection\(editor, name\);/.test(js), 'chips SHOW the clean label but JUMP by the full one');
 
+// v7.20.682 (MEASURED 3 Oct, staging 1355): a finished Literature chat (~95 KB) is over the keepalive
+// limit, so the unload flush died with LearnDash's navigation and the calibration walk never saved.
+{
+    const RS = read('includes/class-rest-api.php'), SM = read('includes/class-session-manager.php');
+    const i = js.indexOf('Promise.resolve(_flushPendingSaves())'), j = js.indexOf('ldMarkBtn.click();', i);
+    ok(i > 0 && j > i && j - i < 400, 'the Mark Complete proxy WAITS for the pending document + chat saves before LearnDash navigates');
+    ok(/return Promise\.all\(_ps\);/.test(js), '…_flushPendingSaves hands back the posts\' promises (the unload listeners ignore them)');
+    ok(/if \(!\$rec\) continue;/.test(SM) && /if \(!\$rec\) continue;/.test(RS) && !/get_phase_result\([^)]*\);\s*\n\s*if \(!\$rec\) break;/.test(RS + SM),
+        'both phase-record walks step OVER a gap in the attempt rows (the 3 Oct calibration 404)');
+}
+
 console.log('\n' + (failN ? '✗ ' + failN + ' failed, ' + pass + ' passed' : '✓ all ' + pass + ' checks passed'));
 process.exit(failN ? 1 : 0);

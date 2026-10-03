@@ -37683,6 +37683,17 @@
                                 new Promise((r) => setTimeout(r, 2500)),
                             ]);
                         }
+                        // ⭐ v7.20.682 (MEASURED, staging 1355, 3 Oct): the chat waits 8 s before it saves, and
+                        // the unload flush can only ride keepalive under ~60 KB. A finished Literature chat is
+                        // ~95 KB, so the flush went out as a plain fetch that LearnDash's navigation killed —
+                        // 200 with an empty body, his whole calibration walk never reached the server. Hand
+                        // the pending saves over and WAIT (bounded, like the CW write above) before LD is asked.
+                        try {
+                            await Promise.race([
+                                Promise.resolve(_flushPendingSaves()),
+                                new Promise((r) => setTimeout(r, 3000)),
+                            ]);
+                        } catch (_) {}
                         ldMarkBtn.click();
                     }
                 });
@@ -62515,32 +62526,36 @@
             console.warn('WML flush: ' + label + ' save did not reach the server (' + bytes + ' bytes) — kept in this browser; the next save carries it.', e && e.message);
         });
     }
+    // v7.20.682: returns the posts' promises, so a caller about to navigate (the Mark Complete proxy)
+    // can WAIT for them — the unload listeners ignore the return value, as before.
     function _flushPendingSaves() {
+        const _ps = [];
         try {
             if (_pendingCanvasSaveBody) {
                 // v7.20.79: capture the promise — the incoming lesson's feed-forward mirror
                 // awaits it so its head-doc GET can never beat this POST's server write.
-                try { _lastCanvasFlushPromise = _postFlushed(API.canvasSave, _pendingCanvasSaveBody, 'document'); } catch (_) {}
+                try { _lastCanvasFlushPromise = _postFlushed(API.canvasSave, _pendingCanvasSaveBody, 'document'); _ps.push(_lastCanvasFlushPromise); } catch (_) {}
                 _pendingCanvasSaveBody = null;
                 clearTimeout(canvasSaveToServerTimer);
             }
             if (_pendingChatSaveBody) {
-                try { _postFlushed(API.chatSave, _pendingChatSaveBody, 'chat'); } catch (_) {}
+                try { _ps.push(_postFlushed(API.chatSave, _pendingChatSaveBody, 'chat')); } catch (_) {}
                 _pendingChatSaveBody = null;
                 clearTimeout(chatSaveTimer);
             }
             if (_pendingCwArtifact) {
                 try {
-                    _postFlushed(API.cwArtifact, {
+                    _ps.push(_postFlushed(API.cwArtifact, {
                         project_id: _pendingCwArtifact.projectId,
                         key: _pendingCwArtifact.artifactKey,
                         value: _pendingCwArtifact.html,
-                    }, 'creative-writing');
+                    }, 'creative-writing'));
                 } catch (_) {}
                 _pendingCwArtifact = null;
                 clearTimeout(_cwArtifactSaveTimer);
             }
         } catch (_) { /* best-effort; never block nav/unload */ }
+        return Promise.all(_ps);
     }
     if (typeof window !== 'undefined' && !window._swmlBeforeUnloadFlushRegistered) {
         window._swmlBeforeUnloadFlushRegistered = true;
