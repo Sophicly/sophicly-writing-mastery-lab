@@ -8759,11 +8759,31 @@
         return rows;
     }
     function _gapR2(x) { return Math.round(x * 100) / 100; }
+    // v7.20.681 (#695): marks here move in quarter steps, so a rating's mark does too.
+    function _gapQ(x) { return Math.round(x * 4) / 4; }
+    // v7.20.681 (#695 — Neil: "it doesn't even show me the total marks that Sophia gave me"). The
+    // card's OWN total line, "Total Mark for Body Paragraph 1: 3.75/8" — never the sum of its rows,
+    // which leaves out the penalties (measured: Zayan's Introduction rows 0.75, total 0/3).
+    function _gapTotalOf(text, section) {
+        if (!section) return null;
+        const re = /Total Mark for ([^:\n]+):\s*\**\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/gi;
+        let m;
+        while ((m = re.exec(String(text || '')))) {
+            const sec = _gapSectionFor(m[1]);
+            if (sec && sec.key === section.key) return { got: parseFloat(m[2]), of: parseFloat(m[3]) };
+        }
+        return null;
+    }
     // ratings = the document's Self-Assessment rows [{group, skill, value}]; rows = the card's table.
     // Both sides on ONE scale: a rating 1–5 → 0–1 by its step (Basic 0 … Perceptive 1); a mark → its
-    // share of what the part is worth. The biggest gap is the largest difference; ties go to the part
-    // worth more marks. Within one step either way is agreement.
-    function _gapCompare(section, ratings, rows) {
+    // share of what the part is worth. Within one step either way is agreement.
+    // ⭐ v7.20.681 (#695 — Neil: "it should show what my rating would equal in terms of a mark… I need
+    // a way of calibrating it"): the rating is ALSO shown as a mark — its step × what the part is
+    // worth, to the nearest quarter — and, because the student now reads MARKS, the biggest gap is
+    // the largest difference IN MARKS among the parts more than one step apart (ties → the part
+    // worth more). By proportion, a 0.5-mark part a quarter out could be named over a 2-mark part
+    // half a mark out, while the student could see the reverse on the screen.
+    function _gapCompare(section, ratings, rows, total) {
         if (!section) return null;
         const agg = {};
         (rows || []).forEach((r) => {
@@ -8778,27 +8798,54 @@
             if (!x || x.group !== section.group || !(x.value >= 1 && x.value <= 5) || !agg[x.skill]) return;
             const a = agg[x.skill];
             const self = (x.value - 1) / 4, mine = a.worth > 0 ? a.score / a.worth : 0;
+            const selfMark = _gapR2(_gapQ(self * a.worth));
             items.push({ skill: x.skill, rating: x.value, word: GAP_WORDS[x.value - 1], score: _gapR2(a.score),
-                worth: _gapR2(a.worth), self: self, sophia: mine, diff: self - mine, parts: a.parts });
+                worth: _gapR2(a.worth), self: self, sophia: mine, diff: self - mine, parts: a.parts,
+                selfMark: selfMark, diffMarks: _gapR2(selfMark - a.score), out: Math.abs(self - mine) > GAP_TOL + 1e-9 });
         });
         if (!items.length) return null;
-        const big = items.slice().sort((p, q) => (Math.abs(q.diff) - Math.abs(p.diff)) || (q.worth - p.worth))[0];
-        const dir = big.diff > GAP_TOL + 1e-9 ? 'over' : (big.diff < -GAP_TOL - 1e-9 ? 'under' : 'close');
-        return { key: section.key, label: section.label, items: items, biggest: big, dir: dir };
-    }
-    function _gapMarksText(it) {
-        if (it.score >= it.worth) return 'full marks (' + it.worth + ' of ' + it.worth + ')';
-        if (it.score <= 0) return 'no marks (0 of ' + it.worth + ')';
-        return it.score + ' of ' + it.worth;
+        const byMarks = (p, q) => (Math.abs(q.diffMarks) - Math.abs(p.diffMarks)) || (q.worth - p.worth) || (Math.abs(q.diff) - Math.abs(p.diff));
+        const gaps = items.filter((it) => it.out);
+        const big = (gaps.length ? gaps : items).slice().sort(byMarks)[0];
+        const dir = !gaps.length ? 'close' : (big.diff > 0 ? 'over' : 'under');
+        // The parts the student rated, added up on both sides — and what the card marked that no
+        // rating covers ("Analysis links to topic sentence"), so the whole-paragraph mark is explained.
+        const rated = items.reduce((s, it) => ({ self: s.self + it.selfMark, mine: s.mine + it.score, worth: s.worth + it.worth }), { self: 0, mine: 0, worth: 0 });
+        const ratedSkills = items.map((it) => it.skill);
+        const unrated = (rows || []).filter((r) => ratedSkills.indexOf(_gapSkillFor(section.group, r.criterion)) === -1)
+            .map((r) => r.criterion.replace(/\s*\((?:AO\d[^)]*)\)\s*$/i, '').trim());
+        const rowsTotal = (rows || []).reduce((s, r) => s + r.score, 0);
+        return { key: section.key, label: section.label, items: items, biggest: big, dir: dir,
+            rated: { self: _gapR2(rated.self), mine: _gapR2(rated.mine), worth: _gapR2(rated.worth) },
+            unrated: unrated, total: total || null,
+            penalties: !!(total && rowsTotal > total.got + 1e-9) };
     }
     function _gapRatingText(it) { return it.word + ' (' + it.rating + ' of 5)'; }
+    function _gapOf(x, worth) { return _gapR2(x) + ' of ' + _gapR2(worth); }
+    // "the Introduction" but "Body 1" — Neil's screenshot read "on the Body 3" (#696).
+    function _gapThe(label) { return /^Body/.test(String(label || '')) ? '' : 'the '; }
+    // The whole paragraph's mark, from the card's own total, and what it covers beyond the table.
+    function _gapWholeText(cmp) {
+        if (!cmp.total) return '';
+        let out = 'My mark for the whole of ' + _gapThe(cmp.label) + cmp.label + ' is **' + _gapR2(cmp.total.got) + ' / ' + _gapR2(cmp.total.of) + '**.';
+        if (cmp.unrated.length) {
+            out += cmp.unrated.length === 1
+                ? ' That mark also counts the part you did not rate (' + cmp.unrated[0].toLowerCase() + ').'
+                : ' That mark also counts the ' + cmp.unrated.length + ' parts you did not rate (' + cmp.unrated.map((u) => u.toLowerCase()).join('; ') + ').';
+        }
+        if (cmp.penalties) out += ' Penalties have been taken off that mark.';
+        return out;
+    }
     // The ask — the comparison, then ONE question, ending on the question (§4c.4). First-person
     // Sophia (§4c.5). The table's first header cell is never empty (the formatAI row-split, v7.20.631).
     function _gapQuestionText(cmp) {
         let out = '**Your ratings beside my marks — ' + cmp.label + '**\n\n';
-        out += '| Part | Your rating | My mark |\n|---|---|---|\n';
-        cmp.items.forEach((it) => { out += '| ' + it.skill + ' | ' + _gapRatingText(it) + ' | ' + _gapMarksText(it) + ' |\n'; });
+        out += '| Part | Your rating | Your rating as a mark | My mark |\n|---|---|---|---|\n';
+        cmp.items.forEach((it) => { out += '| ' + it.skill + ' | ' + _gapRatingText(it) + ' | ' + _gapOf(it.selfMark, it.worth) + ' | ' + _gapOf(it.score, it.worth) + ' |\n'; });
+        out += '| **All the parts you rated** | — | **' + _gapOf(cmp.rated.self, cmp.rated.worth) + '** | **' + _gapOf(cmp.rated.mine, cmp.rated.worth) + '** |\n';
         out += '\n';
+        const whole = _gapWholeText(cmp);
+        if (whole) out += whole + '\n\n';
         const b = cmp.biggest;
         if (cmp.dir === 'over') {
             out += 'The biggest gap is your **' + b.skill + '**: you rated it higher than I marked it.\n\n'
@@ -8807,7 +8854,8 @@
             out += 'The biggest gap is your **' + b.skill + '**: you rated it lower than I marked it.\n\n'
                 + '**What do you think made it work?** Type one line below. Then I will show you why I marked it that way.';
         } else {
-            out += 'Your ratings and my marks agree for this paragraph.\n\n'
+            // v7.20.681: with marks on the screen, "agree" must not hide a visible quarter-mark difference.
+            out += 'Every part you rated is within one step of my mark.\n\n'
                 + '**Which part are you surest about, and what in your writing earned it?** Type one line below.';
         }
         return out;
@@ -8816,7 +8864,7 @@
     function _gapFiledLine(cmp) {
         const b = cmp.biggest;
         if (cmp.dir === 'close') return 'Your ratings and Sophia’s marks agreed on every part of this paragraph.';
-        return b.skill + ' — you: ' + _gapRatingText(b) + ' · Sophia: ' + _gapMarksText(b)
+        return b.skill + ' — you: ' + _gapRatingText(b) + ' = ' + _gapOf(b.selfMark, b.worth) + ' · Sophia: ' + _gapOf(b.score, b.worth)
             + ' · you rated it ' + (cmp.dir === 'over' ? 'higher' : 'lower') + ' than it scored';
     }
     function _gapRevealText(cmp) {
@@ -8827,8 +8875,8 @@
     // The durable turn: a PAST-EVENT report (§4c.7 — tense decides; it stays true after a re-mark).
     function _gapPastLine(cmp) {
         return cmp.dir === 'close'
-            ? 'Filed under **Calibration**: your ratings and my marks agreed on the **' + cmp.label + '**.'
-            : 'Filed under **Calibration**: on the **' + cmp.label + '**, the biggest gap was your **' + cmp.biggest.skill
+            ? 'Filed under **Calibration**: your ratings and my marks agreed on ' + _gapThe(cmp.label) + '**' + cmp.label + '**.'
+            : 'Filed under **Calibration**: on ' + _gapThe(cmp.label) + '**' + cmp.label + '**, the biggest gap was your **' + cmp.biggest.skill
                 + '** — you had rated it ' + (cmp.dir === 'over' ? 'higher' : 'lower') + ' than I marked it.';
     }
     // The closing-turn fact — the filed rows, in the student's own words, for the Final Summary and
@@ -8875,7 +8923,8 @@
             const card = _gapCardOf(reply);
             if (!card) return false;
             if (_ladderRowText(_gapFids(card.section.key).why)) return false;   // already answered (re-mark, reload)
-            const cmp = _gapCompare(card.section, _saWalkRows().filter((r) => r.value != null), _gapRowsFrom(card.body));
+            const cmp = _gapCompare(card.section, _saWalkRows().filter((r) => r.value != null), _gapRowsFrom(card.body),
+                _gapTotalOf(card.body, card.section) || _gapTotalOf(reply, card.section));
             if (!cmp) { _gapFileUnreadable(card.section); return false; }
             _gapAsk(cmp, nextLabel || _gapNextLabelOf(reply));
             return true;

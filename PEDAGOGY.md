@@ -2613,6 +2613,13 @@ reach Sophia inside turns that already happen. Sophia is told NOT to compare rat
 a marking turn's output tokens are hidden thinking, so trimming feedback wording or dropping a gold model saves ~1–2% of
 spend — the recommendation to him was to keep both golds (his float, NOT ruled: *"maybe we should keep those"*).
 
+**v7.20.681 (#695 — Neil, 3 Oct: *"it should show what my rating would equal in terms of a mark… it doesn't even show me the
+total marks that Sophia gave me"*):** the table shows **the rating as a mark** (its step × what the part is worth, to the nearest
+quarter), **totals for the rated parts on both sides**, and **the paragraph's whole mark from the card's own total line** — with
+the part no rating covers named and penalties said when they explain the difference. Because the student now reads MARKS, the
+**biggest gap is the largest difference in marks among the parts more than one step out** (ties → the part worth more). Gate:
+`bin/para-gap-check-harness.js` (Neil's own Body 1 card + Zayan's 0/3 Introduction as fixtures).
+
 **MECHANICS (v7.20.674):** `@GAP-CHECK-PURE` core in wml-assessment.js (criterion → skill map, one scale: rating (v−1)/4
 against mark/worth, tolerance one step, tie → the part worth more marks); host `_gapCheckTakeOver` / `_gapAnswer` /
 `_gapCheckResume`; the continue gate is ONE builder (`_buildAssessConfirmBar`, on the chat shell as `confirmBar`); rows
