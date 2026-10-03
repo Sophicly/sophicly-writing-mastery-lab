@@ -11,7 +11,9 @@
  */
 if (!defined('ABSPATH')) exit;
 @set_time_limit(0);
-$DIR     = '/home/runcloud/wml-capture-20260930';
+// v7.20.682: the web PHP's open_basedir allows /tmp but not /home/runcloud — the recorder must write under /tmp
+// (class-protocol-router.php maybe_capture_exchange docblock). Override with EFFORT_DIR.
+$DIR     = getenv('EFFORT_DIR') ?: '/tmp/wml-capture-20261003';
 $LEVELS  = ['medium', 'low'];
 $MAX_USD = (float) (getenv("EFFORT_MAX_USD") ?: 25.0); // Neil 2026-09-30: cost is no object, get it right; 25 = runaway guard only
 $DRY     = getenv('EFFORT_DRY') === '1';

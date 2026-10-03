@@ -2620,6 +2620,25 @@ the part no rating covers named and penalties said when they explain the differe
 **biggest gap is the largest difference in marks among the parts more than one step out** (ties → the part worth more). Gate:
 `bin/para-gap-check-harness.js` (Neil's own Body 1 card + Zayan's 0/3 Introduction as fixtures).
 
+**v7.20.682 (Neil, 3 Oct, after running the whole calibration walk on .680 — FIXLIST #696–#704):**
+- **The ratings are shown as a mark on every Literature Feedback card** (#702 — *"take the self-rating per paragraph…
+  calculate what [that] percent is out of the marks we give per paragraph… versus an actual… is that within examiner
+  tolerance?"*): "Your rating ≈ x · Actual y · Δ (examiner-accurate / slightly off / recalibrate)", tolerance one mark
+  (`_toleranceFor`, ≤ 8 marks). ⚠️ **His sketch said rating ÷ 5; built on (rating − 1) ÷ 4**, the paragraph table's own
+  scale, so the card and the table can never show two different numbers for one judgement (§5b — his sketch is intent).
+  On that scale "1 of 5" earns nothing and "5 of 5" earns everything; on ÷ 5, "1 of 5" would still predict 20% of the
+  marks. If he wants ÷ 5, it is ONE line (`_gapRatingMark`) and the table moves with it.
+- **"Your next goal" is gone from Calibration** (#701 — *"if it's different, that's fine. But I don't think there's much
+  point in having it overlapping"*). Measured: it repeated the Action Plan's "Where to next?" word for word in intent,
+  asked minutes earlier. Polishing now reads the Action Plan's `action-short-term`.
+- **The keep / Sophia's / in between choice stays, named for what it is** (#698 — *"what's the point of that?… it's a bit
+  confusing… We need some sort of disclaimer… we mark stricter than an examiner"*). Measured: it changes NO mark,
+  total, grade or plan, and nothing on the server reads it. The ask now says so, carries his strictness line (§2), and
+  the chips carry their numbers. Its value is the commitment the next question makes them back up.
+- **The "which criterion" question says where to look and scrolls there** (#703), and the **finish turn reports Document
+  Progress** from the card's own reading (#704): complete → ask your tutor to sign it off; incomplete → what is missing,
+  with a button to each.
+
 **MECHANICS (v7.20.674):** `@GAP-CHECK-PURE` core in wml-assessment.js (criterion → skill map, one scale: rating (v−1)/4
 against mark/worth, tolerance one step, tie → the part worth more marks); host `_gapCheckTakeOver` / `_gapAnswer` /
 `_gapCheckResume`; the continue gate is ONE builder (`_buildAssessConfirmBar`, on the chat shell as `confirmBar`); rows

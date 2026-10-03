@@ -756,6 +756,12 @@ class SWML_Protocol_Router {
      * ⛔ The directory must sit OUTSIDE the web root (OpenLiteSpeed ignores .htaccess, so anything
      * under ABSPATH is downloadable) — refused otherwise. Headers are never written (the API key lives
      * there). Files are 0600. It never throws and never changes the request or the response.
+     * ⭐ v7.20.682 (MEASURED, staging 3 Oct — the 14-call marking run captured NOTHING): the web PHP runs
+     * under open_basedir = (the webapp folder : /var/lib/php/session : /tmp : /usr/bin). A dir in
+     * /home/runcloud is outside it, so realpath() returned false (14 "open_basedir restriction" warnings in
+     * debug.log, one per call) and every exchange was skipped. WP-CLI has no open_basedir, so a CLI probe
+     * PASSES on the same dir — test the WEB path. The webapp folder IS the web root, so the only private,
+     * reachable place is /tmp: arm with 'dir' => '/tmp/wml-capture-<date>' (mkdir -m 700 first).
      */
     private function maybe_capture_exchange($args, $response) {
         try {

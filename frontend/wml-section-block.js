@@ -334,7 +334,9 @@
             // standing overview at the top of each section, not just a collapsed teaser
             // ("students can look at the detail below if they need to"). The 'collapsed'
             // machinery stays for any future strip that should only show as a teaser.
-            const _STRIP_MODE = { 'Analytics': 'always', 'Self-Assessment': 'always', 'Action Plan': 'always', 'Overall Feedback': 'always', 'Score Summary': 'always' };
+            const _STRIP_MODE = { 'Analytics': 'always', 'Self-Assessment': 'always', 'Action Plan': 'always', 'Overall Feedback': 'always', 'Score Summary': 'always',
+                /* v7.20.682 (#699): the two judgement sections get the same standing overview */
+                'Mark-Scheme Self-Assessment': 'always', 'Calibration': 'always' };
             // v7.19.926 (Neil Run 9): Score Summary ('scores') collapses too, with a
             // Total·%·Grade preview strip (builder in wml-assessment's _renderSectionStrips).
             // v7.19.957 (Neil): the Poetic Forms Knowledge Organiser's 'plan' sections (one
@@ -408,7 +410,11 @@
             const _collapsible = type === 'feedback' || type === 'scores'
                 || type === 'outline' /* v7.20.89 (Neil A3): outline sections collapse like assessment docs */
                 || type === 'mark_scheme_response' || type === 'notice' /* v7.20.89 (Neil B7): MSA doc parity */
-                || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'))
+                || (type === 'action' && (_cvLabel === 'Self-Assessment' || _cvLabel === 'Action Plan'
+                    /* v7.20.682 (#699 — Neil: "you can't collapse the calibration or the mark scheme self-assessment… when
+                       you collapse it, you get a quick snapshot of the key information"). Labels hard-coded: the
+                       LADDER_SA_LABEL / CALIB_LABEL constants live in wml-assessment.js, out of this file's scope. */
+                    || _cvLabel === 'Mark-Scheme Self-Assessment' || _cvLabel === 'Calibration'))
                 /* v7.20.96 (Neil universal-consistency ruling, 2026-07-14): plan + response
                    collapse EVERYWHERE (was plan on organiser/CN docs only); keyword/Question-
                    Focus 'notes' collapse on essay-flow docs — CN docs keep their current notes

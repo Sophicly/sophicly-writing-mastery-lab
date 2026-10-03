@@ -41,7 +41,7 @@ const B = JS.indexOf('    // @GAP-CHECK-PURE-BEGIN'), E = JS.indexOf('    // @GA
 ok(B > 0 && E > B, 'the pure core sits between its two sentinels');
 const ctx = { console };
 vm.createContext(ctx);
-vm.runInContext(JS.slice(B, E) + '\nthis.X = { GAP_SECTIONS, GAP_TOL, _gapSectionFor, _gapSkillFor, _gapCardOf, _gapRowsFrom, _gapCompare, _gapQuestionText, _gapFiledLine, _gapRevealText, _gapPastLine, _gapFactText, _gapTotalOf };', ctx);
+vm.runInContext(JS.slice(B, E) + '\nthis.X = { GAP_SECTIONS, GAP_TOL, _gapSectionFor, _gapSkillFor, _gapCardOf, _gapRowsFrom, _gapCompare, _gapQuestionText, _gapFiledLine, _gapRevealText, _gapPastLine, _gapFactText, _gapTotalOf, _gapRatingMark };', ctx);
 const X = ctx.X;
 
 // ── A · MAPPING ─────────────────────────────────────────────────────────────────────────────
@@ -234,6 +234,12 @@ console.log('\nD2 · the rating as a mark, and the totals (#695)');
     want.forEach((w) => ok(nt.indexOf(w) !== -1, 'Neil\'s Body 1: ' + w));
     ok(/My mark for the whole of Body 1 is \*\*3\.75 \/ 8\*\*\./.test(nt), 'Neil\'s Body 1: "the total marks that Sophia gave me" — 3.75 / 8, from the card');
     ok(nb.biggest.skill === 'Evidence' && nb.dir === 'under', 'Neil\'s Body 1: still Evidence (two steps under, 0.5 marks) — the part he was asked about on screen');
+    // v7.20.682 (#702 — Neil: "take the self-rating per paragraph… calculate what [that] percent is out of the marks
+    // we give per paragraph… versus an actual"): the card's "Your rating ≈" is the table's rated-parts share × the card's /8.
+    ok(X._gapRatingMark(nb, null, 8) === 3.25, 'Neil\'s Body 1 card: "Your rating ≈ 3.25" — 3 of 7.5 rated (40%) × 8, to the quarter (got ' + X._gapRatingMark(nb, null, 8) + ')');
+    const _b1r = [4, 3, 3, 2, 2, 2, 3].map((v) => ({ group: 'Body Paragraphs', value: v }));
+    ok(X._gapRatingMark(null, _b1r, 8) === 3.5, 'no readable card → the plain average on the SAME scale ((v−1)/4): 12/28 × 8 → 3.5 (got ' + X._gapRatingMark(null, _b1r, 8) + ')');
+    ok(X._gapRatingMark(null, [], 8) === null && X._gapRatingMark(nb, null, 0) === null, 'nothing rated, or no maximum → no number (never a zero)');
 
     // Zayan's Introduction (staging, 3 Oct): rows 0.75, total 0/3 — the penalties are the difference.
     const Z_INTRO = ['| Compelling hook with intriguing concept/context (AO1/AO3) | 1.0 | 0.25 | Reads as thesis, not an intriguing hook |',
@@ -269,6 +275,26 @@ ok(!/replace the Self-Rating Reflection with an \*\*Element Check\*\*/.test(PROT
 ok(!/and with their own Self-Assessment ratings for this section's elements/.test(ROUTER) && !/compares the section's mark with their own Self-Assessment ratings/.test(ROUTER),
     'neither Literature preamble tells Sophia to compare ratings she is never given');
 ok(/CODE-DERIVED PARAGRAPH SELF-ASSESSMENT/.test(PROTO), 'the protocol\'s Final Summary names the closing fact');
+
+// v7.20.682 — the batch that rides this check (#696 #698 #699 #700 #701 #702 #703 #704).
+{
+    const CSS = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-canvas.css'), 'utf8');
+    const SB = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-section-block.js'), 'utf8');
+    ok(['intro', 'body1', 'body2', 'body3', 'conclusion'].every((k) => CSS.indexOf('.swml-input-field[data-field-id^="calib-gap-' + k + '"]') !== -1
+        && CSS.indexOf('[data-swml-theme="light"] .swml-input-field[data-field-id^="calib-gap-' + k + '"]') !== -1),
+        '#696: each paragraph\'s Calibration rows carry their own colour, in dark AND light');
+    ok(/\.swml-input-field\[data-field-id\^="calib-gap-"\]\[data-prompt\]::before \{\s*color: var\(--swml-para\)/.test(CSS), '#696: the label keeps its words and wears the colour (never colour-only)');
+    ok(/_ratingPred = _gapRatingPredFor\(baseName, maxMarks\)/.test(JS) && /Your rating ≈ <strong>/.test(JS) && /'\|' \+ _ratingPred \+ '\|'/.test(JS),
+        '#702: a Literature card shows the ratings as a mark beside the actual, and redraws when they change');
+    ok(/const out = _gapRatingMark\(cmp, mine, maxMarks\);/.test(JS), '#702: the card uses the pure conversion this harness tests');
+    ok(/tierFn: feedbackTierFn,/.test(JS), '#700: a quarter mark (3.75 / 8) is coloured by the ladder like every option');
+    ok(/_cvLabel === 'Mark-Scheme Self-Assessment' \|\| _cvLabel === 'Calibration'/.test(SB) && /'Mark-Scheme Self-Assessment': 'always', 'Calibration': 'always'/.test(SB)
+        && /'Mark-Scheme Self-Assessment': \(\) => \{/.test(JS) && /'Calibration': \(\) => \{/.test(JS), '#699: both sections collapse, with a summary strip each');
+    ok(/_calibNavChips\(nav\)/.test(JS) && /Where to look:/.test(JS), '#703: the "which criterion" ask says where to look, scrolls there, and offers buttons');
+    ok(/function _assessProgressReport\(refs\)/.test(JS) && /WML\.mcGate\.reading\(\)/.test(JS) && count(JS, '_ASSESS_DONE_RE.test(String(_lastA.content') === 2,
+        '#704: the finish turn reports Document Progress from the card\'s own reading, and a reload re-draws it (both pipelines)');
+    ok(/durable: false, why: 'a present-state report of the document/.test(JS), '#704: the report is drawn, never stored (§4c.7)');
+}
 
 console.log('\n' + (fail ? '❌' : '✅') + ' para-gap-check-harness: ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

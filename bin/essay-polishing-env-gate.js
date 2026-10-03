@@ -619,9 +619,15 @@ console.log('\nStep 6 — the calibration stage compares the two judgements and 
     ok('…it holds all three records distinctly (their mark, Sophia\'s, what they decided and why)',
         /inputHTML\("Sophia's mark", f\.sophia\)/.test(A) && /inputHTML\('What you decided after seeing both', f\.decision\)/.test(A)
         && /inputHTML\('Why — in your own words', f\.why\)/.test(A));
-    ok('…and the ONE improvement goal', /inputHTML\('The ONE thing you will do differently next time', 'calib-goal'\)/.test(A));
-    ok('the student may KEEP their own mark — Sophia\'s is not a verdict to submit to',
-        /const CALIB_KEEP = 'Keep my own mark'/.test(A) && /an assessment to examine, not a verdict/.test(A));
+    // v7.20.682 (#701): the goal box repeated the Action Plan's "Where to next?" — gone; an empty one is healed out.
+    ok('…and NO second goal box (the Action Plan holds it, #701) — an empty old one is healed out',
+        !/inputHTML\('The ONE thing you will do differently next time', 'calib-goal'\)/.test(A)
+        && /function healCalibGoal\(\)/.test(A) && /_migrateStep\('healCalibGoal', healCalibGoal\)/.test(A)
+        && /goal: _ladderRowText\('calib-goal'\) \|\| _ladderRowText\('action-short-term'\)/.test(A));
+    // v7.20.682 (#698): the choice is named for what it is, says it changes neither mark, and carries the strictness line.
+    ok('the student may KEEP their own mark — Sophia\'s is not a verdict to submit to, and the choice changes neither mark',
+        /const CALIB_KEEP = 'My own mark'/.test(A) && /an assessment to examine, not a verdict/.test(A)
+        && /changes \*\*neither mark\*\*/.test(A) && /\+ CALIB_STRICT/.test(A));
     ok('…all three options exist (keep · take mine · in between)', /CALIB_TAKE/.test(A) && /CALIB_BETWEEN/.test(A));
     ok('the comparison numbers are read from the document, never recalled by the model',
         /function _calibActualFor\(qLabel, ao, max\)/.test(A) && /function _calibCompareText\(g\)/.test(A));   // v7.20.633: per-scheme actual (Q5 = AO5 + AO6)

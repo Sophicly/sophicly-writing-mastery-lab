@@ -8304,9 +8304,16 @@
     // question the student was on (§4c.8b) and no fossil can form (§4c.7).
     // ═══════════════════════════════════════════════════════════════════════════════════════
     const CALIB_LABEL = 'Calibration';
-    const CALIB_KEEP = 'Keep my own mark';
-    const CALIB_TAKE = "Change to Sophia's mark";
+    // v7.20.682 (#698 — Neil, 3 Oct: "keep my own mark, change it to Sophia's… It's not going to change
+    // the mark overall. What's going to happen there?… it's a bit confusing"). MEASURED: the tap writes
+    // only the decision box — no mark, total, grade or Action Plan changes, and no server path reads it.
+    // So the choice is named for what it IS (which mark you now think is fairer), never a "change".
+    const CALIB_KEEP = 'My own mark';
+    const CALIB_TAKE = "Sophia's mark";
     const CALIB_BETWEEN = 'Somewhere in between';
+    // His disclaimer, in his terms ("remember that we mark stricter than an examiner. This is a very
+    // technical marking") — PEDAGOGY §2: stricter than examiners on purpose (Ericsson), never softened.
+    const CALIB_STRICT = '**Remember: I mark more strictly than an exam-board examiner, on purpose.** Every criterion has to be fully met before it earns its marks, so the same answer might score a little higher in the real exam. You are training for a higher bar than the exam sets.';
     function _calibFids(key) {
         return { sophia: 'calib-' + key + '-sophia', decision: 'calib-' + key + '-decision', why: 'calib-' + key + '-why' };
     }
@@ -8432,7 +8439,8 @@
     }
     function _calibHostComplete() {
         const g = _calibGroups().filter((x) => x.mineNum !== null && x.actual);
-        return g.length > 0 && g.every((x) => x.done && x.answered) && !!_ladderRowText('calib-goal');
+        // v7.20.682 (#701): no goal step — the Action Plan's "Where to next?" already asked it.
+        return g.length > 0 && g.every((x) => x.done && x.answered);
     }
     // The comparison itself — built in CODE from the two filed marks, so the numbers beside each
     // other are never the model's recollection of them (the §19 rule, applied to a readout).
@@ -8468,12 +8476,16 @@
             _calibAskWhy(next);
             return;
         }
-        if (!_ladderRowText('calib-goal')) { _calibAskGoal(groups); return; }
+        // v7.20.682 (#701 — Neil: "Your next goal… Wouldn't that overlap slightly with what's in the
+        // action plan section?… I don't think there's much point in having it overlapping"). MEASURED: it
+        // repeated the Action Plan's own "Where to next?… what will you do differently in your next
+        // attempt" — asked minutes earlier, filed into action-short-term. The goal step is gone.
         _calibHandBack();
     }
     function _calibAskDecision(g) {
         const plain = _calibCompareText(g)
-            + '\n\nRead the part of your answer we both judged, then decide. **My mark is an assessment to examine, not a verdict** — if you still think yours is right, keep it and tell me what carries it.';
+            + '\n\n' + CALIB_STRICT
+            + '\n\n**My mark is an assessment to examine, not a verdict.** So, having seen both: **which mark do you think your answer deserves?** Your choice changes **neither mark** — both stay on record. It is your own judgement, and the next question asks you to back it up from your answer.';
         _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
         WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain },
             { durable: false, why: 'a present-state comparison of two live marks — re-derived from the document on entry, never stored (§4c.7 VALUE fossil)' });
@@ -8486,10 +8498,11 @@
                 : document.querySelector('#swml-tiptap-editor [data-section-label^="Feedback: ' + g.q + ' "]');
             if (fb && typeof _swmlScrollToTop === 'function') _swmlScrollToTop(fb);
         } catch (e) {}
-        _calibChips([CALIB_KEEP, CALIB_TAKE, CALIB_BETWEEN], function (label) {
-            let filed = label;
-            if (label === CALIB_TAKE) filed = label + ' (' + g.actual.mark + ' / ' + g.max + ')';
-            if (label === CALIB_KEEP) filed = label + ' (' + g.mineNum + ' / ' + g.max + ')';
+        // v7.20.682 (#698): each chip carries its number, so the choice is visibly between two marks.
+        const _keep = CALIB_KEEP + ' (' + g.mineNum + ' / ' + g.max + ')';
+        const _take = CALIB_TAKE + ' (' + g.actual.mark + ' / ' + g.max + ')';
+        _calibChips([_keep, _take, CALIB_BETWEEN], function (label) {
+            const filed = label;
             try { _chatShell.addMsg(label, 'user'); } catch (e) {}
             WML.recordTurn(_chatShell.history, { role: 'user', content: label }, { durable: true, why: 'the student tapped it — it happened, it stays' });
             try { _writeOutlineRowField(g.fids.sophia, g.actual.mark + ' / ' + g.max + (g.myLevel ? ' (you said ' + g.myLevel + ')' : ''), { replace: true }); } catch (e) {}
@@ -8501,21 +8514,68 @@
     function _calibAskWhy(g) {
         const tol = _toleranceFor(g.max);
         const agree = Math.abs(g.mineNum - g.actual.mark) <= tol;
-        const plain = agree
-            ? 'In one line: **which criterion were you surest about**, and what in your answer earned it? Type it below.'
-            : 'In one line: **which criterion explains the gap** — and what would that part of your answer need to do to move up? Type it below.';
+        // v7.20.682 (#703 — Neil: "it's asking me these questions, but I don't know where to actually find
+        // it because there's actually so much information there… if I maybe clicked on a button and it
+        // scrolled to the section"). The ask names WHERE the answer is, the document goes there as the turn
+        // lands (§4c.10), and buttons take them to the other places it lives.
+        const isLit = g.key === LIT_CALIB_KEY;
+        const gapRows = isLit ? _calibSurface('[data-field-id="calib-gap-intro"]') : null;
+        const where = isLit && gapRows
+            ? '**Where to look:** the **paragraph-by-paragraph rows** in your Calibration section — each one names the part you misjudged most in that paragraph. I have scrolled your document there. Your **Action Plan** lists the priorities too.'
+            : '**Where to look:** your **feedback for ' + g.q + '** — I have scrolled your document there. Your **Action Plan** lists the priorities too.';
+        const plain = (agree
+            ? 'In one line: **which criterion were you surest about**, and what in your answer earned it?'
+            : 'In one line: **which criterion explains the gap** — and what would that part of your answer need to do to move up?')
+            + '\n\n' + where + '\n\nThen type your line below.';
         _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
         WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain }, { durable: false, why: 'a present-state ask — re-derived from the document on entry' });
+        const fb = isLit ? null : _calibSurface('[data-section-label^="Feedback: ' + g.q + ' "]');
+        const first = gapRows || fb;
+        // After the decision write's own scroll-to-filled-row (debounced 400 ms), or that one wins.
+        if (first) setTimeout(function () {
+            try { _expandIfCollapsed(first); if (typeof _swmlScrollToTop === 'function') _swmlScrollToTop(first); } catch (e) {}
+        }, 650);
+        const nav = [];
+        if (gapRows) nav.push(['📍 My paragraph gaps', '[data-field-id="calib-gap-intro"]']);
+        if (fb) nav.push(['📍 My feedback for ' + g.q, '[data-section-label^="Feedback: ' + g.q + ' "]']);
+        nav.push(['📍 My Action Plan', '[data-field-id="action-priorities"]']);
+        _calibNavChips(nav);
     }
-    function _calibAskGoal(groups) {
-        const worst = groups.slice().sort((a, b) => Math.abs(b.mineNum - b.actual.mark) - Math.abs(a.mineNum - a.actual.mark))[0];
-        const plain = 'Last one. **What is the ONE thing you will do differently in your next answer** because of this?'
-            + (worst && groups.length > 1 ? '\n\nYour judgement and mine were furthest apart on **' + worst.q + '** — that is the honest place to aim.' : '')
-            + '\n\nType it below, as something you would actually do, not something you would like to be.';
-        _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
-        WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain }, { durable: false, why: 'a present-state ask — re-derived from the document on entry' });
+    // A document surface by selector, or null — a missing one is a silent no-op, never an error.
+    function _calibSurface(sel) {
+        try { return document.querySelector('#swml-tiptap-editor ' + sel) || null; } catch (e) { return null; }
     }
-    // Typed answers: the WHY line and the GOAL line. Consumed ONLY while the stage is live and the
+    // Navigation buttons: they scroll and STAY (the student may look in two places before typing) — never
+    // an answer, so they are not the walk's chips. A collapsed section is opened first, or the scroll
+    // would land on a header with nothing under it.
+    function _calibNavChips(items) {
+        try {
+            const host = (_chatShell && _chatShell.messages) || document.getElementById('swml-canvas-chat-messages');
+            const bubble = host && host.lastElementChild;
+            if (!bubble || !items.length) return;
+            const bar = el('div', { className: 'swml-quick-actions swml-calib-nav' });
+            items.forEach(function (it) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: it[0], onClick: function () {
+                    const n = _calibSurface(it[1]);
+                    if (!n) return;
+                    _expandIfCollapsed(n);
+                    if (typeof _swmlScrollToTop === 'function') _swmlScrollToTop(n);
+                } }));
+            });
+            (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(bar);
+        } catch (e) { /* the ask still names where to look */ }
+    }
+    // v7.20.682: a section the student collapsed is opened when we send them into it (or when a live
+    // write lands in it) — the same class + stored key the chevron uses, so their choice is not fought.
+    function _expandIfCollapsed(n) {
+        try {
+            const sec = n && n.closest && n.closest('.swml-section-block.swml-fb-collapsed');
+            if (!sec) return;
+            sec.classList.remove('swml-fb-collapsed');
+            try { if (sec.dataset.collapseKey) localStorage.setItem(sec.dataset.collapseKey, '0'); } catch (_) {}
+        } catch (e) {}
+    }
+    // Typed answers: the WHY line (v7.20.682: the goal step is gone). Consumed ONLY while the stage is live and the
     // question is on the screen, so ordinary chat after the assessment is never swallowed (§4d).
     // v7.20.649 (#630 — Qamar 857 + Annaya 1398, measured): the stage "sits AFTER marking", but its
     // typed consumer never checked that. With marks on both sides for ONE question it was already
@@ -8540,8 +8600,6 @@
         WML.recordTurn(_chatShell.history, { role: 'user', content: text }, { durable: true, why: 'the student typed it — it happened, it stays' });
         if (pendingWhy) {
             try { _writeOutlineRowField(pendingWhy.fids.why, text, { replace: true }); } catch (e) {}
-        } else if (groups.every((x) => x.done && x.answered)) {
-            try { _writeOutlineRowField('calib-goal', text, { replace: true }); } catch (e) {}
         } else {
             // A decision chip is outstanding — there is nothing to file, but the turn is still
             // OURS: falling through to the AI here would leave a student who reloaded mid-stage
@@ -8584,7 +8642,9 @@
             const payload = {
                 board: state.board, text: state.text, topic_number: state.topicNumber || 0,
                 phase: (state.phase || 'initial'), attempt: state.attempt || 0,
-                goal: _ladderRowText('calib-goal'),
+                // v7.20.682 (#701): the goal is the Action Plan's "Where to next?" plan (action-short-term);
+                // a document filed before .682 keeps the goal the student typed in Calibration.
+                goal: _ladderRowText('calib-goal') || _ladderRowText('action-short-term'),
                 questions: groups.map((g) => ({
                     q: g.q, ao: g.ao, max: g.max, mine: g.mineNum, sophia: g.actual.mark,
                     decision: _ladderRowText(g.fids.decision), why: _ladderRowText(g.fids.why),
@@ -8640,7 +8700,10 @@
     }
     // The assessment's terminal wrap — ONE routine for the closing row's finish button and the
     // hand-back's. Markdown, rendered through formatAI exactly as every replay renders it (#638).
-    const _ASSESS_DONE_LINE = 'Perfect — that wraps your assessment. When you’re ready, click **Mark Complete** to save it.';
+    // v7.20.682 (#704): the stored line is the past event only; WHAT TO DO NEXT is the live report below
+    // (it said "click Mark Complete" to a student whose document sat at 94%).
+    const _ASSESS_DONE_LINE = 'Perfect — that wraps your assessment.';
+    const _ASSESS_DONE_RE = /^Perfect — that wraps your assessment/;   // this line AND the pre-.682 one
     // refs = the calling pipeline's own { addMsg, history, getChatId }; default = the active shell.
     function _assessFinishNow(refs) {
         try {
@@ -8652,7 +8715,38 @@
             sh.addMsg(formatAI(_ASSESS_DONE_LINE), 'ai', _ASSESS_DONE_LINE, { suppressActions: true });
             WML.recordTurn(sh.history, { role: 'assistant', content: _ASSESS_DONE_LINE }, { durable: true, why: 'a real turn that closed the session' });
             try { saveCanvasChat(sh.history, sh.getChatId ? sh.getChatId() : ''); } catch (e) {}
+            _assessProgressReport(sh);
         } catch (e) { console.warn('WML assess-finish: skipped —', e && e.message); }
+    }
+    // ⭐ v7.20.682 (#704 — Neil, 3 Oct: "it says document progress… 94%… question focus keywords. I think
+    // it should say that in the chat as well… if it's complete… everything is complete… get your tutor to
+    // sign it off. And if it's not complete… scroll to the correct place in the document so the student
+    // can fix it"). The reading is the Document Progress card's own (WML.mcGate.reading — the one
+    // computation the card and the Mark Complete gate share), so the chat can never disagree with the
+    // card. Drawn, never stored (§4c.7: it is a present-state fact) — the resume hooks re-draw it.
+    function _assessProgressReport(refs) {
+        try {
+            const sh = refs || _chatShell;
+            if (!sh || !sh.addMsg || !sh.history) return;
+            const r = (WML.mcGate && typeof WML.mcGate.reading === 'function') ? WML.mcGate.reading() : null;
+            let plain, nav = [];
+            if (!r || r.verdict === 'unknown') {
+                plain = 'When you’re ready, click **Mark Complete** to save it.';
+            } else if (r.verdict === 'complete' || !(r.missing || []).length) {
+                plain = '**Your document is complete** — every section is done. Ask your tutor to sign it off in the **Tutor Sign-off** box at the end, and click **Mark Complete** to save the lesson.';
+                nav.push(['📍 Tutor Sign-off', '[data-section-type="signoff"]']);
+            } else {
+                const names = r.missing.map((l) => _progressChipLabel(l));
+                plain = 'One more thing before you click **Mark Complete**: your document is **' + r.pct + '%** complete. Still to do: **'
+                    + names.join('**, **') + '**. Tap ' + (names.length === 1 ? 'the button' : 'a button') + ' below to go straight there, fill it in, then click **Mark Complete**.';
+                r.missing.slice(0, 4).forEach((full, i) => nav.push(['📍 ' + names[i], '.swml-section-block[data-section-label="' + String(full).replace(/"/g, '\\"') + '"]']));
+                nav.push(['📍 Document Progress', '.swml-section-block[data-section-type="progress"]']);
+            }
+            sh.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
+            WML.recordTurn(sh.history, { role: 'assistant', content: plain },
+                { durable: false, why: 'a present-state report of the document — re-derived from the Document Progress reading on entry, never stored (§4c.7)' });
+            if (nav.length) _calibNavChips(nav);
+        } catch (e) { console.warn('WML assess-progress report: skipped —', e && e.message); }
     }
     // ═══════════════════════════════════════════════════════════════════════════════════════
     // ⭐⭐ v7.20.674 (#686 — Neil, 2026-09-30) — THE PARAGRAPH-BY-PARAGRAPH SELF-ASSESSMENT CHECK.
@@ -8820,6 +8914,18 @@
             unrated: unrated, total: total || null,
             penalties: !!(total && rowsTotal > total.got + 1e-9) };
     }
+    // v7.20.682 (#702): a paragraph's ratings AS A MARK out of `max` (its Feedback card's total) — the
+    // paragraph table's rated-parts share when a card was read (cmp), else the plain average of that
+    // paragraph's ratings on the same (rating − 1) / 4 scale. One conversion with the table, by construction.
+    function _gapRatingMark(cmp, groupRatings, max) {
+        if (!(max > 0)) return null;
+        const rs = (groupRatings || []).filter((r) => r && r.value >= 1 && r.value <= 5);
+        let share;
+        if (cmp && cmp.rated && cmp.rated.worth > 0) share = cmp.rated.self / cmp.rated.worth;
+        else if (rs.length) share = rs.reduce((s, r) => s + (r.value - 1) / 4, 0) / rs.length;
+        else return null;
+        return _gapR2(_gapQ(share * max));
+    }
     function _gapRatingText(it) { return it.word + ' (' + it.rating + ' of 5)'; }
     function _gapOf(x, worth) { return _gapR2(x) + ' of ' + _gapR2(worth); }
     // "the Introduction" but "Body 1" — Neil's screenshot read "on the Body 3" (#696).
@@ -8891,6 +8997,43 @@
     // @GAP-CHECK-PURE-END
 
     function _gapFids(key) { return { gap: 'calib-gap-' + key, why: 'calib-gap-' + key + '-why' }; }
+    // ⭐ v7.20.682 (#702 — Neil, 3 Oct: "what we had before was actual versus predicted. But… the students
+    // don't predict the marks for literature… what we do have… is the self-assessment… take the self-rating
+    // per paragraph… calculate what [that] percent is out of the marks we give per paragraph… versus an
+    // actual… is that within examiner tolerance?"). A Literature paragraph's Feedback card shows the
+    // student's own ratings AS A MARK beside the actual. ONE conversion with the paragraph check (§48):
+    // each rated part's rating as a mark ((rating − 1) / 4 × what the part is worth), their share of the
+    // rated parts' worth, applied to the paragraph's whole mark — so the card and the paragraph table can
+    // never show two different numbers for the same judgement. With no mark table readable, the plain
+    // average of that paragraph's ratings on the same scale. Not a prediction asked for (§48.2) — the
+    // ratings the student already gave, converted.
+    let _gapPredCache = { sig: '', map: {} };
+    function _gapRatingPredFor(baseName, maxMarks) {
+        try {
+            if (!_ladderIsLit() || !(maxMarks > 0)) return null;
+            const sec = _gapSectionFor(baseName);
+            if (!sec) return null;
+            const ratings = _saWalkRows().filter((r) => r && r.value != null);
+            const mine = ratings.filter((r) => r.group === sec.group && r.value >= 1 && r.value <= 5);
+            if (!mine.length) return null;
+            const h = (_chatShell && _chatShell.history) || [];
+            const sig = h.length + '|' + ratings.map((r) => r.skill + r.value).join(',');
+            if (_gapPredCache.sig !== sig) _gapPredCache = { sig: sig, map: {} };
+            const ck = sec.key + '/' + maxMarks;
+            if (Object.prototype.hasOwnProperty.call(_gapPredCache.map, ck)) return _gapPredCache.map[ck];
+            let rows = [];
+            for (let i = h.length - 1; i >= 0 && !rows.length; i--) {
+                const m = h[i];
+                if (!m || m.role !== 'assistant') continue;
+                const c = _gapCardOf(m.content);
+                if (c && c.section.key === sec.key) rows = _gapRowsFrom(c.body);
+            }
+            const cmp = rows.length ? _gapCompare(sec, ratings, rows, null) : null;
+            const out = _gapRatingMark(cmp, mine, maxMarks);
+            _gapPredCache.map[ck] = out;
+            return out;
+        } catch (e) { return null; }
+    }
     let _gapOpen = null;   // { cmp, nextLabel, docKey } — ONLY while the question is on the screen
     // A Literature mark-scheme session whose document carries the paragraph rows. An older document
     // (Calibration built before .674) has no rows → the check simply does not run there.
@@ -9060,8 +9203,8 @@
             inner += inputHTML('What you decided after seeing both', f.decision);
             inner += inputHTML('Why — in your own words', f.why);
         });
-        inner += '<h3>Your next goal</h3>';
-        inner += inputHTML('The ONE thing you will do differently next time', 'calib-goal');
+        // v7.20.682 (#701): no "Your next goal" box — the Action Plan holds it. healCalibGoal() takes an
+        // EMPTY one out of documents built before .682 (a goal the student typed stays).
         return sectionHTML('action', CALIB_LABEL, true, null, inner);
     }
 
@@ -9661,6 +9804,57 @@
                     if (!_ana) return '';
                     let html = seg('Key strength', chip(_ana.strength, _ana.strength.score >= _ana.strength.max ? 'swml-ana-full' : null));
                     if (_ana.missed.length) html += seg('Top priority', chip(_ana.missed[0], 'swml-loss-1'));
+                    return html;
+                },
+                // v7.20.682 (#699 — Neil: "when you collapse it, you get a quick snapshot of the key information
+                // in each bit… a quick overview of where all the main strengths and weaknesses are"). Read from
+                // the same rows the walks file — nothing re-derived, nothing stored.
+                'Mark-Scheme Self-Assessment': () => {
+                    const keys = _ladderSchemeKeysFor();
+                    if (!keys.length) return '';
+                    let mine = 0, max = 0, all = true;
+                    const parts = [];
+                    keys.forEach((k) => {
+                        const f = _ladderFids(k.key);
+                        const lvl = _ladderRowText(f.level).split(' · ').slice(0, 2).join(' · ');
+                        const mk = /(\d+(?:\.\d+)?)/.exec(_ladderRowText(f.mark));
+                        max += k.max;
+                        if (mk) mine += parseFloat(mk[1]); else all = false;
+                        if (lvl || mk) parts.push('<span class="swml-ana-calib">' + escapeHTML(k.ao || k.q || '') + ': '
+                            + escapeHTML(lvl || '—') + (mk ? ' · ' + mk[1] + '/' + k.max : '') + '</span>');
+                    });
+                    if (!parts.length) return '';
+                    let html = '';
+                    if (all && keys.length > 1) html += seg('Your mark', '<span class="swml-ana-calib">' + _gapR2(mine) + '/' + max + '</span>');
+                    html += seg(keys.length > 1 ? 'Your levels' : 'Your level', parts.join(' · '));
+                    const conf = _ladderRowText('sa-ms-confidence');
+                    if (conf) html += seg('Confidence', '<span class="swml-ana-calib">' + escapeHTML(conf) + '</span>');
+                    return html;
+                },
+                'Calibration': () => {
+                    let html = '';
+                    const groups = _calibGroups().filter((x) => x.mineNum !== null && x.actual);
+                    groups.forEach((x) => {
+                        const d = x.mineNum - x.actual.mark, ad = Math.abs(d), tol = _toleranceFor(x.max);
+                        const word = ad <= tol ? 'calibrated' : (d > 0 ? 'you marked higher' : 'you marked lower');
+                        const col = ad <= tol ? '#1cd991' : (ad <= tol * 2 ? '#f1c40f' : '#ff9800');
+                        html += seg(groups.length > 1 ? escapeHTML(x.q + ' ' + x.ao) : 'You vs Sophia',
+                            '<span class="swml-ana-calib" style="color:' + col + '">' + x.mineNum + '/' + x.max + ' vs ' + x.actual.mark + '/' + x.max
+                            + ' · ' + (ad ? ad + ' apart · ' : '') + word + '</span>');
+                    });
+                    // Each paragraph's biggest gap, in that paragraph's colour (#696) — words carry it too.
+                    const gaps = GAP_SECTIONS.map((s) => ({ s: s, t: _ladderRowText(_gapFids(s.key).gap) }))
+                        .filter((x) => x.t && !/^Not compared/.test(x.t));
+                    if (gaps.length) {
+                        html += seg('Biggest gaps', gaps.map((x) => {
+                            const agreed = /agreed on every part/i.test(x.t);
+                            const skill = agreed ? 'agreed' : x.t.split(' — ')[0];
+                            const dir = agreed ? '' : (/rated it higher/i.test(x.t) ? ' (rated too high)' : (/rated it lower/i.test(x.t) ? ' (rated too low)' : ''));
+                            return '<span class="swml-ana-chip swml-para-chip swml-para-' + x.s.key + '">' + escapeHTML(x.s.label + ' · ' + skill + dir) + '</span>';
+                        }).join(''));
+                    }
+                    const dec = groups.length === 1 ? _ladderRowText(groups[0].fids.decision) : '';
+                    if (dec) html += seg('You decided', '<span class="swml-ana-calib">' + escapeHTML(dec) + '</span>');
                     return html;
                 },
             };
@@ -18966,6 +19160,8 @@
                     // its Finish / Revisit buttons back (chips are never saved).
                     const _lastA = canvasChatHistory.slice().reverse().find(m => m && m.role === 'assistant' && !m.hidden);
                     if (_lastA && /^That is your calibration filed/.test(String(_lastA.content || ''))) _calibOfferFinish();
+                    // v7.20.682 (#704, §4d): a reload on the finish line re-draws the live Document Progress report.
+                    else if (_lastA && _ASSESS_DONE_RE.test(String(_lastA.content || ''))) _assessProgressReport();
                     return;
                 }
                 // v7.20.649: re-send ONLY when the last hand-off got no reply — Sophia's first answer
@@ -42664,6 +42860,8 @@
                                     // calibration hand-back gets its Finish / Revisit buttons back (§4d).
                                     const _lastA = canvasChatHistory.slice().reverse().find(m => m && m.role === 'assistant' && !m.hidden);
                                     if (_lastA && /^That is your calibration filed/.test(String(_lastA.content || ''))) _calibOfferFinish();
+                                    // v7.20.682 (#704, §4d): a reload on the finish line re-draws the live Document Progress report.
+                                    else if (_lastA && _ASSESS_DONE_RE.test(String(_lastA.content || ''))) _assessProgressReport();
                                     return;
                                 }
                                 // v7.20.649: re-send ONLY when the last hand-off got no reply — Sophia's first answer
@@ -50316,6 +50514,7 @@
             // v7.20.673 (#683): Mark-Scheme SA + Calibration directly under the SA (insert or move).
             _migrateStep('healLadderSectionsUnderSelfAssessment', healLadderSectionsUnderSelfAssessment);
             _migrateStep('healLadderSaWording', healLadderSaWording);   // v7.20.677 (#691)
+            _migrateStep('healCalibGoal', healCalibGoal);   // v7.20.682 (#701)
             // v7.19.619: after dividers exist (RESULTS anchor), heal-in the Overall Feedback section.
             _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
             _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
@@ -50342,6 +50541,7 @@
                 // v7.20.673: the scheme keys read state.subject/state.text — settled-state second pass.
                 try { healLadderSectionsUnderSelfAssessment(); } catch (_) {}
                 try { healLadderSaWording(); } catch (_) {}   // v7.20.677 (#691)
+                try { healCalibGoal(); } catch (_) {}   // v7.20.682 (#701)
             }, 1800));
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
             // inject the Reflection section once it resolves (record-gated; the filing
@@ -51632,15 +51832,18 @@
                 // v7.19.700/701: calibration key resolved up front (name-first, Intro/Conclusion
                 // included) so the prediction can sit in the row's sig — the readout rebuilds
                 // the moment a prediction or mark lands, and only then.
-                let _qForCalib = null, _pred = null;
+                let _qForCalib = null, _pred = null, _ratingPred = null;
                 try {
                     _qForCalib = _paraKey(baseName);
                     if (_qForCalib) _pred = _getPredicted(_qForCalib);
+                    // v7.20.682 (#702): a Literature paragraph with no prediction shows the student's own
+                    // ratings as a mark instead (_gapRatingPredFor — the paragraph check's one conversion).
+                    if (_qForCalib && _pred == null && _ladderIsLit()) _ratingPred = _gapRatingPredFor(baseName, maxMarks);
                 } catch (_) { /* readout degrades to placeholders */ }
 
                 // v7.20.650 (#635/#636): the history line rides the sig too — the card redraws when it lands.
                 const _histHtml = _qForCalib ? _qHistReadoutHTML(baseName, currentMarks, maxMarks) : '';
-                const sig = 'fb|' + baseName + '|' + currentMarks + '/' + maxMarks + '|' + _pred + '|' + _halfMarks + '|' + _qHistSig() + '|' + _histHtml.length;
+                const sig = 'fb|' + baseName + '|' + currentMarks + '/' + maxMarks + '|' + _pred + '|' + _ratingPred + '|' + _halfMarks + '|' + _qHistSig() + '|' + _histHtml.length;
                 if (row.dataset.sig === sig) return;
                 _rowFillStart(row);
 
@@ -51705,6 +51908,10 @@
                         onChange: onMarkChange,
                         extraClass: 'swml-popover-feedback',
                         valueLabelFn: (v) => v === -1 ? '—' : `${v} / ${maxMarks}`,
+                        // v7.20.682 (#700): a quarter mark (3.75 / 8 — Literature criteria are worth 0.25)
+                        // is not one of the half-step options, so the option lookup found no tier and the
+                        // badge kept the default brown. Rank the VALUE itself, same ladder as every option.
+                        tierFn: feedbackTierFn,
                     });
                 }
                 // v7.19.608: calibration readout — Predicted · Actual · Δ (tolerance colour).
@@ -51743,7 +51950,21 @@
                         // Calibration section compares it). Five "Predicted —" placeholders would read
                         // as something the student forgot to do, so those cards show the actual only.
                         // A pre-ladder Literature doc that DID predict still shows the full readout.
-                        calibEl.innerHTML = (_pred == null && _ladderIsLit()) ? actTxt : (predTxt + sep + actTxt + sep + deltaTxt);
+                        // v7.20.682 (#702): …unless the student RATED this paragraph's parts — then their
+                        // ratings, as a mark, sit beside the actual with the same tolerance verdict.
+                        let litTxt = actTxt;
+                        if (_pred == null && _ratingPred != null) {
+                            const rateTxt = '<span title="Your own skill ratings for this paragraph, turned into a mark">Your rating ≈ <strong>' + _ratingPred + '</strong></span>';
+                            let rDelta = '<span style="' + dim + '">Δ —</span>';
+                            if (currentMarks >= 0) {
+                                const rv = _calibVerdict(_ratingPred, currentMarks, maxMarks);
+                                const rd = _gapR2(rv.delta);
+                                const rlab = rv.verdict === 'accurate' ? 'examiner-accurate' : (rv.verdict === 'slightly' ? 'slightly off' : 'recalibrate');
+                                rDelta = '<span style="color:' + rv.color + '">Δ ' + (rd > 0 ? '+' : '') + rd + ' (' + rlab + ')</span>';
+                            }
+                            litTxt = rateTxt + sep + actTxt + sep + rDelta;
+                        }
+                        calibEl.innerHTML = (_pred == null && _ladderIsLit()) ? litTxt : (predTxt + sep + actTxt + sep + deltaTxt);
                         row.appendChild(calibEl);
                         if (window.SWML_DEBUG) console.log('[WML calib] readout Q' + _qForCalib + ' pred=' + _pred + ' act=' + currentMarks); // v7.20.88: gated — was flooding every console (Neil)
                     }
@@ -65230,6 +65451,39 @@
         if (!changed) return;
         console.warn('WML ladder-sections heal: placed ' + changed + ' section(s) directly under Self-Assessment');
         try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
+        try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+    }
+
+    // ⭐ v7.20.682 (#701): Calibration's "Your next goal" box repeated the Action Plan's "Where to next?".
+    // A document built before .682 carries it; an EMPTY one (and its heading) is taken out so Document
+    // Progress never waits on a box nobody will be asked to fill. A goal the student typed is kept.
+    // Same dispatch as healLadderSaWording — under _migrationActive, out of undo — or the Section
+    // Guard reverts the removal (measured on .677).
+    function healCalibGoal() {
+        if (!canvasEditor || state.reviewMode) return;
+        let field = null;
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (field) return false;
+            if (n.type.name === 'inputField' && n.attrs && n.attrs.fieldId === 'calib-goal') { field = { pos: p, node: n }; return false; }
+            return true;
+        });
+        if (!field || (field.node.textContent || '').trim()) return;
+        const $p = canvasEditor.state.doc.resolve(field.pos);
+        const idx = $p.index();
+        const prev = idx > 0 ? $p.parent.child(idx - 1) : null;
+        const from = (prev && /^Your next goal$/i.test((prev.textContent || '').trim())) ? field.pos - prev.nodeSize : field.pos;
+        const tr = canvasEditor.state.tr;
+        tr.delete(from, field.pos + field.node.nodeSize);
+        tr.setMeta('addToHistory', false);
+        _migrationActive = true;
+        try { canvasEditor.view.dispatch(tr); }
+        catch (e) { console.warn('WML calib-goal heal skipped —', e && e.message); return; }
+        finally { _migrationActive = false; }
+        let still = false;
+        canvasEditor.state.doc.descendants(n => { if (n.type.name === 'inputField' && n.attrs && n.attrs.fieldId === 'calib-goal') still = true; });
+        if (still) { console.warn('WML calib-goal heal: the empty goal box is still in the document — something reverted it'); return; }
+        console.warn('WML calib-goal heal: removed the empty "Your next goal" box (the Action Plan holds it)');
         try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
     }

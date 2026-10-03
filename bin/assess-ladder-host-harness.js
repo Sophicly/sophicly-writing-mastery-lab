@@ -426,7 +426,10 @@ console.log('\nJ · Literature under the mark scheme — one comparison, the AO-
     ok(/const ok = \(aoOnly \|\| rating != null\)/.test(panel), 'the card: Submit needs only an AO or a line of text (no rating to wait for)');
     ok(/msg = 'AO targeting: ' \+ \(aoStr \|\| 'not chosen'\) \+ '\.' \+ \(detail \? ' What I was trying to show: ' \+ detail : ''\);/.test(panel),
         'the card sends ONE labelled line — the shape the protocol\'s MARK-SCHEME SESSION rule reads');
-    ok(/\(_pred == null && _ladderIsLit\(\)\) \? actTxt/.test(JS), 'a Literature card with no paragraph prediction shows Actual only — no five "Predicted —" placeholders');
+    // v7.20.682 (#702): no "Predicted —" placeholders still — but where the student RATED the paragraph's parts,
+    // their ratings as a mark sit beside the actual ("Your rating ≈ x · Actual y · Δ"); unrated → Actual only.
+    ok(/\(_pred == null && _ladderIsLit\(\)\) \? litTxt/.test(JS) && /let litTxt = actTxt;/.test(JS) && /if \(_pred == null && _ratingPred != null\)/.test(JS),
+        'a Literature card never shows "Predicted —"; it shows the student\'s ratings as a mark where they rated, else Actual only (#702)');
     ok(/g\.key === LIT_CALIB_KEY \? 'five paragraph marks, added up'/.test(JS), 'the comparison card says how Sophia\'s number was made');
     ok(/if \(r && r\.min === r\.max\) \{/.test(JS), 'a one-mark level (AO4 High / Threshold) is filed without a pointless top/middle/bottom question');
     ok(/if \(_r\.length && _r\[_r\.length - 1\]\.level === step\.level\.level\) \{?\s*st\.stoppedAt = step\.level\.level;/.test(JS),

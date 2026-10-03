@@ -8245,6 +8245,19 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-ana-strip { color: rgba(44, 0, 62, 0.6); }
 [data-swml-theme="light"] .swml-ana-chip { color: rgba(20, 20, 20, 0.92); }
 [data-swml-theme="light"] .swml-ana-chip.swml-ana-full { color: #fff; }
+/* v7.20.682 (#699/#696): Calibration's collapsed "Biggest gaps" chips wear their paragraph's colour —
+   the same five hues as the paragraph rows (an EDGE + wash, not a score fill). */
+.swml-ana-chip.swml-para-chip { background: var(--swml-para-wash); box-shadow: inset 3px 0 0 var(--swml-para); padding-left: 9px; font-weight: 600; margin-right: 4px; }
+.swml-para-chip.swml-para-intro      { --swml-para: #829FFD; --swml-para-wash: rgba(130, 159, 253, 0.14); }
+.swml-para-chip.swml-para-body1      { --swml-para: #51dacf; --swml-para-wash: rgba(81, 218, 207, 0.14); }
+.swml-para-chip.swml-para-body2      { --swml-para: #a78bfa; --swml-para-wash: rgba(167, 139, 250, 0.16); }
+.swml-para-chip.swml-para-body3      { --swml-para: #ffc108; --swml-para-wash: rgba(255, 193, 8, 0.12); }
+.swml-para-chip.swml-para-conclusion { --swml-para: #f49ac1; --swml-para-wash: rgba(244, 154, 193, 0.14); }
+[data-swml-theme="light"] .swml-para-chip.swml-para-intro      { --swml-para: #3651c9; --swml-para-wash: rgba(54, 81, 201, 0.09); }
+[data-swml-theme="light"] .swml-para-chip.swml-para-body1      { --swml-para: #0b6e68; --swml-para-wash: rgba(11, 110, 104, 0.09); }
+[data-swml-theme="light"] .swml-para-chip.swml-para-body2      { --swml-para: #6741d9; --swml-para-wash: rgba(103, 65, 217, 0.09); }
+[data-swml-theme="light"] .swml-para-chip.swml-para-body3      { --swml-para: #7a5600; --swml-para-wash: rgba(255, 193, 8, 0.16); }
+[data-swml-theme="light"] .swml-para-chip.swml-para-conclusion { --swml-para: #a8326a; --swml-para-wash: rgba(168, 50, 106, 0.09); }
 /* v7.19.920: collapsed-summary previews — SA / Action Plan / Overall Feedback strips
    render ONLY while their section is collapsed (Analytics' strip shows always). */
 .swml-ana-strip.swml-strip-collapsed-only { display: none; }
@@ -9710,6 +9723,39 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 }
 [data-swml-theme="light"] .swml-input-field.swml-input-filled {
     background: rgba(28, 217, 145, 0.08);
+}
+
+/* v7.20.682 (#696 — Neil, 3 Oct: "they're all the same gray color… You can't really distinguish between
+   what's about body paragraph one, what's about body paragraph two"). Calibration's paragraph-by-paragraph
+   rows: each paragraph's two boxes share ONE colour — the left edge, a faint wash, and the label. The label
+   keeps its words ("Body 2 — the biggest gap"), so colour is never the only signal (colour-blind safe).
+   Scores are FILLED chips; a paragraph is an EDGE — the two vocabularies stay apart. Labels measured
+   ≥5.1:1 on #2b2c2f (dark) and ≥5.8:1 on #fafafa (light). Light = darker shades of the same hues, never
+   a white wash (root CLAUDE.md §LIGHT THEME). Placed after the filled rule so it wins the done-green edge. */
+.swml-input-field[data-field-id^="calib-gap-intro"]      { --swml-para: #829FFD; --swml-para-wash: rgba(130, 159, 253, 0.08); }
+.swml-input-field[data-field-id^="calib-gap-body1"]      { --swml-para: #51dacf; --swml-para-wash: rgba(81, 218, 207, 0.08); }
+.swml-input-field[data-field-id^="calib-gap-body2"]      { --swml-para: #a78bfa; --swml-para-wash: rgba(167, 139, 250, 0.09); }
+.swml-input-field[data-field-id^="calib-gap-body3"]      { --swml-para: #ffc108; --swml-para-wash: rgba(255, 193, 8, 0.07); }
+.swml-input-field[data-field-id^="calib-gap-conclusion"] { --swml-para: #f49ac1; --swml-para-wash: rgba(244, 154, 193, 0.08); }
+.swml-input-field[data-field-id^="calib-gap-"] {
+    background: var(--swml-para-wash);
+    box-shadow: inset 3px 0 0 var(--swml-para);
+}
+.swml-input-field[data-field-id^="calib-gap-"][data-prompt]::before {
+    color: var(--swml-para);
+    font-style: normal;
+    font-weight: 600;
+}
+[data-swml-theme="light"] .swml-input-field[data-field-id^="calib-gap-intro"]      { --swml-para: #3651c9; --swml-para-wash: rgba(54, 81, 201, 0.06); }
+[data-swml-theme="light"] .swml-input-field[data-field-id^="calib-gap-body1"]      { --swml-para: #0b6e68; --swml-para-wash: rgba(11, 110, 104, 0.06); }
+[data-swml-theme="light"] .swml-input-field[data-field-id^="calib-gap-body2"]      { --swml-para: #6741d9; --swml-para-wash: rgba(103, 65, 217, 0.06); }
+[data-swml-theme="light"] .swml-input-field[data-field-id^="calib-gap-body3"]      { --swml-para: #7a5600; --swml-para-wash: rgba(255, 193, 8, 0.10); }
+[data-swml-theme="light"] .swml-input-field[data-field-id^="calib-gap-conclusion"] { --swml-para: #a8326a; --swml-para-wash: rgba(168, 50, 106, 0.06); }
+[data-swml-theme="light"] .swml-input-field[data-field-id^="calib-gap-"] {
+    background: var(--swml-para-wash);
+}
+[data-swml-theme="light"] .swml-input-field[data-field-id^="calib-gap-"][data-prompt]::before {
+    color: var(--swml-para);
 }
 
 /* ══════════════════════════════════════════
