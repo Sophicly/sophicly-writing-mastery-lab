@@ -220,6 +220,19 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACMDR 2
   grep -E '^(✓|✗) quiz-bank-reach' /tmp/quiz-bank-reach.out
 fi
 
+# v7.20.687 (FIXLIST #715/#719): can a quiz be passed WITHOUT knowing the text? Measured 2026-10-04:
+# right answer = longest option in 85% of 4,321 MCQs, True/False keyed True 502/552, a blind script
+# scores 81% on the FQ banks. The gate reads every bank through the real parser + scorer. RATCHET:
+# only banks listed in bin/quiz-cue-gate.enforced.txt can fail the build — each one joins the day it
+# is rewritten, and can never regain a cue. The selftest proves a clean bank passes and every cue fails.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACMDR 2>/dev/null \
+     | grep -qE 'class-quiz-bank\.php|protocols/shared/(mark-scheme-quiz|mark-scheme-assessment|foundational-quiz)/|quiz-cue-gate'; then
+  php bin/quiz-cue-gate.php --selftest >/tmp/quiz-cue-selftest.out 2>&1 || { cat /tmp/quiz-cue-selftest.out; fail=1; }
+  tail -1 /tmp/quiz-cue-selftest.out
+  php bin/quiz-cue-gate.php --enforce >/tmp/quiz-cue-enforce.out 2>&1 || { cat /tmp/quiz-cue-enforce.out; fail=1; }
+  tail -1 /tmp/quiz-cue-enforce.out
+fi
+
 # v7.20.639 (#598): which copy wins on load — a newer SERVER copy must beat a stale browser copy
 # (doc AND chat), and unsaved typing on this device must never be lost. Runs the shipped decision.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
