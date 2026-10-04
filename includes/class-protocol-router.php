@@ -904,6 +904,12 @@ class SWML_Protocol_Router {
         }
         $row = &$store[$day][$model];
         $row['reqs']++;
+        // v7.20.685: a declined reply is counted per model, so the Sonnet 5.5 decline rate is READ, not guessed
+        // (retry_anthropic_refusal re-sends it on Sonnet 5; that reply is counted under Sonnet 5 as a normal req).
+        if ($body !== '' && strpos($body, '"refusal"') !== false) {
+            $jr = json_decode($body, true);
+            if (is_array($jr) && ($jr['stop_reason'] ?? '') === 'refusal') $row['refusals'] = (int) ($row['refusals'] ?? 0) + 1;
+        }
         if ($seen) {
             foreach (['input', 'output', 'cache_read', 'cache_write'] as $k) $row[$k] += $u[$k];
         } else {

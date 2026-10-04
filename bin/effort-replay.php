@@ -13,7 +13,8 @@ if (!defined('ABSPATH')) exit;
 @set_time_limit(0);
 // v7.20.682: the web PHP's open_basedir allows /tmp but not /home/runcloud — the recorder must write under /tmp
 // (class-protocol-router.php maybe_capture_exchange docblock). Override with EFFORT_DIR.
-$DIR     = getenv('EFFORT_DIR') ?: '/tmp/wml-capture-20261003';
+$_capOpt = get_option('swml_capture_anthropic', null);   // the armed recorder's own folder, while it is set
+$DIR     = getenv('EFFORT_DIR') ?: ((is_array($_capOpt) && !empty($_capOpt['dir'])) ? (string) $_capOpt['dir'] : '/tmp/wml-capture-20261004');
 $LEVELS  = ['medium', 'low'];
 $MAX_USD = (float) (getenv("EFFORT_MAX_USD") ?: 25.0); // Neil 2026-09-30: cost is no object, get it right; 25 = runaway guard only
 $DRY     = getenv('EFFORT_DRY') === '1';
