@@ -52,7 +52,9 @@ const SOURCES = [
     // ── AQA Literature Paper 2 Section C — unseen poetry (8702/2) ───────────────────────────
     // The board bands Q27.1 on the whole 24 with an AO1 + AO2 strand per level — ONE ladder.
     { key: 'aqa_unseen_q271', source: US, board: 'aqa', paper: 'unseen', question: 'Q27.1', ao: 'AO1 + AO2',
-      header: /^## QUESTION 27\.1 — (AO1 \+ AO2 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false },
+      header: /^## QUESTION 27\.1 — (AO1 \+ AO2 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false,
+      // v7.20.684 (#693): AQA's own "how to arrive at a mark" top/bottom sentences per level.
+      arrive: /^## HOW TO ARRIVE AT A MARK — Question 27\.1[^\n]*$/m },
     { key: 'aqa_unseen_q272', source: US, board: 'aqa', paper: 'unseen', question: 'Q27.2', ao: 'AO2',
       header: /^## QUESTION 27\.2 — (AO2 [^(]+?) \((\d+) marks\)[^\n]*$/m, banded: false },
     // ── AQA Literature essays (8702/1 A+B, 8702/2 A) — v7.20.673, FIXLIST #473/#683 ─────────
@@ -61,9 +63,11 @@ const SOURCES = [
     // AO4 is identical on both papers and applies to Shakespeare + modern texts only — the key
     // builder (_ladderSchemeKeysFor) decides which of these a lesson gets, never this file.
     { key: 'aqa_lit_p1_ao123', source: LT, board: 'aqa', paper: 'literature_p1', question: 'Essay', ao: 'AO1 + AO2 + AO3',
-      header: /^## PAPER 1 ESSAY — (AO1 \+ AO2 \+ AO3 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false },
+      header: /^## PAPER 1 ESSAY — (AO1 \+ AO2 \+ AO3 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false,
+      arrive: /^## HOW TO ARRIVE AT A MARK — PAPER 1 ESSAY[^\n]*$/m },
     { key: 'aqa_lit_p2_ao123', source: LT, board: 'aqa', paper: 'literature_p2', question: 'Essay', ao: 'AO1 + AO2 + AO3',
-      header: /^## PAPER 2 ESSAY — (AO1 \+ AO2 \+ AO3 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false },
+      header: /^## PAPER 2 ESSAY — (AO1 \+ AO2 \+ AO3 [^(]+?) — ONE six-level ladder[^(]*\((\d+) marks\)[^\n]*$/m, banded: false,
+      arrive: /^## HOW TO ARRIVE AT A MARK — PAPER 2 ESSAY[^\n]*$/m },
     { key: 'aqa_lit_ao4', source: LT, board: 'aqa', paper: 'literature', question: 'Essay', ao: 'AO4',
       header: /^## ESSAY AO4 — ([^(]+?) — Shakespeare and modern texts only \((\d+) marks\)[^\n]*$/m, banded: false },
 ];

@@ -172,12 +172,15 @@ ok(/What do you think it is missing\?/.test(X._gapQuestionText(cmp)), 'an over-r
 ok(/Which part are you surest about/.test(X._gapQuestionText(close)), 'agreement still asks one question (one answer per paragraph, as ruled)');
 const allText = [q, X._gapQuestionText(cmp), X._gapQuestionText(close), X._gapFiledLine(cmp), X._gapRevealText(cmp), X._gapPastLine(cmp), X._gapPastLine(close)].join('\n');
 ok(!/\b(protocol|module|component|the system|the platform|payload|marker|bank)\b/i.test(allText), 'no insider word reaches the student (§5c-ii)');
-ok(/^Filed under \*\*Calibration\*\*: on \*\*Body 1\*\*, the biggest gap was your \*\*Close Analysis\*\* — you had rated it higher than I marked it\.$/.test(X._gapPastLine(cmp))
-    && /agreed on the \*\*Introduction\*\*\.$/.test(X._gapPastLine(close)),
+// v7.20.684 (#692): the check now shows in the paragraph's Feedback, so the stored line says so.
+ok(/^Filed in your \*\*Feedback\*\* for \*\*Body 1\*\*: the biggest gap was your \*\*Close Analysis\*\* — you had rated it higher than I marked it\.$/.test(X._gapPastLine(cmp))
+    && /^Filed in your \*\*Feedback\*\* for the \*\*Introduction\*\*: your ratings and my marks agreed\.$/.test(X._gapPastLine(close)),
     'the stored turn is PAST tense (§4c.7) — and it is exactly what the resume hook recognises');
+ok(/\/\^Filed \(\?:under \\\*\\\*Calibration\\\*\\\*:\|in your \\\*\\\*Feedback\\\*\\\* for \)\//.test(JS),
+    '#692: the resume hook still recognises the OLD stored line (saved chats keep "Filed under **Calibration**:")');
 ok(X._gapRevealText(cmp) === '**Why I gave your Close Analysis that mark:** “Paraphrases meaning, no word-level zoom” · “No technique named to interrelate”',
     'the reveal is my own reason from the mark table, verbatim (both criteria of a two-row part)');
-ok(X._gapFiledLine(introCmp) === 'Thesis — you: Developing (2 of 5) = 0.25 of 1 · Sophia: 1 of 1 · you rated it lower than it scored',
+ok(X._gapFiledLine(introCmp) === 'Thesis — you: Developing (2 of 5) = 0.5 of 1 · Sophia: 1 of 1 · you rated it lower than it scored',
     'the document row names the part, both judgements — the rating as a mark too (#695) — and the direction');
 const fact = X._gapFactText([{ label: 'Introduction', gap: X._gapFiledLine(introCmp), said: 'it answered the question directly' },
     { label: 'Body 1', gap: 'Not compared — there was no mark table for this paragraph.', said: '' }]);
@@ -193,9 +196,12 @@ ok(X._gapFactText([]) === '', 'no filed gaps → no fact at all');
 console.log('\nD2 · the rating as a mark, and the totals (#695)');
 {
     const it = (c, k) => c.items.find((i) => i.skill === k);
-    ok(it(cmp, 'Topic Sentence').selfMark === 0.25 && it(cmp, 'Close Analysis').selfMark === 1.5 && it(cmp, 'Technical Terms').selfMark === 0.5,
-        'a rating becomes a mark by its step × what the part is worth, to the nearest quarter (2 of 5 on 1 → 0.25 · 4 of 5 on 2 → 1.5 · 4 of 5 on 0.5 → 0.375 → 0.5)');
-    ok(cmp.rated.self === 5.25 && cmp.rated.mine === 2.75 && cmp.rated.worth === 7.5, 'the rated parts add up on both sides — 5.25 of 7.5 against 2.75 of 7.5 (got ' + JSON.stringify(cmp.rated) + ')');
+    // v7.20.684 (#710 — Neil: a rating of 1 must not earn 0): rating ÷ 5 × worth, to the nearest quarter.
+    ok(it(cmp, 'Topic Sentence').selfMark === 0.5 && it(cmp, 'Close Analysis').selfMark === 1.5 && it(cmp, 'Technical Terms').selfMark === 0.5,
+        'a rating becomes a mark as its fifth × what the part is worth, to the nearest quarter (2 of 5 on 1 → 0.4 → 0.5 · 4 of 5 on 2 → 1.6 → 1.5 · 4 of 5 on 0.5 → 0.4 → 0.5)');
+    ok(X._gapRatingMark(null, [{ group: 'x', value: 1 }], 8) === 1.5 && X._gapRatingMark(null, [{ group: 'x', value: 1 }], 3) === 0.5,
+        '#710: "Basic (1 of 5)" is never zero — a fifth of the marks (1.6 → 1.5 of 8 · 0.6 → 0.5 of 3)');
+    ok(cmp.rated.self === 5.5 && cmp.rated.mine === 2.75 && cmp.rated.worth === 7.5, 'the rated parts add up on both sides — 5.5 of 7.5 against 2.75 of 7.5 (got ' + JSON.stringify(cmp.rated) + ')');
     const t = X._gapTotalOf(BODY1, card.section);
     ok(t && t.got === 2.75 && t.of === 8, 'the paragraph mark is read from the card\'s OWN total line ("Total Mark for Body Paragraph 1: 2.75/8")');
     ok(X._gapTotalOf(BODY1, X._gapSectionFor('Body 2')) === null && X._gapTotalOf('no total here', card.section) === null, '…and only for THIS paragraph — never another paragraph\'s total, never a guess');
@@ -203,7 +209,7 @@ console.log('\nD2 · the rating as a mark, and the totals (#695)');
     ok(full.penalties === true, 'penalties are detected when the card\'s total is below its rows (3 > 2.75)');
     ok(full.unrated.length === 1 && full.unrated[0] === 'Analysis links to topic sentence', 'the part no rating covers is named, without its AO tag');
     const ft = X._gapQuestionText(full);
-    ok(/\| \*\*All the parts you rated\*\* \| — \| \*\*5\.25 of 7\.5\*\* \| \*\*2\.75 of 7\.5\*\* \|/.test(ft), 'the table ends on the totals for the parts the student rated, both sides');
+    ok(/\| \*\*All the parts you rated\*\* \| — \| \*\*5\.5 of 7\.5\*\* \| \*\*2\.75 of 7\.5\*\* \|/.test(ft), 'the table ends on the totals for the parts the student rated, both sides');
     ok(/My mark for the whole of Body 1 is \*\*2\.75 \/ 8\*\*\. That mark also counts the part you did not rate \(analysis links to topic sentence\)\. Penalties have been taken off that mark\./.test(ft),
         'the whole paragraph\'s mark is shown, and why it differs from the table: the unrated part and the penalties');
     ok(/Close Analysis \| Good \(4 of 5\) \| 1\.5 of 2 \| 0\.25 of 2 \|/.test(ft), 'each row: rating · rating as a mark · my mark, all on the same "of" scale');
@@ -228,17 +234,17 @@ console.log('\nD2 · the rating as a mark, and the totals (#695)');
         X._gapRowsFrom(NEIL_B1), X._gapTotalOf(NEIL_B1, X._gapSectionFor('Body 1')));
     const nt = X._gapQuestionText(nb);
     const want = ['| Topic Sentence | Good (4 of 5) | 0.75 of 1 | 0.75 of 1 |', '| Technical Terms | Secure (3 of 5) | 0.25 of 0.5 | 0.5 of 0.5 |',
-        '| Evidence | Secure (3 of 5) | 0.5 of 1 | 1 of 1 |', '| Close Analysis | Developing (2 of 5) | 0.5 of 2 | 1 of 2 |',
-        '| Effects on Reader | Developing (2 of 5) | 0.25 of 1 | 0.5 of 1 |', "| Author's Purpose | Developing (2 of 5) | 0.25 of 1 | 0.25 of 1 |",
-        '| Context | Secure (3 of 5) | 0.5 of 1 | 0.75 of 1 |', '| **All the parts you rated** | — | **3 of 7.5** | **4.75 of 7.5** |'];
+        '| Evidence | Secure (3 of 5) | 0.5 of 1 | 1 of 1 |', '| Close Analysis | Developing (2 of 5) | 0.75 of 2 | 1 of 2 |',
+        '| Effects on Reader | Developing (2 of 5) | 0.5 of 1 | 0.5 of 1 |', "| Author's Purpose | Developing (2 of 5) | 0.5 of 1 | 0.25 of 1 |",
+        '| Context | Secure (3 of 5) | 0.5 of 1 | 0.75 of 1 |', '| **All the parts you rated** | — | **3.75 of 7.5** | **4.75 of 7.5** |'];
     want.forEach((w) => ok(nt.indexOf(w) !== -1, 'Neil\'s Body 1: ' + w));
     ok(/My mark for the whole of Body 1 is \*\*3\.75 \/ 8\*\*\./.test(nt), 'Neil\'s Body 1: "the total marks that Sophia gave me" — 3.75 / 8, from the card');
     ok(nb.biggest.skill === 'Evidence' && nb.dir === 'under', 'Neil\'s Body 1: still Evidence (two steps under, 0.5 marks) — the part he was asked about on screen');
     // v7.20.682 (#702 — Neil: "take the self-rating per paragraph… calculate what [that] percent is out of the marks
     // we give per paragraph… versus an actual"): the card's "Your rating ≈" is the table's rated-parts share × the card's /8.
-    ok(X._gapRatingMark(nb, null, 8) === 3.25, 'Neil\'s Body 1 card: "Your rating ≈ 3.25" — 3 of 7.5 rated (40%) × 8, to the quarter (got ' + X._gapRatingMark(nb, null, 8) + ')');
+    ok(X._gapRatingMark(nb, null, 8) === 4, 'Neil\'s Body 1 card: "Your rating ≈ 4" — 3.75 of 7.5 rated (50%) × 8 (got ' + X._gapRatingMark(nb, null, 8) + ')');
     const _b1r = [4, 3, 3, 2, 2, 2, 3].map((v) => ({ group: 'Body Paragraphs', value: v }));
-    ok(X._gapRatingMark(null, _b1r, 8) === 3.5, 'no readable card → the plain average on the SAME scale ((v−1)/4): 12/28 × 8 → 3.5 (got ' + X._gapRatingMark(null, _b1r, 8) + ')');
+    ok(X._gapRatingMark(null, _b1r, 8) === 4.25, 'no readable card → the plain average on the SAME scale (rating ÷ 5): 19/35 × 8 = 4.34 → 4.25 (got ' + X._gapRatingMark(null, _b1r, 8) + ')');
     ok(X._gapRatingMark(null, [], 8) === null && X._gapRatingMark(nb, null, 0) === null, 'nothing rated, or no maximum → no number (never a zero)');
 
     // Zayan's Introduction (staging, 3 Oct): rows 0.75, total 0/3 — the penalties are the difference.
@@ -294,6 +300,29 @@ ok(/CODE-DERIVED PARAGRAPH SELF-ASSESSMENT/.test(PROTO), 'the protocol\'s Final 
     ok(/function _assessProgressReport\(refs\)/.test(JS) && /WML\.mcGate\.reading\(\)/.test(JS) && count(JS, '_ASSESS_DONE_RE.test(String(_lastA.content') === 2,
         '#704: the finish turn reports Document Progress from the card\'s own reading, and a reload re-draws it (both pipelines)');
     ok(/durable: false, why: 'a present-state report of the document/.test(JS), '#704: the report is drawn, never stored (§4c.7)');
+    const SB2 = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-section-block.js'), 'utf8');
+    ok(/if \(type === 'feedback'\) \{\s*gapFoot = document\.createElement\('div'\);/.test(SB2) && /gapFoot && \(gapFoot === mutation\.target \|\| gapFoot\.contains\(mutation\.target\)\)/.test(SB2),
+        '#692: each Feedback card has a firewalled footer slot under its content (never a node inside the card)');
+    ok(/function _renderGapFooters\(\)/.test(JS) && /window\.WML\.renderGapFooters = _renderGapFooters/.test(JS) && /_ladderRowText\(f\.gap\)/.test(JS),
+        '#692: the footer is filled from the stored check rows (no migration, survives every re-mark)');
+    ok(!/<p[ >]|<h3|<li/.test(JS.slice(JS.indexOf('function _renderGapFooters()'), JS.indexOf('window.WML.renderGapFooters = _renderGapFooters'))),
+        '#692: the footer uses div/span only — the penalty ledger reads p/li/h3/h4 inside feedback sections');
+    ok(/\.swml-section-block\[data-section-label="Calibration"\] \.swml-input-field\[data-field-id\^="calib-gap-"\]/.test(CSS),
+        '#692: the storage rows are hidden in Calibration (shown once, in the Feedback)');
+}
+
+// v7.20.684 (#712 — Neil: Anam's AQA Lang P2 Q2 plan "has the old structure… we can't use that structure anymore").
+{
+    const fsrc = JS.slice(JS.indexOf('    function _isOldShapeQ2Plan(t) {'), JS.indexOf('    function _ladderStaleQ2Plan(qk) {'));
+    const c2 = {}; vm.createContext(c2); vm.runInContext(fsrc + '\nthis.f = _isOldShapeQ2Plan;', c2);
+    const ANAM = 'T (Topic): The writer presents purity … · T+E+I (Technique + Evidence + Inference): "utter purity" … · C (Close Analysis): … · E1: … · E2: … · A (Author\'s Purpose): …';
+    const NEW = 'Source A topic: … | Source A inferences: … | Source B difference: … | Source B inferences: …';
+    ok(fsrc.length > 0 && c2.f(ANAM) === true, '#712: Anam\'s measured June Q2 plan (TTECEA) reads as the OLD shape');
+    ok(c2.f(NEW) === false && c2.f('') === false, '#712: a new paired-inference plan, or an empty box, is never called old');
+    ok(/if \(_laterFilled\[qk\] && !_ladderStaleQ2Plan\(qk\)\) continue;/.test(JS) && /_ladderStaleQ2Plan\('Q2'\) && _isOldShapeQ2Plan\(/.test(JS),
+        '#712: the ladder and the sidebar bring an old-shape Q2 back (it is re-planned, never skipped)');
+    ok(/outline-body-1-inf1-topic-q2/.test(JS.slice(JS.indexOf('    function _ladderStaleQ2Plan(qk) {'), JS.indexOf('    function deriveLadderState(history) {'))),
+        '#712: only in a document that carries the NEW inference rows (an old document is not reshaped by this)');
 }
 
 console.log('\n' + (fail ? '❌' : '✅') + ' para-gap-check-harness: ' + pass + ' passed, ' + fail + ' failed');

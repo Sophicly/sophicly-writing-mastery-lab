@@ -9758,6 +9758,32 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     color: var(--swml-para);
 }
 
+/* v7.20.684 (#692 — Neil: "Move each paragraph's check into that paragraph's Feedback? → Yes"). The check
+   now shows at the foot of each Feedback card, under Sophia's marks (.swml-gap-foot, a derived footer), so
+   its storage rows and their heading are hidden in Calibration. Same paragraph colours as #696. */
+.swml-section-block[data-section-label="Calibration"] .swml-input-field[data-field-id^="calib-gap-"],
+.swml-section-block[data-section-label="Calibration"] h3:has(+ .swml-input-field[data-field-id="calib-gap-intro"]) { display: none; }
+.swml-gap-foot.swml-para-intro      { --swml-para: #829FFD; --swml-para-wash: rgba(130, 159, 253, 0.08); }
+.swml-gap-foot.swml-para-body1      { --swml-para: #51dacf; --swml-para-wash: rgba(81, 218, 207, 0.08); }
+.swml-gap-foot.swml-para-body2      { --swml-para: #a78bfa; --swml-para-wash: rgba(167, 139, 250, 0.09); }
+.swml-gap-foot.swml-para-body3      { --swml-para: #ffc108; --swml-para-wash: rgba(255, 193, 8, 0.07); }
+.swml-gap-foot.swml-para-conclusion { --swml-para: #f49ac1; --swml-para-wash: rgba(244, 154, 193, 0.08); }
+[data-swml-theme="light"] .swml-gap-foot.swml-para-intro      { --swml-para: #3651c9; --swml-para-wash: rgba(54, 81, 201, 0.06); }
+[data-swml-theme="light"] .swml-gap-foot.swml-para-body1      { --swml-para: #0b6e68; --swml-para-wash: rgba(11, 110, 104, 0.06); }
+[data-swml-theme="light"] .swml-gap-foot.swml-para-body2      { --swml-para: #6741d9; --swml-para-wash: rgba(103, 65, 217, 0.06); }
+[data-swml-theme="light"] .swml-gap-foot.swml-para-body3      { --swml-para: #7a5600; --swml-para-wash: rgba(255, 193, 8, 0.10); }
+[data-swml-theme="light"] .swml-gap-foot.swml-para-conclusion { --swml-para: #a8326a; --swml-para-wash: rgba(168, 50, 106, 0.06); }
+.swml-gap-foot {
+    margin: 14px 0 4px; padding: 10px 14px; border-radius: 6px;
+    background: var(--swml-para-wash, rgba(255,255,255,0.04));
+    box-shadow: inset 3px 0 0 var(--swml-para, rgba(255,255,255,0.25));
+}
+.swml-gap-foot-head { font-size: 11px; font-weight: 600; letter-spacing: .02em; color: var(--swml-para, rgba(255,255,255,0.6)); margin-bottom: 6px; }
+.swml-gap-foot-row { display: grid; grid-template-columns: minmax(110px, 30%) 1fr; gap: 10px; padding: 3px 0; font-size: 14px; line-height: 1.5; }
+.swml-gap-foot-lbl { font-size: 12px; opacity: .7; }
+.swml-section-block.swml-fb-collapsed > .swml-gap-foot { display: none !important; }
+@media (max-width: 560px) { .swml-gap-foot-row { grid-template-columns: 1fr; gap: 2px; } }
+
 /* ══════════════════════════════════════════
  *  v7.19.437: PLAN-SECTION FIELD ACCENTS — brand purple, not outline-blue
  *  OutlineRow was built for essay OUTLINE sections (blue #42A1EC). It is reused

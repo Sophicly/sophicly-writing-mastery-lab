@@ -154,6 +154,39 @@ for (const entry of SOURCES) {
     }
 }
 
+// ── 5 · HOW TO ARRIVE (v7.20.684, #693) — AQA's own top/bottom sentence per level, re-read raw ──
+for (const entry of SOURCES) {
+    const scheme = data[entry.key];
+    if (!scheme) continue;
+    const label = entry.key + ' how-to-arrive';
+    if (!entry.arrive) {
+        ok(scheme.levels.every((l) => !l.arrive), label + ': carries top/bottom text but registers no how-to-arrive section');
+        continue;
+    }
+    const md = readSource(entry.source);
+    const head = md.match(entry.arrive);
+    ok(!!head, label + ': section missing from ' + entry.source);
+    if (!head) continue;
+    const rest = md.slice(head.index + head[0].length);
+    const end = rest.search(/^(## |---)/m);
+    const sec = end < 0 ? rest : rest.slice(0, end);
+    const raw = {};
+    let n = 0;
+    for (const m of sec.matchAll(/^\*\*Level (\d+) — (top|bottom):\*\*\s*"([^"]*)"/gm)) {
+        n++;
+        (raw[m[1]] = raw[m[1]] || {})[m[2]] = m[3].split(/\s+/).join(' ').trim();
+    }
+    ok(n === scheme.levels.length * 2, label + ': ' + n + ' top/bottom lines in the source, expected ' + (scheme.levels.length * 2));
+    scheme.levels.forEach((lv) => {
+        const r = raw[lv.level] || {};
+        ok(!!lv.arrive && lv.arrive.top === r.top, label + ' L' + lv.level + ' top is NOT verbatim from the source');
+        ok(!!lv.arrive && lv.arrive.bottom === r.bottom, label + ' L' + lv.level + ' bottom is NOT verbatim from the source');
+        ok(/^At the top of the level/.test(r.top || ''), label + ' L' + lv.level + ' top does not start "At the top of the level"');
+        ok(/^At the bottom of the level/.test(r.bottom || ''), label + ' L' + lv.level + ' bottom does not start "At the bottom of the level"');
+        if (lv.level > 1) ok(new RegExp('Level ' + (lv.level - 1) + '\\b').test(r.bottom || ''), label + ' L' + lv.level + ' bottom does not name Level ' + (lv.level - 1));
+    });
+}
+
 if (fails) {
     console.log('❌ markscheme-gate FAILED (' + fails + ' of ' + checks + ' checks). The dataset and the');
     console.log('   mark-scheme source have diverged. Fix the SOURCE md (never the generated file),');

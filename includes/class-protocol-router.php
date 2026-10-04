@@ -614,6 +614,9 @@ class SWML_Protocol_Router {
         // cache token fields, so without this the ~68k-token cached prefix we send every turn
         // is invisible and the cache hit ratio is unknowable. See record_anthropic_usage().
         add_filter('http_response', [$this, 'record_anthropic_usage'], 10, 3);
+        // v7.20.684 (Neil switched Sophia to Sonnet 5.5, 4 Oct): a declined reply is re-sent once on
+        // Sonnet 5 before anything else sees it. Runs BEFORE the usage recorder. See retry_anthropic_refusal().
+        add_filter('http_response', [$this, 'retry_anthropic_refusal'], 5, 3);
     }
 
     /**
@@ -803,10 +806,62 @@ class SWML_Protocol_Router {
      * Costs are ESTIMATES from list prices (see swml_api_token_prices); the console is the
      * authority. They exist to show the SHAPE — cache hit ratio, cost per session — not to bill.
      */
+    /**
+     * v7.20.684 — THE REFUSAL FALLBACK (Neil switched Sophia to Sonnet 5.5, 2026-10-04).
+     *
+     * Sonnet 5.5 can decline a request (HTTP 200, stop_reason "refusal", stop_details.category). One of
+     * its categories, "general_harms", is documented as able to fire on benign work, and Anthropic's own
+     * server-side fallback does NOT retry it. Literature essays are about murder, war, abuse and suicide
+     * (Macbeth, An Inspector Calls, Romeo and Juliet), so a decline is a named way for a student to get
+     * no marking at all. This re-sends the SAME request once on Sonnet 5 (no such classifier) and hands
+     * AI Engine that reply instead — the student sees an ordinary answer. Every decline is logged with
+     * its category and counted (`refusals` in swml_api_usage_daily) so the rate is MEASURED, not assumed.
+     * Never loops (one retry, a static guard), never touches a non-refusal, never throws.
+     */
+    const REFUSAL_FALLBACK_MODEL = 'claude-sonnet-5';
+    public function retry_anthropic_refusal($response, $args, $url) {
+        static $busy = false;
+        try {
+            if ($busy || is_wp_error($response)) return $response;
+            if (!is_string($url) || strpos($url, 'api.anthropic.com') === false || strpos($url, '/v1/messages') === false) return $response;
+            $body = (is_array($response) && isset($response['body']) && is_string($response['body'])) ? $response['body'] : '';
+            if ($body === '' || strpos($body, '"refusal"') === false) return $response;
+            $j = json_decode($body, true);
+            if (!is_array($j) || ($j['stop_reason'] ?? '') !== 'refusal') return $response;
+            $req = (is_array($args) && isset($args['body']) && is_string($args['body'])) ? json_decode($args['body'], true) : null;
+            $model = is_array($req) ? (string) ($req['model'] ?? '') : '';
+            $cat = (string) ($j['stop_details']['category'] ?? '');
+            // Count the decline itself (and capture it) BEFORE replacing it — the outer recorder will skip.
+            $this->record_anthropic_usage($response, $args, $url);
+            if (!is_array($req) || $model === '' || $model === self::REFUSAL_FALLBACK_MODEL) {
+                error_log(sprintf('WML: Anthropic REFUSAL (model=%s category=%s) — no fallback possible', $model ?: '?', $cat ?: 'none'));
+                $response['swml_counted'] = true;
+                return $response;
+            }
+            error_log(sprintf('WML: Anthropic REFUSAL (model=%s category=%s) — re-sending once on %s', $model, $cat ?: 'none', self::REFUSAL_FALLBACK_MODEL));
+            $req['model'] = self::REFUSAL_FALLBACK_MODEL;
+            $a2 = $args;
+            $a2['body'] = wp_json_encode($req);
+            if (isset($a2['headers']) && is_array($a2['headers'])) {
+                foreach (array_keys($a2['headers']) as $hk) { if (strcasecmp($hk, 'content-length') === 0) unset($a2['headers'][$hk]); }
+            }
+            $busy = true;
+            try { $r2 = wp_remote_request($url, $a2); } finally { $busy = false; }
+            if (is_wp_error($r2) || (int) wp_remote_retrieve_response_code($r2) !== 200) {
+                error_log('WML: refusal fallback failed — the decline stands (' . (is_wp_error($r2) ? $r2->get_error_message() : wp_remote_retrieve_response_code($r2)) . ')');
+                $response['swml_counted'] = true;
+                return $response;
+            }
+            $r2['swml_counted'] = true;   // the nested request already recorded its own usage
+            return $r2;
+        } catch (\Throwable $e) { return $response; }
+    }
+
     public function record_anthropic_usage($response, $args, $url) {
         if (!is_string($url) || strpos($url, 'api.anthropic.com') === false) return $response;
         if (strpos($url, '/v1/messages') === false) return $response;
         if (is_wp_error($response)) return $response;
+        if (is_array($response) && !empty($response['swml_counted'])) return $response;   // v7.20.684: counted in retry_anthropic_refusal
         $this->maybe_capture_exchange($args, $response);   // v7.20.675 (#687): opt-in, off by default
 
         $body = '';

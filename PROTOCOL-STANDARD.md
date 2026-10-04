@@ -563,7 +563,7 @@ change that alters emissions is not "shipped" until the data lands in the dashbo
    (DECIMAL, never rounded) → Percentage & Grade → Level Alignment → Calibration → Q-GATE.
 2. **AO mix is per-paper — never assume:** AQA Lit = AO1+AO2+AO3 (+AO4 SPaG on Shakespeare/modern);
    Eduqas Shakespeare/modern = AO1+AO2; Edexcel varies per Q; Edexcel IGCSE Lit = AO1+AO2+AO4 where
-   AO4 = Context. TTECEA+C: +C = CONTEXT, Lit-only. Author's purpose compulsory for Lit.
+   AO4 = Context. TTECEA+C: +C = CONTEXT, Lit-only. Author's purpose compulsory for Lit AND in every Language TTECEA paragraph (Neil ruled 2026-10-04).
 3. **Final Total** = `MIN(sum of the five section totals, max − WC penalty)` — rounding ONCE here;
    WC formula display allowed (A5 carve-out). Anchor-quote sequencing safeguard: B1 = beginning,
    B2 = middle, B3 = end of text/extract.

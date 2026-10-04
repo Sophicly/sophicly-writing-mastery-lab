@@ -2624,10 +2624,12 @@ the part no rating covers named and penalties said when they explain the differe
 - **The ratings are shown as a mark on every Literature Feedback card** (#702 — *"take the self-rating per paragraph…
   calculate what [that] percent is out of the marks we give per paragraph… versus an actual… is that within examiner
   tolerance?"*): "Your rating ≈ x · Actual y · Δ (examiner-accurate / slightly off / recalibrate)", tolerance one mark
-  (`_toleranceFor`, ≤ 8 marks). ⚠️ **His sketch said rating ÷ 5; built on (rating − 1) ÷ 4**, the paragraph table's own
-  scale, so the card and the table can never show two different numbers for one judgement (§5b — his sketch is intent).
-  On that scale "1 of 5" earns nothing and "5 of 5" earns everything; on ÷ 5, "1 of 5" would still predict 20% of the
-  marks. If he wants ÷ 5, it is ONE line (`_gapRatingMark`) and the table moves with it.
+  (`_toleranceFor`, ≤ 8 marks). **THE CONVERSION IS RATING ÷ 5 (Neil ruled 2026-10-04, #710):** *"I don't think it
+  is fair to give 0 marks for a rating of 1 out of 5. Shouldn't that be a minimum of 1 or 2 marks depending on the total
+  marks available"*. "Basic (1 of 5)" says something IS there, so it earns a fifth of the part (≈1.5 of an 8-mark
+  paragraph, ≈0.5 of a 3-mark one). Applied per rated part (× what the part is worth, to the nearest quarter) in the
+  paragraph table AND on the Feedback card — ONE conversion (`_gapCompare` / `_gapRatingMark`), so they never disagree.
+  One step = 0.2 (`GAP_TOL`). (.682 briefly used (rating − 1) ÷ 4, where Basic earned nothing.)
 - **"Your next goal" is gone from Calibration** (#701 — *"if it's different, that's fine. But I don't think there's much
   point in having it overlapping"*). Measured: it repeated the Action Plan's "Where to next?" word for word in intent,
   asked minutes earlier. Polishing now reads the Action Plan's `action-short-term`.
@@ -2639,7 +2641,7 @@ the part no rating covers named and penalties said when they explain the differe
   Progress** from the card's own reading (#704): complete → ask your tutor to sign it off; incomplete → what is missing,
   with a button to each.
 
-**MECHANICS (v7.20.674):** `@GAP-CHECK-PURE` core in wml-assessment.js (criterion → skill map, one scale: rating (v−1)/4
+**MECHANICS (v7.20.674):** `@GAP-CHECK-PURE` core in wml-assessment.js (criterion → skill map, one scale: rating ÷ 5 (v7.20.684; was (v−1)/4)
 against mark/worth, tolerance one step, tie → the part worth more marks); host `_gapCheckTakeOver` / `_gapAnswer` /
 `_gapCheckResume`; the continue gate is ONE builder (`_buildAssessConfirmBar`, on the chat shell as `confirmBar`); rows
 `calib-gap-<intro|body1|body2|body3|conclusion>` (+ `-why`) in the Literature Calibration template; closing fact
@@ -2720,3 +2722,36 @@ re-checked independently). Full notes: `Blog Layout/research/TEACHING-SEQUENCE-R
 be confirmed): `research/2026-09-19-front-loading-vs-spreading-anthology-texts.md` · `research/2026-07-18-scaffolding-
 escalation-and-socratic-tutoring.md` · `research/2026-07-12-prediction-before-reading-pedagogy.md` · `research/2026-07-18-
 context-knowledge-and-concept-driven-interpretation.md`.
+
+---
+
+## §50. ⭐⭐ FOUR RULINGS OF 4 OCTOBER 2026 — the check sits in the Feedback, AQA's own placement words, author's purpose in every Language paragraph, Sonnet 5.5 (Neil, WML Actions page; FIXLIST #709, #710)
+
+**1. Each paragraph's check shows in THAT paragraph's Feedback, under Sophia's marks (#692).** His tap: *"Move each
+paragraph's check into that paragraph's Feedback? → Yes, move them."* The reason he approved: the question is asked
+while the document is already on that paragraph's Feedback, and a redraft is worked from the Feedback cards, so the gap
+belongs next to the marks it is about. **Mechanics (v7.20.684, measured first):** a derived footer in each Literature
+Feedback card (`.swml-gap-foot`, filled by `_renderGapFooters` from the `calib-gap-*` rows), NOT a box inside the card —
+the marking write replaces the whole card body and the Section Guard would then undo the marking itself. So it survives
+every re-mark, Sophia never reads it (payloads read only section content), and no document needs migrating. The rows stay
+in Calibration's storage, hidden there. The whole-essay comparison stays in Calibration.
+
+**2. AQA's own words when a student places their mark inside a level (#693).** His tap: *"Use AQA's own words when a
+student places their mark inside a level? → Yes, use AQA's words."* Where the board prints a top and a bottom sentence
+("How to arrive at a mark") — AQA Literature essays (8702/1, 8702/2 Section A, which differ in five small wordings) and
+unseen Q27.1 — the ladder quotes both, verbatim. Where AQA prints none (Language Q2–Q4, AO6, a printed Upper/Lower band,
+Literature AO4) our one-line explanation stays. Source: the knowledge-mark-scheme files' "HOW TO ARRIVE" sections; dataset
+`level.arrive`; gated verbatim by `bin/markscheme-gate.js` §5. ⚠️ AQA's unseen Level 5 top sentence carries the board's own
+slip ("likely to include be thoughtful") and is shown as printed — his call whether to keep it (handoff ASK).
+
+**3. Author's purpose is REQUIRED in every Language TTECEA paragraph, every board.** His tap: *"Author's purpose:
+required in every Language paragraph? → Yes, that is my ruling."* Replaces the May 2026 "optional for Language" rule.
+Applied v7.20.684 to the nine places that still said optional (mark-scheme quiz ×6, rubric-base, the Edexcel IGCSE rubric
+×2) and PROTOCOL-STANDARD. NOT covered, because it is conclusion-level: the Edexcel IGCSE Lang P1 planning's "optional
+purpose comparison" in the Q5 conclusion (`b5-thesis.md`) — his call.
+
+**4. Sophia runs on Sonnet 5.5.** His tap: *"Switch Sophia to Sonnet 5.5? → Yes."* Measured 29 Sep: ~50% faster writing,
+same price per token, 5 marks stricter on one Paper 1 essay. Sonnet 5.5 can decline a request ("general_harms" can fire
+on benign work and Anthropic's own fallback does not retry it), and literature essays are about murder and war — so
+v7.20.684 re-sends a declined request once on Sonnet 5 and logs the category (`retry_anthropic_refusal`). A decline must
+never leave a student without marking.

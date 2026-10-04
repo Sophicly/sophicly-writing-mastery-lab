@@ -176,6 +176,33 @@ function parseSection(md, entry) {
     return scheme;
 }
 
+/**
+ * v7.20.684 (#693 — Neil, 4 Oct: "Use AQA's own words when a student places their mark inside a level? → Yes").
+ * The board's "how to arrive at a mark" column prints, per level, a TOP and a BOTTOM sentence. Rows that
+ * register an `arrive` header get them as level.arrive = { top, bottom } — the quoted span only (an editorial
+ * note after the closing quote is dropped), wrapped lines joined, whitespace collapsed. Fails loud on a level
+ * with no top or no bottom, and on a top/bottom for a level the scheme does not have.
+ */
+function attachArrive(md, entry, scheme) {
+    if (!entry.arrive) return;
+    const head = md.match(entry.arrive);
+    if (!head) throw new Error(entry.key + ': cannot find its how-to-arrive header in ' + entry.source);
+    const rest = md.slice(head.index + head[0].length);
+    const endAt = rest.search(/^(## |---)/m);
+    const sec = endAt < 0 ? rest : rest.slice(0, endAt);
+    const re = /\*\*Level (\d+) — (top|bottom):\*\*\s*"([\s\S]*?)"/g;
+    let m;
+    while ((m = re.exec(sec))) {
+        const lv = scheme.levels.find((l) => l.level === parseInt(m[1], 10));
+        if (!lv) throw new Error(entry.key + ': how-to-arrive names Level ' + m[1] + ', which the scheme does not have');
+        lv.arrive = lv.arrive || {};
+        lv.arrive[m[2]] = m[3].replace(/\s+/g, ' ').trim();
+    }
+    scheme.levels.forEach((lv) => {
+        if (!lv.arrive || !lv.arrive.top || !lv.arrive.bottom) throw new Error(entry.key + ': Level ' + lv.level + ' has no top and bottom sentence in its how-to-arrive section');
+    });
+}
+
 function main() {
     const mdCache = {};
     const readSource = (rel) => {
@@ -186,6 +213,7 @@ function main() {
     SOURCES.forEach((entry) => {
         if (data[entry.key]) throw new Error('duplicate key in markscheme-sources.js: ' + entry.key);
         data[entry.key] = parseSection(readSource(entry.source), entry);
+        attachArrive(readSource(entry.source), entry, data[entry.key]);   // v7.20.684 (#693)
     });
     // One sha per SOURCE FILE so the gate can tell which one went stale.
     const sources = {};

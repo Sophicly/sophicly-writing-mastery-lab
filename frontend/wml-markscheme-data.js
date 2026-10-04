@@ -1456,7 +1456,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be a critical, exploratory, well-structured argument. It takes a conceptualised approach to the task supported by a range of judicious references. There will be a fine-grained and insightful analysis of methods supported by judicious use of subject terminology.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 5 and be starting to demonstrate elements of exploratory thought and/or analysis of writers’ methods."
+                    }
                 },
                 {
                     "level": 5,
@@ -1486,7 +1490,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to include be thoughtful, detailed and developed. It takes a considered approach to the task with references integrated into interpretation; there will be a detailed examination of the effects of methods supported by apt use of subject terminology.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 4 and be starting to demonstrate elements of thoughtful consideration and/or examination of writers’ methods."
+                    }
                 },
                 {
                     "level": 4,
@@ -1516,7 +1524,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be clear, sustained and consistent. It takes a focused response to the task which demonstrates clear understanding. It uses a range of references effectively to illustrate and justify explanation; there will be clear explanation of the effects of a range of writer’s methods supported by appropriate use of subject terminology.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 3 and be starting to demonstrate elements of understanding and/or explanation of writer’s methods."
+                    }
                 },
                 {
                     "level": 3,
@@ -1546,7 +1558,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be explanatory in parts. It focuses on the task with a range of points exemplified by relevant references from the text; there will be identification of effects of a range of writer’s methods supported by relevant use of subject terminology.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 2 and be starting to explain and/or make relevant comments on writer’s methods."
+                    }
                 },
                 {
                     "level": 2,
@@ -1576,7 +1592,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be relevant and supported by some explanation. It will include some focus on the task with relevant comments and some supporting references from text. There will be identification of deliberate choices made by the writer with some reference to subject terminology.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 1 and be starting to focus on the task and/or show awareness of the writer making deliberate choices."
+                    }
                 },
                 {
                     "level": 1,
@@ -1606,7 +1626,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be narrative and/or descriptive in approach. It may include awareness of the task and provide appropriate reference to text; there will be simple identification of method with possible reference to subject terminology.",
+                        "bottom": "At the bottom of the level, a candidate’s response will show some familiarity with the text."
+                    }
                 }
             ],
             "level0": "Nothing worthy of credit/nothing written.",
@@ -1760,7 +1784,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be a critical, exploratory, well-structured argument. It takes a conceptualised approach to the full task supported by a range of judicious references. There will be a fine-grained and insightful analysis of methods supported by judicious use of subject terminology. Convincing exploration of one or more ideas/perspectives/contextual factors/interpretations.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 5 and be starting to demonstrate elements of exploratory thought and/or analysis of the writer’s methods and/or contexts."
+                    }
                 },
                 {
                     "level": 5,
@@ -1796,7 +1824,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be thoughtful, detailed and developed. It takes a considered approach to the full task with references integrated into interpretation; there will be a detailed examination of the effects of methods supported by apt use of subject terminology. Examination of ideas/perspectives/contextual factors, possibly including alternative interpretations/deeper meanings.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 4 and be starting to demonstrate elements of thoughtful consideration and/or examination of the writer’s methods and/or contexts."
+                    }
                 },
                 {
                     "level": 4,
@@ -1832,7 +1864,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be clear, sustained and consistent. It takes a focused response to the full task which demonstrates clear understanding. It uses a range of references effectively to illustrate and justify explanation; there will be clear explanation of the effects of a range of writer’s methods supported by appropriate use of subject terminology. Clear understanding of ideas/perspectives/contextual factors.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 3 and be starting to demonstrate elements of understanding and/or explanation of the writer’s methods and/or contexts."
+                    }
                 },
                 {
                     "level": 3,
@@ -1868,7 +1904,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be explanatory in parts. It focuses on the full task with a range of points exemplified by relevant references from the text; there will be identification of effects of a range of writer’s methods supported by some relevant terminology. Explanation of some relevant contextual factors.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 2 and be starting to explain and/or make relevant comments on the writer’s methods and/or contexts."
+                    }
                 },
                 {
                     "level": 2,
@@ -1904,7 +1944,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be relevant and supported by some explanation. It will include some focus on the task with relevant comments and some supporting references from the text. There will be identification of deliberate choices made by the writer with some reference to subject terminology. Awareness of some contextual factors.",
+                        "bottom": "At the bottom of the level, a candidate’s response will have Level 1 and be starting to focus on the task and/or starting to show awareness of the writer making deliberate choices and/or awareness of contexts."
+                    }
                 },
                 {
                     "level": 1,
@@ -1940,7 +1984,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be narrative and/or descriptive in approach. It may include awareness of the task and provide appropriate reference to text; there will be simple identification of method with possible reference to subject terminology. Simple comments/responses to context, usually explicit.",
+                        "bottom": "At the bottom of the level, a candidate’s response will show some familiarity with the text."
+                    }
                 }
             ],
             "level0": "Nothing worthy of credit/nothing written.",
@@ -1990,7 +2038,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be a critical, exploratory, well-structured argument. It takes a conceptualised approach to the full task supported by a range of judicious references. There will be a fine-grained and insightful analysis of methods supported by judicious use of subject terminology. Convincing exploration of one or more ideas/perspectives/contextual factors/interpretations.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 5 and be starting to demonstrate elements of exploratory thought and/or analysis of writer’s methods and/or contexts."
+                    }
                 },
                 {
                     "level": 5,
@@ -2026,7 +2078,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be thoughtful, detailed and developed. It takes a considered approach to the full task with references integrated into interpretation; there will be a detailed examination of the effects of methods supported by apt use of subject terminology. Examination of ideas/perspectives/contextual factors, possibly including alternative interpretations/deeper meanings.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 4 and be starting to demonstrate elements of thoughtful consideration and/or examination of writer’s methods and/or contexts."
+                    }
                 },
                 {
                     "level": 4,
@@ -2062,7 +2118,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be clear, sustained and consistent. It takes a focused response to the full task which demonstrates clear understanding. It uses a range of references effectively to illustrate and justify explanation; there will be clear explanation of the effects of a range of writer’s methods supported by appropriate use of subject terminology. Clear understanding of ideas/perspectives/contextual factors.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 3 and be starting to demonstrate elements of understanding and/or explanation of writer’s methods and/or contexts."
+                    }
                 },
                 {
                     "level": 3,
@@ -2098,7 +2158,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be explanatory in parts. It focuses on the full task with a range of points exemplified by relevant references from the text; there will be identification of effects of a range of writer’s methods supported by some relevant terminology. Explanation of some relevant contextual factors.",
+                        "bottom": "At the bottom of the level, a candidate will have Level 2 and be starting to explain and/or make relevant comments on writer’s methods and/or contexts."
+                    }
                 },
                 {
                     "level": 2,
@@ -2134,7 +2198,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be relevant and supported by some explanation. It will include some focus on the task with relevant comments and some supporting references from the text. There will be identification of deliberate choices made by writer with some reference to subject terminology. Awareness of some contextual factors.",
+                        "bottom": "At the bottom of the level, a candidate’s response will have Level 1 and be starting to focus on the task and/or starting to show awareness of the writer making deliberate choices and/or awareness of contexts."
+                    }
                 },
                 {
                     "level": 1,
@@ -2170,7 +2238,11 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "arrive": {
+                        "top": "At the top of the level, a candidate’s response is likely to be narrative and/or descriptive in approach. It may include awareness of the task and provide appropriate reference to text; there will be simple identification of method with possible reference to subject terminology. Simple comments/responses to context, usually explicit.",
+                        "bottom": "At the bottom of the level, a candidate’s response will show some familiarity with the text."
+                    }
                 }
             ],
             "level0": "Nothing worthy of credit/nothing written.",
@@ -2264,7 +2336,7 @@
         "protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md": "ffeb81d6c5981c89afce651f2669a63cb6edc780",
         "protocols/aqa/language2/modules/knowledge-mark-scheme-lang2.md": "081186c2c022d46535b2480014e2fc307f1261a6",
         "protocols/aqa/unseen/modules/knowledge-mark-scheme-unseen.md": "aa6deccde24faafacfe73813fa24decdf89478b9",
-        "protocols/aqa/literature/modules/knowledge-mark-scheme.md": "84a7358041e9a0b68df31dc8ff531ccd008b9585"
+        "protocols/aqa/literature/modules/knowledge-mark-scheme.md": "a3a5f52b400f35c9f487085bfdae1b12fac65532"
     };
     if (typeof window !== 'undefined') { window.WML_MARK_SCHEMES = WML_MARK_SCHEMES; }
     if (typeof module !== 'undefined' && module.exports) { module.exports = WML_MARK_SCHEMES; }

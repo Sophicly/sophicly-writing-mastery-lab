@@ -24,12 +24,12 @@ The 7-element framework for analytical body paragraphs. Pronounced *techie*. Ord
 
 **Per-paper overrides** state which letters carry which AO marks for that paper, and how many paragraphs the question takes. Never assume a paragraph count from this file.
 
-### Author's Purpose (the A) — paper-specific compulsory vs optional
+### Author's Purpose (the A) — compulsory on every paper
 
 - **Lit (all boards):** A is **compulsory**. Drives AO3 + AO2 weight.
-- **Lang (all boards):** A is **OPTIONAL**. Failure mode = bolted-A as closing-sentence add-on. Symptom: paragraph reads complete without it.
+- **Lang (all boards):** A is **compulsory in every TTECEA paragraph** (Neil ruled 2026-10-04: "author's purpose in every Language TTECEA paragraph"). Failure modes = A left out, or bolted-A as a closing-sentence add-on. Symptom: the paragraph stops at what the effect is and never says why the writer chose it.
 
-(Per memory `feedback_authors_purpose_optional_for_language`.)
+(The May 2026 "A is optional for Language" rule is superseded by that ruling.)
 
 ---
 

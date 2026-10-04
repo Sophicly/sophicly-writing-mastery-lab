@@ -4465,6 +4465,25 @@
     // topic) and is skipped whole. Guards: no editor → null (never a phantom derive off a
     // pre-mount race); no filing boxes ANYWHERE → null + warn (legacy pre-outline bake — dormant,
     // NEVER done:true on an empty plan). done:true only when real boxes existed and all resolved.
+    // ⭐ v7.20.684 (#712 — Neil, 4 Oct: "her plan has the old structure… that question was changed, so we
+    // can't use that structure anymore"). AQA Lang P2 Q2 is now a paired-inference summary (Source A topic +
+    // inferences, Source B difference + inferences). A Q2 plan written in the OLD TTECEA shape (June: the old
+    // two-in-one protocol ran Q3's routine on Q2 — measured, Anam 1298, the only prod case) is NOT a Q2 plan.
+    // In a document that carries the new inference rows, such a plan counts as unplanned, so the ladder and the
+    // sidebar bring the student back to Q2; the approved new plan then replaces the old text (@FIELD_SET).
+    function _isOldShapeQ2Plan(t) {
+        t = String(t || '');
+        return /T\s*\+\s*E\s*\+\s*I|Close Analysis/i.test(t) && !/Source\s+[AB]\s+(?:topic|inferences?|difference)/i.test(t);
+    }
+    function _ladderStaleQ2Plan(qk) {
+        try {
+            if (String(qk) !== 'Q2') return false;
+            const ed = document.getElementById('swml-tiptap-editor');
+            if (!ed || !ed.querySelector('[data-field-id="outline-body-1-inf1-topic-q2"]')) return false;
+            return Array.prototype.some.call(ed.querySelectorAll('[data-field-id^="plan-Q2-para-"]'),
+                (n) => _isOldShapeQ2Plan(n.textContent || ''));
+        } catch (e) { return false; }
+    }
     function deriveLadderState(history) {
         if (!_ladderActive()) return null;
         if (!canvasEditor) return null;
@@ -4499,7 +4518,9 @@
             }
             if (!present) continue;                    // question not planned in this doc → skip whole
             anyBox = true;
-            if (_laterFilled[qk]) continue;            // v7.20.645: a later question holds filed work → moved past
+            // v7.20.645: a later question holds filed work → moved past — UNLESS this is an old-shape Q2 plan
+            // that must be re-planned in the new structure (v7.20.684, #712).
+            if (_laterFilled[qk] && !_ladderStaleQ2Plan(qk)) continue;
             // Pass 2: first unresolved element. Synthetic (stamp) els also resolve by IMPLICATION:
             // if any LATER element of this question is already filled/resolved, the chat moved past
             // the synthetic beat (missed marker / legacy mid-plan doc) — never pin the TELL to a
@@ -8519,9 +8540,10 @@
         // scrolled to the section"). The ask names WHERE the answer is, the document goes there as the turn
         // lands (§4c.10), and buttons take them to the other places it lives.
         const isLit = g.key === LIT_CALIB_KEY;
-        const gapRows = isLit ? _calibSurface('[data-field-id="calib-gap-intro"]') : null;
+        // v7.20.684 (#692): the paragraph checks now show at the foot of each paragraph's Feedback.
+        const gapRows = isLit ? _calibSurface('.swml-section-block[data-section-type="feedback"] > .swml-gap-foot:not([style*="none"])') : null;
         const where = isLit && gapRows
-            ? '**Where to look:** the **paragraph-by-paragraph rows** in your Calibration section — each one names the part you misjudged most in that paragraph. I have scrolled your document there. Your **Action Plan** lists the priorities too.'
+            ? '**Where to look:** the **check at the bottom of each paragraph’s Feedback** — it names the part you misjudged most in that paragraph. I have scrolled your document to the first one. Your **Action Plan** lists the priorities too.'
             : '**Where to look:** your **feedback for ' + g.q + '** — I have scrolled your document there. Your **Action Plan** lists the priorities too.';
         const plain = (agree
             ? 'In one line: **which criterion were you surest about**, and what in your answer earned it?'
@@ -8536,7 +8558,7 @@
             try { _expandIfCollapsed(first); if (typeof _swmlScrollToTop === 'function') _swmlScrollToTop(first); } catch (e) {}
         }, 650);
         const nav = [];
-        if (gapRows) nav.push(['📍 My paragraph gaps', '[data-field-id="calib-gap-intro"]']);
+        if (gapRows) nav.push(['📍 My paragraph checks', '.swml-section-block[data-section-type="feedback"] > .swml-gap-foot:not([style*="none"])']);
         if (fb) nav.push(['📍 My feedback for ' + g.q, '[data-section-label^="Feedback: ' + g.q + ' "]']);
         nav.push(['📍 My Action Plan', '[data-field-id="action-priorities"]']);
         _calibNavChips(nav);
@@ -8797,7 +8819,8 @@
             [/purpose/i, 'Central Purpose'], [/moral|message|universal/i, 'Universal Message']],
     };
     const GAP_WORDS = ['Basic', 'Developing', 'Secure', 'Good', 'Perceptive'];
-    const GAP_TOL = 0.25;   // one step on the five-step scale: closer than that is agreement
+    // v7.20.684 (#710): the scale is rating ÷ 5, so one step is 0.2 — closer than that is agreement.
+    const GAP_TOL = 0.2;    // one step on the five-step scale: closer than that is agreement
     function _gapSectionFor(label) {
         const t = String(label || '').toLowerCase();
         if (/introduc/.test(t)) return GAP_SECTIONS[0];
@@ -8869,8 +8892,11 @@
         return null;
     }
     // ratings = the document's Self-Assessment rows [{group, skill, value}]; rows = the card's table.
-    // Both sides on ONE scale: a rating 1–5 → 0–1 by its step (Basic 0 … Perceptive 1); a mark → its
+    // Both sides on ONE scale: a rating 1–5 → its fifth (Basic 0.2 … Perceptive 1); a mark → its
     // share of what the part is worth. Within one step either way is agreement.
+    // ⭐ v7.20.684 (#710 — Neil, 4 Oct: "I don't think it is fair to give 0 marks for a rating of 1 out of 5.
+    // Shouldn't that be a minimum of 1 or 2 marks depending on the total marks available"): "Basic (1 of 5)"
+    // says something IS there, so it earns a fifth of the part — was (rating − 1) ÷ 4, where Basic earned 0.
     // ⭐ v7.20.681 (#695 — Neil: "it should show what my rating would equal in terms of a mark… I need
     // a way of calibrating it"): the rating is ALSO shown as a mark — its step × what the part is
     // worth, to the nearest quarter — and, because the student now reads MARKS, the biggest gap is
@@ -8891,7 +8917,7 @@
         (ratings || []).forEach((x) => {
             if (!x || x.group !== section.group || !(x.value >= 1 && x.value <= 5) || !agg[x.skill]) return;
             const a = agg[x.skill];
-            const self = (x.value - 1) / 4, mine = a.worth > 0 ? a.score / a.worth : 0;
+            const self = x.value / 5, mine = a.worth > 0 ? a.score / a.worth : 0;
             const selfMark = _gapR2(_gapQ(self * a.worth));
             items.push({ skill: x.skill, rating: x.value, word: GAP_WORDS[x.value - 1], score: _gapR2(a.score),
                 worth: _gapR2(a.worth), self: self, sophia: mine, diff: self - mine, parts: a.parts,
@@ -8916,13 +8942,13 @@
     }
     // v7.20.682 (#702): a paragraph's ratings AS A MARK out of `max` (its Feedback card's total) — the
     // paragraph table's rated-parts share when a card was read (cmp), else the plain average of that
-    // paragraph's ratings on the same (rating − 1) / 4 scale. One conversion with the table, by construction.
+    // paragraph's ratings on the same rating ÷ 5 scale (v7.20.684). One conversion with the table, by construction.
     function _gapRatingMark(cmp, groupRatings, max) {
         if (!(max > 0)) return null;
         const rs = (groupRatings || []).filter((r) => r && r.value >= 1 && r.value <= 5);
         let share;
         if (cmp && cmp.rated && cmp.rated.worth > 0) share = cmp.rated.self / cmp.rated.worth;
-        else if (rs.length) share = rs.reduce((s, r) => s + (r.value - 1) / 4, 0) / rs.length;
+        else if (rs.length) share = rs.reduce((s, r) => s + r.value / 5, 0) / rs.length;
         else return null;
         return _gapR2(_gapQ(share * max));
     }
@@ -8981,8 +9007,8 @@
     // The durable turn: a PAST-EVENT report (§4c.7 — tense decides; it stays true after a re-mark).
     function _gapPastLine(cmp) {
         return cmp.dir === 'close'
-            ? 'Filed under **Calibration**: your ratings and my marks agreed on ' + _gapThe(cmp.label) + '**' + cmp.label + '**.'
-            : 'Filed under **Calibration**: on ' + _gapThe(cmp.label) + '**' + cmp.label + '**, the biggest gap was your **' + cmp.biggest.skill
+            ? 'Filed in your **Feedback** for ' + _gapThe(cmp.label) + '**' + cmp.label + '**: your ratings and my marks agreed.'
+            : 'Filed in your **Feedback** for ' + _gapThe(cmp.label) + '**' + cmp.label + '**: the biggest gap was your **' + cmp.biggest.skill
                 + '** — you had rated it ' + (cmp.dir === 'over' ? 'higher' : 'lower') + ' than I marked it.';
     }
     // The closing-turn fact — the filed rows, in the student's own words, for the Final Summary and
@@ -9002,7 +9028,7 @@
     // per paragraph… calculate what [that] percent is out of the marks we give per paragraph… versus an
     // actual… is that within examiner tolerance?"). A Literature paragraph's Feedback card shows the
     // student's own ratings AS A MARK beside the actual. ONE conversion with the paragraph check (§48):
-    // each rated part's rating as a mark ((rating − 1) / 4 × what the part is worth), their share of the
+    // each rated part's rating as a mark (rating ÷ 5 × what the part is worth — v7.20.684), their share of the
     // rated parts' worth, applied to the paragraph's whole mark — so the card and the paragraph table can
     // never show two different numbers for the same judgement. With no mark table readable, the plain
     // average of that paragraph's ratings on the same scale. Not a prediction asked for (§48.2) — the
@@ -9104,6 +9130,7 @@
         WML.recordTurn(_chatShell.history, { role: 'assistant', content: past },
             { durable: true, why: 'a past-event report — the gap and the answer were filed' });
         try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (e) {}
+        setTimeout(function () { try { _renderGapFooters(); } catch (e) {} }, 60);   // v7.20.684 (#692): show it under Sophia's marks
         _gapOfferContinue(g.nextLabel);
         return true;
     }
@@ -9146,7 +9173,7 @@
             for (let i = h.length - 1; i >= 0; i--) { if (h[i] && h[i].role === 'assistant' && !h[i].hidden) { lastA = i; break; } }
             if (lastA === -1) return false;
             const a = String(h[lastA].content || '');
-            if (/^Filed under \*\*Calibration\*\*:/.test(a)) {
+            if (/^Filed (?:under \*\*Calibration\*\*:|in your \*\*Feedback\*\* for )/.test(a)) {   // v7.20.684: old + new wording
                 for (let j = lastA - 1; j >= 0; j--) {
                     const m = h[j];
                     if (m && m.role === 'assistant' && !m.hidden && _gapCardOf(m.content)) { _gapOfferContinue(_gapNextLabelOf(m.content)); return true; }
@@ -9935,6 +9962,40 @@
         } catch (e) { console.warn('WML section strips: skipped —', e && e.message); }
     }
     try { window.WML = window.WML || {}; window.WML.renderAnalyticsReadout = _renderSectionStrips; } catch (_) {}
+    // ⭐ v7.20.684 (#692 — Neil, 4 Oct, Actions page: "Move each paragraph's check into that paragraph's
+    // Feedback? → Yes"). Each Literature Feedback card shows, under Sophia's marks, the student's check on
+    // that paragraph: the biggest gap and what they said about it. A DERIVED footer (the sign-off-footer /
+    // control-row technique, firewalled in the NodeView), read from the calib-gap rows — never a box inside
+    // the card: the marking write replaces the whole card body, and the Section Guard would then undo the
+    // marking itself (measured). So: survives every re-mark, Sophia never reads it (payloads read only the
+    // section content), no migration (rows are found by id anywhere). div/span only — the penalty ledger
+    // reads p/li/h3/h4 inside feedback sections.
+    function _renderGapFooters() {
+        try {
+            const ed = document.getElementById('swml-tiptap-editor');
+            if (!ed) return;
+            ed.querySelectorAll('.swml-section-block[data-section-type="feedback"] > .swml-gap-foot').forEach((foot) => {
+                const lbl = foot.parentElement ? (foot.parentElement.getAttribute('data-section-label') || '') : '';
+                const sec = /^Feedback\s*:/i.test(lbl) ? _gapSectionFor(lbl) : null;
+                let html = '';
+                if (sec) {
+                    const f = _gapFids(sec.key);
+                    const gap = _ladderRowText(f.gap), said = _ladderRowText(f.why).replace(/^—$/, '');
+                    if (gap && !/^Not compared/.test(gap)) {
+                        html = '<div class="swml-gap-foot-head">Your check on this paragraph</div>'
+                            + '<div class="swml-gap-foot-row"><span class="swml-gap-foot-lbl">The biggest gap</span><span class="swml-gap-foot-val">' + escapeHTML(gap) + '</span></div>'
+                            + (said ? '<div class="swml-gap-foot-row"><span class="swml-gap-foot-lbl">What you said about it</span><span class="swml-gap-foot-val">' + escapeHTML(said) + '</span></div>' : '');
+                    }
+                }
+                if (foot.innerHTML !== html) foot.innerHTML = html;
+                const want = html ? '' : 'none';
+                if (foot.style.display !== want) foot.style.display = want;
+                const cls = 'swml-gap-foot' + (sec ? ' swml-para-' + sec.key : '');
+                if (foot.className !== cls) foot.className = cls;
+            });
+        } catch (e) { /* derived display — never blocks the document */ }
+    }
+    try { window.WML.renderGapFooters = _renderGapFooters; } catch (_) {}
     // ── v7.19.949 (Neil): Fix→Learn chips IN CONTEXT — at the end of the penalty line ───
     // (Replaces v948's box-bottom rows: Neil live test — a pooled row reads as detached from
     // the penalties it belongs to.) The chip is a REAL inline atom node (learnChip, the
@@ -30787,9 +30848,20 @@
                     return;
                 }
                 const where = st.bandName ? st.bandName : ('Level ' + step.level.level);
+                // ⭐ v7.20.684 (#693 — Neil, 4 Oct: "Use AQA's own words when a student places their mark inside
+                // a level? → Yes"). Where the board prints a top and a bottom sentence for this level (AQA
+                // Literature essays + unseen Q27.1 — dataset `arrive`, gated verbatim by markscheme-gate §5),
+                // the student reads AQA's own two sentences. Elsewhere (Language, a printed band) AQA prints
+                // none, so our one-line explanation stays.
+                const arrive = (!st.bandName && step.level && step.level.arrive) ? step.level.arrive : null;
+                const how = arrive
+                    ? 'An examiner then decides *where inside it*. This is how AQA describes the two ends of ' + where + ':\n\n'
+                        + '**Top of this level:** “' + arrive.top + '”\n\n'
+                        + '**Bottom of this level:** “' + arrive.bottom + '”\n\n'
+                    : 'An examiner then decides *where inside it*. Top means you meet the level '
+                        + 'convincingly and are close to the one above. Bottom means you only just meet it.\n\n';
                 const text = 'You have placed yourself in **' + where + '** — that is **' + r.min + '–' + r.max
-                    + ' marks**.\n\nAn examiner then decides *where inside it*. Top means you meet the level '
-                    + 'convincingly and are close to the one above. Bottom means you only just meet it.\n\n'
+                    + ' marks**.\n\n' + how
                     + '**Where in ' + where + ' does your writing sit?**';
                 const attach = function () {
                     chipBarOrRetry(PLACE, onPlacement, '**Where in ' + where + ' does your writing sit?**');
@@ -67156,6 +67228,8 @@
                 const labelEcho = txt && norm('plan ' + raw).indexOf(norm(txt)) !== -1;
                 done = !!(txt && !labelEcho);
             }
+            // v7.20.684 (#712): an old-shape Q2 plan (TTECEA) in a paired-inference document is not done.
+            if (done && m && m[1] === 'Q2' && _ladderStaleQ2Plan('Q2') && _isOldShapeQ2Plan(input ? input.textContent : '')) done = false;
             // v7.20.257 (Neil): a row outside a labelled group reads as unregistered —
             // poetry's fallback plan rows group under the doc's own section name.
             add(raw.replace(/\s*—\s*Q\d+\s*$/, ''), m ? m[1] : (_poetryPlanActive() ? 'Essay Plan' : ''), done);

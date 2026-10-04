@@ -497,10 +497,24 @@
                     setTimeout(_fillPoem, 250);
                     setTimeout(_fillPoem, 800);
                 }
+                // v7.20.684 (#692): the student's paragraph check, shown UNDER Sophia's marks — a derived,
+                // firewalled footer after the content (the sign-off footer technique). Never a node inside
+                // the card: the marking write replaces the card body. Filled by WML.renderGapFooters.
+                let gapFoot = null;
+                if (type === 'feedback') {
+                    gapFoot = document.createElement('div');
+                    gapFoot.className = 'swml-gap-foot';
+                    gapFoot.setAttribute('contenteditable', 'false');
+                    gapFoot.style.display = 'none';
+                    dom.appendChild(gapFoot);
+                }
                 const _fillCtl = () => {
                     try {
                         if (window.WML && typeof window.WML.renderControlRows === 'function') {
                             window.WML.renderControlRows();
+                        }
+                        if (gapFoot && window.WML && typeof window.WML.renderGapFooters === 'function') {
+                            window.WML.renderGapFooters();
                         }
                     } catch (_) { /* ignore */ }
                 };
@@ -612,6 +626,8 @@
                         // v7.19.992: the poem card is derived display (renderPoemCards fills +
                         // toggles it) — firewall it or every fill is a foreign mutation (§PM law).
                         if (poemCard && (poemCard === mutation.target || poemCard.contains(mutation.target))) return true;
+                        // v7.20.684 (#692): the paragraph-check footer is derived display — firewall it.
+                        if (gapFoot && (gapFoot === mutation.target || gapFoot.contains(mutation.target))) return true;
                         return toggle === mutation.target || toggle.contains(mutation.target);
                     },
                     // v7.20.90 (ctlrows-storm amplifier fix): WITHOUT update(), every doc

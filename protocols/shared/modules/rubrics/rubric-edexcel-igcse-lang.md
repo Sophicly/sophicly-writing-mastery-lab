@@ -105,7 +105,7 @@ For analytical Qs, the locked Sophicly shape applies (same as GCSE TTECEA, gloss
 3. **Close analysis** — words inside the quote, unpacked. (THIS IS WHERE AO2 LANDS.)
 4. **Effect on reader 1** — what the reader feels or thinks.
 5. **Effect on reader 2** — a different feeling or thought.
-6. **Author's purpose** — what the writer may be arguing. (For Lang, A is **OPTIONAL** per `feedback_authors_purpose_optional_for_language` — failure mode is bolted A as closing-sentence add-on, NOT omitted A.)
+6. **Author's purpose** — what the writer may be arguing. (For Lang, A is **required in every paragraph** — Neil's ruling, 2026-10-04. Failure modes: A left out, or bolted on as a closing-sentence add-on.)
 7. **(For Lang Q2/Q3:) NO context (AO4) at sentence 7.** AO4 surfaces in writing Qs (Q4/Q5), not in Section A reading Qs.
 
 ---
@@ -172,7 +172,7 @@ For Q4 directed writing, register varies by audience (formal letter vs friendly 
 | `check-concept-strength` | Topic sentence concept-only rule (this module). |
 | `check-ttecea-element` | TTECEA-style 6-step shape, Q2/Q3 (this module). |
 | `check-vocabulary-precision` | Banned verbs (this module). |
-| `check-author-purpose` | Author's purpose (OPTIONAL for Lang Q2/Q3 — flag bolted-A pattern). |
+| `check-author-purpose` | Author's purpose (REQUIRED in every Lang Q2/Q3 paragraph — flag a missing A and the bolted-A pattern). |
 | `check-ao3-anchor` | AO3 = comparison (when applicable Q only). |
 | `check-quote-presence` | Quote integration (this module). |
 | `check-coherence` | One concept per paragraph + AO4 cohesion (this module). |
