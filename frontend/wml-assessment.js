@@ -56452,7 +56452,9 @@
                 extra += ` data-${k}="${escapeHTML(String(v))}"`;
             }
         }
-        return `<div data-section-type="${type}" data-section-label="${label}" data-editable="${editable !== false}"${ro}${part}${extra} class="swml-section-block swml-section-${type}${roClass}">${innerHTML}</div>`;
+        // v7.20.688: the label is ESCAPED like every other attribute here — a raw `"` in a title (the IGCSE
+        // roster's "Out, Out−") cut the attribute short, so the outline listed that poem as "Divider".
+        return `<div data-section-type="${type}" data-section-label="${escapeHTML(String(label == null ? '' : label))}" data-editable="${editable !== false}"${ro}${part}${extra} class="swml-section-block swml-section-${type}${roClass}">${innerHTML}</div>`;
     }
 
     // v7.20.414 — the ONE producer for a teaching graphic. Everything the schema needs is the
@@ -60092,7 +60094,7 @@
                         inner += `<p>${richText(line) || '&nbsp;'}</p>`;
                     });
                 }
-                html += sectionHTML('source', escapeHTML(src.label), false, null, inner);
+                html += sectionHTML('source', src.label, false, null, inner);   // v7.20.688: sectionHTML escapes the label itself
             });
         }
 
@@ -66118,7 +66120,7 @@
                 sectionHTML('notes', 'Predictions: This Paper', true, null,
                     inputHTML('3 themes you expect this paper is about — committed before reading, never marked.', 'pred-paper'));
             srcLabels.forEach((lbl, i) => {
-                block += sectionHTML('notes', escapeHTML('Predictions: ' + lbl), true, null,
+                block += sectionHTML('notes', 'Predictions: ' + lbl, true, null,   // v7.20.688: sectionHTML escapes the label itself
                     inputHTML('3 predicted themes for ' + lbl + ' (from its title, author and date only).',
                         'pred-source-' + String.fromCharCode(97 + i)));
             });
