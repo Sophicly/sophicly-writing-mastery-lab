@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.686';
+var WML_BUILD = '7.20.687';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -537,6 +537,16 @@ window.WML = (function() {
         'edexcel-igcse': [
             { id: 'igcse_lang_nonfiction', label: 'Part 1 — Language Non-Fiction', icon: '📰' },
         ],
+    };
+
+    // ── Papers whose course text is the PAPER but whose anthology is MIXED (poems + prose) ──
+    // v7.20.687 (FIXLIST #714): Edexcel IGCSE Spec A Paper 2 studies five poems and five prose
+    // texts (Pearson anthology Part 2). Its lessons carry the PAPER slug, so no roster resolved and
+    // the anthology quiz built the single-novel notes doc. Keyed board|course-text; the poetry
+    // roster drives the poetry one-doc, the prose roster adds its own half. Server twin:
+    // SWML_REST_API::$PAPER_ANTHOLOGY (class-rest-api.php) — the two must list the same papers.
+    const PAPER_ANTHOLOGY = {
+        'edexcel-igcse|edexcel_igcse_lang_a_paper_2': { poetry: 'igcse_lang_poetry', prose: 'igcse_lang_prose' },
     };
 
     // ── Per-board text filtering for shared subject groups (v7.14.13) ──
@@ -2389,11 +2399,21 @@ window.WML = (function() {
                 NONFICTION_ANTHOLOGY_BY_BOARD[board].forEach((a) => { if (a && a.id) tries.push(a.id); });
             }
         } catch (_) {}
+        const pa = PAPER_ANTHOLOGY[board + '|' + t];   // v7.20.687: a mixed paper's POEMS
+        if (pa && pa.poetry) tries.push(pa.poetry);
         for (let i = 0; i < tries.length; i++) {
             const row = map[board + '|' + tries[i]];
             if (Array.isArray(row) && row.length) return row;
         }
         return [];
+    }
+    // v7.20.687: the PROSE half of a mixed paper's anthology ([] for every other doc).
+    function anthologyProseFor(text) {
+        const map = (window.swmlConfig && window.swmlConfig.anthologyPoems) || {};
+        const board = String(state.board || '').toLowerCase();
+        const pa = PAPER_ANTHOLOGY[board + '|' + String(text || state.text || '')];
+        const row = pa && pa.prose ? map[board + '|' + pa.prose] : null;
+        return Array.isArray(row) ? row : [];
     }
     // v7.20.40: the anthology SLUG to fetch the roster (with poem_text bodies) from GET /poems.
     // For nonfiction the doc's course text (edexcel_igcse_lang_a) is NOT the anthology slug —
@@ -2488,8 +2508,8 @@ window.WML = (function() {
         // the mold — it must NOT fall through to literature (that would mis-gate the lit
         // re-layout heal onto a poetry doc). Return null: it's a CN surface with no mold family.
         if (isPoetrySubject()) return null;
-        // NOTE: edexcel-igcse language2 (mixed 5-poem + 5-prose roster) is deliberately
-        // unmapped until the Phase 2 wiring designs its per-item family split.
+        // edexcel-igcse language2 (5 poems + 5 prose) resolves ABOVE as poetry via PAPER_ANTHOLOGY
+        // (v7.20.687) — the poetry one-doc plus a prose half; it never reaches this fallback.
         return CN_FAMILIES.literature;
     };
     function getSteps() {
@@ -5886,7 +5906,7 @@ window.WML = (function() {
         // Helpers
         micFailureMessage, micNotify, micRecordFailure, micIsSilentCode,
         isPoetrySubject, isLanguageSubject, isNonfictionSubject, isAnthologySubject, isPoetryCnDoc,
-        anthologyPoemsFor, cnRosterSlug, isPoetryAnthologyDoc,
+        anthologyPoemsFor, anthologyProseFor, cnRosterSlug, isPoetryAnthologyDoc,
         // CN family registry (v7.20.15)
         CN_FAMILIES, LIT_CN_SPINE, NONFICTION_CN_SPINE, PROSE_CN_SPINE, cnFamily, cnFieldRe,
         CN_STAGE_SPLITS, cnStageSplitFor, cnStageCountFor,

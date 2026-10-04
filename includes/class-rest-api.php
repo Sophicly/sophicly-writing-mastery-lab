@@ -729,14 +729,26 @@ class SWML_REST_API {
      * every consumer (the /poems endpoint, the poetry-CN merge gate) resolves the same
      * way. Returns the raw option rows, [] when the text is not a poetry anthology.
      */
+    /**
+     * v7.20.687 (FIXLIST #714): papers whose course text is the PAPER but whose anthology is MIXED
+     * (poems + prose). Edexcel IGCSE Spec A Paper 2 lessons carry `edexcel_igcse_lang_a_paper_2`, so
+     * no roster resolved and its anthology quiz built the single-novel notes doc. Client twin:
+     * PAPER_ANTHOLOGY in wml-core.js — the two must list the same papers.
+     */
+    private static $PAPER_ANTHOLOGY = [
+        'edexcel-igcse|edexcel_igcse_lang_a_paper_2' => ['poetry' => 'igcse_lang_poetry', 'prose' => 'igcse_lang_prose'],
+    ];
+
     public static function poems_option_rows($board, $text) {
         $board = sanitize_key($board);
         $text  = (string) $text;
         if ($board === '' || $text === '') return [];
         $canon = self::canonical_slug($text);
         $cands = [];
+        $paper = self::$PAPER_ANTHOLOGY[$board . '|' . $text] ?? (self::$PAPER_ANTHOLOGY[$board . '|' . $canon] ?? null);
         foreach ([$text, $canon, preg_replace('/_poetry$/', '', $text), $text . '_poetry',
-                  preg_replace('/_poetry$/', '', (string) $canon), $canon . '_poetry'] as $c) {
+                  preg_replace('/_poetry$/', '', (string) $canon), $canon . '_poetry',
+                  $paper ? $paper['poetry'] : ''] as $c) {
             $c = (string) $c;
             if ($c !== '' && !in_array($c, $cands, true)) $cands[] = $c;
         }

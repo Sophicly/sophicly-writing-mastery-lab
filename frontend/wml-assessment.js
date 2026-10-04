@@ -61336,7 +61336,10 @@
                     '<strong>Poetic Forms</strong> organiser as you master each form — what it <strong>is</strong>, its ' +
                     '<strong>features</strong>, its <strong>effects</strong>, and how <strong>form shapes meaning</strong>. ' +
                     'Then, in Conceptual Notes, you and Sophia study the anthology poem by poem — speaker, context, form, ' +
-                    'language, themes, purpose, and the big message, each anchored to key quotes.</p>');
+                    'language, themes, purpose, and the big message, each anchored to key quotes.</p>' +
+                    // v7.20.687: a mixed paper's anthology also holds prose texts (sections after the poems).
+                    ((WML.anthologyProseFor && WML.anthologyProseFor(String((WML.canvasDocScope() || {}).text || '')).length)
+                        ? '<p>This anthology also has prose texts. Each one has its own section after the poems.</p>' : ''));
                 html += dividerHTML('GENERAL NOTES');
                 html += sectionHTML('plan', 'General Notes', true, null,
                     '<h3>General Notes</h3>' +
@@ -61410,6 +61413,42 @@
                     });
                     html += sectionHTML('plan', poem.title || pid, true, null, pInner);
                 });
+                // v7.20.687 (FIXLIST #714): a MIXED paper (Edexcel IGCSE Spec A Paper 2 — five poems
+                // and five prose texts) adds one section per prose text after the poems, on the prose
+                // family's spine. fieldId contract: prose_{text_id}_{slug} + _quotes, + _effect on the
+                // prose craft elements — the same {prefix}_{id}_{slug} shape as poem_/nf_.
+                var pcnProse = [];
+                try { pcnProse = (WML.anthologyProseFor && WML.anthologyProseFor(String(WML.canvasDocScope().text || ''))) || []; } catch (_) { pcnProse = []; }
+                if (pcnProse.length) {
+                    var proseFam = WML.CN_FAMILIES.prose;
+                    var PROSE_PROMPTS = {
+                        narrator:  'Who tells this story, and from what point of view? How does the narrator shape what we see and feel?',
+                        context:   'When and where was this written? What historical, social or personal context shapes the story?',
+                        structure: 'How is the story organised — its opening, turning point and ending? Why does the writer order events this way?',
+                        language:  'Which language choices and techniques stand out? How do they create meaning?',
+                        themes:    'What are the key themes? How are they developed across the story?',
+                        purpose:   'What is the writer trying to achieve? How do they want the reader to think or feel?',
+                        message:   'What is the overarching message? What does this story reveal about people or society?',
+                    };
+                    var PROSE_EFFECT_PROMPT = 'Effect on the reader — how do the writer’s methods steer the reader’s focus, feeling and thinking here?';
+                    html += sectionHTML('section-header', 'Prose Texts', false, null,
+                        '<h2>Conceptual Notes — The Prose Texts</h2>' +
+                        '<p><em>One section per prose text — narrator and voice, context, form and structure, language, themes, purpose, and the message, each anchored to 1–3 key quotes.</em></p>');
+                    pcnProse.forEach(function (txt) {
+                        var tid = String(txt.id || '');
+                        if (!tid) return;
+                        html += dividerHTML(txt.title || tid);
+                        var tInner = '<h3>' + escapeHTML(txt.title || tid) + '</h3>' +
+                            (txt.poet ? '<p><em>' + escapeHTML(txt.poet) + '</em></p>' : '');
+                        proseFam.spine.forEach(function (e) {
+                            tInner += '<p><strong>' + e.label + '</strong></p>' +
+                                inputHTML(PROSE_PROMPTS[e.slug] || e.label, 'prose_' + tid + '_' + e.slug) +
+                                inputHTML('Key quotes (1–3).', 'prose_' + tid + '_' + e.slug + '_quotes') +
+                                (proseFam.craft.indexOf(e.slug) !== -1 ? inputHTML(PROSE_EFFECT_PROMPT, 'prose_' + tid + '_' + e.slug + '_effect') : '');
+                        });
+                        html += sectionHTML('plan', txt.title || tid, true, null, tInner);
+                    });
+                }
                 html += buildSignoffSection();
                 return html;
             }

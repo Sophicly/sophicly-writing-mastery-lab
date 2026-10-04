@@ -233,6 +233,12 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACMDR 2
   tail -1 /tmp/quiz-cue-enforce.out
 fi
 
+# v7.20.687 (FIXLIST #714): the mixed-paper anthology map (Edexcel IGCSE Spec A Paper 2 = 5 poems +
+# 5 prose) lives in wml-core.js AND class-rest-api.php. A difference = the client builds one doc
+# family while the server resolves another (write-key ≠ read-key, root §5d). Whole-repo, always.
+node bin/paper-anthology-twin-gate.js >/tmp/paper-anthology-twin.out 2>&1 || { cat /tmp/paper-anthology-twin.out; fail=1; }
+tail -1 /tmp/paper-anthology-twin.out
+
 # v7.20.639 (#598): which copy wins on load — a newer SERVER copy must beat a stale browser copy
 # (doc AND chat), and unsaved typing on this device must never be lost. Runs the shipped decision.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
