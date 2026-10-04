@@ -20556,7 +20556,9 @@
         chatTextarea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                const multiSubmit = document.querySelector('.swml-quick-submit:not([disabled])');
+                // v7.20.686 (#717): only a VISIBLE Submit — the canvas hides it (display:none) until a
+                // pick exists, and clicking the hidden one removed the chip bar and sent nothing.
+                const multiSubmit = Array.from(document.querySelectorAll('.swml-quick-submit:not([disabled])')).find(b => b.style.display !== 'none');
                 if (multiSubmit && !chatTextarea.value?.trim()) { multiSubmit.click(); return; }
                 _micThenSend();   // v7.20.327: stops dictation AND submits, in one press
             }
@@ -21135,11 +21137,11 @@
                 if (q.options && q.options.length) {
                     body += '\n\n' + q.options.map(o => `**${o.letter})** ${o.text}`).join('\n');
                 }
-                if (q.type === 'select_all')      body += '\n\n*Select all that apply — type the letters, e.g. `A, C`.*';
-                else if (q.type === 'ranking')    body += '\n\n*Tap the options **in order, weakest first** — tap one again to remove it. (Or type the letters, e.g. `B, D, C, A`.)*';
+                if (q.type === 'select_all')      body += '\n\n*Select all that apply — type the letters, e.g. **A, C**.*';
+                else if (q.type === 'ranking')    body += '\n\n*Tap the options **in order, weakest first** — tap one again to remove it. (Or type the letters, e.g. **B, D, C, A**.)*';
                 else if (q.type === 'true_false') body += '\n\n*Choose True or False below — or just type it.*';
                 else if (q.type === 'fill_blank') body += '\n\n*Type your answer in a word or short phrase.*';
-                else                              body += '\n\n*Type the letter of your answer, e.g. `B`.*';
+                else                              body += '\n\n*Type the letter of your answer, e.g. **B**.*';
                 // v7.19.783: ranking + true_false render their OWN widget (appendRankButtons /
                 // appendQuickButtons) — suppress the generic quick-action auto-detector for those
                 // bubbles, else it parses the option lines into a DUPLICATE button set.
@@ -21168,11 +21170,25 @@
                 persist();
             }
 
+            // v7.20.686 (#717): a typed letter answer in any everyday shape — "A, C", "A C", "A and C",
+            // "AC" (capitals only: "bad"/"ace" are words), or with marks copied from the prompt (`B`, "B",
+            // B.) → the canonical "A, C" the server scores. null = not a letter answer (a question).
+            function _letterNorm(raw, type) {
+                if (!(type === 'mcq' || type === 'select_all' || type === 'ranking')) return null;
+                const t = String(raw || '').replace(/[`*_"\u201c\u201d'\u2018\u2019]/g, '').trim().replace(/[.!]+$/, '').trim();
+                if (!t) return null;
+                const parts = (type !== 'mcq' && /^[A-E]{2,5}$/.test(t))
+                    ? t.split('')
+                    : t.split(/\s*(?:,|&|\/|\+|\band\b|\s)\s*/i).filter(Boolean);
+                if (!parts.length || !parts.every(x => /^[A-Ea-e]$/.test(x))) return null;
+                return parts.map(x => x.toUpperCase()).join(', ');
+            }
+
             function classify(raw, type) {
                 const t = (raw || '').trim();
                 if (!t) return 'empty';
                 if (type === 'mcq' || type === 'select_all' || type === 'ranking') {
-                    return /^[A-Ea-e](\s*,\s*[A-Ea-e])*$/.test(t) ? 'answer' : 'question';
+                    return _letterNorm(t, type) ? 'answer' : 'question';
                 }
                 if (type === 'true_false') {
                     return /^(true|false|t|f)$/i.test(t) ? 'answer' : 'question';
@@ -21223,7 +21239,7 @@
                 const kind = classify(msg, q.type);
                 if (kind === 'empty') { resetSend(); return; }
                 if (kind === 'question') { await routeHelp(msg, q); return; }
-                await recordAnswer(msg, q);
+                await recordAnswer(_letterNorm(msg, q.type) || msg, q);
             }
 
             // Score in code, but WITHHOLD feedback until the round ends. Just record
@@ -21409,7 +21425,7 @@
                     // up. Universal — every quiz type (FQ/MSQ/MSA) reveals through this one builder.
                     const _qtext = (r.q && r.q.question) ? String(r.q.question).trim() : '';
                     body += `**${i + 1}. ${mark}**` + (_qtext ? `  ${_qtext}` : '');
-                    body += `\n\nYour answer: \`${r.answer}\`${_optText(r.q, r.answer)}`;
+                    body += `\n\nYour answer: **${r.answer}**${_optText(r.q, r.answer)}`;   // v7.20.686: no backticks — formatAI shows them literally
                     if (r.res && r.res.partial) body += `  — **${r.res.marks}/${r.res.max}** (right idea, imprecise form)`;
                     if (!(r.res && r.res.correct)) {
                         const _ck = r.res ? _toDisp(r.res.correctKey, r.q) : '?';
@@ -21575,7 +21591,8 @@
                 } else {
                     const tail = qr ? ` (${qr.percentage}% · Grade ${qr.grade})` : '';
                     const mix = isFq ? 'mixed across the key areas of the text' : 'mixed across the assessment objectives';
-                    aiBubble(`You scored **${correctN}/${n}**${tail} this round. **Aim for 100%** — here's a fresh set of ${n}, ${mix}. Your result card on the left now shows this round. You've got this.`);
+                    // v7.20.686 (#718): never "a fresh set" — a bank whose pool equals its round serves the SAME questions again.
+                    aiBubble(`You scored **${correctN}/${n}**${tail} this round. **Aim for 100%** — your next round is ready: ${n} questions, ${mix}. Your result card on the left now shows this round. You've got this.`);
                     if (isFq) { betweenRounds = true; showRoundMenu(); }
                     else { appendQuickBar('Start the next round →', () => { round++; startRound(); }); }
                 }
@@ -43487,7 +43504,8 @@
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
                                 // If multi-select has selections, click its submit button (v7.12.53)
-                                const multiSubmit = document.querySelector('.swml-quick-submit:not([disabled])');
+                                // v7.20.686 (#717): only a VISIBLE Submit (see the canvas twin above).
+                                const multiSubmit = Array.from(document.querySelectorAll('.swml-quick-submit:not([disabled])')).find(b => b.style.display !== 'none');
                                 if (multiSubmit && !chatTextarea.value?.trim()) { multiSubmit.click(); return; }
                                 // If mic is recording, stop it and submit after final transcript (v7.12.70, simplified v7.12.99)
                                 _micThenSend();   // v7.20.327: stops dictation AND submits, in one press

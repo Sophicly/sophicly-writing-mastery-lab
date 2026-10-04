@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.685';
+var WML_BUILD = '7.20.686';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -2343,7 +2343,8 @@ window.WML = (function() {
             // + picker gates but MISSED this one (the partial-sweep failure §5d warns of). Gate on
             // the ONE canonical CN-family predicate (cnFamily → poetry/nonfiction/prose/literature)
             // so any CN-shared FQ keeps the CN doc's own text; only a genuinely standalone
-            // (non-CN) FQ still uses the bank slug. No recursion: cnFamily's deps never call canvasDocScope.
+            // (non-CN) FQ still uses the bank slug. cnFamily → isPoetryCnDoc DOES call back here —
+            // isPoetryCnDoc's re-entrancy guard (v7.20.686) ends that loop.
             if (!cnFamily()) scope.text = state.fqBank;
         }
         if (cfg && typeof cfg.canvasTopicPin === 'number') {
@@ -2448,13 +2449,20 @@ window.WML = (function() {
     // used to produce that scope and no longer does — forms FQ now lands on the anthology
     // doc). Per-poem groups render only when a poem list is present (unseen_poetry has
     // none → forms + General Notes only).
+    let _poetryCnScopeBusy = false;   // v7.20.686: isPoetryCnDoc re-entrancy guard (see inside)
     const isPoetryCnDoc = () => {
         // v7.19.992: keyed on the DURABLE anthology check (poem list resolves for the
         // course text), not just the mutable state.subject — same root fix as
         // canvasDocScope. A subject-timing miss here rendered the OLD 7-section CN
         // template into the unified doc (the stale-shape docs the shape-heal repairs).
         if (isPoetryAnthologyDoc() && (state.task === 'conceptual_notes' || state.task === 'foundational_quiz')) return true;
+        // v7.20.686: canvasDocScope → cnFamily → isPoetryCnDoc → canvasDocScope recursed ~2,900 deep
+        // until a RangeError landed in this catch (measured on the IGCSE P2 + P1 quizzes). Answer the
+        // nested call "not poetry" — the same value the RangeError produced, without the stack.
+        if (_poetryCnScopeBusy) return false;
+        _poetryCnScopeBusy = true;
         try { return canvasDocScope().text === 'poetic_forms'; } catch (_) { return false; }
+        finally { _poetryCnScopeBusy = false; }
     };
     // v7.20.15: THE CN family resolver — returns the CN_FAMILIES entry for the current
     // doc/task, or null off a CN surface. Poetry keeps its battle-tested durable check
