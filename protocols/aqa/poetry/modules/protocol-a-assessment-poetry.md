@@ -202,7 +202,7 @@ Total Mark for Introduction: \[score\]/3   *(canonical line — plain score/max,
 
 * **Percentage & Grade:** \[X\]%, which is a **Grade \[N\]** *(the platform recomputes both from the audited total — echo, never derive)*
 
-* **AQA Level Alignment:** "Your introduction currently aligns with **Level \[X\]** of the AQA comparative mark scheme. To reach Level \[X+1\], you would need to \[specific improvement based on the next level's criteria\]."
+* **AQA Level Alignment:** "Your introduction currently aligns with **Level \[X\]** of the AQA comparative mark scheme: '\[quote that level's descriptor verbatim from knowledge-mark-scheme-poetry.md\]'. To reach Level \[X+1\], you would need to \[specific improvement in that next level's own words\]."
 
 ## **STEP 3: Calibration Moment**
 
@@ -413,7 +413,7 @@ Total Mark for Body Paragraph 1: \[score\]/7   *(canonical line — plain score/
 
 * **Percentage & Grade:** \[X\]%, which is a **Grade \[N\]** *(the platform recomputes both from the audited total — echo, never derive)*
 
-* **AQA Level Alignment:** "This paragraph currently aligns with **Level \[X\]** of the AQA comparative mark scheme. To reach Level \[X+1\], you would need to \[specific improvement based on the next level's criteria\]."
+* **AQA Level Alignment:** "This paragraph currently aligns with **Level \[X\]** of the AQA comparative mark scheme: '\[quote that level's descriptor verbatim from knowledge-mark-scheme-poetry.md\]'. To reach Level \[X+1\], you would need to \[specific improvement in that next level's own words\]."
 
 ## **STEP 3: Calibration Moment**
 
@@ -645,7 +645,7 @@ Total Mark for Body Paragraph 2: \[score\]/7   *(canonical line — plain score/
 
 * **Percentage & Grade:** \[X\]%, which is a **Grade \[N\]** *(the platform recomputes both from the audited total — echo, never derive)*
 
-* **AQA Level Alignment:** "This paragraph currently aligns with **Level \[X\]** of the AQA comparative mark scheme. To reach Level \[X+1\], you would need to \[specific improvement based on the next level's criteria\]."
+* **AQA Level Alignment:** "This paragraph currently aligns with **Level \[X\]** of the AQA comparative mark scheme: '\[quote that level's descriptor verbatim from knowledge-mark-scheme-poetry.md\]'. To reach Level \[X+1\], you would need to \[specific improvement in that next level's own words\]."
 
 ## **STEP 3: Calibration Moment**
 
@@ -857,7 +857,7 @@ Total Mark for Body Paragraph 3: \[score\]/7   *(canonical line — plain score/
 
 * **Percentage & Grade:** \[X\]%, which is a **Grade \[N\]** *(the platform recomputes both from the audited total — echo, never derive)*
 
-* **AQA Level Alignment:** "This paragraph currently aligns with **Level \[X\]** of the AQA comparative mark scheme. To reach Level \[X+1\], you would need to \[specific improvement based on the next level's criteria\]."
+* **AQA Level Alignment:** "This paragraph currently aligns with **Level \[X\]** of the AQA comparative mark scheme: '\[quote that level's descriptor verbatim from knowledge-mark-scheme-poetry.md\]'. To reach Level \[X+1\], you would need to \[specific improvement in that next level's own words\]."
 
 ## **STEP 3: Calibration Moment**
 
@@ -1034,7 +1034,7 @@ Total Mark for Conclusion: \[score\]/6   *(canonical line — plain score/max, l
 
 * **Percentage & Grade:** \[X\]%, which is a **Grade \[N\]** *(the platform recomputes both from the audited total — echo, never derive)*
 
-* **AQA Level Alignment:** "This conclusion currently aligns with **Level \[X\]** of the AQA comparative mark scheme. To reach Level \[X+1\], you would need to \[specific improvement based on the next level's criteria\]."
+* **AQA Level Alignment:** "This conclusion currently aligns with **Level \[X\]** of the AQA comparative mark scheme: '\[quote that level's descriptor verbatim from knowledge-mark-scheme-poetry.md\]'. To reach Level \[X+1\], you would need to \[specific improvement in that next level's own words\]."
 
 ## **STEP 3: Calibration Moment**
 
@@ -1143,7 +1143,7 @@ Ready to proceed?"
 
 * Then output `@SECTION_BEGIN{"section":"Overall Feedback"}` on its own line, containing IN ORDER:
   * **Total & Grade:** "**Total: \[X\]/30** — \[X\]%, which is a **Grade \[N\]**" (canonical ladder; the MARK is shown, not just the percentage, so the student can trace where it comes from).
-  * **AQA Level Alignment:** "Overall, your comparative essay demonstrates **Level \[X\]** qualities as described in the AQA poetry mark scheme: '\[quote relevant overall descriptor\]'" — plus the per-section level pattern (reference the levels already cited per section; never invent a whole-essay descriptor that doesn't exist).
+  * **AQA Level Alignment:** "Overall, your comparative essay demonstrates **Level \[X\]** qualities as described in the AQA poetry mark scheme: '\[quote that level's descriptor verbatim from knowledge-mark-scheme-poetry.md\]'" — plus the per-section level pattern. **One-poem cap (AQA's rubric infringement):** if the response analyses only ONE of the two poems, the total is capped at 10/30 — say so plainly in one line with the fix ("bring the second poem into every paragraph") (reference the levels already cited per section; never invent a whole-essay descriptor that doesn't exist).
   * **The Metacognitive Journey block** (below) — self-rating pattern, AO-targeting pattern, headline-goal closure, overall calibration.
   * **Word-count-ceiling explanation** if the ceiling applied — never a bare cap (the filed summary must explain itself): "Word-count ceiling: your essay was \[X\] words against the \[450-word diagnostic / 650-word redraft\] target, so your total is capped at \[30 − WC\_penalty\]/30 (−\[P\] marks — a full-length essay removes the cap)".
   * **Penalty & Ceiling Ledger:** sum every penalty actually deducted across all five sections, grouped by code with its PLAIN-ENGLISH name and count (e.g. "F1 — weak analytical verb ×4 = −2.0 · CMP1 — no sustained comparison ×1 = −0.5 — total −2.5 marks"; never a bare code), **each code followed by its itemised instances — location + verbatim phrase + the fix** (e.g. "Body 1: 'this shows the form' → 'this dramatises the form' · Body 3: 'is about' → 'interrogates'") so the student can find and fix every one, plus the word-count ceiling's cost if it reduced the total. Then, on its own line: "**Without penalties you'd be on \[X+P\]/30 = \[Y\]% — a Grade \[N\]** (canonical ladder). Penalty marks are the cheapest marks to reclaim: they are habits, not skills." Honest numbers only — sum what your cards actually deducted; never estimate.
