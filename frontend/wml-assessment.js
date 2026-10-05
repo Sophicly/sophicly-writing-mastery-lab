@@ -57097,6 +57097,35 @@
         return crit;
     }
 
+    // ⭐ v7.20.699 — the Author's Purpose row on a paper that does NOT assess AO3: the literature criterion, AO1 only
+    // (no "+ Context"). ONE definition, read by the builder (buildOutlineSection) AND the load heal
+    // (_healOutlineScaffold). The heal used to compare every purpose row against the AO3 literature criterion,
+    // so it "relabelled" a correct fresh AO1 row to AO1/AO3 — and on the next load, seeing AO3, inserted three
+    // Context rows the paper never asks for (measured on staging: a fresh Edexcel IGCSE P2 planning doc, Q1).
+    function _purposeWithoutAO3(c) {
+        return { ...c, label: "Author's Purpose", ao: 'AO1', prompt: 'Why did the author make these choices?' };
+    }
+
+    // ⭐ v7.20.699 — ONE body-row criterion composer: what the builder puts on a TTECEA body row for this paper.
+    // Read by buildOutlineSection AND the load heal (_healOutlineScaffold), so the heal can never call a row the
+    // builder just made "out of date" — the defect class bin/fresh-doc-heal-gate.js now fails on. Returns null when
+    // the paper does not assess the row's AO (the Context row on a no-AO3 paper).
+    //   o = { bodyOnly: bool, focus: an OUTLINE_BODY_FOCUS name, stampTo: the single AO every row is marked against }
+    function _outlineBodyCriterion(c, aoList, o) {
+        if (c.aoRequired && !aoList.includes(c.aoRequired)) return null;
+        // Adapt Author's Purpose when AO3 not assessed: drop "+ Context", relabel AO
+        let adapted = c;
+        if (!aoList.includes('AO3') && c.id === 'purpose') {
+            adapted = _purposeWithoutAO3(c);
+        }
+        // Scaffold-text overlays (label/prompt/items only — id/fieldId untouched):
+        // body-only first (drops the no-thesis reference), then the per-focus wording.
+        const overlay = (o && o.focus && OUTLINE_BODY_FOCUS[o.focus]) || null;
+        if (o && o.bodyOnly && OUTLINE_BODY_ONLY_OVERRIDES[c.id]) adapted = Object.assign({}, adapted, OUTLINE_BODY_ONLY_OVERRIDES[c.id]);
+        if (overlay && overlay[c.id]) adapted = Object.assign({}, adapted, overlay[c.id]);
+        return (o && o.stampTo) ? Object.assign({}, adapted, { ao: o.stampTo }) : adapted;
+    }
+
     const OUTLINE_CRITERIA = {
         // ── Literature essay (TTECEA+C) — used by AQA, EDUQAS, Edexcel, OCR, CCEA, IGCSE ──
         literature: {
@@ -58612,24 +58641,14 @@
         const _stampTo = (opts && opts.stampAO) || (isEvaluation ? 'AO4' : null);
         const stampAO = (c) => _stampTo ? Object.assign({}, c, { ao: _stampTo }) : c;
         const _bodyOnly = opts && opts.bodyOnly > 0 ? opts.bodyOnly : 0;
-        const _focusOverlay = (opts && opts.focus && OUTLINE_BODY_FOCUS[opts.focus]) || null;
 
         // ONE body-row builder for BOTH the full-essay and body-only paths — a second copy would
-        // drift the moment a criterion changes (and the heal reads the same overlay).
+        // drift the moment a criterion changes (and the heal reads the same composer: _outlineBodyCriterion).
         const _bodyRowsFor = (i, suffix) => {
             let rows = '';
             OUTLINE_CRITERIA.literature.body.forEach(c => {
-                if (c.aoRequired && !aoList.includes(c.aoRequired)) return;
-                // Adapt Author's Purpose when AO3 not assessed: drop "+ Context", relabel AO
-                let adapted = c;
-                if (!aoList.includes('AO3') && c.id === 'purpose') {
-                    adapted = { ...c, label: "Author's Purpose", ao: 'AO1', prompt: 'Why did the author make these choices?' };
-                }
-                // Scaffold-text overlays (label/prompt/items only — id/fieldId untouched):
-                // body-only first (drops the no-thesis reference), then the per-focus wording.
-                if (_bodyOnly && OUTLINE_BODY_ONLY_OVERRIDES[c.id]) adapted = Object.assign({}, adapted, OUTLINE_BODY_ONLY_OVERRIDES[c.id]);
-                if (_focusOverlay && _focusOverlay[c.id]) adapted = Object.assign({}, adapted, _focusOverlay[c.id]);
-                rows += outlineRowHTML(stampAO(adapted), `outline-body-${i}-${c.id}${suffix}`);
+                const crit = _outlineBodyCriterion(c, aoList, { bodyOnly: _bodyOnly > 0, focus: opts && opts.focus, stampTo: _stampTo });
+                if (crit) rows += outlineRowHTML(crit, `outline-body-${i}-${c.id}${suffix}`);
             });
             return rows;
         };
@@ -60290,6 +60309,14 @@
     // builder). Reason: the render probe and the planning key-match harness used to COPY this chain, so a
     // change here was invisible to both — they reported on their own copy, which is how "IGCSE P1 Q4 renders
     // 18 rows" was believed while the page rendered none (#618). Both gates now slice and run THESE functions.
+    // v7.20.699: the comparison outline's build arguments — ONE place, read by the redraft dispatch below, the
+    // missing-outline heal (migrateMissingQOutlines) and the scaffold heal (_healOutlineScaffold). null when the
+    // question is not a comparison this paper's outline is verified for (OUTLINE_VERIFIED_PAPERS.comparison).
+    function _comparisonOutlineArgs(qType) {
+        if (!(_outlinePaperVerified('comparison') && qType === 'comparison')) return null;
+        return { specKey: 'aqa_language_p2_comparison', opts: { focus: 'comparative', stampAO: 'AO3' } };
+    }
+
     function _questionWritingFlags(q, qType, qMarks, specQ) {
         const isWritingQ = qType === 'extended_writing' || qType === 'choice'
             || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
@@ -60318,7 +60345,8 @@
         // (it has a short intro + conclusion) and NOT >=20, so it needs its own gate admission +
         // branch. Comparative body = same TTECEA rows via the `comparative` focus overlay (ruling
         // feedback_comparative_body_is_ttecea_helper_text_only) — not a new element set.
-        const _isP2Comparison = _outlinePaperVerified('comparison') && qType === 'comparison';
+        const _cmpArgs = _comparisonOutlineArgs(qType);
+        const _isP2Comparison = !!_cmpArgs;
         // v7.20.148 (Neil): AQA Lang P2 Q2 = inference (short_analysis, 8m, AO1). Its own
         // paired-inference builder — NOT the body-only TTECEA path (that gates on qType
         // 'analysis'; Q2 is 'short_analysis'). Below the >=20 threshold, so admitted explicitly.
@@ -60342,10 +60370,7 @@
                 // Short intro + 3 comparative TTECEA body ¶ + short conclusion (spec key forces
                 // the full-essay path at 16m; the overlay relabels effects → Source A / Source B).
                 out += dividerHTML(`OUTLINE — ${qId}`);
-                out += buildOutlineSection(q.aos || specQ?.aos, qId, qMarks, 'aqa_language_p2_comparison', {
-                    focus: 'comparative',
-                    stampAO: 'AO3',
-                });
+                out += buildOutlineSection(q.aos || specQ?.aos, qId, qMarks, _cmpArgs.specKey, _cmpArgs.opts);
             } else if (_isP2Inference) {
                 // Q2 inference: 2 paired-inference paragraphs (Source A → Source B), AO1.
                 out += dividerHTML(`OUTLINE — ${qId}`);
@@ -66556,10 +66581,41 @@
                 return _bodyOnlyQCache[qid];
             };
             const _mergeAttrs = (node, crit) => Object.assign({}, node.attrs, { criteria: JSON.stringify(crit), prompt: crit.prompt || '' });
+            // ⭐ v7.20.699: a body row in a section that names a COMPARISON question ("Outline: Body Paragraph 2 — Q4"
+            // on AQA Lang P2) is judged against what the BUILDER makes for that question — the comparative overlay,
+            // via the same composer and the same arguments (_outlineBodyCriterion · _comparisonOutlineArgs) — never
+            // the bare literature criteria. The literature branches below re-stamped those rows on every load of every
+            // AQA P2 redraft doc ("Effect on Reader — Source A" → "Effect 1 on Reader", AO3 → AO2/AO1/AO3); this
+            // also turns rows already rewritten that way back. Caught by bin/fresh-doc-heal-gate.js.
+            let _secLabel = '';
+            const _cmpQCache = {};
+            const _cmpFor = (qid) => {
+                if (!(qid in _cmpQCache)) {
+                    const sq = typeof lookupQuestionSpec === 'function' ? lookupQuestionSpec(qid) : null;
+                    const args = sq ? _comparisonOutlineArgs(sq.type || null) : null;
+                    _cmpQCache[qid] = args ? {
+                        aoList: (Array.isArray(sq.aos) ? sq.aos : String(sq.aos || '').split(',')).map(a => String(a).trim()).filter(Boolean),
+                        opts: args.opts,
+                    } : null;
+                }
+                return _cmpQCache[qid];
+            };
             doc.descendants((n, pos) => {
+                if (n.type.name === 'sectionBlock') { _secLabel = (n.attrs && n.attrs.label) || ''; return true; }
                 if (n.type.name !== 'outlineRow') return true;
                 const fid = n.attrs.fieldId || '';
                 let cur; try { cur = JSON.parse(n.attrs.criteria || '{}'); } catch (_) { cur = {}; }
+                const _secQ = (/[—-]\s*(Q\d+)\s*$/.exec(_secLabel) || [])[1];
+                const _cmp = _secQ ? _cmpFor(_secQ) : null;
+                const _cmpRow = _cmp ? /^outline-body-\d+-([a-z0-9]+)$/.exec(fid) : null;
+                if (_cmpRow) {
+                    const base = body.find(c => c.id === _cmpRow[1]);
+                    const want = base ? _outlineBodyCriterion(base, _cmp.aoList, { focus: _cmp.opts.focus, stampTo: _cmp.opts.stampAO }) : null;
+                    if (want && (cur.label !== want.label || cur.ao !== want.ao || cur.prompt !== want.prompt)) {
+                        updates.push({ pos, attrs: _mergeAttrs(n, want) }); needHeal = true;
+                    }
+                    return true;   // never the literature relabel / Effect-2 / Context branches for a comparison's rows
+                }
                 // v7.20.104/105 (Neil): evaluation doc (AQA Lang P1 Q4) — the literature-shaped
                 // outline rows are all AO4. Handle these FIRST, BEFORE the AO4 opt-out guard below:
                 // after .104 restamps them to AO4 a later load would short-circuit on that guard and
@@ -66619,12 +66675,14 @@
                     const hasEffect2 = after && after.type.name === 'outlineRow' && /-effects2$/.test(after.attrs.fieldId || '');
                     if (!hasEffect2) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid + '2', crit: _want(cEffect2) }); needHeal = true; }
                 } else if (/^outline-body-\d+-purpose$/.test(fid)) {
-                    const w = _want(cPurpose); _handled = true;
-                    if (cur.label !== w.label || cur.ao !== w.ao) { updates.push({ pos, attrs: _mergeAttrs(n, w) }); needHeal = true; }
                     // Insert Context after Purpose only if this paragraph assessed AO3 (the old
                     // combined "Author's Purpose + Context" carried AO3) and the next sibling isn't
                     // already Context. Non-AO3 papers keep a single Purpose element (no Context).
                     const purposeHadAO3 = /AO3/.test(cur.ao || '');
+                    // v7.20.699: …and a row that never assessed AO3 stays the builder's ADAPTED purpose. Comparing it
+                    // to the AO3 criterion re-stamped it AO1/AO3, and the next load then added Context rows to it.
+                    const w = _want(purposeHadAO3 ? cPurpose : _purposeWithoutAO3(cPurpose)); _handled = true;
+                    if (cur.label !== w.label || cur.ao !== w.ao) { updates.push({ pos, attrs: _mergeAttrs(n, w) }); needHeal = true; }
                     const afterP = doc.nodeAt(pos + n.nodeSize);
                     const hasContext = afterP && afterP.type.name === 'outlineRow' && /-context$/.test(afterP.attrs.fieldId || '');
                     if (purposeHadAO3 && !hasContext) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid.replace(/-purpose$/, '-context'), crit: _want(cContext) }); needHeal = true; }
@@ -68089,8 +68147,10 @@
             // so the body-only resolver returns null for it. Same-commit render+heal law
             // ([[reference_wml_outline_scaffold_baked_needs_onload_heal]]): .146 shipped the render
             // branch WITHOUT this heal, so baked P2 Q4 docs never gained the outline on reload.
-            const _isComp = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
-                && _specSubjectKey() === 'language_p2' && qType === 'comparison';
+            // v7.20.699: the SAME comparison arguments the render dispatch uses (_comparisonOutlineArgs) — this used to
+            // re-spell the registry as aqa + language_p2 by hand, so a newly verified paper would have rendered and never healed.
+            const _cmpArgs = _comparisonOutlineArgs(qType);
+            const _isComp = !!_cmpArgs;
             // v7.20.148: Q2 inference — same same-commit render+heal law; short_analysis returns
             // null from the body-only resolver, so it needs its own admission (mirrors the render gate).
             const _isInf = (state.board || '').toLowerCase().replace(/-/g, '') === 'aqa'
@@ -68187,10 +68247,7 @@
                     })
                     // Q4 comparison: byte-identical to the render branch at ~34960.
                     : _isComp
-                        ? buildOutlineSection(specQ?.aos, qId, qMarks, 'aqa_language_p2_comparison', {
-                            focus: 'comparative',
-                            stampAO: 'AO3',
-                        })
+                        ? buildOutlineSection(specQ?.aos, qId, qMarks, _cmpArgs.specKey, _cmpArgs.opts)
                         // Section B IUMVCC: byte-identical to the render branch (v7.20.671).
                         : _isIumvcc
                             ? buildIUMVCCOutlineSection(qId)

@@ -94,8 +94,19 @@ fi
 # each codified planning protocol's outline tags: 0 orphan writes, 0 un-allow-listed blank boxes.
 # Runs when the render or any codified planning protocol or the harness is staged.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
-     | grep -qE 'wml-assessment\.js|protocols/.*/planning/.*\.md|planning-keymatch-harness\.js'; then
+     | grep -qE 'wml-assessment\.js|wml-core\.js|protocols/.*/(planning|steps)/.*\.md|protocols/shared/templates/topics/|language-paper-specs\.json|planning-keymatch-harness\.js|bin/lib/template-render-sandbox\.js|bin/lib/topic-dump\.php'; then
+  # v7.20.697: its IGCSE case renders the page builder on the REAL topic templates + spec — those trigger it too
   node bin/planning-keymatch-harness.js || fail=1
+fi
+
+# v7.20.699: FRESH-DOC HEAL — a document the builder has just made must need no healing. Runs the shipped
+# _healOutlineScaffold on every language topic (page builder) + every literature essay paper; fails on ANY change
+# it would make. (It caught the heal adding Context rows to no-AO3 papers — IGCSE P2, Eduqas/Edexcel/CCEA lit —
+# and rewriting every AQA P2 Q4 comparison row on load.) Negative-proven on the pre-fix build.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|protocols/shared/templates/topics/|(language|literature)-paper-specs\.json|fresh-doc-heal-gate\.js|bin/lib/template-render-sandbox\.js|bin/lib/topic-dump\.php'; then
+  if node bin/fresh-doc-heal-gate.js >/tmp/fresh-doc-heal.out 2>&1; then tail -1 /tmp/fresh-doc-heal.out;
+  else grep -v '^WML heal' /tmp/fresh-doc-heal.out; fail=1; fi
 fi
 
 # v7.20.223: PLAN⇄OUTLINE FAN-OUT (Neil's reliability ask). Every planning protocol's literal

@@ -40,6 +40,9 @@ function slice(marker, opener = '{') {
 }
 
 const parts = [
+  // IUMVCC criteria content — OUTLINE_CRITERIA calls these while it is built, so they come first.
+  slice('const _IU_ACTION_VERBS = [', '['), slice('const _IU_SENSORY_VERBS = [', '['), slice('const _IU_TONES_GENERAL = [', '['),
+  slice('function _iuVerbCtl(', '('), slice('function _iuToneCtl(', '('), slice('function _iuEffectCtl(', '('),
   slice('const OUTLINE_BODY_ONLY_OVERRIDES = {'),
   slice('const OUTLINE_BODY_FOCUS = {'),
   slice('const OUTLINE_CRITERIA = {'),
@@ -58,6 +61,11 @@ const parts = [
   slice('function _iumvccFieldId(', '('),
   slice('function _iuPoint(', '('),
   slice('function buildCreativeScenePlan(', '('),
+  // v7.20.699: the body-row composer the builder now calls (it decides which rows exist at all).
+  slice('function _purposeWithoutAO3(', '('),
+  slice('function _outlineBodyCriterion(', '('),
+  // the verified-papers registry _resolveBodyOnlyOutline consults (was a truthy no-op here before v7.20.699)
+  slice('const OUTLINE_VERIFIED_PAPERS = {'), slice('function _outlinePaperKey(', '('), slice('function _outlinePaperVerified(', '('),
 ];
 
 const captured = [];
@@ -77,9 +85,22 @@ const explicit = {
 const NOOP = new Proxy(function () { return NOOP; }, {
   get: (t, k) => (k === Symbol.toPrimitive || k === 'toString' ? () => '__STUB__' : NOOP),
 });
+// ⛔ v7.20.699: a name the sliced builders reach for that wml-assessment.js DEFINES but this file did not slice must
+// FAIL, not fall through to the no-op — a no-op composer rendered every row, Context included, and the TEMPLATE
+// ORACLE below was the only thing that noticed. Names defined nowhere in the file (DOM helpers) still no-op.
+const DECL = /^\s*(?:function\s+([A-Za-z_$][\w$]*)\s*\(|(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=)/gm;
+const namesIn = text => new Set([...text.matchAll(DECL)].map(m => m[1] || m[2]));
+const declared = namesIn(src), slicedNames = namesIn(parts.join('\n'));
 const sandbox = new Proxy(explicit, {
   has: () => true,
-  get: (t, k) => (k in t ? t[k] : (k in globalThis ? globalThis[k] : NOOP)),
+  get: (t, k) => {
+    if (k in t) return t[k];
+    if (k in globalThis) return globalThis[k];
+    if (typeof k === 'string' && declared.has(k) && !slicedNames.has(k)) {
+      throw new Error('planning-keymatch-harness: a sliced builder reaches for ' + k + ', which wml-assessment.js defines but this harness did not slice — add it to `parts`.');
+    }
+    return NOOP;
+  },
   set: (t, k, v) => { t[k] = v; return true; },
 });
 vm.runInContext(parts.join('\n'), vm.createContext(sandbox));

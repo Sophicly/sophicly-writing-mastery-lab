@@ -32,6 +32,9 @@ const MARKERS = [
     ['function getQuestionWordTarget(', '('], ['const MULTIQ_RESPONSE_TARGETS = {'], ['function _multiqTargetKey(', '('],
     ['function _questionWritingFlags(', '('], ['function _redraftOutlineSectionsHTML(', '('],
     ['function buildMultiQuestionTemplate(', '('],
+    // v7.20.699: the load heal, so a gate can prove a FRESH document needs no healing (bin/fresh-doc-heal-gate.js)
+    ['function _purposeWithoutAO3(', '('], ['function _isAnyLanguagePaper(', '('], ['function _healOutlineScaffold(', '('],
+    ['function _outlineBodyCriterion(', '('], ['function _comparisonOutlineArgs(', '('],
 ];
 
 function slicer(src) {
@@ -55,22 +58,27 @@ const DECL = /^\s*(?:function\s+([A-Za-z_$][\w$]*)\s*\(|(?:const|let|var)\s+([A-
 const namesIn = text => new Set([...text.matchAll(DECL)].map(m => m[1] || m[2]));
 
 // The page's HTML helpers are replaced by RECORDERS: one line per section / divider / field, in render order.
-function makeTemplateRenderer(root) {
-    const src = fs.readFileSync(path.join(root, 'frontend', 'wml-assessment.js'), 'utf8');
+// opts.src: read the builder from another copy of wml-assessment.js (a gate proving it can fail runs an older build).
+function makeTemplateRenderer(root, opts) {
+    const src = fs.readFileSync((opts && opts.src) || path.join(root, 'frontend', 'wml-assessment.js'), 'utf8');
     const slice = slicer(src);
     const parts = MARKERS.map(m => slice(m[0], m[1]));
     // a brace-matched slice can swallow a later declaration; drop any part wholly inside another
     const uniq = parts.filter((a, i) => !parts.some((b, j) => j !== i && b.length > a.length && b.includes(a)));
-    const sliced = uniq.join('\n');
+    // Helpers wml-assessment.js imports from wml-core.js (`const { … } = WML;`) live in the other file.
+    const core = fs.readFileSync(path.join(root, 'frontend', 'wml-core.js'), 'utf8');
+    const coreParts = [['const isLanguageSubject = () => {', '{']].map(m => slicer(core)(m[0], m[1]));
+    const sliced = coreParts.concat(uniq).join('\n');
     const explicit = {
         console,
         LIT_ESSAY_BODY_COUNT: parseInt((src.match(/var LIT_ESSAY_BODY_COUNT = (\d+)/) || [, '3'])[1], 10),
         sectionHTML: (type, label, editable, part, inner) => `\n§S\t${type}\t${label}\n${inner || ''}`,
         dividerHTML: label => `\n§D\t${label}`,
         inputHTML: (prompt, fid) => `\n§I\t${fid}`,
-        outlineRowHTML: (crit, fid) => `\n§R\t${fid}`,
+        outlineRowHTML: (crit, fid) => `\n§R\t${fid}\t${JSON.stringify(crit)}`,
         escapeHTML: s => String(s), richText: s => String(s),
         state: {},
+        canvasEditor: null, saveCanvasContent: () => {}, _migrationActive: false,
         // the server embeds language-paper-specs.json verbatim as window.swmlLangSpecs (main plugin file)
         window: { swmlLangSpecs: JSON.parse(fs.readFileSync(path.join(root, 'protocols/shared/language-paper-specs.json'), 'utf8')) },
     };
@@ -82,7 +90,11 @@ function makeTemplateRenderer(root) {
     // (Found the day this file was written: the #618 fix added _langSpecPaper(), this sandbox had not sliced it,
     // and the probe went on reporting NO SPEC FOUND for a lookup that now worked.) Names NOT defined in the file
     // (DOM helpers, other scripts' globals) still no-op — that is what the stub is for.
-    const declared = namesIn(src), slicedNames = namesIn(sliced);
+    // …and every name it imports from WML counts as declared too: unprovided, `typeof isLanguageSubject ===
+    // 'function'` on the catch-all stub is TRUE, which made every Literature subject a language paper here.
+    const imported = [...src.matchAll(/const \{([^}]*)\} = WML;/g)]
+        .flatMap(m => m[1].split(',').map(x => x.trim().split(':')[0].trim()).filter(Boolean));
+    const declared = new Set([...namesIn(src), ...imported]), slicedNames = namesIn(sliced);
     const sandbox = new Proxy(explicit, {
         has: () => true,
         get: (t, k) => {
@@ -104,10 +116,13 @@ function makeTemplateRenderer(root) {
         const out = sandbox.buildMultiQuestionTemplate(mode, {
             metadata: JSON.stringify({ questions: topic.questions, sources: [] }), aos: topic.aos,
         });
-        const byQ = [];
+        const byQ = [], seq = [];
         let cur = null, zone = null;
         for (const line of out.split('\n')) {
             const [tag, a, b] = line.split('\t');
+            if (tag === '§S') seq.push({ sep: true, type: a, label: b });
+            else if (tag === '§D') seq.push({ sep: true, type: 'divider', label: a });
+            else if (tag === '§R') seq.push({ fid: a, crit: JSON.parse(b || '{}') });
             if (tag === '§S' && a === 'question') {
                 const q = topic.questions.find(x => (x.id || x.label) === b) || {};
                 const spec = sandbox.lookupQuestionSpec(b);
@@ -124,9 +139,35 @@ function makeTemplateRenderer(root) {
                 (/^outline-/.test(a) ? cur.outline : zone === 'response' ? cur.response : cur.plan).push(a);
             }
         }
+        byQ.seq = seq;
         return byQ;
     }
-    return { render, sandbox };
+
+    // Run the shipped _healOutlineScaffold on a document made of exactly these rows (as a fresh build lays them out)
+    // and return every change it would make. A fake editor: one position per node, a section boundary between
+    // sections, so "the row after this one" means what it means in the real document.
+    function healFresh(st, seq) {
+        const nodes = seq.map(it => it.sep
+            ? { type: { name: 'sectionBlock' }, attrs: { sectionType: it.type, label: it.label || '' }, nodeSize: 1, textContent: '' }
+            : { type: { name: 'outlineRow' }, attrs: { fieldId: it.fid, criteria: JSON.stringify(it.crit), checkState: '{}' }, nodeSize: 1, textContent: '' });
+        const ops = [];
+        const tr = {
+            setMeta() {},
+            setNodeMarkup: (pos, t, attrs) => ops.push({ op: 'relabel', fid: nodes[pos].attrs.fieldId,
+                from: JSON.parse(nodes[pos].attrs.criteria), to: JSON.parse(attrs.criteria) }),
+            delete: from => ops.push({ op: 'delete', fid: nodes[from] && nodes[from].attrs.fieldId }),
+            insert: (pos, node) => ops.push({ op: 'insert', fid: node.attrs.fieldId }),
+        };
+        explicit.state = Object.assign({ text: '' }, st);
+        explicit.canvasEditor = {
+            state: { doc: { descendants: cb => nodes.forEach((n, i) => cb(n, i)), nodeAt: p => nodes[p] || null } },
+            chain: () => ({ command: fn => ({ run: () => fn({ tr }) }) }),
+            schema: { nodes: { outlineRow: { create: attrs => ({ attrs }) } } },
+        };
+        try { sandbox._healOutlineScaffold(); } finally { explicit.canvasEditor = null; }
+        return ops;
+    }
+    return { render, sandbox, healFresh };
 }
 
 // The shipped PHP topic parser's view of a template: [{ topic, label, aos, format, questions }].

@@ -46,6 +46,9 @@ const parts = [
   slice('function _resolveBodyOnlyOutline(', '{'),
   slice('function buildIntroCriteria(', '{'),
   slice('function buildConclusionCriteria(', '{'),
+  // v7.20.699: the body-row composer buildOutlineSection now calls (and the no-AO3 Purpose it reads)
+  slice('function _purposeWithoutAO3(', '{'),
+  slice('function _outlineBodyCriterion(', '{'),
   slice('function buildOutlineSection(', '{'),
 ];
 
