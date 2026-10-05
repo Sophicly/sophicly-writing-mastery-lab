@@ -600,5 +600,7 @@ ONLY from the student's own words (the approval click is the ownership checkpoin
 characters inside the value:
 @FIELD_SET{"field":"plan-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect 1: … | Effect 2: … | Purpose: …"}
 
+**[AI_INTERNAL] What the document holds after the approval:** the engine writes this value into the paragraph's plan box AND, element by element, into its outline boxes — replacing the words filed during the walk. So after approval every outline box already holds its condensed element: never tell the student to trim, tidy or fix an outline box (measured on staging: a false "trim your Topic Sentence row" sent a student looking for a problem that was not there).
+
 ---
 

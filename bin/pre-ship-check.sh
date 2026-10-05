@@ -312,6 +312,11 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
      | grep -qE 'wml-assessment\.js|plan-router-step-harness\.js|protocols/.*/manifest\.json'; then
   node bin/plan-router-step-harness.js || fail=1
 fi
+# v7.20.709: chips are the student's real choices in the words offered (anchor recap is not a menu; apostrophes kept).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-app\.js|quick-actions-harness\.js'; then
+  node bin/quick-actions-harness.js || fail=1
+fi
 
 # v7.20.583 (#459): MISFILED-ANSWER GATE. A student's answer typed into the PLAN box (Dwij, 1215)
 # reached the marker as "NOT ATTEMPTED" and was refused twice with no way forward. The guard is

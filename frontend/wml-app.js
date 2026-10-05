@@ -4846,7 +4846,7 @@
             const m = line.match(letterRegex) || line.match(letterBoldRegex);
             if (m) {
                 const letter = m[1].toUpperCase();
-                let label = m[2].replace(/[\*_]/g, '').replace(/["']/g, '').replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
+                let label = m[2].replace(/[\*_]/g, '').replace(/"/g, '').replace(/'/g, (q, i, t) => (/[A-Za-z]/.test(t[i - 1] || '') && /[A-Za-z]/.test(t[i + 1] || '')) ? q : '').replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
                 if (label.length > 55) label = label.substring(0, 52) + '...';
                 if (!letterOptions.some(o => o.value === letter)) {
                     letterOptions.push({ label: `${letter}) ${label}`, value: letter });
@@ -4882,7 +4882,7 @@
                     const m = line.match(letterRegex) || line.match(letterBoldRegex);
                     if (m) {
                         const letter = m[1].toUpperCase();
-                        let label = m[2].replace(/[\*_]/g, '').replace(/["']/g, '').replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
+                        let label = m[2].replace(/[\*_]/g, '').replace(/"/g, '').replace(/'/g, (q, i, t) => (/[A-Za-z]/.test(t[i - 1] || '') && /[A-Za-z]/.test(t[i + 1] || '')) ? q : '').replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
                         if (label.length > 55) label = label.substring(0, 52) + '...';
                         if (!tailOptions.some(o => o.value === letter)) {
                             tailOptions.push({ label: `${letter}) ${label}`, value: letter });
@@ -4893,6 +4893,10 @@
             }
         }
 
+        // v7.20.709: an anchor recap ("F: …" / "S: …" / "L: …" — the form, structure and language quotations) matches
+        // the letter pattern but is not a menu. Seen on Edexcel IGCSE P2 planning: three chips ("F) afflicted with a heart
+        // trouble…") under an ask that said "type ready". A real menu starts at A; a set made only of F/S/L never does.
+        if (letterOptions.length >= 2 && letterOptions.every(o => /^[FSL]$/.test(o.value))) letterOptions.length = 0;
         if (letterOptions.length >= 2) {
             // v7.14.55: Check for ranking context — if message asks to rank/order, flag for ranking mode
             const isRankingContext = /(?:rank|order|arrange|sort)\s+(?:these|them|the|from)/i.test(text);
@@ -5095,7 +5099,7 @@
                     const pm = pl.match(letterRegex) || pl.match(letterBoldRegex);
                     if (pm) {
                         const letter = pm[1].toUpperCase();
-                        let plabel = pm[2].replace(/[\*_]/g, '').replace(/["']/g, '').replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
+                        let plabel = pm[2].replace(/[\*_]/g, '').replace(/"/g, '').replace(/'/g, (q, i, t) => (/[A-Za-z]/.test(t[i - 1] || '') && /[A-Za-z]/.test(t[i + 1] || '')) ? q : '').replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
                         if (plabel.length > 55) plabel = plabel.substring(0, 52) + '...';
                         if (!prevOptions.some(o => o.value === letter)) {
                             prevOptions.push({ label: `${letter}) ${plabel}`, value: letter });
