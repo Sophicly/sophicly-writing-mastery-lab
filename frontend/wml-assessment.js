@@ -8059,7 +8059,15 @@
             // to place their marks for Q2–Q4, which they never wrote. Practice papers set every question → unchanged.
             if (paper !== 'unseen') {
                 const qset = new Set();
-                const tq = (topicData && Array.isArray(topicData.questions)) ? topicData.questions : [];
+                // Language topics keep their questions in metadata (a JSON string) — the SAME source the
+                // template's per-question loop reads (`meta.questions`); topicData.questions is the unseen shape.
+                let tq = (topicData && Array.isArray(topicData.questions)) ? topicData.questions : [];
+                if (!tq.length && topicData && topicData.metadata) {
+                    try {
+                        const meta = typeof topicData.metadata === 'string' ? JSON.parse(topicData.metadata || '{}') : topicData.metadata;
+                        if (meta && Array.isArray(meta.questions)) tq = meta.questions;
+                    } catch (_) {}
+                }
                 tq.forEach((q) => { const m = /q(?:uestion)?\s*(\d+)/i.exec(String((q && (q.id || q.number || q.label)) || '')); if (m) qset.add('Q' + m[1]); });
                 if (!qset.size) {
                     try {
@@ -66289,6 +66297,7 @@
         const html = canvasEditor.getHTML();
         if (html.indexOf('pred-paper') !== -1 || html.indexOf('kw-focus') !== -1) return; // already present
         const composed = _composePrewriteBlock(planning, litWrite);
+        if (!composed.block) return;   // v7.20.692: nothing to predict on this doc — insert nothing
         canvasEditor.commands.insertContentAt(_prewriteInsertPos(composed.isKw), composed.block);
         if (typeof saveCanvasContent === 'function') saveCanvasContent();
         console.log('WML Migration: ' + (composed.isKw ? 'Keywords-focus' : 'Predictions') + ' section injected (' + (planning ? 'AQA P2 planning' : 'phase-1 write ' + (state.board || '') + '/' + (state.subject || '')) + ')');
@@ -66345,6 +66354,9 @@
                     return true;
                 });
             } catch (_) {}
+            // v7.20.692 (#722): a Language doc with no source section (AQA P2 writing-only topic) has nothing to
+            // predict — no Predictions space at all (the carry-heal synthesises from here too).
+            if (!srcLabels.length && _isAnyLanguagePaper()) return { block: '', isKw: false };
             block = dividerHTML('PREDICTIONS') +
                 sectionHTML('notes', 'Predictions: This Paper', true, null,
                     inputHTML('3 themes you expect this paper is about — committed before reading, never marked.', 'pred-paper'));
