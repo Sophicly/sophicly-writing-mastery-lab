@@ -2802,3 +2802,24 @@ Recorded here in the same session, as §0 requires. Each line is his tap; a quot
     elegy, blank verse, iambic pentameter, free verse, interior and dramatic monologue, rhyming couplets, quatrains,
     refrain…); (b) for the five stories, genre, protagonist and the other prose ideas the notes document holds. Mastery =
     100% at least once (item 3).
+
+
+## §52. ⭐⭐ FIT BEFORE REUSE — every quiz, assessment, planning walk, polishing step and notes document is built for the PAPER, the QUESTION and the ANTHOLOGY it serves (Neil, 2026-10-05)
+
+Neil, after card 3 (§51.11): *"do we need to make an updated ruling? to make sure… quizzes, assessments, etc., are
+suitable for the paper structure, the question structure and the anthology structure."* Yes — and the universal
+form of it is root `CLAUDE.md` §23.
+
+1. **Three structures, each read from its source, never assumed by analogy with another board:**
+   - **paper structure** — sections, questions, tariffs, AOs: `protocols/shared/language-paper-specs.json` and
+     `literature-paper-specs.json` (verified against the mark schemes; tariff gates in pre-ship);
+   - **question structure** — paragraphs, elements, intro/conclusion shape: `PROTOCOL-QUESTION-STRUCTURE-MAP.md`
+     (every row `file:line`-cited; its anti-guess gate already forbids the marks rule as a source);
+   - **anthology structure** — which texts, how many poems and how many prose texts, which forms and genres they
+     actually use, and which quiz and notes document serve them: **not yet documented in one place — the gap card 3
+     fell into.** First job: an ANTHOLOGY MAP, one row per board anthology, read from each text bank / poem bank.
+2. **Reuse is allowed when the fit check passes** — written as "Built for / This one / Source" — and is wrong when
+   it does not. The Edexcel IGCSE Paper 2 anthology (5 poems + 5 stories) needs its own two-part quiz (§51.11);
+   AQA's anthologies (15 poems, poetry only) keep the forms quiz.
+3. **A decision put to Neil carries its fit check on the card** (`~/.sophicly/probe/decision-card-gate.mjs`). He
+   can then see in seconds whether the premise was checked — the defence that does not depend on his catching it.
