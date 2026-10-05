@@ -140,6 +140,15 @@ ok(healCalls === 1, 'H2: AQA P2 legacy Q4 paragraph plan → still reshaped to t
 sb.state = { task: 'planning', board: 'aqa', subject: 'language_p1', step: 1 }; healCalls = 0; sb._healP2Q4ComparativePlan();
 ok(healCalls === 0, 'H3: AQA P1 (Q4 = evaluation) → untouched');
 
+// G. The Q-GATE continue chip in a PLANNING session (v7.20.712): the shared confirm bar sent the assessment directive
+// "emit the @REFLECT_GATE panel" at every planning gate; at Section B on staging 59205 the model obeyed and left nothing to
+// answer. The planning branch must exist, come first, and forbid the panel; the loop-breaker must never fire in planning.
+const cb = (src.match(/function _buildAssessConfirmBar\(nextLabel\) \{[\s\S]*?\n        \}\n/) || [""])[0];
+const planBranch = (cb.match(/state\.task === 'planning'\s*\?\s*`([^`]*)`/) || [])[1] || "";
+ok(planBranch && /lead-in/.test(planBranch) && /never emit @REFLECT_GATE/.test(planBranch) && !/emit the @REFLECT_GATE panel/.test(planBranch),
+   'G1: the planning gate-continue directive starts the next question\x27s lead-in and forbids the reflection panel');
+ok(/const _loopParams = \(_isLit && state\.task !== 'planning'\)/.test(src), 'G2: the gate loop-breaker never renders an assessment reflection panel in planning');
+
 console.log(`— PLAN ROUTER STEP: ${passed}/${passed + failed} assertions passed.`);
 if (failed) { console.log('\n❌ plan-router-step-harness FAILED'); process.exit(1); }
 console.log('✅ plan-router-step-harness passed (the router is sent the step the model reported, never a sidebar row number).');

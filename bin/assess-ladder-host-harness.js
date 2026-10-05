@@ -268,7 +268,8 @@ ok(/if \(_ladderReplacesReflect\(\)\)/.test(rri) && /return true;/.test(rri), 't
 ok(/there is NO reflection panel in this session/.test(rri) && /Continue now with STEP 2a/.test(rri), '…and fires a continue directive instead (§4d — the next thing on screen is the Y gate)');
 ok(/_reflectLadderRepaired\[_lk\] = true/.test(rri), '…at most once per question (no loop)');
 ok(/_reflectLadderRepaired = \{\};/.test(JS.slice(JS.indexOf('_reflectDone = {}; _reflectPending = null;'))), 'the once-flag resets with the other reflection state');
-ok(/chatTextarea\.value = _ladderReplacesReflect\(\)\s*\?/.test(JS), 'the ✓-continue directive stops demanding STEP 1 in a ladder session');
+// v7.20.712: a planning branch now comes first (planning has no reflection panel at all); the ladder branch it guards is unchanged.
+ok(/chatTextarea\.value = (?:state\.task === 'planning'\s*\?\s*`[^`]*`\s*:\s*)?_ladderReplacesReflect\(\)\s*\?/.test(JS), 'the ✓-continue directive stops demanding STEP 1 in a ladder session');
 // v7.20.702 (#619): the first gated question is the PAPER's (_firstGatedQ — Q2 on AQA, Q4 on IGCSE P1, Q1 on IGCSE P2)
 ok(/_ladderReplacesReflect\(\) && \(out\.indexOf\('@FB_BEGIN\{"q":"' \+ _fq \+ '","para":"1"'\)/.test(JS)
     && /const _fq = _firstGatedQ\(\);/.test(JS) && /function _firstGatedQ\(\)/.test(JS), 'the penalty ledger resets at the first CARD when there is no first gate (the paper\'s first gated question)');

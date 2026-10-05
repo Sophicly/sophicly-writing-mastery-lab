@@ -1206,8 +1206,8 @@
             // closes the predictions. Detection byte-pair: "predict Text One will explore" (_PLAN_PRED_ASK_RE.A) — keep it.
             const la = _planSourceLabel('A');
             const why = 'Why predict? Attempting an answer before you read measurably deepens what you learn from a text — even when the prediction turns out wrong. Psychologists call it the generation effect (Bertsch et al., 2007 — a meta-analysis of 86 studies).';
-            plain = `Now the pre-read. Look at **${la}**, the unseen extract — read ONLY its title, author, date and the short introduction above it, not the text itself.\n\n${why}\n\nWhat **3 themes** do you predict ${_planSourceName('A')} will explore? Text Two is your anthology text, so you already know it — this is your one prediction. We'll check back on it as you plan; being wrong is often where the best insights come from.`;
-            html = `<p>Now the pre-read. Look at <strong>${la}</strong>, the unseen extract — read ONLY its title, author, date and the short introduction above it, not the text itself.</p><p style="margin-top:8px;font-size:12.5px;opacity:0.75"><em>${why}</em></p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict ${_planSourceName('A')} will explore? Text Two is your anthology text, so you already know it — this is your one prediction. We'll check back on it as you plan; being wrong is often where the best insights come from.</p>`;
+            plain = `Now the pre-read. Look at **${la}** — read ONLY its title, author, date and the short introduction above it, not the text itself.\n\n${why}\n\nWhat **3 themes** do you predict ${_planSourceName('A')} will explore? Text Two is your anthology text, so you already know it — this is your one prediction. We'll check back on it as you plan; being wrong is often where the best insights come from.`;
+            html = `<p>Now the pre-read. Look at <strong>${la}</strong> — read ONLY its title, author, date and the short introduction above it, not the text itself.</p><p style="margin-top:8px;font-size:12.5px;opacity:0.75"><em>${why}</em></p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict ${_planSourceName('A')} will explore? Text Two is your anthology text, so you already know it — this is your one prediction. We'll check back on it as you plan; being wrong is often where the best insights come from.</p>`;
         } else if (stage === 'predA') {
             const la = _planSourceLabel('A');
             plain = `Committed. Now look at **${la}** — read ONLY its title, author, date and preamble, not the text itself.\n\nWhat **3 themes** do you predict ${_planSourceName('A')} will explore?`;
@@ -1225,8 +1225,8 @@
             const tidyLead = _tidyN === 2 ? 'Both' : `All ${_planCountWord(_tidyN)}`;
             // Detection byte-pair (both pipelines): /give (?:them|it) a quick once-over/ — singular on a one-prediction paper.
             const _tidyHead = _tidyN === 1 ? 'Your prediction is committed and filed into your document. Before we start planning, give it a quick once-over' : `${tidyLead} predictions are committed and filed into your document. Before we start planning, give them a quick once-over`;
-            plain = `${_tidyHead} in the Predictions section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.\n\nClick **Continue** when you're happy with them.`;
-            html = `<p>${_tidyHead} in the <strong>Predictions</strong> section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.</p><p style="margin-top:8px">Click <strong>Continue</strong> when you're happy with them.</p>`;
+            plain = `${_tidyHead} in the Predictions section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.\n\nClick **Continue** when you're happy with ${_tidyN === 1 ? 'it' : 'them'}.`;
+            html = `<p>${_tidyHead} in the <strong>Predictions</strong> section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.</p><p style="margin-top:8px">Click <strong>Continue</strong> when you're happy with ${_tidyN === 1 ? 'it' : 'them'}.</p>`;
         }
         return { plain: plain, html: html };
     }
@@ -19557,7 +19557,7 @@
                     onClick: () => _planScrollToSection(_planSourceRe(letter), 'source') }));
             } else if (stage === 'tidy') {
                 // v7.20.55: SPaG once-over — nav to the predictions + a silent continue.
-                bar.appendChild(_planPinHint('📍 Tap the pin to jump to your predictions, tidy them, then continue.'));
+                bar.appendChild(_planPinHint(_planChainPreds().length === 1 ? '📍 Tap the pin to jump to your prediction, tidy it, then continue.' : '📍 Tap the pin to jump to your predictions, tidy them, then continue.'));
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 Predictions',
                     onClick: () => _planScrollToSection(/^Predictions/i) }));
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✓ Continue to planning',
@@ -19669,7 +19669,13 @@
                     canvasSilentSend = true;
                     // v7.20.632 (#577): in a ladder session there is no STEP 1 — the directive
                     // must not demand a panel the renderer will refuse.
-                    chatTextarea.value = _ladderReplacesReflect()
+                    // v7.20.712: a PLANNING session has no reflection panel at all. This bar is built for any reply that
+                    // carries the Q-GATE, so every planning gate (AQA and Edexcel IGCSE alike) sent "emit the @REFLECT_GATE
+                    // panel" — measured on staging 59205: at Section B the model obeyed, told the student to "reflect in
+                    // the panel below" and left nothing on screen to answer. Planning gets the planning directive.
+                    chatTextarea.value = state.task === 'planning'
+                        ? `Yes — that's clear. Now BEGIN ${nextLabel}: start with its lead-in exactly as the planning protocol gives it, and end on its first question. There is no reflection panel in planning — never emit @REFLECT_GATE. Do NOT repeat this confirmation or re-ask whether to continue.`
+                        : _ladderReplacesReflect()
                         ? `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}. There is NO reflection panel in this session (the student's own marks are filed — THE STUDENT'S OWN MARKS): do not emit @REFLECT_GATE or ask for a self-rating, prediction or AO targeting. Go straight to ${nextLabel}'s STEP 2a — ${_isLitEssay() ? 'the Y gate (their own mark is for the whole essay — do not restate it for this paragraph)' : 'acknowledge their own level and mark for it in one line and give the Y gate'}. Do NOT repeat this confirmation or re-ask whether to continue.`
                         : `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now${_reflectAoOnly() ? ' (this session\'s card asks ONLY which AO(s) the paragraph aimed for and what it was trying to show — no self-rating, no predicted mark)' : ''}. Do NOT repeat this confirmation or re-ask whether to continue.`;
                     sendCanvasMessageQueued();
@@ -20632,7 +20638,8 @@
                             // the assessment advances no matter what the model does. Lit only (params are
                             // lit-shaped: intro 3 / body 8 / conclusion 7). The panel's combined reply then
                             // drives the model to mark the section (which it does reliably).
-                            const _loopParams = _isLit ? _litSectionParams(nextLabel) : null;
+                            // v7.20.712: never in planning — the breaker renders an ASSESSMENT reflection panel.
+                            const _loopParams = (_isLit && state.task !== 'planning') ? _litSectionParams(nextLabel) : null;
                             // v7.19.722: compare CANONICAL section identity, not the raw gate label. The
                             // model paraphrases the section between gate emissions ("Body Paragraph 1" →
                             // "Body 1" / "Body One"), so a raw-string === missed the loop and the breaker
@@ -43394,7 +43401,7 @@
                                     onClick: () => _planScrollToSection(_planSourceRe(letter), 'source') }));
                             } else if (stage === 'tidy') {
                                 // v7.20.55: SPaG once-over (twin).
-                                bar.appendChild(_planPinHint('📍 Tap the pin to jump to your predictions, tidy them, then continue.'));
+                                bar.appendChild(_planPinHint(_planChainPreds().length === 1 ? '📍 Tap the pin to jump to your prediction, tidy it, then continue.' : '📍 Tap the pin to jump to your predictions, tidy them, then continue.'));
                                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 Predictions',
                                     onClick: () => _planScrollToSection(/^Predictions/i) }));
                                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '✓ Continue to planning',
