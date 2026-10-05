@@ -2342,6 +2342,11 @@ the same way). Tracked: FIXLIST #541.
 
 ---
 
+
+**Not ported to Edexcel IGCSE 4EA1 (recorded 2026-10-05, v7.20.703):** this rule exists because AQA splits
+language (Q2) from structure (Q3). On 4EA1 there is no such split to protect — Paper 1 Q4 and Paper 2 Q1 both
+reward language AND structure together ("how the writer uses language and structure"), so a structural term
+in those answers is simply analysis, credited as such.
 ## §39. ⭐⭐ THE MARK-SCHEME SELF-ASSESSMENT REPLACES THE IN-CHAT REFLECTION PANEL (Neil, ruled 2026-09-14 as FIXLIST #539; ordered built 2026-09-22, #577)
 
 **His words (2026-09-22):** *"there's quite a lot of self-assessments… in the chat we've got that
@@ -2448,7 +2453,9 @@ it: the whole story is prepared.**
 their prepared story; on the day they adapt it to the question. Never tell a student preparing a story is
 wrong or risky. Documented in: Cambridge `method/WRITERS-CRAFT-cambridge-paper2-writing.md` ("the prepared
 story") and AQA Language P1 `planning/protocol-b-planning.md` Stage S6. ⬜ **STILL TO DO:** the other boards'
-creative-writing protocols (Edexcel, Eduqas, OCR, IGCSE) — same note, same place.
+creative-writing protocols (Edexcel, Eduqas, OCR) — same note, same place. ✅ Edexcel IGCSE: done for
+Paper 2's imaginative writing (`edexcel-igcse/language2/steps/b2-creative.md`, checked 2026-10-05); Paper 1
+has no story to write (its Section B is transactional).
 
 ## §42. ⭐⭐ BEGINNING, MIDDLE AND END IS THE ORDER — the fault is RETELLING, never the order (Neil, ruled 2026-09-27; FIXLIST #599)
 

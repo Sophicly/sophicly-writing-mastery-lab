@@ -587,64 +587,50 @@ The derivation rules (para-count-by-marks, skip-list, TTECEA bedrock) live in `C
 
 ### language1 — Language Paper 1 (4EA1/01)
 
-#### Q1 — Q1 — Two retrieval selections
-- **2 marks** · AOs: AO1 · structure: **SKIP (none)**
-- _Note:_ Pure retrieval: 1 mark per valid selection from specified lines. No planning/structure taught.
-- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 398-418)`
+> **Rewritten 2026-10-05 (v7.20.703, FIXLIST #722 B2)** from the new protocol (branch harvest + corrections). Q1–Q3 are on
+> **Text One** (unseen), Q4 on **Text Two** (anthology), Q5 compares both — never "Text A/B". Source of every tariff:
+> June 2024 MS, cross-checked June 2022/2023 (`protocols/_marks/edexcel-igcse__language_p1.json`, tariff-gated).
 
-#### Q2 — Q2 — Description in own words
-- **4 marks** · AOs: AO1 · structure: **SKIP (none)**
-- _Note:_ Short-retrieval in own words, no quotes; marked by counting valid distinct points. No TTECEA/planning. ⚠️ HISTORY (corrected 2026-08-29): this row previously recorded **3 marks**, siding with the live protocol over the spec JSON because the protocol "is the definitive marking document" — **that verdict was WRONG.** The board's own papers (June 2024 QP: "Total for Question 2 = 4 marks"; June 2022 MS: "up to a maximum of four marks") say 4. Both wrong-and-right tariff sets sum to 45, so the totals check could not catch it — root CLAUDE.md §PARALLEL-LANES 2a documents this exact case. The protocol was fixed at v7.20.528 and the tariff is now mechanically gated (`protocols/_marks/edexcel-igcse__language_p1.json` + `bin/tariff-gate.js`). **A protocol outranks OUR other files; the mark scheme outranks the protocol.**
-- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 420-440); protocols/shared/language-paper-specs.json (edexcel-igcse.language_p1.Q2, conflicts)`
+#### Q1 — Retrieval from the named lines (Text One)
+- **2 marks** · AOs: AO1 · structure: **SKIP (none)** — one answer box per point
+- _Note:_ Point-marked, "Reward all valid points"; no plan, no outline, no golds, no level grid.
+- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 411-436)`
 
-#### Q3 — Q3 — Thoughts/feelings with quotes
-- **5 marks** · AOs: AO1 · structure: **SKIP (none)**
-- _Note:_ Mark-per-valid-point retrieval/interpretation with brief quotes — not TTECEA, no planning taught. ⚠️ HISTORY (corrected 2026-08-29): this row previously recorded **6 marks**, and read the protocol's own "/5" prose as a typo — it was the TRUE tariff leaking through. June 2024 QP: "Total for Question 3 = 5 marks"; both the June 2024 and June 2022 mark schemes end the Q3 indicative content "(5)". AO1 only (the JSON's old [AO1, AO2] was the drift, since fixed). Protocol fixed at v7.20.528; gated as above.
-- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 442-491); protocols/shared/language-paper-specs.json (edexcel-igcse.language_p1.Q3, conflicts)`
+#### Q2 — Own-words points; the TASK changes every paper (Text One)
+- **4 marks** · AOs: AO1 · structure: **SKIP (none)** — one answer box per point
+- _Note:_ Point-marked. Task read from the question (2022: thoughts and feelings; 2023/2024: description of what happens). "In your own words where possible" is guidance — quotations never refuse or deduct (v7.20.617). ⚠️ HISTORY: this row once recorded 3 marks (corrected 2026-08-29 against the MS).
+- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 438-468)`
 
-#### Q4 — Q4 — Language and structure analysis
-- **12 marks** · AOs: AO2 · structure: **ttecea-body** · paragraphs: **3**
-- **Body paragraph elements:**
-  - Topic sentence that perceptively introduces the concept (AO2) — 0.5
-  - Judicious use of language and/or structure technical terminology (AO2) — 0.5
-  - Judicious, integrated quotes (AO2) — 0.5
-  - Perceptive inferences (AO2) — 0.5
-  - Detailed, perceptive close analysis of language and/or structure techniques (AO2) — 0.5
-  - First detailed, perceptive sentence evaluating effects on the reader (AO2) — 0.5
-  - Second detailed, perceptive sentence evaluating effects on the reader (AO2) — 0.5
-  - Perceptive evaluation of the author's purpose for creating these effects (AO2) — 0.5
-- _Note:_ Body-only (reading question, no intro/conclusion — protocol explicitly forbids intro/conclusion content for Q4). Single AO (AO2) marks every element; no Context row (no AO3/AO4 in this question). 8 elements × 0.5 = 4.0 marks/paragraph × 3 paragraphs = 12. 'One paragraph for every 4 marks' rule confirmed (line 1919).
-- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 495-800)`
+#### Q3 — Points with brief quotations; task AND focus change every paper (Text One)
+- **5 marks** · AOs: AO1 · structure: **SKIP (none)** — one answer box per point
+- _Note:_ Point-marked; quotation-rich indicative answers. Task read from the question (2022: description of an argument; 2023: thoughts and actions; 2024: thoughts and feelings). ONE optimal model; no level grid. ⚠️ HISTORY: once recorded 6 marks.
+- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 470-498)`
 
-#### Q5 — Q5 — Comparative essay (Text A vs Text B)
-- **22 marks** · AOs: AO3 · structure: **full-essay** · paragraphs: **3**
-- **Intro:** Hook — an engaging question or provocative statement about the concept (AO3) — 1.0 · Comparative thesis statement outlining the three main ideas of the essay, one per body paragraph (AO3) — 1.0
-- **Body paragraph elements:**
-  - Comparative topic sentence that takes a position and frames a like-for-like lens (AO3) — 0.5
-  - Judicious, integrated evidence from BOTH texts, not bolted-on (AO3) — 0.5
-  - Developed comparative analysis of methods → effects, each text addressed within the same move (AO3) — 1.0
-  - Interplay between methods — how two techniques combine to create an effect (AO3) — 0.5
-  - Reader impact 1 — specific, text-tethered effect (AO3) — 0.5
-  - Reader impact 2 — a second, distinct effect (AO3) — 0.5
-  - Comparative evaluation of writers' ideas/purposes — which is more effective and why (AO3) — 1.0
-  - Cohesive flow with comparative discourse markers, e.g. whereas/similarly/in contrast (AO3) — 0.5
-- **Conclusion:** Restated thesis — sophisticated rephrasing of introduction thesis (AO3) — 1.0 · Final perceptive evaluation of the authors' purposes — the ultimate moral/message each text carries (AO3) — 1.0
-- _Note:_ This is the SAME TTECEA rows adapted for comparison (per feedback_comparative_body_is_ttecea_helper_text_only memory), not a different skeleton, with the two reader-effect rows generalised to 'reader impact 1/2' rather than one-per-source. ARITHMETIC — RESOLVED (commit 1a04d97, 2026-08-29): the 8 body elements summed to 5.0 against a 6-mark paragraph because the list was copied from AQA Lang P2 Q4 (whose comparative paragraph really is 5.0) and never re-weighted. The two criteria that ARE the AO3 skill (developed comparative analysis; comparative evaluation of writers' purposes) were re-cut 1.0 → 1.5, so the elements now sum to 6.0 and Q5 reconciles 2 + 18 + 2 = 22. Full marks are reachable.
-- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 868-1470, esp. 1026-1115 body-paragraph mark breakdown)`
+#### Q4 — Language AND structure analysis (Text Two)
+- **12 marks** · AOs: AO2 · structure: **ttecea-body** · paragraphs: **3** (outline rows `outline-body-N-*-q4`, plan `plan-Q4-para-N`)
+- **Body paragraph elements (8 × 0.5 = 4.0):** topic sentence · precise terminology · judicious integrated quotation · perceptive inference · close analysis · effect 1 · a different effect 2 · writer's purpose — + BONUS interplay (+0.5, capped at 4.0). Rule 5: the last 0.25 of each criterion is for perceptiveness.
+- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 500-584)`
 
-#### Q6 — Q6 / Section B — Transactional writing (choice of 2: review, article, speech, letter)
-- **45 marks** · AOs: AO4, AO5 · structure: **iumvcc** · paragraphs: **6**
-- **Body paragraph elements:**
-  - Introduction — hook + thesis
-  - Urgency — why this matters NOW (metaphor, extended development, evidence)
-  - Methodology — HOW to fix the problem (clear solution, specific steps)
-  - Vision — what the future looks like if the methodology is implemented (vivid imagery, sensory detail)
-  - Counter-argument — anticipate and refute objections
-  - Conclusion — call to action
-- _Note:_ AO4 = Content/Organisation (27 marks) + AO5 = Technical Accuracy (18 marks) = 45. Marked holistically per IUMVCC section via Level-based bands (AO4 Levels 1-5, AO5 Levels 1-5), not itemised sub-marks per element the way TTECEA papers are. 6 paragraphs of ~110-120 words each, 700+ words minimum.
-- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 1422-1921); protocols/shared/language-paper-specs.json (edexcel-igcse.language_p1.Q6)`
+#### Q5 — Comparison of Text One and Text Two
+- **22 marks** · AOs: AO3 · structure: **comparative full-essay** · paragraphs: **3** (outline: `outline-intro-perspectives-q5`, `outline-intro-thesis-q5`, 3 × six TTECEA rows with the Text One / Text Two overlay, `outline-conclusion-thesis`, `outline-conclusion-purpose`; plan `plan-Q5-intro/body-N/conclusion`)
+- **Intro (2.0):** both writers' overall perspectives, side by side 1.0 · comparative thesis — three main ideas, one per paragraph 1.0. **No hook mark** (v7.20.618).
+- **Body paragraph elements (6.0, paired per text — Neil 2026-09-15):** comparative-conceptual topic sentence 0.5 · Text One method + quotation + inference 0.5 · effect on the reader — Text One 0.5 · Text Two method + quotation + inference with a comparative pivot 0.5 · effect on the reader — Text Two 0.5 · development of the difference/similarity as a PAIR 1.5 · word-level analysis 0.5 · the writers' purposes compared against the focus 1.5. Partial/surface = half worth.
+- **Conclusion (2.0):** restated thesis 1.0 · final perceptive evaluation of the writers' purposes 1.0.
+- _Note:_ ONE-TEXT CAP (MS, Level 2 cell): one text only → max 8/22, applied last, never a penalty. PEDAGOGY §3c: a comparative body is the same six TTECEA rows.
+- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 586-689)`
+
+#### Q6 (or Q7) — Section B transactional writing; box id Q6
+- **45 marks** · AOs: AO4 (27), AO5 (18) · structure: **iumvcc** (spec `family: transactional` — a review-only brief still routes to IUMVCC) · holistic
+- _Note:_ Q6 and Q7 are both modelled; the student answers ONE; ONE criteria set (Neil, 2026-09-14). Holistic AO4 + AO5 marks against the verbatim grids, per-IUMVCC-section feedback, ONE labelled holistic gold for the task the student chose. Word count: a ceiling only if WML injects one (none today); never a halt.
+- _Source:_ `protocols/edexcel-igcse/language1/modules/protocol-a-assessment.md (lines 691-764)`
 
 ### language2 — Language Paper 2 (4EA1/02) — Section A: Reading (Anthology Part 2 — poetry OR prose)
+
+> ⚠️ **STALE BELOW — read the protocol, not these rows (flagged 2026-10-05).** The element lists below predate the
+> v7.20.642 port. The shipped shape: **Q1** = Intro 3 + BP1–3 × 7 + Conclusion 6 = exactly 30, AO1 /12 + AO2 /18
+> reported as LEVELS on the June 2024 split grids (`protocols/edexcel-igcse/language2/modules/assessment-section-a.md`,
+> "## QUESTION 1"); **Section B** (box Q2) = holistic AO4 18 + AO5 12, one labelled gold (`assessment-section-b.md`).
+> Outline: Q1 = the plain essay rows with `-q1` intro ids (v7.20.697); Section B = the 7 scene-plan rows.
 
 #### Q1 — Q1 — Single anthology text analysis (poetry OR prose)
 - **30 marks** · AOs: AO1, AO2 · structure: **full-essay** · paragraphs: **3**

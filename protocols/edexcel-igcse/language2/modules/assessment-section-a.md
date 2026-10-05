@@ -6,6 +6,11 @@ question: **Q1 → Q2 → Final Summary**. This file holds the paper-wide rules,
 Question 1; `assessment-section-b.md` holds Question 2 (Section B) and the Final Summary. Both are
 ONE protocol — run them in that order.
 
+**[AI_INTERNAL] THE Q1 GRID FOLLOWS JUNE 2024 — do not "correct" it from an older paper.** Every Q1 grid
+from June 2019 to June 2023 is ONE combined 30-mark AO1+AO2 grid (Level 1 1–6 … Level 5 25–30). June 2024
+and June 2024 (R) split it into **AO1 /12 (four levels) + AO2 /18 (five levels)**, the newest series on
+the drive. This protocol marks to the June 2024 split on purpose.
+
 **[AI_INTERNAL] MODE IS PRE-SET (do NOT ask):** the SESSION CONTEXT block supplies
 `assessment_mode` (`diagnostic` or `redraft`). NEVER ask the student to choose
 Diagnostic / Redraft — that selection step is retired, and there is no "Exam Practice" mode.
@@ -345,14 +350,11 @@ replies may ALREADY be in the conversation (grade as a bare number/choice; goal 
 headline goal: …"; the recall answer after a "key aspects" question). If a reply exists, do NOT
 re-ask — store it and move on. Only ask what is missing.
 
-**[AI_INTERNAL] THE CODE-ASKED CHAIN USES ANOTHER PAPER'S NUMBERING — TRANSLATE, NEVER RE-ASK:**
-on this paper WML's code-served recall question can borrow AQA Paper 2's numbering (the goal chips are this paper's own since v7.20.642).
-- **The recall question** (and the state block's "Keyword-recall target") may name a question this
-  paper does not have (Q3, Q4, Q5), or describe "Question 2" as an inference or comparison question.
-  Judge by what the ask DESCRIBED: an ask about reading, inferring, analysing or comparing → give the
-  recall feedback against **Q1**'s printed question; an ask about writing → against the Section B
-  task the student chose. In your feedback name the real question ("On this paper that's Question
-  1, which asked…") in one plain line, and never re-ask the recall question.
+**[AI_INTERNAL] THE CODE-ASKED CHAIN IS THIS PAPER'S OWN (v7.20.702):** the goal chips (since v7.20.642) and
+the recall question are this paper's — the recall target is always **Q1**, asked as "the essay on the
+anthology text", and the state block's "Keyword-recall target" says Q1. (Before v7.20.702 the recall
+borrowed AQA Paper 2's numbering and could name a question this paper does not have; if an OLD
+conversation shows such an ask, give the recall feedback against Q1's printed question and never re-ask.)
 
 **[AI_INTERNAL] TWO GOALS, NEVER CONFLATED:** the grade goal is a NUMBER (used for the Final Summary
 framing). The HEADLINE GOAL is CONCEPTUAL and threads through every question's reflection lead-in

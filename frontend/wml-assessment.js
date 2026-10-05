@@ -3020,7 +3020,7 @@
             });
             if (_isLangPaper2()) return _ask('Question 1', 'the essay on the anthology text, worth half of this paper\'s marks');
             if (tq === 'Q4') return _ask('Question 4', 'the analysis of Text Two', 'analyse — and was it about language only, or language and structure');
-            if (tq === 'Q3') return _ask('Question 3', 'the question on Text One', 'explain about the writer');
+            if (tq === 'Q3') return _ask('Question 3', 'the question on Text One');   // its task changes every paper — no fixed hint
             if (tq === 'Q6') return _ask('Section B', 'the writing task you chose', 'do — which purpose, which form, and which reader');
             return _ask('Question 5', 'comparing Text One and Text Two, the biggest reading question', 'compare — and what happens to an answer that writes about only one text');
         }
@@ -57099,6 +57099,21 @@
             effects2: { label: 'Effect on Reader — Source B', prompt: 'How does Source B’s writer shape it differently? This is where the comparison lands.' },
             purpose: { label: 'Writers’ Purposes Compared', prompt: 'Why did each writer make these choices — and how do their purposes differ?' },
         },
+        // v7.20.703 (#722 B2): Edexcel IGCSE P1 Q5 compares TEXT ONE and TEXT TWO — the names on the paper and on every
+        // IGCSE assessment card. Same rows and helper text as `comparative`; only the names differ (the comparativePoetry
+        // pattern below). Chosen per paper by COMPARISON_OUTLINE_SPEC.
+        comparativeTexts: {
+            topic: { prompt: 'A conceptual claim comparing what BOTH writers convey about the topic' },
+            evidence: {
+                label: 'Technique + Evidence + Inference',
+                items: ['Technique named', 'Quote integrated', 'Inference made'],
+                prompt: 'Name the technique, integrate a quote, infer — then weave the comparison between the two texts',
+            },
+            analysis: { prompt: 'Zoom on the sharpest word/choice — and how it differs from the other text' },
+            effects: { label: 'Effect on Reader — Text One', prompt: 'How does the writer of Text One shape the reader’s response? Be specific.' },
+            effects2: { label: 'Effect on Reader — Text Two', prompt: 'How does the writer of Text Two shape it differently? This is where the comparison lands.' },
+            purpose: { label: 'Writers’ Purposes Compared', prompt: 'Why did each writer make these choices — and how do their purposes differ?' },
+        },
         // AQA poetry comparison (Body 1 Form / Body 2 Structure / Body 3 Language): same TTECEA+C rows,
         // the comparison lives in the HELPER TEXT + the per-poem effect split (effects = Poem A,
         // effects2 = Poem B). "Poem" not "Source" — students compare poems (CLAUDE.md §14). ids unchanged.
@@ -60411,14 +60426,14 @@
     // question is not a comparison this paper's outline is verified for (OUTLINE_VERIFIED_PAPERS.comparison).
     // The intro/conclusion each comparison paper's outline uses (OUTLINE_SPECS) — the bodies are the same six rows.
     const COMPARISON_OUTLINE_SPEC = {
-        'aqa/language_p2': 'aqa_language_p2_comparison',
-        'edexceligcse/language_p1': 'edexcel_igcse_language_p1_comparison',
+        'aqa/language_p2': { specKey: 'aqa_language_p2_comparison', focus: 'comparative' },                     // Source A / Source B
+        'edexceligcse/language_p1': { specKey: 'edexcel_igcse_language_p1_comparison', focus: 'comparativeTexts' },  // Text One / Text Two
     };
     function _comparisonOutlineArgs(qType) {
         if (!(_outlinePaperVerified('comparison') && qType === 'comparison')) return null;
-        const specKey = COMPARISON_OUTLINE_SPEC[_outlinePaperKey()];
-        if (!specKey) console.warn('WML outline: ' + _outlinePaperKey() + ' is verified for comparison but has no COMPARISON_OUTLINE_SPEC entry — using the AQA P2 shape');
-        return { specKey: specKey || 'aqa_language_p2_comparison', opts: { focus: 'comparative', stampAO: 'AO3' } };
+        const spec = COMPARISON_OUTLINE_SPEC[_outlinePaperKey()];
+        if (!spec) console.warn('WML outline: ' + _outlinePaperKey() + ' is verified for comparison but has no COMPARISON_OUTLINE_SPEC entry — using the AQA P2 shape');
+        return { specKey: spec ? spec.specKey : 'aqa_language_p2_comparison', opts: { focus: spec ? spec.focus : 'comparative', stampAO: 'AO3' } };
     }
 
     function _questionWritingFlags(q, qType, qMarks, specQ) {

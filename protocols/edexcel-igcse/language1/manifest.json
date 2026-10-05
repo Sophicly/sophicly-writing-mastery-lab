@@ -156,20 +156,14 @@
     },
     "assessment": {
         "always": [
-            "modules/foundation.md",
-            "modules/knowledge-algorithm.md",
-            "modules/knowledge-macros.md",
-            "modules/knowledge-validation.md",
-            "modules/knowledge-progress.md",
-            "modules/knowledge-state.md",
-            "modules/knowledge-hub.md",
             "modules/protocol-a-assessment.md",
             "language/modules/communication-standards.md",
             "language/modules/graceful-degradation.md",
             "language/modules/anti-hallucination.md",
             "language/modules/state-management.md",
             "language/modules/ttecea-rationale-lang.md",
-            "mark-scheme/marking-fairness-universal.md"
+            "mark-scheme/marking-fairness-universal.md",
+            "modules/knowledge-mark-scheme.md"
         ],
         "steps": {}
     },
