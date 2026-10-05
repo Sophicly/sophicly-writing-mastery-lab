@@ -2823,3 +2823,12 @@ form of it is root `CLAUDE.md` §23.
    AQA's anthologies (15 poems, poetry only) keep the forms quiz.
 3. **A decision put to Neil carries its fit check on the card** (`~/.sophicly/probe/decision-card-gate.mjs`). He
    can then see in seconds whether the premise was checked — the defence that does not depend on his catching it.
+4. **A grade we recover or receive is filed by OUR CURRENT grading scale — never by a number Sophia wrote** (Neil,
+   2026-10-05, on 1392's AI-run final: *"his grade should be the most correct one… whatever is our latest grading
+   system, then that it should be that one. So I guess that's six."*). Sophia had written "Grade 7" for 70%; the
+   canonical band (Sophicly_Grade_Mapper) gives 6. Recovered marks are labelled "not code-scored".
+5. **A MARK-SCHEME quiz is per board; a play/text RECAP quiz is for every board** (Neil, same day: *"If it's… just a
+   recap, then that's applicable to all exam boards… If you're talking about modern text… mark scheme quiz… each
+   exam board is going to have its own… [with] questions and answers that relate to Inspector Calls, and then same
+   for the other texts."*). The AIC mark-scheme quiz bank is AQA-only today, so non-AQA courses need their own
+   (FIXLIST #735) — a §52 fit-check failure caught in the wild.
