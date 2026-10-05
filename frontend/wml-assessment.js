@@ -68071,7 +68071,14 @@
                 && Array.from(tmp.querySelectorAll('[data-section-type="plan"]'))
                     .some(s => (s.getAttribute('data-section-label') || '').endsWith(`— ${qId}`)
                         && !!s.querySelector('[data-field-id^="iumvcc-"]'));
-            if (!shape && !_isComp && !_isInf && !_isIumvcc) return;
+            // v7.20.693 (#722, P1 audit D3): an EVALUATION question (AQA P1 Q4 — AO4-only, 20 marks). The body-only
+            // resolver returns null for it (≥20 marks / evaluation), so a planning doc copied forward from the
+            // diagnostic carried Q4's PLAN boxes and never its OUTLINE rows: every Q4 @FIELD_COMMIT landed nowhere
+            // and Sophia moved on (measured on prod: Qamar 857 + Mishel 1237 — 0 of 20 Q4 outline rows; Qamar's
+            // 240-message session filed nothing for Q4 while she asked four times to finish it). Capability-gated
+            // (the question TYPE), read against the doc's own plan boxes; built by the render branch's builder.
+            const _isEval = !shape && !_isComp && !_isInf && !_isIumvcc && qType === 'evaluation';
+            if (!shape && !_isComp && !_isInf && !_isIumvcc && !_isEval) return;
 
             // Already has this question's outline?
             let _staleOutlineToRemove = null;
@@ -68149,8 +68156,11 @@
                         // Section B IUMVCC: byte-identical to the render branch (v7.20.671).
                         : _isIumvcc
                             ? buildIUMVCCOutlineSection(qId)
-                            // Q2 inference: byte-identical to the render branch.
-                            : buildInferenceOutlineSection(qId, 2));
+                            // Evaluation (v7.20.693): the render's generic branch — AO4-only → the evaluation shape.
+                            : _isEval
+                                ? buildOutlineSection(specQ?.aos, qId, qMarks)
+                                // Q2 inference: byte-identical to the render branch.
+                                : buildInferenceOutlineSection(qId, 2));
 
             let after = anchor;
             while (frag.firstChild) {
@@ -68160,7 +68170,7 @@
             changed = true;
             healed.push(shape
                 ? `${qId}(${shape.bodies}¶/${shape.ao}${shape.focus ? '/' + shape.focus : ''})`
-                : _isComp ? `${qId}(comparison/AO3)` : _isIumvcc ? `${qId}(IUMVCC)` : `${qId}(inference/AO1)`);
+                : _isComp ? `${qId}(comparison/AO3)` : _isIumvcc ? `${qId}(IUMVCC)` : _isEval ? `${qId}(evaluation/AO4)` : `${qId}(inference/AO1)`);
         });
 
         if (!changed) return;
