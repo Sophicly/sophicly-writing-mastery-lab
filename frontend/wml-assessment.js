@@ -66105,7 +66105,7 @@
             );
             if (ok) carried++;
         });
-        console.warn('WML SA-heal: replaced stale essay-shaped Self-Assessment with the Language P1 set'
+        console.warn('WML SA-heal: replaced a stale Self-Assessment with this paper\'s own set (' + (state.board || '?') + ' ' + (state.subject || '?') + ')'
             + (carried ? ' — carried ' + carried + ' rating(s) over' : ''));
         try { if (typeof _scoreOverlaysRefresh === 'function') _scoreOverlaysRefresh(); } catch (_) {}
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}

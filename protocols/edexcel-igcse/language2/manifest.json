@@ -4,8 +4,18 @@
     "version": "1.0.0",
     "base_path": "protocols/edexcel-igcse/language2",
     "planning": {
+        "_destitched": "v7.20.706 — planning fed WHOLE, like AQA P1/P2 (v7.20.49). This lesson runs the code-asked opening chain and the doc-derived sidebar, which assume ONE document: sliced, the step the router loaded moved whenever the model emitted [PROGRESS: N] early or the sidebar wrote its own row number, and the confirmation of B.2A was answered from step 2's file (key words unfiled, B.3/B.4 skipped as 'already complete') — measured on staging 59207, 2026-10-05. An empty steps map is also the router's de-stitch signal, so the preamble no longer narrates the legacy Part A/B flow.",
         "always": [
             "modules/foundation.md",
+            "steps/b-setup.md",
+            "steps/b-goal.md",
+            "steps/b5-preplanning.md",
+            "steps/b5-body1.md",
+            "steps/b5-body2.md",
+            "steps/b5-body3.md",
+            "steps/b5-complete.md",
+            "steps/b-conclusion.md",
+            "steps/b2-creative.md",
             "language/modules/knowledge-algorithm-planning.md",
             "modules/knowledge-text-bank.md",
             "modules/knowledge-genre.md",
@@ -19,85 +29,8 @@
             "modules/quote-validation.md",
             "steps/b-ladder.md"
         ],
-        "groups": [
-            {
-                "id": "setup",
-                "label": "Setup",
-                "steps": [
-                    1
-                ]
-            },
-            {
-                "id": "q1",
-                "label": "Q1",
-                "steps": [
-                    2,
-                    3,
-                    4,
-                    5,
-                    6,
-                    7
-                ]
-            },
-            {
-                "id": "section_b",
-                "label": "Section B",
-                "steps": [
-                    8
-                ]
-            }
-        ],
-        "steps": {
-            "1": {
-                "label": "Setup & Goals",
-                "files": [
-                    "steps/b-setup.md",
-                    "steps/b-goal.md"
-                ]
-            },
-            "2": {
-                "label": "Q1: Pre-Planning & Text Type",
-                "files": [
-                    "steps/b5-preplanning.md"
-                ]
-            },
-            "3": {
-                "label": "Q1: Body Paragraph 1 (Form/Genre)",
-                "files": [
-                    "steps/b5-body1.md"
-                ]
-            },
-            "4": {
-                "label": "Q1: Body Paragraph 2 (Structure)",
-                "files": [
-                    "steps/b5-body2.md"
-                ]
-            },
-            "5": {
-                "label": "Q1: Body Paragraph 3 (Language)",
-                "files": [
-                    "steps/b5-body3.md"
-                ]
-            },
-            "6": {
-                "label": "Q1: Working Thesis & Introduction",
-                "files": [
-                    "steps/b5-complete.md"
-                ]
-            },
-            "7": {
-                "label": "Q1: Conclusion & Final Plan",
-                "files": [
-                    "steps/b-conclusion.md"
-                ]
-            },
-            "8": {
-                "label": "Section B: Creative Writing Planning",
-                "files": [
-                    "steps/b2-creative.md"
-                ]
-            }
-        }
+        "steps": {},
+        "groups": []
     },
     "assessment": {
         "always": [

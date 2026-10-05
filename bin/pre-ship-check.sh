@@ -309,7 +309,7 @@ fi
 # v7.20.706: the step sent to the router comes from the model's [PROGRESS: N], never a derived-sidebar row number
 # (measured on staging 59207: "paragraph" matched a sidebar row, step 1 → 2, b-goal dropped mid-step).
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
-     | grep -qE 'wml-assessment\.js|plan-router-step-harness\.js'; then
+     | grep -qE 'wml-assessment\.js|plan-router-step-harness\.js|protocols/.*/manifest\.json'; then
   node bin/plan-router-step-harness.js || fail=1
 fi
 

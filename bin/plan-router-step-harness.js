@@ -68,6 +68,39 @@ ok(sends === 2, 'W1: both canvas /chat request bodies send _planRouterStep(canva
 ok(/if \(_planDerivedSidebar\(\)\) \{\s*_refreshPlanningSidebar\(\);\s*\} else if \(state\.task === 'planning' \|\| state\.task === 'polishing'\) \{\s*const planStep = detectPlanningStep\(/.test(src),
    'W2: on a derived sidebar the reply never moves the step by keyword, and updateProgress never paints router numbers onto its rows');
 
+// D. The predicate's PRECONDITION, mechanical: _buildPlanningSidebarModel says "De-stitched planning ONLY — sliced papers
+// still advance their manifest steps via [PROGRESS: N] tags, and this model's numbering would fight them." It was widened
+// past that twice without de-stitching (AQA poetry v7.20.256, Edexcel IGCSE P2 v7.20.704). Every manifest a planning lesson
+// can route to is evaluated against the REAL predicate: if the derived sidebar serves it, its planning.steps must be empty
+// (the router's own de-stitch signal), unless named below with the reason it is tracked.
+const KNOWN_SLICED = {
+  'aqa/poetry': 'sliced under the derived predicate since v7.20.256; router step comes from the model\'s [PROGRESS] (v7.20.706); de-stitch tracked in wml-FIXLIST #722 (no poetry planning session exists on prod or staging)',
+};
+const protoRoot = path.join(__dirname, '..', 'protocols');
+let derivedSeen = 0;
+for (const board of fs.readdirSync(protoRoot)) {
+  const bd = path.join(protoRoot, board);
+  if (board === 'shared' || !fs.statSync(bd).isDirectory()) continue;
+  for (const subj of fs.readdirSync(bd)) {
+    const mf = path.join(bd, subj, 'manifest.json');
+    if (!fs.existsSync(mf)) continue;
+    let plan; try { plan = JSON.parse(fs.readFileSync(mf, 'utf8')).planning; } catch (e) { continue; }
+    if (!plan) continue;
+    const cands = [subj, subj.replace(/^language(\d)$/, 'language_p$1'), subj === 'poetry' ? 'poetry_anthology' : null].filter(Boolean);
+    const derived = [board, board.replace(/-/g, '_')].some(b => cands.some(c => {
+      sb.state = { task: 'planning', board: b, subject: c, step: 1 }; return sb._planDerivedSidebar();
+    }));
+    if (!derived) continue;
+    derivedSeen++;
+    const key = board + '/' + subj;
+    const sliced = plan.steps && Object.keys(plan.steps).length > 0;
+    ok(!sliced || KNOWN_SLICED[key], `D1: ${key} is served by the derived sidebar, so its planning must be de-stitched (empty planning.steps)`,
+       sliced ? Object.keys(plan.steps).length + ' sliced steps' : '');
+    if (sliced && KNOWN_SLICED[key]) console.log(`  ⚠ known debt — ${key}: ${KNOWN_SLICED[key]}`);
+  }
+}
+ok(derivedSeen >= 4, 'D2: the predicate admits the expected papers (AQA P1, AQA P2, AQA poetry, Edexcel IGCSE P2)', derivedSeen);
+
 console.log(`— PLAN ROUTER STEP: ${passed}/${passed + failed} assertions passed.`);
 if (failed) { console.log('\n❌ plan-router-step-harness FAILED'); process.exit(1); }
 console.log('✅ plan-router-step-harness passed (the router is sent the step the model reported, never a sidebar row number).');
