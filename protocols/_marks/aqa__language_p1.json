@@ -94,5 +94,18 @@
       "marks_quote": "[40 marks]",
       "quote_note": "Locator = the task's opening line: the sample prints the two component tariffs ABOVE the '[40 marks]' line, so anchoring on '[40 marks]' would leave both components outside Q5's own region."
     }
+  ],
+  "protocols": [
+    {
+      "file": "protocols/aqa/language1/modules/protocol-a-assessment.md",
+      "role": "assessment (the LANGUAGE anchor)",
+      "questions": [
+        "Q1",
+        "Q2",
+        "Q3",
+        "Q4",
+        "Q5"
+      ]
+    }
   ]
 }

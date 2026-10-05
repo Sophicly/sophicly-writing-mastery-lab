@@ -93,6 +93,13 @@
   },
   "protocols": [
     {
+      "file": "protocols/edexcel-igcse/language2/modules/assessment-section-a.md",
+      "role": "Section A assessment",
+      "questions": [
+        "Q1"
+      ]
+    },
+    {
       "file": "protocols/edexcel-igcse/language2/modules/assessment-section-b.md",
       "role": "Section B assessment",
       "questions": [
@@ -100,5 +107,5 @@
       ]
     }
   ],
-  "protocols_note": "Section A is decomposed in assessment-section-a.md as our own teaching split — introduction out of 3, each body paragraph out of 7, conclusion out of 6 (3 + 3x7 + 6 = 30). That is a Sophicly structure, not a board one, so it carries no 'Assessment Sub-Protocol: Question 1' heading and check E cannot read it. ⭐ FOLLOW-UP WORTH DOING: a per-part check that a protocol's element marks SUM to the board tariff — PROTOCOL-QUESTION-STRUCTURE-MAP.md already records three Edexcel protocols where they do not (modern totals 36.5/37 against a stated 40; poetry's intro header says 3 but its breakdown sums to 2; unseen Q12 sums to 25 against a stated 20)."
+  "protocols_note": "Both section files head each question in the anchor form (\"## QUESTION 1 — … (AO1 12 + AO2 18 = 30 marks — …)\"), which check E reads since v7.20.697. Section A also decomposes Q1 as our own teaching split — introduction 3, each body paragraph 7, conclusion 6 (3 + 3x7 + 6 = 30); that split is Sophicly structure, not the board's, and is not what check E verifies. ⭐ FOLLOW-UP WORTH DOING: a per-part check that a protocol's element marks SUM to the board tariff — PROTOCOL-QUESTION-STRUCTURE-MAP.md already records three Edexcel protocols where they do not (modern totals 36.5/37 against a stated 40; poetry's intro header says 3 but its breakdown sums to 2; unseen Q12 sums to 25 against a stated 20)."
 }

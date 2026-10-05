@@ -91,5 +91,18 @@
         }
       ]
     }
+  ],
+  "protocols": [
+    {
+      "file": "protocols/aqa/language2/modules/protocol-a-assessment.md",
+      "role": "assessment",
+      "questions": [
+        "Q1",
+        "Q2",
+        "Q3",
+        "Q4",
+        "Q5"
+      ]
+    }
   ]
 }

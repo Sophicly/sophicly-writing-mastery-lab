@@ -370,6 +370,16 @@ function checkPaper(src, file) {
          * one pair of grids, so the heading is plural and the first number is the one we key on. */
         const heads = [...body.matchAll(/^#{1,6}\s*\**\s*Assessment Sub-?Protocol:?\s*\**\s*Questions?\s*(\d+)/gim)]
             .map(m => ({ num: +m[1], at: m.index }));
+        /* v7.20.697 (#722 B2 step 0.4): THE ANCHOR'S OWN FORM. Every protocol ported to the AQA Lang P1 standard
+         * heads a question "## QUESTION 2 — Language Analysis (AO2, 8 marks — …)" — upper-case, its tariff in the
+         * heading's bracket. The gate only knew the older "Assessment Sub-Protocol" form, so it could not read a
+         * single ported protocol: AQA P1/P2 were never listed, and Edexcel IGCSE P2 Q2 printed UNVERIFIED. Such a
+         * section ends at the next level-1/2 heading (a FINAL SUMMARY or the next question), never at end of file. */
+        const anchorHeads = [...body.matchAll(/^#{1,6}\s*\**\s*QUESTION\s+(\d+)\b/gm)]
+            .map(m => ({ num: +m[1], at: m.index, anchor: true }))
+            .filter(a => !heads.some(h => h.num === a.num));
+        heads.push(...anchorHeads);
+        const majorAt = [...body.matchAll(/^#{1,2}\s/gm)].map(m => m.index);
 
         for (const q of src.questions) {
             /* A protocol may cover only some questions (Edexcel IGCSE P2 splits Section A and
@@ -382,12 +392,14 @@ function checkPaper(src, file) {
             let region;
             if (h) {
                 const next = heads.filter(x => x.at > h.at).sort((a, b) => a.at - b.at)[0];
-                region = body.slice(h.at, next ? next.at : body.length);
+                let end = next ? next.at : body.length;
+                if (h.anchor) { const major = majorAt.find(x => x > h.at); if (major !== undefined && major < end) end = major; }
+                region = body.slice(h.at, end);
             } else {
                 region = null;
             }
             if (!region) {
-                note(`${YEL}E PROTOCOL — ${id} ${q.id}: no "Assessment Sub-Protocol: Question ${num}" section in ` +
+                note(`${YEL}E PROTOCOL — ${id} ${q.id}: no "QUESTION ${num}" (or "Assessment Sub-Protocol: Question ${num}") section in ` +
                      `${base}, so its tariff is UNVERIFIED (not clean, just unchecked).${OFF}`);
                 continue;
             }
