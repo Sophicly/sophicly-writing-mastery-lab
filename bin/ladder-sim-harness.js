@@ -509,6 +509,88 @@ ok(stL && stL.question === 'intro' && stL.paceValve === false && stL.base === 1,
    'LIT-C2: 3 high-resolves in bodies do NOT pace the intro arc (per-question scope law)');
 sandbox.state.subject = 'language2';
 
+// ═══ IGCSE2. EDEXCEL IGCSE SPEC A LANGUAGE PAPER 2 (v7.20.704 port — Q1 essay, three-arc walk) ═══════
+// REAL lesson state (staging probe page 59207, read from WML.state in a browser 2026-10-05 on v7.20.704):
+// board="edexcel-igcse" subject="language_p2" text="edexcel_igcse_lang_a_paper_2" task="planning" marks=30
+// question="". Doc ids are the ones that page draws: kw-focus + plan-intro/body-N/conclusion (inputField),
+// outline-intro-{thesis,hook,building}-q1, outline-body-{1..3}-{six TTECEA rows, NO context}, outline-conclusion-*,
+// plan-scene-Q2-* (Section B — outside the ladder by ruling).
+sandbox.state.board = 'edexcel-igcse'; sandbox.state.subject = 'language_p2'; sandbox.state.marks = 30; sandbox.state.question = '';
+const IG2_BODY = ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose'];
+function igcse2Doc(filled) {
+  filled = filled || {};
+  const rows = [{ fieldId: 'kw-focus', type: 'inputField', text: filled['kw-focus'] || '' }];
+  for (const p of ['plan-intro', 'plan-body-1', 'plan-body-2', 'plan-body-3', 'plan-conclusion']) rows.push({ fieldId: p, type: 'inputField', text: filled[p] || '' });
+  for (const s of ['hook', 'building', 'thesis']) rows.push({ fieldId: `outline-intro-${s}-q1`, text: filled[`outline-intro-${s}-q1`] || '' });
+  for (let i = 1; i <= 3; i++) for (const s of IG2_BODY) { const fid = `outline-body-${i}-${s}`; rows.push({ fieldId: fid, text: filled[fid] || '' }); }
+  for (const s of ['thesis', 'concept', 'purpose', 'message']) rows.push({ fieldId: `outline-conclusion-${s}`, text: filled[`outline-conclusion-${s}`] || '' });
+  for (const s of ['hook', 'setup', 'reaction', 'epiphany', 'proaction', 'climax', 'denouement']) rows.push({ fieldId: `plan-scene-Q2-${s}`, type: 'inputField', text: '' });
+  return rows;
+}
+// Registry dispatch + shape:
+ok(call('_ladderPaperKey') === 'igcse2', 'IG2-R1: board edexcel-igcse + language_p2 → paper key igcse2 (board first — AQA shares the subject)');
+const ig2Bodies = call('_ladderRegistry', 'bodies').map(e => e.el);
+ok(ig2Bodies.length === 21 && ig2Bodies.includes('igcse2-technique-b1') && ig2Bodies.includes('outline-body-3-purpose')
+   && !ig2Bodies.some(e => /context/.test(e)) && !ig2Bodies.includes('lit-technique-b1'),
+   'IG2-R2: bodies = 3 × (six TTECEA rows + technique stamp), NO context row (4EA1/02 = AO1+AO2), own technique el', ig2Bodies.length);
+ok(call('_ladderQuestionOrder').join(',') === 'bodies,intro,conclusion', 'IG2-R3: walk order = bodies → intro → conclusion');
+ok(call('_ladderRegistry', 'intro').map(e => e.el).join(',') === 'outline-intro-thesis-q1,outline-intro-hook-q1,outline-intro-building-q1',
+   'IG2-R4: intro arc = -q1 thesis → hook → building (B.6 working thesis files into the thesis box B.7 refines)');
+sandbox.state.board = 'aqa';
+ok(call('_ladderPaperKey') === 'p2' && call('_ladderRegistry', 'q2').map(e => e.el).includes('q2-overall-difference'),
+   'IG2-R5: same subject on AQA → AQA P2 registry (no cross-board bleed)');
+sandbox.state.board = 'edexcel-igcse';
+// Gates:
+mkDoc(igcse2Doc());
+let stI = call('deriveLadderState', []);
+ok(stI && stI.el === 'outline-body-1-topic' && stI.question === 'bodies' && stI.rung === 1,
+   'IG2-A1: REAL IGCSE P2 state + fresh doc → ladder LIVE, body-1 topic first, L1', stI && `${stI.el}/${stI.question}`);
+sandbox.state.board = 'edexcel_igcse';
+stI = call('deriveLadderState', []);
+ok(stI && stI.el === 'outline-body-1-topic', 'IG2-G1: underscore board form (live on 3 prod IGCSE lessons) → ladder LIVE too, like the pre-chain gate');
+sandbox.state.board = 'edexcel-igcse'; sandbox.state.subject = 'language_p1';
+ok(call('deriveLadderState', []) === null, 'IG2-G2: IGCSE P1 planning (language_p1, no ladder module yet) → dormant — never the silent-broken sibling');
+sandbox.state.subject = 'language_p2'; sandbox.state.task = 'assessment';
+ok(call('deriveLadderState', []) === null, 'IG2-G3: IGCSE P2 assessment → dormant (planning only)');
+sandbox.state.task = 'planning';
+// Walk arms:
+mkDoc(igcse2Doc({ 'outline-body-1-topic': 'their concept' }));
+stI = call('deriveLadderState', []);
+ok(stI && stI.el === 'igcse2-technique-b1', 'IG2-A2: topic filed → the technique stamp beat gates before evidence', stI && stI.el);
+mkDoc(igcse2Doc({ 'kw-focus': 'question focus confirmed' }));
+stI = call('deriveLadderState', []);
+ok(stI && stI.el === 'outline-body-1-topic', 'IG2-A3: kw-focus (B.2A Question Focus) filed → NOT a ladder element, walk still opens on body-1 topic');
+const ig2BodiesDone = {};
+for (let i = 1; i <= 3; i++) for (const s of IG2_BODY) ig2BodiesDone[`outline-body-${i}-${s}`] = 'done';
+const ig2TechStamps = [1, 2, 3].map(i => stamp('igcse2-technique-b' + i, 'resolved', { question: 'bodies' }));
+mkDoc(igcse2Doc(ig2BodiesDone));
+stI = call('deriveLadderState', ig2TechStamps);
+ok(stI && stI.el === 'outline-intro-thesis-q1' && stI.question === 'intro',
+   'IG2-A4: bodies arc complete → intro arc opens on the working thesis', stI && `${stI.el}/${stI.question}`);
+mkDoc(igcse2Doc(Object.assign({ 'outline-intro-thesis-q1': 't', 'outline-intro-hook-q1': 'h', 'outline-intro-building-q1': 'b' }, ig2BodiesDone)));
+stI = call('deriveLadderState', ig2TechStamps);
+ok(stI && stI.el === 'outline-conclusion-thesis' && stI.question === 'conclusion', 'IG2-A5: intro filed → conclusion arc opens on the restated thesis', stI && stI.el);
+const ig2AllDone = Object.assign({ 'outline-intro-thesis-q1': 't', 'outline-intro-hook-q1': 'h', 'outline-intro-building-q1': 'b' }, ig2BodiesDone);
+for (const s of ['thesis', 'concept', 'purpose', 'message']) ig2AllDone[`outline-conclusion-${s}`] = 'done';
+mkDoc(igcse2Doc(ig2AllDone));
+stI = call('deriveLadderState', ig2TechStamps);
+ok(stI && stI.done === true, 'IG2-A6: every laddered element filed → done (the empty Section B scene rows never block it)');
+// Fade across paragraphs + arc scope:
+const ig2Fade = {};
+for (const s of IG2_BODY) ig2Fade[`outline-body-1-${s}`] = 'done';
+mkDoc(igcse2Doc(ig2Fade));
+stI = call('deriveLadderState', [stamp('outline-body-1-topic', 'resolved', { rung: 3, question: 'bodies' })].concat(ig2TechStamps));
+ok(stI && stI.el === 'outline-body-2-topic' && stI.base === 2 && stI.fade === true,
+   'IG2-C1: body-1 topic resolved ≥L3 → body-2 topic opens L2 (fade carries across paragraphs)', stI && `${stI.el} base=${stI.base}`);
+mkDoc(igcse2Doc(ig2BodiesDone));
+stI = call('deriveLadderState', ig2TechStamps.concat([
+  stamp('outline-body-1-evidence', 'resolved', { rung: 3, question: 'bodies' }),
+  stamp('outline-body-1-analysis', 'resolved', { rung: 4, question: 'bodies' }),
+  stamp('outline-body-2-evidence', 'resolved', { rung: 3, question: 'bodies' })]));
+ok(stI && stI.question === 'intro' && stI.paceValve === false && stI.base === 1,
+   'IG2-C2: 3 high-resolves in bodies do NOT pace the intro arc (per-question scope law)');
+sandbox.state.board = 'aqa'; sandbox.state.subject = 'language2'; sandbox.state.marks = 12; sandbox.state.question = 'Q3';
+
 // ═══ REPORT ═══════════════════════════════════════════════════════════════════════════════════
 console.log(`— LADDER SIM: ${passed}/${passed + failed} behavioural assertions passed (real sliced engine, scripted sessions).`);
 if (failed) { console.log(`\n❌ ladder-sim-harness FAILED — ${failed} assertion(s); the shipped state machine violates the design contract.`); process.exit(1); }

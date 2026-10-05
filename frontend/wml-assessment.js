@@ -1119,8 +1119,11 @@
         if (stage === 'greeting') {
             const fn = firstName || 'there';
             const facts = _planDocQuestionFacts();
-            const plannedPhrase = facts.planned.length
-                ? `plan all ${_planCountWord(facts.planned.length)} questions in exam order — ${_planListJoin(facts.planned)} —`
+            // v7.20.705: "all two questions" read wrong on Edexcel IGCSE P2 — two is "both", one is "your question".
+            const _plannedN = facts.planned.length;
+            const _plannedLead = _plannedN === 1 ? 'your question' : _plannedN === 2 ? 'both questions' : `all ${_planCountWord(_plannedN)} questions`;
+            const plannedPhrase = _plannedN
+                ? `plan ${_plannedLead} in exam order — ${_planListJoin(facts.planned)} —`
                 : 'plan your questions in exam order —';
             const unNote = _planUntrainedNote(facts);
             // v7.20.208: paper name + prediction count are DERIVED (P1 = one source → two
@@ -4290,7 +4293,9 @@
             // shakespeare/moderntext).
             // Edexcel IGCSE (v7.20.704, #722 B2 step 1.6): Paper 2's planning carries steps/b-ladder.md + filing in steps/.
             // Paper 1 joins with its planning monolith (step 5) — a ladder with no module is the silent-broken sibling.
-            if (_board === 'edexcel-igcse') {
+            // v7.20.705: board normalised like _planPreChainActive / _ladderPaperKey — prod lessons carry BOTH
+            // 'edexcel-igcse' and 'edexcel_igcse'; an underscore planning lesson would get the chain with a silently dormant ladder.
+            if (_board.replace(/_/g, '-') === 'edexcel-igcse') {
                 return typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false;
             }
             if (_board === 'eduqas') {
