@@ -9962,6 +9962,169 @@
         } catch (e) { console.warn('WML section strips: skipped —', e && e.message); }
     }
     try { window.WML = window.WML || {}; window.WML.renderAnalyticsReadout = _renderSectionStrips; } catch (_) {}
+
+    // ⭐ v7.20.689 (#655 — Neil, 29 Sep + 5 Oct: *"the analytics section to show up in the students' reports
+    // as well… which text they're doing, the exam board, the topic… when the assessment was completed… the
+    // phase"*). The REPORT OVERVIEW — one object per assessment attempt, sent with the phase commit
+    // (contract: ~/.claude/handoffs/open/wml-to-dashboard-INSTANT-REPORT-assessment-overview-2026-09-29.md).
+    // Built from the SAME data functions the collapsed cards draw from (_saWalkRows, _saCalibrationData,
+    // _analyticsReadoutModel, _calibGroups, _getPredicted / _gapRatingPredFor + _calibVerdict, _qHistCompare),
+    // so the parent's report can never disagree with the student's own cards. LAW: a value that cannot be
+    // resolved is OMITTED, never 0 and never a prettified slug (§14). `complete` = the chat has reached the
+    // closing [ASSESSMENT_COMPLETE] turn — so a reopened finished doc re-sends the full overview (backfill).
+    function _overviewFromDoc(totalMarks, maxTotal, gradeVal) {
+        try {
+            const ed = document.getElementById('swml-tiptap-editor');
+            if (!ed || !(maxTotal > 0)) return null;
+            const r2 = (n) => Math.round(n * 100) / 100;
+            const clip = (t, n) => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : t; };
+            const subj = String(state.subject || '').toLowerCase();
+            const isLang = typeof isLanguageSubject === 'function' && isLanguageSubject();
+
+            const labels = {};
+            const board = (WML.BOARD_NAMES || {})[String(state.board || '').toLowerCase()];
+            if (board) labels.board = board;
+            if (isLang) {
+                const pn = (/(?:^|_|p|paper)([12])$/.exec(subj) || /paper_?([12])/.exec(String(state.text || '')) || [])[1];
+                if (pn) labels.paper = (String(state.board) === 'edexcel-igcse' ? 'English Language A, Paper ' : 'English Language Paper ') + pn;
+            } else {
+                // The text's name only from the real catalogue — getTextLabel's slug fallback is not a name.
+                try {
+                    const cat = WML.TEXT_CATALOGUE || {};
+                    Object.keys(cat).some((k) => {
+                        const hit = ((cat[k] && cat[k].texts) || []).find((t) => t && t.id === state.text);
+                        if (hit && hit.label) { labels.text = hit.label; return true; }
+                        return false;
+                    });
+                } catch (_) {}
+            }
+            if (state.topicNumber) labels.topic = 'Topic ' + state.topicNumber;
+            labels.phase = ((state.phase === 'redraft') || (state.task === 'redraft_assessment')) ? 'Redraft' : 'Diagnostic';
+
+            const ov = {
+                v: 2,
+                labels: labels,
+                total: { earned: r2(totalMarks), available: maxTotal, grade: String(gradeVal || '') },
+                questions: [],
+                complete: _calibStageOpen(),
+            };
+            if (ov.complete) ov.completed_at = new Date().toISOString();
+
+            // Self-Assessment card: average rating + calibration (=== the 'Self-Assessment' strip).
+            const saRows = _saWalkRows().filter((r) => r.value != null);
+            if (saRows.length) {
+                const avg = saRows.reduce((s, r) => s + r.value, 0) / saRows.length;
+                const sa = { avg: Math.round(avg * 10) / 10, out_of: 5, pct: Math.round((avg / 5) * 100) };
+                const c = _saCalibrationData();
+                if (c) { sa.scored_pct = c.actPct; sa.calibration = c.verdict; }
+                ov.self_assessment = sa;
+            } else ov.self_assessment = null;
+
+            // Mark-Scheme Self-Assessment card: the student's own level + mark per scheme row.
+            try {
+                const keys = _ladderSchemeKeysFor();
+                const rows = [];
+                keys.forEach((k) => {
+                    const f = _ladderFids(k.key);
+                    const lvl = _ladderRowText(f.level).split(' · ').slice(0, 2).join(' · ');
+                    const mk = /(\d+(?:\.\d+)?)/.exec(_ladderRowText(f.mark));
+                    if (!lvl && !mk) return;
+                    const row = { label: k.ao || k.q || '', available: k.max };
+                    if (lvl) row.level = lvl;
+                    if (mk) row.mark = parseFloat(mk[1]);
+                    rows.push(row);
+                });
+                if (rows.length) {
+                    ov.mark_scheme = { rows: rows };
+                    const conf = _ladderRowText('sa-ms-confidence');
+                    if (conf) ov.mark_scheme.confidence = conf;
+                }
+            } catch (_) {}
+
+            // Calibration card: the student's own mark vs Sophia's (=== the 'Calibration' strip).
+            try {
+                const cal = _calibGroups().filter((x) => x.mineNum !== null && x.actual).map((x) => {
+                    const d = x.mineNum - x.actual.mark, tol = _toleranceFor(x.max);
+                    return { label: (x.q ? x.q + ' ' : '') + (x.ao || ''), mine: x.mineNum, sophia: x.actual.mark, available: x.max,
+                        verdict: Math.abs(d) <= tol ? 'calibrated' : (d > 0 ? 'marked higher' : 'marked lower') };
+                });
+                if (cal.length) ov.calibration = cal;
+            } catch (_) {}
+
+            // Every Feedback card's line: marks · predicted (or Literature's rating-as-a-mark) · previous.
+            ed.querySelectorAll('[data-section-type="feedback"]').forEach((section) => {
+                const label = section.getAttribute('data-section-label') || '';
+                const m = label.match(/^(.*?Feedback:\s*.+?)\s*\((—|\d+(?:\.\d+)?)\s*\/\s*(\d+)\)$/);
+                if (!m) return;                                   // Overall Feedback / Analytics → below
+                const base = m[1].trim(), max = parseInt(m[3], 10);
+                const q = { label: base.replace(/^.*?Feedback:\s*/, ''), available: max };
+                if (m[2] !== '—') q.earned = parseFloat(m[2]);    // unmarked → omitted, never 0
+                try {
+                    const key = _paraKey(base);
+                    let pred = key ? _getPredicted(key) : null;
+                    if (pred == null && key && _ladderIsLit()) {
+                        const rp = _gapRatingPredFor(base, max);
+                        if (rp != null) q.rating = rp;            // Literature: the student's ratings, as a mark
+                    }
+                    if (pred != null) q.predicted = pred;
+                    const p = pred != null ? pred : q.rating;
+                    if (p != null && q.earned != null) {
+                        const v = _calibVerdict(p, q.earned, max);
+                        q.prediction = v.verdict === 'accurate' ? 'examiner-accurate' : (v.verdict === 'slightly' ? 'slightly off' : 'recalibrate');
+                    }
+                    if (_qHist.status === 'ready') {               // not loaded → absent, never guessed
+                        const h = _qHistCompare(_qHist.attempts, _qHistCurrent(), _fbHistKey(base), max, _fbHistKey);
+                        if (h.prev) q.previous = { earned: h.prev.mark, source: _qHistLabel(h.prev) };
+                    }
+                } catch (_) {}
+                ov.questions.push(q);
+            });
+
+            // Overall Feedback: the section's own text (absent while it still shows its placeholder).
+            try {
+                const sec = ed.querySelector('[data-section-type="feedback"][data-section-label="Overall Feedback"] .swml-section-content');
+                const t = clip(sec ? sec.textContent : '', 2000);
+                if (t && !/will appear here once your assessment is complete/i.test(t)) ov.overall_feedback = t;
+            } catch (_) {}
+
+            // Analytics card (=== the Analytics strip) + its filed fields.
+            const ana = _analyticsReadoutModel();
+            if (ana) {
+                const a = { strongest: { label: ana.strength.label, earned: ana.strength.score, available: ana.strength.max } };
+                if (ana.strength.ao) a.strongest.ao = ana.strength.ao;
+                a.most_lost = ana.missed.map((x) => ({ label: x.label, ao: x.ao || undefined, earned: x.score, available: x.max, lost: x.lost }));
+                if (ana.blindSpot) a.blind_spot = { label: ana.blindSpot.label, rated_pct: ana.blindSpot.selfPct, scored_pct: ana.blindSpot.actualPct };
+                const fields = {};
+                [['top_missed', 'analytics-top-missed'], ['optouts', 'analytics-optouts'], ['repeated_errors', 'analytics-repeated-errors'],
+                 ['improvements', 'analytics-improvements'], ['challenges', 'analytics-challenges']].forEach(([k, fid]) => {
+                    const t = clip(_ladderRowText(fid), 1000); if (t) fields[k] = t;
+                });
+                if (Object.keys(fields).length) a.fields = fields;
+                ov.analytics = a;
+            }
+            const plan = {};
+            [['grade_goal', 'action-grade-goal'], ['priorities', 'action-priorities'], ['short_term', 'action-short-term']].forEach(([k, fid]) => {
+                const t = clip(_ladderRowText(fid), 1000); if (t) plan[k] = t;
+            });
+            if (Object.keys(plan).length) ov.action_plan = plan;
+            return ov;
+        } catch (e) {
+            console.warn('WML overview: build failed —', e && e.message);
+            return null;
+        }
+    }
+    // The re-send at the closing turn lives in the canvas closure (the commit's payload is there) — module
+    // scope reaches it through this hook (the .898 lesson: closure-locals are never referenced across scopes).
+    let _resendReportOverviewHook = null;
+    try { window.WML = window.WML || {}; window.WML.reportOverview = () => { const r = _rankMarkedAreas(); let t = 0, m = 0; (r && r.ranked || []).forEach(a => { t += a.score; m += a.max; }); return _overviewFromDoc(t, m, _deterministicDocGrade()); }; } catch (_) {}   // read-only — the probe + support read the payload the report receives
+    function _maybeSendReportOverview(reply) {
+        try {
+            if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return;
+            if (state.reviewMode) return;
+            if (!/\[ASSESSMENT_COMPLETE\]/i.test(reply || '')) return;   // closing turn only
+            if (typeof _resendReportOverviewHook === 'function') _resendReportOverviewHook();
+        } catch (e) { console.warn('WML overview: closing re-send skipped —', e && e.message); }
+    }
     // ⭐ v7.20.684 (#692 — Neil, 4 Oct, Actions page: "Move each paragraph's check into that paragraph's
     // Feedback? → Yes"). Each Literature Feedback card shows, under Sophia's marks, the student's check on
     // that paragraph: the biggest gap and what they said about it. A DERIVED footer (the sign-off-footer /
@@ -20331,6 +20494,7 @@
                             // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
+                            setTimeout(() => _maybeSendReportOverview(_r), 1500);   // v7.20.689 (#655) — full report overview at the closing turn
                             setTimeout(() => _maybeOpenCalibration(_r), 1600);   // v7.20.614 — step 6 opens on the closing turn
                             setTimeout(() => _gapCheckNoGate(_r), 1650);   // v7.20.674 (#686) — a marking reply that lost its gate still gets the check
                             // v7.19.854: engine-owned closing chain — after section fills settle
@@ -43396,6 +43560,7 @@
                                             // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
                                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
+                            setTimeout(() => _maybeSendReportOverview(_r), 1500);   // v7.20.689 (#655) — full report overview at the closing turn
                             setTimeout(() => _maybeOpenCalibration(_r), 1600);   // v7.20.614 — step 6 opens on the closing turn
                             setTimeout(() => _gapCheckNoGate(_r), 1650);   // v7.20.674 (#686) — a marking reply that lost its gate still gets the check
                                             // v7.19.854: engine-owned closing chain — after section fills settle
@@ -53014,8 +53179,13 @@
                 // commit exactly as it was, so this can never regress the grade write.
                 const _bd = _breakdownFromDoc(totalMarks, maxTotal);
                 if (_bd) payload.breakdown = _bd;
+                // v7.20.689 (#655): the report overview rides the same commit. Additive — null leaves the
+                // commit exactly as it was (never risks the grade write).
+                const _ov = _overviewFromDoc(totalMarks, maxTotal, gradeVal);
+                if (_ov) payload.overview = _ov;
                 const res = await apiPost(API.phaseComplete, payload);
                 if (res && res.success) {
+                    state._phaseCommitPayload = payload;   // v7.20.689: the closing-turn re-send repeats these values
                     state._phaseCommitted = true;
                     state._phaseMarkedComplete = true;
                     try { WML.markSessionFinished(); } catch (_) {}   // v7.20.637: the gate's "this attempt finished"
@@ -53029,6 +53199,23 @@
                 state._phaseCommitting = false;
             }
         }
+        // v7.20.689 (#655): at the closing [ASSESSMENT_COMPLETE] turn the Overall Feedback, Analytics and Action
+        // Plan exist — re-send the SAME grade/total (complete_phase's idempotent same-attempt path, never a new
+        // attempt row) with the full overview. Bound per canvas mount; module scope calls it via the hook.
+        _resendReportOverviewHook = async () => {
+            const prev = state._phaseCommitPayload;
+            if (!state._phaseCommitted || !prev || state._phaseOverviewResent) return;
+            const tm = /^\s*([\d.]+)\s*\/\s*(\d+)/.exec(String(prev.total_score || ''));
+            if (!tm) return;
+            const ov = _overviewFromDoc(parseFloat(tm[1]), parseInt(tm[2], 10), prev.grade);
+            if (!ov || !ov.complete) return;
+            state._phaseOverviewResent = true;
+            try {
+                const res = await apiPost(API.phaseComplete, Object.assign({}, prev, { overview: ov }));
+                if (res && res.success) console.log('WML overview: full report overview sent at the closing turn (attempt ' + (res.attempt || prev.attempt_number) + ')');
+                else { state._phaseOverviewResent = false; console.warn('WML overview: closing re-send failed', res); }
+            } catch (e) { state._phaseOverviewResent = false; console.warn('WML overview: closing re-send error', e && e.message); }
+        };
 
         function recalculateScoreSummary() {
             const editor = document.getElementById('swml-tiptap-editor');

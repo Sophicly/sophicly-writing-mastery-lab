@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.688';
+var WML_BUILD = '7.20.689';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -537,6 +537,13 @@ window.WML = (function() {
         'edexcel-igcse': [
             { id: 'igcse_lang_nonfiction', label: 'Part 1 — Language Non-Fiction', icon: '📰' },
         ],
+    };
+
+    // ── Exam boards as a person reads them (root CLAUDE.md §14 — never show a board slug) ──
+    // v7.20.689 (#655): first consumer = the report overview; #720 (doc headers) reuses it.
+    const BOARD_NAMES = {
+        'aqa': 'AQA', 'edexcel': 'Edexcel', 'edexcel-igcse': 'Edexcel IGCSE', 'eduqas': 'Eduqas',
+        'ocr': 'OCR', 'cambridge-igcse': 'Cambridge IGCSE', 'ccea': 'CCEA', 'sqa': 'SQA',
     };
 
     // ── Papers whose course text is the PAPER but whose anthology is MIXED (poems + prose) ──
@@ -5892,7 +5899,7 @@ window.WML = (function() {
         state,
         // Data maps
         TEXT_CATALOGUE, POETRY_ANTHOLOGY_BY_BOARD, PROSE_ANTHOLOGY_BY_BOARD,
-        NONFICTION_ANTHOLOGY_BY_BOARD, BOARD_TEXT_FILTER, AUTHOR_MAP, SECTION_COLOURS, getTextLabel, isSkipTextSelect,
+        NONFICTION_ANTHOLOGY_BY_BOARD, BOARD_NAMES, BOARD_TEXT_FILTER, AUTHOR_MAP, SECTION_COLOURS, getTextLabel, isSkipTextSelect,
         // Step arrays
         PLAN_STEPS, ASSESSMENT_STEPS, POLISHING_STEPS, QUOTE_ANALYSIS_STEPS,
         CONCEPTUAL_NOTES_STEPS, POETRY_CN_STEPS, POETRY_CN_SPINE, POETRY_CN_OPENERS, NONFICTION_CN_STEPS,

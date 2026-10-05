@@ -5473,6 +5473,47 @@ class SWML_REST_API {
         return ['success' => true, 'attempt' => $target_n, 'questions' => count($rows)];
     }
 
+    /**
+     * v7.20.689 (#655): whitelist + sanitise the client's report overview. Unknown top-level keys are dropped,
+     * strings become plain text (capped), numbers stay numbers, nesting depth and list length are bounded — a
+     * malformed payload can never bloat the row or carry markup into the parent's report. null = nothing sent.
+     */
+    private static function sanitize_overview($ov) {
+        if (!is_array($ov) || empty($ov)) return null;
+        $allowed = ['v', 'labels', 'completed_at', 'total', 'self_assessment', 'mark_scheme', 'calibration',
+                    'questions', 'overall_feedback', 'analytics', 'action_plan', 'complete'];
+        $clean = function ($v, $depth) use (&$clean) {
+            if ($depth > 5) return null;
+            if (is_bool($v)) return $v;
+            if (is_int($v) || is_float($v)) return is_finite((float) $v) ? $v + 0 : null;
+            if (is_string($v)) {
+                $t = sanitize_textarea_field($v);
+                return function_exists('mb_substr') ? mb_substr($t, 0, 2000) : substr($t, 0, 2000);
+            }
+            if (is_array($v)) {
+                $out = [];
+                $n = 0;
+                foreach ($v as $k => $item) {
+                    if (++$n > 40) break;
+                    $c = $clean($item, $depth + 1);
+                    if ($c === null || $c === '' || $c === []) continue;
+                    if (is_int($k)) $out[] = $c; else $out[sanitize_key($k)] = $c;
+                }
+                return $out;
+            }
+            return null;
+        };
+        $out = [];
+        foreach ($allowed as $k) {
+            if (!array_key_exists($k, $ov)) continue;
+            $c = $clean($ov[$k], 1);
+            if ($c !== null && $c !== '' && $c !== []) $out[$k] = $c;
+        }
+        // The contract's one meaningful null: a paper with no self-assessment walk says so explicitly.
+        if (array_key_exists('self_assessment', $ov) && $ov['self_assessment'] === null) $out['self_assessment'] = null;
+        return isset($out['total']) ? $out : null;
+    }
+
     public function complete_phase($request) {
         $user_id = get_current_user_id();
         $params  = $request->get_json_params();
@@ -5591,6 +5632,16 @@ class SWML_REST_API {
 
         // v7.17.36: stamp lesson_url for student-data derivation listener.
         $data['lesson_url'] = esc_url_raw($params['lesson_url'] ?? '');
+
+        // v7.20.689 (FIXLIST #655): the report overview (board · paper/text · topic · phase · completion date ·
+        // every card's overview · overall feedback · analytics) for the dashboard's student report. Passed to
+        // the listener only — the phase record stored above stays exactly as it was. Contract (v2):
+        // ~/.claude/handoffs/open/wml-to-dashboard-INSTANT-REPORT-assessment-overview-2026-09-29.md
+        $overview = self::sanitize_overview($params['overview'] ?? null);
+        if ($overview) {
+            $overview['completed_at_server'] = $data['completed_at'];
+            $data['overview'] = $overview;
+        }
 
         // Fire action for external integrations (student-data plugin, LearnDash bridge)
         // v7.15.44: Attempt number now lives inside $data; listeners that care can read $data['attempt']
