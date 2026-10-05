@@ -67819,6 +67819,11 @@
      */
     function _healP2Q4ComparativePlan() {
         if (!canvasEditor || !_planPreChainActive()) return;
+        // v7.20.711: AQA Paper 2 ONLY — its Q4 is the comparison. Edexcel IGCSE Paper 1 joined _planPreChainActive at
+        // v7.20.710 and its Q4 is single-text analysis (plan-Q4-para-1..3, the planning monolith files them); this heal
+        // rewrote those three boxes into a comparative intro/bodies/conclusion on every load (measured on staging 59205:
+        // "Plan: Introduction — Q4 · Comparative Body 1–3 — Q4 · Conclusion — Q4").
+        if (String(state.board || '').toLowerCase().replace(/_/g, '-') !== 'aqa' || !_isLangPaper2()) return;
         const html = canvasEditor.getHTML();
         if (html.indexOf('plan-Q4-para-') === -1) return;   // already new shape / no Q4 plan
         if (html.indexOf('plan-Q4-intro') !== -1) return;   // both shapes present — leave alone

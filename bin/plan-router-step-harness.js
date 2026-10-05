@@ -122,6 +122,24 @@ const chainSrc = src;
 ok(/fid = _planIsIgcseP1\(\) \? 'pred-unseen' : 'pred-source-a'/.test(chainSrc), 'P7: the Text One prediction files into IGCSE P1\'s own box (pred-unseen)');
 ok((chainSrc.match(/give \(\?:them\|it\) a quick once-over\/i\.test\(t\)\) pending = 'tidy'/g) || []).length === 2, 'P8: both pipelines detect the singular tidy card ("give it a quick once-over") — byte-pair with the card text');
 
+// H. A WIDENED predicate wakes every consumer — paper-specific ones must check the paper. Measured on staging 59205
+// (v7.20.710): _healP2Q4ComparativePlan (AQA P2's Q4 is the comparison) ran on Edexcel IGCSE P1 once P1 joined
+// _planPreChainActive, and rewrote its three Q4 paragraph boxes into a comparative intro/bodies/conclusion. Sliced and
+// run with a fake editor: IGCSE P1 must be left alone; AQA P2's legacy shape must still be reshaped.
+vm.runInContext(slice(/function _healP2Q4ComparativePlan\(\) \{[\s\S]*?\n    \}/, '_healP2Q4ComparativePlan'), sb);
+let healCalls = 0;
+sb.document = { createElement: () => ({ innerHTML: '' }) };
+sb._swapLegacyQ4Plan = () => { healCalls++; return 0; };
+sb.saveCanvasContent = () => {};
+sb.console = { log() {}, warn() {} };
+sb.canvasEditor = { getHTML: () => '<div data-field-id="plan-Q4-para-1"></div><div data-field-id="plan-Q4-para-2"></div>', commands: { setContent() {} } };
+sb.state = { task: 'planning', board: 'edexcel-igcse', subject: 'language_p1', step: 1 }; healCalls = 0; sb._healP2Q4ComparativePlan();
+ok(healCalls === 0, 'H1: Edexcel IGCSE P1 (Q4 = single-text analysis) — the AQA P2 comparative Q4 heal never touches its paragraph plan');
+sb.state = { task: 'planning', board: 'aqa', subject: 'language_p2', step: 1 }; healCalls = 0; sb._healP2Q4ComparativePlan();
+ok(healCalls === 1, 'H2: AQA P2 legacy Q4 paragraph plan → still reshaped to the comparative plan');
+sb.state = { task: 'planning', board: 'aqa', subject: 'language_p1', step: 1 }; healCalls = 0; sb._healP2Q4ComparativePlan();
+ok(healCalls === 0, 'H3: AQA P1 (Q4 = evaluation) → untouched');
+
 console.log(`— PLAN ROUTER STEP: ${passed}/${passed + failed} assertions passed.`);
 if (failed) { console.log('\n❌ plan-router-step-harness FAILED'); process.exit(1); }
 console.log('✅ plan-router-step-harness passed (the router is sent the step the model reported, never a sidebar row number).');
