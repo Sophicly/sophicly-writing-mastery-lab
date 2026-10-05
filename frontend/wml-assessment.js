@@ -17189,7 +17189,10 @@
     }
     // r = { verdict: 'complete'|'incomplete'|'unknown', family, exempt, sessionFinished, unmarked[] }
     // → { block, record, why } — `record` is what the gate's log should say (null = nothing to say).
-    function mcGateDecide(r, mode) {
+    // `families` (v7.20.714, Neil 2026-10-05: "Assessments now, writing lessons after item 13") = the families the SITE
+    // enforces today (wp option swml_mc_gate_families, delivered as swmlEmbedConfig.mcGate.families). It can only NARROW
+    // the measured set; omitted = every measured family (the saved verdict uses that — the server narrows it again).
+    function mcGateDecide(r, mode, families) {
         const m = (mode === 'enforce' || mode === 'watch') ? mode : 'off';
         if (m === 'off' || !r) return { block: false, record: null, why: 'off' };
         const quietPass = m === 'watch' ? 'pass' : null;   // watch records every click — the base rate
@@ -17210,7 +17213,8 @@
             would = true; why = 'incomplete';
         }
         if (!would) return { block: false, record: record, why: why };
-        const eligible = MC_GATE_ENFORCE_FAMILIES.indexOf(r.family) !== -1;
+        const fams = Array.isArray(families) ? families.filter(x => MC_GATE_ENFORCE_FAMILIES.indexOf(x) !== -1) : MC_GATE_ENFORCE_FAMILIES;
+        const eligible = fams.indexOf(r.family) !== -1;
         if (m === 'enforce' && eligible) return { block: true, record: 'blocked', why: why };
         return { block: false, record: 'would_block', why: why + (eligible ? '' : ' · family is watch-only') };
     }
@@ -17219,6 +17223,11 @@
     function _mcGateCfg() {
         const c = window.swmlEmbedConfig && window.swmlEmbedConfig.mcGate;
         return (c && typeof c === 'object') ? c : {};
+    }
+    // v7.20.714: the families the site enforces today; undefined (no config) = every measured family.
+    function _mcGateFamilies() {
+        const f = _mcGateCfg().families;
+        return Array.isArray(f) ? f : undefined;
     }
     // No config (older server, standalone lab page) = 'off' — today's behaviour (safeguard 2).
     function _mcGateMode() {
@@ -17447,7 +17456,7 @@
             const mode = _mcGateMode();
             if (mode === 'off') return 'proceed';
             reading = _mcGateReading();
-            const decision = mcGateDecide(reading, mode);
+            const decision = mcGateDecide(reading, mode, _mcGateFamilies());
             if (decision.record) _mcGateRecord(decision.record, reading, decision, 'click');
             if (decision.block) {
                 await _mcGateShow(reading);
@@ -17476,7 +17485,7 @@
             const tick = () => {
                 const r = _mcGateReading();
                 if (r.verdict === 'unknown' && ++tries < 20) { setTimeout(tick, 500); return; }
-                const d = mcGateDecide(r, 'enforce');
+                const d = mcGateDecide(r, 'enforce', _mcGateFamilies());
                 if (d.block) _mcGateShow(r);
             };
             setTimeout(tick, 800);

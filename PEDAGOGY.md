@@ -2762,3 +2762,32 @@ same price per token, 5 marks stricter on one Paper 1 essay. Sonnet 5.5 can decl
 on benign work and Anthropic's own fallback does not retry it), and literature essays are about murder and war — so
 v7.20.684 re-sends a declined request once on Sonnet 5 and logs the category (`retry_anthropic_refusal`). A decline must
 never leave a student without marking.
+
+## §51. ⭐⭐ THE RULINGS OF 5 OCTOBER 2026 — from Neil's own taps on the WML Actions page (v27, copied back into WML 324 A)
+
+Recorded here in the same session, as §0 requires. Each line is his tap; a quoted note is his own words.
+
+1. **Mark Complete enforcement — "Assessments now, writing lessons after item 13."** (card 14) The gate blocks an
+   unfinished ASSESSMENT now. Writing lessons (the diagnostic write, CW steps) stay watch-only until item 2 below is
+   built and measured. Mechanism (v7.20.714): wp option `swml_mc_gate_families` names the families the site
+   enforces; it can only narrow the measured set (cw · diagnostic · assessment, §40).
+2. **A writing lesson's Predictions and Keywords boxes COUNT towards Mark Complete.** (card 13: "Yes, they count")
+   Build before writing lessons are enforced.
+3. **Mastery in the Foundational Quizzes = 100% at least ONCE.** (card 5, his note: *"I don't think it is correct
+   to make students score 100% over 2 rounds of the same quiz; we need them to hit 100% at least once."*)
+4. **AQA Paper 1 Question 5 — we only teach STORIES.** (card 7, his note: *"We only teach stories"*) No
+   description plan, no description branch in marking or polishing.
+5. **AQA Paper 1 Question 5 — first-attempt notes go in a separate "First attempt" box.** (card 8)
+6. **AQA Paper 1 Question 1 — switch to the 2026 multiple-choice format.** (card 9)
+7. **Retire the old chatbot lessons — add ours and retire the old ones.** (card 10)
+8. **Edexcel IGCSE Paper 1 Question 5 — the plan MUST compare the writers' purposes.** (card 11: "Required";
+   already built in v7.20.710.)
+9. **Rewrite all 155 quiz banks, IGCSE poetry first.** (card 4) His note on the two sample questions (card 6):
+   *"It looks good but does it align with research? also, it seems like more than one answer is plausible"* —
+   the shape is not ruled until both are answered: check the question-writing research, and every rewritten item
+   must have exactly ONE defensible answer.
+10. **The rest of the protocol work — "Go ahead."** (card 12) His note: *"Polishing always comes after assessment
+    and planning for everything; the creative writing course and Grade 9 core skills course have their own
+    sequence."* — the lesson order is Assessment → Planning → … → Polishing everywhere except those two courses.
+11. **Open (no answer yet):** card 3 — his note: *"The anthology has both poetry and prose; we will have to make a
+    new document that has both, don't you think?"* — the Edexcel IGCSE Paper 2 anthology lesson's quiz.

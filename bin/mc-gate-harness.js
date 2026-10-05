@@ -100,6 +100,28 @@ ok(d.block === false && d.record === 'would_block', 'an unmeasured family (plann
 d = decide(null, 'enforce');
 ok(d.block === false, 'no reading at all → through');
 
+console.log('\n3b. the site enforces only the families switched on (v7.20.714 — Neil: "Assessments now, writing lessons after item 13")');
+const ON = ['assessment'];
+d = decide(annaya, 'enforce', ON);
+ok(d.block === true && d.record === 'blocked', 'assessments switched on → an unfinished assessment is STOPPED', JSON.stringify(d));
+d = decide({ verdict: 'incomplete', family: 'diagnostic', exempt: '' }, 'enforce', ON);
+ok(d.block === false && d.record === 'would_block' && /watch-only/.test(d.why), 'a writing lesson (diagnostic) under 100% is NOT stopped yet — recorded as would-block', JSON.stringify(d));
+d = decide({ verdict: 'incomplete', family: 'cw', exempt: '' }, 'enforce', ON);
+ok(d.block === false && d.record === 'would_block', 'a CW step under 100% is NOT stopped yet', JSON.stringify(d));
+d = decide({ verdict: 'incomplete', family: 'other:planning', exempt: '' }, 'enforce', ['other:planning', 'assessment']);
+ok(d.block === false, 'the option can only NARROW the measured set — an unmeasured family named in it is still never enforced', JSON.stringify(d));
+d = decide({ verdict: 'incomplete', family: 'diagnostic', exempt: '' }, 'enforce');
+ok(d.block === true, 'no option (undefined) = every measured family, exactly as before', JSON.stringify(d));
+{
+    const php = fs.readFileSync(path.join(__dirname, '..', 'sophicly-writing-mastery-lab.php'), 'utf8');
+    ok(/public static function mc_gate_families\(\)[\s\S]{0,700}array_intersect\(\$measured/.test(php), 'the server reads swml_mc_gate_families and can only narrow the measured set');
+    ok(/\$fam_on = in_array\([^;]*self::mc_gate_families\(\), true\);/.test(php) && /if \(\$mode !== 'enforce' \|\| !\$fam_on\) return \$process;/.test(php),
+        'the server refuses ONLY an enforced family — a saved block for a writing lesson cannot stop anyone yet');
+    ok(/'families' => self::mc_gate_families\(\)/.test(php), 'the page is told which families are enforced (swmlEmbedConfig.mcGate.families)');
+    const js = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'wml-assessment.js'), 'utf8');
+    ok(/mcGateDecide\(reading, mode, _mcGateFamilies\(\)\)/.test(js) && /mcGateDecide\(r, 'enforce', _mcGateFamilies\(\)\)/.test(js), 'both click-time decisions use the enforced families');
+}
+
 console.log('\n4. modes');
 d = decide(annaya, 'watch');
 ok(d.block === false && d.record === 'would_block', 'WATCH: Annaya is let through and recorded as would-block', JSON.stringify(d));
@@ -180,7 +202,7 @@ if (filt) {
     ok(/empty\(\$rec\['block'\]\)\) return \$process;/.test(f), 'no stored verdict, or a non-blocking one → through');
     ok(/wp_verify_nonce\(substr\(\$vouch, 5\)/.test(f), 'a click the page vouched for is never second-guessed');
     ok(/current_user_can\('manage_options'\)\) return \$process;/.test(f), 'staff are never gated');
-    ok(/if \(\$mode !== 'enforce'\) return \$process;/.test(f), 'watch mode records only');
+    ok(/if \(\$mode !== 'enforce'(?: \|\| !\$fam_on)?\) return \$process;/.test(f), 'watch mode records only (v7.20.714: and a family not switched on is only recorded)');
     // MEASURED on staging 2026-09-23: student-data's bridge completes a FINISHED assessment's lesson
     // programmatically (swml_phase_complete → learndash_process_mark_complete). Gating that refused a
     // finished student on a stale verdict. Only the student's own Mark Complete POST is gated.

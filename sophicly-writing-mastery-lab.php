@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.713
+ * Version: 7.20.714
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.713');
+define('SWML_VERSION', '7.20.714');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -209,6 +209,20 @@ class Sophicly_Writing_Mastery_Lab {
     }
 
     /**
+     * v7.20.714 (Neil, 2026-10-05, Actions card 14: "Assessments now, writing lessons after item 13") — the document
+     * families the site ENFORCES today. wp option swml_mc_gate_families (comma list or array); it can only NARROW the
+     * measured set (cw · diagnostic · assessment, wml-assessment.js MC_GATE_ENFORCE_FAMILIES). Unset = all three.
+     * Switch with WP-CLI, no deploy: `wp option update swml_mc_gate_families assessment`.
+     */
+    public static function mc_gate_families() {
+        $measured = ['cw', 'diagnostic', 'assessment'];
+        $o = get_option('swml_mc_gate_families', '');
+        $list = is_array($o) ? $o : array_filter(array_map('trim', explode(',', (string) $o)));
+        if (!$list) return $measured;
+        return array_values(array_intersect($measured, array_map('sanitize_key', $list)));
+    }
+
+    /**
      * v7.20.634 (#588) — LearnDash asks whether to record a completion. The RULE lives once, in
      * wml-assessment.js (mcGateDecide); the page saves its verdict with the document
      * (user meta swml_docprog_{post}) and this only reads it. Fail-open everywhere: no record, a
@@ -243,15 +257,17 @@ class Sophicly_Writing_Mastery_Lab {
             if (!class_exists('SWML_REST_API')) return $process;
             $rec = SWML_REST_API::mc_gate_doc_progress($student_id, $post->ID);
             if (!$rec || empty($rec['block'])) return $process;
+            // v7.20.714: the saved verdict blocks for every measured family; the site enforces only the ones switched on.
+            $fam_on = in_array((string) ($rec['family'] ?? ''), self::mc_gate_families(), true);
             SWML_REST_API::mc_gate_append_log($student_id, [
                 'at'       => current_time('c'),
-                'kind'     => $mode === 'enforce' ? 'blocked' : 'would_block',
+                'kind'     => ($mode === 'enforce' && $fam_on) ? 'blocked' : 'would_block',
                 'where'    => 'server',
                 'mode'     => $mode,
                 'post_id'  => (int) $post->ID,
                 'task'     => (string) ($rec['task'] ?? ''),
                 'family'   => (string) ($rec['family'] ?? ''),
-                'why'      => 'server: ' . (string) ($rec['why'] ?? ''),
+                'why'      => 'server: ' . (string) ($rec['why'] ?? '') . ($fam_on ? '' : ' · family not enforced'),
                 'done'     => (int) ($rec['done'] ?? 0),
                 'total'    => (int) ($rec['total'] ?? 0),
                 'pct'      => (int) ($rec['pct'] ?? 0),
@@ -259,7 +275,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'unmarked' => (array) ($rec['unmarked'] ?? []),
                 'version'  => SWML_VERSION,
             ]);
-            if ($mode !== 'enforce') return $process;
+            if ($mode !== 'enforce' || !$fam_on) return $process;
             set_transient('swml_mc_refused_' . $student_id . '_' . $post->ID, 1, 5 * MINUTE_IN_SECONDS);
             return false;
         } catch (\Throwable $e) {
@@ -1149,6 +1165,7 @@ class Sophicly_Writing_Mastery_Lab {
         }
         $embed_config['mcGate'] = [
             'mode'    => self::mc_gate_mode(),
+            'families' => self::mc_gate_families(),   // v7.20.714: the families enforced today
             'refused' => $mc_refused,
             'nonce'   => ($mc_uid && $post_id) ? wp_create_nonce('swml_mc_gate_' . $mc_uid . '_' . $post_id) : '',
         ];
