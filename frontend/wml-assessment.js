@@ -67866,6 +67866,30 @@
             // v7.20.53: chain truth when available — raw fields tick from a PREVIOUS
             // run's answers (doc survives chat clears; Neil's jump-to-Q2 repro).
             add('Predictions', 'Setup', histAvailable ? stageIdx >= L : predsFiled);
+        } else if (_planPreChainActive()) {
+            // v7.20.708 (canvas rule 5b): the chain's own stages get rows whenever the chain RUNS — the block above is
+            // keyed on AQA's predictions box, so Edexcel IGCSE P2 (Question Focus, no predictions) and AQA P2's
+            // writing-only topics drew no Setup rows at all. With no prediction stage the chain ENDS on plan mode, which
+            // the +2 rule above cannot express, so each row here is done when its ask has been ANSWERED: the first
+            // assistant turn carrying the ask (the strings _planPreChainStageFor detects) followed by a student turn.
+            let _h0 = null;
+            try { _h0 = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null; } catch (_) { /* rows stay pending */ }
+            const _hh = _h0 || [];
+            const _answered = (re) => {
+                const k = _hh.findIndex(m => m.role === 'assistant' && re.test(_planChainNorm(m.content)));
+                return k !== -1 && _hh.some((m, i) => i > k && m.role === 'user');
+            };
+            add('Grade goal', 'Setup', _answered(/what grade are you aiming for/i));
+            if (_planChainOrder().indexOf('reflect') !== -1 && host.querySelector('[data-field-id="reflect-recall"]')) add('Reflect on last attempt', 'Setup', _answered(/when you sat this paper last time/i));
+            add('Headline goal', 'Setup', _answered(/headline goal/i));
+            add('Plan mode', 'Setup', _answered(/condense your plans/i));
+            // B.2A Question Focus (Edexcel IGCSE P2): done when the kw-focus filing is in this run's history — the model's
+            // marker or the v7.20.706 save heal's. The box's text is the no-history fallback only (it survives chat clears).
+            if (host.querySelector('[data-field-id="kw-focus"]')) {
+                add('Question key words', 'Setup', _h0
+                    ? _hh.some(m => m.role === 'assistant' && /@FIELD_SET\s*\{[^}]*"field"\s*:\s*"kw-focus"/.test(String(m.content || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_')))
+                    : !!fieldText('kw-focus'));
+            }
         }
         // v7.20.256: poetry Setup rows — the programmatic chain's own stages (canvas rule
         // 5b: every code-owned pre-chain capture gets a row). Done-ness derives from the
@@ -67931,7 +67955,16 @@
                         g, !!(committed && fid && committed[fid]));
                 });
             });
-        } else planSecs.forEach(sec => {
+        } else (function () {
+            // v7.20.708: an essay the ladder walks BODIES FIRST (Edexcel IGCSE P2 Q1: B.5 → B.6/B.7 → B.8) lists its rows in
+            // that order, so "current" follows the student instead of parking on Introduction while Body 1 is planned.
+            // Stable sort: question first, then body → intro → conclusion; every other paper keeps document order.
+            if (!(_ladderActive() && (_ladderQuestionOrder() || [])[0] === 'bodies')) return planSecs;
+            const _lbl = (s) => s.getAttribute('data-section-label') || '';
+            const _q = (s) => { const x = /—\s*Q(\d+)\s*$/.exec(_lbl(s)); return x ? +x[1] : 0; };
+            const _rank = (s) => /body/i.test(_lbl(s)) ? 0 : /intro/i.test(_lbl(s)) ? 1 : /conclusion/i.test(_lbl(s)) ? 2 : 3;
+            return Array.from(planSecs).sort((a, b) => (_q(a) - _q(b)) || (_rank(a) - _rank(b)));
+        })().forEach(sec => {
             const raw = (sec.getAttribute('data-section-label') || '').replace(/^Plan:\s*/i, '');
             const m = /—\s*(Q\d+)\s*$/.exec(raw);
             const input = sec.querySelector('[data-field-id]');
