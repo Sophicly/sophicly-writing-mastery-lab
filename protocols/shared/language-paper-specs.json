@@ -34,6 +34,7 @@
       "verified": true,
       "source": "AQA 8700/1 sample mark scheme for the 2026 specification (AQA-8700-1-SMS-2026.pdf, first exam June 2026) + past papers — tariffs gated by protocols/_marks/aqa__language_p1.json",
       "total": 80,
+      "recall_rotation": ["Q4","Q2","Q3","Q5"],
       "time_minutes": 105,
       "aos_descriptions": {
         "AO1": "Identify and interpret explicit and implicit information and ideas. Select and synthesise evidence from different texts.",
@@ -111,6 +112,7 @@
       "verified": true,
       "source": "AQA 8700/2 sample mark scheme for the 2026 specification (AQA-87002-SMS-2026, first exam June 2026) + past papers — tariffs gated by protocols/_marks/aqa__language_p2.json",
       "total": 80,
+      "recall_rotation": ["Q4","Q2","Q3","Q5"],
       "time_minutes": 105,
       "sections": [
         {
@@ -866,6 +868,7 @@
       "verified": true,
       "source": "Edexcel IGCSE 4EA1/01 Spec A + June 2024 past papers",
       "total": 90,
+      "recall_rotation": ["Q5","Q4","Q3","Q6"],
       "time_minutes": 135,
       "aos_descriptions": {
         "AO1": "Read and understand a variety of texts, selecting and interpreting explicit and implicit information and ideas.",
@@ -955,6 +958,7 @@
       "verified": true,
       "source": "Edexcel IGCSE 4EA1/02 Spec A + June 2024 past papers",
       "total": 60,
+      "recall_rotation": ["Q1"],
       "time_minutes": 90,
       "aos_descriptions": {
         "AO1": "Read and understand a variety of texts, selecting and interpreting explicit and implicit information and ideas.",

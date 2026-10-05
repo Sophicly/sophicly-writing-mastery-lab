@@ -7565,11 +7565,17 @@ TEMPLATE;
             // same protocol serves both phases of every practice paper, so attempt-only
             // repeated Q4 across the whole course. MUST stay identical to the frontend's
             // _recallTargetQ (wml-assessment.js).
-            $recall_rotation = ['Q4', 'Q2', 'Q3', 'Q5'];
+            // v7.20.702 (#619): the PAPER's rotation (language-paper-specs.json recall_rotation) — the AQA list named a
+            // Question 4 to Edexcel IGCSE P2 students. Same field and same default as _recallTargetQ (wml-assessment.js).
+            $recall_rotation = ['Q4', 'Q2', 'Q3', 'Q5'];   // RECALL_ROTATION_DEFAULT — must equal the JS default
+            $_rp = self::get_paper_spec($context['board'] ?? $board, $context['subject'] ?? '');
+            if ($_rp && $_rp['kind'] === 'lang' && !empty($_rp['spec']['recall_rotation']) && is_array($_rp['spec']['recall_rotation'])) {
+                $recall_rotation = array_values($_rp['spec']['recall_rotation']);
+            }
             $attempt_n = max(1, (int) preg_replace('/\D/', '', (string) $attempt) ?: 1);
             $topic_n   = max(1, (int) preg_replace('/\D/', '', (string) $topic) ?: 1);
             $redraft_n = (stripos((string) $suffix, 'redraft') !== false || stripos((string) $suffix, 'reassess') !== false) ? 1 : 0;
-            $recall_q = $recall_rotation[($attempt_n - 1 + $topic_n - 1 + $redraft_n) % 4];
+            $recall_q = $recall_rotation[($attempt_n - 1 + $topic_n - 1 + $redraft_n) % count($recall_rotation)];
             $block .= "**Keyword-recall target THIS attempt: {$recall_q}** — the pre-chain's keyword-recall question (2c) asks about {$recall_q} this time (restate THAT question's task/statement), never a different question.\n";
             // v7.19.854 (Neil): family-first leniency flag — CODE-COMPUTED from the
             // student's attempt history across the whole subject family. The protocol's

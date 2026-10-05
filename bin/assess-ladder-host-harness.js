@@ -269,7 +269,9 @@ ok(/there is NO reflection panel in this session/.test(rri) && /Continue now wit
 ok(/_reflectLadderRepaired\[_lk\] = true/.test(rri), '…at most once per question (no loop)');
 ok(/_reflectLadderRepaired = \{\};/.test(JS.slice(JS.indexOf('_reflectDone = {}; _reflectPending = null;'))), 'the once-flag resets with the other reflection state');
 ok(/chatTextarea\.value = _ladderReplacesReflect\(\)\s*\?/.test(JS), 'the ✓-continue directive stops demanding STEP 1 in a ladder session');
-ok(/_ladderReplacesReflect\(\) && \(out\.indexOf\('@FB_BEGIN\{"q":"Q2","para":"1"'\)/.test(JS), 'the penalty ledger resets at the first CARD when there is no first gate');
+// v7.20.702 (#619): the first gated question is the PAPER's (_firstGatedQ — Q2 on AQA, Q4 on IGCSE P1, Q1 on IGCSE P2)
+ok(/_ladderReplacesReflect\(\) && \(out\.indexOf\('@FB_BEGIN\{"q":"' \+ _fq \+ '","para":"1"'\)/.test(JS)
+    && /const _fq = _firstGatedQ\(\);/.test(JS) && /function _firstGatedQ\(\)/.test(JS), 'the penalty ledger resets at the first CARD when there is no first gate (the paper\'s first gated question)');
 ok(/private function ladder_marks_in_history\(\)/.test(ROUTER), 'router: ladder_marks_in_history() (chat-truth, no board literal)');
 ok((ROUTER.match(/\$this->ladder_marks_in_history\(\)/g) || []).length >= 3, 'router: used at the metacog mandate, the setup-phase gate and the per-question reflection directive');
 ok(/NO IN-CHAT REFLECTION IN THIS SESSION/.test(ROUTER) && /\} else \{\s*\n\s*\$preamble \.= "### ⛔ METACOGNITIVE REFLECTION CYCLE/.test(ROUTER), 'router: the three reflection mandates are SKIPPED in a ladder session, not merely contradicted');

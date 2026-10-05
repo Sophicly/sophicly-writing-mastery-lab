@@ -99,6 +99,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/planning-keymatch-harness.js || fail=1
 fi
 
+# v7.20.702: PRE-CHAIN GOAL OPTIONS — the headline-goal list the code asks (both pipelines) must equal each paper's
+# protocol step 2b, with the "Something else" letter the code derives. IGCSE P1 had no list and was shown AQA P1's.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|protocols/(aqa|edexcel-igcse)/language[12]/modules/.*\.md|prechain-goal-gate\.js'; then
+  node bin/prechain-goal-gate.js || fail=1
+fi
+
 # v7.20.699: FRESH-DOC HEAL — a document the builder has just made must need no healing. Runs the shipped
 # _healOutlineScaffold on every language topic (page builder) + every literature essay paper; fails on ANY change
 # it would make. (It caught the heal adding Context rows to no-AO3 papers — IGCSE P2, Eduqas/Edexcel/CCEA lit —

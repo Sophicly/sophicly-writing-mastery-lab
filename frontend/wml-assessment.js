@@ -2989,14 +2989,41 @@
         const attempt = Math.max(1, parseInt(String(state.attempt == null ? '' : state.attempt).replace(/\D/g, ''), 10) || 1);
         const topic = Math.max(1, parseInt(String(state.topicNumber == null ? '' : state.topicNumber).replace(/\D/g, ''), 10) || 1);
         const redraft = (state.task === 'redraft_assessment' || state.phase === 'redraft') ? 1 : 0;
-        return ['Q4', 'Q2', 'Q3', 'Q5'][(attempt - 1 + topic - 1 + redraft) % 4];
+        // v7.20.702 (#619, #722 B2 step 1.5): the questions it rotates over are the PAPER's (language-paper-specs.json
+        // recall_rotation) — the AQA list asked Edexcel IGCSE P2 students about a Question 4 their paper does not have.
+        // The router twin reads the same field; the list below is only the default for a paper without one.
+        const _paper = _langSpecPaper();
+        const rot = (_paper && Array.isArray(_paper.recall_rotation) && _paper.recall_rotation.length) ? _paper.recall_rotation : RECALL_ROTATION_DEFAULT;
+        return rot[(attempt - 1 + topic - 1 + redraft) % rot.length];
     }
+    const RECALL_ROTATION_DEFAULT = ['Q4', 'Q2', 'Q3', 'Q5'];
+    // v7.20.702 (#619): the first question of this paper that carries a reflection gate / first feedback card — the
+    // first that is not lean retrieval or multiple choice. Q2 when the paper has no spec (the old fixed key).
+    function _firstGatedQ() {
+        const p = _langSpecPaper();
+        const q = p && p.sections ? p.sections.flatMap(sec => sec.questions || []).find(x => x.type !== 'retrieval' && x.type !== 'multiple_choice') : null;
+        return q ? q.id : 'Q2';
+    }   // must equal the router's default (bin/prechain-goal-gate.js)
     // Builds { plain, html } for the language pre-chain keyword-recall ask. EVERY
     // variant keeps the literal phrase "key aspects" — the pre-chain stage detector
     // gates on it (askedBy(/key aspects/i)); dropping it would re-ask forever.
     function _recallAskForTarget(qText) {
         const tq = _recallTargetQ();
         const lead = 'Good — noted. One more check before we begin marking. ';
+        // v7.20.702 (#619): Edexcel IGCSE's own questions, in plain words (the AQA wording below names a structure
+        // question, creative writing and an inference question — none of them on these papers). The protocol's step 2c
+        // then checks the answer against the question itself.
+        if (String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse') {
+            const _ask = (q, about, hint) => ({
+                plain: lead + 'Thinking back to **' + q + '** — ' + about + ': what were the **key aspects** it asked you to ' + (hint ? hint : 'explore') + '?',
+                html: '<p>' + lead + 'Thinking back to <strong>' + q + '</strong> — ' + about + ':</p><p>What were the <strong>key aspects</strong> it asked you to ' + (hint ? hint : 'explore') + '? (type or use the mic)</p>',
+            });
+            if (_isLangPaper2()) return _ask('Question 1', 'the essay on the anthology text, worth half of this paper\'s marks');
+            if (tq === 'Q4') return _ask('Question 4', 'the analysis of Text Two', 'analyse — and was it about language only, or language and structure');
+            if (tq === 'Q3') return _ask('Question 3', 'the question on Text One', 'explain about the writer');
+            if (tq === 'Q6') return _ask('Section B', 'the writing task you chose', 'do — which purpose, which form, and which reader');
+            return _ask('Question 5', 'comparing Text One and Text Two, the biggest reading question', 'compare — and what happens to an answer that writes about only one text');
+        }
         // v7.19.854: P2 wording — its questions are inference (Q2), language (Q3),
         // comparison (Q4), transactional writing (Q5). The P1 wording below calls Q3
         // "the structure question" and Q5 "creative writing", both wrong for P2.
@@ -11117,11 +11144,14 @@
             // lit's first gate is "Introduction", so _penLedgerComplete stayed false and
             // the ledger rebuild NEVER ran on Literature (R&J 04-Jul console: "ledger
             // rebuild skipped — session resumed mid-assessment" on a fresh run).
-            if (out.indexOf('@REFLECT_GATE{"q":"Q2"') !== -1
+            // v7.20.702 (#619): the run's first GATED question is the paper's — the first that is not lean retrieval or
+            // multiple choice (AQA P1/P2 → Q2 as before; Edexcel IGCSE P1 → Q4; IGCSE P2 → Q1, whose ledger never reset).
+            const _fq = _firstGatedQ();
+            if (out.indexOf('@REFLECT_GATE{"q":"' + _fq + '"') !== -1
                 || out.indexOf('@REFLECT_GATE{"q":"Introduction"') !== -1
                 // v7.20.632 (#577): a ladder session emits NO reflection gate, so its run starts at
                 // the first feedback card instead (the v7.19.854 lesson through a third door).
-                || (_ladderReplacesReflect() && (out.indexOf('@FB_BEGIN{"q":"Q2","para":"1"') !== -1 || out.indexOf('@FB_BEGIN{"q":"Introduction"') !== -1))) { _penLedgerCards = {}; _penLedgerComplete = true; }
+                || (_ladderReplacesReflect() && (out.indexOf('@FB_BEGIN{"q":"' + _fq + '","para":"1"') !== -1 || out.indexOf('@FB_BEGIN{"q":"Introduction"') !== -1))) { _penLedgerCards = {}; _penLedgerComplete = true; }
             // ---- Pass 0 (v7.19.841): code-own the visible Q5 ceiling SENTENCE. The AI
             // computed ROUND(12.5)→"10" in Run 4; the injected numbers are authoritative.
             // Line-scoped so ledger/penalty lines elsewhere in the message are untouched.
@@ -19117,10 +19147,21 @@
             'C) Communicating imaginatively in the right form, tone and register (AO4)',
             'D) Improving my vocabulary, sentences and technical accuracy (AO5)',
         ];
+        // v7.20.702 (#722 B2 step 1.5): Edexcel IGCSE Spec A Paper 1 (4EA1/01) shares the subject `language_p1` with AQA P1,
+        // so it was shown AQA's options — "creative writing (AO5)" and "technical accuracy (AO6)" on a paper whose AO4 is
+        // transactional writing and which has no AO6. Paper-true set: AO1 retrieval · AO2 Q4 · AO3 Q5 · AO4/AO5 Section B
+        // (MS June 2024). Must equal the P1 protocol's step 2b — bin/prechain-goal-gate.js holds them together.
+        const PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P1 = [
+            'A) Finding and interpreting the right details in a text (AO1)',
+            'B) Analysing how writers use language and structure for effect (AO2)',
+            'C) Comparing how two writers present their ideas and perspectives (AO3)',
+            'D) Writing for a real purpose, form and reader (AO4)',
+            'E) Improving my vocabulary, sentences and accuracy (AO5)',
+        ];
         const _preChainIsIgcse = () => String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse';
         const _preChainIsLang = () => (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject());
         const _preChainIsLangP2 = () => /^(language2|languagep2|languagepaper2|langp2)$/.test(String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
-        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? (_preChainIsIgcse() ? PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG_P2) : PRECHAIN_GOAL_OPTIONS_LANG) : PRECHAIN_GOAL_OPTIONS);
+        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? (_preChainIsIgcse() ? PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG_P2) : (_preChainIsIgcse() ? PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P1 : PRECHAIN_GOAL_OPTIONS_LANG)) : PRECHAIN_GOAL_OPTIONS);
         function _assessPreChainStage() {
             if (state.task !== 'assessment') return null;
             const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
@@ -19147,7 +19188,7 @@
             if (stage === 'selfassess') { _saWalkRenderCurrent(); return; }
             const _pcLang = _preChainIsLang();
             if (stage === 'headline') {
-                const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
+                const optsPlain = _preChainGoalOptions().join('\n') + '\n' + String.fromCharCode(65 + _preChainGoalOptions().length) + ') Something else (type it below)';   // v7.20.702: the letter after the last option (IGCSE P2 has four — it printed F after D)
                 if (_pcLang) {
                     plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your paper **as a whole**: what was the **one main goal** you were working toward? You'll reflect on each question as we go — this is your **headline goal** for the whole paper. Please choose the option that best describes your focus:\n\n${optsPlain}`;
                     html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your paper <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll reflect on each question as we go — this is your <strong>headline goal</strong> for the whole paper. Choose the option that best describes your focus, or type your own:</p>`;
@@ -19211,7 +19252,7 @@
         function _renderPlanChainQuestion(stage) {
             let plain, html;
             if (stage === 'headline') {
-                const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
+                const optsPlain = _preChainGoalOptions().join('\n') + '\n' + String.fromCharCode(65 + _preChainGoalOptions().length) + ') Something else (type it below)';   // v7.20.702: the letter after the last option (IGCSE P2 has four — it printed F after D)
                 plain = `Good — noted. Now your **headline goal**: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan. Please choose the option that best describes your focus:\n\n${optsPlain}`;
                 html = `<p>Good — noted. Now your <strong>headline goal</strong>: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan.</p><p style="margin-top:8px">Choose the option that best describes your focus, or type your own:</p>`;
             } else {
@@ -42975,10 +43016,21 @@
                             'C) Communicating imaginatively in the right form, tone and register (AO4)',
                             'D) Improving my vocabulary, sentences and technical accuracy (AO5)',
                         ];
+                        // v7.20.702 (#722 B2 step 1.5): Edexcel IGCSE Spec A Paper 1 (4EA1/01) shares the subject `language_p1` with AQA P1,
+                        // so it was shown AQA's options — "creative writing (AO5)" and "technical accuracy (AO6)" on a paper whose AO4 is
+                        // transactional writing and which has no AO6. Paper-true set: AO1 retrieval · AO2 Q4 · AO3 Q5 · AO4/AO5 Section B
+                        // (MS June 2024). Must equal the P1 protocol's step 2b — bin/prechain-goal-gate.js holds them together.
+                        const PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P1 = [
+                            'A) Finding and interpreting the right details in a text (AO1)',
+                            'B) Analysing how writers use language and structure for effect (AO2)',
+                            'C) Comparing how two writers present their ideas and perspectives (AO3)',
+                            'D) Writing for a real purpose, form and reader (AO4)',
+                            'E) Improving my vocabulary, sentences and accuracy (AO5)',
+                        ];
                         const _preChainIsIgcse = () => String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse';
                         const _preChainIsLang = () => (typeof WML !== 'undefined' && typeof WML.isLanguageSubject === 'function' && WML.isLanguageSubject());
                         const _preChainIsLangP2 = () => /^(language2|languagep2|languagepaper2|langp2)$/.test(String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
-                        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? (_preChainIsIgcse() ? PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG_P2) : PRECHAIN_GOAL_OPTIONS_LANG) : PRECHAIN_GOAL_OPTIONS);
+                        const _preChainGoalOptions = () => (_preChainIsLang() ? (_preChainIsLangP2() ? (_preChainIsIgcse() ? PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P2 : PRECHAIN_GOAL_OPTIONS_LANG_P2) : (_preChainIsIgcse() ? PRECHAIN_GOAL_OPTIONS_IGCSE_LANG_P1 : PRECHAIN_GOAL_OPTIONS_LANG)) : PRECHAIN_GOAL_OPTIONS);
                         function _assessPreChainStage() {
                             if (state.task !== 'assessment') return null;
                             const askedBy = (re) => canvasChatHistory.some(m => m.role === 'assistant' && re.test(m.content || ''));
@@ -43000,7 +43052,7 @@
                             if (stage === 'selfassess') { _saWalkRenderCurrent(); return; }
                             const _pcLang = _preChainIsLang();
                             if (stage === 'headline') {
-                                const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
+                                const optsPlain = _preChainGoalOptions().join('\n') + '\n' + String.fromCharCode(65 + _preChainGoalOptions().length) + ') Something else (type it below)';   // v7.20.702: the letter after the last option (IGCSE P2 has four — it printed F after D)
                                 if (_pcLang) {
                                     plain = `Before we begin the assessment, I'd like to understand what you were working on. Looking at your paper **as a whole**: what was the **one main goal** you were working toward? You'll reflect on each question as we go — this is your **headline goal** for the whole paper. Please choose the option that best describes your focus:\n\n${optsPlain}`;
                                     html = `<p>Before we begin the assessment, I'd like to understand what you were working on. Looking at your paper <strong>as a whole</strong>: what was the <strong>one main goal</strong> you were working toward?</p><p style="margin-top:8px">You'll reflect on each question as we go — this is your <strong>headline goal</strong> for the whole paper. Choose the option that best describes your focus, or type your own:</p>`;
@@ -43046,7 +43098,7 @@
                         function _renderPlanChainQuestion(stage) {
                             let plain, html;
                             if (stage === 'headline') {
-                                const optsPlain = _preChainGoalOptions().join('\n') + '\nF) Something else (type it below)';
+                                const optsPlain = _preChainGoalOptions().join('\n') + '\n' + String.fromCharCode(65 + _preChainGoalOptions().length) + ') Something else (type it below)';   // v7.20.702: the letter after the last option (IGCSE P2 has four — it printed F after D)
                                 plain = `Good — noted. Now your **headline goal**: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan. Please choose the option that best describes your focus:\n\n${optsPlain}`;
                                 html = `<p>Good — noted. Now your <strong>headline goal</strong>: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan.</p><p style="margin-top:8px">Choose the option that best describes your focus, or type your own:</p>`;
                             } else {
@@ -68240,7 +68292,20 @@
             // 240-message session filed nothing for Q4 while she asked four times to finish it). Capability-gated
             // (the question TYPE), read against the doc's own plan boxes; built by the render branch's builder.
             const _isEval = !shape && !_isComp && !_isInf && !_isIumvcc && qType === 'evaluation';
-            if (!shape && !_isComp && !_isInf && !_isIumvcc && !_isEval) return;
+            // v7.20.702 (#722 B2): ANY other question the render dispatch gives an outline — a plain full essay (Edexcel
+            // IGCSE P2 Q1, 30 marks) — is built by the dispatch itself, so heal and render cannot disagree. Measured on
+            // staging: a planning doc copied forward from an IGCSE P2 diagnostic carried Q1's five plan boxes and NO
+            // outline, so every Q1 @FIELD_COMMIT landed nowhere — the path the one real P2 student would take next.
+            // Never an IUMVCC outline from here: that family is read from the doc's own plan boxes (_isIumvcc above),
+            // so a doc whose plan is not IUMVCC can never be handed IUMVCC rows.
+            let _dispatchHTML = '';
+            if (!shape && !_isComp && !_isInf && !_isIumvcc && !_isEval) {
+                const _q = { id: qId, label: qId, text: qSection.textContent || '', aos: specQ?.aos };
+                const _f = Object.assign(_questionWritingFlags(_q, qType, qMarks, specQ), { topicAos: '' });
+                _dispatchHTML = _redraftOutlineSectionsHTML(_q, qId, qMarks, qType, specQ, _f);
+                if (/outline-iumvcc-/.test(_dispatchHTML)) _dispatchHTML = '';
+            }
+            if (!shape && !_isComp && !_isInf && !_isIumvcc && !_isEval && !_dispatchHTML) return;
 
             // Already has this question's outline?
             let _staleOutlineToRemove = null;
@@ -68302,7 +68367,7 @@
             const anchor = planSections[planSections.length - 1];
 
             const frag = document.createElement('div');
-            frag.innerHTML = dividerHTML(`OUTLINE — ${qId}`)
+            frag.innerHTML = _dispatchHTML || dividerHTML(`OUTLINE — ${qId}`)
                 + (shape
                     ? buildOutlineSection(specQ?.aos, qId, qMarks, null, {
                         bodyOnly: shape.bodies,
