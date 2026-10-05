@@ -145,11 +145,11 @@ For this question, you need to refer to the whole of Source A, together with the
 # Topic 2: Transactional Writing — Article
 **Type:** language_paper
 **Format:** multi_question
-**Teaching Point:** Standalone transactional writing exercise — Article form. Practice crafting a persuasive article using IUMVCC structure (Introduction, Umbrella statement, Main arguments, Vivid examples, Counter-argument, Conclusion). 40 marks: 24 for content/organisation (AO5) and 16 for technical accuracy (AO6). Phase 1 (first draft) focuses on structure and argument; Phase 2 (redraft) refines style, vocabulary, and technical accuracy.
+**Teaching Point:** Standalone transactional writing exercise — Article form. Practice crafting a persuasive article using IUMVCC structure (Introduction, Urgency, Methodology, Vision, Counter-argument, Conclusion). 40 marks: 24 for content/organisation (AO5) and 16 for technical accuracy (AO6). Phase 1 (first draft) focuses on structure and argument; Phase 2 (redraft) refines style, vocabulary, and technical accuracy.
 **Marks:** 40
 **AOs:** AO5, AO6
 
-## Q1
+## Q5
 **Marks:** 40 (24 content AO5 + 16 technical accuracy AO6)
 **AOs:** AO5, AO6
 
@@ -315,7 +315,7 @@ For this question, you need to refer to the whole of Source A, together with the
 **Marks:** 40
 **AOs:** AO5, AO6
 
-## Q1
+## Q5
 **Marks:** 40 (24 content AO5 + 16 technical accuracy AO6)
 **AOs:** AO5, AO6
 
@@ -485,7 +485,7 @@ For this question, you need to refer to the whole of Source A, together with the
 **Marks:** 40
 **AOs:** AO5, AO6
 
-## Q1
+## Q5
 **Marks:** 40 (24 content AO5 + 16 technical accuracy AO6)
 **AOs:** AO5, AO6
 
@@ -639,7 +639,7 @@ For this question, you need to refer to the whole of Source A, together with the
 **Marks:** 40
 **AOs:** AO5, AO6
 
-## Q1
+## Q5
 **Marks:** 40 (24 content AO5 + 16 technical accuracy AO6)
 **AOs:** AO5, AO6
 

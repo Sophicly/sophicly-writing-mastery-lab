@@ -6248,7 +6248,45 @@ TEMPLATE;
                 ];
             }
         }
+        // v7.20.691 (FIXLIST #722, audit LP2-2): a TOPIC that sets only some of the paper's questions is assessed
+        // on those alone. AQA P2's writing-only topics (T2 Article · T4 Speech · T6 Letter · T8 Leaflet) set Q5
+        // only, yet every caller below (next question, Sequence line, keyword-recall rotation, Total X/N, the
+        // final-summary mandate) walked Q1→Q5 out of 80. Filtering HERE fixes them all at once. Falls back to the
+        // whole paper when the topic lists nothing or nothing matches — never an empty order.
+        // SCOPE (measured on prod 2026-10-05: 147 of 313 topics list fewer questions than their paper, on boards
+        // whose topic data is unverified — e.g. OCR "Q1-only" topics that look like a mislabelled 40-mark task):
+        // only a topic that sets exactly ONE question, whose marks EQUAL the paper's marks for that question id,
+        // is narrowed. A mislabelled task (a 40-mark "Q1" against a 4-mark Q1) keeps the old whole-paper order.
+        $topic_qs = $this->topic_question_ids($context);
+        if (count($topic_qs) === 1) {
+            $norm = static function ($id) { return strtoupper(preg_replace('/^(?:question|q)\s*/i', 'Q', trim((string) $id))); };
+            $want = $norm($topic_qs[0]['id']);
+            foreach ($out as $q) {
+                if ($norm($q['id']) === $want && $q['marks'] !== null && (int) $topic_qs[0]['marks'] === (int) $q['marks']) return [$q];
+            }
+        }
         return $out;
+    }
+
+    /**
+     * v7.20.691: the questions ({id, marks}) this lesson's TOPIC actually sets (topic metadata `questions[]`), or []
+     * when the context names no topic / the topic stores no list. One read of the same record the page builds
+     * its document from (SWML_Topic_Questions::get_topic), so the server and the document agree on the paper.
+     */
+    private function topic_question_ids($context) {
+        $topic = absint($context['topic_number'] ?? 0);
+        $board = (string) ($context['board'] ?? '');
+        $text  = (string) ($context['text'] ?? '');
+        if (!$topic || $board === '' || $text === '' || !class_exists('SWML_Topic_Questions')) return [];
+        $t = SWML_Topic_Questions::get_topic($board, $text, $topic);
+        if (!is_array($t) || empty($t['metadata'])) return [];
+        $meta = is_array($t['metadata']) ? $t['metadata'] : json_decode((string) $t['metadata'], true);
+        if (!is_array($meta) || empty($meta['questions']) || !is_array($meta['questions'])) return [];
+        $qs = [];
+        foreach ($meta['questions'] as $q) {
+            if (is_array($q) && !empty($q['id'])) $qs[] = ['id' => (string) $q['id'], 'marks' => isset($q['marks']) ? (int) $q['marks'] : null];
+        }
+        return $qs;
     }
 
     /**
