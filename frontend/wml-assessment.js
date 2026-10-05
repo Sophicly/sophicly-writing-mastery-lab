@@ -936,6 +936,10 @@
         try {
             const n = document.querySelectorAll('[data-section-type="source"]').length;
             if (n > 0) return n;
+            // v7.20.692 (#722, AQA P2 writing-only topics): a LOADED doc (its Feedback cards exist) with no
+            // source section has nothing to predict — 0, never the paper's fallback, which asked a student
+            // writing an article to predict "Source A" and "Source B". Not-yet-loaded keeps the fallback.
+            if (document.querySelector('#swml-tiptap-editor [data-section-type="feedback"]')) return 0;
         } catch (_) { /* fall through */ }
         return _isLangPaper1() ? 1 : 2;
     }
@@ -1001,6 +1005,7 @@
         if (_planReflectEligible() && !askedBy(/when you sat this paper last time/i) && !askedBy(/headline goal/i)) return 'reflect';
         if (!askedBy(/headline goal/i)) return 'headline';
         if (!askedBy(/condense your plans/i)) return 'planmode';
+        if (_planChainSourceCount() < 1) return null;   // v7.20.692: no source → no predictions (writing-only topic)
         if (!askedBy(/do you expect this paper is about/i)) return 'predQ';
         if (!askedBy(/predict Source A will explore/i)) return 'predA';
         // v7.20.208: predB only exists on a paired-source doc (P1 has one source).
@@ -1013,7 +1018,8 @@
     function _planChainOrder() {
         const o = ['greeting'];
         if (_planReflectEligible()) o.push('reflect');
-        o.push('headline', 'planmode', 'predQ', 'predA');
+        o.push('headline', 'planmode');
+        if (_planChainSourceCount() >= 1) o.push('predQ', 'predA');   // v7.20.692: same rule as the stage picker
         if (_planChainSourceCount() >= 2) o.push('predB');
         return o;
     }
@@ -1095,8 +1101,10 @@
             // predictions; P2 = paired sources → three), never P2-literal.
             const paperName = _isLangPaper1() ? 'AQA English Language Paper 1' : 'AQA English Language Paper 2';
             const predCount = _planCountWord(1 + _planChainSourceCount());
-            plain = `Hi ${fn}! Welcome to your planning session for ${paperName}. Here's what's coming: we'll set your goals, make ${predCount} quick predictions, then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
-            html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>${paperName}</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, make ${predCount} quick predictions, then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
+            // v7.20.692: a writing-only topic has no source, so no predictions step to announce.
+            const predStep = _planChainSourceCount() >= 1 ? `make ${predCount} quick predictions, ` : '';
+            plain = `Hi ${fn}! Welcome to your planning session for ${paperName}. Here's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
+            html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>${paperName}</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
         } else if (stage === 'reflect') {
             // v7.20.56: ask-then-reveal, beat 1 (the ASK — no AI turn, free-typed reply).
             // Research-locked framing (Kluger & DeNisi 1996): TASK-level recall only —
@@ -8045,6 +8053,27 @@
             if (!paper) return [];
             const prefix = 'aqa_' + paper + '_';
             let keys = Object.keys(all).filter(k => k.indexOf(prefix) === 0 && all[k] && Array.isArray(all[k].levels));
+            // v7.20.692 (#722, AQA P2 writing-only topics): ladder rows only for the questions THIS topic sets —
+            // the topic data when the builder is handed it, else the document's own Feedback cards (so every
+            // reader that calls this with no argument agrees with the builder). A Q5-only topic asked the student
+            // to place their marks for Q2–Q4, which they never wrote. Practice papers set every question → unchanged.
+            if (paper !== 'unseen') {
+                const qset = new Set();
+                const tq = (topicData && Array.isArray(topicData.questions)) ? topicData.questions : [];
+                tq.forEach((q) => { const m = /q(?:uestion)?\s*(\d+)/i.exec(String((q && (q.id || q.number || q.label)) || '')); if (m) qset.add('Q' + m[1]); });
+                if (!qset.size) {
+                    try {
+                        document.querySelectorAll('#swml-tiptap-editor [data-section-type="feedback"]').forEach((sec) => {
+                            const m = /feedback\s*[:\-]?\s*q(?:uestion)?\s*(\d+)/i.exec(sec.getAttribute('data-section-label') || '');
+                            if (m) qset.add('Q' + m[1]);
+                        });
+                    } catch (_) {}
+                }
+                if (qset.size) {
+                    const narrowed = keys.filter((k) => qset.has(String(all[k].question || '').toUpperCase()));
+                    if (narrowed.length) keys = narrowed;
+                }
+            }
             if (paper === 'unseen') {
                 // The course's own unseen topics pose ONE poem, ONE question (no Q27.2). Only a
                 // sitting whose topic data carries a second question gets the Q27.2 ladder.
@@ -66227,6 +66256,9 @@
         // Studied-text (Literature) write docs: keywords-focus box instead of predictions.
         const litWrite = !planning && !langWrite && _isPhase1WriteDoc();
         if (!canvasEditor) return;
+        // v7.20.692 (#722): a Language doc with NO source section (AQA P2's writing-only topics) has nothing to
+        // predict — no boxes, matching the chain's skipped prediction steps (an empty box would sit unfinished).
+        if ((planning || langWrite) && _planChainSourceCount() === 0) return;
         if (!(planning || langWrite || litWrite)) {
             // v7.20.70 FAIL-LOUD, v7.20.76 broadened: warn on ANY write-shaped miss
             // (task '' OR a diagnostic/development draftType) — the R&J miss carried a
