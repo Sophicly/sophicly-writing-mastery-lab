@@ -442,6 +442,56 @@ if (!fs.existsSync(IGCSE2_STEPS_DIR)) {
   }
 }
 
+// ── (3f) EL BYTE-TRACE — EDEXCEL IGCSE LANGUAGE PAPER 1 (v7.20.710 port; same gate as (3e)) ─────────
+// The shipped _ladderRegistryIgcse1 is sliced out of wml-assessment.js and RUN over q4/q5/q6. Each non-stamp row's
+// resolveBy is the field it fills: for Q4/Q5 that is the element's own outline id; for Section B the els are synthetic
+// (q6-intro-image…) and resolve to the IUMVCC rows. Every one must be a real @FIELD_COMMIT in the planning monolith
+// (planning/*.md — _superseded/ is a subdirectory and never read), and the monolith must file all six plan boxes + the
+// key words; b-ladder.md must ride planning.always and the planning block must be de-stitched (steps {}).
+const IGCSE1_PLAN_DIR = path.join(ROOT, 'protocols', 'edexcel-igcse', 'language1', 'planning');
+function igcse1RegistryFields() {
+  const src = fs.existsSync(ASSESS_JS) ? fs.readFileSync(ASSESS_JS, 'utf8') : '';
+  const start = src.indexOf('function _ladderRegistryIgcse1(');
+  if (start < 0) return null;
+  let depth = 0, i = src.indexOf('{', start), end = -1;
+  for (; i < src.length; i++) { if (src[i] === '{') depth++; else if (src[i] === '}' && --depth === 0) { end = i + 1; break; } }
+  if (end < 0) return null;
+  const vm = require('vm'); const box = {};
+  vm.runInNewContext(src.slice(start, end) + '\nthis.fn = _ladderRegistryIgcse1;', box);
+  const out = new Set();
+  ['q4', 'q5', 'q6'].forEach(q => (box.fn(q) || []).forEach(r => { if (r.resolveBy !== 'stamp') out.add(r.resolveBy); }));
+  return Array.from(out);
+}
+if (!fs.existsSync(IGCSE1_PLAN_DIR)) {
+  note(`— EL BYTE-TRACE (IGCSE P1): SKIP (planning dir not found at ${path.relative(ROOT, IGCSE1_PLAN_DIR)}).`);
+} else {
+  const protoI1 = fs.readdirSync(IGCSE1_PLAN_DIR).filter(f => f.endsWith('.md'))
+    .map(f => fs.readFileSync(path.join(IGCSE1_PLAN_DIR, f), 'utf8')).join('\n');
+  const commitI1 = new Set(), setI1 = new Set();
+  { const re = /@FIELD_COMMIT\s*\{[^}]*?"field"\s*:\s*"([^"]+)"[^}]*\}/g; let m; while ((m = re.exec(protoI1)) !== null) commitI1.add(m[1].trim()); }
+  { const re = /@FIELD_SET\{"field":"([^"]+)"/g; let m; while ((m = re.exec(protoI1)) !== null) setI1.add(m[1]); }
+  const expectedI1 = igcse1RegistryFields();
+  if (!expectedI1 || !expectedI1.length) {
+    failed = 1;
+    note('  ❌ IGCSE P1: could not slice/run _ladderRegistryIgcse1 from frontend/wml-assessment.js — the trace has nothing to check.');
+  } else {
+    const orphansI1 = expectedI1.filter(e => !commitI1.has(e));
+    const planFieldsI1 = ['plan-Q4-para-1', 'plan-Q4-para-2', 'plan-Q4-para-3', 'plan-Q5-intro', 'plan-Q5-body-1', 'plan-Q5-body-2', 'plan-Q5-body-3', 'plan-Q5-conclusion', 'kw-focus'];
+    const planMissI1 = planFieldsI1.filter(e => !setI1.has(e));
+    let mfOk = false, destitched = false;
+    try {
+      const mf = JSON.parse(fs.readFileSync(path.join(ROOT, 'protocols', 'edexcel-igcse', 'language1', 'manifest.json'), 'utf8'));
+      mfOk = !!(mf.planning && Array.isArray(mf.planning.always) && mf.planning.always.includes('planning/b-ladder.md') && mf.planning.always.includes('planning/protocol-b-planning.md'));
+      destitched = !!(mf.planning && (!mf.planning.steps || !Object.keys(mf.planning.steps).length));
+    } catch (_) { mfOk = false; }
+    note(`— EL BYTE-TRACE (IGCSE P1): ${expectedI1.length - orphansI1.length}/${expectedI1.length} code filing fields (run from the shipped registry) + ${planFieldsI1.length - planMissI1.length}/${planFieldsI1.length} plan @FIELD_SET fields are real in the IGCSE P1 monolith; monolith + b-ladder.md always-loaded: ${mfOk ? 'yes' : 'NO'}; de-stitched: ${destitched ? 'yes' : 'NO'}.`);
+    if (orphansI1.length) { failed = 1; note('  ❌ IGCSE P1 CODE registry field(s) with NO matching @FIELD_COMMIT (write-key ≠ read-key):'); orphansI1.forEach(e => note(`       ${e}`)); }
+    if (planMissI1.length) { failed = 1; note('  ❌ IGCSE P1 plan @FIELD_SET field(s) the monolith never files:'); planMissI1.forEach(e => note(`       ${e}`)); }
+    if (!mfOk) { failed = 1; note('  ❌ protocols/edexcel-igcse/language1/manifest.json planning.always must carry planning/protocol-b-planning.md AND planning/b-ladder.md.'); }
+    if (!destitched) { failed = 1; note('  ❌ IGCSE P1 planning is sliced (planning.steps not empty) — the derived sidebar and the code-asked chain assume one document.'); }
+  }
+}
+
 // ── (4) ENGINE CONTRACT — lock the verdict/heal mechanics from silent erosion (as (1) locks the
 // protocol literals). These are the load-bearing lines a refactor would quietly break; the Fable
 // review's two fixes (heal-weak must not spend the push; el-specific heal-commit) are guarded here

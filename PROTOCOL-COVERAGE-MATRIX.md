@@ -34,17 +34,17 @@ Legend: ✅ done+tested · 🟢 built, mechanical gates green, not driven · �
 | P2 §B anthology poetry | comparison 30 | 🟢 | 🟢 | 🟢 ENV v7.20.610 | model-answers-poetry | ⚠️ NOT reachable (audit 2026-10-05): only L&R 42623 has the WML assessment (41449); no course has WML planning/outlining/polishing/reassessment — LD splice pending (handoff wml-to-ld-AQA-POETRY-COURSES-…-2026-10-05) |
 | P2 §C unseen 27.1 / 27.2 | 24 / 8 | 🟢 | 🟢 | 🟢 ENV v7.20.610 | knowledge-unseen | prod diag |
 
-## Edexcel International GCSE English Language A (4EA1) — port RESUMED 2026-10-05 (WML 323 A, FIXLIST #722 B2); state = staging v7.20.703, NOT on prod
+## Edexcel International GCSE English Language A (4EA1) — port RESUMED 2026-10-05 (WML 323 A → 324 A, FIXLIST #722 B2); state = staging v7.20.710, NOT on prod. Audit: P1 ASSESS 10/10 · PLAN 8/8; P2 ASSESS 10/10 · PLAN 8/8
 
 Engine + gates first (v7.20.697–.702): IGCSE question specs now reach the page (#618), the page builder is what the render probe, key-match and fan-out harnesses check, and new gates hold the heals, goal options and recall rotation to it. Full log: FIXLIST #722 "STEP 1 ENGINE"; port plan: `~/.claude/handoffs/open/wml-IGCSE-LANG-P1-P2-PORT-STATE-2026-10-05.md`.
 
 | paper | Q | type | assessment | planning | polishing | gold | reachable |
 |---|---|---|---|---|---|---|---|
 | P1 | Q1–Q3 | AO1 point-marked (2/4/5) — Q2/Q3 task read from the question | ✅ B 10/10 (v7.20.703, branch harvest + §5.2) | n/a | n/a | Q3: one optimal model | prod (old protocol until shipped) |
-| P1 | Q4 | language+structure on TEXT TWO, 3×TTECEA ×4.0 | ✅ | 🟡 doc ✅ (18-row outline, fan-out routed); protocol: 0 markers — step 5 monolith | ⬜ monolith | ⬜ no benchmark gold on disk (#505) | prod |
-| P1 | Q5 | comparison 22 — intro 2 + 3×6.0 (paired per text) + conclusion 2, one-text cap 8 | ✅ | 🟡 doc ✅ (22-row comparative outline, comparative plan, Text One/Two labels); protocol — step 5 | ⬜ | ⬜ | prod |
-| P1 | Q6/7 | transactional 45 (AO4 27 + AO5 18), IUMVCC, holistic | ✅ (one criteria set, box Q6) | 🟡 doc ✅ (IUMVCC by spec family); protocol — step 5 | ⬜ | ⬜ | prod |
-| P2 | Q1 | anthology text essay 30 (AO1 12 + AO2 18, June 2024 split) | ✅ B 10/10 (section-a + section-b) | 🟡 ✅ `steps/` filing (intro `-q1` fixed v7.20.697); ladder + setup cleanup — step 4 | ⬜ | ? | prod diag |
+| P1 | Q4 | language+structure on TEXT TWO, 3×TTECEA ×4.0 | ✅ | ✅ `planning/protocol-b-planning.md` monolith (v7.20.710, ported from the AQA P2 monolith's Q3) + `planning/b-ladder.md`; 18 outline commits + 3 plan approvals, keymatch/fan-out/ladder-check (3f) green; de-stitched | ⬜ monolith | ⬜ no benchmark gold on disk (#505) | prod |
+| P1 | Q5 | comparison 22 — intro 2 + 3×6.0 (paired per text) + conclusion 2, one-text cap 8 | ✅ | ✅ monolith (from AQA P2 Q4): aspects → 3 comparative bodies → perspectives + thesis → restated thesis + writers' purposes (REQUIRED); no hook; Text One prediction revisited | ⬜ | ⬜ | prod |
+| P1 | Q6/7 | transactional 45 (AO4 27 + AO5 18), IUMVCC, holistic | ✅ (one criteria set, box Q6) | ✅ monolith (from AQA P2 Q5): task choice → task analysis → six IUMVCC sections, form-aware, no word quota | ⬜ | ⬜ | prod |
+| P2 | Q1 | anthology text essay 30 (AO1 12 + AO2 18, June 2024 split) | ✅ B 10/10 (section-a + section-b) | ✅ `steps/` files fed WHOLE (de-stitched v7.20.707) + `steps/b-ladder.md`; walked end to end on staging 59207 (v7.20.708) | ⬜ | ? | prod diag |
 | P2 | Q2–4 | imaginative writing 30 (box Q2) | ✅ | ✅ 7 scene rows `plan-scene-Q2-*` (keymatch-gated) | ⬜ | ⬜ (#505) | prod diag |
 
 ## Edexcel GCSE English Language (1EN0) — port STARTED 2026-09-13 by a Fable agent, STOPPED before any report; partial work in `wml-port-agents-inflight-2026-09-13.patch` (FIXLIST #492)

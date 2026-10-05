@@ -101,6 +101,27 @@ for (const board of fs.readdirSync(protoRoot)) {
 }
 ok(derivedSeen >= 4, 'D2: the predicate admits the expected papers (AQA P1, AQA P2, AQA poetry, Edexcel IGCSE P2)', derivedSeen);
 
+// P. The chain's prediction stages come from ONE per-paper list (v7.20.710). Sliced with _planChainSourceCount (its
+// document reads stubbed per fixture) so the real list logic runs. IGCSE P1 carries two source sections (Text One and
+// Text Two) but asks ONE prediction — on the unseen Text One — which is exactly what a source-count rule got wrong.
+for (const [re, n] of [
+  [/function _planChainPredictsSources\(\) \{[\s\S]*?\n    \}/, '_planChainPredictsSources'],
+  [/function _planChainSourceCount\(\) \{[\s\S]*?\n    \}/, '_planChainSourceCount'],
+  [/function _planIsIgcseP1\(\) \{[\s\S]*?\n    \}/, '_planIsIgcseP1'],
+  [/function _planChainPreds\(\) \{[\s\S]*?\n    \}/, '_planChainPreds'],
+]) vm.runInContext(slice(re, n), sb);
+const withDoc = (sources, loaded) => { sb.document = { querySelectorAll: () => ({ length: sources }), querySelector: () => (loaded ? {} : null) }; };
+const preds = (board, subject, sources, loaded) => { sb.state = { task: 'planning', board, subject, step: 1 }; withDoc(sources, loaded !== false); return sb._planChainPreds().join(','); };
+ok(preds('aqa', 'language_p2', 2) === 'predQ,predA,predB', 'P1: AQA P2 → the paper, Source A, Source B', preds('aqa', 'language_p2', 2));
+ok(preds('aqa', 'language_p1', 1) === 'predQ,predA', 'P2: AQA P1 → the paper, Source A', preds('aqa', 'language_p1', 1));
+ok(preds('edexcel-igcse', 'language_p1', 2) === 'predA', 'P3: Edexcel IGCSE P1 → ONE prediction, on the unseen Text One (ruling v7.20.67), despite two source sections', preds('edexcel-igcse', 'language_p1', 2));
+ok(preds('edexcel_igcse', 'language_p1', 2) === 'predA', 'P4: underscore board form → the same single prediction');
+ok(preds('edexcel-igcse', 'language_p2', 1) === '', 'P5: Edexcel IGCSE P2 (a studied text) → no predictions');
+ok(preds('aqa', 'language_p2', 0, true) === '', 'P6: a loaded writing-only document (no source) → no predictions');
+const chainSrc = src;
+ok(/fid = _planIsIgcseP1\(\) \? 'pred-unseen' : 'pred-source-a'/.test(chainSrc), 'P7: the Text One prediction files into IGCSE P1\'s own box (pred-unseen)');
+ok((chainSrc.match(/give \(\?:them\|it\) a quick once-over\/i\.test\(t\)\) pending = 'tidy'/g) || []).length === 2, 'P8: both pipelines detect the singular tidy card ("give it a quick once-over") — byte-pair with the card text');
+
 console.log(`— PLAN ROUTER STEP: ${passed}/${passed + failed} assertions passed.`);
 if (failed) { console.log('\n❌ plan-router-step-harness FAILED'); process.exit(1); }
 console.log('✅ plan-router-step-harness passed (the router is sent the step the model reported, never a sidebar row number).');

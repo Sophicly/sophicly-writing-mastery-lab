@@ -193,6 +193,15 @@ const CASES = [{
   protocols: mdIn('protocols/edexcel-igcse/language2/steps'),
   render: () => renderPaperOutlineIds('edexcel-igcse', 'language_p2'),
   allow: [],
+}, {
+  // v7.20.710 (#722 B2 step 5). Edexcel IGCSE Spec A Lang P1 — the planning monolith (planning/protocol-b-planning.md)
+  // against the page builder over every topic of edexcel-igcse-language-p1.md: Q4 = three -q4 TTECEA bodies, Q5 = the
+  // comparison (perspectives + thesis -q5, unsuffixed bodies, conclusion thesis + purpose), Q6 = IUMVCC. Q1–Q3 draw no
+  // outline. mdIn is one directory deep, so planning/_superseded/ is never read.
+  name: 'Edexcel IGCSE Lang P1 (page builder, every topic)',
+  protocols: mdIn('protocols/edexcel-igcse/language1/planning'),
+  render: () => renderPaperOutlineIds('edexcel-igcse', 'language_p1'),
+  allow: [],
 }];
 
 let failed = 0;

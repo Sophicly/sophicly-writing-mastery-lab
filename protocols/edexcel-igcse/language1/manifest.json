@@ -4,155 +4,16 @@
     "version": "1.0.0",
     "base_path": "protocols/edexcel-igcse/language1",
     "planning": {
+        "_destitched": "v7.20.710 (#722 B2 step 5) — planning fed WHOLE, like AQA P1/P2 (v7.20.49) and IGCSE P2 (v7.20.707): planning/protocol-b-planning.md is the monolith (ported from the AQA P2 planning monolith), planning/b-ladder.md the ladder. The b-intro/b1–b8 step files moved to planning/_superseded/. Not loaded on purpose: modules/foundation.md (the old 'Unified AI Tutor Protocol' — its header still announces a 6-marks-per-100-words penalty the rebuilt assessment dropped), and the pseudo-code control-flow modules (knowledge-algorithm-planning, knowledge-macros, knowledge-validation, graceful-degradation, state-management) — the engine owns control flow now, as AQA's de-stitch ruled. knowledge-hub.md opens with the retired main menu.",
         "always": [
-            "modules/foundation.md",
-            "language/modules/knowledge-algorithm-planning.md",
-            "modules/knowledge-macros.md",
-            "modules/knowledge-validation.md",
-            "modules/knowledge-hub.md",
+            "planning/protocol-b-planning.md",
             "language/modules/communication-standards.md",
-            "language/modules/graceful-degradation.md",
             "language/modules/anti-hallucination.md",
-            "language/modules/state-management.md",
-            "language/modules/ttecea-rationale-lang.md"
+            "language/modules/ttecea-rationale-lang.md",
+            "planning/b-ladder.md"
         ],
-        "groups": [
-            {
-                "id": "setup",
-                "label": "Setup",
-                "steps": [
-                    1
-                ]
-            },
-            {
-                "id": "q4",
-                "label": "Q4",
-                "steps": [
-                    2,
-                    3,
-                    4,
-                    5
-                ]
-            },
-            {
-                "id": "q5",
-                "label": "Q5",
-                "steps": [
-                    6,
-                    7,
-                    8,
-                    9,
-                    10
-                ]
-            },
-            {
-                "id": "section_b",
-                "label": "Section B",
-                "steps": [
-                    11,
-                    12,
-                    13,
-                    14,
-                    15
-                ]
-            }
-        ],
-        "steps": {
-            "1": {
-                "label": "Setup & Goals",
-                "files": [
-                    "planning/b-intro.md",
-                    "planning/b1-setup.md",
-                    "planning/b2-goals.md"
-                ]
-            },
-            "2": {
-                "label": "Q4: Evidence Selection",
-                "files": [
-                    "planning/b3-evidence.md"
-                ]
-            },
-            "3": {
-                "label": "Q4: Body Paragraph 1",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "4": {
-                "label": "Q4: Body Paragraph 2",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "5": {
-                "label": "Q4: Body Paragraph 3",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "6": {
-                "label": "Q5: Evidence Selection",
-                "files": [
-                    "planning/b3-evidence.md"
-                ]
-            },
-            "7": {
-                "label": "Q5: Body Paragraph 1",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "8": {
-                "label": "Q5: Body Paragraph 2",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "9": {
-                "label": "Q5: Body Paragraph 3",
-                "files": [
-                    "planning/b4-bodies.md"
-                ]
-            },
-            "10": {
-                "label": "Q5: Thesis, Introduction & Conclusion",
-                "files": [
-                    "planning/b5-thesis.md"
-                ]
-            },
-            "11": {
-                "label": "Section B: Setup & Help Menu",
-                "files": [
-                    "planning/b6-sectionb.md",
-                    "language/modules/help-menu-devices.md"
-                ]
-            },
-            "12": {
-                "label": "Section B: Task Analysis & Introduction",
-                "files": [
-                    "planning/b7-iumvcc.md"
-                ]
-            },
-            "13": {
-                "label": "Section B: Urgency & Methodology",
-                "files": [
-                    "planning/b7-iumvcc.md"
-                ]
-            },
-            "14": {
-                "label": "Section B: Vision & Counter-argument",
-                "files": [
-                    "planning/b7-iumvcc.md"
-                ]
-            },
-            "15": {
-                "label": "Section B: Conclusion & Audit",
-                "files": [
-                    "planning/b7-iumvcc.md",
-                    "planning/b8-sectionb-final.md"
-                ]
-            }
-        }
+        "steps": {},
+        "groups": []
     },
     "assessment": {
         "always": [

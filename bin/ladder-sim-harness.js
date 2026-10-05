@@ -549,7 +549,7 @@ sandbox.state.board = 'edexcel_igcse';
 stI = call('deriveLadderState', []);
 ok(stI && stI.el === 'outline-body-1-topic', 'IG2-G1: underscore board form (live on 3 prod IGCSE lessons) → ladder LIVE too, like the pre-chain gate');
 sandbox.state.board = 'edexcel-igcse'; sandbox.state.subject = 'language_p1';
-ok(call('deriveLadderState', []) === null, 'IG2-G2: IGCSE P1 planning (language_p1, no ladder module yet) → dormant — never the silent-broken sibling');
+ok(call('_ladderPaperKey') === 'igcse1', 'IG2-G2: IGCSE P1 planning routes to ITS OWN registry (igcse1, v7.20.710) — never the P2 essay arcs');
 sandbox.state.subject = 'language_p2'; sandbox.state.task = 'assessment';
 ok(call('deriveLadderState', []) === null, 'IG2-G3: IGCSE P2 assessment → dormant (planning only)');
 sandbox.state.task = 'planning';
@@ -589,6 +589,67 @@ stI = call('deriveLadderState', ig2TechStamps.concat([
   stamp('outline-body-2-evidence', 'resolved', { rung: 3, question: 'bodies' })]));
 ok(stI && stI.question === 'intro' && stI.paceValve === false && stI.base === 1,
    'IG2-C2: 3 high-resolves in bodies do NOT pace the intro arc (per-question scope law)');
+sandbox.state.board = 'aqa'; sandbox.state.subject = 'language2'; sandbox.state.marks = 12; sandbox.state.question = 'Q3';
+
+// ═══ IGCSE1. EDEXCEL IGCSE SPEC A LANGUAGE PAPER 1 (v7.20.710 port — Q4 → Q5 → Section B) ═════════════
+// REAL lesson state (staging probe page 59205, read from WML.state in a browser 2026-10-05): board="edexcel-igcse"
+// subject="language_p1" text="edexcel_igcse_lang_a" task="planning" marks=30 question="". Doc ids are the page
+// builder's (bin/paper-render-probe.js . edexcel-igcse language_p1 --topic=1) + the prewrite inputFields.
+sandbox.state.board = 'edexcel-igcse'; sandbox.state.subject = 'language_p1'; sandbox.state.marks = 30; sandbox.state.question = '';
+const IG1_BODY = ['topic', 'evidence', 'analysis', 'effects', 'effects2', 'purpose'];
+const IG1_IUMVCC = ['intro', 'urgency', 'method-point-1', 'method-point-2', 'method-point-3', 'vision', 'counter', 'conclusion'];
+function igcse1Doc(filled) {
+  filled = filled || {};
+  const rows = [{ fieldId: 'kw-focus', type: 'inputField', text: filled['kw-focus'] || '' }, { fieldId: 'pred-unseen', type: 'inputField', text: filled['pred-unseen'] || '' }];
+  for (let i = 1; i <= 3; i++) { rows.push({ fieldId: 'plan-Q4-para-' + i, type: 'inputField', text: '' }); }
+  for (let i = 1; i <= 3; i++) for (const s of IG1_BODY) { const fid = `outline-body-${i}-${s}-q4`; rows.push({ fieldId: fid, text: filled[fid] || '' }); }
+  for (const p of ['intro', 'body-1', 'body-2', 'body-3', 'conclusion']) rows.push({ fieldId: 'plan-Q5-' + p, type: 'inputField', text: '' });
+  for (const s of ['perspectives', 'thesis']) rows.push({ fieldId: `outline-intro-${s}-q5`, text: filled[`outline-intro-${s}-q5`] || '' });
+  for (let i = 1; i <= 3; i++) for (const s of IG1_BODY) { const fid = `outline-body-${i}-${s}`; rows.push({ fieldId: fid, text: filled[fid] || '' }); }
+  for (const s of ['thesis', 'purpose']) rows.push({ fieldId: `outline-conclusion-${s}`, text: filled[`outline-conclusion-${s}`] || '' });
+  for (const s of IG1_IUMVCC) rows.push({ fieldId: 'outline-iumvcc-' + s, text: filled['outline-iumvcc-' + s] || '' });
+  return rows;
+}
+ok(call('_ladderPaperKey') === 'igcse1' && call('_ladderQuestionOrder').join(',') === 'q4,q5,q6', 'IG1-R1: IGCSE P1 → paper key igcse1, walk Q4 → Q5 → Section B (Q1–Q3 never planned)');
+const ig1q4 = call('_ladderRegistry', 'q4').map(e => e.el);
+ok(ig1q4.length === 21 && ig1q4.includes('outline-body-3-purpose-q4') && ig1q4.includes('q4-technique-p2') && !ig1q4.some(e => /context|-q3$/.test(e)),
+   'IG1-R2: Q4 = 3 × (six -q4 TTECEA rows + technique stamp), no context', ig1q4.length);
+const ig1q5 = call('_ladderRegistry', 'q5').map(e => e.el);
+ok(ig1q5[0] === 'q5-aspects' && ig1q5.includes('outline-intro-perspectives-q5') && ig1q5.includes('outline-conclusion-purpose')
+   && !ig1q5.some(e => /hook|context|-q4$/.test(e)) && ig1q5.indexOf('outline-body-3-purpose') < ig1q5.indexOf('outline-intro-perspectives-q5'),
+   'IG1-R3: Q5 = aspects → bodies → perspectives + thesis → restated thesis + purposes; no hook, no context (Neil 2026-09-15)');
+const ig1q6 = call('_ladderRegistry', 'q6');
+ok(ig1q6.length === 9 && ig1q6.filter(e => e.resolveBy !== 'stamp').every(e => /^outline-iumvcc-/.test(e.resolveBy)), 'IG1-R4: Section B els are synthetic and resolve to the IUMVCC rows');
+mkDoc(igcse1Doc());
+let st1 = call('deriveLadderState', []);
+ok(st1 && st1.el === 'outline-body-1-topic-q4' && st1.question === 'q4' && st1.rung === 1, 'IG1-A1: REAL P1 state + fresh doc → ladder LIVE on Q4 paragraph 1 topic, L1', st1 && `${st1.el}/${st1.question}`);
+mkDoc(igcse1Doc({ 'outline-body-1-topic-q4': 'their concept' }));
+st1 = call('deriveLadderState', []);
+ok(st1 && st1.el === 'q4-technique-p1', 'IG1-A2: topic filed → the technique stamp beat gates before evidence', st1 && st1.el);
+const ig1Q4Done = {}; for (let i = 1; i <= 3; i++) for (const s of IG1_BODY) ig1Q4Done[`outline-body-${i}-${s}-q4`] = 'done';
+const ig1Tech = [1, 2, 3].map(i => stamp('q4-technique-p' + i, 'resolved', { question: 'q4' }));
+mkDoc(igcse1Doc(ig1Q4Done));
+st1 = call('deriveLadderState', ig1Tech);
+ok(st1 && st1.el === 'q5-aspects' && st1.question === 'q5', 'IG1-A3: Q4 planned → Q5 opens on the aspects beat', st1 && `${st1.el}/${st1.question}`);
+const ig1Q5Bodies = Object.assign({}, ig1Q4Done); for (let i = 1; i <= 3; i++) for (const s of IG1_BODY) ig1Q5Bodies[`outline-body-${i}-${s}`] = 'done';
+const ig1Stamps = ig1Tech.concat([stamp('q5-aspects', 'resolved', { question: 'q5' })]);
+mkDoc(igcse1Doc(ig1Q5Bodies));
+st1 = call('deriveLadderState', ig1Stamps);
+ok(st1 && st1.el === 'outline-intro-perspectives-q5', 'IG1-A4: comparative bodies filed → the introduction opens on both writers\' perspectives (bodies first, frame last)', st1 && st1.el);
+const ig1Q5Done = Object.assign({ 'outline-intro-perspectives-q5': 'p', 'outline-intro-thesis-q5': 't', 'outline-conclusion-thesis': 'r', 'outline-conclusion-purpose': 'w' }, ig1Q5Bodies);
+mkDoc(igcse1Doc(ig1Q5Done));
+st1 = call('deriveLadderState', ig1Stamps);
+ok(st1 && st1.el === 'q6-task-analysis' && st1.question === 'q6', 'IG1-A5: Q5 complete → Section B opens on the task analysis', st1 && `${st1.el}/${st1.question}`);
+const ig1All = Object.assign({}, ig1Q5Done); IG1_IUMVCC.forEach(s => { ig1All['outline-iumvcc-' + s] = 'done'; });
+mkDoc(igcse1Doc(ig1All));
+st1 = call('deriveLadderState', ig1Stamps.concat([stamp('q6-task-analysis', 'resolved', { question: 'q6' })]));
+ok(st1 && st1.done === true, 'IG1-A6: every laddered element filed → done (Q1–Q3 point boxes never block it)');
+const ig1Fade = {}; for (const s of IG1_BODY) ig1Fade[`outline-body-1-${s}-q4`] = 'done';
+mkDoc(igcse1Doc(ig1Fade));
+st1 = call('deriveLadderState', [stamp('outline-body-1-topic-q4', 'resolved', { rung: 3, question: 'q4' })].concat(ig1Tech));
+ok(st1 && st1.el === 'outline-body-2-topic-q4' && st1.base === 2 && st1.fade === true, 'IG1-C1: paragraph-1 topic resolved ≥L3 → paragraph-2 topic opens L2 (fade across Q4 paragraphs)', st1 && `${st1.el} base=${st1.base}`);
+sandbox.state.board = 'aqa';
+ok(call('_ladderPaperKey') === 'p1', 'IG1-R5: same subject on AQA → AQA P1 registry (board first, no cross-board bleed)');
 sandbox.state.board = 'aqa'; sandbox.state.subject = 'language2'; sandbox.state.marks = 12; sandbox.state.question = 'Q3';
 
 // ═══ REPORT ═══════════════════════════════════════════════════════════════════════════════════

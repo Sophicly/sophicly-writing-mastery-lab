@@ -928,9 +928,9 @@
         const _b = String(state.board || '').toLowerCase().replace(/_/g, '-');
         if (_b === 'aqa') return _isLangPaper2() || _isLangPaper1();
         // v7.20.704 (#722 B2 step 1.6): Edexcel IGCSE Paper 2 planning hands its setup to the code-asked chain (C-COMMON 6;
-        // steps/b-setup.md). Paper 1 joins with its planning monolith (step 5) — its step files still ask setup in prose,
-        // and two askers for one question is the conflict class.
-        if (_b === 'edexcel-igcse') return _isLangPaper2();
+        // steps/b-setup.md). v7.20.710 (#722 B2 step 5): Paper 1 joins with its planning monolith
+        // (language1/planning/protocol-b-planning.md), which leaves setup to the chain — never two askers for one question.
+        if (_b === 'edexcel-igcse') return _isLangPaper2() || _isLangPaper1();
         return false;
     }
     // v7.20.706 — THE ROUTER'S STEP COMES FROM THE ROUTER'S OWN SIGNAL.
@@ -963,6 +963,22 @@
     function _planChainPredictsSources() {
         return !(String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse' && _isLangPaper2());
     }
+    // v7.20.710 (#722 B2 step 5): WHICH prediction stages this paper's chain asks, in order — one list read by the stage
+    // picker, the stage order, the greeting's count, the tidy card, the final-prediction test and the filer, so none of
+    // them can fork. AQA P2: the paper, Source A, Source B. AQA P1: the paper, Source A. Edexcel IGCSE P1 (ruling
+    // v7.20.67): ONE prediction, on the unseen Text One (Text Two is the studied anthology text) — filed into the
+    // document's own "Predictions: The Unseen Text" box. No source, or a studied text only (IGCSE P2): none.
+    function _planIsIgcseP1() {
+        return String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse' && _isLangPaper1();
+    }
+    function _planChainPreds() {
+        const n = _planChainSourceCount();
+        if (n < 1 || !_planChainPredictsSources()) return [];
+        if (_planIsIgcseP1()) return ['predA'];
+        return n >= 2 ? ['predQ', 'predA', 'predB'] : ['predQ', 'predA'];
+    }
+    const _PLAN_PRED_STAGE_RE = { predQ: /do you expect this paper is about/i };
+    function _planPredAskRe(stage) { return stage === 'predQ' ? _PLAN_PRED_STAGE_RE.predQ : stage === 'predB' ? _PLAN_PRED_ASK_RE.B : _PLAN_PRED_ASK_RE.A; }
     // v7.20.704: what THIS paper calls its sources in the prediction asks — AQA (and IGCSE P2, whose document labels its
     // text "Source A") say Source A / Source B; Edexcel IGCSE Paper 1 says Text One / Text Two. The asks print these
     // and _PLAN_PRED_ASK_RE reads them back (byte-pair rule); AQA's words are unchanged, so stored transcripts still match.
@@ -1055,11 +1071,9 @@
         if (_planReflectEligible() && !askedBy(/when you sat this paper last time/i) && !askedBy(/headline goal/i)) return 'reflect';
         if (!askedBy(/headline goal/i)) return 'headline';
         if (!askedBy(/condense your plans/i)) return 'planmode';
-        if (_planChainSourceCount() < 1 || !_planChainPredictsSources()) return null;   // v7.20.692 no source · v7.20.704 studied text → no predictions
-        if (!askedBy(/do you expect this paper is about/i)) return 'predQ';
-        if (!askedBy(_PLAN_PRED_ASK_RE.A)) return 'predA';
-        // v7.20.208: predB only exists on a paired-source doc (P1 has one source).
-        if (_planChainSourceCount() >= 2 && !askedBy(_PLAN_PRED_ASK_RE.B)) return 'predB';
+        // v7.20.692 no source · v7.20.704 studied text → no predictions · v7.20.710 the paper's own list (_planChainPreds).
+        const _preds = _planChainPreds();
+        for (let i = 0; i < _preds.length; i++) if (!askedBy(_planPredAskRe(_preds[i]))) return _preds[i];
         return null;
     }
     // v7.20.56: the chain's stage order is DERIVED (reflect slots in only when a
@@ -1069,8 +1083,7 @@
         const o = ['greeting'];
         if (_planReflectEligible()) o.push('reflect');
         o.push('headline', 'planmode');
-        if (_planChainSourceCount() >= 1 && _planChainPredictsSources()) o.push('predQ', 'predA');   // v7.20.692/.704: same rule as the stage picker
-        if (_planChainSourceCount() >= 2 && _planChainPredictsSources()) o.push('predB');
+        _planChainPreds().forEach(p => o.push(p));   // v7.20.710: the same list the stage picker walks
         return o;
     }
     function _planChainBeat(stage) {
@@ -1153,9 +1166,10 @@
             // v7.20.208: paper name + prediction count are DERIVED (P1 = one source → two
             // predictions; P2 = paired sources → three), never P2-literal.
             const paperName = _planPaperName();   // v7.20.704: paper-true (Edexcel IGCSE named as itself)
-            const predCount = _planCountWord(1 + _planChainSourceCount());
+            const _predN = _planChainPreds().length;   // v7.20.710: the paper's own list
+            const predCount = _planCountWord(_predN);
             // v7.20.692: a writing-only topic has no source, so no predictions step to announce.
-            const predStep = (_planChainSourceCount() >= 1 && _planChainPredictsSources()) ? `make ${predCount} quick predictions, ` : '';
+            const predStep = _predN === 1 ? 'make one quick prediction, ' : _predN ? `make ${predCount} quick predictions, ` : '';
             plain = `Hi ${fn}! Welcome to your planning session for ${paperName}. Here's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
             html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>${paperName}</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
         } else if (stage === 'reflect') {
@@ -1187,6 +1201,13 @@
             const why = 'Why predict? Attempting an answer before you read measurably deepens what you learn from a text — even when the prediction turns out wrong. Psychologists call it the generation effect (Bertsch et al., 2007 — a meta-analysis of 86 studies).';
             plain = `Now the pre-read. Look at the **${qPhrase}** in your document first — just the questions, don't read the sources yet.${unShort}${skim}\n\n${why}\n\nWhat **3 themes** do you expect this paper is about? Type your three themes.`;
             html = `<p>Now the pre-read. Look at the <strong>${qPhrase}</strong> in your document first — just the questions, don't read the sources yet.${unShort ? ` <em>${unShort.trim()}</em>` : ''}${skim}</p><p style="margin-top:8px;font-size:12.5px;opacity:0.75"><em>${why}</em></p><p style="margin-top:8px">What <strong>3 themes</strong> do you expect this paper is about? Type your three themes.</p>`;
+        } else if (stage === 'predA' && _planChainPreds()[0] === 'predA') {
+            // v7.20.710: Edexcel IGCSE P1 — the chain's ONE prediction (ruling v7.20.67), so it opens the pre-read itself and
+            // closes the predictions. Detection byte-pair: "predict Text One will explore" (_PLAN_PRED_ASK_RE.A) — keep it.
+            const la = _planSourceLabel('A');
+            const why = 'Why predict? Attempting an answer before you read measurably deepens what you learn from a text — even when the prediction turns out wrong. Psychologists call it the generation effect (Bertsch et al., 2007 — a meta-analysis of 86 studies).';
+            plain = `Now the pre-read. Look at **${la}**, the unseen extract — read ONLY its title, author, date and the short introduction above it, not the text itself.\n\n${why}\n\nWhat **3 themes** do you predict ${_planSourceName('A')} will explore? Text Two is your anthology text, so you already know it — this is your one prediction. We'll check back on it as you plan; being wrong is often where the best insights come from.`;
+            html = `<p>Now the pre-read. Look at <strong>${la}</strong>, the unseen extract — read ONLY its title, author, date and the short introduction above it, not the text itself.</p><p style="margin-top:8px;font-size:12.5px;opacity:0.75"><em>${why}</em></p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict ${_planSourceName('A')} will explore? Text Two is your anthology text, so you already know it — this is your one prediction. We'll check back on it as you plan; being wrong is often where the best insights come from.</p>`;
         } else if (stage === 'predA') {
             const la = _planSourceLabel('A');
             plain = `Committed. Now look at **${la}** — read ONLY its title, author, date and preamble, not the text itself.\n\nWhat **3 themes** do you predict ${_planSourceName('A')} will explore?`;
@@ -1200,10 +1221,12 @@
             // first AI turn — a quick SPaG once-over of the prediction boxes.
             // v7.20.209: "All two predictions" read wrong on P1 (1 paper + 1 source = 2) —
             // two → "Both", three+ keeps "All {word}". Count stays doc-derived.
-            const _tidyN = 1 + _planChainSourceCount();
+            const _tidyN = _planChainPreds().length;   // v7.20.710: the paper's own list (IGCSE P1 = one)
             const tidyLead = _tidyN === 2 ? 'Both' : `All ${_planCountWord(_tidyN)}`;
-            plain = `${tidyLead} predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the Predictions section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.\n\nClick **Continue** when you're happy with them.`;
-            html = `<p>${tidyLead} predictions are committed and filed into your document. Before we start planning, give them a quick once-over in the <strong>Predictions</strong> section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.</p><p style="margin-top:8px">Click <strong>Continue</strong> when you're happy with them.</p>`;
+            // Detection byte-pair (both pipelines): /give (?:them|it) a quick once-over/ — singular on a one-prediction paper.
+            const _tidyHead = _tidyN === 1 ? 'Your prediction is committed and filed into your document. Before we start planning, give it a quick once-over' : `${tidyLead} predictions are committed and filed into your document. Before we start planning, give them a quick once-over`;
+            plain = `${_tidyHead} in the Predictions section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.\n\nClick **Continue** when you're happy with them.`;
+            html = `<p>${_tidyHead} in the <strong>Predictions</strong> section — tidy any spelling, punctuation or grammar slips. Clean writing is a habit, not an afterthought.</p><p style="margin-top:8px">Click <strong>Continue</strong> when you're happy with them.</p>`;
         }
         return { plain: plain, html: html };
     }
@@ -2024,7 +2047,7 @@
             if (!lastAsk) return;
             let fid = null;
             if (/do you expect this paper is about/i.test(lastAsk)) fid = 'pred-paper';
-            else if (_PLAN_PRED_ASK_RE.A.test(lastAsk)) fid = 'pred-source-a';
+            else if (_PLAN_PRED_ASK_RE.A.test(lastAsk)) fid = _planIsIgcseP1() ? 'pred-unseen' : 'pred-source-a';   // v7.20.710: IGCSE P1's own box
             else if (_PLAN_PRED_ASK_RE.B.test(lastAsk)) fid = 'pred-source-b';
             // v7.20.56: the reflect recall files too (ruling 1: FILE IT — Bisra et al.
             // 2018, self-explanation g≈.55; the written line co-encodes with the reveal).
@@ -2052,7 +2075,9 @@
             // v7.20.85 note: pred-unseen is DELIBERATELY absent — it is a self-fill
             // write-doc box (IGCSE Spec A P1), not a P2-planning-chain capture; this
             // reset is chain-scoped (_planPreChainActive above).
-            ['pred-paper', 'pred-source-a', 'pred-source-b', 'reflect-recall'].forEach(fid => {
+            // v7.20.710: on IGCSE P1 PLANNING pred-unseen is now the chain's capture (the write doc still self-fills it — this
+            // reset is chain-scoped by _planPreChainActive above, so a diagnostic's box is never touched).
+            ['pred-paper', 'pred-source-a', 'pred-source-b', 'pred-unseen', 'reflect-recall'].forEach(fid => {
                 let targetPos = null, targetNode = null;
                 canvasEditor.state.doc.descendants((node, pos) => {
                     if (targetPos !== null) return false;
@@ -2250,9 +2275,10 @@
     // message is that final ask itself — once the tidy card (or any other assistant turn)
     // follows, the reply flows through to the AI.
     function _planChainAnswersFinalPred(history) {
-        const finalRe = _planChainSourceCount() >= 2
-            ? _PLAN_PRED_ASK_RE.B
-            : _PLAN_PRED_ASK_RE.A;
+        // v7.20.710: the LAST stage of the paper's own prediction list (IGCSE P1: Text One, its only one).
+        const _pl = _planChainPreds();
+        if (!_pl.length) return false;
+        const finalRe = _planPredAskRe(_pl[_pl.length - 1]);
         for (let i = history.length - 1; i >= 0; i--) {
             const m = history[i];
             if (m.hidden) continue;
@@ -4316,11 +4342,12 @@
             // TASK-SCOPING #1 trap). Subject-scoped, never a bare _isLitEssay() (which also matches
             // shakespeare/moderntext).
             // Edexcel IGCSE (v7.20.704, #722 B2 step 1.6): Paper 2's planning carries steps/b-ladder.md + filing in steps/.
-            // Paper 1 joins with its planning monolith (step 5) — a ladder with no module is the silent-broken sibling.
+            // v7.20.710 (step 5): Paper 1 joins with its planning monolith + planning/b-ladder.md (both on planning.always).
             // v7.20.705: board normalised like _planPreChainActive / _ladderPaperKey — prod lessons carry BOTH
             // 'edexcel-igcse' and 'edexcel_igcse'; an underscore planning lesson would get the chain with a silently dormant ladder.
             if (_board.replace(/_/g, '-') === 'edexcel-igcse') {
-                return typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false;
+                return (typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false)
+                    || (typeof _isLangPaper1 === 'function' ? _isLangPaper1() : false);
             }
             if (_board === 'eduqas') {
                 var _subj = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -4350,7 +4377,9 @@
     // 1 per arc (bodies · intro · conclusion) under the universal ceiling of 4.
     // igcse2 (v7.20.704): Paper 2's Q1 essay walked as three ARCS in planning order — bodies (B.5) → intro (B.6–B.7) →
     // conclusion (B.8), the lit shape; Section B's scene plan stays UN-laddered (the AQA P1 creative precedent).
-    var _LADDER_QUESTION_ORDERS = { p2: ['q2', 'q3', 'q4', 'q5'], p1: ['q2', 'q3', 'q4'], lit: ['bodies', 'intro', 'conclusion'], igcse2: ['bodies', 'intro', 'conclusion'] };
+    // igcse1 (v7.20.710): Paper 1's three planned questions in exam order — Q4 (Text Two, language + structure), Q5 (the
+    // comparison), Q6 (Section B, transactional — laddered like AQA P2's Q5). Q1–Q3 are point-marked and never planned.
+    var _LADDER_QUESTION_ORDERS = { p2: ['q2', 'q3', 'q4', 'q5'], p1: ['q2', 'q3', 'q4'], lit: ['bodies', 'intro', 'conclusion'], igcse2: ['bodies', 'intro', 'conclusion'], igcse1: ['q4', 'q5', 'q6'] };
     function _ladderQuestionOrder() { return _LADDER_QUESTION_ORDERS[_ladderPaperKey()]; }
 
     // The element REGISTRY — ordered, per question, in PLANNING-BEAT order. Each entry:
@@ -4364,6 +4393,7 @@
         var pk = _ladderPaperKey();
         if (pk === 'lit') return _ladderRegistryLit(qKey);
         if (pk === 'igcse2') return _ladderRegistryIgcse2(qKey);
+        if (pk === 'igcse1') return _ladderRegistryIgcse1(qKey);
         return pk === 'p1' ? _ladderRegistryP1(qKey) : _ladderRegistryP2(qKey);
     }
     // ── AQA Literature essay registry (v7.20.229 — byte-traced against the lit render:
@@ -4429,6 +4459,52 @@
             r.push({ el: 'outline-conclusion-concept', type: 'concept-synthesis', resolveBy: 'outline-conclusion-concept' });
             r.push({ el: 'outline-conclusion-purpose', type: 'central-purpose', resolveBy: 'outline-conclusion-purpose' });
             r.push({ el: 'outline-conclusion-message', type: 'universal-message', resolveBy: 'outline-conclusion-message' });
+        }
+        return r;
+    }
+    // ── Edexcel IGCSE Paper 1 registry (v7.20.710, #722 B2 step 5) — the AQA P2 shapes it was ported from, on this paper's
+    // ids (byte-traced against the page builder: bin/planning-keymatch-harness.js IGCSE P1 case, and RUN by ladder-check 3f):
+    // Q4 = AQA P2 Q3 — three TTECEA paragraphs on Text Two, -q4 suffixed, a technique stamp per paragraph (the Technique
+    // step files nothing). Q5 = AQA P2 Q4 — an aspects stamp, three comparative bodies UNSUFFIXED (effects = Text One,
+    // effects2 = Text Two), then the introduction's two marked elements (both writers' perspectives · comparative thesis,
+    // -q5) and the conclusion's two (restated thesis · the writers' purposes, unsuffixed). No hook, no context. Q6 = AQA P2
+    // Q5 — IUMVCC, synthetic els resolving to the outline-iumvcc rows. Planning-beat order throughout (bodies first).
+    function _ladderRegistryIgcse1(qKey) {
+        var r = [], i;
+        if (qKey === 'q4') {
+            for (i = 1; i <= 3; i++) {
+                r.push({ el: 'outline-body-' + i + '-topic-q4', type: 'topic', resolveBy: 'outline-body-' + i + '-topic-q4' });
+                r.push({ el: 'q4-technique-p' + i, type: 'technique', resolveBy: 'stamp' });
+                r.push({ el: 'outline-body-' + i + '-evidence-q4', type: 'evidence', resolveBy: 'outline-body-' + i + '-evidence-q4' });
+                r.push({ el: 'outline-body-' + i + '-analysis-q4', type: 'analysis', resolveBy: 'outline-body-' + i + '-analysis-q4' });
+                r.push({ el: 'outline-body-' + i + '-effects-q4', type: 'effect', resolveBy: 'outline-body-' + i + '-effects-q4' });
+                r.push({ el: 'outline-body-' + i + '-effects2-q4', type: 'effect', resolveBy: 'outline-body-' + i + '-effects2-q4' });
+                r.push({ el: 'outline-body-' + i + '-purpose-q4', type: 'purpose', resolveBy: 'outline-body-' + i + '-purpose-q4' });
+            }
+        } else if (qKey === 'q5') {
+            r.push({ el: 'q5-aspects', type: 'aspects', resolveBy: 'stamp' });
+            for (i = 1; i <= 3; i++) {
+                r.push({ el: 'outline-body-' + i + '-topic', type: 'topic', resolveBy: 'outline-body-' + i + '-topic' });
+                r.push({ el: 'outline-body-' + i + '-evidence', type: 'evidence', resolveBy: 'outline-body-' + i + '-evidence' });
+                r.push({ el: 'outline-body-' + i + '-analysis', type: 'analysis', resolveBy: 'outline-body-' + i + '-analysis' });
+                r.push({ el: 'outline-body-' + i + '-effects', type: 'effect', resolveBy: 'outline-body-' + i + '-effects' });
+                r.push({ el: 'outline-body-' + i + '-effects2', type: 'effect', resolveBy: 'outline-body-' + i + '-effects2' });
+                r.push({ el: 'outline-body-' + i + '-purpose', type: 'purpose', resolveBy: 'outline-body-' + i + '-purpose' });
+            }
+            r.push({ el: 'outline-intro-perspectives-q5', type: 'perspectives', resolveBy: 'outline-intro-perspectives-q5' });
+            r.push({ el: 'outline-intro-thesis-q5', type: 'thesis', resolveBy: 'outline-intro-thesis-q5' });
+            r.push({ el: 'outline-conclusion-thesis', type: 'conclusion', resolveBy: 'outline-conclusion-thesis' });
+            r.push({ el: 'outline-conclusion-purpose', type: 'central-purpose', resolveBy: 'outline-conclusion-purpose' });
+        } else if (qKey === 'q6') {
+            r.push({ el: 'q6-task-analysis', type: 'task', resolveBy: 'stamp' });
+            r.push({ el: 'q6-intro-image', type: 'image', resolveBy: 'outline-iumvcc-intro' });
+            r.push({ el: 'q6-urgency-image', type: 'image', resolveBy: 'outline-iumvcc-urgency' });
+            r.push({ el: 'q6-method-point-1', type: 'point', resolveBy: 'outline-iumvcc-method-point-1' });
+            r.push({ el: 'q6-method-point-2', type: 'point', resolveBy: 'outline-iumvcc-method-point-2' });
+            r.push({ el: 'q6-method-point-3', type: 'point', resolveBy: 'outline-iumvcc-method-point-3' });
+            r.push({ el: 'q6-vision-image', type: 'image', resolveBy: 'outline-iumvcc-vision' });
+            r.push({ el: 'q6-counter-objection', type: 'objection', resolveBy: 'outline-iumvcc-counter' });
+            r.push({ el: 'q6-conclusion-image', type: 'image', resolveBy: 'outline-iumvcc-conclusion' });
         }
         return r;
     }
@@ -19515,7 +19591,7 @@
                 else if (/do you expect this paper is about/i.test(t)) pending = 'predQ';
                 else if (_PLAN_PRED_ASK_RE.A.test(t)) pending = 'predA';
                 else if (_PLAN_PRED_ASK_RE.B.test(t)) pending = 'predB';
-                else if (/give them a quick once-over/i.test(t)) pending = 'tidy';
+                else if (/give (?:them|it) a quick once-over/i.test(t)) pending = 'tidy';
                 if (!pending) return; // chain done or a conversation the chain never owned
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
@@ -43347,7 +43423,7 @@
                                 else if (/do you expect this paper is about/i.test(t)) pending = 'predQ';
                                 else if (_PLAN_PRED_ASK_RE.A.test(t)) pending = 'predA';
                                 else if (_PLAN_PRED_ASK_RE.B.test(t)) pending = 'predB';
-                                else if (/give them a quick once-over/i.test(t)) pending = 'tidy';
+                                else if (/give (?:them|it) a quick once-over/i.test(t)) pending = 'tidy';
                                 if (!pending) return;
                                 const bubble = chatMessages.lastElementChild;
                                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
@@ -67841,9 +67917,8 @@
                         // chain never owned). v7.20.208: the final prediction is predB on
                         // a paired-source paper, predA on a one-source paper (P1).
                         // Asked ≠ answered: only reach L when a user reply follows the ask.
-                        const _finalPredRe = _planChainSourceCount() >= 2
-                            ? _PLAN_PRED_ASK_RE.B
-                            : _PLAN_PRED_ASK_RE.A;
+                        const _plS = _planChainPreds();   // v7.20.710: the paper's own list — same test as the chain
+                        const _finalPredRe = _planPredAskRe(_plS[_plS.length - 1] || 'predA');
                         let bIdx = -1;
                         hist.forEach((m, i) => { if (m.role === 'assistant' && _finalPredRe.test(_planChainNorm(m.content))) bIdx = i; });
                         stageIdx = (bIdx !== -1 && !hist.some((m, i) => i > bIdx && m.role === 'user')) ? (L - 1) : L;
@@ -67883,6 +67958,8 @@
             if (_planChainOrder().indexOf('reflect') !== -1 && host.querySelector('[data-field-id="reflect-recall"]')) add('Reflect on last attempt', 'Setup', _answered(/when you sat this paper last time/i));
             add('Headline goal', 'Setup', _answered(/headline goal/i));
             add('Plan mode', 'Setup', _answered(/condense your plans/i));
+            // v7.20.710: Edexcel IGCSE P1's one prediction (on the unseen Text One) — done when its ask has been answered.
+            if (host.querySelector('[data-field-id="pred-unseen"]') && _planChainPreds().length) add('Prediction', 'Setup', _answered(_PLAN_PRED_ASK_RE.A));
             // B.2A Question Focus (Edexcel IGCSE P2): done when the kw-focus filing is in this run's history — the model's
             // marker or the v7.20.706 save heal's. The box's text is the no-history fallback only (it survives chat clears).
             if (host.querySelector('[data-field-id="kw-focus"]')) {
@@ -67956,14 +68033,17 @@
                 });
             });
         } else (function () {
-            // v7.20.708: an essay the ladder walks BODIES FIRST (Edexcel IGCSE P2 Q1: B.5 → B.6/B.7 → B.8) lists its rows in
-            // that order, so "current" follows the student instead of parking on Introduction while Body 1 is planned.
-            // Stable sort: question first, then body → intro → conclusion; every other paper keeps document order.
-            if (!(_ladderActive() && (_ladderQuestionOrder() || [])[0] === 'bodies')) return planSecs;
+            // v7.20.708: an essay planned BODIES FIRST lists its rows in that order, so "current" follows the student instead
+            // of parking on Introduction while Body 1 is planned. v7.20.710: every ported essay plans bodies first (AQA P1/P2
+            // Q4, Edexcel IGCSE P1 Q5, IGCSE P2 Q1 — each protocol's own beat order), so the rule is per QUESTION: a question
+            // whose plan has body rows lists body → introduction → conclusion; any other question (IUMVCC sections, a scene
+            // plan, paragraph lists) keeps document order. Stable sort, question first.
             const _lbl = (s) => s.getAttribute('data-section-label') || '';
             const _q = (s) => { const x = /—\s*Q(\d+)\s*$/.exec(_lbl(s)); return x ? +x[1] : 0; };
-            const _rank = (s) => /body/i.test(_lbl(s)) ? 0 : /intro/i.test(_lbl(s)) ? 1 : /conclusion/i.test(_lbl(s)) ? 2 : 3;
-            return Array.from(planSecs).sort((a, b) => (_q(a) - _q(b)) || (_rank(a) - _rank(b)));
+            const _arr = Array.from(planSecs);
+            const _withBodies = new Set(_arr.filter(s => /body/i.test(_lbl(s))).map(_q));
+            const _rank = (s) => !_withBodies.has(_q(s)) ? 0 : /body/i.test(_lbl(s)) ? 0 : /intro/i.test(_lbl(s)) ? 1 : /conclusion/i.test(_lbl(s)) ? 2 : 3;
+            return _arr.map((s, i) => [s, i]).sort((a, b) => (_q(a[0]) - _q(b[0])) || (_rank(a[0]) - _rank(b[0])) || (a[1] - b[1])).map(x => x[0]);
         })().forEach(sec => {
             const raw = (sec.getAttribute('data-section-label') || '').replace(/^Plan:\s*/i, '');
             const m = /—\s*(Q\d+)\s*$/.exec(raw);
