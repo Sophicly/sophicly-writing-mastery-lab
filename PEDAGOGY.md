@@ -2832,3 +2832,33 @@ form of it is root `CLAUDE.md` §23.
    exam board is going to have its own… [with] questions and answers that relate to Inspector Calls, and then same
    for the other texts."*). The AIC mark-scheme quiz bank is AQA-only today, so non-AQA courses need their own
    (FIXLIST #735) — a §52 fit-check failure caught in the wild.
+
+---
+
+## §53. ⭐⭐ LITERATURE MARKING — the perceptive quarter, every row kept, and the supporting quotation (Neil, 2026-10-06; FIXLIST #738–#738f)
+
+Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). Rulings made so far, in his words:
+
+1. **Every literature row's last 0.25 is for perceptiveness**, intro and conclusion included, every board (#738,
+   #738d, #738f): *"close analysis, technique interplay, effect one, effect two, author's purpose, and context, all
+   of them need to have the last point two five of mark for perceptive inference. Or just perceptiveness."* This is
+   Rule 5 (`marking-fairness-universal.md`, 2026-09-22) carried into Literature, where it had never landed (prod
+   count 2026-10-05: 0 of 7 Literature marks carried its wording).
+2. **AQA's word is "conceptualised"** (#738b): AQA's Literature mark scheme never says "perceptive". Argument rows
+   (thesis, topic sentence, conclusion) are judged as conceptualised on AQA; reading rows stay "perceptive".
+3. **The bar is the Mrs Birling essay** (#738d): *"that's the standard we really want to reach."* (AQA model answer,
+   `sophicly_library_cpts_v1_9_0/content/library-pages/_rewrites/aic-pilot-out/54869-3-mrs-birling-class-prejudice.md`;
+   row-by-row definitions in the plan §3b and §3d.)
+4. **The old rows stay, because each teaches something** (#738c): an **integrated** quote earns more than a quote
+   that hangs (*"having a quote is okay… at least they've tried… but actually integrating the quote should carry
+   additional marks"*); a **wrong technical term** (metaphor for a simile) loses that row's marks; **every sentence
+   links back to the topic sentence and the question**, because otherwise *"they'll just write anything… It's just
+   information."*
+5. **A supporting quotation is a SCORED 0.25, not a bonus** (#738e): *"I favor… the last point two five just being
+   incorporated in rather than a bonus. So it's part of the marking that we do."* One anchor quotation per
+   paragraph can still reach a grade 9 (his premise; a one-anchor essay loses 0.75 of 34). The 0.25 comes out of
+   another body row so each body stays at 8. **Which row gives it up: OPEN — WML Actions page** (recommended:
+   close analysis 1.5 → 1.25, the one source that works on every table; author's purpose fails on the AQA
+   19th-century body, where it is already 0.5).
+
+Still open on the Actions page: the plan as a whole (card 2) and the introduction/conclusion definitions (card 4).
