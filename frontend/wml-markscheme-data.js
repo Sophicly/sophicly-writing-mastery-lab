@@ -234,9 +234,8 @@
             ],
             "level0": "Nothing to reward",
             "notes": [
-                "This question assesses how the writer has structured a text. Structural features can be: at a whole",
-                "text level eg beginnings/endings/perspective shifts; at a paragraph level eg topic change/aspects of",
-                "cohesion; and at a sentence level when judged to contribute to whole structure."
+                "This question assesses structure: i.e. structural features such as a pivotal point, juxtaposition, flash",
+                "back, shifts in focus, mood or tone, contrast, narrative pace and/or other structural features"
             ]
         },
         "aqa_lang1_q4_ao4": {
@@ -262,10 +261,10 @@
                                 {
                                     "name": null,
                                     "descriptors": [
-                                        "Develops a convincing and critical response to the focus of the statement",
+                                        "Develops a convincing and critical understanding of ideas",
                                         "Shows perceptive understanding of writer's methods",
-                                        "Selects a range of judicious textual detail",
-                                        "Evaluates critically and in detail the effect(s) on the reader"
+                                        "Evaluates critically and in detail the impact of the writer's ideas and methods on the reader",
+                                        "Selects a range of judicious textual detail"
                                     ]
                                 }
                             ]
@@ -287,10 +286,10 @@
                                 {
                                     "name": null,
                                     "descriptors": [
-                                        "Makes a clear and relevant response to the focus of the statement",
+                                        "Makes a clear and relevant understanding of ideas",
                                         "Shows clear understanding of writer's methods",
-                                        "Selects a range of relevant textual references",
-                                        "Evaluates clearly the effect(s) on the reader"
+                                        "Evaluates clearly the impact of the writer's ideas and methods on the reader",
+                                        "Selects a range of relevant textual references"
                                     ]
                                 }
                             ]
@@ -312,10 +311,10 @@
                                 {
                                     "name": null,
                                     "descriptors": [
-                                        "Makes some response to the focus of the statement",
+                                        "Shows some understanding of ideas",
                                         "Shows some understanding of writer's methods",
-                                        "Selects some appropriate textual reference(s)",
-                                        "Makes some evaluative comment(s) on effect(s) on the reader"
+                                        "Makes some evaluative comment(s) on the impact of the writer's methods and ideas on the reader",
+                                        "Selects some appropriate textual reference(s)"
                                     ]
                                 }
                             ]
@@ -337,10 +336,10 @@
                                 {
                                     "name": null,
                                     "descriptors": [
-                                        "Makes a simple, limited response to the focus of the statement",
+                                        "Shows simple, limited understanding of ideas",
                                         "Shows limited understanding of writer's methods",
-                                        "Selects simple, limited textual reference(s)",
-                                        "Makes simple, limited evaluative comment(s) on effect(s) on reader"
+                                        "Makes simple, limited evaluative comment(s) on the impact of the writer's methods and ideas on the reader",
+                                        "Selects simple, limited textual reference(s)"
                                     ]
                                 }
                             ]
@@ -350,9 +349,9 @@
             ],
             "level0": "Nothing to reward.",
             "notes": [
-                "AQA notes: reference to the writer's methods may be implicit without specific mention of the writer;",
-                "the evaluative 'I do/I don't agree' may be implicit — in both cases credit is given according to the",
-                "quality of what is written."
+                "AQA note (verbatim): Reference to the writer's methods may be implicit without specific mention of the writer.",
+                "Similarly, the evaluative 'I do/I don't agree' may be implicit.",
+                "In both these cases credit should be given according to the quality of what is written."
             ]
         },
         "aqa_lang1_q5_ao5": {
@@ -378,7 +377,7 @@
                                 {
                                     "name": "Content",
                                     "descriptors": [
-                                        "Communication is convincing and compelling",
+                                        "Communication is convincing and compelling and directly relevant to focus and task",
                                         "Tone, style and register are assuredly matched to purpose and audience",
                                         "Extensive and ambitious vocabulary with sustained crafting of linguistic devices"
                                     ]
@@ -401,7 +400,7 @@
                                 {
                                     "name": "Content",
                                     "descriptors": [
-                                        "Communication is convincing",
+                                        "Communication is convincing and directly relevant to focus and task",
                                         "Tone, style and register are convincingly matched to purpose and audience",
                                         "Extensive vocabulary with conscious crafting of linguistic devices"
                                     ]
@@ -433,7 +432,7 @@
                                 {
                                     "name": "Content",
                                     "descriptors": [
-                                        "Communication is consistently clear",
+                                        "Communication is consistently clear and consistently relevant to focus/task",
                                         "Tone, style and register are clearly and consistently matched to purpose and audience",
                                         "Increasingly sophisticated vocabulary and phrasing, chosen for effect with a range of successful linguistic devices"
                                     ]
@@ -456,7 +455,7 @@
                                 {
                                     "name": "Content",
                                     "descriptors": [
-                                        "Communication is generally clear",
+                                        "Communication is generally clear and relevant to focus/task",
                                         "Tone, style and register are generally matched to purpose and audience",
                                         "Vocabulary clearly chosen for effect and appropriate use of linguistic devices"
                                     ]
@@ -488,7 +487,7 @@
                                 {
                                     "name": "Content",
                                     "descriptors": [
-                                        "Communicates with some sustained success",
+                                        "Communicates with some sustained success and sustained relevance to focus/task",
                                         "Some sustained attempt to match tone, style and register to purpose and audience",
                                         "Conscious use of vocabulary with some use of linguistic devices"
                                     ]
@@ -511,9 +510,9 @@
                                 {
                                     "name": "Content",
                                     "descriptors": [
-                                        "Communicates with some success",
+                                        "Communicates with some success and some relevance to focus/task",
                                         "Attempts to match tone, style and register to purpose and audience",
-                                        "Begins to vary vocabulary with some use of linguistic devices"
+                                        "Attempts to vary vocabulary with some use of linguistic devices"
                                     ]
                                 },
                                 {
@@ -543,7 +542,7 @@
                                 {
                                     "name": "Content",
                                     "descriptors": [
-                                        "Communicates simply",
+                                        "Communicates simply with simple relevance to focus/task",
                                         "Simple awareness of matching tone, style and register to purpose and audience",
                                         "Simple vocabulary; simple linguistic devices"
                                     ]
@@ -566,7 +565,7 @@
                                 {
                                     "name": "Content",
                                     "descriptors": [
-                                        "Limited communication",
+                                        "Limited communication with limited relevance to focus/task",
                                         "Occasional sense of matching tone, style and register to purpose and audience",
                                         "Simple vocabulary"
                                     ]
@@ -585,7 +584,10 @@
                 }
             ],
             "level0": "Students will not have offered any meaningful writing to assess. Nothing to reward.",
-            "notes": []
+            "notes": [
+                "**NB (verbatim):** If a candidate does not directly address the focus of the task, their communication cannot be",
+                "clear or convincing and therefore the mark for AO5 is capped at the top of Level 2 - 12 marks"
+            ]
         },
         "aqa_lang1_q5_ao6": {
             "board": "aqa",
@@ -2331,9 +2333,9 @@
             ]
         }
     };
-    WML_MARK_SCHEMES.__sourceSha1 = 'ffeb81d6c5981c89afce651f2669a63cb6edc780';
+    WML_MARK_SCHEMES.__sourceSha1 = '27bdbfbb3a2e31e0f8403cee2ef57e7a6da1acb6';
     WML_MARK_SCHEMES.__sources = {
-        "protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md": "ffeb81d6c5981c89afce651f2669a63cb6edc780",
+        "protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md": "27bdbfbb3a2e31e0f8403cee2ef57e7a6da1acb6",
         "protocols/aqa/language2/modules/knowledge-mark-scheme-lang2.md": "081186c2c022d46535b2480014e2fc307f1261a6",
         "protocols/aqa/unseen/modules/knowledge-mark-scheme-unseen.md": "aa6deccde24faafacfe73813fa24decdf89478b9",
         "protocols/aqa/literature/modules/knowledge-mark-scheme.md": "a3a5f52b400f35c9f487085bfdae1b12fac65532"

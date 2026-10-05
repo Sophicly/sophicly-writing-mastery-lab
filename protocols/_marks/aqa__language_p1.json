@@ -1,0 +1,98 @@
+{
+  "board": "aqa",
+  "paper": "language_p1",
+  "title": "AQA GCSE English Language (8700) — Paper 1: Explorations in creative reading and writing",
+  "authority": {
+    "file": "MSR/AQA English Language Paper Mark Schemes/AQA-8700-1-SMS-2026.pdf",
+    "kind": "mark scheme",
+    "sitting": "Sample assessment materials, first exam June 2026 (Version 1.1)",
+    "why_this_source": "The board's own mark scheme for the specification students sit from June 2026 — top of the authority order (PEDAGOGY.md, Neil 2026-08-16). Paper 2's source file already cites its 2026 sample; Paper 1 had no source file at all, so tariff-gate reported it UNGATED (P1 audit 2026-10-05, D13). Its text is identical to 'AQA Lang P1 Mark Scheme 2026 Spec.pdf'."
+  },
+  "spec": {
+    "file": "language",
+    "key": "aqa.language_p1",
+    "field_kinds": {
+      "content_marks": "content",
+      "spag_marks": "spag"
+    }
+  },
+  "total": {
+    "marks": 80,
+    "marks_from": "questions",
+    "why": "The mark scheme states each question's tariff, not a paper total. 4+8+8+20 = 40 (Section A) + 40 (Section B) = 80, which matches language-paper-specs.json."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 4,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading",
+      "quote": "[4 marks]"
+    },
+    {
+      "id": "Q2",
+      "marks": 8,
+      "aos": [
+        "AO2"
+      ],
+      "section": "A — Reading",
+      "quote": "[8 marks]",
+      "quote_note": "Q2 and Q3 each print '[8 marks]' on their own mark line; the first occurrence is Q2's."
+    },
+    {
+      "id": "Q3",
+      "marks": 8,
+      "aos": [
+        "AO2"
+      ],
+      "section": "A — Reading",
+      "quote": "[8 marks]",
+      "quote_occurrence": "last",
+      "quote_note": "The second '[8 marks]' is Q3's own mark line."
+    },
+    {
+      "id": "Q4",
+      "marks": 20,
+      "aos": [
+        "AO4"
+      ],
+      "section": "A — Reading",
+      "quote": "[20 marks]"
+    },
+    {
+      "id": "Q5",
+      "marks": 40,
+      "aos": [
+        "AO5",
+        "AO6"
+      ],
+      "section": "B — Writing",
+      "marks_from": "components",
+      "quote": "A wildlife magazine is running a creative writing competition.",
+      "components": [
+        {
+          "label": "content and organisation",
+          "marks": 24,
+          "kind": "writing",
+          "aos": [
+            "AO5"
+          ],
+          "quote": "(24 marks for content and organisation"
+        },
+        {
+          "label": "technical accuracy",
+          "marks": 16,
+          "kind": "writing",
+          "aos": [
+            "AO6"
+          ],
+          "quote": "16 marks for technical accuracy)"
+        }
+      ],
+      "marks_quote": "[40 marks]",
+      "quote_note": "Locator = the task's opening line: the sample prints the two component tariffs ABOVE the '[40 marks]' line, so anchoring on '[40 marks]' would leave both components outside Q5's own region."
+    }
+  ]
+}

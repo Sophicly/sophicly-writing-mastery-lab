@@ -1,0 +1,95 @@
+{
+  "board": "aqa",
+  "paper": "language_p2",
+  "title": "AQA GCSE English Language (8700) — Paper 2: Writers' viewpoints and perspectives",
+  "authority": {
+    "file": "MSR/AQA English Language Paper Mark Schemes/AQA-87002-SMS-2026 (1).PDF",
+    "kind": "mark scheme",
+    "sitting": "Sample assessment materials, first exam June 2026",
+    "why_this_source": "The board's own mark scheme for the specification students sit from June 2026 — the same source knowledge-mark-scheme-lang2.md already quotes. Paper 2 had no source file, so tariff-gate reported it UNGATED (found 2026-10-05 while gating Paper 1)."
+  },
+  "spec": {
+    "file": "language",
+    "key": "aqa.language_p2",
+    "field_kinds": {
+      "content_marks": "content",
+      "spag_marks": "spag"
+    }
+  },
+  "total": {
+    "marks": 80,
+    "marks_from": "questions",
+    "why": "The mark scheme states each question's tariff, not a paper total. 4+8+12+16 = 40 (Section A) + 40 (Section B) = 80, which matches language-paper-specs.json."
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "marks": 4,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading",
+      "quote": "[4 marks]"
+    },
+    {
+      "id": "Q2",
+      "marks": 8,
+      "aos": [
+        "AO1"
+      ],
+      "section": "A — Reading",
+      "quote": "[8 marks]"
+    },
+    {
+      "id": "Q3",
+      "marks": 12,
+      "aos": [
+        "AO2"
+      ],
+      "section": "A — Reading",
+      "quote": "[12 marks]"
+    },
+    {
+      "id": "Q4",
+      "marks": 16,
+      "aos": [
+        "AO3"
+      ],
+      "section": "A — Reading",
+      "quote": "[16 marks]"
+    },
+    {
+      "id": "Q5",
+      "marks": 40,
+      "aos": [
+        "AO5",
+        "AO6"
+      ],
+      "section": "B — Writing",
+      "marks_from": "components",
+      "quote": "'Cars are convenient, comfortable and save time.",
+      "marks_quote": "[40 marks]",
+      "quote_note": "Locator = the task's opening line: the component tariffs are printed ABOVE the '[40 marks]' line.",
+      "components": [
+        {
+          "label": "content and organisation",
+          "marks": 24,
+          "kind": "writing",
+          "aos": [
+            "AO5"
+          ],
+          "quote": "(24 marks for content and organisation"
+        },
+        {
+          "label": "technical accuracy",
+          "marks": 16,
+          "kind": "writing",
+          "aos": [
+            "AO6"
+          ],
+          "quote": "16 marks for technical accuracy)"
+        }
+      ]
+    }
+  ]
+}

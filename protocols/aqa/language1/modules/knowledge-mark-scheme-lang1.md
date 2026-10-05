@@ -1,7 +1,9 @@
-# Knowledge: AQA English Language 8700 Paper 1 — REAL Mark Scheme Level Descriptors
+# Knowledge: AQA English Language 8700 Paper 1 — REAL Mark Scheme Level Descriptors (2026 spec)
 
 **[AI_INTERNAL] WHAT THIS FILE IS:** the verbatim AQA 8700/1 level descriptors (source: AQA GCSE
-English Language 8700/1 mark scheme, June 2024 series, Version 1.0 Final). This is REFERENCE DATA,
+English Language 8700/1 SAMPLE mark scheme, 2026 specification, first exam June 2026 — "AQA-8700-1-SMS-2026.pdf"
+= "AQA Lang P1 Mark Scheme 2026 Spec.pdf", Version 1.1. Q3's framing note, Q4 and the AO5 Content bullets + NB
+were re-sourced from it on 2026-10-05 (v7.20.694); Q1, Q2 and AO6 are unchanged from June 2024). This is REFERENCE DATA,
 not workflow. When Protocol A's "Level Alignment" step tells you to quote a level descriptor, quote
 it from THIS file — word for word, naming the level and its mark range. **NEVER invent, paraphrase
 from memory, or extrapolate a descriptor that is not on this page.** If a descriptor you need is not
@@ -93,9 +95,8 @@ in Level 1 or Level 2, according to the quality of what is written.
 
 ## QUESTION 3 (AO2 Structure — 8 marks) — level descriptors
 
-> This question assesses how the writer has structured a text. Structural features can be: at a whole
-> text level eg beginnings/endings/perspective shifts; at a paragraph level eg topic change/aspects of
-> cohesion; and at a sentence level when judged to contribute to whole structure.
+> This question assesses structure: i.e. structural features such as a pivotal point, juxtaposition, flash
+> back, shifts in focus, mood or tone, contrast, narrative pace and/or other structural features
 
 **Level 4 — Perceptive, detailed analysis — 7–8 marks**
 Shows perceptive and detailed understanding of structural features:
@@ -129,37 +130,37 @@ Shows simple awareness of structural features:
 
 **Level 4 — Perceptive, detailed evaluation — 16–20 marks**
 Shows perceptive and detailed evaluation:
-- Develops a convincing and critical response to the focus of the statement
+- Develops a convincing and critical understanding of ideas
 - Shows perceptive understanding of writer's methods
+- Evaluates critically and in detail the impact of the writer's ideas and methods on the reader
 - Selects a range of judicious textual detail
-- Evaluates critically and in detail the effect(s) on the reader
 
 **Level 3 — Clear, relevant evaluation — 11–15 marks**
 Shows clear and relevant evaluation:
-- Makes a clear and relevant response to the focus of the statement
+- Makes a clear and relevant understanding of ideas
 - Shows clear understanding of writer's methods
+- Evaluates clearly the impact of the writer's ideas and methods on the reader
 - Selects a range of relevant textual references
-- Evaluates clearly the effect(s) on the reader
 
 **Level 2 — Some evaluation — 6–10 marks**
 Shows some attempts at evaluation:
-- Makes some response to the focus of the statement
+- Shows some understanding of ideas
 - Shows some understanding of writer's methods
+- Makes some evaluative comment(s) on the impact of the writer's methods and ideas on the reader
 - Selects some appropriate textual reference(s)
-- Makes some evaluative comment(s) on effect(s) on the reader
 
 **Level 1 — Simple, limited comment — 1–5 marks**
 Shows simple, limited evaluation:
-- Makes a simple, limited response to the focus of the statement
+- Shows simple, limited understanding of ideas
 - Shows limited understanding of writer's methods
+- Makes simple, limited evaluative comment(s) on the impact of the writer's methods and ideas on the reader
 - Selects simple, limited textual reference(s)
-- Makes simple, limited evaluative comment(s) on effect(s) on reader
 
 **Level 0 — No marks:** Nothing to reward.
 
-AQA notes: reference to the writer's methods may be implicit without specific mention of the writer;
-the evaluative 'I do/I don't agree' may be implicit — in both cases credit is given according to the
-quality of what is written.
+AQA note (verbatim): Reference to the writer's methods may be implicit without specific mention of the writer.
+Similarly, the evaluative 'I do/I don't agree' may be implicit.
+In both these cases credit should be given according to the quality of what is written.
 
 ---
 
@@ -169,7 +170,7 @@ quality of what is written.
 
 *Upper Level 4 — 22–24 marks*
 Content:
-- Communication is convincing and compelling
+- Communication is convincing and compelling and directly relevant to focus and task
 - Tone, style and register are assuredly matched to purpose and audience
 - Extensive and ambitious vocabulary with sustained crafting of linguistic devices
 
@@ -180,7 +181,7 @@ Organisation:
 
 *Lower Level 4 — 19–21 marks*
 Content:
-- Communication is convincing
+- Communication is convincing and directly relevant to focus and task
 - Tone, style and register are convincingly matched to purpose and audience
 - Extensive vocabulary with conscious crafting of linguistic devices
 
@@ -193,7 +194,7 @@ Organisation:
 
 *Upper Level 3 — 16–18 marks*
 Content:
-- Communication is consistently clear
+- Communication is consistently clear and consistently relevant to focus/task
 - Tone, style and register are clearly and consistently matched to purpose and audience
 - Increasingly sophisticated vocabulary and phrasing, chosen for effect with a range of successful linguistic devices
 
@@ -204,7 +205,7 @@ Organisation:
 
 *Lower Level 3 — 13–15 marks*
 Content:
-- Communication is generally clear
+- Communication is generally clear and relevant to focus/task
 - Tone, style and register are generally matched to purpose and audience
 - Vocabulary clearly chosen for effect and appropriate use of linguistic devices
 
@@ -217,7 +218,7 @@ Organisation:
 
 *Upper Level 2 — 10–12 marks*
 Content:
-- Communicates with some sustained success
+- Communicates with some sustained success and sustained relevance to focus/task
 - Some sustained attempt to match tone, style and register to purpose and audience
 - Conscious use of vocabulary with some use of linguistic devices
 
@@ -228,9 +229,9 @@ Organisation:
 
 *Lower Level 2 — 7–9 marks*
 Content:
-- Communicates with some success
+- Communicates with some success and some relevance to focus/task
 - Attempts to match tone, style and register to purpose and audience
-- Begins to vary vocabulary with some use of linguistic devices
+- Attempts to vary vocabulary with some use of linguistic devices
 
 Organisation:
 - Attempts to use structural features
@@ -241,7 +242,7 @@ Organisation:
 
 *Upper Level 1 — 4–6 marks*
 Content:
-- Communicates simply
+- Communicates simply with simple relevance to focus/task
 - Simple awareness of matching tone, style and register to purpose and audience
 - Simple vocabulary; simple linguistic devices
 
@@ -252,7 +253,7 @@ Organisation:
 
 *Lower Level 1 — 1–3 marks*
 Content:
-- Limited communication
+- Limited communication with limited relevance to focus/task
 - Occasional sense of matching tone, style and register to purpose and audience
 - Simple vocabulary
 
@@ -262,6 +263,9 @@ Organisation:
 - No paragraphs
 
 **Level 0 — No marks:** Students will not have offered any meaningful writing to assess. Nothing to reward.
+
+**NB (verbatim):** If a candidate does not directly address the focus of the task, their communication cannot be
+clear or convincing and therefore the mark for AO5 is capped at the top of Level 2 - 12 marks
 
 ---
 

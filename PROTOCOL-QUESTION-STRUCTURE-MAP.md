@@ -30,8 +30,8 @@ The derivation rules (para-count-by-marks, skip-list, TTECEA bedrock) live in `C
 
 #### Q1 — Retrieval — list 4 things from lines X-Y
 - **4 marks** · AOs: AO1 · structure: **SKIP (none)**
-- _Note:_ True/false-style retrieval, mark-per-statement. Universal SKIP rule applies verbatim.
-- _Source:_ `protocols/aqa/language1/modules/protocol-a-assessment.md (PAPER MAP, line 42); protocols/shared/language-paper-specs.json aqa.language_p1.Q1`
+- _Note:_ List-four retrieval, one mark per correct point (our practice papers; real past papers). ⚠️ AQA's 2026 sample (first exam June 2026) makes Q1 multiple choice — whether our papers follow is Neil's ruling (P1 audit A5, 2026-10-05). Universal SKIP rule applies either way.
+- _Source:_ `protocols/aqa/language1/modules/protocol-a-assessment.md (PAPER MAP); protocols/shared/language-paper-specs.json aqa.language_p1.Q1; AQA-8700-1-SMS-2026.pdf p.8`
 
 #### Q2 — Language Analysis — how the writer uses language to...
 - **8 marks** · AOs: AO2 · structure: **ttecea-body** · paragraphs: **2**
@@ -77,8 +77,8 @@ The derivation rules (para-count-by-marks, skip-list, TTECEA bedrock) live in `C
 
 #### Q5 — Creative Writing — descriptive or narrative (choice of 2 tasks)
 - **40 marks** · AOs: AO5, AO6 · structure: **scene-story-spine** · paragraphs: **0**
-- _Note:_ HOLISTIC — no paragraph-count rule at all; marked whole-piece as Content & Organisation (AO5, /24) + Technical Accuracy (AO6, /16). Feedback walks the taught scene-structure beats (knowledge-hub 2.C creative-writing criteria — the Pixar-style story-spine beats used across CW), one block per beat, not a fixed paragraph count. 650-word ceiling applies (never a halt).
-- _Source:_ `protocols/aqa/language1/modules/protocol-a-assessment.md lines 565-624; protocols/shared/language-paper-specs.json aqa.language_p1.Q5`
+- _Note:_ HOLISTIC — no paragraph-count rule at all; marked whole-piece as Content & Organisation (AO5, /24) + Technical Accuracy (AO6, /16). A STORY: feedback walks the SEVEN scene beats the student planned (Hook · Setup · Reaction · Epiphany · Proaction · Climax · Denouement — protocol-b-planning.md S6), one block per beat. A DESCRIPTION has no beats: one block per part of the piece in its own order (a planned description shape awaits Neil's ruling, P1 audit A1). AO5 capped at 12 when the writing does not address the task's focus (2026 sample NB). 650-word ceiling applies (never a halt).
+- _Source:_ `protocols/aqa/language1/modules/protocol-a-assessment.md (STEP 2b — the Q5 card); protocols/shared/language-paper-specs.json aqa.language_p1.Q5; AQA-8700-1-SMS-2026.pdf pp.16-20`
 
 ### language2 — AQA Language Paper 2 (non-fiction)
 

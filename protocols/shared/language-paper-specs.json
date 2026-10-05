@@ -32,7 +32,7 @@
   "aqa": {
     "language_p1": {
       "verified": true,
-      "source": "AQA 8700/1 specification + past papers",
+      "source": "AQA 8700/1 sample mark scheme for the 2026 specification (AQA-8700-1-SMS-2026.pdf, first exam June 2026) + past papers — tariffs gated by protocols/_marks/aqa__language_p1.json",
       "total": 80,
       "time_minutes": 105,
       "aos_descriptions": {
@@ -109,7 +109,7 @@
     },
     "language_p2": {
       "verified": true,
-      "source": "AQA 8700/2 specification + past papers",
+      "source": "AQA 8700/2 sample mark scheme for the 2026 specification (AQA-87002-SMS-2026, first exam June 2026) + past papers — tariffs gated by protocols/_marks/aqa__language_p2.json",
       "total": 80,
       "time_minutes": 105,
       "sections": [
