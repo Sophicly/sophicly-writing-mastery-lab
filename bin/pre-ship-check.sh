@@ -317,6 +317,18 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
      | grep -qE 'wml-app\.js|quick-actions-harness\.js'; then
   node bin/quick-actions-harness.js || fail=1
 fi
+# v7.20.713 (#726): the student's OWN mark-scheme total is out of the BOARD's total (measured on prod: "YOUR MARK
+# 41/76" on an /80 AQA paper — Q1 was never self-marked). Real key builder + dataset vs the repo's tariff files.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-markscheme-data\.js|paper-specs\.json|sa-total-harness\.js'; then
+  node bin/sa-total-harness.js || fail=1
+fi
+# v7.20.713 (#730): one field id is ONE answer box (measured on prod: "Q2-response" ×5 from an editor split — the
+# pop-out chip and Document Progress miscounted). Real ProseMirror Transform where available.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|dup-field-harness\.js'; then
+  node bin/dup-field-harness.js || fail=1
+fi
 
 # v7.20.583 (#459): MISFILED-ANSWER GATE. A student's answer typed into the PLAN box (Dwij, 1215)
 # reached the marker as "NOT ATTEMPTED" and was refused twice with no way forward. The guard is

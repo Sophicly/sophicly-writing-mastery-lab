@@ -69,25 +69,27 @@ ok(_descs('aqa_lit_p1_ao123').indexOf('Identification of the writer’s methods.
     'each paper keeps its OWN wording (P1 "the writer’s" · P2 "writers’")');
 
 // The host's key builder, executed against a fake state/window — the real function, sliced whole.
-const kbSrc = JS.slice(JS.indexOf('    function _ladderSchemeKeysFor(topicData) {'), JS.indexOf('    function _ladderFids(key) {'))
+// v7.20.713 (#726): the point-marked table (Q1) + its helpers sit just above the builder — sliced with it.
+const ptSrc = JS.slice(JS.indexOf('    const LADDER_POINT_SCHEMES = {'), JS.indexOf('    function _ladderSchemeKeysFor(topicData) {'));
+const kbSrc = ptSrc + JS.slice(JS.indexOf('    function _ladderSchemeKeysFor(topicData) {'), JS.indexOf('    function _ladderFids(key) {'))
     // v7.20.673: the builder calls _isLitEssay — the REAL predicate, sliced too. Without it the
     // sandbox threw, the builder's try/catch returned [], and "no keys for Literature" passed on a crash.
     + JS.slice(JS.indexOf('    function _isLitEssay() {'), JS.indexOf('    function _isPoetryLadder() {'));
-ok(kbSrc.length > 200 && /return keys\.map/.test(kbSrc), 'sliced the real _ladderSchemeKeysFor whole');
+ok(kbSrc.length > 200 && /keys\.map\(k => \(\{ key: k/.test(kbSrc) && /const LADDER_POINT_SCHEMES/.test(kbSrc), 'sliced the real _ladderSchemeKeysFor whole (with its point-marked table)');
 function keysUnder(board, subject, topicData, text) {
     const ctx = { window: { WML_MARK_SCHEMES: data }, state: { board, subject, text: text || '' }, console };
     vm.createContext(ctx);
     vm.runInContext(kbSrc + '\nthis.__out = _ladderSchemeKeysFor(' + JSON.stringify(topicData || null) + ');', ctx);
     return ctx.__out;
 }
-ok(keysUnder('aqa', 'language1').length === 5, 'derives 5 keys for aqa/language1');
+ok(keysUnder('aqa', 'language1').length === 6, 'derives 6 keys for aqa/language1 (Q1 point-marked + 5 levelled — v7.20.713)');
 // The REAL shortcode shape on the staging AQA P1 assessment lesson (measured 2026-09-07):
 // subject="language" text="aqa_lang_paper_1" — the paper is in the TEXT slug.
-ok(keysUnder('aqa', 'language', null, 'aqa_lang_paper_1').length === 5, 'derives 5 keys for subject=language + text=aqa_lang_paper_1 (the real lesson shape)');
-ok(keysUnder('aqa', 'language', null, 'aqa_lang_paper_2').length === 5, 'derives 5 keys for subject=language + text=aqa_lang_paper_2');
-ok(keysUnder('aqa', 'language', null, 'aqa-lang-paper-1').length === 5, 'dash form of the text slug resolves too');
+ok(keysUnder('aqa', 'language', null, 'aqa_lang_paper_1').length === 6, 'derives 6 keys for subject=language + text=aqa_lang_paper_1 (the real lesson shape)');
+ok(keysUnder('aqa', 'language', null, 'aqa_lang_paper_2').length === 6, 'derives 6 keys for subject=language + text=aqa_lang_paper_2');
+ok(keysUnder('aqa', 'language', null, 'aqa-lang-paper-1').length === 6, 'dash form of the text slug resolves too');
 ok(keysUnder('aqa', 'language', null, '').length === 0, 'subject=language with NO text → nothing (never guess a paper)');
-ok(keysUnder('aqa', 'language_p2').length === 5, 'derives 5 keys for aqa/language_p2 (spec-key spelling)');
+ok(keysUnder('aqa', 'language_p2').length === 6, 'derives 6 keys for aqa/language_p2 (spec-key spelling)');
 ok(keysUnder('aqa', 'unseen_poetry').length === 1 && keysUnder('aqa', 'unseen_poetry')[0].key === 'aqa_unseen_q271',
     'unseen with NO Q27.2 in the topic → Q27.1 only (the course\'s own topics)');
 ok(keysUnder('aqa', 'unseen_poetry', { questions: [{ id: 'Q27.1' }, { id: 'Q27.2' }] }).length === 2,
@@ -122,14 +124,14 @@ function sectionUnder(board, subject, text) {
 }
 const p1 = sectionUnder('aqa', 'language1');
 ok(/label="Mark-Scheme Self-Assessment"/.test(p1), 'P1 section carries the host\'s label');
-ok((p1.match(/<row fid="sa-ms-aqa_lang1_/g) || []).length === 20, 'P1: 5 keys × 4 rows = 20 rows — got ' + (p1.match(/<row fid="sa-ms-aqa_lang1_/g) || []).length);
+ok((p1.match(/<row fid="sa-ms-aqa_lang1_/g) || []).length === 21, 'P1: 5 levelled keys × 4 rows + Q1\x27s one mark box = 21 rows — got ' + (p1.match(/<row fid="sa-ms-aqa_lang1_/g) || []).length);
 ok(/fid="sa-ms-confidence"/.test(p1), 'P1: the confidence row exists');
 // v7.20.677 (#691 — Neil: "is that what I've given myself?… at the bottom it shows what Sophia is
 // going to give me or something?"): every box is the student's own, and says so; no Band box.
 ok(!/-band"/.test(p1), 'no Band box — only AQA Lang Q5 content prints Upper/Lower, and there the level box already carries it (#691)');
 {
     const prompts = (p1.match(/ p="([^"]*)"/g) || []).map((x) => x.slice(4, -1)).filter((x) => !/^How confident/.test(x));
-    ok(prompts.length === 20 && prompts.every((x) => /you gave yourself|you said your answer|^Your reason/.test(x)),
+    ok(prompts.length === 21 && prompts.every((x) => /you gave yourself|you said your answer|^Your reason/.test(x)),   // 21: + Q1's mark box (v7.20.713)
         'every box names it as the student\'s own decision — ' + Array.from(new Set(prompts)).join(' | '));
     ok(!prompts.some((x) => /band|placement/i.test(x)), 'no label mentions band or placement');
     ok(/Every box here holds what you decided\./.test(p1) && /Sophia’s marks go in the Feedback sections\./.test(p1) && /Calibration section then puts your marks and hers side by side/.test(p1),
@@ -141,7 +143,7 @@ ok(!/-band"/.test(p1), 'no Band box — only AQA Lang Q5 content prints Upper/Lo
     // scheme keeps its criteria box.
     const osCtx = { window: { WML_MARK_SCHEMES: data } };
     vm.createContext(osCtx);
-    vm.runInContext(fidSrc + '\nthis.one = _ladderOneSentence; this.fids = _ladderFids;', osCtx);
+    vm.runInContext(ptSrc + fidSrc + '\nthis.one = _ladderOneSentence; this.fids = _ladderFids;', osCtx);
     const oneSentence = Object.keys(data).filter((k) => data[k] && Array.isArray(data[k].levels) && osCtx.one(k));
     ok(oneSentence.join(',') === 'aqa_lit_ao4', 'only Literature AO4 has one-sentence levels — got ' + (oneSentence.join(',') || 'none'));
     ok(!('met' in osCtx.fids('aqa_lit_ao4')) && osCtx.fids('aqa_lit_p1_ao123').met === 'sa-ms-aqa_lit_p1_ao123-met', 'AO4 has no criteria fid; AO1–AO3 keeps its own');
@@ -311,7 +313,7 @@ ok(/actual: _calibActualFor\(k\.q, k\.ao, k\.max\)/.test(JS), '_calibGroups asks
         },
     };
     vm.createContext(ctx);
-    vm.runInContext(kbSrc + sl('_ladderFids') + sl('_ladderOneSentence') + sl('_ladderRowText') + sl('_ladderHostGroups') + sl('_paraKey') + sl('_calibDocKey') + sl('_predKey')
+    vm.runInContext(kbSrc + sl('_ladderFids') + sl('_ladderOneSentence') + sl('_ladderRowText') + sl('_ladderMarksInHistory') + sl('_ladderHostGroups') + sl('_paraKey') + sl('_calibDocKey') + sl('_predKey')
         + sl('_predFromDoc') + sl('_predFromChat')
         + sl('_getPredicted') + sl('_setPredicted') + sl('_ladderFeedPrediction') + sl('_calibActualFor'), ctx);
     const run = (code) => vm.runInContext(code, ctx);

@@ -57,13 +57,16 @@ function sliceName(name) {
     return SRC.slice(start, SRC.indexOf(';\n', i) + 1);
 }
 const NAMES = ['LADDER_SA_LABEL', 'CALIB_LABEL', 'LIT_CALIB_KEY', 'escapeHTML', 'sectionHTML', 'inputHTML', 'dividerHTML',
-    '_isLitEssay', '_ladderSchemeKeysFor', '_ladderFids', 'buildMarkSchemeSelfAssessSection', '_calibFids', '_ladderIsLit',
+    '_isLitEssay', 'LADDER_POINT_SCHEMES', '_ladderPointScheme', '_ladderSchemeKeysFor', '_ladderFids', '_ladderGroupHTML', 'buildMarkSchemeSelfAssessSection', '_calibFids', '_ladderIsLit',   // v7.20.713 (#726): + the Q1 point rows
     'GAP_SECTIONS', '_gapFids',   // v7.20.674 (#686): the Literature Calibration template carries the paragraph rows
     'buildCalibrationSection', 'healLadderSectionsUnderSelfAssessment',
     // v7.20.677 (#691): the wording heal + the one-ask confidence fix, both driven below
     'LADDER_SA_INTRO', 'LADDER_SA_PROMPTS', 'LADDER_SA_OLD', '_setParagraphContentViaPM', 'healLadderSaWording', '_ladderHostAskConfidence',
     // v7.20.678: the Section Guard's own node count — the guard reverted the first cut of the heal
-    '_PROTECTED_NODE_TYPES', 'countSections', '_ladderOneSentence'];
+    '_PROTECTED_NODE_TYPES', 'countSections', '_ladderOneSentence',
+    // v7.20.713 (#726 Q1 point rows · #730 one id = one box): the two new heals + the one-tap ask, driven in block P
+    '_ladderRowText', '_ladderRowExists', '_ladderMarksInHistory', '_ladderPointSkip', '_ladderPointExempt', '_ladderHostGroups',
+    'healLadderPointRows', '_ladderHostAskPoints', '_ladderHostFilePoints', '_dupFieldRuns', '_dupFieldMerged', 'healDuplicateInputFields'];
 const CODE = NAMES.map((n) => { const s = sliceName(n); if (!s) throw new Error('cannot slice ' + n); return s; }).join('\n');
 
 const browser = await chromium.launch();
@@ -214,8 +217,9 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
             state, { hasAssessmentSections: () => true, recordTurn: () => null }, () => {}, () => {}, () => { saves++; },
             shell, (x) => x, el, () => true, () => {}, () => { rendered++; });
 
-        // Build the pre-.677 section byte-for-byte from the OLD strings.
-        const keys = api._ladderSchemeKeysFor(null);
+        // Build the pre-.677 section byte-for-byte from the OLD strings. A pre-.677 document never had a
+        // point-marked (Q1) box — those arrived at .713 — so the old section is built from the levelled keys only.
+        const keys = api._ladderSchemeKeysFor(null).filter((k) => !k.points);
         let inner = '<p><em>' + api.OLD.intro + '</em></p>';
         keys.forEach((k) => {
             const f = api._ladderFids(k.key), b = 'sa-ms-' + k.key + '-band';
@@ -302,6 +306,115 @@ for (const FIX of ['OLD-LANG', 'TEMPLATE', 'LIT-NEW', 'IN-ORDER']) {
     ok('reload race (wrap → ask → ask): ONE confidence ask, last in the chat, with 5 buttons', r.asks === 1 && r.lastIsAsk && r.lastBtns === 5, 'asks=' + r.asks + ' buttons=' + r.lastBtns);
     ok('reload race (ask → wrap → ask): still ONE ask, last, with 5 buttons', r.asks2 === 1 && r.last2IsAsk && r.last2Btns === 5, 'asks=' + r.asks2 + ' buttons=' + r.last2Btns);
     ok('the buttons carry words (#690)', r.btnText.join('|') === '1 — Not at all|2 — Not very|3 — Somewhat|4 — Fairly|5 — Very', r.btnText.join('|'));
+    await page.close();
+}
+
+// ── P · v7.20.713 — Q1 POINT ROWS (#726) + ONE ID = ONE BOX (#730), in a real TipTap editor under the real guard ──
+{
+    console.log('\n== P · Q1 point rows + duplicate answer boxes (#726, #730)');
+    const page = await browser.newPage();
+    page.on('pageerror', (e) => console.log('  page error:', e.message));
+    await page.setContent('<!doctype html><html><body><div id="swml-tiptap-editor"></div><div id="chat"></div></body></html>');
+    await page.addScriptTag({ content: TIPTAP });
+    await page.addScriptTag({ content: DATA });
+    const r = await page.evaluate(({ CODE }) => {
+        const T = window.TipTap;
+        const SectionBlock = T.Node.create({
+            name: 'sectionBlock', group: 'block', content: 'block+', defining: true,
+            addAttributes() { return { sectionType: { default: 'response' }, label: { default: '' } }; },
+            parseHTML() { return [{ tag: 'div[data-section-type]', getAttrs: (d) => ({ sectionType: d.getAttribute('data-section-type'), label: d.getAttribute('data-section-label') || '' }) }]; },
+            renderHTML({ HTMLAttributes: a }) { return ['div', { 'data-section-type': a.sectionType, 'data-section-label': a.label }, 0]; },
+        });
+        const InputField = T.Node.create({
+            name: 'inputField', group: 'block', content: 'inline*',
+            addAttributes() { return { fieldId: { default: null }, prompt: { default: '' } }; },
+            parseHTML() { return [{ tag: 'div[data-input-field]', getAttrs: (d) => ({ fieldId: d.getAttribute('data-field-id'), prompt: d.getAttribute('data-prompt') || '' }) }]; },
+            renderHTML({ HTMLAttributes: a }) { return ['div', { 'data-input-field': 'true', 'data-field-id': a.fieldId, 'data-prompt': a.prompt }, 0]; },
+        });
+        const state = { board: 'aqa', subject: 'language', text: 'aqa_lang_paper_1', task: 'assessment', reviewMode: false };
+        let saves = 0, rendered = 0, edRef = null;
+        const chat = document.getElementById('chat');
+        const shell = { messages: chat, history: [], addMsg: (html) => {
+            chat.querySelectorAll('.swml-quick-actions').forEach((q) => q.remove());
+            const b = document.createElement('div'); b.className = 'bubble'; b.innerHTML = '<div class="swml-bubble-content">' + html + '</div>'; chat.appendChild(b); return b; } };
+        const el = (tag, o) => { const n = document.createElement(tag); if (o && o.className) n.className = o.className; if (o && o.textContent) n.textContent = o.textContent; if (o && o.onClick) n.addEventListener('click', o.onClick); return n; };
+        // The shipped write: replace the box's text through a transaction (true = written).
+        const write = (fid, text) => { let at = null, node = null; edRef.state.doc.descendants((n, p) => { if (at === null && n.type.name === 'inputField' && n.attrs.fieldId === fid) { at = p; node = n; } });
+            if (at === null) return false; edRef.view.dispatch(edRef.state.tr.insertText(text, at + 1, at + node.nodeSize - 1)); return true; };
+        const GUARD = '\nlet _undoGuardActive = false, _sectionCount = 0, _reverted = 0;\n'
+            + 'function guardTx(editor, transaction) {\n'
+            + '  if (!transaction.docChanged || _sectionCount <= 0) return;\n'
+            + '  if (_migrationActive || _undoGuardActive) { _sectionCount = countSections(editor.state.doc); return; }\n'
+            + '  const newCount = countSections(editor.state.doc);\n'
+            + '  if (newCount < _sectionCount) { _reverted++; _undoGuardActive = true; editor.commands.undo(); _undoGuardActive = false; _sectionCount = countSections(editor.state.doc); return; }\n'
+            + '  _sectionCount = newCount;\n}\n';
+        const api = new Function('state', 'WML', '_scoreOverlaysRefresh', '_recomputeAllCompletion', 'saveCanvasContent', '_chatShell', 'formatAI', 'el', '_writeOutlineRowField', 'saveCanvasChat', '_ladderHostRenderCurrent',
+            'let canvasEditor = null; let _migrationActive = false;\n' + CODE + GUARD
+            + '\nreturn { setEd: (e) => { canvasEditor = e; _sectionCount = countSections(e.state.doc); }, guardTx, reverted: () => _reverted, sectionHTML, inputHTML, _ladderSchemeKeysFor, _ladderFids, _ladderGroupHTML,'
+            + ' healPoints: healLadderPointRows, ask: _ladderHostAskPoints, groups: _ladderHostGroups, healDup: healDuplicateInputFields, runs: _dupFieldRuns };')(
+            // recordTurn as shipped (wml-core.js:4271): a durable turn is stored, a durable:false one is not.
+            state, { hasAssessmentSections: () => true, recordTurn: (h, e, o) => { if (o && o.durable) { h.push(e); return e; } return null; } }, () => {}, () => {}, () => { saves++; },
+            shell, (x) => x, el, (fid, text) => write(fid, text), () => {}, () => { rendered++; });
+        const mount = (html) => { if (edRef) edRef.destroy(); edRef = new T.Editor({ element: document.getElementById('swml-tiptap-editor'), extensions: [T.StarterKit, SectionBlock, InputField], content: html,
+            onTransaction: ({ editor: e, transaction }) => api.guardTx(e, transaction) }); api.setEd(edRef); return edRef; };
+        const rows = () => { const o = {}; edRef.state.doc.descendants((n) => { if (n.type.name === 'inputField' && n.attrs.fieldId) o[n.attrs.fieldId] = (o[n.attrs.fieldId] || []).concat([n.textContent]); }); return o; };
+        const firstHeadingInSa = () => { let h = null; edRef.state.doc.descendants((n) => { if (n.type.name === 'sectionBlock') { if (n.attrs.label === 'Mark-Scheme Self-Assessment') n.forEach((c) => { if (!h && c.type.name === 'heading') h = c.textContent; }); return false; } return true; }); return h; };
+        let tx = 0; const countTx = () => { tx = 0; const h = () => { tx++; }; edRef.on('transaction', h); return () => edRef.off('transaction', h); };
+
+        // A pre-.713 Mark-Scheme section: the levelled keys only, confidence empty (the walk not finished).
+        const levelled = api._ladderSchemeKeysFor(null).filter((k) => !k.points);
+        const preSection = (conf) => api.sectionHTML('action', 'Self-Assessment', true, null, '<p>SA</p>')
+            + api.sectionHTML('action', 'Mark-Scheme Self-Assessment', true, null, '<p><em>intro</em></p>' + levelled.map(api._ladderGroupHTML).join('')
+                + '<h3>Confidence</h3>' + api.inputHTML('How confident are you in your own marks? (1 = not at all · 5 = very)', 'sa-ms-confidence'))
+            + api.sectionHTML('feedback', 'Feedback: Q1 (— / 4)', true, null, '<p>fb</p>');
+        const out = {};
+        mount(preSection());
+        let stop = countTx(); saves = 0;
+        api.healPoints();
+        stop();
+        out.a1 = { q1: rows()['sa-ms-aqa_lang1_q1_ao1-mark'] || null, first: firstHeadingInSa(), tx: tx, saves: saves, reverted: api.reverted() };
+        stop = countTx(); api.healPoints(); stop(); out.a2 = { tx: tx, q1Count: (rows()['sa-ms-aqa_lang1_q1_ao1-mark'] || []).length };
+        out.a3 = { order: api.groups().map((g) => g.q + (g.done ? '✓' : '·')).join(' ') };
+        // B — the one-tap ask files "3 / 4" into the Q1 box.
+        api.ask(api.groups()[0]);
+        const btns = Array.from(chat.querySelectorAll('.swml-sa-walk-btn'));
+        out.b1 = { text: btns.map((b) => b.textContent).join('|'), askLast: chat.lastElementChild && /How many of your answers are correct\?/.test(chat.lastElementChild.textContent) };
+        const three = btns.find((b) => b.textContent === '3 / 4'); if (three) three.click();
+        out.b2 = { q1: rows()['sa-ms-aqa_lang1_q1_ao1-mark'], said: shell.history.filter((m) => m.role === 'user').map((m) => m.content), rendered: rendered, done: api.groups()[0].done };
+        // A finished walk (confidence filed) is never given a Q1 box.
+        mount(preSection());
+        write('sa-ms-confidence', '4 / 5');
+        stop = countTx(); api.healPoints(); stop();
+        out.a4 = { q1: rows()['sa-ms-aqa_lang1_q1_ao1-mark'] || null, tx: tx, exempt: api.groups()[0].done };
+
+        // C — Mishel's measured shape: the answer, then four empty copies sharing its id; Q3 clean.
+        const resp = (label, fields) => api.sectionHTML('response', label, true, null, fields.map(([id, t]) => '<div data-input-field="true" data-field-id="' + id + '" data-prompt="Write your response here.">' + (t || '') + '</div>').join(''));
+        mount(resp('Q2 Response', [['Q2-response', 'The storm is a warning sign.<br><br>'], ['Q2-response'], ['Q2-response'], ['Q2-response'], ['Q2-response']])
+            + resp('Q3 Response', [['Q3-response', 'Structure answer.']]));
+        out.c0 = { runs: api.runs(edRef.state.doc).map((x) => x.id + '×' + x.nodes.length) };
+        saves = 0; stop = countTx(); api.healDup(); stop();
+        out.c1 = { q2: rows()['Q2-response'], q3: rows()['Q3-response'], tx: tx, saves: saves, reverted: api.reverted(), left: api.runs(edRef.state.doc).length };
+        stop = countTx(); api.healDup(); stop(); out.c2 = { tx: tx };
+        // A split that carried text keeps every word.
+        mount(resp('Q2 Response', [['Q2-response', 'First paragraph.'], ['Q2-response', 'Second paragraph.']]));
+        api.healDup();
+        let joined = null; edRef.state.doc.descendants((n) => { if (n.type.name === 'inputField' && n.attrs.fieldId === 'Q2-response') joined = { text: n.textContent, brs: (() => { let c = 0; n.forEach((x) => { if (x.type.name === 'hardBreak') c++; }); return c; })() }; });
+        out.c3 = { joined: joined, count: (rows()['Q2-response'] || []).length };
+        return out;
+    }, { CODE });
+    ok('A1: an unfinished pre-.713 walk gets ONE Q1 box', r.a1.q1 && r.a1.q1.length === 1, JSON.stringify(r.a1.q1));
+    ok('A1: the Q1 box comes first — before Q2\'s heading', r.a1.first === 'Q1 — AO1 (/4)', r.a1.first);
+    ok('A1: one heal transaction, saved once, the Section Guard never reverted it', r.a1.tx >= 1 && r.a1.saves === 1 && r.a1.reverted === 0, JSON.stringify(r.a1));
+    ok('A2: a second run changes nothing (idempotent)', r.a2.tx === 0 && r.a2.q1Count === 1, JSON.stringify(r.a2));
+    ok('A3: the walk asks Q1 first, then the levelled questions', /^Q1· Q2· Q3· Q4· Q5· Q5·$/.test(r.a3.order), r.a3.order);
+    ok('B1: the ask ends on its question with one button per possible mark (0–4)', r.b1.askLast && r.b1.text === '0 / 4|1 / 4|2 / 4|3 / 4|4 / 4', JSON.stringify(r.b1));
+    ok('B2: the tap files "3 / 4", records the pick as a real turn, and moves the walk on', r.b2.q1 && r.b2.q1[0] === '3 / 4' && r.b2.said.indexOf('Q1: 3 / 4') !== -1 && r.b2.done && r.b2.rendered >= 1, JSON.stringify(r.b2));
+    ok('A4: a FINISHED walk (confidence filed) gets no Q1 box and is not pulled back', !r.a4.q1 && r.a4.tx === 0 && r.a4.exempt === true, JSON.stringify(r.a4));
+    ok('C0: the measured shape is found — Q2-response ×5', r.c0.runs.join() === 'Q2-response×5', r.c0.runs.join());
+    ok('C1: one Q2 box after the heal, her answer intact; Q3 untouched', r.c1.q2 && r.c1.q2.length === 1 && r.c1.q2[0] === 'The storm is a warning sign.' && r.c1.q3.length === 1 && r.c1.left === 0, JSON.stringify(r.c1));
+    ok('C1: the merge is a migration — saved once, never reverted by the Section Guard', r.c1.saves === 1 && r.c1.reverted === 0 && r.c1.tx >= 1, JSON.stringify(r.c1));
+    ok('C2: a second run changes nothing (idempotent)', r.c2.tx === 0);
+    ok('C3: a copy holding text is joined back with a blank line — no word lost', r.c3.count === 1 && r.c3.joined && r.c3.joined.text === 'First paragraph.Second paragraph.' && r.c3.joined.brs === 2, JSON.stringify(r.c3));
     await page.close();
 }
 await browser.close();

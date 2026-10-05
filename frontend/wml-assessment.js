@@ -8282,6 +8282,31 @@
     // ═══════════════════════════════════════════════════════════════════════════════════════
     const LADDER_SA_LABEL = 'Mark-Scheme Self-Assessment';
     const LADDER_SA_WALK = 'assess-ladder';
+    // ⭐ v7.20.713 (#726 — Neil, on "YOUR MARK 41/76" for AQA Paper 1: "the total marks has to be the
+    // correct one according to what's set on the exam board"). The generated dataset holds only the
+    // questions the board marks by LEVEL, so Q1 — point-marked, one mark per correct answer, no level
+    // descriptors — was never self-marked and the student's own total read /76 on an /80 paper (P2 the
+    // same). Q1 is self-marked with ONE tap (how many answers are correct), filed as "N / max" like every
+    // other mark row, so every reader adds it in. Tariffs: protocols/shared/language-paper-specs.json
+    // (aqa.language_p1 / language_p2 — Q1 AO1 /4, verified against AQA-8700-1-SMS-2026.pdf);
+    // bin/sa-total-harness.js fails the build if the self-marked total ever differs from the board's.
+    const LADDER_POINT_SCHEMES = {
+        lang1: [{ key: 'aqa_lang1_q1_ao1', q: 'Q1', ao: 'AO1', max: 4 }],
+        lang2: [{ key: 'aqa_lang2_q1_ao1', q: 'Q1', ao: 'AO1', max: 4 }],
+    };
+    function _ladderPointScheme(key) {
+        for (const p in LADDER_POINT_SCHEMES) for (const s of LADDER_POINT_SCHEMES[p]) if (s.key === key) return s;
+        return null;
+    }
+    // A point question the student was never asked: the walk finished before .713 (their confidence is
+    // filed, or the hand-off to Sophia is in the chat), or its box could not be put in the document
+    // (_ladderPointSkip, set by the ask itself). Such a question is DONE for the walk — a finished
+    // student is never pulled back — and the readouts say plainly that it was not self-marked.
+    const _ladderPointSkip = {};
+    function _ladderPointExempt(k) {
+        if (!k || !k.points || _ladderRowText(_ladderFids(k.key).mark)) return false;
+        return !!_ladderPointSkip[k.key] || !!_ladderRowText('sa-ms-confidence') || _ladderMarksInHistory();
+    }
     // §5d KEY-MATCH: the ONE builder of scheme keys for the current paper. Reads the generated
     // dataset (never re-derives ids) and filters by the paper the document actually poses.
     function _ladderSchemeKeysFor(topicData) {
@@ -8319,12 +8344,14 @@
             if (!paper) return [];
             const prefix = 'aqa_' + paper + '_';
             let keys = Object.keys(all).filter(k => k.indexOf(prefix) === 0 && all[k] && Array.isArray(all[k].levels));
+            let _qset = null;
             // v7.20.692 (#722, AQA P2 writing-only topics): ladder rows only for the questions THIS topic sets —
             // the topic data when the builder is handed it, else the document's own Feedback cards (so every
             // reader that calls this with no argument agrees with the builder). A Q5-only topic asked the student
             // to place their marks for Q2–Q4, which they never wrote. Practice papers set every question → unchanged.
             if (paper !== 'unseen') {
                 const qset = new Set();
+                _qset = qset;
                 // Language topics keep their questions in metadata (a JSON string) — the SAME source the
                 // template's per-question loop reads (`meta.questions`); topicData.questions is the unseen shape.
                 let tq = (topicData && Array.isArray(topicData.questions)) ? topicData.questions : [];
@@ -8355,13 +8382,17 @@
                 const hasQ272 = qs.some(q => /27\.2/.test(String((q && (q.id || q.number || q.label)) || '')));
                 if (!hasQ272) keys = keys.filter(k => k !== 'aqa_unseen_q272');
             }
-            return keys.map(k => ({ key: k, q: all[k].question, ao: all[k].ao, max: all[k].maxMarks, title: all[k].title || '' }));
+            // v7.20.713 (#726): the point-marked questions THIS topic sets, first — paper order, Q1 before Q2.
+            const points = (LADDER_POINT_SCHEMES[paper] || []).filter(p => !_qset || !_qset.size || _qset.has(p.q))
+                .map(p => ({ key: p.key, q: p.q, ao: p.ao, max: p.max, title: '', points: true }));
+            return points.concat(keys.map(k => ({ key: k, q: all[k].question, ao: all[k].ao, max: all[k].maxMarks, title: all[k].title || '' })));
         } catch (e) { return []; }
     }
     // v7.20.677 (#691): no `band` box. The ladder writes a band only where the host hands it a fid,
     // and the band the student picks is already written into the LEVEL box ("Level 4 · Upper Level 4
     // · Top of this level"); _ladderBandOf reads it back from there.
     function _ladderFids(key) {
+        if (_ladderPointScheme(key)) return { mark: 'sa-ms-' + key + '-mark' };   // v7.20.713 (#726): one box — the count
         const f = { level: 'sa-ms-' + key + '-level', met: 'sa-ms-' + key + '-met',
                     mark: 'sa-ms-' + key + '-mark', reason: 'sa-ms-' + key + '-reason' };
         if (_ladderOneSentence(key)) delete f.met;   // v7.20.679 — nothing to tick, no box
@@ -8390,19 +8421,23 @@
     const LADDER_SA_PROMPTS = { level: 'The level you gave yourself', met: 'The criteria you said your answer meets', mark: 'The mark you gave yourself', reason: 'Your reason — the evidence in your own answer' };
     // The wording every document saved before .677 carries. healLadderSaWording replaces EXACTLY these.
     const LADDER_SA_OLD = { intro: 'Before Sophia marks, you mark — against the exam board’s own level descriptors, one question at a time. Your level, the criteria you judged met, your mark and your reason are filed here, and Sophia sees them before she gives you hers.', level: 'Your level (and band / placement)', met: 'Criteria you judged met', mark: 'Your mark', reason: 'Why — the evidence in your own response', band: 'Band (where the board prints one)' };
+    // ONE question's rows — used by the section builder AND the point-row heal (v7.20.713), so a heal
+    // can never write a different shape from a fresh document.
+    function _ladderGroupHTML(k) {
+        const f = _ladderFids(k.key);
+        let h = '<h3>' + escapeHTML(k.q + ' — ' + k.ao + ' (/' + k.max + ')') + '</h3>';
+        if (f.level) h += inputHTML(LADDER_SA_PROMPTS.level, f.level);
+        if (f.met) h += inputHTML(LADDER_SA_PROMPTS.met, f.met);
+        h += inputHTML(LADDER_SA_PROMPTS.mark, f.mark);
+        if (f.reason) h += inputHTML(LADDER_SA_PROMPTS.reason, f.reason);
+        return h;
+    }
     // The document section — ONE producer, used by the template AND the on-load heal.
     function buildMarkSchemeSelfAssessSection(topicData) {
         const keys = _ladderSchemeKeysFor(topicData);
         if (!keys.length) return '';
         let inner = '<p><em>' + LADDER_SA_INTRO + '</em></p>';
-        keys.forEach(k => {
-            const f = _ladderFids(k.key);
-            inner += '<h3>' + escapeHTML(k.q + ' — ' + k.ao + ' (/' + k.max + ')') + '</h3>';
-            inner += inputHTML(LADDER_SA_PROMPTS.level, f.level);
-            if (f.met) inner += inputHTML(LADDER_SA_PROMPTS.met, f.met);
-            inner += inputHTML(LADDER_SA_PROMPTS.mark, f.mark);
-            inner += inputHTML(LADDER_SA_PROMPTS.reason, f.reason);
-        });
+        keys.forEach(k => { inner += _ladderGroupHTML(k); });
         inner += '<h3>Confidence</h3>';
         inner += inputHTML('How confident are you in your own marks? (1 = not at all · 5 = very)', 'sa-ms-confidence');
         return sectionHTML('action', LADDER_SA_LABEL, true, null, inner);
@@ -8477,7 +8512,7 @@
     function _reflectAoOnly() { try { return _litLadderKeepsAoCard() && _isLitEssay() && _ladderMarksInHistory(); } catch (e) { return false; } }
     function _ladderReplacesReflect() { try { return _ladderMarksInHistory() && !_reflectAoOnly(); } catch (e) { return false; } }
     function _ladderHostGroups() {
-        return _ladderSchemeKeysFor().map(k => Object.assign({}, k, { fids: _ladderFids(k.key), done: !!_ladderRowText(_ladderFids(k.key).mark) }));
+        return _ladderSchemeKeysFor().map(k => Object.assign({}, k, { fids: _ladderFids(k.key), done: !!_ladderRowText(_ladderFids(k.key).mark) || _ladderPointExempt(k) }));
     }
     function _ladderHostConfidence() { return _ladderRowText('sa-ms-confidence'); }
     function _ladderHostComplete() {
@@ -8488,6 +8523,7 @@
     // The student's own marks, compact — what Sophia is handed (the CW trial's §1.6 shape).
     function _ladderHostSummary() {
         return _ladderHostGroups().map(g => {
+            if (g.points) return '- ' + g.q + ' ' + g.ao + ' (one mark per correct answer, no levels): ' + (_ladderRowText(g.fids.mark) || 'not self-marked');
             const lvl = _ladderRowText(g.fids.level), mark = _ladderRowText(g.fids.mark), why = _ladderRowText(g.fids.reason);
             const met = _ladderRowText(g.fids.met);
             return '- ' + g.q + ' ' + g.ao + ': ' + (lvl || '—') + ' · ' + (mark || '—') + (met ? ' · met: ' + met.replace(/\n+/g, '; ') : '') + (why ? ' — "' + why + '"' : '');
@@ -8523,6 +8559,7 @@
         const groups = _ladderHostGroups();
         const next = groups.find(g => !g.done);
         if (next) {
+            if (next.points) { _ladderHostAskPoints(next); return; }   // v7.20.713 (#726): no levels to climb — one tap
             if (typeof _ladderOpenHook !== 'function') { console.warn('WML ladder-host: no open hook — ladder not mounted'); return; }
             const qNum = parseInt(String(next.q).replace(/^Q/i, ''), 10);
             _ladderOpenHook({
@@ -8571,7 +8608,66 @@
             if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(bar);
         } catch (e) { /* the typed fallback below still files a bare digit */ }
     }
+    // ⭐ v7.20.713 (#726): a point-marked question (AQA Language Q1) is self-marked with ONE tap —
+    // how many answers are correct — because the board prints no levels for it. The criterion comes
+    // first (§4c.1), the ask ends on the question with its chips (§4d), the ask is never stored and
+    // the pick is (§4c.7), exactly as the confidence ask below. Filed as "N / max", the shape the
+    // ladder files, so the total, the prediction and the hand-off to Sophia all add it in.
+    function _ladderRowExists(fid) {
+        try { return !!document.querySelector('#swml-tiptap-editor [data-field-id="' + fid + '"]'); } catch (e) { return false; }
+    }
+    function _ladderHostAskPoints(g) {
+        if (!_ladderRowExists(g.fids.mark)) {
+            try { healLadderPointRows(); } catch (e) {}
+            if (!_ladderRowExists(g.fids.mark)) {
+                // §4d: never leave the student on an ask that cannot be filed — skip it, loudly, and go on.
+                console.warn('WML ladder-host: no ' + g.fids.mark + ' box and the heal could not add one — ' + g.q + ' left out of the student\'s own total');
+                _ladderPointSkip[g.key] = true;
+                _ladderHostRenderCurrent();
+                return;
+            }
+        }
+        const plain = '**' + g.q + ' is worth ' + g.max + ' marks: one mark for each correct answer.** An answer is correct if it is true, and it comes from the lines the question names.\n\n'
+            + 'Read your answers to ' + g.q + ' again and check each one. **How many of your answers are correct?**';
+        try { if (_chatShell.messages) _chatShell.messages.querySelectorAll('[data-swml-ask="ladder-points"]').forEach(n => n.remove()); } catch (e) {}
+        _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
+        try { const _ab = _chatShell.messages && _chatShell.messages.lastElementChild; if (_ab) _ab.setAttribute('data-swml-ask', 'ladder-points'); } catch (e) {}
+        WML.recordTurn(_chatShell.history, { role: 'assistant', content: plain }, { durable: false, why: 'a present-state ask — re-derived from the document on entry, never stored' });
+        try {
+            const bar = el('div', { className: 'swml-quick-actions swml-sa-walk-bar' });
+            for (let v = 0; v <= g.max; v++) {
+                bar.appendChild(el('button', { className: 'swml-quick-btn swml-sa-walk-btn', textContent: v + ' / ' + g.max, onClick: function () {
+                    bar.remove();
+                    _ladderHostFilePoints(g, v);
+                } }));
+            }
+            const bubble = _chatShell.messages && _chatShell.messages.lastElementChild;
+            if (bubble) (bubble.querySelector('.swml-bubble-content') || bubble).appendChild(bar);
+        } catch (e) { /* the typed fallback (_ladderHostConsumeTyped) still files a bare number */ }
+    }
+    function _ladderHostFilePoints(g, v) {
+        const said = g.q + ': ' + v + ' / ' + g.max;
+        WML.recordTurn(_chatShell.history, { role: 'user', content: said }, { durable: true, why: 'the student tapped or typed it — a pick is a real user turn' });
+        _chatShell.addMsg(said, 'user');
+        let wrote = false;
+        try { wrote = !!_writeOutlineRowField(g.fids.mark, v + ' / ' + g.max, { replace: true }); } catch (e) {}
+        if (wrote) { try { _ladderFeedPrediction(g.q, g.key, v); } catch (e) {} }
+        else { console.warn('WML ladder-host: could not file ' + g.fids.mark + ' — ' + g.q + ' left out of the student\'s own total'); _ladderPointSkip[g.key] = true; }
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (e) {}
+        try { saveCanvasChat(_chatShell.history, _chatShell.getChatId ? _chatShell.getChatId() : ''); } catch (e) {}
+        try { if (typeof _refreshLangSidebar === 'function') _refreshLangSidebar(); } catch (e) {}
+        _ladderHostRenderCurrent();
+    }
     function _ladderHostConsumeTyped(msg) {
+        // v7.20.713 (#726): a bare number typed at the point ask files it, as a tap would.
+        const _nx = _ladderHostGroups().find(g => !g.done);
+        if (_nx && _nx.points) {
+            const pm = String(msg || '').trim().match(/^(\d{1,2})(?:\s*\/\s*\d{1,2})?$/);
+            if (!pm || parseInt(pm[1], 10) > _nx.max) return false;
+            try { if (_chatShell.messages) _chatShell.messages.querySelectorAll('[data-swml-ask="ladder-points"] .swml-sa-walk-bar').forEach(n => n.remove()); } catch (e) {}
+            _ladderHostFilePoints(_nx, parseInt(pm[1], 10));
+            return true;
+        }
         const m = String(msg || '').trim().match(/^([1-5])(?:\s*\/\s*5)?$/);
         if (!m || _ladderHostConfidence()) return false;
         if (!_ladderHostGroups().every(g => g.done)) return false;
@@ -8728,7 +8824,9 @@
     }
     function _calibGroups() {
         if (_ladderIsLit()) return [_litCalibGroup()];
-        return _ladderSchemeKeysFor().map((k) => {
+        // v7.20.713 (#726): a point-marked question (Q1) is right-or-wrong — no judgement to keep or
+        // change, so it is never calibrated here; its Feedback box already shows Predicted · Actual · Δ.
+        return _ladderSchemeKeysFor().filter(k => !k.points).map((k) => {
             const lf = _ladderFids(k.key), cf = _calibFids(k.key);
             const mine = _ladderRowText(lf.mark);
             // v7.20.631 (#574d): the ladder files the row as "6 / 8" (mark AND out-of). Stripping every
@@ -9509,7 +9607,7 @@
     // the ladder section is. A NEW section (not extra rows inside the ladder's) precisely so the
     // existing section-level heal carries it into documents that already exist.
     function buildCalibrationSection(topicData) {
-        const keys = _ladderSchemeKeysFor(topicData);
+        const keys = _ladderSchemeKeysFor(topicData).filter(k => !k.points);   // v7.20.713 (#726): see _calibGroups
         if (!keys.length) return '';
         let inner = '<p><em>You marked your own answer before I did. Here both marks sit side by side. '
             + 'Where they differ, the gap is the lesson — and you may keep your own mark if you can say what carries it.</em></p>';
@@ -10143,19 +10241,23 @@
                     const keys = _ladderSchemeKeysFor();
                     if (!keys.length) return '';
                     let mine = 0, max = 0, all = true;
-                    const parts = [];
+                    const parts = [], notSelf = [];
                     keys.forEach((k) => {
+                        // v7.20.713 (#726): a walk finished before Q1 was self-marked leaves Q1 out of BOTH
+                        // sides of the sum, and the total says so — never a silent /76, never a guessed mark.
+                        if (_ladderPointExempt(k)) { notSelf.push(k.q); return; }
                         const f = _ladderFids(k.key);
                         const lvl = _ladderRowText(f.level).split(' · ').slice(0, 2).join(' · ');
                         const mk = /(\d+(?:\.\d+)?)/.exec(_ladderRowText(f.mark));
                         max += k.max;
                         if (mk) mine += parseFloat(mk[1]); else all = false;
-                        if (lvl || mk) parts.push('<span class="swml-ana-calib">' + escapeHTML(k.ao || k.q || '') + ': '
-                            + escapeHTML(lvl || '—') + (mk ? ' · ' + mk[1] + '/' + k.max : '') + '</span>');
+                        if (lvl || mk) parts.push('<span class="swml-ana-calib">' + escapeHTML(k.points ? k.q : (k.ao || k.q || '')) + ': '
+                            + (k.points ? '' : escapeHTML(lvl || '—') + (mk ? ' · ' : '')) + (mk ? mk[1] + '/' + k.max : '') + '</span>');
                     });
                     if (!parts.length) return '';
                     let html = '';
-                    if (all && keys.length > 1) html += seg('Your mark', '<span class="swml-ana-calib">' + _gapR2(mine) + '/' + max + '</span>');
+                    if (all && keys.length > 1) html += seg('Your mark', '<span class="swml-ana-calib">' + _gapR2(mine) + '/' + max
+                        + (notSelf.length ? ' · ' + escapeHTML(notSelf.join(', ')) + ' not self-marked' : '') + '</span>');
                     html += seg(keys.length > 1 ? 'Your levels' : 'Your level', parts.join(' · '));
                     const conf = _ladderRowText('sa-ms-confidence');
                     if (conf) html += seg('Confidence', '<span class="swml-ana-calib">' + escapeHTML(conf) + '</span>');
@@ -10560,14 +10662,18 @@
             doc.descendants((node) => {
                 if (node.type.name !== 'sectionBlock') return true;
                 if (((node.attrs && node.attrs.sectionType) || '') === 'response') {
-                    let fields = 0, filled = 0;
+                    // v7.20.713 (#730): count DISTINCT boxes — a box the editor split into copies sharing
+                    // one field id (Mishel 1237, Q2 ×5) is still ONE answer, so its chip is not lost.
+                    const ids = new Set(), filledIds = new Set();
+                    let n = 0;
                     node.descendants(c => {
                         if (c.type.name !== 'inputField') return true;
-                        fields++;
-                        if ((c.textContent || '').trim()) filled++;
+                        const id = String((c.attrs && c.attrs.fieldId) || ('#' + n++));
+                        ids.add(id);
+                        if ((c.textContent || '').trim()) filledIds.add(id);
                         return false;
                     });
-                    responses.push({ label: (node.attrs && node.attrs.label) || '', fields: fields, filled: filled });
+                    responses.push({ label: (node.attrs && node.attrs.label) || '', fields: ids.size, filled: filledIds.size });
                 }
                 return false;
             });
@@ -51131,6 +51237,8 @@
             // v7.20.673 (#683): Mark-Scheme SA + Calibration directly under the SA (insert or move).
             _migrateStep('healLadderSectionsUnderSelfAssessment', healLadderSectionsUnderSelfAssessment);
             _migrateStep('healLadderSaWording', healLadderSaWording);   // v7.20.677 (#691)
+            _migrateStep('healLadderPointRows', healLadderPointRows);   // v7.20.713 (#726): Q1 into the student's own total
+            _migrateStep('healDuplicateInputFields', healDuplicateInputFields);   // v7.20.713 (#730): one field id = one box
             _migrateStep('healCalibGoal', healCalibGoal);   // v7.20.682 (#701)
             // v7.19.619: after dividers exist (RESULTS anchor), heal-in the Overall Feedback section.
             _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
@@ -51158,6 +51266,8 @@
                 // v7.20.673: the scheme keys read state.subject/state.text — settled-state second pass.
                 try { healLadderSectionsUnderSelfAssessment(); } catch (_) {}
                 try { healLadderSaWording(); } catch (_) {}   // v7.20.677 (#691)
+                try { healLadderPointRows(); } catch (_) {}   // v7.20.713 (#726)
+                try { healDuplicateInputFields(); } catch (_) {}   // v7.20.713 (#730)
                 try { healCalibGoal(); } catch (_) {}   // v7.20.682 (#701)
             }, 1800));
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
@@ -63199,7 +63309,8 @@
             // how the student reached their level and mark (their handoff carries the shape).
             ...((snap.task === 'assessment' && typeof _ladderHostGroups === 'function' && _ladderSchemeKeysFor().length) ? (function () {
                 try {
-                    const items = _ladderHostGroups().map(g => ({
+                    // v7.20.713 (#726): a point question the student was never asked carries no item.
+                    const items = _ladderHostGroups().filter(g => !_ladderPointExempt(g)).map(g => ({
                         key: g.key, question: g.q, ao: g.ao, out_of: g.max,
                         level: _ladderRowText(g.fids.level) || null, band: _ladderBandOf(g.key, _ladderRowText(g.fids.level)) || null,
                         met: _ladderRowText(g.fids.met) || null, mark: _ladderRowText(g.fids.mark) || null,
@@ -66398,6 +66509,102 @@
         console.warn('WML ladder wording heal: ' + relabelled + ' label(s) rewritten, ' + removed + ' unfillable box(es) removed' + (intro ? ', intro rewritten' : ''));
         try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+    }
+
+    // ⭐ v7.20.713 (#726): a Mark-Scheme Self-Assessment section saved before .713 has no Q1 box. A
+    // student who has NOT finished the walk gets it, before the first question heading — where the
+    // builder puts it, from the ONE producer (_ladderGroupHTML) — so the walk can ask Q1 and their own
+    // total reaches the board's. A FINISHED walk (confidence filed, or the hand-off in the chat) is left
+    // exactly as it is: no student is pulled back and no empty box appears in a finished document;
+    // _ladderPointExempt reads it as "not self-marked". Idempotent; a migration transaction, out of undo.
+    function healLadderPointRows() {
+        if (!canvasEditor || canvasEditor.isDestroyed || state.reviewMode) return;
+        const pts = _ladderSchemeKeysFor().filter(k => k.points && !_ladderRowExists(_ladderFids(k.key).mark));
+        if (!pts.length) return;
+        if (_ladderRowText('sa-ms-confidence') || _ladderMarksInHistory()) return;   // finished walk — leave it
+        let sec = null;
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (sec) return false;
+            if (n.type.name !== 'sectionBlock') return true;
+            if (String((n.attrs && n.attrs.label) || '') === LADDER_SA_LABEL) sec = { pos: p, node: n };
+            return false;   // section blocks never nest
+        });
+        if (!sec) return;
+        let at = sec.pos + sec.node.nodeSize - 1, found = false;
+        sec.node.forEach((child, offset) => {
+            if (!found && child.type.name === 'heading') { at = sec.pos + 1 + offset; found = true; }
+        });
+        _migrationActive = true;
+        try {
+            canvasEditor.chain().command(({ tr }) => { tr.setMeta('addToHistory', false); return true; })
+                .insertContentAt(at, pts.map(_ladderGroupHTML).join('')).run();
+        } catch (e) { console.warn('WML ladder point-rows heal skipped —', e && e.message); return; }
+        finally { _migrationActive = false; }
+        const missing = pts.filter(k => !_ladderRowExists(_ladderFids(k.key).mark));
+        if (missing.length) { console.warn('WML ladder point-rows heal: ' + missing.map(k => k.q).join(', ') + ' still has no box — something reverted it'); return; }
+        console.warn('WML ladder point-rows heal: added ' + pts.map(k => k.q).join(', ') + ' to the Mark-Scheme Self-Assessment');
+        try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+    }
+
+    // ⭐ v7.20.713 (#730 — MEASURED on prod 2026-10-05, read-only: 4 of 630 documents, all one student,
+    // "Q2-response" ×5 with identical attrs down to the same data-edit-ts — the editor SPLIT the box while
+    // she wrote, then every later lesson copied the split forward). ONE field id must be ONE box: five
+    // boxes with one id read as five answers to every counter — the pop-out chip never appeared for that
+    // question and Document Progress counted four empty boxes. Consecutive boxes sharing an id are merged
+    // back into the first: text kept, joined by a blank line (the paragraph separator _responseParagraphs
+    // reads); empty copies dropped. The SPLIT's trigger is not measured yet (#730), so this is the net
+    // under it, on every load. A migration transaction (Section Guard), out of undo, idempotent.
+    // ── @DUP-FIELD-PURE (bin/dup-field-harness.js drives this; keep it pure — no editor, no state) ──
+    function _dupFieldRuns(doc) {
+        const runs = [];
+        const scan = (parent, base) => {
+            let run = null;
+            parent.forEach((child, offset) => {
+                const at = base + offset;
+                const id = child.type.name === 'inputField' ? String((child.attrs && child.attrs.fieldId) || '') : '';
+                if (id && run && run.id === id) { run.nodes.push(child); run.to = at + child.nodeSize; }
+                else {
+                    if (run && run.nodes.length > 1) runs.push(run);
+                    run = id ? { id: id, from: at, to: at + child.nodeSize, nodes: [child] } : null;
+                }
+                if (!id && child.childCount && !child.isTextblock) scan(child, at + 1);
+            });
+            if (run && run.nodes.length > 1) runs.push(run);
+        };
+        scan(doc, 0);
+        return runs;
+    }
+    function _dupFieldMerged(run, hardBreakType) {
+        const first = run.nodes[0];
+        let content = first.content;
+        const Frag = content.constructor;
+        run.nodes.slice(1).forEach(n => {
+            if (!(n.textContent || '').trim()) return;      // an empty copy is simply dropped
+            content = content.append(Frag.from([hardBreakType.create(), hardBreakType.create()])).append(n.content);
+        });
+        return first.type.create(first.attrs, content, first.marks);
+    }
+    // ── @DUP-FIELD-PURE-END ──
+    function healDuplicateInputFields() {
+        if (!canvasEditor || canvasEditor.isDestroyed || state.reviewMode) return;
+        try {
+            const runs = _dupFieldRuns(canvasEditor.state.doc);
+            if (!runs.length) return;
+            const hb = canvasEditor.schema.nodes.hardBreak;
+            if (!hb) return;
+            const tr = canvasEditor.state.tr;
+            runs.slice().sort((a, b) => b.from - a.from).forEach(r => { tr.replaceWith(r.from, r.to, _dupFieldMerged(r, hb)); });
+            tr.setMeta('addToHistory', false);
+            _migrationActive = true;
+            try { canvasEditor.view.dispatch(tr); }
+            finally { _migrationActive = false; }
+            const left = _dupFieldRuns(canvasEditor.state.doc);
+            if (left.length) { console.warn('WML duplicate-field heal: ' + left.length + ' run(s) still in the document — something reverted it'); return; }
+            console.warn('WML duplicate-field heal: merged ' + runs.map(r => r.id + ' ×' + r.nodes.length).join(', ') + ' into one box each');
+            try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
+            try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+        } catch (e) { console.warn('WML duplicate-field heal skipped —', e && e.message); }
     }
 
     function migrateDocument() {
