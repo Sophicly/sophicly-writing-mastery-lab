@@ -933,6 +933,30 @@
         if (_b === 'edexcel-igcse') return _isLangPaper2();
         return false;
     }
+    // v7.20.706 — THE ROUTER'S STEP COMES FROM THE ROUTER'S OWN SIGNAL.
+    // The router loads ONLY steps[step]'s files, numbered by the MANIFEST, under a header telling the model that earlier
+    // steps are complete (class-protocol-router.php ~2976–3010); the model reports entering step N with [PROGRESS: N]
+    // against that same list (the preamble prints it). A lesson under this predicate draws a DOC-DERIVED sidebar whose
+    // rows are numbered differently, and two writers put those row numbers into state.step: detectPlanningStep's keyword
+    // fallback (reply words matched against the derived labels) and _applyServerSidebar → updateProgress(current).
+    // Measured on staging 59207 (Edexcel IGCSE P2, 2026-10-05): "…every quotation and paragraph…" matched the derived row
+    // "Body Paragraph 1", state.step went 1 → 2, and the key-words confirmation was answered from step 2's file — the save
+    // went unfiled and B.3/B.4 were skipped as "already complete". AQA poetry (8 sliced steps, same predicate) has the same
+    // exposure. So for these lessons the step SENT is the highest [PROGRESS: N] in this session's transcript: resume-safe,
+    // and no sidebar paint can move it. Monoliths (AQA P1/P2, manifest steps {}) ignore the value either way.
+    function _planDerivedSidebar() {
+        return state.task === 'planning' && (_planPreChainActive() || _poetryPlanActive());
+    }
+    function _planRouterStep(history) {
+        if (!_planDerivedSidebar()) return state.step || 1;
+        let max = 1;
+        (history || []).forEach(function (m) {
+            if (!m || m.role !== 'assistant') return;
+            const re = /\[PROGRESS:\s*(\d+)\]/g; let x;
+            while ((x = re.exec(String(m.content || '')))) max = Math.max(max, parseInt(x[1], 10) || 1);
+        });
+        return max;
+    }
     // v7.20.704: does THIS paper's chain ask source predictions? Neil's rulings v7.20.66/.67: predictions anticipate UNSEEN
     // material — a studied text gets the Keywords-Focus box instead. Edexcel IGCSE Paper 2's text is a studied anthology
     // text, so its chain asks none (its document carries Question Focus only; _composePrewriteBlock). AQA: as before.
@@ -5715,6 +5739,48 @@
             m[0].trim() + '") while ' + _walkResume.id + ' was armed — truncated' +
             (markers.length ? ' (preserved ' + markers.join(',') + ')' : ''));
         return out;
+    }
+
+    // v7.20.706 — THE KEY-WORDS SAVE IS FILED, EVEN WHEN THE MODEL FORGETS THE MARKER.
+    // Question Focus (Edexcel IGCSE P2 b-goal B.2A, AQA poetry b2) presents the student's key words with
+    // "A) Save these key words · B) Tweak them" and files kw-focus on the NEXT turn, after the tap. Measured on
+    // staging 2026-10-05 (59207, test student 1938): the model replied "Saved! ✅" and emitted no @FIELD_SET —
+    // the box stayed empty and the stored history held zero markers. The tap is deterministic and the list is
+    // already on screen in the presentation turn, so when the reply to that tap lacks the marker, code appends it
+    // from that list before the reply is displayed, recorded or filed: every consumer (applyFieldSets, the poetry
+    // b2a trigger, the setup row, replay-on-load) then sees one truth. Self-guarding: no-op unless the turn just
+    // answered was a key-words presentation, the student chose Save, and the doc has a kw-focus box.
+    function _healKeywordSave(reply, history) {
+        try {
+            if (!reply || !Array.isArray(history) || state.task !== 'planning') return reply;
+            if (/@FIELD_SET\s*\{[^}]*"field"\s*:\s*"kw-focus"/.test(String(reply).replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_'))) return reply;
+            let u = history.length - 1;
+            while (u >= 0 && history[u].role !== 'user') u--;
+            if (u < 1) return reply;
+            const said = String(history[u].content || '').replace(/\*/g, '').trim();
+            if (!/^(?:A\)?\s*)?Save these key ?words\b/i.test(said) && !/^A\)?\s*\.?$/i.test(said)) return reply;
+            let a = u - 1;
+            while (a >= 0 && (history[a].role !== 'assistant' || history[a].hidden)) a--;
+            if (a < 0) return reply;
+            const shown = String(history[a].content || '');
+            const saveAt = shown.search(/Save these key ?words/i);
+            if (saveAt === -1) return reply;
+            if (!canvasEditor || String(canvasEditor.getHTML()).indexOf('data-field-id="kw-focus"') === -1) return reply;
+            const words = shown.slice(0, saveAt).split('\n')
+                .map(l => (l.match(/^\s*(?:[-•*]|\d+[.)])\s+(.+?)\s*$/) || [])[1])
+                .filter(Boolean)
+                .map(w => w.replace(/[*`{}]/g, '').trim())
+                .filter(w => w && !/^[AB]\)/.test(w));
+            if (!words.length) {
+                console.warn('WML KeywordSave: the student chose Save but the presented key words could not be read — kw-focus left empty');
+                return reply;
+            }
+            console.warn('WML KeywordSave: the reply to "Save these key words" carried no kw-focus @FIELD_SET — filed from the presented list (' + words.length + ' key words)');
+            return String(reply).replace(/\s+$/, '') + '\n@FIELD_SET' + JSON.stringify({ field: 'kw-focus', value: words.join('; ') });
+        } catch (e) {
+            console.warn('WML KeywordSave: heal skipped —', e && e.message);
+            return reply;
+        }
     }
 
     // v7.20.291 — STEP-3 STORY COMPONENTS, readable from ANY later CW step.
@@ -20222,7 +20288,7 @@
                         chatId: canvasChatId,
                         history: historyToSend,
                         planState: state.plan || {},
-                        step: state.step || 1,
+                        step: _planRouterStep(canvasChatHistory),   // v7.20.706: the router's step, from the router's own [PROGRESS] signal
                         board: state.board,
                         subject: state.subject,
                         text: state.text || '',
@@ -20277,6 +20343,7 @@
                     // so chat, doc cards, sidebar and Score Summary all read corrected numbers.
                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
                     res.reply = _stripDuplicateWalkAsk(res.reply); // v7.20.290: code owns the asks while a walk is armed — never show two competing questions
+                    res.reply = _healKeywordSave(res.reply, canvasChatHistory); // v7.20.706: the confirmed key words file even when the model forgets the marker
                     let cleanReply = stripAIInternals(res.reply);
                     // v7.19.989: hard-strip the raw progress breadcrumb + any improvised bar at the
                     // SOURCE too (belt-and-braces with withProgressChip — the pin must never show).
@@ -20687,7 +20754,11 @@
                         }
 
                         // v7.14.68: Planning/polishing step detection — advance sidebar based on AI content
-                        if (state.task === 'planning' || state.task === 'polishing') {
+                        // v7.20.706: a DERIVED planning sidebar is repainted by its own doc model — never by router
+                        // numbers, never by reply words matched against its labels (_planRouterStep owns what the router is sent).
+                        if (_planDerivedSidebar()) {
+                            _refreshPlanningSidebar();
+                        } else if (state.task === 'planning' || state.task === 'polishing') {
                             const planStep = detectPlanningStep(res.reply, state.step);
                             if (planStep > state.step) {
                                 console.log('WML Canvas: Planning step advanced', state.step, '→', planStep);
@@ -43637,7 +43708,7 @@
                                         chatId: canvasChatId,
                                         history: historyToSend,
                                         planState: state.plan || {},
-                                        step: state.step || 1,
+                                        step: _planRouterStep(canvasChatHistory),   // v7.20.706: the router's step, from the router's own [PROGRESS] signal
                                         board: state.board,
                                         subject: state.subject,
                                         text: state.text || '',
@@ -43674,6 +43745,7 @@
                                     // v7.19.832: deterministic mark integrity (see pipeline 1 twin).
                                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
                     res.reply = _stripDuplicateWalkAsk(res.reply); // v7.20.290: code owns the asks while a walk is armed — never show two competing questions
+                    res.reply = _healKeywordSave(res.reply, canvasChatHistory); // v7.20.706: the confirmed key words file even when the model forgets the marker
                                     let cleanReply = stripAIInternals(res.reply);
                                     // v7.19.989: hard-strip raw breadcrumb + bar at source (twin).
                                     cleanReply = _stripRawProgressLines(cleanReply);
@@ -60972,7 +61044,23 @@
         // set + other papers' sets still need a content review before tuning them too.
         const _saSubj = String((typeof state !== 'undefined' && state && state.subject) || '')
             .toLowerCase().replace(/[^a-z0-9]/g, '');
-        const _isLangP1 = ['language1', 'languagep1', 'languagepaper1', 'langp1'].indexOf(_saSubj) !== -1;
+        // v7.20.706: Edexcel IGCSE Spec A shares the language_p1/p2 subjects with AQA but not their questions — an IGCSE P2
+        // planning doc on staging asked the student to rate "Reading Across Two Sources" and "Transactional Writing (Q5)",
+        // neither of which its paper has. Board first, then subject.
+        const _saIgcse = String((typeof state !== 'undefined' && state && state.board) || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse';
+        const _isLangP1 = !_saIgcse && ['language1', 'languagep1', 'languagepaper1', 'langp1'].indexOf(_saSubj) !== -1;
+        if (_saIgcse && ['language1', 'languagep1', 'languagepaper1', 'langp1', 'language2', 'languagep2', 'languagepaper2', 'langp2'].indexOf(_saSubj) !== -1) {
+            const _p2 = /2$/.test(_saSubj);
+            // Paper 2's Q1 is a full essay (outline: Hook · Building Sentences · Thesis … the four conclusion rows), AO1+AO2:
+            // keep the essay frame, drop only Context. Paper 1 is reading questions + a comparison: the AQA language spine.
+            const _drop = _p2 ? ['Context'] : ['Hook', 'Building Sentences', 'Context', 'Controlling Concept', 'Central Purpose', 'Universal Message'];
+            skills = skills
+                .map(s => ({ cat: s.cat, items: s.items.filter(it => _drop.indexOf(it) === -1) }))
+                .filter(s => s.items.length > 0);
+            if (!_p2) skills.push({ cat: 'Reading Across Two Texts', items: ['Inference', 'Comparison'] });
+            skills.push({ cat: _p2 ? 'Imaginative Writing (Section B)' : 'Transactional Writing (Section B)', items: ['Tone & Register', 'Vocabulary & Devices', 'Structural Features', 'Sentence Variety'] });
+            skills.push({ cat: 'Spelling, Punctuation & Grammar', items: ['Spelling', 'Punctuation', 'Grammar & Tense Control'] });
+        }
         if (_isLangP1) {
             const _removeLangP1 = ['Hook', 'Building Sentences', 'Context', 'Controlling Concept', 'Central Purpose', 'Universal Message'];
             skills = skills
@@ -60993,7 +61081,7 @@
         // Comparison (Q4), and Q5 is TRANSACTIONAL (same AO5/AO6 craft items as the CW
         // set — identical descriptors — under the paper-true label). Registered port
         // surface (PORT SOP §E2).
-        const _isLangP2sa = ['language2', 'languagep2', 'languagepaper2', 'langp2'].indexOf(_saSubj) !== -1;
+        const _isLangP2sa = !_saIgcse && ['language2', 'languagep2', 'languagepaper2', 'langp2'].indexOf(_saSubj) !== -1;
         if (_isLangP2sa) {
             const _removeLangP2 = ['Hook', 'Building Sentences', 'Context', 'Controlling Concept', 'Central Purpose', 'Universal Message'];
             skills = skills
@@ -65934,6 +66022,18 @@
     // and ONLY while the section is completely untouched — every rating still the "— / 5"
     // placeholder. One filled rating and the section is never touched. Replaces just the
     // SA node via insertContentAt, refreshes the rating overlays, persists.
+    // v7.20.706: the Self-Assessment's item labels in order ("#Category" for each heading), from builder HTML — the
+    // comparison key healLangP1SelfAssessment uses for Edexcel IGCSE docs.
+    function _saLabelSignature(html) {
+        const d = document.createElement('div'); d.innerHTML = html;
+        const out = [];
+        d.querySelectorAll('h3, p').forEach(e => {
+            const t = (e.textContent || '').trim();
+            if (e.tagName === 'H3') out.push('#' + t);
+            else { const m = t.match(/^(.{2,60}?):\s*(?:\u2014|[1-5])\s*\/\s*5$/); if (m) out.push(m[1].trim()); }
+        });
+        return out.join('|');
+    }
     function healLangP1SelfAssessment() {
         if (!canvasEditor || state.reviewMode) return;
         if (!WML.hasAssessmentSections(state.task)) return;
@@ -65959,12 +66059,29 @@
         // re-render → re-heal: the load storm + oscillating saves + the breaker trip. Accept EITHER
         // Q5 label so BOTH papers reach a stable "not stale" state (idempotence is the whole point
         // of this guard — cf. the v817 mutate-every-load wipe lesson).
-        const _q5Missing = txt.indexOf('Creative Writing (Q5)') === -1
-            && txt.indexOf('Transactional Writing (Q5)') === -1;
-        const stale = /Hook|Building Sentences|Controlling Concept|Central Purpose|Universal Message/.test(txt)
-            || _q5Missing
-            || txt.indexOf('Linked Ideas & Paragraphs') !== -1
-            || txt.indexOf('Spelling, Punctuation & Grammar') === -1;
+        // v7.20.706: Edexcel IGCSE — stale means "the item labels differ from what the builder draws for this paper today",
+        // compared label for label, so a correct document is a no-op BY CONSTRUCTION. (IGCSE P2's essay-shaped set rightly
+        // keeps Hook and Controlling Concept, which the AQA test below would call stale on every load — the v7.20.173 storm.)
+        let stale;
+        if (String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse') {
+            const have = [];
+            node.descendants(n => {
+                if (n.type && n.type.name === 'heading') have.push('#' + (n.textContent || '').trim());
+                else if (n.type && n.type.name === 'paragraph') {
+                    const m = (n.textContent || '').trim().match(/^(.{2,60}?):\s*(?:\u2014|[1-5])\s*\/\s*5$/);
+                    if (m) have.push(m[1].trim());
+                }
+                return true;
+            });
+            stale = have.join('|') !== _saLabelSignature(buildSelfAssessmentSection(false));
+        } else {
+            const _q5Missing = txt.indexOf('Creative Writing (Q5)') === -1
+                && txt.indexOf('Transactional Writing (Q5)') === -1;
+            stale = /Hook|Building Sentences|Controlling Concept|Central Purpose|Universal Message/.test(txt)
+                || _q5Missing
+                || txt.indexOf('Linked Ideas & Paragraphs') !== -1
+                || txt.indexOf('Spelling, Punctuation & Grammar') === -1;
+        }
         if (!stale) return;
         // v7.19.835: RATED stale sections migrate too — a rating against a REMOVED item
         // (Hook, Context, …) is a rating of the wrong rubric, not student data worth
@@ -68484,7 +68601,8 @@
             changed = true;
             healed.push(shape
                 ? `${qId}(${shape.bodies}¶/${shape.ao}${shape.focus ? '/' + shape.focus : ''})`
-                : _isComp ? `${qId}(comparison/AO3)` : _isIumvcc ? `${qId}(IUMVCC)` : _isEval ? `${qId}(evaluation/AO4)` : `${qId}(inference/AO1)`);
+                : _isComp ? `${qId}(comparison/AO3)` : _isIumvcc ? `${qId}(IUMVCC)` : _isEval ? `${qId}(evaluation/AO4)`
+                    : _dispatchHTML ? `${qId}(render dispatch)` : `${qId}(inference/AO1)`);   // v7.20.706: the .702 dispatch path was logged as "inference/AO1"
         });
 
         if (!changed) return;

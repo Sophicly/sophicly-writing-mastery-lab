@@ -300,6 +300,18 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
      | grep -qE 'wml-assessment\.js|ladder-sim-harness\.js'; then
   node bin/ladder-sim-harness.js || fail=1
 fi
+# v7.20.706: the confirmed Question Focus key words file even when the model forgets the @FIELD_SET (measured on
+# staging 59207: "Saved! ✅" with no marker, box empty). Drives the real sliced _healKeywordSave with that transcript.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|keyword-save-harness\.js'; then
+  node bin/keyword-save-harness.js || fail=1
+fi
+# v7.20.706: the step sent to the router comes from the model's [PROGRESS: N], never a derived-sidebar row number
+# (measured on staging 59207: "paragraph" matched a sidebar row, step 1 → 2, b-goal dropped mid-step).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|plan-router-step-harness\.js'; then
+  node bin/plan-router-step-harness.js || fail=1
+fi
 
 # v7.20.583 (#459): MISFILED-ANSWER GATE. A student's answer typed into the PLAN box (Dwij, 1215)
 # reached the marker as "NOT ATTEMPTED" and was refused twice with no way forward. The guard is

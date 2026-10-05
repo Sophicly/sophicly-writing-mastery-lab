@@ -12,8 +12,10 @@ think matter most."
 - **Accurate:** "Exactly — the core focus is [their key words]. Every quotation and every paragraph will serve that." Present
   their key-word list back and ask them to confirm it BEFORE anything is written: **A) Save these key words** · **B) Tweak
   them**.
-  **[AI_INTERNAL — write to the document ONLY AFTER the student confirms]:** once they choose **A** (their final version),
-  emit on its own line: `@FIELD_SET{"field":"kw-focus","value":"<the confirmed key words>"}` — this fills the document's
+  **[AI_INTERNAL — write to the document ONLY AFTER the student confirms]:** once they choose **A** (their final version) —
+  in THAT acknowledgement message ("Saved!") — emit, on its OWN line (never inside bold or other markup), with the value =
+  their confirmed key words (plain text, no braces, no line breaks):
+  `@FIELD_SET{"field":"kw-focus","value":"<the confirmed key words>"}` — this fills the document's
   **Question Focus: Keywords** box. On **B**, revise with them and re-present; file only after they save.
 - **Incomplete:** "You've got [X]. The question also names [Y] — why might that matter for what you explore?" Guide until
   complete.
