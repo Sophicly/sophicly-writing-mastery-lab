@@ -50,6 +50,11 @@ const parts = [
     slice('function buildIUMVCCOutlineSection(', '('),
     slice('function _iumvccFieldId(', '('),
     slice('function _iuPoint(', '('),
+    // v7.20.697 (#722 B2 step 0.2): the page's OWN spec lookup. The probe read the JSON with the hyphenated
+    // board key, while the page looks it up as board.replace(/-/g, '') — so for Edexcel IGCSE the probe
+    // rendered from a spec the page never finds (#618) and reported "Q4 renders 18 rows" when the real page
+    // rendered none. Resolve every question through the shipped function, exactly as the doc builder does.
+    slice('function lookupQuestionSpec(', '('),
 ];
 
 const captured = [];
@@ -60,6 +65,8 @@ const explicit = {
     sectionHTML: (t, l, a, b, inner) => inner || '',
     _specSubjectKey: () => SUBJ,
     state: { board: BOARD, subject: SUBJ },
+    // the server embeds language-paper-specs.json verbatim as window.swmlLangSpecs (main plugin file)
+    window: { swmlLangSpecs: require(path.resolve(ROOT, 'protocols/shared/language-paper-specs.json')) },
 };
 const NOOP = new Proxy(function () { return NOOP; }, {
     get: (t, k) => (k === Symbol.toPrimitive || k === 'toString' ? () => '__STUB__' : NOOP),
@@ -74,15 +81,20 @@ const sandbox = new Proxy(explicit, {
 const uniq = parts.filter((a, i) => !parts.some((b, j) => j !== i && b.length > a.length && b.includes(a)));
 vm.runInContext(uniq.join('\n'), vm.createContext(sandbox));
 
-const spec = require(path.join(ROOT, 'protocols/shared/language-paper-specs.json'))[BOARD][SUBJ];
+const spec = require(path.resolve(ROOT, 'protocols/shared/language-paper-specs.json'))[BOARD][SUBJ];
 const qs = [];
 for (const sec of spec.sections) for (const q of sec.questions) qs.push(q);
 
 function render(fn) { captured.length = 0; try { fn(); } catch (e) { return ['THREW: ' + e.message]; } return captured.slice(); }
 
 console.log(`=== REAL DISPATCH SIMULATION — board=${BOARD} subject=${SUBJ}, mode=redraft ===\n`);
+let specMisses = 0;
 for (const q of qs) {
-    const qId = q.id, qMarks = q.marks, qType = q.type, aos = q.aos;
+    // AS THE PAGE DOES: the topic parser sets no per-question type, so type and marks come from the
+    // page's spec lookup (q here stands in for the topic row: its marks are the topic's own).
+    const specQ = sandbox.lookupQuestionSpec(q.id);
+    if (!specQ) specMisses++;
+    const qId = q.id, qMarks = specQ ? specQ.marks : q.marks, qType = specQ ? specQ.type : null, aos = (specQ || q).aos;
     const bodyOnly = sandbox._resolveBodyOnlyOutline(qId, qType, qMarks, aos, q);
     // v7.20.625: call the SHIPPED registry helper. These two lines used to COPY the gate
     // conditions, so the probe reported on its own copy and could not see a dispatch change
@@ -117,6 +129,10 @@ for (const q of qs) {
     console.log();
 }
 
+if (specMisses) {
+    console.log(`⛔ lookupQuestionSpec found NO spec for ${specMisses} of ${qs.length} question(s) on board=${BOARD} subject=${SUBJ} — `
+        + 'the REAL page renders these with no question type (#618). The rows above are what the page renders today.\n');
+}
 console.log('=== WHAT Q5 *WOULD* RENDER IF THE COMPARATIVE OVERLAY WERE ALLOWED FOR THIS BOARD ===');
 const want = render(() => sandbox.buildOutlineSection(['AO3'], 'Q5', 22, 'aqa_language_p2_comparison', { focus: 'comparative', stampAO: 'AO3' }));
 console.log(`${want.length} row(s):`); want.forEach(i => console.log('    ' + i));

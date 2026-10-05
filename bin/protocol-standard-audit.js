@@ -105,8 +105,23 @@ for (const board of fs.readdirSync(P).sort()) {
         if (!fs.statSync(sdir).isDirectory() || subject.startsWith('_')) continue;   // v7.20.610: _sources / _marks are data dirs
         const manifest = fs.existsSync(path.join(sdir, 'manifest.json')) ? JSON.parse(read(path.join(sdir, 'manifest.json'))) : null;
 
-        // assessment = every protocol-a-* module (some subjects split per question)
-        const aFiles = filesUnder(path.join(sdir, 'modules'), /^protocol-a-.*\.md$/);
+        // v7.20.697 (#722 B2 step 0.1): read WHAT THE ROUTER LOADS. The router serves the manifest's
+        // <task>.always + <task>.steps[*].files (load_modular_protocol); a filename glob missed Edexcel IGCSE
+        // P2's assessment-section-a/-b.md ("no protocol-a file") and its steps/ planning ("no planning") while
+        // both were live. Limited to the subject's OWN assessment/planning files — shared modules are excluded,
+        // since phrases in them would credit a protocol that lacks them. Falls back to the glob with no manifest.
+        const manifestFiles = (task, re) => {
+            if (!manifest || !manifest[task]) return [];
+            const blk = manifest[task];
+            const rel = [].concat(blk.always || [], ...Object.values(blk.steps || {}).map((st) => (st && st.files) || []));
+            const base = path.join(P, '..', manifest.base_path || path.relative(path.join(P, '..'), sdir));
+            const seen = new Set();
+            return rel.map((f) => path.join(base, f))
+                .filter((f) => f.startsWith(sdir + path.sep) && re.test(path.basename(f)) && fs.existsSync(f))
+                .filter((f) => (seen.has(f) ? false : (seen.add(f), true)));
+        };
+        let aFiles = manifestFiles('assessment', /^(protocol-a-|assessment-).*\.md$/);
+        if (!aFiles.length) aFiles = filesUnder(path.join(sdir, 'modules'), /^protocol-a-.*\.md$/);
         const aText = aFiles.map(read).join('\n');
         const a = {};
         let aPass = 0, aTotal = 0;
@@ -116,9 +131,11 @@ for (const board of fs.readdirSync(P).sort()) {
             if (verdict) { aTotal++; if (verdict(n)) aPass++; }
         }
         // planning = the planning/ dir (whole), plus a legacy modules/protocol-b-* if that is all there is
-        let pFiles = [];
-        const pdir = path.join(sdir, 'planning');
-        if (fs.existsSync(pdir)) pFiles = fs.readdirSync(pdir).filter((f) => f.endsWith('.md')).map((f) => path.join(pdir, f));
+        let pFiles = manifestFiles('planning', /\.md$/).filter((f) => /[\\/](planning|steps)[\\/]/.test(f) || /^protocol-b-/.test(path.basename(f)));
+        if (!pFiles.length) {
+            const pdir = path.join(sdir, 'planning');
+            if (fs.existsSync(pdir)) pFiles = fs.readdirSync(pdir).filter((f) => f.endsWith('.md')).map((f) => path.join(pdir, f));
+        }
         if (!pFiles.length) pFiles = filesUnder(path.join(sdir, 'modules'), /^protocol-b-.*\.md$/);
         const pText = pFiles.map(read).join('\n');
         const c = {};
