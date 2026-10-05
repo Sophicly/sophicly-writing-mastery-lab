@@ -2789,5 +2789,16 @@ Recorded here in the same session, as §0 requires. Each line is his tap; a quot
 10. **The rest of the protocol work — "Go ahead."** (card 12) His note: *"Polishing always comes after assessment
     and planning for everything; the creative writing course and Grade 9 core skills course have their own
     sequence."* — the lesson order is Assessment → Planning → … → Polishing everywhere except those two courses.
-11. **Open (no answer yet):** card 3 — his note: *"The anthology has both poetry and prose; we will have to make a
-    new document that has both, don't you think?"* — the Edexcel IGCSE Paper 2 anthology lesson's quiz.
+11. **The Edexcel IGCSE Paper 2 anthology gets its OWN quiz and its own notes document — never the AQA forms quiz.**
+    (card 3, then his correction in chat the same day: *"it has its own anthology, which comprises both poetry and prose…
+    it only has… five [poems]… if we're going to have a forms quiz, we'd have to have… a special one… that only covers
+    the forms that are relevant for the poems in its anthology… then we also have to cover things like… protagonists… and
+    genre for the prose… it's a bit more complex than the other anthologies."*) My card had recommended the AQA forms
+    quiz — WRONG: that quiz serves a large, poetry-only anthology. The anthology (protocols/edexcel-igcse/language2/
+    modules/knowledge-text-bank.md) is five poems — Disabled, "Out, Out—", An Unknown Girl, The Bright Lights of Sarajevo,
+    Still I Rise — and five stories — The Story of an Hour, The Necklace, Significant Cigarettes, Whistle and I'll Come to
+    You, Night — and the paper's protocol already plans Body 1 as FORM for a poem and GENRE for a story. So: ONE notes
+    document holding all ten texts, and ONE quiz in two parts — (a) only the forms those five poems use (narrative poem,
+    elegy, blank verse, iambic pentameter, free verse, interior and dramatic monologue, rhyming couplets, quatrains,
+    refrain…); (b) for the five stories, genre, protagonist and the other prose ideas the notes document holds. Mastery =
+    100% at least once (item 3).
