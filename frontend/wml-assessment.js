@@ -924,9 +924,35 @@
     //  deterministic, never through the LLM.
     // ══════════════════════════════════════════════════════════════
     function _planPreChainActive() {
-        return state.task === 'planning'
-            && (state.board || '').toLowerCase() === 'aqa'
-            && (_isLangPaper2() || _isLangPaper1());
+        if (state.task !== 'planning') return false;
+        const _b = String(state.board || '').toLowerCase().replace(/_/g, '-');
+        if (_b === 'aqa') return _isLangPaper2() || _isLangPaper1();
+        // v7.20.704 (#722 B2 step 1.6): Edexcel IGCSE Paper 2 planning hands its setup to the code-asked chain (C-COMMON 6;
+        // steps/b-setup.md). Paper 1 joins with its planning monolith (step 5) — its step files still ask setup in prose,
+        // and two askers for one question is the conflict class.
+        if (_b === 'edexcel-igcse') return _isLangPaper2();
+        return false;
+    }
+    // v7.20.704: does THIS paper's chain ask source predictions? Neil's rulings v7.20.66/.67: predictions anticipate UNSEEN
+    // material — a studied text gets the Keywords-Focus box instead. Edexcel IGCSE Paper 2's text is a studied anthology
+    // text, so its chain asks none (its document carries Question Focus only; _composePrewriteBlock). AQA: as before.
+    function _planChainPredictsSources() {
+        return !(String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse' && _isLangPaper2());
+    }
+    // v7.20.704: what THIS paper calls its sources in the prediction asks — AQA (and IGCSE P2, whose document labels its
+    // text "Source A") say Source A / Source B; Edexcel IGCSE Paper 1 says Text One / Text Two. The asks print these
+    // and _PLAN_PRED_ASK_RE reads them back (byte-pair rule); AQA's words are unchanged, so stored transcripts still match.
+    function _planSourceName(letter) {
+        if (String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse' && _isLangPaper1()) return letter === 'B' ? 'Text Two' : 'Text One';
+        return 'Source ' + letter;
+    }
+    function _planSourceRe(letter) { return new RegExp(_planSourceName(letter).replace(/\s+/g, '\\s*') + '\\b', 'i'); }
+    const _PLAN_PRED_ASK_RE = { A: /predict (?:Source A|Text One) will explore/i, B: /predict (?:Source B|Text Two) will explore/i };
+    function _planPaperName() {
+        const n = _isLangPaper1() ? '1' : '2';
+        return String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse'
+            ? 'Edexcel International GCSE English Language A, Paper ' + n
+            : 'AQA English Language Paper ' + n;
     }
     // v7.20.208: how many source sections does THIS doc carry? Drives the prediction
     // stage list (P2 = paired sources → predA+predB; P1 = one fiction extract → predA
@@ -1005,11 +1031,11 @@
         if (_planReflectEligible() && !askedBy(/when you sat this paper last time/i) && !askedBy(/headline goal/i)) return 'reflect';
         if (!askedBy(/headline goal/i)) return 'headline';
         if (!askedBy(/condense your plans/i)) return 'planmode';
-        if (_planChainSourceCount() < 1) return null;   // v7.20.692: no source → no predictions (writing-only topic)
+        if (_planChainSourceCount() < 1 || !_planChainPredictsSources()) return null;   // v7.20.692 no source · v7.20.704 studied text → no predictions
         if (!askedBy(/do you expect this paper is about/i)) return 'predQ';
-        if (!askedBy(/predict Source A will explore/i)) return 'predA';
+        if (!askedBy(_PLAN_PRED_ASK_RE.A)) return 'predA';
         // v7.20.208: predB only exists on a paired-source doc (P1 has one source).
-        if (_planChainSourceCount() >= 2 && !askedBy(/predict Source B will explore/i)) return 'predB';
+        if (_planChainSourceCount() >= 2 && !askedBy(_PLAN_PRED_ASK_RE.B)) return 'predB';
         return null;
     }
     // v7.20.56: the chain's stage order is DERIVED (reflect slots in only when a
@@ -1019,15 +1045,15 @@
         const o = ['greeting'];
         if (_planReflectEligible()) o.push('reflect');
         o.push('headline', 'planmode');
-        if (_planChainSourceCount() >= 1) o.push('predQ', 'predA');   // v7.20.692: same rule as the stage picker
-        if (_planChainSourceCount() >= 2) o.push('predB');
+        if (_planChainSourceCount() >= 1 && _planChainPredictsSources()) o.push('predQ', 'predA');   // v7.20.692/.704: same rule as the stage picker
+        if (_planChainSourceCount() >= 2 && _planChainPredictsSources()) o.push('predB');
         return o;
     }
     function _planChainBeat(stage) {
         const labels = {
             greeting: 'Setup · Grade goal', reflect: 'Setup · Reflect', headline: 'Setup · Headline goal',
             planmode: 'Setup · Plan mode', predQ: 'Predict · This paper',
-            predA: 'Predict · Source A', predB: 'Predict · Source B', tidy: 'Predict · Tidy-up',
+            predA: 'Predict · ' + _planSourceName('A'), predB: 'Predict · ' + _planSourceName('B'), tidy: 'Predict · Tidy-up',
         };
         if (!labels[stage]) return null;
         const order = _planChainOrder();
@@ -1042,10 +1068,10 @@
             const secs = document.querySelectorAll('[data-section-type="source"]');
             for (let i = 0; i < secs.length; i++) {
                 const l = secs[i].getAttribute('data-section-label') || '';
-                if (new RegExp('source\\s*' + letter + '\\b', 'i').test(l)) return l;
+                if (_planSourceRe(letter).test(l)) return l;
             }
         } catch (_) { /* non-fatal */ }
-        return 'Source ' + letter;
+        return _planSourceName(letter);
     }
     // v7.20.50 (Neil): question counts + planned/untrained lists are DERIVED FROM THE
     // DOCUMENT, never hardcoded — "five questions"/"four questions" was AQA-P2 literal
@@ -1099,10 +1125,10 @@
             const unNote = _planUntrainedNote(facts);
             // v7.20.208: paper name + prediction count are DERIVED (P1 = one source → two
             // predictions; P2 = paired sources → three), never P2-literal.
-            const paperName = _isLangPaper1() ? 'AQA English Language Paper 1' : 'AQA English Language Paper 2';
+            const paperName = _planPaperName();   // v7.20.704: paper-true (Edexcel IGCSE named as itself)
             const predCount = _planCountWord(1 + _planChainSourceCount());
             // v7.20.692: a writing-only topic has no source, so no predictions step to announce.
-            const predStep = _planChainSourceCount() >= 1 ? `make ${predCount} quick predictions, ` : '';
+            const predStep = (_planChainSourceCount() >= 1 && _planChainPredictsSources()) ? `make ${predCount} quick predictions, ` : '';
             plain = `Hi ${fn}! Welcome to your planning session for ${paperName}. Here's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
             html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>${paperName}</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
         } else if (stage === 'reflect') {
@@ -1136,12 +1162,12 @@
             html = `<p>Now the pre-read. Look at the <strong>${qPhrase}</strong> in your document first — just the questions, don't read the sources yet.${unShort ? ` <em>${unShort.trim()}</em>` : ''}${skim}</p><p style="margin-top:8px;font-size:12.5px;opacity:0.75"><em>${why}</em></p><p style="margin-top:8px">What <strong>3 themes</strong> do you expect this paper is about? Type your three themes.</p>`;
         } else if (stage === 'predA') {
             const la = _planSourceLabel('A');
-            plain = `Committed. Now look at **${la}** — read ONLY its title, author, date and preamble, not the text itself.\n\nWhat **3 themes** do you predict Source A will explore?`;
-            html = `<p>Committed. Now look at <strong>${la}</strong> — read ONLY its title, author, date and preamble, not the text itself.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict Source A will explore?</p>`;
+            plain = `Committed. Now look at **${la}** — read ONLY its title, author, date and preamble, not the text itself.\n\nWhat **3 themes** do you predict ${_planSourceName('A')} will explore?`;
+            html = `<p>Committed. Now look at <strong>${la}</strong> — read ONLY its title, author, date and preamble, not the text itself.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict ${_planSourceName('A')} will explore?</p>`;
         } else if (stage === 'predB') {
             const lb = _planSourceLabel('B');
-            plain = `Committed. Last one: **${lb}** — title, author, date and preamble only.\n\nWhat **3 themes** do you predict Source B will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.`;
-            html = `<p>Committed. Last one: <strong>${lb}</strong> — title, author, date and preamble only.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict Source B will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.</p>`;
+            plain = `Committed. Last one: **${lb}** — title, author, date and preamble only.\n\nWhat **3 themes** do you predict ${_planSourceName('B')} will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.`;
+            html = `<p>Committed. Last one: <strong>${lb}</strong> — title, author, date and preamble only.</p><p style="margin-top:8px">What <strong>3 themes</strong> do you predict ${_planSourceName('B')} will explore? After this your predictions are committed — we'll check back on them as you plan. Being wrong there is often where the best insights come from.</p>`;
         } else if (stage === 'tidy') {
             // v7.20.55 (Neil): one code-owned confirm between the last prediction and the
             // first AI turn — a quick SPaG once-over of the prediction boxes.
@@ -1971,8 +1997,8 @@
             if (!lastAsk) return;
             let fid = null;
             if (/do you expect this paper is about/i.test(lastAsk)) fid = 'pred-paper';
-            else if (/predict Source A will explore/i.test(lastAsk)) fid = 'pred-source-a';
-            else if (/predict Source B will explore/i.test(lastAsk)) fid = 'pred-source-b';
+            else if (_PLAN_PRED_ASK_RE.A.test(lastAsk)) fid = 'pred-source-a';
+            else if (_PLAN_PRED_ASK_RE.B.test(lastAsk)) fid = 'pred-source-b';
             // v7.20.56: the reflect recall files too (ruling 1: FILE IT — Bisra et al.
             // 2018, self-explanation g≈.55; the written line co-encodes with the reveal).
             // Section is healed in just before the write (late-prefetch safe).
@@ -2198,8 +2224,8 @@
     // follows, the reply flows through to the AI.
     function _planChainAnswersFinalPred(history) {
         const finalRe = _planChainSourceCount() >= 2
-            ? /predict Source B will explore/i
-            : /predict Source A will explore/i;
+            ? _PLAN_PRED_ASK_RE.B
+            : _PLAN_PRED_ASK_RE.A;
         for (let i = history.length - 1; i >= 0; i--) {
             const m = history[i];
             if (m.hidden) continue;
@@ -4262,6 +4288,11 @@
             // with no Session Law 9 / filing markers: a silent-broken sibling, the CANVAS
             // TASK-SCOPING #1 trap). Subject-scoped, never a bare _isLitEssay() (which also matches
             // shakespeare/moderntext).
+            // Edexcel IGCSE (v7.20.704, #722 B2 step 1.6): Paper 2's planning carries steps/b-ladder.md + filing in steps/.
+            // Paper 1 joins with its planning monolith (step 5) — a ladder with no module is the silent-broken sibling.
+            if (_board === 'edexcel-igcse') {
+                return typeof _isLangPaper2 === 'function' ? _isLangPaper2() : false;
+            }
             if (_board === 'eduqas') {
                 var _subj = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
                 return /^(19thcentury|nineteenthcentury)$/.test(_subj);
@@ -4273,6 +4304,10 @@
     // verdict routing are SHARED; a paper contributes only its question order + registries.
     // Never fork deriveLadderState per paper.
     function _ladderPaperKey() {
+        // v7.20.704: Edexcel IGCSE papers have their own registries (board first — they share subjects with AQA)
+        if (String(state.board || '').toLowerCase().replace(/_/g, '-') === 'edexcel-igcse') {
+            return (typeof _isLangPaper1 === 'function' && _isLangPaper1()) ? 'igcse1' : 'igcse2';
+        }
         // poetry anthology reuses the lit registry + walk (identical fieldIds / bodies-intro-conclusion)
         if ((typeof _isLitEssay === 'function' && _isLitEssay()) || (typeof _isPoetryLadder === 'function' && _isPoetryLadder())) return 'lit';
         return (typeof _isLangPaper1 === 'function' && _isLangPaper1()) ? 'p1' : 'p2';
@@ -4284,7 +4319,9 @@
     // bodies-first ruling): 'bodies' is a single walk unit so fade/pace carry across the three
     // TTECEA+C paragraphs (the P2-Q3 precedent), and the wallet's per-question sub-cap lands
     // 1 per arc (bodies · intro · conclusion) under the universal ceiling of 4.
-    var _LADDER_QUESTION_ORDERS = { p2: ['q2', 'q3', 'q4', 'q5'], p1: ['q2', 'q3', 'q4'], lit: ['bodies', 'intro', 'conclusion'] };
+    // igcse2 (v7.20.704): Paper 2's Q1 essay walked as three ARCS in planning order — bodies (B.5) → intro (B.6–B.7) →
+    // conclusion (B.8), the lit shape; Section B's scene plan stays UN-laddered (the AQA P1 creative precedent).
+    var _LADDER_QUESTION_ORDERS = { p2: ['q2', 'q3', 'q4', 'q5'], p1: ['q2', 'q3', 'q4'], lit: ['bodies', 'intro', 'conclusion'], igcse2: ['bodies', 'intro', 'conclusion'] };
     function _ladderQuestionOrder() { return _LADDER_QUESTION_ORDERS[_ladderPaperKey()]; }
 
     // The element REGISTRY — ordered, per question, in PLANNING-BEAT order. Each entry:
@@ -4297,6 +4334,7 @@
     function _ladderRegistry(qKey) {
         var pk = _ladderPaperKey();
         if (pk === 'lit') return _ladderRegistryLit(qKey);
+        if (pk === 'igcse2') return _ladderRegistryIgcse2(qKey);
         return pk === 'p1' ? _ladderRegistryP1(qKey) : _ladderRegistryP2(qKey);
     }
     // ── AQA Literature essay registry (v7.20.229 — byte-traced against the lit render:
@@ -4327,6 +4365,36 @@
             r.push({ el: 'outline-intro-thesis', type: 'thesis', resolveBy: 'outline-intro-thesis' });
             r.push({ el: 'outline-intro-hook', type: 'hook', resolveBy: 'outline-intro-hook' });
             r.push({ el: 'outline-intro-building', type: 'building', resolveBy: 'outline-intro-building' });
+        } else if (qKey === 'conclusion') {
+            r.push({ el: 'outline-conclusion-thesis', type: 'thesis', resolveBy: 'outline-conclusion-thesis' });
+            r.push({ el: 'outline-conclusion-concept', type: 'concept-synthesis', resolveBy: 'outline-conclusion-concept' });
+            r.push({ el: 'outline-conclusion-purpose', type: 'central-purpose', resolveBy: 'outline-conclusion-purpose' });
+            r.push({ el: 'outline-conclusion-message', type: 'universal-message', resolveBy: 'outline-conclusion-message' });
+        }
+        return r;
+    }
+    // ── Edexcel IGCSE Paper 2 registry (v7.20.704, #722 B2) — byte-traced against the planning step files' @FIELD_COMMIT ids
+    // and the page builder (bin/planning-keymatch-harness.js IGCSE P2 case): bodies UNSUFFIXED ×3, six TTECEA rows, NO Context
+    // (4EA1/02 assesses AO1 + AO2 only); intro -q1-suffixed; conclusion unsuffixed. Planning-beat order per the step files:
+    // each body = Step 1 topic → Step 2 technical terminology (files nothing — a stamp, the lit 'technique' beat) → Step 3
+    // evidence → Step 4 close analysis → Step 5 effects (two) → Step 6 purpose. The B.6 working thesis files straight into
+    // outline-intro-thesis-q1 (B.7 refines the same box), then hook, then building sentences. Types match the lit registry.
+    function _ladderRegistryIgcse2(qKey) {
+        var r = [], i;
+        if (qKey === 'bodies') {
+            for (i = 1; i <= 3; i++) {
+                r.push({ el: 'outline-body-' + i + '-topic', type: 'topic', resolveBy: 'outline-body-' + i + '-topic' });
+                r.push({ el: 'igcse2-technique-b' + i, type: 'technique', resolveBy: 'stamp' });
+                r.push({ el: 'outline-body-' + i + '-evidence', type: 'evidence', resolveBy: 'outline-body-' + i + '-evidence' });
+                r.push({ el: 'outline-body-' + i + '-analysis', type: 'analysis', resolveBy: 'outline-body-' + i + '-analysis' });
+                r.push({ el: 'outline-body-' + i + '-effects', type: 'effect', resolveBy: 'outline-body-' + i + '-effects' });
+                r.push({ el: 'outline-body-' + i + '-effects2', type: 'effect', resolveBy: 'outline-body-' + i + '-effects2' });
+                r.push({ el: 'outline-body-' + i + '-purpose', type: 'purpose', resolveBy: 'outline-body-' + i + '-purpose' });
+            }
+        } else if (qKey === 'intro') {
+            r.push({ el: 'outline-intro-thesis-q1', type: 'thesis', resolveBy: 'outline-intro-thesis-q1' });
+            r.push({ el: 'outline-intro-hook-q1', type: 'hook', resolveBy: 'outline-intro-hook-q1' });
+            r.push({ el: 'outline-intro-building-q1', type: 'building', resolveBy: 'outline-intro-building-q1' });
         } else if (qKey === 'conclusion') {
             r.push({ el: 'outline-conclusion-thesis', type: 'thesis', resolveBy: 'outline-conclusion-thesis' });
             r.push({ el: 'outline-conclusion-concept', type: 'concept-synthesis', resolveBy: 'outline-conclusion-concept' });
@@ -19339,7 +19407,7 @@
                 const letter = stage === 'predA' ? 'A' : 'B';
                 bar.appendChild(_planPinHint('📍 Tap the pin to jump to the source in your document.'));
                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + _planSourceLabel(letter),
-                    onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i'), 'source') }));
+                    onClick: () => _planScrollToSection(_planSourceRe(letter), 'source') }));
             } else if (stage === 'tidy') {
                 // v7.20.55: SPaG once-over — nav to the predictions + a silent continue.
                 bar.appendChild(_planPinHint('📍 Tap the pin to jump to your predictions, tidy them, then continue.'));
@@ -19374,8 +19442,8 @@
                 else if (/headline goal/i.test(t)) pending = 'headline';
                 else if (/what grade are you aiming for/i.test(t)) pending = 'greeting';
                 else if (/do you expect this paper is about/i.test(t)) pending = 'predQ';
-                else if (/predict Source A will explore/i.test(t)) pending = 'predA';
-                else if (/predict Source B will explore/i.test(t)) pending = 'predB';
+                else if (_PLAN_PRED_ASK_RE.A.test(t)) pending = 'predA';
+                else if (_PLAN_PRED_ASK_RE.B.test(t)) pending = 'predB';
                 else if (/give them a quick once-over/i.test(t)) pending = 'tidy';
                 if (!pending) return; // chain done or a conversation the chain never owned
                 const bubble = chatMessages.lastElementChild;
@@ -43171,7 +43239,7 @@
                                 const letter = stage === 'predA' ? 'A' : 'B';
                                 bar.appendChild(_planPinHint('📍 Tap the pin to jump to the source in your document.'));
                                 bar.appendChild(el('button', { className: 'swml-quick-btn', textContent: '📍 ' + _planSourceLabel(letter),
-                                    onClick: () => _planScrollToSection(new RegExp('source\\s*' + letter + '\\b', 'i'), 'source') }));
+                                    onClick: () => _planScrollToSection(_planSourceRe(letter), 'source') }));
                             } else if (stage === 'tidy') {
                                 // v7.20.55: SPaG once-over (twin).
                                 bar.appendChild(_planPinHint('📍 Tap the pin to jump to your predictions, tidy them, then continue.'));
@@ -43201,8 +43269,8 @@
                 else if (/headline goal/i.test(t)) pending = 'headline';
                                 else if (/what grade are you aiming for/i.test(t)) pending = 'greeting';
                                 else if (/do you expect this paper is about/i.test(t)) pending = 'predQ';
-                                else if (/predict Source A will explore/i.test(t)) pending = 'predA';
-                                else if (/predict Source B will explore/i.test(t)) pending = 'predB';
+                                else if (_PLAN_PRED_ASK_RE.A.test(t)) pending = 'predA';
+                                else if (_PLAN_PRED_ASK_RE.B.test(t)) pending = 'predB';
                                 else if (/give them a quick once-over/i.test(t)) pending = 'tidy';
                                 if (!pending) return;
                                 const bubble = chatMessages.lastElementChild;
@@ -66508,7 +66576,9 @@
                 inputHTML('The key words or concepts the question asks you to focus on — and the specific aspect they point at (a transformation, a relationship, a treatment of others — not the character or theme generally). Committed before writing, never marked.', 'kw-focus'));
         if (litWrite) {
             block = kwSection;
-        } else if (!planning && (state.board || '').toLowerCase() === 'edexcel-igcse') {
+        } else if ((state.board || '').toLowerCase() === 'edexcel-igcse') {
+            // v7.20.704: planning docs too — the chain now runs on IGCSE P2 planning, and this branch must keep winning
+            // over the AQA P2 planning trio below (which would hand a studied text three prediction boxes).
             // v7.20.67 (Neil): Spec A sources are STUDIED anthology texts. P1 = anthology
             // text + ONE unseen → keywords box + a single unseen-text prediction;
             // P2 = anthology poetry/prose → keywords only (same treatment as literature).
@@ -67650,8 +67720,8 @@
                         // a paired-source paper, predA on a one-source paper (P1).
                         // Asked ≠ answered: only reach L when a user reply follows the ask.
                         const _finalPredRe = _planChainSourceCount() >= 2
-                            ? /predict Source B will explore/i
-                            : /predict Source A will explore/i;
+                            ? _PLAN_PRED_ASK_RE.B
+                            : _PLAN_PRED_ASK_RE.A;
                         let bIdx = -1;
                         hist.forEach((m, i) => { if (m.role === 'assistant' && _finalPredRe.test(_planChainNorm(m.content))) bIdx = i; });
                         stageIdx = (bIdx !== -1 && !hist.some((m, i) => i > bIdx && m.role === 'user')) ? (L - 1) : L;

@@ -394,6 +394,54 @@ if (!fs.existsSync(EDU_LIT_PLAN_DIR)) {
   }
 }
 
+// ── (3e) EL BYTE-TRACE — EDEXCEL IGCSE LANGUAGE PAPER 2 (v7.20.704 port; same gate as (3)) ────────
+// Unlike (3b)-(3d), the expected els are NOT a hand-copied list: the shipped _ladderRegistryIgcse2 is
+// sliced out of wml-assessment.js and RUN, so the trace cannot drift from the code it guards. Synthetic
+// els (resolveBy 'stamp' — igcse2-technique-b*) file nothing and are excluded. Filings live across the
+// steps/ files (modular protocol), so every steps/*.md is concatenated. The intro rows carry the paper's
+// -q1 suffix (the doc labels its introduction by question number); bodies and conclusion are unsuffixed.
+const IGCSE2_STEPS_DIR = path.join(ROOT, 'protocols', 'edexcel-igcse', 'language2', 'steps');
+function igcse2RegistryEls() {
+  const src = fs.existsSync(ASSESS_JS) ? fs.readFileSync(ASSESS_JS, 'utf8') : '';
+  const start = src.indexOf('function _ladderRegistryIgcse2(');
+  if (start < 0) return null;
+  let depth = 0, i = src.indexOf('{', start), end = -1;
+  for (; i < src.length; i++) { if (src[i] === '{') depth++; else if (src[i] === '}' && --depth === 0) { end = i + 1; break; } }
+  if (end < 0) return null;
+  const vm = require('vm'); const box = {};
+  vm.runInNewContext(src.slice(start, end) + '\nthis.fn = _ladderRegistryIgcse2;', box);
+  const out = [];
+  ['bodies', 'intro', 'conclusion'].forEach(q => (box.fn(q) || []).forEach(r => { if (r.resolveBy !== 'stamp') out.push(r.el); }));
+  return out;
+}
+if (!fs.existsSync(IGCSE2_STEPS_DIR)) {
+  note(`— EL BYTE-TRACE (IGCSE P2): SKIP (steps dir not found at ${path.relative(ROOT, IGCSE2_STEPS_DIR)}).`);
+} else {
+  const protoI2 = fs.readdirSync(IGCSE2_STEPS_DIR).filter(f => f.endsWith('.md'))
+    .map(f => fs.readFileSync(path.join(IGCSE2_STEPS_DIR, f), 'utf8')).join('\n');
+  const commitI2 = new Set(), setI2 = new Set();
+  { const re = /@FIELD_COMMIT\s*\{[^}]*?"field"\s*:\s*"([^"]+)"[^}]*\}/g; let m; while ((m = re.exec(protoI2)) !== null) commitI2.add(m[1].trim()); }
+  { const re = /@FIELD_SET\{"field":"([^"]+)"/g; let m; while ((m = re.exec(protoI2)) !== null) setI2.add(m[1]); }
+  const expectedI2 = igcse2RegistryEls();
+  if (!expectedI2 || !expectedI2.length) {
+    failed = 1;
+    note('  ❌ IGCSE P2: could not slice/run _ladderRegistryIgcse2 from frontend/wml-assessment.js — the trace has nothing to check.');
+  } else {
+    const orphansI2 = expectedI2.filter(e => !commitI2.has(e));
+    const planFieldsI2 = ['plan-body-1', 'plan-body-2', 'plan-body-3', 'plan-intro', 'plan-conclusion', 'kw-focus'];
+    const planMissI2 = planFieldsI2.filter(e => !setI2.has(e));
+    let mfOk = false;
+    try {
+      const mf = JSON.parse(fs.readFileSync(path.join(ROOT, 'protocols', 'edexcel-igcse', 'language2', 'manifest.json'), 'utf8'));
+      mfOk = !!(mf.planning && Array.isArray(mf.planning.always) && mf.planning.always.includes('steps/b-ladder.md'));
+    } catch (_) { mfOk = false; }
+    note(`— EL BYTE-TRACE (IGCSE P2): ${expectedI2.length - orphansI2.length}/${expectedI2.length} code filing els (run from the shipped registry) + ${planFieldsI2.length - planMissI2.length}/${planFieldsI2.length} plan @FIELD_SET fields are real in the IGCSE P2 steps; b-ladder.md always-loaded: ${mfOk ? 'yes' : 'NO'}.`);
+    if (orphansI2.length) { failed = 1; note('  ❌ IGCSE P2 CODE registry el(s) with NO matching @FIELD_COMMIT field (write-key ≠ read-key):'); orphansI2.forEach(e => note(`       ${e}`)); }
+    if (planMissI2.length) { failed = 1; note('  ❌ IGCSE P2 plan @FIELD_SET field(s) the steps never file:'); planMissI2.forEach(e => note(`       ${e}`)); }
+    if (!mfOk) { failed = 1; note('  ❌ protocols/edexcel-igcse/language2/manifest.json planning.always does not include steps/b-ladder.md — the ladder contract would vanish on unlisted steps.'); }
+  }
+}
+
 // ── (4) ENGINE CONTRACT — lock the verdict/heal mechanics from silent erosion (as (1) locks the
 // protocol literals). These are the load-bearing lines a refactor would quietly break; the Fable
 // review's two fixes (heal-weak must not spend the push; el-specific heal-commit) are guarded here

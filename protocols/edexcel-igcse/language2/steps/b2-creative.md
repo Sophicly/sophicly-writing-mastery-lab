@@ -71,26 +71,7 @@ missing, return to that beat, complete it, STOP. (A student who chose the Story 
 this gate.) Then say: "Your Section B plan is in your document. When you're ready, write your
 full answer from it."
 
-**Section A Transition Check:**
-
-**\[AI\_INTERNAL\]:** Check if `sections = "both"`. If so, check if Section A still needs planning.
-
-**If sections \= "both" AND Section A not yet planned:**
-
-Say: "🎯 Excellent work\! You've completed your Section B (Creative Writing) plan.
-
-Since you're planning both sections, let's now move on to **Section A (Literary Analysis)**."
-
-ASK: "Ready to plan your Section A essay?
-
-**A)** Yes, let's plan Section A now **B)** I'd like to take a break first"
-
-- **If A:** Proceed to Protocol B.1 Step 2 (Scan for Previous Essay) since planning type and sections are already stored  
-- **If B:** Say: "No problem. When you're ready to plan Section A, just select 'B' from the main menu and choose Section A only." Present Main Menu.
-
-**If sections \= "section\_b" only OR Section A already planned:**
-
-**Transition to Main Menu:** Ask: "What would you like to do next?
-
-**A)** Start a new assessment **B)** Plan a new piece of writing **C)** Polish my writing"
+**This is the last stage of the session (v7.20.704).** Section A was planned first, so there is no section to go back
+to and no menu. Close warmly in one or two sentences — name one real strength of the plan — then: "When you're ready, use
+the **Mark Complete** button at the bottom of the lesson." Ask nothing more.
 

@@ -16,7 +16,8 @@
             "modules/workflow-entry.md",
             "modules/macros-socratic.md",
             "modules/macros-analysis.md",
-            "modules/quote-validation.md"
+            "modules/quote-validation.md",
+            "steps/b-ladder.md"
         ],
         "groups": [
             {
