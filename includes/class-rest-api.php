@@ -5480,7 +5480,7 @@ class SWML_REST_API {
      */
     private static function sanitize_overview($ov) {
         if (!is_array($ov) || empty($ov)) return null;
-        $allowed = ['v', 'labels', 'completed_at', 'total', 'self_assessment', 'mark_scheme', 'calibration',
+        $allowed = ['v', 'labels', 'total', 'self_assessment', 'mark_scheme', 'calibration',
                     'questions', 'overall_feedback', 'analytics', 'action_plan', 'complete'];
         $clean = function ($v, $depth) use (&$clean) {
             if ($depth > 5) return null;
@@ -5551,6 +5551,7 @@ class SWML_REST_API {
         // re-marks share the document; only the grade history forks).
         $incoming_grade = sanitize_text_field($params['grade'] ?? '');
         $incoming_total = sanitize_text_field($params['total_score'] ?? '');
+        $first_completed_at = null;   // v7.20.689 (#655): when THIS attempt first completed (an idempotent re-send keeps it)
         if ($incoming_grade !== '' || $incoming_total !== '') {
             $decode_phase_meta = static function ($raw) {
                 if (!$raw) return null;
@@ -5559,6 +5560,10 @@ class SWML_REST_API {
                 return is_array($d) ? $d : null;
             };
             $prior = $decode_phase_meta(get_user_meta($user_id, $this->phase_meta_key($board, $text, $topic, $phase, $attempt), true));
+            if ($prior && ($prior['status'] ?? '') === 'complete' && !empty($prior['completed_at'])
+                && ($prior['grade'] ?? '') === $incoming_grade && ($prior['total_score'] ?? '') === $incoming_total) {
+                $first_completed_at = $prior['completed_at'];
+            }
             if ($prior && ($prior['status'] ?? '') === 'complete'
                 && (($prior['grade'] ?? '') !== '' || ($prior['total_score'] ?? '') !== '')
                 && (($prior['grade'] ?? '') !== $incoming_grade || ($prior['total_score'] ?? '') !== $incoming_total)) {
@@ -5639,7 +5644,9 @@ class SWML_REST_API {
         // ~/.claude/handoffs/open/wml-to-dashboard-INSTANT-REPORT-assessment-overview-2026-09-29.md
         $overview = self::sanitize_overview($params['overview'] ?? null);
         if ($overview) {
-            $overview['completed_at_server'] = $data['completed_at'];
+            // The day the assessment was completed = this attempt's FIRST completion (a reopened doc re-sends;
+            // the date must not move). Server clock only — the client never supplies it.
+            $overview['completed_at'] = $first_completed_at ?: $data['completed_at'];
             $data['overview'] = $overview;
         }
 

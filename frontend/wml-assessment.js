@@ -9977,7 +9977,15 @@
             const ed = document.getElementById('swml-tiptap-editor');
             if (!ed || !(maxTotal > 0)) return null;
             const r2 = (n) => Math.round(n * 100) / 100;
-            const clip = (t, n) => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : t; };
+            // Plain text that keeps the document's line breaks — textContent welds blocks ("Grade 4Technical").
+            const plain = (node) => {
+                if (!node) return '';
+                const d = document.createElement('div');
+                d.innerHTML = String(node.innerHTML || '').replace(/<br\s*\/?>|<\/(p|h[1-6]|li|div|tr)>/gi, '\n').replace(/<[^>]+>/g, ' ');
+                return String(d.textContent || '').replace(/[ \t\u00a0]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{2,}/g, '\n').trim();
+            };
+            const field = (fid) => plain(ed.querySelector('[data-field-id="' + fid + '"]'));
+            const clip = (t, n) => { t = String(t || '').trim(); return t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : t; };
             const subj = String(state.subject || '').toLowerCase();
             const isLang = typeof isLanguageSubject === 'function' && isLanguageSubject();
 
@@ -10006,9 +10014,8 @@
                 labels: labels,
                 total: { earned: r2(totalMarks), available: maxTotal, grade: String(gradeVal || '') },
                 questions: [],
-                complete: _calibStageOpen(),
+                complete: _calibStageOpen(),   // completed_at is stamped by the SERVER (first completion of this attempt)
             };
-            if (ov.complete) ov.completed_at = new Date().toISOString();
 
             // Self-Assessment card: average rating + calibration (=== the 'Self-Assessment' strip).
             const saRows = _saWalkRows().filter((r) => r.value != null);
@@ -10043,9 +10050,12 @@
 
             // Calibration card: the student's own mark vs Sophia's (=== the 'Calibration' strip).
             try {
-                const cal = _calibGroups().filter((x) => x.mineNum !== null && x.actual).map((x) => {
+                const groups = _calibGroups().filter((x) => x.mineNum !== null && x.actual);
+                const cal = groups.map((x) => {
                     const d = x.mineNum - x.actual.mark, tol = _toleranceFor(x.max);
-                    return { label: (x.q ? x.q + ' ' : '') + (x.ao || ''), mine: x.mineNum, sophia: x.actual.mark, available: x.max,
+                    // === the strip: one group is the whole paper/essay; several are named by question + AO.
+                    return { label: groups.length > 1 ? ((x.q ? x.q + ' ' : '') + (x.ao || '')).trim() : (isLang ? 'Whole paper' : 'Whole essay'),
+                        mine: x.mineNum, sophia: x.actual.mark, available: x.max,
                         verdict: Math.abs(d) <= tol ? 'calibrated' : (d > 0 ? 'marked higher' : 'marked lower') };
                 });
                 if (cal.length) ov.calibration = cal;
@@ -10083,7 +10093,7 @@
             // Overall Feedback: the section's own text (absent while it still shows its placeholder).
             try {
                 const sec = ed.querySelector('[data-section-type="feedback"][data-section-label="Overall Feedback"] .swml-section-content');
-                const t = clip(sec ? sec.textContent : '', 2000);
+                const t = clip(plain(sec), 2000);
                 if (t && !/will appear here once your assessment is complete/i.test(t)) ov.overall_feedback = t;
             } catch (_) {}
 
@@ -10097,14 +10107,14 @@
                 const fields = {};
                 [['top_missed', 'analytics-top-missed'], ['optouts', 'analytics-optouts'], ['repeated_errors', 'analytics-repeated-errors'],
                  ['improvements', 'analytics-improvements'], ['challenges', 'analytics-challenges']].forEach(([k, fid]) => {
-                    const t = clip(_ladderRowText(fid), 1000); if (t) fields[k] = t;
+                    const t = clip(field(fid), 1000); if (t) fields[k] = t;
                 });
                 if (Object.keys(fields).length) a.fields = fields;
                 ov.analytics = a;
             }
             const plan = {};
             [['grade_goal', 'action-grade-goal'], ['priorities', 'action-priorities'], ['short_term', 'action-short-term']].forEach(([k, fid]) => {
-                const t = clip(_ladderRowText(fid), 1000); if (t) plan[k] = t;
+                const t = clip(field(fid), 1000); if (t) plan[k] = t;
             });
             if (Object.keys(plan).length) ov.action_plan = plan;
             return ov;
