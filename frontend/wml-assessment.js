@@ -7475,11 +7475,20 @@
     }
     function _planOutlineTargets(planField, rowExists) {
         const has = rowExists || _planRowExists;
-        let m = /^plan-Q([23])-para-([123])$/.exec(planField);
+        // v7.20.701 (#722 B2 step 1.4): any question's per-paragraph plan, not only Q2/Q3 — Edexcel IGCSE P1 Q4 carries
+        // plan-Q4-para-1..3 over outline-body-N-*-q4 (the real doc, measured 2026-08-16), and had no route at all.
+        let m = /^plan-Q(\d)-para-([1-9])$/.exec(planField);
         if (m) { const q = m[1], p = m[2]; return { mode: 'elements', make: el => 'outline-body-' + p + '-' + el + '-q' + q }; }
-        m = /^plan-(?:Q4-)?body-([123])$/.exec(planField); // P1 plan-body-{i} · lit plan-body-{i} · P2 plan-Q4-body-{i}
+        m = /^plan-(?:Q\d-)?body-([123])$/.exec(planField); // P1 plan-body-{i} · lit plan-body-{i} · comparative plan-Q{n}-body-{i} (AQA P2 Q4 · IGCSE P1 Q5)
         if (m) { const b = m[1]; return { mode: 'elements', make: el => 'outline-body-' + b + '-' + el }; }
-        if (planField === 'plan-intro' || planField === 'plan-Q4-intro') {
+        const _cmpIntro = /^plan-Q(\d)-intro$/.exec(planField);
+        if (planField === 'plan-intro' || _cmpIntro) {
+            // v7.20.701: a comparison intro drawn as one row per marked element (IGCSE P1 Q5: Both Writers'
+            // Perspectives + Comparative Thesis) fans per element; a single-thesis one (AQA P2 Q4) still takes it whole.
+            if (_cmpIntro && has('outline-intro-perspectives-q' + _cmpIntro[1])) {
+                const qs = '-q' + _cmpIntro[1];
+                return { mode: 'elements', family: 'intro', make: el => 'outline-intro-' + el + qs };
+            }
             // v7.20.228: LITERATURE essay docs carry per-element intro rows (unsuffixed
             // hook/building/thesis) — fan per element with the intro label family. Lang P1 Q4
             // docs carry only the single suffixed thesis box — whole-mode, unchanged.
@@ -7492,9 +7501,15 @@
                 const sfx = ['', '-q1', '-q2', '-q3', '-q4', '-q5', '-q6', '-q7'].find(s => has('outline-intro-hook' + s));
                 if (sfx !== undefined) return { mode: 'elements', family: 'intro', make: el => 'outline-intro-' + el + sfx };
             }
-            return { mode: 'whole', target: 'outline-intro-thesis-q4' };
+            return { mode: 'whole', target: _cmpIntro ? 'outline-intro-thesis-q' + _cmpIntro[1] : 'outline-intro-thesis-q4' };
         }
-        if (planField === 'plan-conclusion' || planField === 'plan-Q4-conclusion') {
+        const _cmpConc = /^plan-Q(\d)-conclusion$/.exec(planField);
+        if (planField === 'plan-conclusion' || _cmpConc) {
+            // v7.20.701: a comparison conclusion drawn per marked element (IGCSE P1 Q5: Restated Thesis + The
+            // Writers' Purposes) fans per element; AQA P2 Q4's single restated-thesis row still takes it whole.
+            if (_cmpConc && has('outline-conclusion-purpose')) {
+                return { mode: 'elements', family: 'conclusion', make: el => 'outline-conclusion-' + el };
+            }
             // v7.20.228: lit conclusion = 4 element rows (thesis/concept/purpose/message).
             if (planField === 'plan-conclusion' && has('outline-conclusion-concept')) {
                 return { mode: 'elements', family: 'conclusion', make: el => 'outline-conclusion-' + el };
@@ -7516,6 +7531,7 @@
         if (!l) return null;
         if (family === 'intro') {
             if (l.indexOf('hook') === 0) return 'hook';
+            if (l.indexOf('perspective') === 0 || l.indexOf('both') === 0) return 'perspectives';   // v7.20.701 comparison intro
             if (l.indexOf('building') === 0) return 'building';
             if (l.indexOf('thesis') === 0) return 'thesis';
             return null;
@@ -7523,7 +7539,7 @@
         if (family === 'conclusion') {
             if (l.indexOf('restated') === 0 || l.indexOf('thesis') === 0) return 'thesis';
             if (l.indexOf('controlling') === 0) return 'concept';
-            if (l.indexOf('central') === 0 || l.indexOf('author') === 0 || l.indexOf('purpose') === 0) return 'purpose';
+            if (l.indexOf('central') === 0 || l.indexOf('author') === 0 || l.indexOf('purpose') === 0 || l.indexOf('writer') === 0) return 'purpose';
             if (l.indexOf('universal') === 0 || l.indexOf('message') === 0) return 'message';
             return null;
         }
@@ -7535,6 +7551,8 @@
         if (/^effect\s*source\s*b/.test(l)) return 'effects2';
         if (/^effect\s*poem\s*a/.test(l)) return 'effects';   // poetry comparative per-poem effect split
         if (/^effect\s*poem\s*b/.test(l)) return 'effects2';
+        if (/^effect\s*text\s*(one|1)\b/.test(l)) return 'effects';    // v7.20.701: Edexcel IGCSE names its texts One / Two
+        if (/^effect\s*text\s*(two|2)\b/.test(l)) return 'effects2';
         if (l.indexOf('topic') === 0) return 'topic';
         if (l.indexOf('tei') === 0 || l.indexOf('technique') === 0 || l.indexOf('structural') === 0) return 'evidence';
         if (l.indexOf('close') === 0) return 'analysis';
@@ -60296,10 +60314,10 @@
         // question was built as a persuasive-writing plan. f.qType is the question's spec type.
         if (_comparisonOutlineArgs(f.qType || null)) {
             out += buildComparativePlanSection(qId);
-        } else if ((f.isCreativeWritingQ && f.isWritingQ) || _isLangP1Q5Creative) {
+        } else if ((f.isCreativeWritingQ && f.isWritingQ && !f.isTransactional) || _isLangP1Q5Creative) {
             // Fiction Section B: 7-element scene structure (reused from CW Step 8)
             out += buildCreativeScenePlan(qId);
-        } else if (f.isPersuasive
+        } else if (f.isPersuasive || f.isTransactional
             || ((state.board || '').toLowerCase() === 'aqa' && _isLangPaper2() && f.isWritingQ && !f.isCreativeWritingQ)) {
             // v7.20.49 (brief §11.3): AQA P2 Section B is transactional BY SPEC — route
             // it to IUMVCC even when the prompt text lacks a form-word trigger (a "Write
@@ -60354,7 +60372,14 @@
     function _questionWritingFlags(q, qType, qMarks, specQ) {
         const isWritingQ = qType === 'extended_writing' || qType === 'choice'
             || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
-        const isPersuasive = SWML_PERSUASIVE_RE.test(q.text || q.label || '');
+        // v7.20.701 (#722 B2 step 1.3): the form-word test only ever applies to a question the SPEC calls writing. It
+        // read every question's text, so a reading question that mentions a report, a letter or a guide could be
+        // built as a persuasive-writing plan (IGCSE P1 Topic 3's comparison said "reporting"). No spec → as before.
+        const specWriting = specQ ? /^(extended_writing|choice|creative_writing)$/.test(String(specQ.type || '')) : null;
+        const isPersuasive = specWriting !== false && SWML_PERSUASIVE_RE.test(q.text || q.label || '');
+        // …and a Section B the spec DECLARES transactional is IUMVCC whatever its brief says — a review-only brief
+        // (IGCSE P1 June 2024: a magazine review) names no form the test knows.
+        const isTransactional = !!(specQ && specQ.family === 'transactional');
         // v7.15.35: Broadened fiction detection — unanchored, checks description + text + label
         const creativeText = (q.text || '') + ' ' + (q.label || '') + ' ' + (specQ?.description || '');
         // v7.15.108: split — standalone CW course gets multi-stage archetype outline; Language fiction gets Scene Structure only
@@ -60363,7 +60388,7 @@
             || qType === 'creative_writing'
             || (qType === 'extended_writing' && /creative|imaginative|narrative|descriptive|write a story|write a description/i.test(creativeText))
             || /creative writing|creative prose|imaginative writing|narrative writing|descriptive writing|write a story|write a description/i.test(creativeText);
-        return { isWritingQ: isWritingQ, isPersuasive: isPersuasive, isCWCourse: isCWCourse, isCreativeWritingQ: isCreativeWritingQ };
+        return { isWritingQ: isWritingQ, isPersuasive: isPersuasive, isCWCourse: isCWCourse, isCreativeWritingQ: isCreativeWritingQ, isTransactional: isTransactional };
     }
 
     // `f` = { isCWCourse, isCreativeWritingQ, isWritingQ, isPersuasive, topicAos } — from _questionWritingFlags
@@ -60412,9 +60437,9 @@
             } else if (f.isCWCourse) {
                 out += dividerHTML(`OUTLINE — ${qId}`);
                 out += buildCWPlotOutlineSection();
-            } else if (f.isCreativeWritingQ && f.isWritingQ) {
+            } else if (f.isCreativeWritingQ && f.isWritingQ && !f.isTransactional) {
                 // Language fiction: Plan Scene Structure above is the outline. No second scaffold.
-            } else if (f.isPersuasive
+            } else if (f.isPersuasive || f.isTransactional
                 || ((state.board || '').toLowerCase() === 'aqa' && _isLangPaper2() && f.isWritingQ && !f.isCreativeWritingQ)) {
                 // v7.20.49: same AQA-P2-transactional guarantee as the plan branch above —
                 // plan and outline must route to the SAME family (key-match law).
@@ -60495,7 +60520,7 @@
             const specQ = lookupQuestionSpec(qId);
             const qMarks = parseInt(specQ?.marks ?? q.marks) || 0;
             const qType = q.type || specQ?.type || null;
-            const { isWritingQ, isPersuasive, isCWCourse, isCreativeWritingQ } = _questionWritingFlags(q, qType, qMarks, specQ);
+            const { isWritingQ, isPersuasive, isCWCourse, isCreativeWritingQ, isTransactional } = _questionWritingFlags(q, qType, qMarks, specQ);
 
             // Section dividers from specs (multi-section support for Edexcel P2 etc.)
             if (sectionMap && sectionMap[qId] && sectionMap[qId] !== lastSection) {
@@ -60563,7 +60588,7 @@
                     html += sectionHTML('plan', `Plan \u2014 ${qId}`, true, null,
                         inputHTML('Plan only — notes and quotes. Write your answer in the Response box below.', `plan-${qId}-para-1`));
                 } else {
-                html += _redraftPlanSectionsHTML(qId, qMarks, { isCreativeWritingQ: isCreativeWritingQ, isWritingQ: isWritingQ, isPersuasive: isPersuasive, aos: q.aos || specQ?.aos || '', qType: qType });
+                html += _redraftPlanSectionsHTML(qId, qMarks, { isCreativeWritingQ: isCreativeWritingQ, isWritingQ: isWritingQ, isPersuasive: isPersuasive, isTransactional: isTransactional, aos: q.aos || specQ?.aos || '', qType: qType });
                 } // end REDRAFT plan builders (v7.20.110 — diagnostic took the single-area branch)
             }
 
@@ -60571,7 +60596,7 @@
             if (mode === 'redraft') {
                 html += _redraftOutlineSectionsHTML(q, qId, qMarks, qType, specQ, {
                     isCWCourse: isCWCourse, isCreativeWritingQ: isCreativeWritingQ, isWritingQ: isWritingQ,
-                    isPersuasive: isPersuasive, topicAos: topicData.aos,
+                    isPersuasive: isPersuasive, isTransactional: isTransactional, topicAos: topicData.aos,
                 });
             }
 
@@ -67414,16 +67439,12 @@
             const qMarks = parseInt(specQ && specQ.marks != null ? specQ.marks : (marksMatch ? marksMatch[1] : 0)) || 0;
             if (!qMarks) { console.warn('WML heal: plan scaffold for', qId, 'skipped — no marks resolvable'); return; }
             const qType = (specQ && specQ.type) || null;
-            const creativeText = qText + ' ' + ((specQ && specQ.description) || '');
-            const f = {
-                isWritingQ: qType === 'extended_writing' || qType === 'choice' || qMarks >= 24,
-                isPersuasive: SWML_PERSUASIVE_RE.test(qText),
-                isCreativeWritingQ: qType === 'creative_writing'
-                    || (qType === 'extended_writing' && /creative|imaginative|narrative|descriptive|write a story|write a description/i.test(creativeText))
-                    || /creative writing|creative prose|imaginative writing|narrative writing|descriptive writing|write a story|write a description/i.test(creativeText),
+            // v7.20.701: the template's OWN flag derivation (it was a hand copy here, so a routing change reached one
+            // and not the other — plan heal and plan builder must agree on the family, the key-match law).
+            const f = Object.assign(_questionWritingFlags({ text: qText, label: qId }, qType, qMarks, specQ), {
                 aos: (specQ && specQ.aos) || '',
                 qType: qType,
-            };
+            });
             const frag = document.createElement('div');
             frag.innerHTML = _redraftPlanSectionsHTML(qId, qMarks, f);
             const freshIds = Array.prototype.map.call(frag.querySelectorAll('[data-field-id]'), n => n.getAttribute('data-field-id'));

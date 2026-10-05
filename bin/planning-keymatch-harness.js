@@ -237,6 +237,30 @@ for (const [name, board, subject] of [['AQA Lang P1', 'aqa', 'language_p1'], ['A
   }
 }
 
+// ── ROUTING (v7.20.701, #722 B2 step 1.3) ─────────────────────────────────────────────────────────────────────
+// Two guarantees the page builder now makes from the SPEC, never from words in the question:
+//   • a Section B the spec declares transactional is IUMVCC whatever its brief — a review-only brief (IGCSE P1 June
+//     2024 asked for a magazine review) names no form the old word test knew, and got a literature essay outline;
+//   • a reading COMPARISON is planned and outlined as a comparison even when its text says "reporting" (IGCSE P1
+//     Topic 3 was built as a persuasive-writing plan because the word test heard "report").
+{
+  const st = { board: 'edexcel-igcse', subject: 'language_p1' };
+  const topics = readTopics(ROOT, languageTemplate(ROOT, 'edexcel-igcse', 'language_p1')).filter(x => x.questions.length);
+  const t1 = JSON.parse(JSON.stringify(topics.find(x => x.topic === 1)));
+  t1.questions.find(q => q.id === 'Q6').text = 'Write a review of a film you have seen recently for a magazine aimed at teenagers.';
+  const q6 = TPL.render(st, 'redraft', t1).find(q => q.qId === 'Q6');
+  const t3 = topics.find(x => x.topic === 3);
+  const q5 = TPL.render(st, 'redraft', t3).find(q => q.qId === 'Q5');
+  const checks = [
+    ['review-only Section B → IUMVCC plan + outline', q6.plan[0] === 'iumvcc-intro' && q6.outline[0] === 'outline-iumvcc-intro'],
+    ['a comparison that says "reporting" → comparative plan + outline', q5.plan[0] === 'plan-Q5-intro' && q5.outline[0] === 'outline-intro-perspectives-q5'],
+  ];
+  for (const [name, ok] of checks) {
+    if (!ok) { failed = 1; console.log('  ❌ ROUTING: ' + name); }
+  }
+  console.log('— ROUTING: ' + checks.filter(c => c[1]).length + '/' + checks.length + ' spec-driven routes hold (IGCSE P1).');
+}
+
 // ── COVERAGE RATCHET (v7.20.616) ───────────────────────────────────────────────────────────────
 // This harness can only check a protocol that has a hand-written CASE (the render() call must
 // mirror that paper's real question dispatch — it cannot be derived). So the silent failure here

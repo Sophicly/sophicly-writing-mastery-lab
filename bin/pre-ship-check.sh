@@ -116,7 +116,8 @@ fi
 # enforced the moment their conversion ships. Negative-proven (label typo → UNMAPPED, exit 1).
 # Runs when the engine, any planning protocol, or the harness is staged.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
-     | grep -qE 'wml-assessment\.js|protocols/.*/planning/.*\.md|plan-fanout-harness\.js'; then
+     | grep -qE 'wml-assessment\.js|wml-core\.js|protocols/.*/(planning|steps)/.*\.md|protocols/shared/templates/topics/|language-paper-specs\.json|plan-fanout-harness\.js|bin/lib/template-render-sandbox\.js'; then
+  # v7.20.701: its DOC-AWARE block renders every language topic through the page builder — templates + spec trigger it
   node bin/plan-fanout-harness.js || fail=1
 fi
 

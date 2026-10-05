@@ -168,6 +168,7 @@
                 "AO6"
               ],
               "type": "extended_writing",
+              "family": "transactional",
               "content_marks": 24,
               "spag_marks": 16,
               "description": "Transactional writing (article, letter, speech, etc.)"
@@ -940,6 +941,7 @@
                 "AO5"
               ],
               "type": "choice",
+              "family": "transactional",
               "content_marks": 27,
               "spag_marks": 18,
               "description": "ANSWER QUESTION 6 **OR** QUESTION 7 — two transactional writing tasks, the student picks ONE. Both are marked against the SAME criteria (AO4 content/style 27 + AO5 technical accuracy 18), so the choice never changes how the answer is judged; only the brief differs (form, audience, purpose). Edexcel IGCSE 4EA1 AO4/AO5 are the WRITING objectives — NEVER context.",
