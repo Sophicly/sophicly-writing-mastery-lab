@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.695
+ * Version: 7.20.696
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.695');
+define('SWML_VERSION', '7.20.696');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -156,6 +156,45 @@ class Sophicly_Writing_Mastery_Lab {
         // v7.20.634 (#588): the Mark Complete gate's server half — holds the same line as the page
         // for a completion that did not come through the footer button. See mc_gate_filter().
         add_filter('learndash_process_mark_complete', [$this, 'mc_gate_filter'], 20, 3);
+
+        // v7.20.696 (#723): a permitted reviewer (tutor · specialist · admin · connected parent) on a ?view_as=
+        // link may OPEN the student's lesson even when not enrolled in that course. See review_access_filter().
+        add_filter('sfwd_lms_has_access', [$this, 'review_access_filter'], 20, 3);
+    }
+
+    /**
+     * v7.20.696 (FIXLIST #723 — the dashboard's report links each attempt to its lesson; Neil: view-as WITH THE
+     * CHAT for tutors, specialists and connected parents). MEASURED on staging 2026-10-05: a tutor got the
+     * student's document and all 154 chat messages — but only because that test tutor happened to be ENROLLED in
+     * the course; a specialist and a connected parent were 302-redirected by LearnDash to the course page before
+     * WML ran (sfwd_lms_has_access(42205) = no). So any reviewer not enrolled in the student's course was locked out.
+     *
+     * Grants access ONLY when every condition holds, and never removes access:
+     *   · the check is about the person making THIS request (never a check about some other user);
+     *   · the request names a review target (sophicly_review_target_id — ?view_as= / ?student_id=) other than them;
+     *   · resolve_viewer_mode() — THE permission rule — says they may review that student ('comment' or 'readonly');
+     *   · the STUDENT has access to this post themselves (a reviewer never sees a course the student cannot).
+     * Writes stay as they were: every REST write refuses anything below 'edit', and Mark Complete is blocked in
+     * review (block_review_mark_complete + the Focus template's review gate).
+     */
+    public function review_access_filter($has_access, $post_id, $user_id = null) {
+        static $busy = false;
+        if ($has_access || $busy) return $has_access;
+        $me = get_current_user_id();
+        $viewer = $user_id ? (int) $user_id : $me;
+        if (!$me || $viewer !== $me) return $has_access;
+        if (!function_exists('sophicly_review_target_id')) return $has_access;
+        $target = (int) sophicly_review_target_id();
+        if (!$target || $target === $viewer) return $has_access;
+        $mode = self::resolve_viewer_mode($viewer, $target);
+        if ($mode !== 'comment' && $mode !== 'readonly') return $has_access;
+        $busy = true;
+        try {
+            $student_has = function_exists('sfwd_lms_has_access') && sfwd_lms_has_access($post_id, $target);
+        } finally {
+            $busy = false;
+        }
+        return $student_has ? true : $has_access;
     }
 
     /**
