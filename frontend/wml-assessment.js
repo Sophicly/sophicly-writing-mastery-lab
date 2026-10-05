@@ -57113,6 +57113,12 @@
     //   o = { bodyOnly: bool, focus: an OUTLINE_BODY_FOCUS name, stampTo: the single AO every row is marked against }
     function _outlineBodyCriterion(c, aoList, o) {
         if (c.aoRequired && !aoList.includes(c.aoRequired)) return null;
+        // v7.20.700 (#722 B2 step 1.2): a LANGUAGE paper never assesses context — its AO3 is comparison
+        // (language-paper-specs.json `_ao_cross_board_disambiguation.CONTEXT_IS_LITERATURE_ONLY`). The Context row
+        // keyed on "AO3 is assessed" and so appeared on every comparison body (AQA P2 Q4: three blank rows no
+        // protocol ever fills — the key-match file carried them as known-blank QUEUE#1). PEDAGOGY §3c: a
+        // comparative body is the SAME SIX TTECEA rows.
+        if (c.id === 'context' && o && o.languagePaper) return null;
         // Adapt Author's Purpose when AO3 not assessed: drop "+ Context", relabel AO
         let adapted = c;
         if (!aoList.includes('AO3') && c.id === 'purpose') {
@@ -58372,6 +58378,9 @@
         // TTECEA body ¶ + short thesis-only conclusion (protocol: intro 0.5 + 3×BP 5 + conc 0.5 = 16).
         // Body rows come via the `comparative` focus overlay; every element stamped AO3.
         'aqa_language_p2_comparison': { introType: 'thesis_only', concType: 'thesis_only', buildAO: 'AO3', purposeAO: 'AO3' },
+        // v7.20.700: Edexcel IGCSE P1 Q5 — one row per marked element: intro = both perspectives + comparative thesis,
+        // conclusion = restated thesis + the writers' purposes (protocol-a-assessment.md:1016-1031, :1358-1361).
+        'edexcel_igcse_language_p1_comparison': { introType: 'perspectives_thesis', concType: 'thesis_purposes', buildAO: 'AO3', purposeAO: 'AO3' },
         // ── EDUQAS ──
         'eduqas_shakespeare_partA': { introType: 'thesis_only', concType: 'thesis_only' },
         'eduqas_shakespeare_partB': { introType: 'full', concType: 'full', buildAO: 'AO1/AO2', purposeAO: 'AO1' },
@@ -58439,6 +58448,11 @@
             case 'hook_only':  return [hook]; // v7.20.102: evaluation intro = a single Hook
             case 'thesis_only': return [thesis];
             case 'compact':    return [hook, thesis];
+            // v7.20.700: a comparison intro marks both writers' perspectives, then the comparative thesis (no hook).
+            case 'perspectives_thesis': return [
+                { id: 'perspectives', label: "Both Writers' Perspectives", ao: 'AO3', type: 'checkbox', prompt: "Name each writer's overall view of the topic, side by side" },
+                { ...thesis, label: 'Comparative Thesis', ao: 'AO3', items: ['Key idea 1', 'Key idea 2', 'Key idea 3'], prompt: 'Your three main ideas, one for each body paragraph, comparing the two texts' },
+            ];
             case 'standard':   return [hook, buildCtx, thesis];
             case 'full':       return [hook, { ...buildCtx, id: 'building1', label: 'Building Sentence 1' }, { ...buildCtx, id: 'building2', label: 'Building Sentence 2' }, thesis];
             case 'extended':   return [hook, { ...buildCtx, id: 'building1', label: 'Building Sentence 1' }, { ...buildCtx, id: 'building2', label: 'Building Sentence 2' }, { ...buildCtx, id: 'building3', label: 'Building Sentence 3' }, thesis];
@@ -58456,6 +58470,8 @@
         const moral = { id: 'moral', label: 'Moral / Message', ao: 'AO1', type: 'checkbox', prompt: 'The universal lesson or truth the text conveys' };
         switch (type) {
             case 'thesis_only': return [rThesis];
+            // v7.20.700: a comparison conclusion marks the restated thesis, then the writers' purposes.
+            case 'thesis_purposes': return [rThesis, { ...purpose, label: "The Writers' Purposes", prompt: 'The final message each text carries, and why each writer made their choices' }];
             case 'standard':    return [rThesis, concept, purpose, message];
             case 'full':        return [rThesis, concept, techLinks, purpose, message];
             case 'extended':    return [rThesis, concept, techLinks, purpose, context, moral, message];
@@ -58574,7 +58590,12 @@
         //   the submission gate at :527 enforces exactly 3. ceil(12/4) = 3 agrees.
         bodyOnly: ['aqa/language_p1', 'aqa/language_p2', 'edexceligcse/language_p1'],
         // Short intro + comparative TTECEA bodies + short conclusion.
-        comparison: ['aqa/language_p2'],
+        // · edexceligcse/language_p1 Q5 (22m, AO3) — VERIFIED v7.20.700 against its own protocol: "Compare how the
+        //   writers of Text One and Text Two present their ideas and perspectives" — intro 2 (both perspectives +
+        //   comparative thesis), three comparative bodies, conclusion 2 (restated thesis + purposes)
+        //   (edexcel-igcse/language1/modules/protocol-a-assessment.md:1016-1031, :1358-1361); PEDAGOGY §3c names
+        //   it as the second user of the comparative body.
+        comparison: ['aqa/language_p2', 'edexceligcse/language_p1'],
         // Paired-inference paragraphs (Source A → Source B).
         inference: ['aqa/language_p2'],
     };
@@ -58647,7 +58668,7 @@
         const _bodyRowsFor = (i, suffix) => {
             let rows = '';
             OUTLINE_CRITERIA.literature.body.forEach(c => {
-                const crit = _outlineBodyCriterion(c, aoList, { bodyOnly: _bodyOnly > 0, focus: opts && opts.focus, stampTo: _stampTo });
+                const crit = _outlineBodyCriterion(c, aoList, { bodyOnly: _bodyOnly > 0, focus: opts && opts.focus, stampTo: _stampTo, languagePaper: _isAnyLanguagePaper() });
                 if (crit) rows += outlineRowHTML(crit, `outline-body-${i}-${c.id}${suffix}`);
             });
             return rows;
@@ -60269,7 +60290,13 @@
         const _isLangP1Q5Creative = qId === 'Q5'
             && qMarks >= 40
             && /^language[_-]?p?1$/.test(String(state.subject || ''));
-        if ((f.isCreativeWritingQ && f.isWritingQ) || _isLangP1Q5Creative) {
+        // v7.20.700 (#722 B2 step 1.2): a COMPARISON question's plan follows its outline (key-match law: plan and
+        // outline route to the same family) — and it comes FIRST, because a reading comparison is never writing:
+        // Edexcel IGCSE P1 Topic 3's Q5 says "reporting", the form-word test below heard "report", and the
+        // question was built as a persuasive-writing plan. f.qType is the question's spec type.
+        if (_comparisonOutlineArgs(f.qType || null)) {
+            out += buildComparativePlanSection(qId);
+        } else if ((f.isCreativeWritingQ && f.isWritingQ) || _isLangP1Q5Creative) {
             // Fiction Section B: 7-element scene structure (reused from CW Step 8)
             out += buildCreativeScenePlan(qId);
         } else if (f.isPersuasive
@@ -60312,9 +60339,16 @@
     // v7.20.699: the comparison outline's build arguments — ONE place, read by the redraft dispatch below, the
     // missing-outline heal (migrateMissingQOutlines) and the scaffold heal (_healOutlineScaffold). null when the
     // question is not a comparison this paper's outline is verified for (OUTLINE_VERIFIED_PAPERS.comparison).
+    // The intro/conclusion each comparison paper's outline uses (OUTLINE_SPECS) — the bodies are the same six rows.
+    const COMPARISON_OUTLINE_SPEC = {
+        'aqa/language_p2': 'aqa_language_p2_comparison',
+        'edexceligcse/language_p1': 'edexcel_igcse_language_p1_comparison',
+    };
     function _comparisonOutlineArgs(qType) {
         if (!(_outlinePaperVerified('comparison') && qType === 'comparison')) return null;
-        return { specKey: 'aqa_language_p2_comparison', opts: { focus: 'comparative', stampAO: 'AO3' } };
+        const specKey = COMPARISON_OUTLINE_SPEC[_outlinePaperKey()];
+        if (!specKey) console.warn('WML outline: ' + _outlinePaperKey() + ' is verified for comparison but has no COMPARISON_OUTLINE_SPEC entry — using the AQA P2 shape');
+        return { specKey: specKey || 'aqa_language_p2_comparison', opts: { focus: 'comparative', stampAO: 'AO3' } };
     }
 
     function _questionWritingFlags(q, qType, qMarks, specQ) {
@@ -60529,7 +60563,7 @@
                     html += sectionHTML('plan', `Plan \u2014 ${qId}`, true, null,
                         inputHTML('Plan only — notes and quotes. Write your answer in the Response box below.', `plan-${qId}-para-1`));
                 } else {
-                html += _redraftPlanSectionsHTML(qId, qMarks, { isCreativeWritingQ: isCreativeWritingQ, isWritingQ: isWritingQ, isPersuasive: isPersuasive, aos: q.aos || specQ?.aos || '' });
+                html += _redraftPlanSectionsHTML(qId, qMarks, { isCreativeWritingQ: isCreativeWritingQ, isWritingQ: isWritingQ, isPersuasive: isPersuasive, aos: q.aos || specQ?.aos || '', qType: qType });
                 } // end REDRAFT plan builders (v7.20.110 — diagnostic took the single-area branch)
             }
 
@@ -66610,9 +66644,16 @@
                 const _cmpRow = _cmp ? /^outline-body-\d+-([a-z0-9]+)$/.exec(fid) : null;
                 if (_cmpRow) {
                     const base = body.find(c => c.id === _cmpRow[1]);
-                    const want = base ? _outlineBodyCriterion(base, _cmp.aoList, { focus: _cmp.opts.focus, stampTo: _cmp.opts.stampAO }) : null;
+                    const want = base ? _outlineBodyCriterion(base, _cmp.aoList, { focus: _cmp.opts.focus, stampTo: _cmp.opts.stampAO, languagePaper: _isAnyLanguagePaper() }) : null;
                     if (want && (cur.label !== want.label || cur.ao !== want.ao || cur.prompt !== want.prompt)) {
                         updates.push({ pos, attrs: _mergeAttrs(n, want) }); needHeal = true;
+                    } else if (base && !want) {
+                        // v7.20.700: a row the builder no longer makes for this question (the Context row on a language
+                        // comparison) goes — ONLY when EMPTY, no text and no tick, the same rule as the eval shape below.
+                        const _txt = (n.textContent || '').trim();
+                        let _checked = false;
+                        try { const cs = JSON.parse(n.attrs.checkState || '{}'); _checked = Object.keys(cs).some(k => cs[k]); } catch (_) {}
+                        if (!_txt && !_checked) { deletes.push({ pos, size: n.nodeSize }); needHeal = true; }
                     }
                     return true;   // never the literature relabel / Effect-2 / Context branches for a comparison's rows
                 }
@@ -66685,7 +66726,8 @@
                     if (cur.label !== w.label || cur.ao !== w.ao) { updates.push({ pos, attrs: _mergeAttrs(n, w) }); needHeal = true; }
                     const afterP = doc.nodeAt(pos + n.nodeSize);
                     const hasContext = afterP && afterP.type.name === 'outlineRow' && /-context$/.test(afterP.attrs.fieldId || '');
-                    if (purposeHadAO3 && !hasContext) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid.replace(/-purpose$/, '-context'), crit: _want(cContext) }); needHeal = true; }
+                    // v7.20.700: …and only where the builder would draw a Context row at all (never on a language paper).
+                    if (purposeHadAO3 && !hasContext && _outlineBodyCriterion(cContext, ['AO3'], { languagePaper: _isAnyLanguagePaper() })) { inserts.push({ pos: pos + n.nodeSize, fieldId: fid.replace(/-purpose$/, '-context'), crit: _want(cContext) }); needHeal = true; }
                 } else if (cHook && /^outline-intro-hook/.test(fid)) {
                     const w = _want(cHook); _handled = true;
                     if (cur.prompt !== w.prompt || cur.ao !== w.ao) { updates.push({ pos, attrs: _mergeAttrs(n, w) }); needHeal = true; }
@@ -67379,7 +67421,8 @@
                 isCreativeWritingQ: qType === 'creative_writing'
                     || (qType === 'extended_writing' && /creative|imaginative|narrative|descriptive|write a story|write a description/i.test(creativeText))
                     || /creative writing|creative prose|imaginative writing|narrative writing|descriptive writing|write a story|write a description/i.test(creativeText),
-                aos: (specQ && specQ.aos) || ''
+                aos: (specQ && specQ.aos) || '',
+                qType: qType,
             };
             const frag = document.createElement('div');
             frag.innerHTML = _redraftPlanSectionsHTML(qId, qMarks, f);

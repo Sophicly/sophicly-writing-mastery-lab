@@ -49,6 +49,10 @@ const parts = [
   // v7.20.699: the body-row composer buildOutlineSection now calls (and the no-AO3 Purpose it reads)
   slice('function _purposeWithoutAO3(', '{'),
   slice('function _outlineBodyCriterion(', '{'),
+  // v7.20.700: the composer asks whether this is a language paper (no Context row) — the real check, and the
+  // wml-core.js helper it calls (wml-assessment.js imports it from WML).
+  slice('function _isAnyLanguagePaper(', '{'),
+  (() => { const core = fs.readFileSync(require('path').join(__dirname, '..', 'frontend', 'wml-core.js'), 'utf8'); const i = core.indexOf('const isLanguageSubject = () => {'); if (i < 0) throw new Error('marker not found: isLanguageSubject'); let d = 0, k = core.indexOf('{', i); for (; k < core.length; k++) { if (core[k] === '{') d++; else if (core[k] === '}') { d--; if (!d) break; } } return core.slice(i, k + 2); })(),
   slice('function buildOutlineSection(', '{'),
 ];
 

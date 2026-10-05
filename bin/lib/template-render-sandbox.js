@@ -34,7 +34,7 @@ const MARKERS = [
     ['function buildMultiQuestionTemplate(', '('],
     // v7.20.699: the load heal, so a gate can prove a FRESH document needs no healing (bin/fresh-doc-heal-gate.js)
     ['function _purposeWithoutAO3(', '('], ['function _isAnyLanguagePaper(', '('], ['function _healOutlineScaffold(', '('],
-    ['function _outlineBodyCriterion(', '('], ['function _comparisonOutlineArgs(', '('],
+    ['function _outlineBodyCriterion(', '('], ['function _comparisonOutlineArgs(', '('], ['const COMPARISON_OUTLINE_SPEC = {'],
 ];
 
 function slicer(src) {

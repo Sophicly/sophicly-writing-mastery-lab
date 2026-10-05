@@ -66,6 +66,9 @@ const parts = [
   slice('function _outlineBodyCriterion(', '('),
   // the verified-papers registry _resolveBodyOnlyOutline consults (was a truthy no-op here before v7.20.699)
   slice('const OUTLINE_VERIFIED_PAPERS = {'), slice('function _outlinePaperKey(', '('), slice('function _outlinePaperVerified(', '('),
+  // v7.20.700: the composer's language-paper check, and the wml-core.js helper it calls
+  slice('function _isAnyLanguagePaper(', '('),
+  (() => { const core = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8'); const i = core.indexOf('const isLanguageSubject = () => {'); if (i < 0) throw new Error('marker not found: isLanguageSubject'); let d = 0, k = core.indexOf('{', i); for (; k < core.length; k++) { if (core[k] === '{') d++; else if (core[k] === '}') { d--; if (!d) break; } } return core.slice(i, k + 2); })(),
 ];
 
 const captured = [];
@@ -90,7 +93,10 @@ const NOOP = new Proxy(function () { return NOOP; }, {
 // ORACLE below was the only thing that noticed. Names defined nowhere in the file (DOM helpers) still no-op.
 const DECL = /^\s*(?:function\s+([A-Za-z_$][\w$]*)\s*\(|(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=)/gm;
 const namesIn = text => new Set([...text.matchAll(DECL)].map(m => m[1] || m[2]));
-const declared = namesIn(src), slicedNames = namesIn(parts.join('\n'));
+// …and every name wml-assessment.js imports from WML (`const { … } = WML;`) — unprovided, `typeof isLanguageSubject ===
+// 'function'` on the no-op is TRUE, which would make the Literature case a language paper.
+const imported = [...src.matchAll(/const \{([^}]*)\} = WML;/g)].flatMap(m => m[1].split(',').map(x => x.trim().split(':')[0].trim()).filter(Boolean));
+const declared = new Set([...namesIn(src), ...imported]), slicedNames = namesIn(parts.join('\n'));
 const sandbox = new Proxy(explicit, {
   has: () => true,
   get: (t, k) => {
@@ -136,11 +142,9 @@ const CASES = [{
   ],
   // Editable outline boxes that INTENTIONALLY receive no planning @FIELD_COMMIT (filled from another
   // source, not the planning chat). Keep this list minimal + justified — it is the "known blank" gate.
-  allow: [
-    // Q4 comparative renders a context row (AO3 gate) but AQA Lang P2 does NOT assess context —
-    // it comes from the source, never the planning chat. (Tracked render-gate cleanup, QUEUE#1.)
-    'outline-body-1-context', 'outline-body-2-context', 'outline-body-3-context',
-  ],
+  // v7.20.700: no allow-list any more — the Q4 comparative body no longer draws a Context row (a language paper never
+  // assesses context; PEDAGOGY §3c six rows). That was QUEUE#1.
+  allow: [],
 }, {
   // v7.20.223 (Neil: "check the rest of the questions in AQA Language Paper 1"). The P1 case the
   // file's own TODO promised. Mirrors the REAL question dispatch (wml-assessment.js ~36583-36620):
