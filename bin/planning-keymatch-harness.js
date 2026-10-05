@@ -86,6 +86,21 @@ vm.runInContext(parts.join('\n'), vm.createContext(sandbox));
 
 function renderIds(fn) { captured.length = 0; fn(); return captured.slice(); }
 
+// v7.20.697 (#722 B2 step 0.3) — cases rendered by the page's OWN doc builder (buildMultiQuestionTemplate and
+// the real outline dispatch, on every topic of the real template; bin/lib/template-render-sandbox.js). The hand
+// cases below re-type each paper's dispatch, which is why a paper nobody re-typed (Edexcel IGCSE) went unchecked.
+// New cases use this; the AQA hand cases stay as the oracle it is cross-checked against (TEMPLATE ORACLE below).
+const { makeTemplateRenderer, readTopics, languageTemplate } = require('./lib/template-render-sandbox.js');
+const TPL = makeTemplateRenderer(ROOT);
+function renderPaperOutlineIds(board, subject) {
+  const ids = new Set();
+  for (const t of readTopics(ROOT, languageTemplate(ROOT, board, subject)).filter(x => x.questions.length)) {
+    for (const q of TPL.render({ board, subject }, 'redraft', t)) q.outline.forEach(id => ids.add(id));
+  }
+  return [...ids];
+}
+const mdIn = dir => fs.readdirSync(path.join(ROOT, dir)).filter(f => f.endsWith('.md')).sort().map(f => path.join(ROOT, dir, f));
+
 // ── CASES: one per codified planning protocol. render() returns EVERY outline fieldId the doc
 // builds for that paper (call the real builders exactly as the question dispatch does). ──
 const CASES = [{
@@ -145,6 +160,14 @@ const CASES = [{
     return renderIds(() => sandbox.buildOutlineSection('AO1,AO2,AO3,AO4', null, 34));
   },
   allow: [],
+}, {
+  // v7.20.697 (#722 B2 step 0.3). Edexcel IGCSE Spec A Lang P2 — the ladder lives in steps/ (the manifest's planning
+  // dir). Rendered by the page builder over every topic of edexcel-igcse-language-p2.md: Q1 = the 30-mark essay
+  // (plain full-essay outline), Q2 = imaginative writing (its scene plan IS the outline; checked under SCENE ROWS).
+  name: 'Edexcel IGCSE Lang P2 (page builder, every topic)',
+  protocols: mdIn('protocols/edexcel-igcse/language2/steps'),
+  render: () => renderPaperOutlineIds('edexcel-igcse', 'language_p2'),
+  allow: [],
 }];
 
 let failed = 0;
@@ -174,6 +197,21 @@ for (const c of CASES) {
   }
 }
 
+// ── TEMPLATE ORACLE (v7.20.697) ─────────────────────────────────────────────────────────────────
+// The page-builder renderer must reproduce the AQA hand cases EXACTLY. If it does not, either a hand case has
+// drifted from the real dispatch, or the renderer is wrong — and every case built on it is unproven.
+for (const [name, board, subject] of [['AQA Lang P1', 'aqa', 'language_p1'], ['AQA Lang P2', 'aqa', 'language_p2']]) {
+  const hand = new Set(CASES.find(c => c.name === name).render());
+  const tpl = new Set(renderPaperOutlineIds(board, subject));
+  const onlyHand = [...hand].filter(x => !tpl.has(x)), onlyTpl = [...tpl].filter(x => !hand.has(x));
+  if (onlyHand.length || onlyTpl.length) {
+    failed = 1;
+    console.log(`  ❌ TEMPLATE ORACLE ${name}: page builder and hand case disagree — hand only [${onlyHand.join(', ')}] · page only [${onlyTpl.join(', ')}]`);
+  } else {
+    console.log(`— TEMPLATE ORACLE ${name}: page builder reproduces the hand case (${tpl.size} outline ids, every topic).`);
+  }
+}
+
 // ── COVERAGE RATCHET (v7.20.616) ───────────────────────────────────────────────────────────────
 // This harness can only check a protocol that has a hand-written CASE (the render() call must
 // mirror that paper's real question dispatch — it cannot be derived). So the silent failure here
@@ -190,8 +228,6 @@ const KNOWN_UNCOVERED = {
     'poetry renders through the poem-specific builder, not buildOutlineSection — needs its own case (QUEUE).',
   'protocols/aqa/unseen/planning':
     'unseen poetry: two-poem comparison dispatch, own builder — needs its own case (QUEUE).',
-  'protocols/edexcel-igcse/language2/steps':
-    'IGCSE Lang P2 port (content lane, 2026-08-16). Fan-out harness now covers its 25 ids as of v7.20.616; a render case still owed (QUEUE).',
   'protocols/eduqas/literature/planning':
     'eduqas lit mirrors the AQA lit registry (ladder-check byte-traces it); a render case still owed (QUEUE).',
 };

@@ -1,142 +1,74 @@
 #!/usr/bin/env node
 /* eslint-env node */
-// REAL-STATE VERIFY probe for Edexcel IGCSE Spec A Lang P1 (PLANNING-LADDER-PORT-RECIPE §2).
-// Runs the SHIPPED outline builders (sliced from wml-assessment.js, never reimplemented) with
-// this paper's REAL spec values, and prints the fieldIds each question would actually render.
+// REAL-STATE VERIFY probe (PLANNING-LADDER-PORT-RECIPE §2): what does a language paper's REDRAFT document
+// actually render, question by question — plan boxes, outline rows, response boxes?
+//
+//   node bin/paper-render-probe.js . edexcel-igcse language_p1            (Topic 1)
+//   node bin/paper-render-probe.js . edexcel-igcse language_p1 --topic=4
+//   node bin/paper-render-probe.js . aqa language_p2 --all-topics          (one line per topic × question)
+//
+// v7.20.697 (#722 B2 step 0): the probe now runs the page's WHOLE doc builder (buildMultiQuestionTemplate,
+// sliced from wml-assessment.js) on the REAL topic template, parsed by the shipped PHP parser — see
+// bin/lib/template-render-sandbox.js. Its two earlier versions each measured something the page never does:
+// the first read the spec JSON with the hyphenated board key the page cannot find (#618), and both re-typed
+// the outline dispatch by hand, so a change to the real dispatch was invisible to them.
 'use strict';
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
+const { makeTemplateRenderer, readTopics, languageTemplate } = require('./lib/template-render-sandbox.js');
 
-const ROOT = process.argv[2] || path.join(__dirname, '..');
-// v7.20.625: board/subject are ARGUMENTS. The probe was hardcoded to Edexcel IGCSE, so the
-// AQA papers it shares every builder with could regress without it noticing.
-//   node bin/paper-render-probe.js . aqa language_p1
+const ROOT  = process.argv[2] || require('path').join(__dirname, '..');
 const BOARD = process.argv[3] || 'edexcel-igcse';
 const SUBJ  = process.argv[4] || 'language_p1';
-const src = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-assessment.js'), 'utf8');
+const flags = process.argv.slice(5);
+const ALL = flags.includes('--all-topics');
+const TOPIC = parseInt((flags.find(f => f.startsWith('--topic=')) || '').split('=')[1], 10) || null;
 
-function slice(marker, opener = '{') {
-    const i = src.indexOf(marker);
-    if (i < 0) throw new Error('marker not found: ' + marker);
-    let j = src.indexOf(opener, i), depth = 0, k = j;
-    for (; k < src.length; k++) {
-        const ch = src[k];
-        if (ch === '{' || ch === '[') depth++;
-        else if (ch === '}' || ch === ']') { depth--; if (depth === 0) break; }
+const { render, sandbox } = makeTemplateRenderer(ROOT);
+const template = languageTemplate(ROOT, BOARD, SUBJ);
+const topics = readTopics(ROOT, template).filter(t => t.questions.length);
+if (!topics.length) { console.error('no topic with questions in ' + template); process.exit(1); }
+const st = { board: BOARD, subject: SUBJ };
+
+if (ALL) {
+    console.log(`=== ${BOARD} ${SUBJ} — every topic, redraft (${require('path').basename(template)}) ===`);
+    const shapes = {};
+    for (const t of topics) {
+        for (const q of render(st, 'redraft', t)) {
+            const shape = `plan ${q.plan.length} · outline ${q.outline.length} · response ${q.response.length}`
+                + (q.outline[0] ? ` (${q.outline[0]}…)` : q.plan[0] ? ` (${q.plan[0]}…)` : '');
+            (shapes[q.qId] = shapes[q.qId] || {})[shape] = (shapes[q.qId][shape] || []).concat(t.topic);
+        }
     }
-    let end = k + 1;
-    if (src[end] === ';') end++;
-    return src.slice(i, end);
+    for (const [qId, byShape] of Object.entries(shapes)) {
+        const n = Object.keys(byShape).length;
+        console.log(`${qId}${n > 1 ? '  ⚠ ' + n + ' DIFFERENT SHAPES across topics' : ''}`);
+        for (const [shape, ts] of Object.entries(byShape)) console.log(`    topics ${ts.join(',')}: ${shape}`);
+    }
+    process.exit(0);
 }
 
-const parts = [
-    slice('const OUTLINE_BODY_ONLY_OVERRIDES = {'),
-    slice('const OUTLINE_BODY_FOCUS = {'),
-    slice('const OUTLINE_CRITERIA = {'),
-    slice('const OUTLINE_SPECS = {'),
-    slice('function needsFullEssayStructure(', '('),
-    slice('function getOutlineSpecKey(', '('),
-    slice('function getParagraphCount(', '('),
-    slice('const OUTLINE_VERIFIED_PAPERS = {'),
-    slice('const SWML_PERSUASIVE_RE = ', ';'),
-    slice('function _outlinePaperKey(', '('),
-    slice('function _outlinePaperVerified(', '('),
-    slice('function _resolveBodyOnlyOutline(', '('),
-    slice('function buildIntroCriteria(', '('),
-    slice('function buildConclusionCriteria(', '('),
-    slice('function buildOutlineSection(', '('),
-    slice('function buildInferenceOutlineSection(', '('),
-    slice('function buildIUMVCCOutlineSection(', '('),
-    slice('function _iumvccFieldId(', '('),
-    slice('function _iuPoint(', '('),
-    // v7.20.697 (#722 B2 step 0.2): the page's OWN spec lookup. The probe read the JSON with the hyphenated
-    // board key, while the page looks it up as board.replace(/-/g, '') — so for Edexcel IGCSE the probe
-    // rendered from a spec the page never finds (#618) and reported "Q4 renders 18 rows" when the real page
-    // rendered none. Resolve every question through the shipped function, exactly as the doc builder does.
-    slice('function lookupQuestionSpec(', '('),
-];
-
-const captured = [];
-const explicit = {
-    console,
-    LIT_ESSAY_BODY_COUNT: parseInt((src.match(/var LIT_ESSAY_BODY_COUNT = (\d+)/) || [, '3'])[1], 10),
-    outlineRowHTML: (crit, fid) => { captured.push(fid); return ''; },
-    sectionHTML: (t, l, a, b, inner) => inner || '',
-    _specSubjectKey: () => SUBJ,
-    state: { board: BOARD, subject: SUBJ },
-    // the server embeds language-paper-specs.json verbatim as window.swmlLangSpecs (main plugin file)
-    window: { swmlLangSpecs: require(path.resolve(ROOT, 'protocols/shared/language-paper-specs.json')) },
-};
-const NOOP = new Proxy(function () { return NOOP; }, {
-    get: (t, k) => (k === Symbol.toPrimitive || k === 'toString' ? () => '__STUB__' : NOOP),
-});
-const sandbox = new Proxy(explicit, {
-    has: () => true,
-    get: (t, k) => (k in t ? t[k] : (k in globalThis ? globalThis[k] : NOOP)),
-    set: (t, k, v) => { t[k] = v; return true; },
-});
-// v7.20.625: slices can overlap (a brace-matched block may swallow a later declaration),
-// which then re-declares a const and throws. Drop any part wholly contained in another.
-const uniq = parts.filter((a, i) => !parts.some((b, j) => j !== i && b.length > a.length && b.includes(a)));
-vm.runInContext(uniq.join('\n'), vm.createContext(sandbox));
-
-const spec = require(path.resolve(ROOT, 'protocols/shared/language-paper-specs.json'))[BOARD][SUBJ];
-const qs = [];
-for (const sec of spec.sections) for (const q of sec.questions) qs.push(q);
-
-function render(fn) { captured.length = 0; try { fn(); } catch (e) { return ['THREW: ' + e.message]; } return captured.slice(); }
-
-console.log(`=== REAL DISPATCH SIMULATION — board=${BOARD} subject=${SUBJ}, mode=redraft ===\n`);
+const topic = TOPIC ? topics.find(t => t.topic === TOPIC) : topics[0];
+if (!topic) { console.error('no Topic ' + TOPIC + ' with questions in ' + template); process.exit(1); }
+console.log(`=== REAL DOC BUILD — board=${BOARD} subject=${SUBJ}, mode=redraft, Topic ${topic.topic} (${require('path').basename(template)}) ===\n`);
+const qs = render(st, 'redraft', topic);
 let specMisses = 0;
 for (const q of qs) {
-    // AS THE PAGE DOES: the topic parser sets no per-question type, so type and marks come from the
-    // page's spec lookup (q here stands in for the topic row: its marks are the topic's own).
-    const specQ = sandbox.lookupQuestionSpec(q.id);
-    if (!specQ) specMisses++;
-    const qId = q.id, qMarks = specQ ? specQ.marks : q.marks, qType = specQ ? specQ.type : null, aos = (specQ || q).aos;
-    const bodyOnly = sandbox._resolveBodyOnlyOutline(qId, qType, qMarks, aos, q);
-    // v7.20.625: call the SHIPPED registry helper. These two lines used to COPY the gate
-    // conditions, so the probe reported on its own copy and could not see a dispatch change
-    // at all — the exact defect class it was built to catch.
-    const isP2Comparison = sandbox._outlinePaperVerified('comparison') && qType === 'comparison';
-    const isP2Inference  = sandbox._outlinePaperVerified('inference')  && qType === 'short_analysis';
-    const admitted = qType !== 'multiple_choice' && (qMarks >= 20 || bodyOnly || isP2Comparison || isP2Inference);
-
-    console.log(`--- ${qId}  (${qMarks} marks, type=${qType}, ${aos.join('+')}) ---`);
-    console.log(`    _resolveBodyOnlyOutline -> ${bodyOnly ? JSON.stringify(bodyOnly) : 'null'}`);
-    console.log(`    outline gate admits?    -> ${admitted}`);
-    if (!admitted) { console.log('    => NO OUTLINE RENDERED\n'); continue; }
-
-    let branch, ids;
-    if (bodyOnly) {
-        branch = 'body-only';
-        ids = render(() => sandbox.buildOutlineSection(aos, qId, qMarks, null,
-            { bodyOnly: bodyOnly.bodies, stampAO: bodyOnly.ao, focus: bodyOnly.focus }));
-    } else if (isP2Comparison) {
-        branch = 'P2 comparative overlay';
-        ids = render(() => sandbox.buildOutlineSection(aos, qId, qMarks, 'aqa_language_p2_comparison', { focus: 'comparative', stampAO: 'AO3' }));
-    } else if (isP2Inference) {
-        branch = 'P2 inference';
-        ids = render(() => sandbox.buildInferenceOutlineSection(qId, 2));
-    } else {
-        branch = 'PLAIN full-essay (final else)';
-        ids = render(() => sandbox.buildOutlineSection(aos, qId, qMarks));
-    }
-    console.log(`    BRANCH TAKEN            -> ${branch}`);
-    console.log(`    ${ids.length} row(s):`);
-    ids.forEach(i => console.log('        ' + i));
-    console.log();
+    if (!q.specFound) specMisses++;
+    console.log(`--- ${q.qId}  (${q.marks} marks, type=${q.type}${q.specFound ? '' : ', NO SPEC FOUND'}) ---`);
+    console.log(`    PLAN     ${q.plan.length ? q.plan.length + ': ' + q.plan.join(' ') : '— none'}`);
+    console.log(`    OUTLINE  ${q.outline.length ? q.outline.length + ' row(s):' : '— none'}`);
+    q.outline.forEach(id => console.log('        ' + id));
+    console.log(`    RESPONSE ${q.response.join(' ') || '— none'}\n`);
 }
-
 if (specMisses) {
     console.log(`⛔ lookupQuestionSpec found NO spec for ${specMisses} of ${qs.length} question(s) on board=${BOARD} subject=${SUBJ} — `
-        + 'the REAL page renders these with no question type (#618). The rows above are what the page renders today.\n');
+        + 'the page builds these with no question type (#618). The rows above are what the page renders today.\n');
 }
-console.log('=== WHAT Q5 *WOULD* RENDER IF THE COMPARATIVE OVERLAY WERE ALLOWED FOR THIS BOARD ===');
-const want = render(() => sandbox.buildOutlineSection(['AO3'], 'Q5', 22, 'aqa_language_p2_comparison', { focus: 'comparative', stampAO: 'AO3' }));
-console.log(`${want.length} row(s):`); want.forEach(i => console.log('    ' + i));
 
-console.log('\n=== WHAT SECTION B *WOULD* RENDER AS IUMVCC ===');
-const iu = render(() => sandbox.buildIUMVCCOutlineSection('Q6'));
-console.log(`${iu.length} row(s):`); iu.forEach(i => console.log('    ' + i));
+// Hypotheticals for porting — the shipped builders called directly, labelled as such.
+const ids = html => String(html).split('\n').filter(l => l.startsWith('§R\t') || l.startsWith('§I\t')).map(l => l.split('\t')[1]);
+const want = ids(sandbox.buildOutlineSection(['AO3'], 'Q5', 22, 'aqa_language_p2_comparison', { focus: 'comparative', stampAO: 'AO3' }));
+console.log('=== HYPOTHETICAL: Q5 through the AQA comparative overlay ===');
+console.log(`${want.length} row(s): ${want.join(' ')}`);
+const iu = ids(sandbox.buildIUMVCCOutlineSection('Q6'));
+console.log('\n=== HYPOTHETICAL: Section B (Q6) as IUMVCC ===');
+console.log(`${iu.length} row(s): ${iu.join(' ')}`);

@@ -94,14 +94,15 @@ its own line in the SAME accepting reply (verbatim capture — I file the studen
 box). The PLAN box is NOT filed per element — it fills ONCE, at the Y approval above.
 
 The working thesis drafted at B.6 is the SAME element as the introduction's thesis — it files once, to
-`outline-intro-thesis`, and the B.7 refinement re-files that same box. Never open a second thesis box.
+`outline-intro-thesis-q1`, and the B.7 refinement re-files that same box. Never open a second thesis box.
 
-Use exactly these literal fieldIds:
+Use exactly these literal fieldIds (the `-q1` ending is part of the name — this paper's document labels its
+introduction rows with the question number):
 
 **Introduction:**
-@FIELD_COMMIT{"field":"outline-intro-hook"}
-@FIELD_COMMIT{"field":"outline-intro-building"}
-@FIELD_COMMIT{"field":"outline-intro-thesis"}
+@FIELD_COMMIT{"field":"outline-intro-hook-q1"}
+@FIELD_COMMIT{"field":"outline-intro-building-q1"}
+@FIELD_COMMIT{"field":"outline-intro-thesis-q1"}
 
 **At the Y approval — ONE marker.** Labelled elements on one line, separated by " | ", condensed to the
 chosen plan mode, built ONLY from the student's own words. No double-quote characters inside the value:

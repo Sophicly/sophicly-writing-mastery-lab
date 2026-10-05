@@ -7483,8 +7483,14 @@
             // v7.20.228: LITERATURE essay docs carry per-element intro rows (unsuffixed
             // hook/building/thesis) — fan per element with the intro label family. Lang P1 Q4
             // docs carry only the single suffixed thesis box — whole-mode, unchanged.
-            if (planField === 'plan-intro' && has('outline-intro-hook')) {
-                return { mode: 'elements', family: 'intro', make: el => 'outline-intro-' + el };
+            // v7.20.697 (#722 §3.2): a LANGUAGE paper's full-essay question carries the same three rows
+            // SUFFIXED with its question id (Edexcel IGCSE P2 Q1 → outline-intro-hook-q1), so the
+            // literature probe never matched and the approved intro went to a Q4 box that paper does not
+            // have. Probe for the suffix the doc actually carries. plan-intro is not namespaced, so only
+            // one question per doc can own it — the first suffix found is that question's.
+            if (planField === 'plan-intro') {
+                const sfx = ['', '-q1', '-q2', '-q3', '-q4', '-q5', '-q6', '-q7'].find(s => has('outline-intro-hook' + s));
+                if (sfx !== undefined) return { mode: 'elements', family: 'intro', make: el => 'outline-intro-' + el + sfx };
             }
             return { mode: 'whole', target: 'outline-intro-thesis-q4' };
         }
@@ -60274,6 +60280,86 @@
         return out;
     }
 
+    // ⭐ v7.20.697 (#722 B2 step 0) — THE QUESTION-FAMILY FLAGS and THE REDRAFT OUTLINE DISPATCH, extracted
+    // byte-for-byte from buildMultiQuestionTemplate's question loop (the same move .629 made for the plan
+    // builder). Reason: the render probe and the planning key-match harness used to COPY this chain, so a
+    // change here was invisible to both — they reported on their own copy, which is how "IGCSE P1 Q4 renders
+    // 18 rows" was believed while the page rendered none (#618). Both gates now slice and run THESE functions.
+    function _questionWritingFlags(q, qType, qMarks, specQ) {
+        const isWritingQ = qType === 'extended_writing' || qType === 'choice'
+            || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
+        const isPersuasive = SWML_PERSUASIVE_RE.test(q.text || q.label || '');
+        // v7.15.35: Broadened fiction detection — unanchored, checks description + text + label
+        const creativeText = (q.text || '') + ' ' + (q.label || '') + ' ' + (specQ?.description || '');
+        // v7.15.108: split — standalone CW course gets multi-stage archetype outline; Language fiction gets Scene Structure only
+        const isCWCourse = state.subject === 'creative_writing';
+        const isCreativeWritingQ = isCWCourse
+            || qType === 'creative_writing'
+            || (qType === 'extended_writing' && /creative|imaginative|narrative|descriptive|write a story|write a description/i.test(creativeText))
+            || /creative writing|creative prose|imaginative writing|narrative writing|descriptive writing|write a story|write a description/i.test(creativeText);
+        return { isWritingQ: isWritingQ, isPersuasive: isPersuasive, isCWCourse: isCWCourse, isCreativeWritingQ: isCreativeWritingQ };
+    }
+
+    // `f` = { isCWCourse, isCreativeWritingQ, isWritingQ, isPersuasive, topicAos } — from _questionWritingFlags
+    // plus the topic's AO default. Returns '' when this question gets no outline. Redraft docs only (the caller gates).
+    function _redraftOutlineSectionsHTML(q, qId, qMarks, qType, specQ, f) {
+        let out = '';
+        // v7.15.108: CW multi-stage archetype outline is standalone-course-only; Language fiction's
+        // Scene Structure plan above IS the outline — skip the outline block entirely for it.
+        // v7.20.107: body-only outline for the sub-essay analysis questions (AQA Lang P1 Q2/Q3).
+        // Resolved BEFORE the gate so the gate admits them alongside the >=20 essay path.
+        const _bodyOnlyOutline = _resolveBodyOnlyOutline(qId, qType, qMarks, q.aos || specQ?.aos, specQ);
+        // v7.20.146 (Neil, P2 outline build): AQA Lang P2 Q4 = comparison (16m, AO3). NOT body-only
+        // (it has a short intro + conclusion) and NOT >=20, so it needs its own gate admission +
+        // branch. Comparative body = same TTECEA rows via the `comparative` focus overlay (ruling
+        // feedback_comparative_body_is_ttecea_helper_text_only) — not a new element set.
+        const _isP2Comparison = _outlinePaperVerified('comparison') && qType === 'comparison';
+        // v7.20.148 (Neil): AQA Lang P2 Q2 = inference (short_analysis, 8m, AO1). Its own
+        // paired-inference builder — NOT the body-only TTECEA path (that gates on qType
+        // 'analysis'; Q2 is 'short_analysis'). Below the >=20 threshold, so admitted explicitly.
+        const _isP2Inference = _outlinePaperVerified('inference') && qType === 'short_analysis';
+        if (qType !== 'multiple_choice' && (qMarks >= 20 || _bodyOnlyOutline || _isP2Comparison || _isP2Inference)) {
+            if (_bodyOnlyOutline) {
+                // Body-only: N TTECEA paragraphs, no intro/conclusion. Checked BEFORE the
+                // writing branches — an 8-mark analysis Q can never be creative/persuasive,
+                // and this keeps the essay path byte-identical to what shipped.
+                out += dividerHTML(`OUTLINE — ${qId}`);
+                out += buildOutlineSection(q.aos || specQ?.aos, qId, qMarks, null, {
+                    bodyOnly: _bodyOnlyOutline.bodies,
+                    stampAO: _bodyOnlyOutline.ao,
+                    focus: _bodyOnlyOutline.focus,
+                });
+            } else if (_isP2Comparison) {
+                // Short intro + 3 comparative TTECEA body ¶ + short conclusion (spec key forces
+                // the full-essay path at 16m; the overlay relabels effects → Source A / Source B).
+                out += dividerHTML(`OUTLINE — ${qId}`);
+                out += buildOutlineSection(q.aos || specQ?.aos, qId, qMarks, 'aqa_language_p2_comparison', {
+                    focus: 'comparative',
+                    stampAO: 'AO3',
+                });
+            } else if (_isP2Inference) {
+                // Q2 inference: 2 paired-inference paragraphs (Source A → Source B), AO1.
+                out += dividerHTML(`OUTLINE — ${qId}`);
+                out += buildInferenceOutlineSection(qId, 2);
+            } else if (f.isCWCourse) {
+                out += dividerHTML(`OUTLINE — ${qId}`);
+                out += buildCWPlotOutlineSection();
+            } else if (f.isCreativeWritingQ && f.isWritingQ) {
+                // Language fiction: Plan Scene Structure above is the outline. No second scaffold.
+            } else if (f.isPersuasive
+                || ((state.board || '').toLowerCase() === 'aqa' && _isLangPaper2() && f.isWritingQ && !f.isCreativeWritingQ)) {
+                // v7.20.49: same AQA-P2-transactional guarantee as the plan branch above —
+                // plan and outline must route to the SAME family (key-match law).
+                out += dividerHTML(`OUTLINE — ${qId}`);
+                out += buildIUMVCCOutlineSection(qId);
+            } else {
+                out += dividerHTML(`OUTLINE — ${qId}`);
+                out += buildOutlineSection(q.aos || f.topicAos, qId, qMarks);
+            }
+        }
+        return out;
+    }
+
     function buildMultiQuestionTemplate(mode, topicData) {
         const meta = typeof topicData.metadata === 'string' ? JSON.parse(topicData.metadata || '{}') : (topicData.metadata || {});
         const questions = meta.questions || [];
@@ -60341,17 +60427,7 @@
             const specQ = lookupQuestionSpec(qId);
             const qMarks = parseInt(specQ?.marks ?? q.marks) || 0;
             const qType = q.type || specQ?.type || null;
-            const isWritingQ = qType === 'extended_writing' || qType === 'choice'
-                || qMarks >= 24 || /section\s*b|writing|creative|persuasive|narrative|descriptive/i.test(q.label || '');
-            const isPersuasive = SWML_PERSUASIVE_RE.test(q.text || q.label || '');
-            // v7.15.35: Broadened fiction detection — unanchored, checks description + text + label
-            const creativeText = (q.text || '') + ' ' + (q.label || '') + ' ' + (specQ?.description || '');
-            // v7.15.108: split — standalone CW course gets multi-stage archetype outline; Language fiction gets Scene Structure only
-            const isCWCourse = state.subject === 'creative_writing';
-            const isCreativeWritingQ = isCWCourse
-                || qType === 'creative_writing'
-                || (qType === 'extended_writing' && /creative|imaginative|narrative|descriptive|write a story|write a description/i.test(creativeText))
-                || /creative writing|creative prose|imaginative writing|narrative writing|descriptive writing|write a story|write a description/i.test(creativeText);
+            const { isWritingQ, isPersuasive, isCWCourse, isCreativeWritingQ } = _questionWritingFlags(q, qType, qMarks, specQ);
 
             // Section dividers from specs (multi-section support for Edexcel P2 etc.)
             if (sectionMap && sectionMap[qId] && sectionMap[qId] !== lastSection) {
@@ -60424,58 +60500,11 @@
             }
 
             // v7.14.78: Outline with criteria columns — redraft only (diagnostic = write cold)
-            // v7.15.108: CW multi-stage archetype outline is standalone-course-only; Language fiction's
-            // Scene Structure plan above IS the outline — skip the outline block entirely for it.
-            // v7.20.107: body-only outline for the sub-essay analysis questions (AQA Lang P1 Q2/Q3).
-            // Resolved BEFORE the gate so the gate admits them alongside the >=20 essay path.
-            const _bodyOnlyOutline = _resolveBodyOnlyOutline(qId, qType, qMarks, q.aos || specQ?.aos, specQ);
-            // v7.20.146 (Neil, P2 outline build): AQA Lang P2 Q4 = comparison (16m, AO3). NOT body-only
-            // (it has a short intro + conclusion) and NOT >=20, so it needs its own gate admission +
-            // branch. Comparative body = same TTECEA rows via the `comparative` focus overlay (ruling
-            // feedback_comparative_body_is_ttecea_helper_text_only) — not a new element set.
-            const _isP2Comparison = _outlinePaperVerified('comparison') && qType === 'comparison';
-            // v7.20.148 (Neil): AQA Lang P2 Q2 = inference (short_analysis, 8m, AO1). Its own
-            // paired-inference builder — NOT the body-only TTECEA path (that gates on qType
-            // 'analysis'; Q2 is 'short_analysis'). Below the >=20 threshold, so admitted explicitly.
-            const _isP2Inference = _outlinePaperVerified('inference') && qType === 'short_analysis';
-            if (mode === 'redraft' && qType !== 'multiple_choice' && (qMarks >= 20 || _bodyOnlyOutline || _isP2Comparison || _isP2Inference)) {
-                if (_bodyOnlyOutline) {
-                    // Body-only: N TTECEA paragraphs, no intro/conclusion. Checked BEFORE the
-                    // writing branches — an 8-mark analysis Q can never be creative/persuasive,
-                    // and this keeps the essay path byte-identical to what shipped.
-                    html += dividerHTML(`OUTLINE — ${qId}`);
-                    html += buildOutlineSection(q.aos || specQ?.aos, qId, qMarks, null, {
-                        bodyOnly: _bodyOnlyOutline.bodies,
-                        stampAO: _bodyOnlyOutline.ao,
-                        focus: _bodyOnlyOutline.focus,
-                    });
-                } else if (_isP2Comparison) {
-                    // Short intro + 3 comparative TTECEA body ¶ + short conclusion (spec key forces
-                    // the full-essay path at 16m; the overlay relabels effects → Source A / Source B).
-                    html += dividerHTML(`OUTLINE — ${qId}`);
-                    html += buildOutlineSection(q.aos || specQ?.aos, qId, qMarks, 'aqa_language_p2_comparison', {
-                        focus: 'comparative',
-                        stampAO: 'AO3',
-                    });
-                } else if (_isP2Inference) {
-                    // Q2 inference: 2 paired-inference paragraphs (Source A → Source B), AO1.
-                    html += dividerHTML(`OUTLINE — ${qId}`);
-                    html += buildInferenceOutlineSection(qId, 2);
-                } else if (isCWCourse) {
-                    html += dividerHTML(`OUTLINE \u2014 ${qId}`);
-                    html += buildCWPlotOutlineSection();
-                } else if (isCreativeWritingQ && isWritingQ) {
-                    // Language fiction: Plan Scene Structure above is the outline. No second scaffold.
-                } else if (isPersuasive
-                    || ((state.board || '').toLowerCase() === 'aqa' && _isLangPaper2() && isWritingQ && !isCreativeWritingQ)) {
-                    // v7.20.49: same AQA-P2-transactional guarantee as the plan branch above \u2014
-                    // plan and outline must route to the SAME family (key-match law).
-                    html += dividerHTML(`OUTLINE \u2014 ${qId}`);
-                    html += buildIUMVCCOutlineSection(qId);
-                } else {
-                    html += dividerHTML(`OUTLINE \u2014 ${qId}`);
-                    html += buildOutlineSection(q.aos || topicData.aos, qId, qMarks);
-                }
+            if (mode === 'redraft') {
+                html += _redraftOutlineSectionsHTML(q, qId, qMarks, qType, specQ, {
+                    isCWCourse: isCWCourse, isCreativeWritingQ: isCreativeWritingQ, isWritingQ: isWritingQ,
+                    isPersuasive: isPersuasive, topicAos: topicData.aos,
+                });
             }
 
             // ── Response area ──
