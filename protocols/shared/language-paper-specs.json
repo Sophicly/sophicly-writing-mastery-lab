@@ -963,7 +963,7 @@
       },
       "sections": [
         {
-          "label": "Section A: Reading — Poetry",
+          "label": "Section A: Reading",
           "marks": 30,
           "questions": [
             {
@@ -974,7 +974,7 @@
                 "AO2"
               ],
               "type": "analysis",
-              "description": "How does the writer present X? (single anthology poem, printed in full)"
+              "description": "How does the writer present X? (one Part 2 anthology text — a poem or a prose text — printed in full)"
             }
           ]
         },

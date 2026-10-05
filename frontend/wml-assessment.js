@@ -60156,11 +60156,19 @@
      * Returns the question object { id, marks, type, aos, description, ... } or null.
      * v7.14.16
      */
-    function lookupQuestionSpec(questionId) {
+    // ⭐ v7.20.698 (#618, #722 B2 step 1.1): the ONE way to find this page's paper in language-paper-specs.json.
+    // The spec's board keys are HYPHENATED ('edexcel-igcse', 'cambridge-igcse') and the server hands the page the
+    // hyphenated form (sophicly-writing-mastery-lab.php: str_replace('_', '-', $board)). Both lookups below
+    // stripped the hyphen ('edexceligcse'), so no IGCSE question ever had a type: retrieval questions got one
+    // box instead of a box per point, Q3 got a plan box, Q4 got no outline. Same rule as wml-core.js
+    // writingQuestionIds: underscores become hyphens, never the other way round.
+    function _langSpecPaper() {
         const specs = window.swmlLangSpecs || {};
-        const board = (state.board || '').toLowerCase().replace(/-/g, '');
-        const subject = _specSubjectKey();
-        const paper = specs[board]?.[subject];
+        const board = String(state.board || '').toLowerCase().replace(/_/g, '-');
+        return specs[board]?.[_specSubjectKey()] || null;
+    }
+    function lookupQuestionSpec(questionId) {
+        const paper = _langSpecPaper();
         if (!paper?.sections) return null;
         for (const sec of paper.sections) {
             for (const q of sec.questions || []) {
@@ -60176,10 +60184,7 @@
      * v7.14.16
      */
     function buildSectionMap() {
-        const specs = window.swmlLangSpecs || {};
-        const board = (state.board || '').toLowerCase().replace(/-/g, '');
-        const subject = _specSubjectKey();
-        const paper = specs[board]?.[subject];
+        const paper = _langSpecPaper();
         if (!paper?.sections) return null;
         const map = {};
         for (const sec of paper.sections) {
@@ -60318,7 +60323,11 @@
         // paired-inference builder — NOT the body-only TTECEA path (that gates on qType
         // 'analysis'; Q2 is 'short_analysis'). Below the >=20 threshold, so admitted explicitly.
         const _isP2Inference = _outlinePaperVerified('inference') && qType === 'short_analysis';
-        if (qType !== 'multiple_choice' && (qMarks >= 20 || _bodyOnlyOutline || _isP2Comparison || _isP2Inference)) {
+        // v7.20.698: a RETRIEVAL question gets no outline, exactly as it gets no plan (the plan gate in the
+        // question loop; CLAUDE.md "SKIP the basic retrieval ones"). Unreachable until #618 — no question with a
+        // spec was retrieval at 20+ marks — but fixing the lookup gave Cambridge IGCSE P1 Q1 (30 marks) its
+        // type, and it would have kept a 25-row essay outline with no plan above it.
+        if (qType !== 'multiple_choice' && qType !== 'retrieval' && (qMarks >= 20 || _bodyOnlyOutline || _isP2Comparison || _isP2Inference)) {
             if (_bodyOnlyOutline) {
                 // Body-only: N TTECEA paragraphs, no intro/conclusion. Checked BEFORE the
                 // writing branches — an 8-mark analysis Q can never be creative/persuasive,

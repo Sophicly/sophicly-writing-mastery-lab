@@ -15,17 +15,21 @@ const vm = require('vm');
 const cp = require('child_process');
 
 const MARKERS = [
+    // IUMVCC criteria content (pure data + tiny control builders). They shape what a row SAYS, not its id, but
+    // OUTLINE_CRITERIA calls them as it is built, so they go first (a const read before it is declared throws).
+    ['const _IU_ACTION_VERBS = [', '['], ['const _IU_SENSORY_VERBS = [', '['], ['const _IU_TONES_GENERAL = [', '['],
+    ['function _iuVerbCtl(', '('], ['function _iuToneCtl(', '('], ['function _iuEffectCtl(', '('],
     ['const OUTLINE_BODY_ONLY_OVERRIDES = {'], ['const OUTLINE_BODY_FOCUS = {'], ['const OUTLINE_CRITERIA = {'],
     ['const OUTLINE_SPECS = {'], ['function needsFullEssayStructure(', '('], ['function getOutlineSpecKey(', '('],
     ['function getParagraphCount(', '('], ['const OUTLINE_VERIFIED_PAPERS = {'], ['const SWML_PERSUASIVE_RE = ', ';'],
     ['function _outlinePaperKey(', '('], ['function _outlinePaperVerified(', '('], ['function _resolveBodyOnlyOutline(', '('],
     ['function buildIntroCriteria(', '('], ['function buildConclusionCriteria(', '('], ['function buildOutlineSection(', '('],
     ['function buildInferenceOutlineSection(', '('], ['function buildIUMVCCOutlineSection(', '('], ['function _iumvccFieldId(', '('],
-    ['function _iuPoint(', '('], ['function lookupQuestionSpec(', '('], ['function buildSectionMap(', '('],
-    ['function _specSubjectKey(', '('], ['function _isLangPaper2(', '('], ['function buildPlanSection(', '('],
-    ['function buildIUMVCCPlanSection(', '('], ['function buildComparativePlanSection(', '('], ['function buildCreativeScenePlan(', '('],
-    ['function _redraftPlanSectionsHTML(', '('], ['function _canonicalWordHint(', '('], ['function getQuestionWordTarget(', '('],
-    ['const MULTIQ_RESPONSE_TARGETS = {'], ['function _multiqTargetKey(', '('],
+    ['function _iuPoint(', '('], ['function _langSpecPaper(', '('], ['function lookupQuestionSpec(', '('],
+    ['function buildSectionMap(', '('], ['function _specSubjectKey(', '('], ['function _isLangPaper2(', '('],
+    ['function buildPlanSection(', '('], ['function buildIUMVCCPlanSection(', '('], ['function buildComparativePlanSection(', '('],
+    ['function buildCreativeScenePlan(', '('], ['function _redraftPlanSectionsHTML(', '('], ['function _canonicalWordHint(', '('],
+    ['function getQuestionWordTarget(', '('], ['const MULTIQ_RESPONSE_TARGETS = {'], ['function _multiqTargetKey(', '('],
     ['function _questionWritingFlags(', '('], ['function _redraftOutlineSectionsHTML(', '('],
     ['function buildMultiQuestionTemplate(', '('],
 ];
@@ -46,6 +50,10 @@ function slicer(src) {
     };
 }
 
+// Top-level declarations in a source text: `function NAME(` and `const|let|var NAME =`.
+const DECL = /^\s*(?:function\s+([A-Za-z_$][\w$]*)\s*\(|(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=)/gm;
+const namesIn = text => new Set([...text.matchAll(DECL)].map(m => m[1] || m[2]));
+
 // The page's HTML helpers are replaced by RECORDERS: one line per section / divider / field, in render order.
 function makeTemplateRenderer(root) {
     const src = fs.readFileSync(path.join(root, 'frontend', 'wml-assessment.js'), 'utf8');
@@ -53,6 +61,7 @@ function makeTemplateRenderer(root) {
     const parts = MARKERS.map(m => slice(m[0], m[1]));
     // a brace-matched slice can swallow a later declaration; drop any part wholly inside another
     const uniq = parts.filter((a, i) => !parts.some((b, j) => j !== i && b.length > a.length && b.includes(a)));
+    const sliced = uniq.join('\n');
     const explicit = {
         console,
         LIT_ESSAY_BODY_COUNT: parseInt((src.match(/var LIT_ESSAY_BODY_COUNT = (\d+)/) || [, '3'])[1], 10),
@@ -68,12 +77,26 @@ function makeTemplateRenderer(root) {
     const NOOP = new Proxy(function () { return NOOP; }, {
         get: (t, k) => (k === Symbol.toPrimitive || k === 'toString' ? () => '__STUB__' : NOOP),
     });
+    // ⛔ A name the sliced code reaches for that IS defined in wml-assessment.js but was not sliced must FAIL, never
+    // fall through to the no-op: a no-op lookup returns nothing, and "no spec found" then reads as a measurement.
+    // (Found the day this file was written: the #618 fix added _langSpecPaper(), this sandbox had not sliced it,
+    // and the probe went on reporting NO SPEC FOUND for a lookup that now worked.) Names NOT defined in the file
+    // (DOM helpers, other scripts' globals) still no-op — that is what the stub is for.
+    const declared = namesIn(src), slicedNames = namesIn(sliced);
     const sandbox = new Proxy(explicit, {
         has: () => true,
-        get: (t, k) => (k in t ? t[k] : (k in globalThis ? globalThis[k] : NOOP)),
+        get: (t, k) => {
+            if (k in t) return t[k];
+            if (k in globalThis) return globalThis[k];
+            if (typeof k === 'string' && declared.has(k) && !slicedNames.has(k)) {
+                throw new Error('template-render-sandbox: the doc builder reaches for ' + k + ', which wml-assessment.js '
+                    + 'defines but this sandbox did not slice — add it to MARKERS (or stub it in `explicit` on purpose).');
+            }
+            return NOOP;
+        },
         set: (t, k, v) => { t[k] = v; return true; },
     });
-    vm.runInContext(uniq.join('\n'), vm.createContext(sandbox));
+    vm.runInContext(sliced, vm.createContext(sandbox));
 
     // Render one topic → [{ qId, specFound, type, marks, plan: [ids], outline: [ids], response: [ids] }].
     function render(st, mode, topic) {
