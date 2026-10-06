@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.714';
+var WML_BUILD = '7.20.715';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -5088,7 +5088,10 @@ window.WML = (function() {
         // connectives list and never answered it; Notes' `final-read` (reading the answer back to
         // catch the unclear sentence) does — live on notes prod 2.6.234, verified 2026-09-29.
         C1: { dest: 'toolkit', arg: 'final-read', label: 'The Final Read' },
-        T2: { dest: 'toolkit', arg: 'cohesion', label: 'Coherence & Cohesion' },
+        // v7.20.715 (PEDAGOGY §53.20–21): T2 = a sentence joined to the one before by none of the toolkit's
+        // nine links — exactly `sentence-transitions` ("Linking Sentences & Paragraphs"). R1 stays on
+        // `cohesion`, whose "Strategic repetition" box is R1's fault.
+        T2: { dest: 'toolkit', arg: 'sentence-transitions', label: 'Linking Sentences & Paragraphs' },
         R1: { dest: 'toolkit', arg: 'cohesion', label: 'Coherence & Cohesion' },
         S2: { dest: 'toolkit', arg: 'word-budget', label: 'Word Count & Length' },
         Q1: { dest: 'toolkit', arg: 'fix-evidence', label: 'Evidence & Quotes' },
@@ -5181,7 +5184,7 @@ window.WML = (function() {
     function learnChipsForLine(text) {
         const t = String(text || '').trim();
         const m = t.match(_LEARN_BLOCK_RE);
-        if (!m) return [];
+        if (!m) return rowChipsFor(_rowFromDocLine(t));   // v7.20.715: a mark-table row line
         const map = PENALTY_LEARN_MAP[m[1]];
         if (!map) return [];
         if (map.dest !== 'table') {
@@ -5228,6 +5231,9 @@ window.WML = (function() {
         // .inference's four boxes · `interpretation-ladder` = rubric-base.md's 0–3 ladder · `answer-shapes`
         // (see the `language` family for the one question it must not reach) · `tense-control`.
         'scene', 'answer-shapes', 'paired-inference', 'interpretation-ladder', 'tense-control',
+        // v7.20.715 (PEDAGOGY §53.20) — "Linking Sentences & Paragraphs": the toolkit's nine links. The flow
+        // element, T2 and the coherence-row chip all point here (`cohesion` is the connectives list).
+        'sentence-transitions',
     ];
     // ═══════════════════════════════════════════════════════════════════════════════════════
     // ⭐⭐ v7.20.615 (Neil, 2026-09-15) — THE ELEMENT → REFERENCE MAP.
@@ -5279,7 +5285,7 @@ window.WML = (function() {
             // ⛔ Not `sp-inference-clarity-depth`: its six-step depth scale clashes with these four (notes hold).
             { el: 'how far an interpretation goes — the Interpretation Ladder, rungs 0 to 3', arg: 'interpretation-ladder', label: 'The Interpretation Ladder' },
             { el: 'fine-grained rather than merely detailed', arg: 'finegrained', label: 'Fine-Grained vs Detailed' },
-            { el: 'flow from one sentence to the next', arg: 'cohesion', label: 'Coherence & Cohesion' },
+            { el: 'flow from one sentence to the next', arg: 'sentence-transitions', label: 'Linking Sentences & Paragraphs' },
             { el: 'repeated sentence openers', arg: 'fix-sentence-starters', label: 'Sentence Starters' },
             { el: 'punctuating and embedding a quotation', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
             { el: 'answering the words the question actually uses', arg: 'evaluative-keywords', label: 'Evaluative Keywords' },
@@ -5290,7 +5296,7 @@ window.WML = (function() {
         iumvcc: [
             { el: 'the IUMVCC shape (all six beats)', arg: 'iumvcc', label: 'Persuasive Structure' },
             { el: 'control in your own writing', arg: 'fix-creative-writing', label: 'Creative & Persuasive Writing' },
-            { el: 'flow from one sentence to the next', arg: 'cohesion', label: 'Coherence & Cohesion' },
+            { el: 'flow from one sentence to the next', arg: 'sentence-transitions', label: 'Linking Sentences & Paragraphs' },
             { el: 'naming the writer’s attitude precisely', arg: 'wb-tone', label: 'Tone & Feeling Words' },
             { el: 'how long the answer should be', arg: 'word-budget', label: 'Word Count & Length' },
         ],
@@ -5396,6 +5402,14 @@ window.WML = (function() {
                 const chip = _learnChipFor(code, context);
                 if (!chip) return whole;
                 return lead + line + ' ⟦SWML_LEARN:' + chip.dest + ':' + chip.arg + ':' + chip.label + '⟧';
+            }).replace(/^[ \t]*\|[^\n]*\|[ \t]*$/gm, (row) => {
+                // v7.20.715: a mark-table row — the token goes INSIDE the last cell (before its closing
+                // pipe), so the table converter keeps it in the Why cell. Gated like every chat chip.
+                if (row.indexOf('⟦SWML_LEARN:') !== -1) return row;
+                if (!(window.SophiclyToolkit && window.SophiclyToolkit.open)) return row;
+                const chips = rowChipsFor(_rowFromMd(row));
+                if (!chips.length) return row;
+                return row.replace(/\|[ \t]*$/, chips.map(c => '⟦SWML_LEARN:' + c.dest + ':' + c.arg + ':' + c.label + '⟧').join(' ') + ' |');
             });
         } catch (e) { console.warn('WML learn-chip: tag skipped —', e && e.message); return text; }
     }
@@ -5416,6 +5430,38 @@ window.WML = (function() {
     // Rendered-block detection shape shared by the two DOM-phase consumers below —
     // textContent form (no markdown asterisks / leading bullet chars).
     const _LEARN_BLOCK_RE = /^([A-Z]{1,3}\d(?:-[A-Z]+)?)(?:.{0,80}?\((?:−|-|–)\s*[\d.]+\)|[^×]{0,60}×\d+)/;
+    // ⭐ v7.20.715 (PEDAGOGY §53.20 + §53.22 — Neil: "if the students get it wrong, then we can give them a
+    // quick action button to open that up so a deep link"). MARK-TABLE ROW chips, CODE-owned and keyed
+    // on the row itself — never on an id Sophia composes (the v7.19.949 silent-landing lesson):
+    //   · a coherence row scored below its worth → Linking Sentences & Paragraphs (the toolkit's nine links);
+    //   · any row whose Why opens "Not valid —" (marking-fairness Rule 6, every board) → The Interpretation Ladder.
+    // A row reaches the student in two shapes, so ONE rule set and two parsers: the chat's raw markdown
+    // row ("| Criterion | 0.5 | 0.25 | Why |") and the document/pad line cwMarkdownToDocHtml draws from
+    // it ("Criterion — 0.5 · 0.25 · Why"). Every arg below is proven by bin/toolkit-link-gate.js.
+    const ROW_LEARN_RULES = [
+        { arg: 'sentence-transitions', label: 'Linking Sentences & Paragraphs', test: (r) => /coheren/i.test(r.criterion) && r.score < r.worth - 1e-9 },
+        { arg: 'interpretation-ladder', label: 'The Interpretation Ladder', test: (r) => /^[\s*_"“]*not\s+valid\b/i.test(r.why) },
+    ];
+    function _rowNum(c) { const m = /^\s*(-?\d+(?:\.\d+)?)/.exec(String(c || '').replace(/[*_`]/g, '')); return m ? parseFloat(m[1]) : NaN; }
+    function _rowFromMd(line) {
+        const t = String(line || '').trim();
+        if (t.charAt(0) !== '|') return null;
+        const cells = t.replace(/^\|/, '').replace(/\|\s*$/, '').split('|').map(c => c.trim());
+        if (cells.length < 4) return null;
+        const worth = _rowNum(cells[1]), score = _rowNum(cells[2]);
+        if (isNaN(worth) || isNaN(score) || !(worth > 0)) return null;
+        return { criterion: cells[0].replace(/[*_`]/g, ''), worth: worth, score: score, why: cells.slice(3).join(' | ') };
+    }
+    const _DOC_ROW_RE = /^(.+?)\s+—\s+(-?\d+(?:\.\d+)?)\s*·\s*(-?\d+(?:\.\d+)?)\s*(?:·\s*([\s\S]*))?$/;
+    function _rowFromDocLine(text) {
+        const m = _DOC_ROW_RE.exec(String(text || '').trim());
+        if (!m || !(parseFloat(m[2]) > 0)) return null;
+        return { criterion: m[1], worth: parseFloat(m[2]), score: parseFloat(m[3]), why: m[4] || '' };
+    }
+    function rowChipsFor(row) {
+        if (!row) return [];
+        return ROW_LEARN_RULES.filter(x => x.test(row)).map(x => ({ dest: 'toolkit', arg: x.arg, label: x.label }));
+    }
     // DOM phase for non-PM clones (the pop-out Feedback pad; PM doc itself stays chip-free
     // v1). Same detection on textContent — rendered blocks have no markdown asterisks or
     // leading bullet chars. Idempotent: a block that already carries a chip is skipped.
@@ -5427,17 +5473,19 @@ window.WML = (function() {
                 if (bl.querySelector('.swml-learn-chip')) return;
                 const t = (bl.textContent || '').trim();
                 const m = t.match(blockRe);
-                if (!m) return;
-                const chip = _learnChipFor(m[1], t);
-                if (!chip) return;
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'swml-learn-chip';
-                btn.setAttribute('data-learn-dest', chip.dest);
-                btn.setAttribute('data-learn-arg', chip.arg);
-                btn.textContent = 'Learn: ' + chip.label + ' →';
-                bl.appendChild(document.createTextNode(' '));
-                bl.appendChild(btn);
+                let chips;
+                if (m) { const one = _learnChipFor(m[1], t); chips = one ? [one] : []; }
+                else chips = (window.SophiclyToolkit && window.SophiclyToolkit.open) ? rowChipsFor(_rowFromDocLine(t)) : [];   // v7.20.715: a mark-table row
+                chips.forEach(chip => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'swml-learn-chip';
+                    btn.setAttribute('data-learn-dest', chip.dest);
+                    btn.setAttribute('data-learn-arg', chip.arg);
+                    btn.textContent = 'Learn: ' + chip.label + ' →';
+                    bl.appendChild(document.createTextNode(' '));
+                    bl.appendChild(btn);
+                });
             });
         } catch (e) { console.warn('WML learn-chip: DOM inject skipped —', e && e.message); }
     }
@@ -5970,6 +6018,7 @@ window.WML = (function() {
         glyphizeEl,   // v7.20.631 (#574a) — leading chip glyph → inline SVG, literal kept
         appendLearnChips,   // v7.19.922: Fix→Learn chips on non-PM clones (Feedback pad)
         learnChipsForLine,  // v7.19.949/950: ungated line→chips resolver for the in-doc healer
+        rowChipsFor, ROW_LEARN_RULES,   // v7.20.715: mark-table row → Learn chips (harness-driven)
         // v7.17.11: topic-flow detection (suppresses attempts UX inside numbered topics)
         isTopicFlow,
         // Rendering

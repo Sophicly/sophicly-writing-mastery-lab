@@ -845,6 +845,13 @@ php bin/markscheme-route-gate.php >/dev/null || { php bin/markscheme-route-gate.
 # told "out of 30" with AQA's worths, appended last. Behaviour twin: bin/lit-19c-override-probe.php.
 php bin/lit-19c-override-gate.php >/dev/null || { php bin/lit-19c-override-gate.php; fail=1; }
 
+# LITERATURE MARKING, AS RULED 6 OCT (v7.20.715, PEDAGOGY §53). The v5 body rows byte-exact and
+# summing to 8 (19th c. to 7), Rule 5/6 restated, T2/TTE1/H1/P2 off the body list, no "type Y"
+# step, the row Learn chips, and every literature protocol PORTED or listed PENDING — counted
+# from the manifests. The self-test proves each check catches the defect it names.
+node bin/lit-perceptive-gate.js >/dev/null || { node bin/lit-perceptive-gate.js; fail=1; }
+node bin/lit-perceptive-gate.js --self-test >/dev/null || { node bin/lit-perceptive-gate.js --self-test; fail=1; }
+
 
 if [ "$fail" -ne 0 ]; then
   echo ""

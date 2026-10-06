@@ -8520,6 +8520,39 @@
         return g.length > 0 && g.every(x => x.done) && !!_ladderHostConfidence();
     }
     function _ladderHostActive() { try { return !!(_ladderActiveHook && _ladderActiveHook()); } catch (e) { return false; } }
+    // ⭐ v7.20.715 (#687b, PEDAGOGY §53.29 — Neil, 6 Oct: "Drop it: Continue starts the marking").
+    // The ✓-continue tap used to buy a Sophia call whose whole reply was "You marked yourself [level],
+    // [mark] — type Y to see your mark breakdown" (7 of 14 calls in his 3 Oct run). The tap now starts
+    // the marking, and the line repeating the student's OWN level and mark for that question is drawn
+    // HERE, by code, from the document's mark-scheme rows, while the marking loads. Language only: a
+    // Literature mark is for the whole essay (never restated per paragraph). Present-state (the rows can
+    // be re-walked), so drawn, never stored (§4c.7). A question with no self-marked row draws nothing.
+    function _ladderOwnMarkLine(label) {
+        try {
+            if (_isLitEssay()) return '';
+            const lab = String(label || '').trim();
+            if (!/^(?:Q|Question)\s*\d/i.test(lab)) return '';   // a question, never "Paragraph 2"
+            const k = _paraKey(lab);
+            const gs = _ladderHostGroups().filter(g => _paraKey(g.q) === k);
+            const parts = gs.map(g => {
+                const mark = _ladderRowText(g.fids.mark);
+                if (!mark) return '';
+                if (g.points) return mark;
+                const lvl = _ladderRowText(g.fids.level);
+                return (lvl ? lvl + ', ' : '') + mark + (gs.length > 1 ? ' for ' + g.ao : '');
+            }).filter(Boolean);
+            if (!parts.length) return '';
+            return 'You marked yourself **' + parts.join('** and **') + '** on ' + lab.replace(/^Q\s*(\d)/i, 'Question $1') + '. Let\'s see how my marking compares…';
+        } catch (e) { return ''; }
+    }
+    function _drawLadderOwnMark(label) {
+        try {
+            const line = _ladderOwnMarkLine(label);
+            if (!line || !_chatShell || !_chatShell.addMsg) return;
+            _chatShell.addMsg(formatAI(line), 'ai', line, { suppressActions: true });
+            WML.recordTurn(_chatShell.history, { role: 'assistant', content: line }, { durable: false, why: 'a present-state echo of the student\'s own ladder marks — re-read from the document, never stored (§4c.7)' });
+        } catch (e) { console.warn('WML ladder: own-mark line skipped —', e && e.message); }
+    }
     // The student's own marks, compact — what Sophia is handed (the CW trial's §1.6 shape).
     function _ladderHostSummary() {
         return _ladderHostGroups().map(g => {
@@ -9203,13 +9236,18 @@
     ];
     // Mark-table criterion (the AQA Literature protocol's wording, or the model's shortening of it) →
     // the skill the student rated in the walk. Ordered, first match wins: [match, skill, unless].
-    // A criterion no rated skill describes stays UNMAPPED ("Analysis links to topic sentence",
-    // "Links to question") — an honest hole in the comparison beats a forced pairing.
+    // A criterion no rated skill describes stays UNMAPPED ("Coherence and flow", "Links to question")
+    // — an honest hole in the comparison beats a forced pairing.
+    // v7.20.715 (PEDAGOGY §53.23, the v5 body table): "Technique + anchor quotation + inference, in one
+    // sentence" → Technical Terms — it is the only row that judges NAMING the method, and Evidence keeps
+    // two rows of its own (quotation integrated · judicious supporting quotations). Its pattern must win
+    // before /quot/ (its name contains "quotation"). "Coherence and flow" stays unmapped and may never
+    // reach Topic Sentence even when the model writes "…links to the topic sentence" into the name.
     const GAP_SKILL_RULES = {
         'Introduction': [[/hook/i, 'Hook'], [/building/i, 'Building Sentences'], [/thesis/i, 'Thesis']],
         'Body Paragraphs': [
-            [/topic\s*sentence/i, 'Topic Sentence', /analys/i],
-            [/terminolog|technical\s*term/i, 'Technical Terms'],
+            [/topic\s*sentence/i, 'Topic Sentence', /analys|coheren|flow/i],
+            [/terminolog|technical\s*term|technique\s*(?:\+|&|,|and)\s*(?:the\s+)?(?:anchor|quot|evidence)/i, 'Technical Terms'],
             [/quot|evidence/i, 'Evidence'],
             [/close\s*analysis|interplay/i, 'Close Analysis'],
             [/reader|effect/i, 'Effects on Reader'],
@@ -9330,7 +9368,7 @@
         const big = (gaps.length ? gaps : items).slice().sort(byMarks)[0];
         const dir = !gaps.length ? 'close' : (big.diff > 0 ? 'over' : 'under');
         // The parts the student rated, added up on both sides — and what the card marked that no
-        // rating covers ("Analysis links to topic sentence"), so the whole-paragraph mark is explained.
+        // rating covers ("Coherence and flow"), so the whole-paragraph mark is explained.
         const rated = items.reduce((s, it) => ({ self: s.self + it.selfMark, mine: s.mine + it.score, worth: s.worth + it.worth }), { self: 0, mine: 0, worth: 0 });
         const ratedSkills = items.map((it) => it.skill);
         const unrated = (rows || []).filter((r) => ratedSkills.indexOf(_gapSkillFor(section.group, r.criterion)) === -1)
@@ -11222,7 +11260,7 @@
         S2: 'underdeveloped sentence', D1: 'lacks sustained detail', B1: 'beyond text boundaries',
         M1: 'retelling instead of analysing', E1: 'lacks evaluative language', K1: 'misses the statement keywords',
         I1: 'imprecise/underdeveloped interpretation', Q1: 'quotation without analysis',
-        L1: 'missing causal link', G1: 'SPaG undermining clarity', T2: 'lacks discourse markers',
+        L1: 'missing causal link', G1: 'SPaG undermining clarity', T2: 'sentence not linked to the one before',
         R1: 'unstrategic repetition', U1: 'informal vocabulary', P2: 'lacks perceptive insight',
         A1: 'anachronistic interpretation', X1: 'irrelevant/unexplained context',
         STR1: 'structure not followed', STR2: 'structure divergence',
@@ -12946,10 +12984,13 @@
                         return;
                     }
                     canvasSilentSend = true;
-                    chatTextarea.value = 'SYSTEM (not from the student): there is NO reflection panel in this session — the student has already marked their own response (THE STUDENT\'S OWN MARKS). Do not ask for a self-rating, a predicted mark or AO targeting, and do not emit @REFLECT_GATE. Continue now with STEP 2a for ' + (reflectData.q || 'this question') + (_isLitEssay()
+                    // v7.20.715 (#687b, PEDAGOGY §53.29 — Neil: "Drop it: Continue starts the marking"): no
+                    // "type Y" step — the repair asks for the marking itself; in Language code shows their own mark.
+                    _drawLadderOwnMark(reflectData.q || '');
+                    chatTextarea.value = 'SYSTEM (not from the student): there is NO reflection panel in this session — the student has already marked their own response (THE STUDENT\'S OWN MARKS). Do not ask for a self-rating, a predicted mark or AO targeting, and do not emit @REFLECT_GATE. Continue now with the marking of ' + (reflectData.q || 'this question') + ': start straight at its first mark card — there is NO "type Y" step' + (_isLitEssay()
                         // v7.20.673: a Literature mark is for the WHOLE essay — never restate it per paragraph.
-                        ? ': go straight to the Y gate (their own mark is for the whole essay — do not restate it for this paragraph).'
-                        : ': acknowledge their own level and mark for it in one line and give the Y gate.') + ' Do not show this message to the student.';
+                        ? ' (their own mark is for the whole essay — do not restate it for this paragraph).'
+                        : ', and do not restate their own level and mark (the platform has just shown it).') + ' Do not show this message to the student.';
                     if (send) send();
                 };
                 setTimeout(_lFire, 400);
@@ -19788,10 +19829,14 @@
                     // carries the Q-GATE, so every planning gate (AQA and Edexcel IGCSE alike) sent "emit the @REFLECT_GATE
                     // panel" — measured on staging 59205: at Section B the model obeyed, told the student to "reflect in
                     // the panel below" and left nothing on screen to answer. Planning gets the planning directive.
+                    // v7.20.715 (#687b, PEDAGOGY §53.29 — Neil: "Drop it: Continue starts the marking"): in a ladder
+                    // session this tap used to buy a call whose whole reply was the fixed "type Y" line. It now asks
+                    // for the marking itself; in Language, code draws their own level + mark while it loads.
+                    if (state.task !== 'planning' && _ladderReplacesReflect()) _drawLadderOwnMark(nextLabel);
                     chatTextarea.value = state.task === 'planning'
                         ? `Yes — that's clear. Now BEGIN ${nextLabel}: start with its lead-in exactly as the planning protocol gives it, and end on its first question. There is no reflection panel in planning — never emit @REFLECT_GATE. Do NOT repeat this confirmation or re-ask whether to continue.`
                         : _ladderReplacesReflect()
-                        ? `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}. There is NO reflection panel in this session (the student's own marks are filed — THE STUDENT'S OWN MARKS): do not emit @REFLECT_GATE or ask for a self-rating, prediction or AO targeting. Go straight to ${nextLabel}'s STEP 2a — ${_isLitEssay() ? 'the Y gate (their own mark is for the whole essay — do not restate it for this paragraph)' : 'acknowledge their own level and mark for it in one line and give the Y gate'}. Do NOT repeat this confirmation or re-ask whether to continue.`
+                        ? `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}. There is NO reflection panel in this session (the student's own marks are filed — THE STUDENT'S OWN MARKS): do not emit @REFLECT_GATE or ask for a self-rating, prediction or AO targeting. There is NO "type Y" step: your reply IS ${nextLabel}'s marking — start straight at its first mark card (${_isLitEssay() ? 'their own mark is for the whole essay — do not restate it for this paragraph' : 'do not restate their own level and mark — the platform has just shown it to them'}). Do NOT repeat this confirmation or re-ask whether to continue.`
                         : `Yes — I've reviewed this feedback. Now BEGIN ${nextLabel}: go straight to its STEP 1 reflection and emit the @REFLECT_GATE panel for ${nextLabel} now${_reflectAoOnly() ? ' (this session\'s card asks ONLY which AO(s) the paragraph aimed for and what it was trying to show — no self-rating, no predicted mark)' : ''}. Do NOT repeat this confirmation or re-ask whether to continue.`;
                     sendCanvasMessageQueued();
                 }

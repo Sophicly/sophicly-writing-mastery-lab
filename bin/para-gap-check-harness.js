@@ -58,17 +58,18 @@ const EXPECT = [
     ['Introduction', 'Building sentence(s) that establishe(s) pertinent contextual backdrop (AO3)', 'Building Sentences'],
     ['Introduction', 'Building sentence(s) that evaluate(s) how context shapes themes/purpose/choices (AO3)', 'Building Sentences'],
     ['Introduction', 'Clear, precise three-point thesis with powerful argument (AO1)', 'Thesis'],
+    // v7.20.715 — the v5 body table (PEDAGOGY §53.23), in the order the student writes the paragraph.
     ['Body Paragraphs', 'Topic sentence links to thesis and question (AO1)', 'Topic Sentence'],
-    ['Body Paragraphs', 'Integrated quotes & supporting evidence (AO1)', 'Evidence'],
-    ['Body Paragraphs', 'Strategic selection of quotes (AO1)', 'Evidence'],
-    ['Body Paragraphs', 'Accurate technical terminology (AO2)', 'Technical Terms'],
-    ['Body Paragraphs', 'Analysis links to topic sentence (AO1/AO2)', null],
-    ['Body Paragraphs', 'Perceptive close analysis of words/sound/structure (AO2)', 'Close Analysis'],
+    ['Body Paragraphs', 'Technique + anchor quotation + inference, in one sentence (AO2/AO1)', 'Technical Terms'],
+    ['Body Paragraphs', 'Quotation integrated into the sentence (AO1)', 'Evidence'],
+    ['Body Paragraphs', 'Fine-grained close analysis of words, sounds and punctuation (AO2)', 'Close Analysis'],
     ['Body Paragraphs', 'Analysis of technique interplay (AO2)', 'Close Analysis'],
     ['Body Paragraphs', 'First detailed sentence on reader effects (AO2)', 'Effects on Reader'],
     ['Body Paragraphs', 'Second detailed sentence on reader effects (AO2)', 'Effects on Reader'],
     ['Body Paragraphs', "Evaluates author's purpose (AO1)", "Author's Purpose"],
     ['Body Paragraphs', "Context drives author's choices (AO3)", 'Context'],
+    ['Body Paragraphs', 'Coherence and flow (AO1)', null],
+    ['Body Paragraphs', 'Judicious supporting quotations (AO1)', 'Evidence'],
     ['Conclusion', 'Restates thesis (AO1)', 'Restated Thesis'],
     ['Conclusion', 'Links to question (AO1)', null],
     ['Conclusion', 'Evaluates controlling concept (AO1)', 'Controlling Concept'],
@@ -86,8 +87,16 @@ EXPECT.forEach((e, i) => {
 // The model shortens criteria in its tables; the common short forms must land on the same skill.
 [['Introduction', 'Hook', 'Hook'], ['Introduction', 'Building sentence (context)', 'Building Sentences'], ['Introduction', 'Thesis', 'Thesis'],
  ['Body Paragraphs', 'Topic sentence', 'Topic Sentence'], ['Body Paragraphs', 'Technical terms', 'Technical Terms'], ['Body Paragraphs', 'Close analysis', 'Close Analysis'],
- ['Body Paragraphs', 'Effect on reader 1', 'Effects on Reader'], ['Body Paragraphs', 'Context', 'Context'], ['Conclusion', 'Universal message', 'Universal Message']]
+ ['Body Paragraphs', 'Effect on reader 1', 'Effects on Reader'], ['Body Paragraphs', 'Context', 'Context'], ['Conclusion', 'Universal message', 'Universal Message'],
+ // v7.20.715: the v5 rows' likely shortenings — row 2 must beat /quot/ to Technical Terms
+ ['Body Paragraphs', 'Technique + quote + inference', 'Technical Terms'], ['Body Paragraphs', 'Technique, anchor quotation and inference (AO2)', 'Technical Terms'],
+ ['Body Paragraphs', 'Technique & evidence & inference', 'Technical Terms'], ['Body Paragraphs', 'Supporting quotations', 'Evidence'],
+ ['Body Paragraphs', 'Quotation integrated', 'Evidence'], ['Body Paragraphs', 'Fine-grained close analysis', 'Close Analysis']]
     .forEach((e) => ok(X._gapSkillFor(e[0], e[1]) === e[2], 'short form "' + e[1] + '" → ' + e[2]));
+// v7.20.715: the coherence row is NEVER the Topic Sentence skill, however the model words it (plan §5.2).
+['Coherence and flow (AO1)', 'Coherence: every sentence links to the topic sentence and question', 'Flow — links back to topic sentence', 'Analysis links to topic sentence (AO1/AO2)']
+    .forEach((c) => ok(X._gapSkillFor('Body Paragraphs', c) === null, 'coherence "' + c + '" stays UNMAPPED (never Topic Sentence)'));
+ok(X._gapSkillFor('Body Paragraphs', 'Analysis of technique interplay (AO2)') === 'Close Analysis', 'interplay is not caught by the row-2 technique pattern');
 
 // ── B · PARSE ───────────────────────────────────────────────────────────────────────────────
 console.log('\nB · the measured card shapes parse');
@@ -98,16 +107,16 @@ const BODY1 = [
     '| Criterion | Worth | Your Score | Why |',
     '|---|---|---|---|',
     '| Topic sentence links to thesis and question (AO1) | 1.0 | 0.5 | Narrates plot rather than stating a concept |',
-    '| Integrated quotes &amp; supporting evidence (AO1) | 0.5 | 0.5 | Quote embedded naturally into the sentence |',
-    '| Strategic selection of quotes (AO1) | 0.5 | 0.25 | Accurate but analytically thin quote choice |',
-    '| Accurate technical terminology (AO2) | 0.5 | 0 | No technique named anywhere |',
-    '| Analysis links to topic sentence (AO1/AO2) | 0.5 | 0.25 | Loosely tied to curiosity, not conflict |',
-    '| Perceptive close analysis of words/sound/structure (AO2) | 1.5 | 0.25 | Paraphrases meaning, no word-level zoom |',
+    '| Technique + anchor quotation + inference, in one sentence (AO2/AO1) | 1.0 | 0.25 | No technique named; inference clear |',
+    '| Quotation integrated into the sentence (AO1) | 0.5 | 0.5 | Quote embedded naturally into the sentence |',
+    '| Fine-grained close analysis of words, sounds and punctuation (AO2) | 1.25 | 0.25 | Paraphrases meaning, no word-level zoom |',
     '| Analysis of technique interplay (AO2) | 0.5 | 0 | No technique named to interrelate |',
     '| First detailed sentence on reader effects (AO2) | 0.5 | 0.5 | Clear emotional effect, tied to downfall |',
     '| Second detailed sentence on reader effects (AO2) | 0.5 | 0.25 | Generic moralising, not text-specific |',
     "| Evaluates author's purpose (AO1) | 1.0 | 0.5 | States purpose but lacks development |",
     "| Context drives author's choices (AO3) | 1.0 | 0 | No context anywhere in paragraph |",
+    '| Coherence and flow (AO1) | 0.5 | 0.25 | Loosely tied to curiosity, not conflict |',
+    '| Judicious supporting quotations (AO1) | 0.25 | 0 | Absent — anchor quotation only |',
     '| Bonus: sustained conceptual line | +0.5 | +0.25 | Sustained through the paragraph |',
     'Total Mark for Body Paragraph 1: 2.75/8',
     '@FB_END',
@@ -120,7 +129,7 @@ const card = X._gapCardOf(BODY1);
 ok(card && card.section.key === 'body1', 'the card\'s own q ("Body 1") names the paragraph');
 const rows = X._gapRowsFrom(card && card.body);
 ok(rows.length === 11, 'eleven criterion rows — header, separator and the +bonus row skipped (got ' + rows.length + ')');
-ok(rows.some((r) => r.criterion === 'Integrated quotes & supporting evidence (AO1)'), 'the stored "&amp;" is decoded before matching');
+ok(X._gapRowsFrom('| Integrated quotes &amp; supporting evidence (AO1) | 0.5 | 0.5 | Embedded |')[0].criterion === 'Integrated quotes & supporting evidence (AO1)', 'the stored "&amp;" is decoded before matching (measured on prod)');
 ok(X._gapCardOf('@FB_BEGIN{"q":"Introduction","title":"Introduction"}\n\nTotal Mark for Introduction: 0/3\n\nNo introduction was submitted for this essay.\n@FB_END').section.key === 'intro'
     && X._gapRowsFrom('No introduction was submitted for this essay.').length === 0,
     'the "not submitted" Introduction (Zayan 1109, 29 Sep) is a card with NO rows → filed "not compared", never a question about nothing');
@@ -137,9 +146,9 @@ const bodyRatings = R('Body Paragraphs', [['Topic Sentence', 2], ['Technical Ter
 const cmp = X._gapCompare(card.section, bodyRatings, rows);
 ok(cmp && cmp.items.length === 7, 'all seven rated body skills are compared (got ' + (cmp && cmp.items.length) + ')');
 const ev = cmp.items.find((i) => i.skill === 'Evidence');
-ok(ev && ev.score === 0.75 && ev.worth === 1, 'two criteria for one skill are ADDED (Evidence 0.5 + 0.25 of 0.5 + 0.5 → 0.75 of 1)');
+ok(ev && ev.score === 0.5 && ev.worth === 0.75, 'two criteria for one skill are ADDED (Evidence: integrated 0.5 of 0.5 + supporting quotations 0 of 0.25 → 0.5 of 0.75)');
 // v7.20.681 (#695): the student now reads MARKS, so the biggest gap is the largest difference in
-// marks among the parts more than one step out. Close Analysis: rated 4 = 1.5 of 2, scored 0.25 of 2
+// marks among the parts more than one step out. Close Analysis: rated 4 = 1.5 of 1.75, scored 0.25 of 1.75
 // → 1.25 marks out. (By proportion it was Context, 0.75 of 1 — a smaller gap on the screen.)
 ok(cmp.biggest.skill === 'Close Analysis' && cmp.dir === 'over', 'biggest gap = Close Analysis, rated 1.25 marks higher than it scored — the largest gap IN MARKS (#695)');
 const introRows = X._gapRowsFrom([
@@ -197,8 +206,8 @@ console.log('\nD2 · the rating as a mark, and the totals (#695)');
 {
     const it = (c, k) => c.items.find((i) => i.skill === k);
     // v7.20.684 (#710 — Neil: a rating of 1 must not earn 0): rating ÷ 5 × worth, to the nearest quarter.
-    ok(it(cmp, 'Topic Sentence').selfMark === 0.5 && it(cmp, 'Close Analysis').selfMark === 1.5 && it(cmp, 'Technical Terms').selfMark === 0.5,
-        'a rating becomes a mark as its fifth × what the part is worth, to the nearest quarter (2 of 5 on 1 → 0.4 → 0.5 · 4 of 5 on 2 → 1.6 → 1.5 · 4 of 5 on 0.5 → 0.4 → 0.5)');
+    ok(it(cmp, 'Topic Sentence').selfMark === 0.5 && it(cmp, 'Close Analysis').selfMark === 1.5 && it(cmp, 'Technical Terms').selfMark === 0.75,
+        'a rating becomes a mark as its fifth × what the part is worth, to the nearest quarter (2 of 5 on 1 → 0.4 → 0.5 · 4 of 5 on 1.75 → 1.4 → 1.5 · 4 of 5 on 1 → 0.8 → 0.75)');
     ok(X._gapRatingMark(null, [{ group: 'x', value: 1 }], 8) === 1.5 && X._gapRatingMark(null, [{ group: 'x', value: 1 }], 3) === 0.5,
         '#710: "Basic (1 of 5)" is never zero — a fifth of the marks (1.6 → 1.5 of 8 · 0.6 → 0.5 of 3)');
     ok(cmp.rated.self === 5.5 && cmp.rated.mine === 2.75 && cmp.rated.worth === 7.5, 'the rated parts add up on both sides — 5.5 of 7.5 against 2.75 of 7.5 (got ' + JSON.stringify(cmp.rated) + ')');
@@ -207,12 +216,12 @@ console.log('\nD2 · the rating as a mark, and the totals (#695)');
     ok(X._gapTotalOf(BODY1, X._gapSectionFor('Body 2')) === null && X._gapTotalOf('no total here', card.section) === null, '…and only for THIS paragraph — never another paragraph\'s total, never a guess');
     const full = X._gapCompare(card.section, bodyRatings, rows, t);
     ok(full.penalties === true, 'penalties are detected when the card\'s total is below its rows (3 > 2.75)');
-    ok(full.unrated.length === 1 && full.unrated[0] === 'Analysis links to topic sentence', 'the part no rating covers is named, without its AO tag');
+    ok(full.unrated.length === 1 && full.unrated[0] === 'Coherence and flow', 'the part no rating covers is named, without its AO tag');
     const ft = X._gapQuestionText(full);
     ok(/\| \*\*All the parts you rated\*\* \| — \| \*\*5\.5 of 7\.5\*\* \| \*\*2\.75 of 7\.5\*\* \|/.test(ft), 'the table ends on the totals for the parts the student rated, both sides');
-    ok(/My mark for the whole of Body 1 is \*\*2\.75 \/ 8\*\*\. That mark also counts the part you did not rate \(analysis links to topic sentence\)\. Penalties have been taken off that mark\./.test(ft),
+    ok(/My mark for the whole of Body 1 is \*\*2\.75 \/ 8\*\*\. That mark also counts the part you did not rate \(coherence and flow\)\. Penalties have been taken off that mark\./.test(ft),
         'the whole paragraph\'s mark is shown, and why it differs from the table: the unrated part and the penalties');
-    ok(/Close Analysis \| Good \(4 of 5\) \| 1\.5 of 2 \| 0\.25 of 2 \|/.test(ft), 'each row: rating · rating as a mark · my mark, all on the same "of" scale');
+    ok(/Close Analysis \| Good \(4 of 5\) \| 1\.5 of 1\.75 \| 0\.25 of 1\.75 \|/.test(ft), 'each row: rating · rating as a mark · my mark, all on the same "of" scale');
     ok(!/My mark for the whole/.test(X._gapQuestionText(cmp)), 'no total line on the card → no whole-paragraph sentence (never a made-up total)');
 
     // ⭐ NEIL'S OWN RUN (staging 1355, 3 Oct — Zayan's essay, Body 1 card as stored, his ratings off the screenshot).

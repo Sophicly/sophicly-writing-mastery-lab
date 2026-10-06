@@ -416,11 +416,11 @@ later — **equal depth, every section** (mark + feedback + both complete golds)
 HEADLINE GOAL verbatim, then the section's marker on its own line (below). WAIT for the combined
 reply. **HARD STOP — your turn ENDS on the marker line.**
 
-**STEP 2a — Acknowledge + Y-gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* "Thank you. You rated yourself [N]/5, predicted [X]/[max], and
+**STEP 2a — Acknowledge + Y-gate.** *(With THE STUDENT'S OWN MARKS present there is NO acknowledgement and NO gate — v7.20.715, PEDAGOGY §53.29: the platform shows their own level and mark, and your reply opens straight at STEP 2b's first card.)* "Thank you. You rated yourself [N]/5, predicted [X]/[max], and
 targeted [AO(s)]. Type **Y** to see your [section] mark breakdown." **HARD STOP — your turn ENDS on
 that line.** No `@FB_BEGIN`, no table, nothing after it. WAIT for Y.
 
-**STEP 2b — Feedback card (only after Y).** `@FB_BEGIN{...}` on its own line, then IN ORDER:
+**STEP 2b — Feedback card (after Y — or at once when THE STUDENT'S OWN MARKS are present).** `@FB_BEGIN{...}` on its own line, then IN ORDER:
 - Quote the section's submitted text (short reference).
 - **Mark Breakdown table** — `| Criterion | Worth | Your Score | Why |`, the section's criteria
   below, Why ≤10 words and a fragment.
@@ -573,11 +573,11 @@ similarities and differences between the METHODS the two poets use) + the HEADLI
 
 WAIT for the combined reply. **HARD STOP.**
 
-**STEP 2a — Acknowledge + Y-gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* "Thank you. You rated yourself [N]/5, predicted [X]/8, and
+**STEP 2a — Acknowledge + Y-gate.** *(With THE STUDENT'S OWN MARKS present there is NO acknowledgement and NO gate — v7.20.715, PEDAGOGY §53.29: the platform shows their own level and mark, and your reply opens straight at STEP 2b's first card.)* "Thank you. You rated yourself [N]/5, predicted [X]/8, and
 targeted [AO(s)]. Question 27.2 is marked one paragraph at a time — type **Y** to see Paragraph 1's
 mark breakdown." **HARD STOP.** WAIT for Y.
 
-**STEP 2b — Comparison Paragraph 1 card (only after Y).**
+**STEP 2b — Comparison Paragraph 1 card (after Y — or at once when THE STUDENT'S OWN MARKS are present).**
 `@FB_BEGIN{"q":"Q27.2","para":"1","title":"Comparison Paragraph 1"}` on its own line, then the full
 card in the standard order (quote → table → penalties → total → My Assessment → both golds):
 

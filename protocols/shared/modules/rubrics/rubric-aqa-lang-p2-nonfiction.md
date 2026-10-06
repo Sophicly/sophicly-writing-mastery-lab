@@ -163,7 +163,7 @@ worked fix (on a DIFFERENT sentence or as a skeleton — never their finished li
   weariness surfaces as he 'counts the hours', the verb turning time into a burden."*
 - **P1 comma splice / run-on** — add a coordinator, a full stop, a semicolon, or subordinate.
 - **C1 clarity / flow** — muddled cause and effect, vague pronouns. Clarity ONLY; relevance is M1.
-- **T2 missing discourse markers** — no connective between ideas; on Q2 and Q4 the Source B pivot
+- **T2 sentence not linked to the one before** — none of the toolkit's nine links (a discourse marker is only one of them); on Q2 and Q4 the Source B pivot
   (*In contrast*, *Whereas*, *Similarly*) is the load-bearing one.
 - **F1 the "shows" family** — shows / illustrates / tells us / is about / acts as / seems to. Replace with
   a precise analytical verb: depicts · portrays · emphasises · reveals · conveys · evokes · underscores ·

@@ -1,6 +1,6 @@
 # Marking Fairness — Universal (every board, every paper)
 
-**Version:** 1.1.0 (Rule 5 + the bonus standard — v7.20.630, 2026-09-22)
+**Version:** 1.2.0 (Rule 6 — only valid readings count — v7.20.715, 2026-10-06; Rule 5 + the bonus standard — v7.20.630, 2026-09-22)
 **Scope:** EVERY assessment — Language + Literature, GCSE + IGCSE + N5/Higher, all boards.
 **Loaded by:** every board manifest's `assessment.always` (resolved via shared fallback).
 **Relationship to other modules:** element ROWS, mark VALUES and penalty CODES live in the paper's `protocol-a-assessment.md`. This module governs HOW those marks are awarded — fairly and consistently. Where a paper module and these fairness rules conflict, **these rules win**.
@@ -32,6 +32,15 @@ Every criterion's **last 0.25** is reserved for work that is **perceptive**: ins
 Where a criterion's name already carries the word (*"Perceptive inferences"*, *"Judicious, integrated quotes"*, *"Conceptual topic sentence"*), the name stays and the rule reads the same way: the clear version earns everything but the last quarter; the perceptive version earns it all.
 
 **Rule 5 does not apply where there are no criteria:** retrieval / right-or-wrong questions (Q1 on every language paper, per-statement marks); extended writing marked as a whole piece by band (Section B / Q5, AO5 + AO6); any separate technical-accuracy mark (AO4 SPaG, IGCSE AO5); quizzes; and penalty rows.
+
+
+## Rule 6 — Only valid readings count (Neil, 2026-10-06 — PEDAGOGY §53.22)
+
+A reading earns credit only when it is **valid**: the quoted words can carry it, it follows logically, and it is true to the text (AQA: *"Examiners are encouraged to reward any valid interpretations"*). Mark each criterion on its VALID readings only — inference, close analysis, effects, purpose, context, a topic sentence's or thesis's concept. A reading that fails any of the three earns **nothing in its criterion**, and Rule 2 never credits it as "present". A criterion with no valid reading scores 0 for that reading.
+- **Valid is not the same as usual.** An unexpected reading the words support is valid and can be perceptive. A hedge ("perhaps") never makes an invalid reading valid, and never makes a valid one less valid.
+- **One charge (Rule 3):** there is NO penalty code for it — the criterion's lost marks are the whole charge.
+- **Say so in the Why, in this shape:** begin it `Not valid —` and name the words that do not carry the reading (*"Not valid — 'naturally' normalises prejudice, not kindness"*). The platform reads that opening and attaches the Interpretation Ladder link; never name a toolkit section yourself.
+- Two readings in one criterion, one valid and one not: score the valid one, and name the other in My Assessment.
 
 ---
 

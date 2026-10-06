@@ -106,6 +106,19 @@ tkRows.forEach(r => {
         ALLOW.indexOf(r[3]) !== -1);
 });
 
+// ── 3b. v7.20.715 — every MARK-TABLE ROW chip (ROW_LEARN_RULES) must resolve AND be allow-listed ─
+// The coherence row → `sentence-transitions` and a "Not valid —" Why → `interpretation-ladder`
+// (PEDAGOGY §53.20 + §53.22). Same two halves as the penalty map.
+const rowSrc = core.match(/const ROW_LEARN_RULES = \[([\s\S]*?)\n    \];/);
+ok('ROW_LEARN_RULES is present in wml-core.js', !!rowSrc);
+const rowArgs = rowSrc ? [...rowSrc[1].matchAll(/arg:\s*'([^']+)',\s*label:\s*'([^']+)'/g)] : [];
+ok('ROW_LEARN_RULES carries at least the two ruled chips', rowArgs.length >= 2, rowArgs.length);
+rowArgs.forEach(r => {
+    ok('row chip → "' + r[1] + '" resolves to a real section', resolves(r[1]));
+    ok('row chip → "' + r[1] + '" is in RESOURCE_TOOLKIT_IDS', ALLOW.indexOf(r[1]) !== -1);
+    ok('row chip → "' + r[1] + '" carries a human label (root §14)', !!r[2] && r[2] !== r[1]);
+});
+
 // ── 4. Every @RESOURCE_LINK the chip emits must be in the allowlist ──────────────────────────
 // The scans emit these markers as literal text; tagResourceLinks validates them at render time
 // and drops an unknown one SILENTLY, so a typo in a scan is a link the student never sees.

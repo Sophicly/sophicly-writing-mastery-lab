@@ -267,7 +267,15 @@ const ROUTER = fs.readFileSync(path.join(ROOT, 'includes', 'class-protocol-route
 ok(/function _ladderReplacesReflect\(\)/.test(JS), 'ONE predicate: _ladderReplacesReflect');
 const rri = JS.slice(JS.indexOf('function _renderReflectInto('), JS.indexOf('function _taskUsesReflectPanel'));
 ok(/if \(_ladderReplacesReflect\(\)\)/.test(rri) && /return true;/.test(rri), 'the renderer never draws the panel in a ladder session');
-ok(/there is NO reflection panel in this session/.test(rri) && /Continue now with STEP 2a/.test(rri), '…and fires a continue directive instead (§4d — the next thing on screen is the Y gate)');
+ok(/there is NO reflection panel in this session/.test(rri) && /Continue now with the marking of/.test(rri) && /there is NO "type Y" step/.test(rri), '…and fires a continue directive instead (§4d — v7.20.715: the next thing on screen is the marking itself, no Y step)');
+// v7.20.715 (#687b, PEDAGOGY §53.29 — "Drop it: Continue starts the marking"): no directive may ask for a Y gate any more.
+{
+    const cont = JS.slice(JS.indexOf('function _buildAssessConfirmBar('), JS.indexOf('function _buildAssessConfirmBar(') + 6000);
+    ok(!/give the Y gate|the Y gate \(their/.test(rri + cont), 'neither the repair nor the ✓-continue directive asks for a "type Y" turn (#687b)');
+    ok(/There is NO "type Y" step: your reply IS \$\{nextLabel\}'s marking/.test(cont), 'the ✓-continue directive asks for the marking itself');
+    ok(/_drawLadderOwnMark\(nextLabel\)/.test(cont) && /_drawLadderOwnMark\(reflectData\.q/.test(rri), 'Language: code draws the student\'s own level + mark (no API call) on both routes');
+    ok(!/STEP 2a \(the Y gate\)|then the Y gate\.|go straight to the Y gate/.test(ROUTER), 'router: no ladder-session instruction still asks for the Y gate');
+}
 ok(/_reflectLadderRepaired\[_lk\] = true/.test(rri), '…at most once per question (no loop)');
 ok(/_reflectLadderRepaired = \{\};/.test(JS.slice(JS.indexOf('_reflectDone = {}; _reflectPending = null;'))), 'the once-flag resets with the other reflection state');
 // v7.20.712: a planning branch now comes first (planning has no reflection panel at all); the ladder branch it guards is unchanged.

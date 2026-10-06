@@ -414,9 +414,7 @@ structure · language · Conclusion), cite the HEADLINE GOAL, then on its own li
 
 WAIT for the combined reply. STORE predicted /30 + rating + AO targeting.
 
-**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is
-instead their own level and mark — "You marked yourself [their level], [their mark]/30." — then the
-same gate.)* Echo their reflection, then: "Question 1 is marked section by section — type **Y** to
+**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present there is NO acknowledgement and NO gate — v7.20.715, PEDAGOGY §53.29: the platform shows their own level and mark, and your reply opens straight at STEP 2b's first card.)* Echo their reflection, then: "Question 1 is marked section by section — type **Y** to
 see your Introduction's mark breakdown." **HARD STOP — your turn ENDS on that line.** No
 `@FB_BEGIN`, no table, nothing after it. WAIT for Y.
 

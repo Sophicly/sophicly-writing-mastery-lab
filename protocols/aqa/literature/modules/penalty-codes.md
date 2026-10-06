@@ -2,7 +2,7 @@
 
 Instructions: Apply penalties using codes for consistency. Show before→after fixes when deducting marks. Maximum deductions: Intro (2), Body (3), Conclusion (2).
 
-**\[AI\_INTERNAL\] UNIVERSAL REGISTRY (v7.19.854):** penalty codes are shared across every WML paper — one code, one meaning, everywhere. Renames from the legacy lit set: **W1→F1** (weak analytical verb) · **T1→T2** (lacks discourse markers) · **K1→L1** (missing causal/conceptual link) · **structure-F1→STR1** · **old T2→TTE1** (missing TTE in second sentence) · **F2→STR2** (TTECEA order violation). NEVER emit a legacy code.
+**\[AI\_INTERNAL\] UNIVERSAL REGISTRY (v7.19.854):** penalty codes are shared across every WML paper — one code, one meaning, everywhere. Renames from the legacy lit set: **W1→F1** (weak analytical verb) · **T1→T2** (sentence not linked to the one before) · **K1→L1** (missing causal/conceptual link) · **structure-F1→STR1** · **old T2→TTE1** (missing TTE in second sentence) · **F2→STR2** (TTECEA order violation). NEVER emit a legacy code.
 
 #### **Core Writing Penalties (All Sections):**
 
@@ -12,7 +12,7 @@ P1 – Comma splice/run-on/fused sentence (-0.5) Detection: Independent clauses 
 
 C1 – Clarity/flow lapse creating ambiguity (-0.5) Detection: Muddled cause→effect, vague pronouns, logical gaps Fix: Clarify referents, tighten verbs, add sequence markers
 
-T2 – Lacks transitional phrases/discourse markers (-0.5) Detection: Missing connectives between concepts Fix: Add Furthermore, Consequently, Specifically, Moreover
+T2 – Sentence not linked to the one before (-0.5) Detection: a sentence joined to the one before by NONE of the Mastery Toolkit's nine linking methods (a linking word chosen for its meaning (never the same one twice in a paragraph) · echoing a key word from the sentence before · That/Such + a summing-up noun (never a bare "this") · a word from the quotation · the link inside the sentence · a time or place clause · cause, then effect · contrast · general, then specific), or by a linking word with the wrong meaning ("Additionally" before a result). Discourse markers are ONE method and are never required. Fix: rewrite the student's own sentence linked to the one before — echo a key word, or use the linking word whose meaning fits (never "add Furthermore"). Scope (one fault, one charge): never charged on a section whose mark table has a coherence row (a Literature body paragraph) — that row already charges the missing link (PEDAGOGY §53.20–21)
 
 F1 – Weak analytical verb (-0.5 per instance) Detection: any banned/weak-tier verb ("shows," "tells us," "is about," "acts as," "illustrates," "aims to/seems to [verb]," uses/has/says/makes — v7.19.923 tier list) doing the analytical work Upgrade: conveys, constructs, positions, depicts, portrays, emphasizes, highlights, reveals, suggests, evokes, underscores, reinforces, critiques, challenges, exposes, examines
 

@@ -29,9 +29,7 @@ sentence structures, appropriate paragraphing and accurate spelling, punctuation
 
 WAIT for the combined reply (Predicted Q2 mark /30 + rating + AO chips). STORE.
 
-**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is
-instead their own level and mark — "You marked yourself [their level], [their mark]/30." — then
-the same gate.)* Echo, then: "Type **Y** to see your Section B assessment." **HARD STOP.** WAIT
+**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present there is NO acknowledgement and NO gate — v7.20.715, PEDAGOGY §53.29: the platform shows their own level and mark, and your reply opens straight at STEP 2b's first card.)* Echo, then: "Type **Y** to see your Section B assessment." **HARD STOP.** WAIT
 for Y.
 
 **STEP 2b — the Q2 card (holistic — NO per-paragraph marks).**

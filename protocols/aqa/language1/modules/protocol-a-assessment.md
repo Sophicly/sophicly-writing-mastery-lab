@@ -413,12 +413,12 @@ forms — for effect) + cite the HEADLINE GOAL, then on its own line:
 
 WAIT for the combined reply (Predicted Q2 mark /8 + self-rating + AO targeting). STORE all three.
 
-**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* Say: "Thank you. You rated yourself [N]/5, predicted [X]/8, and
+**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present there is NO acknowledgement and NO gate — v7.20.715, PEDAGOGY §53.29: the platform shows their own level and mark, and your reply opens straight at STEP 2b's first card.)* Say: "Thank you. You rated yourself [N]/5, predicted [X]/8, and
 targeted [AO(s)]. Q2 is marked one paragraph at a time — type **Y** to see Paragraph 1's mark
 breakdown." **HARD STOP — your turn ENDS on that line.** No `@FB_BEGIN`, no table, nothing after
 it. WAIT for Y.
 
-**STEP 2b — Paragraph 1 feedback card (only after Y).**
+**STEP 2b — Paragraph 1 feedback card (after Y — or at once when THE STUDENT'S OWN MARKS are present).**
 Output `@FB_BEGIN{"q":"Q2","para":"1","title":"Paragraph 1"}` on its own line, then IN ORDER:
 - Quote the paragraph's submitted text (short reference).
 - **Mark Breakdown table** — `| Criterion | Worth | Your Score | Why |` (Why ≤10 words, fragment):
@@ -543,7 +543,7 @@ way round), cite the HEADLINE GOAL, then on its own line:
 
 WAIT for the combined reply. STORE predicted /20 + rating + AO targeting.
 
-**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* Echo their reflection, then: "Q4 is marked section by section —
+**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present there is NO acknowledgement and NO gate — v7.20.715, PEDAGOGY §53.29: the platform shows their own level and mark, and your reply opens straight at STEP 2b's first card.)* Echo their reflection, then: "Q4 is marked section by section —
 type **Y** to see your Introduction's mark breakdown." **HARD STOP.** WAIT for Y.
 
 **STEP 2b — five section cards, ONE PER TURN, each ending "Type Y for [next section]" (HARD STOP)
@@ -618,7 +618,7 @@ then on its own line:
 
 WAIT for the combined reply (Predicted Q5 mark /40 + rating + AO chips). STORE.
 
-**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present the acknowledgement is instead their own level and mark — \"You marked yourself [their level], [their mark]/[max].\" — then the same gate.)* Echo, then: "Type **Y** to see your Question 5 assessment."
+**STEP 2a — Acknowledge + gate.** *(With THE STUDENT'S OWN MARKS present there is NO acknowledgement and NO gate — v7.20.715, PEDAGOGY §53.29: the platform shows their own level and mark, and your reply opens straight at STEP 2b's first card.)* Echo, then: "Type **Y** to see your Question 5 assessment."
 **HARD STOP.** WAIT for Y.
 
 **STEP 2b — the Q5 card (holistic — NO per-paragraph marks).**

@@ -27,9 +27,9 @@
   Detection: Muddled cause→effect, vague pronouns, logical gaps  
   Fix: Clarify referents, tighten verbs, add sequence markers  
     
-* **T2** – Lacks transitional phrases/discourse markers (-0.5)  
-  Detection: Missing connectives between concepts  
-  Fix: Add Furthermore, Consequently, Specifically, Moreover  
+* **T2** – Sentence not linked to the one before (-0.5)  
+  Detection: a sentence joined to the one before by NONE of the Mastery Toolkit's nine linking methods (a linking word chosen for its meaning (never the same one twice in a paragraph) · echoing a key word from the sentence before · That/Such + a summing-up noun (never a bare "this") · a word from the quotation · the link inside the sentence · a time or place clause · cause, then effect · contrast · general, then specific), or by a linking word with the wrong meaning ("Additionally" before a result). Discourse markers are ONE method and are never required (PEDAGOGY §53.20–21)  
+  Fix: rewrite the student's own sentence linked to the one before — echo a key word, or use the linking word whose meaning fits (never "add Furthermore")  
     
 * **R1** – Unstrategic repetition of words (-0.5)  
   Detection: Same words used without rhetorical purpose  
