@@ -113,7 +113,7 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
 | Topic sentence | "Mrs Birling shows prejudice towards Sheila." | "A first instance of Mrs Birling's prejudice is, ironically, directed towards her own daughter when she encourages Sheila to accept Gerald's infidelity…" | the concept is turned to show something unexpected (prejudice aimed at her own child), and it is drawn from the anchor quote itself (her advice to Sheila about "men with important work to do") |
 | Inference | "'men with important work to do' shows Mrs Birling defends Gerald." | "Priestley implies that loyalty to the status quo matters more to Mrs Birling than loyalty to another human being, since Gerald's 'important work' was his months with Daisy Renton, a working-class girl he used and discarded." | reads what the words HIDE, and proves it from the text |
 | Close analysis | "'have to' shows Sheila has no choice." | "the modal 'have to' combined with the comparison 'just as I had' suggests a sordid, immutable custom handed from mother to daughter for generations." | names the word class, and draws a meaning from one small word that goes beyond the obvious |
-| Interplay | "Priestley also uses a comparison." | "The hyperbole, therefore, inflates Mrs Birling's outrage while the sentence adverb 'naturally'… converts her prejudice into upper-class common sense" | two methods working together toward ONE meaning |
+| Interplay | "Priestley also uses a comparison." | "The adverb, therefore, converts her prejudice into upper-class common sense, while her hyperbole, 'a piece of gross impertinence', inflates her outrage into a personal insult…" (Body 2 as reworked by the Library, 3e986a82) | two methods working together toward ONE meaning |
 | Effect 1 | "The audience feel angry." | "An audience may feel unease, disgust and even anger at this inheritance." | precise, rising feelings, aimed at the idea just analysed |
 | Effect 2 | "The audience think Mrs Birling is a bad person." | "spectators could face the sobering reality that those who benefit from the status quo will defend it even at the cost of someone they love." | moves from a feeling about one character to a truth about society |
 | Purpose | "Priestley wants to show that prejudice is wrong." | "Priestley perhaps intended to expose why help for people in need cannot depend on how one powerful person feels about the one asking: it must be guaranteed by law." | an argument the audience is pushed towards, tied to the essay's thesis |
@@ -138,16 +138,18 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
   | Body | Anchor | Supporting quotations woven in |
   |---|---|---|
   | 1 | "men with important work to do" | "important work", "have to", "just as I had" (3) |
-  | 2 | "naturally that was one of the things that prejudiced me against her case" | "a piece of gross impertinence", "called herself Mrs. Birling", "prejudiced against her case" (3) |
+  | 2 | "naturally that was one of the things that prejudiced me against her case" | "called herself Mrs. Birling", "a piece of gross impertinence" (2) |
   | 3 | "Didn't I say I couldn't imagine a real police inspector talking like that to us" | "an old friend of mine", "was an alderman for years" (2) |
 
   Each is short (2–6 words), sits in a different sentence, carries its own inference, and is never analysed in a
   sentence of its own (Library ruling N472). So the row is plural and judged on quality: **"Judicious supporting
   quotations"** (Neil, #738i), AQA's own word ("Judicious use of precise references").
-- ⚠️ **The essay's Body 2 breaks the new row-4 rule:** its second sentence is built on a SUPPORT quote ("a piece
-  of gross impertinence"); the anchor arrives in sentence 3. Rule built as Neil stated it (anchor); handoff to the
-  Library lane to rework Body 2: `~/.claude/handoffs/open/wml-to-library-2026-10-06-mrs-birling-body2-second-sentence-must-use-the-anchor.md`
-  (also messaged to Library 44). Until it lands, the calibration example uses Bodies 1 and 3 for row 4.
+- ✅ **Body 2 now follows the row-4 rule** (found 2026-10-06; the Library lane reworked it the same day, commit
+  3e986a82, verified here by reading the file). Sentence 2: *"Indeed, in "naturally that was one of the things that
+  prejudiced me against her case", the sentence adverb "naturally" suggests that she treats her prejudice as
+  obvious, since Eva, pregnant and alone, had "called herself Mrs. Birling"…"* The Library also removed a
+  misquote ("prejudiced against her case"; the play has "prejudiced me against her case"). All three bodies now
+  model technique + anchor + inference.
 - **The row (body paragraphs only):** 0.25 when at least one quotation beyond the anchor is woven into a sentence
   and carries its own perceptive inference that supports the paragraph's point. A second or third earns nothing
   more, because the boards reward the quality of references, never their number: AQA *"Judicious use of precise
