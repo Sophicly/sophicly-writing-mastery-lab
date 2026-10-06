@@ -2871,7 +2871,15 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
    terms (an addition of mine he did not ask for; removed).
 9. **Every reading row shows its perceptive 0.25: close analysis, interplay, effect 1, effect 2, purpose, context**
    (#738g: *"Everything… I did say that."*).
+10. **Topic sentence REBALANCED: 0.25 links + 0.5 CONVINCING concept + 0.25 drawn from the anchor quote**
+    (#738h, superseding the 0.5 / 0.25 / 0.25 of item 6): *"conceptualization is actually the most important
+    thing… it should be 0.25 linking and 0.5 concept… convincing conceptualization."*
+11. **Terminology is worth 0.25** (correct 0.25, wrong 0), superseding item 8's 0.5 (#738h: *"I feel like 0.5 is
+    too much"*). Where the freed 0.25 goes: OPEN (recommended the inference's convincing part, 0.25 → 0.5).
+12. **"Convincing" is checkable** (#738h asked how): a convincing/perceptive part is awarded only when the Why
+    names the student's reading and the exact quoted words it rests on (AQA Level 6 title: "Convincing, critical
+    analysis"; Rule 5: "traceable to the words on the page"). (My proposal, carried with the plan; not yet ruled.)
 
-Still open on the Actions page: the body table as a whole, where the 0.5 for the two new parts comes from
-(recommended close analysis 1.5 → 1.0), AQA 19th-century bodies (the July 0.5 topic sentence cannot hold three
-parts), and the introduction/conclusion definitions.
+Still open on the Actions page: the body table as a whole, where the marks come from (close analysis 1.5 → 1.0;
+terminology's 0.25 → the inference), AQA 19th-century bodies (recommended: topic sentence whole; purpose 0.5,
+close analysis 0.75, context 0.75), and the introduction/conclusion definitions.

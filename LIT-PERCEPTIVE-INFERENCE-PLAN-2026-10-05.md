@@ -56,12 +56,12 @@ each of those rows teaches something.** v2 keeps every row and every worth.
 
 AQA body paragraph, out of 8, in the order the student writes it:
 
-| # | Row | Worth | How it is marked (v3, Neil 2026-10-06 #738g) |
+| # | Row | Worth | How it is marked (v4, Neil 2026-10-06 #738g + #738h) |
 |---|---|---|---|
-| 1 | Topic sentence links to thesis and question | 1.0 | **0.5** links to thesis and question · **+0.25** conceptualised (AQA's word) · **+0.25** that concept is drawn from the ANCHOR QUOTE ("they don't always base their ideas on the anchor quote") |
-| 2 | Accurate technical terminology | 0.5 | **correct = 0.5 · wrong term = 0** (metaphor for a simile). Accuracy row: no perceptive quarter. |
+| 1 | Topic sentence links to thesis and question | 1.0 | **0.25** links to thesis and question · **+0.5 a CONVINCING concept** (AQA: conceptualised — "conceptualization is actually the most important thing") · **+0.25** that concept is drawn from the ANCHOR QUOTE ("they don't always base their ideas on the anchor quote") |
+| 2 | Accurate technical terminology | 0.25 (was 0.5) | **correct = 0.25 · wrong term = 0** (metaphor for a simile). Accuracy row: no perceptive quarter. |
 | 3 | Quotation, integrated | 0.5 | a quote that hangs = 0.25 · woven into the sentence = 0.5. Accuracy row: no perceptive quarter. |
-| 4 | **Technique + anchor quote + inference, in ONE sentence** (replaces "Strategic selection of quotes") | 0.75 | **0.25 the structure** (technique, then the anchor quote, then what it shows, together in one sentence; a technique named elsewhere in the paragraph does not earn it) · **0.25** an inference the quote supports · **+0.25 perceptive** |
+| 4 | **Technique + anchor quote + inference, in ONE sentence** (replaces "Strategic selection of quotes") | 1.0 | **0.25 the structure** (technique, then the anchor quote, then what it shows, together in one sentence; a technique named elsewhere in the paragraph does not earn it) · **0.25** an inference the quote supports · **+0.5 a CONVINCING, perceptive inference** (terminology's freed 0.25 lands here, pending Neil's tap — mirrors the topic sentence) |
 | 5 | Close analysis | 1.0 (was 1.5) | 0.75 · +0.25 perceptive |
 | 6 | Technique interplay | 0.5 | 0.25 · +0.25 perceptive |
 | 7 | Effect 1 | 0.5 | 0.25 · +0.25 perceptive |
@@ -71,6 +71,14 @@ AQA body paragraph, out of 8, in the order the student writes it:
 | 11 | Coherence: every sentence links back to the topic sentence and the question | 0.5 | every sentence links = 0.5 · one drifts = 0.25 · two or more, or a list of facts = 0 |
 | 12 | Supporting quotation (ruled 2026-10-06, scored not bonus) | 0.25 | a quotation beyond the anchor, woven into a sentence, carrying its own perceptive inference. More earn nothing more. |
 | | **Total** | **8** | unchanged |
+
+**What "convincing" means, so it can be checked (#738h: "it does have to be convincing. So I'm not sure what
+we can do about that"):** AQA's own top level is titled *"Convincing, critical analysis"* (AQA Literature June
+2024 MS, Level 6), and Rule 5 already says *"traceable to the words on the page"*. So the convincing / perceptive
+part of any row is awarded **only when Sophia's Why names the student's reading AND the exact words of the quote
+it rests on** (*"perceptive — 'naturally' turns prejudice into common sense"*). If she cannot point to the words,
+the part is not awarded. Calibrated against the Mrs Birling lines in §3b. Build-time check: every awarded
+convincing/perceptive part in a marked paragraph carries a quoted fragment in its Why (measured after release).
 
 **Rows 2–4 together are the technique + anchor quote + inference sentence** Neil described: accuracy (row 2),
 integration (row 3), and the one-sentence structure plus its inference (row 4). Funding: rows 4 (+0.25 structure)
@@ -148,13 +156,14 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
 
 Neil approved on 2026-07-21: 19th-century bodies are out of 7 by cutting the topic sentence to 0.5 and author's
 purpose to 0.5 (`includes/class-protocol-router.php:3128-3140`). **His three-part topic sentence (0.5 + 0.25 +
-0.25) cannot fit in 0.5.** Recommended, keeping both rulings' intent:
+0.25) cannot fit in 0.5.** Recommended (v4, after #738h), keeping both rulings' intent:
 
 | Row | Shakespeare / Modern | 19th century (recommended) |
 |---|---|---|
-| Topic sentence | 1.0 (0.5 + 0.25 + 0.25) | **0.75** (0.25 links + 0.25 conceptualised + 0.25 from the anchor quote) |
+| Topic sentence | 1.0 (0.25 + 0.5 + 0.25) | **1.0, kept whole** — the concept is "the most important thing" (#738h) |
 | Author's purpose | 1.0 | **0.5** (as July) |
 | Close analysis | 1.0 | **0.75** |
+| Context | 1.0 | **0.75** |
 | every other row | as §3 | unchanged |
 | **Body total** | **8** | **7** |
 
