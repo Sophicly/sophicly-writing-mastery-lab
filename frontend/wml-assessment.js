@@ -41477,6 +41477,11 @@
                         tp.chatMessages.scrollTop = tp.chatMessages.scrollHeight;
                     }
                     if (savedChat.chatId) tp.canvasChatId = savedChat.chatId;
+                    // v7.20.722 (#749): repaint a DERIVED planning sidebar now that the history exists. Its
+                    // first paint fires when the doc mounts; on a fresh device the chat arrives from the server
+                    // AFTER that, so every row stayed unticked until the student's next reply (measured twice
+                    // on staging, 338-turn IGCSE P1 plan, empty localStorage).
+                    if (_planDerivedSidebar()) setTimeout(_refreshPlanningSidebar, 0);
 
                     // v7.19.323: resuming a mark-scheme quiz mid-flow — rehydrate the
                     // deterministic controller from its localStorage sidecar so the
@@ -44663,6 +44668,8 @@
                                                 WML.rehydrateTurn(canvasChatHistory, msg);
                                             });
                                             if (savedChat.chatId) canvasChatId = savedChat.chatId;
+                                            // v7.20.722 (#749): repaint the derived planning sidebar once history exists (twin).
+                                            if (_planDerivedSidebar()) setTimeout(_refreshPlanningSidebar, 0);
 
                                             // v7.20.52: re-append the pending plan-chain capture's
                                             // buttons after replay (DOM-only — twin of pipeline 1).
