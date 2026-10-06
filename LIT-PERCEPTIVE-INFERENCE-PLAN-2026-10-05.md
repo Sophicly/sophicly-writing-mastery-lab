@@ -59,8 +59,8 @@ AQA body paragraph, out of 8, in the order the student writes it:
 | # | Row | Worth | How it is marked (v5, Neil 2026-10-06 #738g–#738k) | Today's AQA row it replaces |
 |---|---|---|---|---|
 | 1 | Topic sentence links to thesis and question | 1.0 | **0.25** links to thesis and question · **+0.5 a CONVINCING concept** (AQA: conceptualised) · **+0.25** that concept is drawn from the ANCHOR QUOTE | Topic sentence, 1.0 |
-| 2 | **Technique + anchor quote + inference, in ONE sentence** | 1.0 | **0.25 the technique, named accurately** — any of the 304 techniques in the Table of Techniques (`sophicly-writing-mastery-lab/protocols/shared/reference/techniques.json`, 0 of which is a bare word class); a wrong term = 0 for this part; it counts wherever it is named (#738k) · **0.25 the sequence** — technique, then the anchor quote, then an inference the quote supports, together in one sentence · **+0.5 a CONVINCING, perceptive inference** | Strategic selection 0.5 + Accurate terminology 0.5 = 1.0 |
-| 3 | Quotation, integrated | 0.5 | a quote that hangs = 0.25 · woven into the sentence = 0.5 | Integrated quotes, 0.5 |
+| 2 | **Technique + anchor quote + inference, in ONE sentence** | 1.0 | **0.25 for the technique** — a technique used in the sequence: technique, then the anchor quote, then an inference the quote supports, together in one sentence · **+0.25 when it is named correctly** — any of the 304 techniques in the Table of Techniques (`sophicly-writing-mastery-lab/protocols/shared/reference/techniques.json`, 0 of which is a bare word class); a wrong name loses only this quarter, and a correct name counts wherever it appears (#738k, #738l) · **+0.5 a CONVINCING, perceptive inference** | Strategic selection 0.5 + Accurate terminology 0.5 = 1.0 |
+| 3 | Quotation, integrated | 0.5 | a quote that hangs = 0.25 · **integrated = 0.5: embedded in the sentence, or correctly introduced (for example after a colon)**. Embedding is the ideal — "usually the skill that they're actually missing" — so feedback on a colon-led quote encourages embedding without deducting (#738n) | Integrated quotes, 0.5 |
 | 4 | Close analysis, fine-grained | 1.25 | breaks the technique and the quote into small parts: words and their word classes, sounds, punctuation (AQA L6: "a fine-grained and insightful analysis of methods") · 1.0 · +0.25 perceptive | Close analysis, 1.5 (**−0.25**) |
 | 5 | Technique interplay | 0.5 | 0.25 · +0.25 perceptive | same |
 | 6 | Effect 1 | 0.5 | 0.25 · +0.25 perceptive | same |
@@ -68,7 +68,7 @@ AQA body paragraph, out of 8, in the order the student writes it:
 | 8 | Author's purpose | 1.0 | 0.75 · +0.25 perceptive | same |
 | 9 | Context | 1.0 | 0.75 · +0.25 perceptive | same |
 | 10 | Coherence: every sentence links back to the topic sentence and the question | 0.5 | every sentence links = 0.5 · one drifts = 0.25 · two or more, or a list of facts = 0 | Analysis links to topic sentence, 0.5 |
-| 11 | **Judicious supporting quotations** | 0.25 | short quotations beyond the anchor, each woven in with its own inference; quality not number (the essay uses 2–3 per paragraph) | **new (+0.25)** |
+| 11 | **Judicious supporting quotations** | 0.25 | short quotations beyond the anchor, each **integrated** (embedded, or correctly introduced, as row 3; ideally embedded) and carrying its own inference; quality not number (the essay uses 2–3 per paragraph) | **new (+0.25)** |
 | | **Total** | **8** | unchanged | **the only mark that moves: 0.25 from close analysis to row 11** |
 
 **What "convincing" means, so it can be checked (#738h: "it does have to be convincing. So I'm not sure what
@@ -148,9 +148,12 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
   obvious, since Eva, pregnant and alone, had "called herself Mrs. Birling"…"* The Library also removed a
   misquote ("prejudiced against her case"; the play has "prejudiced me against her case"). All three bodies now
   model technique + anchor + inference. **Second rework, 4dc36772:** sentence 2 now names a method ("through dramatic
-  irony") and close analysis breaks it down to the sentence adverb "naturally" (#738j). ❓ Open with the Library:
-  whether "dramatic irony" is the accurate term here — the sentence does not state the gap between what she knows
-  and what the audience knows.
+  irony") and close analysis breaks it down to the sentence adverb "naturally" (#738j). **Third rework, 236730bc:** "dramatic irony" was WRONG
+  at that line (the Library checked the play: the line comes BEFORE Eva's pregnancy or the father is revealed, so
+  the audience knows nothing she doesn't). Now: *"Indeed, in a matter-of-fact tone, she admits that 'naturally that
+  was one of the things that prejudiced me against her case', suggesting she treats her prejudice as obvious…"* —
+  tone is a Table-of-Techniques card. Library gate `bin/verify-big-technique.mjs` (b004b9f1) found 21 more model
+  answers to fix; their sweep is running.
 - **The row (body paragraphs only):** 0.25 when at least one quotation beyond the anchor is woven into a sentence
   and carries its own perceptive inference that supports the paragraph's point. A second or third earns nothing
   more, because the boards reward the quality of references, never their number: AQA *"Judicious use of precise
@@ -215,6 +218,38 @@ go into the AQA Literature protocol only, as Sophia's calibration example (inter
 a template, root §5c: examples vary across texts). Other boards' calibration examples come from their own
 model answers.
 
+## 3e. Naming a technique wrongly — what the boards say (#738l, read 2026-10-06)
+
+Neil asked whether examiners still award something when a technique is named wrongly. From the mark schemes on the
+drive (primary sources):
+
+| Board | Terminology across the levels |
+|---|---|
+| AQA Language, 2026 mark schemes (P1 + P2) | L4 "sophisticated and accurate use of subject terminology" · L3 "clear and accurate use" · L2 "some use of subject terminology, mainly appropriately" · L1 "simple use of subject terminology, **not always appropriately**". AQA's own Level 2 example begins "The writer uses adjectives…" |
+| Eduqas Literature (Component 1, June 2024) | lower bands: "may use some subject terminology but **not always accurately**" |
+| Edexcel Literature (Paper 1, June 2024) | upper levels: "Relevant subject terminology is used accurately and appropriately to develop ideas" |
+| AQA Literature (June 2024) | AO2: "using relevant subject terminology **where appropriate**" |
+| Cambridge 0500 examiner reports (2022–24) | "labelling of devices without explanation of how these were working… meant opportunities to target higher levels were missed" |
+
+**Reading:** no board zeroes an answer for a wrong term. Accuracy is what separates the upper levels from the lower,
+and the analysis is credited on its own. So the split Neil proposed — 0.25 for using a technique, 0.25 for naming it
+correctly — matches the boards, and v5's row 2 is written that way. **Not found:** an AQA Literature examiner report
+sentence about a wrongly named device; those reports are not on the drive (only the mark schemes are).
+
+## 3f. Token cost (#738n) — measured, and why it barely moves
+
+Prod usage record (`swml_api_usage_daily`, the last 7 days with traffic, read 2026-10-06): **153 requests, ≈ $25.58,
+≈ $0.17 per request**; per request ≈ 50,700 cached instruction tokens read and ≈ 4,300 output tokens; caching
+(writes $15.50 + reads $1.55) is ≈ 67% of the cost, output ≈ 26%.
+- **Output does not grow:** the body table is **11 rows today and 11 rows in v5**, and every "Why" stays under the
+  existing 10-word cap (naming the quoted words fits: *"perceptive — 'naturally' turns prejudice into common
+  sense"* is 8 words).
+- **Instructions grow a little:** the definitions and the Mrs Birling calibration lines add an estimated 1,500–2,500
+  tokens to the Literature assessment protocol (≈ 3–5% of the cached block), and only Literature assessments load it.
+  **Ceiling:** even if every request's cached part grew 5%, that is ≈ $0.85 a week at today's volume. (Estimate;
+  re-measured from the same record after release.)
+- The overall scorecard (§8) is built by code from marks already written, so it costs no tokens.
+
 ## 4. Every board
 
 The same meanings apply wherever the same rows exist. **One worth moves: 0.25 from close analysis into the
@@ -271,3 +306,20 @@ supporting-quotation row**, so every total is unchanged; the gate (§6) proves i
 
 AQA Literature first (the anchor), walked once on staging as a student with a real essay → the six other
 tables with all four rows → the exceptions in §4, one ruling each → gates → one test cycle.
+
+## 8. Two follow-ons Neil raised (#738m) — planned, not built
+
+1. **Gold-standard model answers.** Two kinds, both must follow the new shape:
+   - the **Library model answers** — the Library lane's gate `verify-big-technique.mjs` is already sweeping sentence 2
+     (21 files); once Neil rules the table, a second Library check for "the topic sentence's concept comes from the
+     anchor quote" and integrated supporting quotations (handoff to write then);
+   - the **gold rewrites Sophia writes in feedback** (each paragraph: the student's answer rewritten + an alternative
+     model) — their instructions change in the same build as the table, so the gold models demonstrate exactly
+     what the rows reward.
+2. **An overall criteria scorecard in the feedback document** (Literature and Language). Recommended placement: in the
+   closing summary, **directly above the Action Priorities**, so the three priorities are visibly the weakest rows.
+   Rows = criteria in sentence order (introduction, body, conclusion; for Language, each question's own criteria);
+   columns = each paragraph + overall; each cell coloured by the share of marks earned (purple only for full marks,
+   per the colour rule). **Built by code** from the mark tables already in each Feedback card (the parser the
+   self-assessment check uses), so no API call. Needs its own end-to-end plan (root §16: data → doc section →
+   both chat pipelines → saved-doc heal) and a picture for Neil's tap before any build.
