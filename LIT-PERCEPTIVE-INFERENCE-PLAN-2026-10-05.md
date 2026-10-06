@@ -323,3 +323,35 @@ tables with all four rows → the exceptions in §4, one ruling each → gates �
    per the colour rule). **Built by code** from the mark tables already in each Feedback card (the parser the
    self-assessment check uses), so no API call. Needs its own end-to-end plan (root §16: data → doc section →
    both chat pipelines → saved-doc heal) and a picture for Neil's tap before any build.
+
+## 9. Can code do any of this instead of Sophia? (#738q, #738r — answered 2026-10-06, WML 326 A)
+
+Neil: *"do we need API calls for all of this? Is there any way that any of this can be programmatic?… to reduce API
+calls"* and *"What about output tokens? Is there any way that we can reduce those? while still giving clarity?"*
+
+**Scoring the new rows by code saves no calls.** Each section is marked in one call, whatever its rows. And no v5 row
+is mechanical on a student's writing:
+
+| Row | Code? | Why |
+|---|---|---|
+| 3 quotation integrated · 11 supporting quotations | no | The Library's `bin/verify-quote-integration.mjs` only DETECTS two faults in clean model answers (a quotation in brackets; one standing alone). It cannot decide "integrated", and it misses a quotation a student writes without quote marks. |
+| 2 technique named correctly | no | Code can tell whether a name is in the Table of Techniques. It cannot tell a simile called a metaphor (both are in the Table). |
+| 2 the sequence (technique → anchor → inference) | no | Needs the inference to be read; `verify-big-technique.mjs` checks only that sentence 2 names a method. |
+| every convincing / perceptive part | no | Judgement. |
+| the Why cites the quoted words (§3) | yes — as a MEASUREMENT of Sophia after release | Never a deduction from the student: a missing quote in Sophia's Why is her fault, not theirs. |
+
+Decision: no code-computed facts in the v5 build (they would add a failure mode and save nothing). Measure Sophia's
+consistency on rows 2, 3 and 11 after release; add code facts only if she is inconsistent.
+
+**Where calls and output really go (measured, Neil's staging run, 3 Oct: 14 calls ≈ $1.66, 12 m 56 s of waiting):**
+1. **Fixed-wording turns, 7 of 14 calls (#687b).** In a self-marked session the "✓ Got it — continue" tap
+   (`frontend/wml-assessment.js:19794`) sends a hidden directive whose whole reply is the fixed line "type **Y** to see
+   your [section] mark breakdown" (`includes/class-protocol-router.php:8094`; PEDAGOGY ~l.2366). Each still bills
+   ≈ 1,900 output tokens of hidden thinking (#687, 29 Sep). Serve it from code → 5 fewer calls and 5 fewer waits per
+   essay. Language too ("You marked yourself [level], [mark]" is already held by code).
+2. **Hidden thinking, ≈ 90% of output (#687).** Output was the largest line of the 3 Oct cost ($0.75). WML sends no
+   effort setting, so every call runs at the API default `high`. The lever is `output_config.effort` (medium / low),
+   set per lesson type, never per turn (a mid-chat change invalidates the cache). It must be proved on real essays
+   first: the same marking replayed at high, medium and low, marks compared (#687a, approved 30 Sep, never run).
+3. **Visible feedback, ≤ 10% of output.** The golds are 1–2% of spend (#687). Shortening what students read saves
+   little and costs clarity — not recommended.
