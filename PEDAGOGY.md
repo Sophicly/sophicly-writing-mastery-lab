@@ -2927,6 +2927,14 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
     body paragraph whose coherence row already charged the same missing link (Rule 3, one fault one charge); the gold
     rewrite rule `shared/literature/modules/model-answer.md:54` ("Always begin sentences with a discourse marker…")
     is aligned the same way.
+21. **T2 = no link by any of the nine methods** (#738t, Neil, 2026-10-06): *"the T2 penalty is a simplified version
+    of that, right? It's about coherence… and cohesion… if there's no coherence cohesion, i.e. not using one of the
+    nine techniques, then the penalty applies."* Restated so: a sentence joined to the one before by none of the
+    toolkit's nine methods, or by a linking word with the wrong meaning. Scope (Rule 3, already law — stated to Neil,
+    not a new ruling): T2 is charged on introductions, conclusions and tables with no coherence row; never on a
+    Literature body paragraph, whose coherence row already charges the same fault. Costs no calls and no output.
+    **Open on the Actions page (card 9):** his "the interpretation is actually making sense" — proposed as fairness
+    Rule 6 (plan §3g): only a VALID reading earns its row's reading part (AQA: "reward any valid interpretations").
 
 Still open on the Actions page: the body table as a whole; where the freed 0.25 goes (recommended close analysis,
 so the only mark that moves against today's table is close analysis 1.5 → 1.25 for the supporting quotations);

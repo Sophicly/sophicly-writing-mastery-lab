@@ -59,7 +59,7 @@ AQA body paragraph, out of 8, in the order the student writes it:
 | # | Row | Worth | How it is marked (v5, Neil 2026-10-06 #738g–#738k) | Today's AQA row it replaces |
 |---|---|---|---|---|
 | 1 | Topic sentence links to thesis and question | 1.0 | **0.25** links to thesis and question · **+0.5 a CONVINCING concept** (AQA: conceptualised) · **+0.25** that concept is drawn from the ANCHOR QUOTE | Topic sentence, 1.0 |
-| 2 | **Technique + anchor quote + inference, in ONE sentence** | 1.0 | **0.25 for the technique** — a technique used in the sequence: technique, then the anchor quote, then an inference the quote supports, together in one sentence · **+0.25 when it is named correctly** — any of the 304 techniques in the Table of Techniques (`sophicly-writing-mastery-lab/protocols/shared/reference/techniques.json`, 0 of which is a bare word class); a wrong name loses only this quarter, and a correct name counts wherever it appears (#738k, #738l) · **+0.5 a CONVINCING, perceptive inference** | Strategic selection 0.5 + Accurate terminology 0.5 = 1.0 |
+| 2 | **Technique + anchor quote + inference, in ONE sentence** | 1.0 | **0.25 for the technique** — a technique used in the sequence: technique, then the anchor quote, then an inference, together in one sentence (the SHAPE only; whether the inference makes sense is judged once, in the inference part — §3g, Rule 3) · **+0.25 when it is named correctly** — any of the 304 techniques in the Table of Techniques (`sophicly-writing-mastery-lab/protocols/shared/reference/techniques.json`, 0 of which is a bare word class); a wrong name loses only this quarter, and a correct name counts wherever it appears (#738k, #738l) · **+0.5 a CONVINCING, perceptive inference** | Strategic selection 0.5 + Accurate terminology 0.5 = 1.0 |
 | 3 | Quotation, integrated | 0.5 | a quote that hangs = 0.25 · **integrated = 0.5: embedded in the sentence, or correctly introduced (for example after a colon)**. Embedding is the ideal — "usually the skill that they're actually missing" — so feedback on a colon-led quote encourages embedding without deducting (#738n) | Integrated quotes, 0.5 |
 | 4 | Close analysis, fine-grained | 1.25 | breaks the technique and the quote into small parts: words and their word classes, sounds, punctuation (AQA L6: "a fine-grained and insightful analysis of methods") · 1.0 · +0.25 perceptive | Close analysis, 1.5 (**−0.25**) |
 | 5 | Technique interplay | 0.5 | 0.25 · +0.25 perceptive | same |
@@ -250,6 +250,33 @@ Prod usage record (`swml_api_usage_daily`, the last 7 days with traffic, read 20
   re-measured from the same record after release.)
 - The overall scorecard (§8) is built by code from marks already written, so it costs no tokens.
 
+## 3g. A reading that does not make sense earns nothing (#738t) — PROPOSED, Actions card 9
+
+Neil, 2026-10-06: *"what about… one more thing, which is… the interpretation is actually making sense."*
+
+**What exists (read 2026-10-06):** Rule 5 already says *"Never award the quarter for a reading the text cannot
+support"* — but only the LAST quarter. Nothing says what a reading that does not make sense earns in the rest of the
+row, and Rule 2 ("award what is present") could be read as crediting it. The penalty list has no code for it: I1 is
+*vague*, P2 *not perceptive*, C1 *muddled prose*, L1 *a missing link between ideas*, A1 *anachronism* — depth and
+clarity, never "this reading is wrong". The interpretation ladder WML already teaches names the fault exactly —
+verdict 6, *"SPECULATION BEYOND THE EVIDENCE — a claim the passage cannot carry. Ask which words on the page put it
+there. If the answer is none, that is the finding."* (`protocols/shared/modules/rubrics/rubric-base.md`) — but only
+POLISHING loads that file; the assessment manifests do not. AQA's mark scheme: *"Examiners are encouraged to reward
+any valid interpretations"* (AQA Literature June 2024 MS) — the word is *valid*.
+
+**Proposed — Rule 6 in `marking-fairness-universal.md` (every board, loaded by all 31 manifests):**
+- A reading earns credit only when it is **valid**: the quoted words can carry it, it follows logically, and it is
+  true to the text. A reading that fails any of the three (verdict 6) scores **0 for that reading part** of its row —
+  inference, close analysis, effects, purpose, context, the topic sentence's concept. Rule 2 never credits it.
+- **Valid is not the same as usual.** An unexpected reading the words support is valid and can be perceptive (AQA:
+  "any valid interpretations"). A hedge ("perhaps") never makes an invalid reading valid, and never makes a valid
+  one less valid.
+- **One charge (Rule 3):** no separate penalty code. The row loses the part, Sophia's Why names the words that do not
+  carry it (*"'naturally' makes her prejudice sound normal, not kind"*), and the paragraph gets a chip to the
+  toolkit's **Interpretation Ladder** (`interpretation-ladder`, already allow-listed, live on prod).
+- **Cost:** ≈ 150 tokens of cached instructions (≈ $0.00003 a call); no new calls; no new output — the Why already
+  names the quoted words (§3).
+
 ## 4. Every board
 
 The same meanings apply wherever the same rows exist. **One worth moves: 0.25 from close analysis into the
@@ -300,11 +327,16 @@ supporting-quotation row**, so every total is unchanged; the gate (§6) proves i
      `bin/toolkit-link-gate.js` proves the id exists in the built bundle.
    - A missed coherence quarter carries that chip (the existing `@RESOURCE_LINK` path — Sophia copies the line,
      never composes an id).
-   - **T2** (`aqa/literature/modules/penalty-codes.md:15`, `aqa/poetry/modules/penalty-codes-poetry.md`) restated:
-     a sentence with no link of any kind to the one before (linking word, transitional phrase or repeated key word),
-     or a linking word with the wrong meaning; its Fix shows the student's own sentence linked by echoing a key word
-     or by the right linking word — never "add Furthermore". Not charged on a body paragraph whose coherence row
-     already charged the same missing link (Rule 3).
+   - **T2** (`aqa/literature/modules/penalty-codes.md:15`, `aqa/poetry/modules/penalty-codes-poetry.md`) restated
+     (Neil, #738t: *"if there's no coherence cohesion, i.e. not using one of the nine techniques, then the penalty
+     applies"*): a sentence joined to the one before by none of the toolkit's nine methods, or by a linking word with
+     the wrong meaning. Its Fix shows the student's own sentence linked by echoing a key word or by the right linking
+     word, never "add Furthermore", and carries the `sentence-transitions` chip. **Where it applies:** introductions,
+     conclusions, and every table with no coherence row (Language papers, comparative poetry). **Not** on a Literature
+     body paragraph: the coherence row's flow quarter already charges that fault, and charging both would take 0.75
+     for one missing link (Rule 3, one fault one charge).
+   - **Cost (#738t):** no new calls and no new output (the penalty line and its Why already exist). The nine methods
+     add ≈ 80 tokens to the cached instructions — ≈ $0.00002 a call at the cache-read price.
    - The gold-rewrite rule `shared/literature/modules/model-answer.md:54` ("Always begin sentences with a discourse
      marker…") and `aqa/literature/modules/protocol-a-assessment.md:406` aligned the same way, so Sophia's gold
      models vary their links as the toolkit does.
