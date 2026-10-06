@@ -114,7 +114,7 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
 | Topic sentence | "Mrs Birling shows prejudice towards Sheila." | "A first instance of Mrs Birling's prejudice is, ironically, directed towards her own daughter when she encourages Sheila to accept Gerald's infidelity…" | the concept is turned to show something unexpected (prejudice aimed at her own child), and it is drawn from the anchor quote itself (her advice to Sheila about "men with important work to do") |
 | Inference | "'men with important work to do' shows Mrs Birling defends Gerald." | "Priestley implies that loyalty to the status quo matters more to Mrs Birling than loyalty to another human being, since Gerald's 'important work' was his months with Daisy Renton, a working-class girl he used and discarded." | reads what the words HIDE, and proves it from the text |
 | Close analysis | "'have to' shows Sheila has no choice." | "the modal 'have to' combined with the comparison 'just as I had' suggests a sordid, immutable custom handed from mother to daughter for generations." | names the word class, and draws a meaning from one small word that goes beyond the obvious |
-| Interplay | "Priestley also uses a comparison." | "The adverb, therefore, converts her prejudice into upper-class common sense, while her hyperbole, 'a piece of gross impertinence', inflates her outrage into a personal insult…" (Body 2 as reworked by the Library, 3e986a82) | two methods working together toward ONE meaning |
+| Interplay | "Priestley also uses a comparison." | "The sentence adverb 'naturally', therefore, converts her prejudice into upper-class common sense, while her hyperbole, 'a piece of gross impertinence', inflates her outrage…" (Body 2 as reworked by the Library, 4dc36772) | two methods working together toward ONE meaning |
 | Effect 1 | "The audience feel angry." | "An audience may feel unease, disgust and even anger at this inheritance." | precise, rising feelings, aimed at the idea just analysed |
 | Effect 2 | "The audience think Mrs Birling is a bad person." | "spectators could face the sobering reality that those who benefit from the status quo will defend it even at the cost of someone they love." | moves from a feeling about one character to a truth about society |
 | Purpose | "Priestley wants to show that prejudice is wrong." | "Priestley perhaps intended to expose why help for people in need cannot depend on how one powerful person feels about the one asking: it must be guaranteed by law." | an argument the audience is pushed towards, tied to the essay's thesis |
@@ -150,7 +150,10 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
   prejudiced me against her case", the sentence adverb "naturally" suggests that she treats her prejudice as
   obvious, since Eva, pregnant and alone, had "called herself Mrs. Birling"…"* The Library also removed a
   misquote ("prejudiced against her case"; the play has "prejudiced me against her case"). All three bodies now
-  model technique + anchor + inference.
+  model technique + anchor + inference. **Second rework, 4dc36772:** sentence 2 now names a method ("through dramatic
+  irony") and close analysis breaks it down to the sentence adverb "naturally" (#738j). ❓ Open with the Library:
+  whether "dramatic irony" is the accurate term here — the sentence does not state the gap between what she knows
+  and what the audience knows.
 - **The row (body paragraphs only):** 0.25 when at least one quotation beyond the anchor is woven into a sentence
   and carries its own perceptive inference that supports the paragraph's point. A second or third earns nothing
   more, because the boards reward the quality of references, never their number: AQA *"Judicious use of precise
