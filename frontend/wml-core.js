@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.715';
+var WML_BUILD = '7.20.716';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -609,7 +609,18 @@ window.WML = (function() {
     // Get full text label from catalogue
     function getTextLabel(textId, subjectId) {
         const subject = TEXT_CATALOGUE[subjectId];
-        if (!subject) return ucfirst(textId);
+        if (!subject) {
+            // v7.20.716 (found on the AQA P2 walk, WML 327 A): a lesson's subject drifts ('language',
+            // 'language_p1', 'language_paper_2'…) while the catalogue keys on language1 / language2, so the
+            // exact lookup fell through to the raw id — "I've received your Aqa lang paper 2 redraft
+            // response" (root §14: never a de-slugged id on screen). Resolve the Language family by the paper
+            // the id names; anything else keeps the old fallback.
+            if (/^language/i.test(String(subjectId || ''))) {
+                const pm = /(?:paper|_p|_c|language)_?([12])(?![0-9])/i.exec(String(textId || '') + ' ' + String(subjectId || ''));
+                if (pm && TEXT_CATALOGUE['language' + pm[1]]) return TEXT_CATALOGUE['language' + pm[1]].label;
+            }
+            return ucfirst(textId);
+        }
         if (subject.skipTextSelect) return subject.label;
         // For poetry/prose anthology, check board-specific texts first
         if (subjectId === 'poetry_anthology' && POETRY_ANTHOLOGY_BY_BOARD[state.board]) {

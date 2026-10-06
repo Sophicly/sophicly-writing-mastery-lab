@@ -203,6 +203,23 @@ CASES.forEach(function (c) {
         c.name + ' → ' + c.expect + ' paragraph(s) (got ' + got + ')\n      ' + c.why);
 });
 
+// ── v7.20.716: the essay template's prompt line is never a paragraph ────────
+// Measured on the WML 327 A Macbeth walk (staging, 1938): the Literature path keeps <em>, and the
+// template ships <p data-locked="true"><em>Write your essay here.</em></p> above the student's text,
+// so the prompt reached Sophia as PARAGRAPH 1 and was marked as the Introduction. keepEm=true is the
+// Literature call (`_mqParas(section, true)`); without it the shim's <em> strip would hide the defect.
+console.log('\nthe template prompt line (Literature path, keepEm):');
+[
+    { name: 'locked prompt + intro + 3 bodies + conclusion', html: '<p data-locked="true"><em>Write your essay here.</em></p>' + P(words(40)) + P(words(70)) + P(words(65)) + P(words(68)) + P(words(35)), expect: 5 },
+    { name: 'older docs: the same prompt unlocked', html: P('<em>Write your essay here.</em>') + P(words(60)) + P(words(55)) + P(words(58)), expect: 3 },
+    { name: 'a blank template (prompt only) is an empty answer', html: '<p data-locked="true"><em>Write your essay here.</em></p><p></p>', expect: 0 },
+    { name: 'a student sentence that merely contains the words stays', html: P('I will write your essay here. ' + words(40)), expect: 1 },
+].forEach(function (c) {
+    const got = mqParas(makeSection(c.html), true);
+    ok(got.length === c.expect && got.every(p => !/^write your essay here\.$/i.test(p.trim())),
+        c.name + ' → ' + c.expect + ' paragraph(s), none of them the prompt (got ' + got.length + ': ' + JSON.stringify(got.map(p => p.slice(0, 24))) + ')');
+});
+
 // ── nothing the student wrote may be lost ───────────────────────────────────
 console.log('\nand no word the student wrote is dropped on the way:');
 [

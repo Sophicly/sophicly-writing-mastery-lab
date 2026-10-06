@@ -8538,7 +8538,10 @@
                 const mark = _ladderRowText(g.fids.mark);
                 if (!mark) return '';
                 if (g.points) return mark;
-                const lvl = _ladderRowText(g.fids.level);
+                // The level row also carries the student's placement words ("Level 2 · Upper Level 2 · Middle of
+                // this level" — measured on the P2 walk); the echo names the level only.
+                const lvlRaw = _ladderRowText(g.fids.level);
+                const lvl = lvlRaw ? ((/Level\s*\d+/i.exec(lvlRaw) || [lvlRaw])[0]) : '';
                 return (lvl ? lvl + ', ' : '') + mark + (gs.length > 1 ? ' for ' + g.ao : '');
             }).filter(Boolean);
             if (!parts.length) return '';
@@ -56671,7 +56674,8 @@
                             const type = attrs.sectionType || attrs.type || '';
                             const label = attrs.sectionLabel || attrs.label || '';
                             if (type === 'response') {
-                                const text = extractText(node).replace(/\s+/g, ' ').trim();
+                                // v7.20.716: drop the template prompt line here too (see _mqParas).
+                                const text = extractText(node).replace(/\s+/g, ' ').trim().replace(/^write your (?:essay|response) here\.\s*/i, '');
                                 if (text) responseTexts.push({ label, text });
                             }
                         }
@@ -56772,7 +56776,15 @@
             const text = (tmp.textContent || '').replace(/ /g, ' ');
             const paras = [];
             let lead = '';
-            text.split(/\n+/).map(s => s.trim()).filter(Boolean).forEach(line => {
+            // ⭐ v7.20.716 (measured on the WML 327 A Macbeth walk): the essay template ships its prompt as
+            // real text — <p data-locked="true"><em>Write your essay here.</em></p> (older docs: the same
+            // line unlocked) — and the Literature path keeps <em>, so since v7.20.672 (a short line that
+            // ends a sentence stays a paragraph) the prompt reached Sophia as PARAGRAPH 1 and was marked as
+            // the student's Introduction ("contains only the placeholder line"), shifting every paragraph
+            // after it. The word counter has stripped exactly these lines since v7.19.696; the payload now
+            // drops them too. Text-level, so it holds for both doc generations and every reader.
+            const _PROMPT_LINES = ['write your essay here.', 'write your response here.'];
+            text.split(/\n+/).map(s => s.trim()).filter(Boolean).filter(line => _PROMPT_LINES.indexOf(line.toLowerCase()) === -1).forEach(line => {
                 const wc = line.split(/\s+/).filter(Boolean).length;
                 // Closing quotes/brackets after the full stop still count as "ends a sentence". Kept as a
                 // STRING, not a regex class: the repo's brace-slicing harnesses read string literals
