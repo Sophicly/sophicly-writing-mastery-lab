@@ -202,7 +202,10 @@ verb gets the same ruling every run):**
 - **Any verb on NO tier: NO penalty by default** (ANTI-FABRICATION — never fill slots).
   Charge F1/T1 on an unlisted verb ONLY when it plainly asserts without analysing AND you can
   name which tier definition it meets.
-One code per fault, never both on the same verb.
+One code per fault, never both on the same verb. **One verb charge per SENTENCE (Neil, 2026-10-06 —
+PEDAGOGY §53.31):** a student sentence carries at most ONE analytical-verb charge. "Uses X to show Y"
+is ONE fault — charge F1 once (the "shows" verb), never T1 as well. The engine merges any second
+verb charge on the same sentence.
 **UNIT-SCOPE LAW (v7.19.950 — Neil live 2026-07-08):** a penalty quotes ONLY from the unit
 being marked. The SAME phrase can never be charged in two units — if the quoted words are not
 in THIS unit's submitted text, the fault does not exist HERE (the engine dedupes duplicate

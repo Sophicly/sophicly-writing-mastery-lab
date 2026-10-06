@@ -11400,6 +11400,8 @@
             return { plain: plain, html: html };
         } catch (_) { return null; }
     }
+    // ── @PEN-NET-PURE-BEGIN (bin/pen-net-harness.js drives everything down to @PEN-NET-PURE-END;
+    //    keep it pure — no DOM, no state; canvasEditor is only read behind a typeof guard) ──
     // v7.19.927: the ANALYTICAL-VERB TIER LIST's code twin (keep in sync with the protocol
     // registry — protocols/aqa/*/modules/protocol-a-assessment.md + knowledge-penalties.md).
     // BANNED = the F1 family; WEAK = the T1 family. A charged F1/T1 must quote a phrase
@@ -11421,7 +11423,7 @@
                 if (supportable) return whole;
                 n++;
                 console.warn('WML MarkAudit: ' + code + ' charge stripped — quoted phrase has no banned/weak-tier verb: "' + qm[1].slice(0, 80) + '"');
-                return lead;
+                return lead + _penDropMark(whole);
             });
             if (n) console.warn('WML MarkAudit: tier-list net removed ' + n + ' unsupported verb penalt' + (n === 1 ? 'y' : 'ies') + ' — card totals recomputed without ' + (n === 1 ? 'it' : 'them'));
             return outText;
@@ -11460,7 +11462,7 @@
                 if (frags.some(f => doc.indexOf(f) !== -1)) return whole;
                 n++;
                 console.warn('WML MarkAudit: ' + code + ' charge stripped — quoted phrase not found verbatim in the document: "' + qm[1].slice(0, 80) + '"');
-                return lead;
+                return lead + _penDropMark(whole);
             });
             if (n) console.warn('WML MarkAudit: verbatim-quote net removed ' + n + ' fabricated-quote penalt' + (n === 1 ? 'y' : 'ies') + ' — card totals recomputed without ' + (n === 1 ? 'it' : 'them'));
             return outText;
@@ -11513,8 +11515,135 @@
             const hits = Object.keys(drop);
             if (!hits.length) return text;
             hits.forEach(k => console.warn('WML MarkAudit: duplicate penalty stripped — quoted phrase belongs to another unit: ' + drop[k]));
-            return lines.filter((_, i) => !drop[i]).join('\n');
+            return lines.map((ln, i) => drop[i] ? _penDropMark(ln) : ln).join('\n');
         } catch (_) { return text; }
+    }
+    // v7.20.718: A STRIPPED PENALTY MUST TAKE ITS MARKS WITH IT. Every card states
+    // "Total penalties: −X", and the card auditor (Pass 1) prefers that line to the bullets —
+    // so a net that only deleted the bullet left the deduction standing: the charge vanished
+    // from view and the mark never came back (true of the three nets above since they were
+    // written). Each net now leaves this marker where the line was, and
+    // _reconcileCardPenaltyTotals takes the value off that card's stated total.
+    function _penDropMark(line) {
+        const m = String(line).match(/\((?:−|-|–)[ \t]*([\d.]+)\)/);
+        return m ? '\u0001PENDROP:' + m[1] + '\u0001' : '';
+    }
+    function _reconcileCardPenaltyTotals(text) {
+        const _strip = t => String(t).replace(/\n?[ \t]*\u0001PENDROP:[\d.]+\u0001[ \t]*(?=\n|$)/g, '').replace(/\u0001PENDROP:[\d.]+\u0001/g, '');
+        try {
+            const s = String(text);
+            if (s.indexOf('\u0001PENDROP:') === -1) return s;
+            const r2 = x => Math.round(x * 100) / 100;
+            return _strip(s.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
+                let dropped = 0;
+                body.replace(/\u0001PENDROP:([\d.]+)\u0001/g, (m, v) => { dropped += parseFloat(v) || 0; return m; });
+                if (!dropped) return whole;
+                const head = whole.slice(0, whole.length - '@FB_END'.length - body.length);
+                let clean = _strip(body);
+                const tpRe = /(Total penalties:?\*{0,2}\s*)([−–-]\s*)([\d.]+)/i;
+                const tm = clean.match(tpRe);
+                if (tm) {   // no stated total → Pass 1 sums the bullets that remain, which is already right
+                    const stated = parseFloat(tm[3]);
+                    let rem = 0, pm;
+                    const bRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}[A-Z]{1,3}\d(?:-[A-Z]+)?\*{0,2}[^\n]{0,80}?\([−–-]\s*([\d.]+)\)/g;
+                    while ((pm = bRe.exec(clean)) !== null) rem += parseFloat(pm[1]);
+                    let nt = Math.max(0, r2(stated - dropped));
+                    if (rem > nt) nt = Math.min(stated, r2(rem));   // a capped list (e.g. max 3) keeps its cap
+                    let str = String(nt);
+                    if (tm[3].indexOf('.') !== -1 && str.indexOf('.') === -1) str += '.0';
+                    clean = clean.replace(tpRe, (m0, label, sign) => label + (nt === 0 ? '0' : sign + str));
+                    console.warn('WML MarkAudit: card "Total penalties" ' + tm[3] + ' → ' + (nt === 0 ? '0' : str) + ' (stripped charges returned ' + r2(dropped) + ')');
+                }
+                return head + clean + '@FB_END';
+            }));
+        } catch (_) { return _strip(text); }
+    }
+    // v7.20.718 (Neil 2026-10-06, PEDAGOGY §53.31 — "One penalty for that sentence"): a student
+    // sentence carries at most ONE analytical-verb charge. "Munby uses positive adjectives to show
+    // how beautiful the snow makes London" was charged F1 ("show") AND T1 ("uses") — two verbs,
+    // one habit, and one rewrite fixes both. Within each card, every F1/T1 charge is placed in the
+    // student's sentences by its verbatim quote; two or more landing on ONE sentence keep the first
+    // F1 (else the first charge) and drop the rest, and _reconcileCardPenaltyTotals returns the
+    // marks. Conservative by design: a quote that cannot be placed, or two that are both
+    // ambiguous, stand — the old double charge, never a wrongly-forgiven one.
+    function _penSentences(src) {
+        return String(src || '').replace(/\*/g, '').split(/[.!?]+|\n+/)
+            .map(x => _normQuote(x)).filter(x => x.length > 0);
+    }
+    function _penPlaceQuote(q, sents) {
+        const pieces = _normQuote(String(q).replace(/\*/g, ''))
+            .split(/\.\.\.|…|\[\.\.\.\]|\[…\]|[.!?]+/)
+            .map(x => x.replace(/^[\s,;:'"]+|[\s,;:'"]+$/g, '')).filter(x => x.length >= 3);
+        const hits = [];
+        if (!pieces.length) return hits;
+        sents.forEach((s, i) => { if (pieces.every(p => s.indexOf(p) !== -1)) hits.push(i); });
+        return hits;
+    }
+    function _mergeSameSentenceVerbPenalties(text, srcText) {
+        try {
+            const s = String(text);
+            if (!/\b[FT]1\b/.test(s)) return s;
+            const sents = _penSentences(srcText);
+            const penRe = /^[ \t]*(?:[·•*-][ \t]*)?\*{0,2}(F1|T1)\*{0,2}[^\n]{0,80}?\((?:−|-|–)[ \t]*[\d.]+\)/;
+            return s.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
+                const lines = body.split('\n');
+                const ch = [];
+                lines.forEach((ln, i) => {
+                    const pm = ln.match(penRe);
+                    if (!pm) return;
+                    const qm = ln.replace(/\*/g, '').match(/["“”]([^"“”]{1,160})["“”]/);
+                    if (!qm) return;   // a quote-less charge cannot be placed → stands
+                    ch.push({ idx: i, code: pm[1], q: _normQuote(qm[1]), cand: sents.length ? _penPlaceQuote(qm[1], sents) : [] });
+                });
+                if (ch.length < 2) return whole;
+                const groupOf = ch.map(c => (c.cand.length === 1 ? 's' + c.cand[0] : null));
+                const placed = new Set(groupOf.filter(Boolean));
+                // an ambiguous quote joins the ONE placed sentence it could be in
+                ch.forEach((c, i) => {
+                    if (groupOf[i] || c.cand.length < 2) return;
+                    const shared = c.cand.filter(k => placed.has('s' + k));
+                    if (shared.length === 1) groupOf[i] = 's' + shared[0];
+                });
+                // a quote that cannot be found: the same words as another charge → the same place
+                ch.forEach((c, i) => {
+                    if (groupOf[i] || c.cand.length || c.q.length < 4) return;
+                    for (let j = 0; j < ch.length; j++) {
+                        if (j === i || ch[j].q.length < 4) continue;
+                        if (c.q.indexOf(ch[j].q) === -1 && ch[j].q.indexOf(c.q) === -1) continue;
+                        groupOf[i] = groupOf[j] || ('q' + Math.min(i, j));
+                        if (!groupOf[j]) groupOf[j] = groupOf[i];
+                        break;
+                    }
+                });
+                const groups = {};
+                ch.forEach((c, i) => { if (groupOf[i]) (groups[groupOf[i]] = groups[groupOf[i]] || []).push(i); });
+                const drop = {};
+                Object.keys(groups).forEach(g => {
+                    const m = groups[g];
+                    if (m.length < 2) return;
+                    let keep = m[0];
+                    for (let k = 0; k < m.length; k++) { if (ch[m[k]].code === 'F1') { keep = m[k]; break; } }
+                    m.forEach(i => { if (i !== keep) drop[ch[i].idx] = ch[i]; });
+                });
+                const hits = Object.keys(drop);
+                if (!hits.length) return whole;
+                hits.forEach(k => console.warn('WML MarkAudit: ' + drop[k].code + ' merged — its sentence already carries a verb charge (one per sentence, PEDAGOGY §53.31): "' + drop[k].q.slice(0, 80) + '"'));
+                const head = whole.slice(0, whole.length - '@FB_END'.length - body.length);
+                return head + lines.map((ln, i) => (drop[i] ? _penDropMark(ln) : ln)).join('\n') + '@FB_END';
+            });
+        } catch (_) { return text; }
+    }
+    // ── @PEN-NET-PURE-END ──
+    // The student's own writing, for placing a quoted charge in its sentence: the response
+    // sections' rendered text (innerText keeps the paragraph breaks), else the whole document.
+    function _penSentenceSource() {
+        try {
+            const root = document.getElementById('swml-tiptap-editor');
+            const els = root ? root.querySelectorAll('[data-section-type="response"]') : [];
+            const t = Array.prototype.map.call(els, e => e.innerText || e.textContent || '').join('\n');
+            if (t.replace(/\s/g, '').length > 40) return t;
+        } catch (_) {}
+        return _docPlainText();
     }
     function _auditAssessmentArithmetic(reply) {
         try {
@@ -11581,6 +11710,11 @@
             // unit's words (passes 0c because the phrase IS in the doc — just not in the
             // unit being marked). See _stripDuplicatePenalties.
             out = _stripDuplicatePenalties(out);
+            // ---- Pass 0e (v7.20.718): ONE VERB CHARGE PER SENTENCE — see _mergeSameSentenceVerbPenalties.
+            out = _mergeSameSentenceVerbPenalties(out, _penSentenceSource());
+            // ---- Pass 0f (v7.20.718): every net above gives its marks back — the card's stated
+            // "Total penalties" falls by what was stripped (Pass 1 prefers that line to the bullets).
+            out = _reconcileCardPenaltyTotals(out);
             // ---- Pass 1: each card — recompute total from its own table ----
             out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
                 let meta = null;

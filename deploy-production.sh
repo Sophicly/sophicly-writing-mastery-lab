@@ -19,7 +19,7 @@ SSH_KEY="$HOME/.ssh/sophicly_staging"
 REMOTE_PATH="/home/runcloud/webapps/SophiclyMain/wp-content/plugins/sophicly-writing-mastery-lab/"
 LOCAL_PATH="$(cd "$(dirname "$0")" && pwd)/"
 
-# ⭐⭐ v7.20.451 — THE CW RENUMBER SPLIT GUARD. Neil inserted a new Step 8 ("Update Your Plot —
+# ⭐⭐ v7.20.451 — THE CW RENUMBER SPLIT GUARD. (v7.20.718: `ssh -n` — without it this ssh swallowed a piped "y" and the confirm below hit EOF.) Neil inserted a new Step 8 ("Update Your Plot —
 # Values") and WELDED the shortcode task keys to the lesson titles, so cw_step_8..30 mean different
 # lessons before and after the renumber. LearnDash renumbered STAGING first; prod is renumbered
 # separately. If this plugin (renumbered map) lands on a prod course that is NOT renumbered, EVERY
@@ -31,7 +31,7 @@ LOCAL_PATH="$(cd "$(dirname "$0")" && pwd)/"
 # lesson. Router maps cw_step_31 only once that insert has happened, so the probe is keyed on it.
 if grep -q "'cw_step_31'" "$LOCAL_PATH/includes/class-protocol-router.php" 2>/dev/null; then
     echo "Checking the production course carries BOTH renumbers (Step 8 + Step 13) before shipping the map..."
-    _cw_step8=$(ssh -i "$SSH_KEY" -o ConnectTimeout=20 "$REMOTE_USER@$REMOTE_HOST" \
+    _cw_step8=$(ssh -n -i "$SSH_KEY" -o ConnectTimeout=20 "$REMOTE_USER@$REMOTE_HOST" \
         "cd /home/runcloud/webapps/SophiclyMain && wp --skip-plugins --skip-themes db query \
          \"SELECT COUNT(*) FROM wp_posts p JOIN wp_postmeta m ON m.post_id=p.ID AND m.meta_key='course_id' AND m.meta_value='41165' \
            WHERE p.post_type='sfwd-topic' AND p.post_status='publish' AND (p.post_title LIKE '%STEP 8: Update Your Plot%' OR p.post_title LIKE '%STEP 13: Scene Selection%')\" \

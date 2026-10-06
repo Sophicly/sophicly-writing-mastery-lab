@@ -2976,6 +2976,16 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
     diagnostics — *"Yes, read them"* (#729) · Mishel's device — *"I don't know"* (#730 → instrument, never guess) ·
     recover six students' quiz grades — *"Yes, recover all six"* (#736) · the quick exam story — *"Every board's
     creative question"* (#727, plan first).
+31. **"Uses … to show" is ONE fault — *"One penalty for that sentence."*** (Neil, 2026-10-06, Actions v48 card 4;
+    FIXLIST #738z.) The case: *"Munby uses positive adjectives to show how beautiful the snow makes London."* Sophia
+    charged F1 for "show" and T1 for "uses" — 1 mark from one sentence in a paragraph worth 4 — because the old rule
+    said only "never both codes on the same VERB", and these were two verbs. The habit is one, and one rewrite fixes
+    it (*"Munby conveys the snow's beauty through…"*). **The rule: a student sentence carries at most ONE
+    analytical-verb charge.** When F1 and T1 both land on one sentence, charge F1 once (the "shows" verb) and never
+    T1 as well; in Literature, where both verbs sit on the F1 list, that is one F1 per such sentence. Applies to every
+    board and paper that uses the verb tier list. **Enforced in code** (v7.20.718): the mark auditor merges verb
+    charges that quote the same student sentence, keeps the F1, and the card's `Total penalties` falls with it
+    (`bin/pen-net-harness.js`).
 
 Nothing in §53 is still open after 6 October: rulings 23–29 settled the table, the moved mark, the 19th-century
 split and the introduction/conclusion definitions.

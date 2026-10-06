@@ -204,6 +204,8 @@ verb against these three tiers so the same verb gets the same ruling every run):
   exposes, examines, establishes, crafts, constructs, frames, positions, foregrounds, mirrors,
   juxtaposes, interrogates, crystallises, embodies, externalises, distils, encapsulates, heightens.
 - **Any verb on NO tier: NO penalty by default** (anti-fabrication — never fill slots).
+- **One verb charge per SENTENCE (Neil, 2026-10-06 — PEDAGOGY §53.31):** "uses X to show Y" is ONE
+  fault — charge F1 once (the "shows" verb), never T1 as well.
 - Other codes: H1 hanging/mis-punctuated quotations · P1 comma splice/run-on · C1 lacks clarity or
   flow (**clarity/flow ONLY** — relevance faults are M1) · N1 technique naming inaccurate or too
   micro · S1 weak or repetitive sentence starters (the/this/these) · S2 underdeveloped sentences

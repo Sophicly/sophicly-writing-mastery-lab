@@ -208,7 +208,9 @@ every analytical verb against these three tiers so the same verb gets the same r
   foregrounds, mirrors, juxtaposes, interrogates, crystallises, embodies, externalises,
   distils, encapsulates, heightens.
 - **Any verb on NO tier: NO penalty by default** (ANTI-FABRICATION — never fill slots).
-One code per fault, never both on the same verb.
+One code per fault, never both on the same verb. **One verb charge per SENTENCE (Neil, 2026-10-06 —
+PEDAGOGY §53.31):** "uses X to show Y" is ONE fault — charge F1 once (the "shows" verb), never T1
+as well.
 **UNIT-SCOPE LAW:** a penalty quotes ONLY from the unit being marked. The SAME phrase can never be
 charged in two units.
 

@@ -50,6 +50,7 @@
     
 * **T1** – Imprecise analytical verbs (-0.5)  
   Detection: Using vague verbs like "uses/has/goes" instead of precise analytical language  
+  Never apply: to the same SENTENCE as an F1 — "uses X to show Y" is ONE fault, charged F1 once (Neil, 2026-10-06 — PEDAGOGY §53.31)  
   Upgrade: evokes, establishes, conveys, crafts, constructs, demonstrates  
     
 * **L1** – Missing causal link between evidence and effect (-0.5)  

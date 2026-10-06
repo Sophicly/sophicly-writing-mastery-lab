@@ -193,7 +193,8 @@ older material mentions W1, read it as F1). For run-to-run consistency, verbs ar
 BANNED tier ("shows" family incl. "illustrates", "acts as (a symbol of)", "creates the idea
 that", "aims to/seems to [verb]"); **T1** = the WEAK tier (uses/has/goes/gets/says/makes/does);
 STRONG-tier verbs (reveals, conveys, frames, positions, crystallises, …) are NEVER penalised;
-unlisted verbs default to NO penalty. **ONE FAULT, ONE CHARGE:** a fault already reflected in a criterion score takes NO
+unlisted verbs default to NO penalty. **One verb charge per SENTENCE (PEDAGOGY §53.31):** "uses X
+to show Y" is ONE fault — F1 once (the "shows" verb), never T1 as well. **ONE FAULT, ONE CHARGE:** a fault already reflected in a criterion score takes NO
 penalty, and a penalised fault is never also docked in a criterion — the same words are never
 charged twice; a unit/element that scored 0 for missing content is ALREADY the full cost of that
 gap (no H1-COMP/STR1/E2/I1 for the same absence). **C1 is clarity/flow ONLY** — relevance faults

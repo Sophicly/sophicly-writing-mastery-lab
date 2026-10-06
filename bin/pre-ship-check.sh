@@ -852,6 +852,11 @@ php bin/lit-19c-override-gate.php >/dev/null || { php bin/lit-19c-override-gate.
 # A FILING MARKER THAT SAYS "fieldId" STILL FILES (v7.20.717, measured on the AQA Lit planning walk: the
 # student's accepted topic sentence vanished because every consumer reads "field").
 node bin/marker-key-harness.js >/dev/null || { node bin/marker-key-harness.js; fail=1; }
+# ONE VERB CHARGE PER SENTENCE (v7.20.718, PEDAGOGY §53.31 — Neil: "One penalty for that sentence") and
+# every stripped penalty gives its marks back (the card's stated "Total penalties" falls with it — before
+# .718 the three older nets hid the charge but kept the deduction). --self-test breaks it four ways.
+node bin/pen-net-harness.js >/dev/null || { node bin/pen-net-harness.js; fail=1; }
+node bin/pen-net-harness.js --self-test >/dev/null || { node bin/pen-net-harness.js --self-test; fail=1; }
 node bin/lit-perceptive-gate.js >/dev/null || { node bin/lit-perceptive-gate.js; fail=1; }
 node bin/lit-perceptive-gate.js --self-test >/dev/null || { node bin/lit-perceptive-gate.js --self-test; fail=1; }
 

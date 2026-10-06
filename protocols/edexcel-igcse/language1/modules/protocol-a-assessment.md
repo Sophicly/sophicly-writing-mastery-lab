@@ -228,7 +228,9 @@ analytical verb against these three tiers so the same verb gets the same ruling 
   juxtaposes, interrogates, crystallises, embodies, externalises, distils, encapsulates, heightens.
 - **Any verb on NO tier: NO penalty by default.** Charge F1/T1 on an unlisted verb only when it
   plainly asserts without analysing AND you can name which tier definition it meets.
-One code per fault, never both on the same verb.
+One code per fault, never both on the same verb. **One verb charge per SENTENCE (Neil, 2026-10-06 —
+PEDAGOGY §53.31):** "uses X to show Y" is ONE fault — charge F1 once (the "shows" verb), never T1
+as well.
 **UNIT-SCOPE LAW:** a penalty quotes ONLY from the unit being marked. The same phrase can never be
 charged in two units — if the quoted words are not in THIS unit's submitted text, the fault does not
 exist here.
