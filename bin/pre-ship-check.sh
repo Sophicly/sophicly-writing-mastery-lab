@@ -862,6 +862,8 @@ node bin/lit-perceptive-gate.js --self-test >/dev/null || { node bin/lit-percept
 # DISPLAY MARKERS SURVIVE THE SWEEP (v7.20.721, #745): @DEVICE_MENU was deleted by stripAIInternals' generic
 # whole-line sweep before formatAI could render it — the device-template chip had not appeared since .335.
 node bin/display-marker-harness.js >/dev/null || { node bin/display-marker-harness.js; fail=1; }
+# NO SIDEBAR STEP NOBODY RUNS (v7.20.723, #755): the skills Self-Assessment step appears only where its walk runs.
+node bin/sa-sidebar-harness.js >/dev/null || { node bin/sa-sidebar-harness.js; fail=1; }
 
 
 if [ "$fail" -ne 0 ]; then

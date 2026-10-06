@@ -155,6 +155,15 @@ for (const file of protocols) {
 
     const bad = [];
     for (const [q, lines] of [...perQ.entries()].sort()) {
+        // v7.20.723 (#754): a CARD files the feedback text, but the question's MARK — the feedback
+        // label, i.e. the grade source the Score Summary and dashboard read — is set ONLY from a line
+        // the _detectQuestionTotal header reads. IGCSE P1 Q6 had an @FB card and passed this gate,
+        // while "Q6 Total: … = 17/45" never matched the header's [1-5]: chat said 26/90, the
+        // document said 9/90 "in progress". So every instructed "Qn Total" must be header-readable.
+        if (lines.some(l => /\bQ(?:uestion)?\s*\d+\s*Total\b/i.test(l.literal)) && !lines.some(l => HDR.test(l.literal))) {
+            bad.push({ q, lines, markOnly: true });
+            continue;
+        }
         if (fbQs.has(q)) continue;                    // marker-driven: filing does not depend on prose
         if (lines.some(l => l.ok)) continue;          // at least one instructed literal is readable
         bad.push({ q, lines });
@@ -176,6 +185,11 @@ for (const r of rows) {
     if (r.bad) {
         console.log(`     @FB_BEGIN cards in this protocol: ${r.hasFB ? r.fbCount : 'NONE'}`);
         for (const b of r.bad) {
+            if (b.markOnly) {
+                console.log(`     ⛔ Q${b.q} — its card files, but the MARK never reaches the feedback label (the grade source): the _detectQuestionTotal header cannot read`);
+                b.lines.slice(0, 2).forEach(l => console.log(`          "${l.literal.slice(0, 110)}"`));
+                continue;
+            }
             console.log(`     ⛔ Q${b.q} — no readable total line. The protocol instructs:`);
             b.lines.slice(0, 2).forEach(l => console.log(`          "${l.literal.slice(0, 110)}"`));
             console.log(`        Neither detector matches, so Sophia marks it in chat and the box stays empty.`);

@@ -3172,6 +3172,12 @@
     // Returns { steps, n, firstIncomplete, present } starting the ordinal at startN.
     function _saSidebarSteps(startN) {
         const out = { steps: [], n: startN, firstIncomplete: 0, present: false };
+        // v7.20.723 (#755): the section is in EVERY assessment doc, but the walk that fills it runs only
+        // where _saWalkRunsHere() says. Elsewhere the rows stay "—" for ever, the group never completes,
+        // and the sidebar's single "current" pointer parked on it: on the IGCSE P1 walk (staging 59209)
+        // Q1–Q5 were marked and filed, yet no question ever ticked and every marking bubble was headed
+        // "Self-Assessment · Step 1 of 7". A step nobody is asked to do is not a step.
+        if (!_saWalkRunsHere()) return out;
         const editor = document.getElementById('swml-tiptap-editor');
         if (!editor) return out;
         const sec = editor.querySelector('[data-section-label="Self-Assessment"]');
@@ -6810,7 +6816,7 @@
         const hasScoreTotal = /Total:\s*\d+(?:\.\d+)?\s*\/\s*\d+/i.test(t);
         const hasGold = /Rewritten to Gold Standard|Optimal Gold Standard/i.test(t);
         if (!hasScoreTotal && !hasGold) return null;
-        const qm = t.match(/Q(?:uestion)?\s*([1-5])\b/i);
+        const qm = t.match(/Q(?:uestion)?\s*([1-9])\b/i);   // v7.20.723 (#754): [1-5] → [1-9] — IGCSE P1 Section B is Q6
         if (!qm) return null;
         let title = '';
         const pm = t.match(/\b(Introduction|Conclusion|Creative Writing|(?:Body )?Paragraph\s*\d)\b/i);
@@ -6821,7 +6827,7 @@
         if (startM > 0) body = body.slice(startM);
         body = _stripChatFurniture(body
             .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '')               // drop trailing Y/C gate
-            .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-5]\s*Total\b[\s\S]*$/i, ''));       // v7.19.606: question total is its OWN card — don't duplicate it inside the paragraph card
+            .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-9]\s*Total\b[\s\S]*$/i, ''));       // v7.19.606: question total is its OWN card — don't duplicate it inside the paragraph card
         return body ? [{ q: 'Q' + qm[1], title: title, body: body, _detected: true }] : null;
     }
 
@@ -6841,12 +6847,15 @@
         // form and silently dropped Q3/Q5. Gate ONLY on the presence of a "Qn Total" label
         // (NOT per-paragraph "Paragraph n Total", NOT "whole paper"/"Grand" total) and slice
         // the block as-is — the readable text fills the box whatever the numeric layout.
-        const HDR = /\*{0,2}\s*Q(?:uestion)?\s*([1-5])\s*Total\b/i;
+        // v7.20.723 (#754): [1-5] → [1-9]. Edexcel IGCSE P1's Section B is Q6, so "Q6 Total: AO4 10/27 +
+        // AO5 7/18 = 17/45" was never detected, its mark never reached the feedback label (the grade
+        // source), and the Score Summary read 9/90 "in progress" while the chat said 26/90.
+        const HDR = /\*{0,2}\s*Q(?:uestion)?\s*([1-9])\s*Total\b/i;
         if (!HDR.test(t)) return null;
         let body = _stripFeedbackMarkers(t);
         const start = body.search(HDR);
         if (start < 0) return null;
-        const q = 'Q' + ((body.slice(start).match(/Q(?:uestion)?\s*([1-5])/i) || [])[1] || '');
+        const q = 'Q' + ((body.slice(start).match(/Q(?:uestion)?\s*([1-9])/i) || [])[1] || '');
         body = _stripChatFurniture(body.slice(start)
             .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, ''));
         return body ? { q: q, title: 'Question Total', body: body, _detected: true } : null;
@@ -7449,7 +7458,7 @@
                 const body = _stripChatFurniture((m[2] || '')
                     .replace(/@FB_END[\s\S]*$/, '')
                     .replace(/\n\s*[^\n]*\bType\s+\*{0,2}[CY]\*{0,2}\b[\s\S]*$/i, '') // drop trailing Y/C gate if @FB_END missing
-                    .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-5]\s*Total\b[\s\S]*$/i, '')); // v7.19.606: if @FB_END dropped, don't let the marker body swallow the question total (it's its own card)
+                    .replace(/\n\s*\*{0,2}\s*Q(?:uestion)?\s*[1-9]\s*Total\b[\s\S]*$/i, '')); // v7.19.606: if @FB_END dropped, don't let the marker body swallow the question total (it's its own card)
                 if (q && body) cards.push({ q: q, title: title, body: body });
             }
             // Fallback: no usable markers → detect the marking block from natural output.
@@ -7533,7 +7542,7 @@
                     const htext = (node.textContent || '').trim();
                     if (cardStart === null) {
                         if (htext === cardHeading) cardStart = pos;
-                    } else if (cardEnd === null && /^(Q[1-5]|Introduction|Body|Conclusion)\b/.test(htext)) {
+                    } else if (cardEnd === null && /^(Q[1-9]|Introduction|Body|Conclusion)\b/.test(htext)) {
                         cardEnd = pos; // v7.19.701: bound lit cards too (headings are Introduction/Body N/Conclusion, not Qn)
                     }
                     return true;
@@ -9750,9 +9759,14 @@
         } catch (e) { console.warn('WML calibration: open skipped —', e && e.message); }
     }
 
+    // v7.20.723 (#755): WHERE the walk runs, without the review-mode exit — the sidebar uses this, so a
+    // tutor reviewing an AQA doc still sees the step while a board the walk never runs on cannot park on it.
+    function _saWalkRunsHere() {
+        return state.task === 'assessment' && String(state.board || '').toLowerCase() === 'aqa';   // AQA P1 / P2 / Literature = the 3 anchors
+    }
     function _saWalkEligible() {
-        if (state.task !== 'assessment' || state.reviewMode) return false;
-        return String(state.board || '').toLowerCase() === 'aqa';   // AQA P1 / P2 / Literature = the 3 anchors
+        if (state.reviewMode) return false;
+        return _saWalkRunsHere();
     }
     function _saWalkRows() {
         const out = [];
@@ -13159,7 +13173,7 @@
         const sm = t.match(/how well (?:do|did) you(?:\s+think you(?:['’]ve)?)?\s+([^?]{6,160})\?/i);
         if (sm) skill = sm[1].replace(/\s+/g, ' ').trim();
         let q = '';
-        const qm = t.match(/\bQ(?:uestion)?\s*([1-5])\b/i);
+        const qm = t.match(/\bQ(?:uestion)?\s*([1-9])\b/i);   // v7.20.723 (#754): Q6+ boards
         if (qm) q = 'Q' + qm[1];
         // v7.19.773: NAMED-section reflections (Literature essays: Introduction / Body
         // Paragraph N / Conclusion — no Q digit) left q empty in prose-fallback, so predictQ
@@ -53832,7 +53846,9 @@
         // of one 40 (foundation-lang1.md L86) — code cannot derive them, only a marker awards
         // them. So we read them, then AUDIT them against the ledger box; anything that fails
         // the audit is dropped with a warning rather than shipped.
-        const _AO_SPLIT_RE = /AO5\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*\+\s*AO6\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*=\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)/i;
+        // v7.20.723 (#754): any two AOs — Edexcel IGCSE Section B splits AO4 + AO5 ("Q6 Total: AO4 10/27 + AO5
+        // 7/18 = 17/45"); the AQA-only AO5+AO6 shape silently dropped it from the dashboard breakdown.
+        const _AO_SPLIT_RE = /AO([1-9])\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*\+\s*AO([1-9])\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*=\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)/i;
         function _breakdownFromDoc(finalMarks, maxTotal) {
             try {
                 const editor = document.getElementById('swml-tiptap-editor');
@@ -53853,9 +53869,10 @@
 
                     const sp = _AO_SPLIT_RE.exec(String(section.textContent || ''));
                     if (!sp) return;
-                    const a5e = parseFloat(sp[1]), a5a = parseInt(sp[2], 10);
-                    const a6e = parseFloat(sp[3]), a6a = parseInt(sp[4], 10);
-                    const z   = parseFloat(sp[5]), zm  = parseInt(sp[6], 10);
+                    const aoA = 'AO' + sp[1], aoB = 'AO' + sp[4];
+                    const a5e = parseFloat(sp[2]), a5a = parseInt(sp[3], 10);
+                    const a6e = parseFloat(sp[5]), a6a = parseInt(sp[6], 10);
+                    const z   = parseFloat(sp[7]), zm  = parseInt(sp[8], 10);
                     const sum = a5e + a6e;
                     // AUDIT — every one of these must hold or the split is not trustworthy.
                     const ok = isFinite(a5e) && isFinite(a6e) && isFinite(z)
@@ -53876,8 +53893,8 @@
                         question[question.length - 1].capped_from = sum;
                         console.log('WML breakdown: ' + key + ' word-count ceiling applied — AO5+AO6 ' + sum + ' capped to ' + z);
                     }
-                    ao_holistic.push({ question: key, key: 'AO5', earned: a5e, available: a5a });
-                    ao_holistic.push({ question: key, key: 'AO6', earned: a6e, available: a6a });
+                    ao_holistic.push({ question: key, key: aoA, earned: a5e, available: a5a });
+                    ao_holistic.push({ question: key, key: aoB, earned: a6e, available: a6a });
                 });
                 if (!question.length) return null;
                 const out = {
@@ -56849,6 +56866,30 @@
      * Used to inject the student's essay into assessment chat context.
      */
     function getResponseText(editor) {
+        // @TAUGHT-RANK-PURE-BEGIN — nested here so getResponseText stays self-contained (marking-payload-harness slices it alone)
+        // v7.20.723 (#753): which paragraphs of an over-long body-only answer are MARKED. Returns null when
+        // there is nothing to choose (no taught count, or not more paragraphs than taught); otherwise a map
+        // { paragraphIndex → 0-based taught position }. Paragraphs that quote the text come first (document
+        // order), quote-less ones fill the remaining places — "a short overview never displaces a content
+        // paragraph". A quote is "…" / “…” / ‘…’, or '…' opened after a space (so it's / don't never count).
+        function _taughtParagraphRank(paras, taught) {
+            if (!taught || !paras || paras.length <= taught) return null;
+            // Quote characters are written as \u escapes: the repo's brace-slicing harnesses read a quote
+            // character inside a regex literal as the start of a string (see _mqParas).
+            const DQ = new RegExp('\u0022[^\u0022\\n]{3,}\u0022');
+            const SQ = new RegExp('(^|[\\s(])\u0027[^\u0027\\n]{3,}?\u0027(?=[\\s.,;:!?)]|$)');
+            const quotes = p => {
+                const t = String(p).replace(/[\u201C\u201D]/g, '\u0022').replace(/[\u2018\u2019]/g, '\u0027');
+                return DQ.test(t) || SQ.test(t);
+            };
+            const withQ = [], without = [];
+            paras.forEach((p, i) => (quotes(p) ? withQ : without).push(i));
+            const chosen = withQ.concat(without).slice(0, taught).sort((a, b) => a - b);
+            const rank = {};
+            chosen.forEach((idx, k) => { rank[idx] = k; });
+            return rank;
+        }
+        // @TAUGHT-RANK-PURE-END
         // v7.17.53: Removed early `if (!editor) return ''`. RunCloudRescue 2026-04-25
         // confirmed canvasEditor closure was NULL at click time (none of the v7.17.52
         // PM-state diagnostic logs ever appeared in console), but DOM was healthy
@@ -56998,7 +57039,7 @@
         //      Literature; it now holds everywhere). A short line that ENDS a sentence stays a
         //      paragraph, so a one-sentence introduction or conclusion is no longer swallowed.
         // keepEm: the Literature path never stripped <em> (a student's italics are their words).
-        const _mqParas = (section, keepEm) => {
+        const _mqParas = (section, keepEm, asStatements) => {
             const clone = section.cloneNode(true);
             clone.querySelectorAll('[data-checklist-item], .swml-ana-strip, .swml-ctl-row, button').forEach(el => el.remove());
             if (!keepEm) clone.querySelectorAll('em').forEach(el => el.remove());
@@ -57022,7 +57063,14 @@
             // after it. The word counter has stripped exactly these lines since v7.19.696; the payload now
             // drops them too. Text-level, so it holds for both doc generations and every reader.
             const _PROMPT_LINES = ['write your essay here.', 'write your response here.'];
-            text.split(/\n+/).map(s => s.trim()).filter(Boolean).filter(line => _PROMPT_LINES.indexOf(line.toLowerCase()) === -1).forEach(line => {
+            const _lines = text.split(/\n+/).map(s => s.trim()).filter(Boolean).filter(line => _PROMPT_LINES.indexOf(line.toLowerCase()) === -1);
+            // v7.20.723 (#751): a RETRIEVAL answer is a list of statements, one per Point box. The merge
+            // rules below are for essays (a short unpunctuated first line is a title; a ≤3-word line joins
+            // its neighbour) — on Q1 they welded "it's like they occupy different planets" and the next box
+            // into ONE statement, and Sophia told the student their quotations "ran together in one line"
+            // (IGCSE P1 walk, staging, 6 Oct). Short, unpunctuated phrases are exactly what retrieval asks for.
+            if (asStatements) return _lines;
+            _lines.forEach(line => {
                 const wc = line.split(/\s+/).filter(Boolean).length;
                 // Closing quotes/brackets after the full stop still count as "ends a sentence". Kept as a
                 // STRING, not a regex class: the repo's brace-slicing harnesses read string literals
@@ -57067,7 +57115,7 @@
                 const qType = spec ? (spec.type || '') : '';
                 const isRetrievalQ = qType === 'retrieval' || qType === 'multiple_choice' || (qMarks > 0 && qMarks <= 4);
                 const isExtendedQ = qType === 'extended_writing' || qType === 'choice' || qMarks >= 24;
-                const paras = _mqParas(section);
+                const paras = _mqParas(section, false, isRetrievalQ);
                 const qWords = paras.length ? paras.join(' ').split(/\s+/).filter(Boolean).length : 0;
                 _lastQWordCounts[qId] = qWords;   // v7.19.841: auditor's Q5-ceiling source
                 if (!paras.length) {
@@ -57112,8 +57160,20 @@
                 const isEssayShape = qType === 'evaluation' || qType === 'comparison'
                     || (qMarks > 0 && Math.round(qMarks / 4) >= 5);
                 const taught = isEssayShape ? 5 : (qMarks > 0 ? Math.max(1, Math.round(qMarks / 4)) : 0);
+                // v7.20.723 (#753): with MORE paragraphs than taught, the protocol marks the taught count
+                // "chosen by CONTENT … never by position — a short overview never displaces a content
+                // paragraph". The labels decide it ("labels are law"), and they chose by position: on the
+                // IGCSE P1 walk (staging 59209) a two-sentence quote-less overview was labelled PARAGRAPH 1
+                // and the student's only structure paragraph (with its quotation) became the unmarked
+                // EXTRA. Now paragraphs that quote the text are taught first, in document order; quote-less
+                // ones fill any remaining places. No quotation anywhere → positional, exactly as before.
+                const _bodyRank = isEssayShape ? null : _taughtParagraphRank(paras, taught);
                 const mapQLabel = (i, n) => {
                     if (!isEssayShape) {
+                        if (_bodyRank) {
+                            if (_bodyRank[i] !== undefined) return `${qId} PARAGRAPH ${_bodyRank[i] + 1} of ${taught}`;
+                            return `${qId} EXTRA PARAGRAPH (beyond the taught ${taught} — protocol extra-paragraph rules apply)`;
+                        }
                         if (!taught || i < taught) return `${qId} PARAGRAPH ${i + 1} of ${taught || n}`;
                         return `${qId} EXTRA PARAGRAPH (beyond the taught ${taught} — protocol extra-paragraph rules apply)`;
                     }
@@ -61260,7 +61320,9 @@
                     if (line.trim()) qInner += `<p>${richText(line)}</p>`;
                 });
             }
-            if (qMarks) qInner += `<p><em>[${qMarks} marks]</em></p>`;
+            // v7.20.723 (#750): the Edexcel IGCSE topic template's question text already ends "[2 marks]", so
+            // every question showed its tariff twice ("[2 marks]" then "[2 marks]" in italics). Add it once.
+            if (qMarks && !/\[\s*\d+\s*marks?\s*\]\s*$/i.test(String(q.text || '').trim())) qInner += `<p><em>[${qMarks} marks]</em></p>`;
             if (q.aos) qInner += `<p><em>${escapeHTML(q.aos)}</em></p>`;
             // Per-question word target hint
             // v7.20.644 (#625, §5d): the hint a student READS and the target the marker PENALISES

@@ -245,6 +245,52 @@ console.log('\nand nothing that is not the answer is handed to the marker:');
     ok(joined.indexOf('EXPANDBUTTON') < 0, 'a section button’s label is not part of the answer');
 })();
 
+// ── v7.20.723 (#751): a retrieval answer's Point boxes are separate statements ──────────────────
+// Measured on the IGCSE P1 walk (staging 59209, 6 Oct): Q1's two Point boxes reached Sophia as ONE
+// statement, "it's like they occupy different planets They were laughing as police chased them" —
+// the essay title rule merged the short unpunctuated first box into the second — and Sophia told
+// the student their quotations "ran together in one line". The DOM shape is the real inputField
+// markup (one <div data-field-id> per box).
+console.log('\nretrieval Point boxes stay separate statements:');
+(function () {
+    const box = (id, t) => '<div data-prompt="Point" data-field-id="' + id + '" data-input-field="true">' + t + '</div>';
+    const q1 = box('Q1-point-1', "it's like they occupy different planets") + box('Q1-point-2', 'They were laughing as police chased them');
+    const got = mqParas(makeSection(q1), false, true);
+    ok(got.length === 2 && got[0] === "it's like they occupy different planets",
+        'Q1: two unpunctuated phrases in two boxes → two statements (got ' + JSON.stringify(got) + ')');
+    const short = box('Q1-point-1', 'different planets') + box('Q1-point-2', 'Mars') + box('Q1-point-3', 'utter hopelessness and disenfranchisement');
+    ok(mqParas(makeSection(short), false, true).length === 3, 'Q1: one- and two-word answers are never folded into a neighbour');
+    ok(mqParas(makeSection(q1)).length === 1, 'oracle: the ESSAY rule still treats a short unpunctuated first line as a title (unchanged for essays)');
+    ok(/const paras = _mqParas\(section, false, isRetrievalQ\);/.test(SRC), 'the multi-question payload reads retrieval answers as statements');
+})();
+
+// ── v7.20.723 (#753): an over-long body-only answer is marked by CONTENT, never position ────────
+// The protocol: "mark ONLY the taught count, chosen by CONTENT … a short overview never displaces a
+// content paragraph". The IGCSE P1 walk's Q4 (4 paragraphs, taught 3) labelled the quote-less overview
+// PARAGRAPH 1 and left the structure paragraph — the only one naming structure — as the unmarked EXTRA.
+console.log('\nan over-long answer keeps its content paragraphs:');
+(function () {
+    const b = SRC.indexOf('// @TAUGHT-RANK-PURE-BEGIN'), e = SRC.indexOf('// @TAUGHT-RANK-PURE-END');
+    ok(b > 0 && e > b, 'the taught-paragraph chooser sits between its sentinels');
+    const rankFn = new Function(SRC.slice(b, e) + '\nreturn _taughtParagraphRank;')();
+    const walkQ4 = [
+        'Adichie uses language and structure to show that single stories are dangerous. She tells lots of stories about her life.',
+        'At the start she says "all my characters were white and blue-eyed". This shows that she only read British and American books so she wrote about them.',
+        'She also uses repetition when she says "as one thing, as only one thing, over and over again". This shows that a single story is told a lot of times.',
+        'The structure is that she tells three stories, about her books, about Fide and about her roommate. At the end she says "we regain a kind of paradise" which is a happy ending.',
+    ];
+    const r = rankFn(walkQ4, 3);
+    ok(r && r[0] === undefined && r[1] === 0 && r[2] === 1 && r[3] === 2,
+        'the walk\'s Q4: the quote-less overview is the extra; paragraphs 2–4 are marked as 1–3 (got ' + JSON.stringify(r) + ')');
+    ok(rankFn(walkQ4.slice(1), 3) === null, 'exactly the taught count → nothing to choose');
+    const noQuotes = ['It is about stories. ' + words(20), words(30), words(30), words(30)];
+    const rn = rankFn(noQuotes, 3);
+    ok(rn && rn[0] === 0 && rn[1] === 1 && rn[2] === 2 && rn[3] === undefined, 'no quotation anywhere → positional, as before');
+    ok(rankFn(["Adichie's talk isn't about one story, it's about many. " + words(10), 'She says "Stories matter" ' + words(10), 'And "Many stories matter" ' + words(10), 'Then "a kind of paradise" ' + words(10)], 3)[0] === undefined,
+        'apostrophes (it\'s, isn\'t, Adichie\'s) are not mistaken for a quotation');
+    ok(/const _bodyRank = isEssayShape \? null : _taughtParagraphRank\(paras, taught\);/.test(SRC), 'the payload labeller uses the chooser');
+})();
+
 console.log('');
 if (fails) {
     console.log('❌ paragraph-count-harness FAILED (' + fails + ' of ' + checks + ').');
