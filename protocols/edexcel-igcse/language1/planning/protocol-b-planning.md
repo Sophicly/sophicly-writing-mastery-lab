@@ -327,7 +327,7 @@ block below (per current paragraph). For each anchor quote, in order:
 ### Q4 filing — OUTLINE per element; PLAN box at mirror-back approval
 As you confirm EACH element (per the six-element sequence above), emit that element's OUTLINE marker on its own line
 in the SAME reply (verbatim capture — the element store). The paragraph PLAN box is NOT filed per element — it fills
-ONCE, at the mirror-back approval. The Technique step files nothing. Use exactly these literal fieldIds:
+ONCE, at the mirror-back approval. The Technique step files nothing. Copy these markers exactly — the key is `field` (never `fieldId`), and the marker carries no value (code files the student's own words):
 
 **Paragraph 1** (anchor quote 1):
 @FIELD_COMMIT{"field":"outline-body-1-topic-q4"}

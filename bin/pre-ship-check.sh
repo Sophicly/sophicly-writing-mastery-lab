@@ -849,6 +849,9 @@ php bin/lit-19c-override-gate.php >/dev/null || { php bin/lit-19c-override-gate.
 # summing to 8 (19th c. to 7), Rule 5/6 restated, T2/TTE1/H1/P2 off the body list, no "type Y"
 # step, the row Learn chips, and every literature protocol PORTED or listed PENDING — counted
 # from the manifests. The self-test proves each check catches the defect it names.
+# A FILING MARKER THAT SAYS "fieldId" STILL FILES (v7.20.717, measured on the AQA Lit planning walk: the
+# student's accepted topic sentence vanished because every consumer reads "field").
+node bin/marker-key-harness.js >/dev/null || { node bin/marker-key-harness.js; fail=1; }
 node bin/lit-perceptive-gate.js >/dev/null || { node bin/lit-perceptive-gate.js; fail=1; }
 node bin/lit-perceptive-gate.js --self-test >/dev/null || { node bin/lit-perceptive-gate.js --self-test; fail=1; }
 

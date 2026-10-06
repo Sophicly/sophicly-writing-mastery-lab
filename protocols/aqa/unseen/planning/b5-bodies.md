@@ -82,8 +82,8 @@ the value. Emit each marker ONCE, in the confirming reply only. **The paragraph 
 fill live** — it fills once, at the approval below. The Technique question (Step 2) and the Evidence
 confirmation (Step 3) file NOTHING on their own: both are absorbed into the Technique + Evidence +
 Inference sentence, which files the `evidence` box. Effects file as TWO separate turns. **There is
-no Context element and no Context box — AO3 is not assessed in Section C.** Use exactly these
-literal fieldIds:
+no Context element and no Context box — AO3 is not assessed in Section C.** Copy these markers
+exactly — the key is `field` (never `fieldId`), and the marker carries no value (code files the student's own words):
 
 **Body Paragraph 1** (Form or the opening — beginning anchor):
 @FIELD_COMMIT{"field":"outline-body-1-topic"}

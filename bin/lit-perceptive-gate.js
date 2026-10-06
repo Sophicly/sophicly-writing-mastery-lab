@@ -44,6 +44,7 @@ const FILES = {
     fairness: P('protocols', 'shared', 'mark-scheme', 'marking-fairness-universal.md'),
     core: P('frontend', 'wml-core.js'),
     assess: P('frontend', 'wml-assessment.js'),
+    poetryProto: P('protocols', 'aqa', 'poetry', 'modules', 'protocol-a-assessment-poetry.md'),
     penLit: P('protocols', 'aqa', 'literature', 'modules', 'penalty-codes.md'),
     penPoetry: P('protocols', 'aqa', 'poetry', 'modules', 'penalty-codes-poetry.md'),
     penAqaL2: P('protocols', 'aqa', 'language2', 'modules', 'knowledge-penalties.md'),
@@ -171,6 +172,10 @@ function checkAll(T, log) {
     ok('every STEP 2a says to mark in the SAME message', (pr.match(/STEP 2a — Acknowledge, then mark in the SAME message/g) || []).length === 3);
     ok('the Table Format Rule pins exact criterion names (rows are read by name)', /Copy each Criterion name EXACTLY/.test(pr));
     ok('the weak-verb tier points at F1, never T2', !/WEAK \(T2 imprecision territory\)/.test(pr));
+    // v7.20.717 — measured on the WML 327 A poetry walk: with the gate still in the protocol, Sophia
+    // obeyed it on Body 1 and not on the Introduction (the router's state block says the opposite).
+    ok('AQA poetry: no STEP 2a "type **Y**" gate either (§53.29)', !/type \*{0,2}Y\*{0,2} to see|WAIT for the student to reply \*\*Y\*\*/i.test(T.poetryProto)
+        && (T.poetryProto.match(/STEP 2a — Acknowledge, then mark in the SAME message/g) || []).length === 5);
 
     // ── B · the AQA 19th-century override ─────────────────────────────────────────────────
     H('B · the AQA 19th-century override (body out of 7)');
@@ -281,6 +286,7 @@ if (process.argv.includes('--self-test')) {
         ['the override cuts the topic sentence again (sum ≠ 7)', T => { T.router = T.router.replace('is worth **0.75** (not 1.0', 'is worth **1.0** (not 1.0'); }],
         ['the coherence row chip removed', T => { T.core = T.core.replace("{ arg: 'sentence-transitions', label: 'Linking Sentences & Paragraphs', test:", "{ arg: 'cohesion', label: 'Coherence & Cohesion', test:"); }],
         ['T2 back to "Add Furthermore"', T => { T.penPoetry = T.penPoetry.replace('T2 – Sentence not linked to the one before', 'T2 – Lacks transitional phrases/discourse markers (-0.5) Fix: Add Furthermore, Consequently'); }],
+        ['a poetry Y gate restored', T => { T.poetryProto = T.poetryProto.replace('**STEP 2a — Acknowledge, then mark in the SAME message', '**STEP 2a — type **Y** to see your mark breakdown'); }],
     ];
     M.forEach(([name, mut]) => {
         const T = Object.assign({}, base);

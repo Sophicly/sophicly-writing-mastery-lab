@@ -5817,6 +5817,23 @@
         return out;
     }
 
+    // ⭐ v7.20.717 — ONE canonical filing-marker key (§5d). Measured on the WML 327 A AQA Literature planning
+    // walk (staging, 1938): the protocol says @FIELD_COMMIT{"field":"outline-body-1-topic"}, but its own line
+    // reads "Use exactly these literal fieldIds", and Sophia wrote {"fieldId":"outline-body-1-topic","value":…}.
+    // Every consumer (applyFieldCommits, applyFieldSets, the kw-focus detectors, the resume scans) reads
+    // `field`, so the element vanished with no warning — "saved fine but nothing shows up". The key is
+    // rewritten ONCE, as each reply arrives (both pipelines), so every consumer and the stored history see one
+    // form. Only the key inside a filing marker is touched; the student's words are still what gets filed.
+    // @MARKER-KEY-PURE-BEGIN
+    function _normalizeMarkerKeys(reply) {
+        if (!reply || String(reply).indexOf('fieldId') === -1) return reply;
+        let n = 0;
+        const out = String(reply).replace(/@FIELD\\?_(?:COMMIT|SET)\s*\{[^}]*\}/g, (mk) => mk.replace(/"fieldId"(\s*:)/g, (x, colon) => { n++; return '"field"' + colon; }));
+        if (n && typeof console !== 'undefined') console.warn('WML markers: normalised ' + n + ' "fieldId" key(s) to "field"');
+        return out;
+    }
+    // @MARKER-KEY-PURE-END
+
     // v7.20.706 — THE KEY-WORDS SAVE IS FILED, EVEN WHEN THE MODEL FORGETS THE MARKER.
     // Question Focus (Edexcel IGCSE P2 b-goal B.2A, AQA poetry b2) presents the student's key words with
     // "A) Save these key words · B) Tweak them" and files kw-focus on the NEXT turn, after the tap. Measured on
@@ -5834,19 +5851,30 @@
             while (u >= 0 && history[u].role !== 'user') u--;
             if (u < 1) return reply;
             const said = String(history[u].content || '').replace(/\*/g, '').trim();
-            if (!/^(?:A\)?\s*)?Save these key ?words\b/i.test(said) && !/^A\)?\s*\.?$/i.test(said)) return reply;
+            // v7.20.717 (measured, AQA Literature planning walk, staging 1938): Literature presents "Here is your
+            // keyword focus for the plan: how; present; … — Does this look right to save? A — Save this", so the
+            // tap is "A) Save this" and the list is ONE semicolon line, not bullets — the .706 heal matched
+            // neither and the box stayed empty after "Saved!". Both shapes are read now.
+            if (!/^(?:A\)?\s*)?Save (?:these key ?words|this)\b/i.test(said) && !/^A\)?\s*\.?$/i.test(said)) return reply;
             let a = u - 1;
             while (a >= 0 && (history[a].role !== 'assistant' || history[a].hidden)) a--;
             if (a < 0) return reply;
             const shown = String(history[a].content || '');
-            const saveAt = shown.search(/Save these key ?words/i);
+            let saveAt = shown.search(/Save these key ?words/i);
+            if (saveAt === -1 && /key ?words?|keyword focus/i.test(shown)) saveAt = shown.search(/Does this look right to save\?|\n\s*\**A\**\s*[—–)-]\s*\**\s*Save this\b/i);
             if (saveAt === -1) return reply;
             if (!canvasEditor || String(canvasEditor.getHTML()).indexOf('data-field-id="kw-focus"') === -1) return reply;
-            const words = shown.slice(0, saveAt).split('\n')
+            const before = shown.slice(0, saveAt);
+            let words = before.split('\n')
                 .map(l => (l.match(/^\s*(?:[-•*]|\d+[.)])\s+(.+?)\s*$/) || [])[1])
                 .filter(Boolean)
                 .map(w => w.replace(/[*`{}]/g, '').trim())
                 .filter(w => w && !/^[AB]\)/.test(w));
+            if (!words.length) {
+                // the one-line form: the last line before the save question that lists phrases with semicolons
+                const line = before.split('\n').map(l => l.trim()).filter(l => l.indexOf(';') !== -1).pop() || '';
+                words = line.split(';').map(w => w.replace(/[*`{}]/g, '').trim()).filter(Boolean);
+            }
             if (!words.length) {
                 console.warn('WML KeywordSave: the student chose Save but the presented key words could not be read — kw-focus left empty');
                 return reply;
@@ -6315,14 +6343,17 @@
             if (!verbatim) return;
             const re = /@FIELD_COMMIT\s*(\{[^}]*\})/g;
             const fields = [];
-            let m;
+            let m, seen = 0;
             while ((m = re.exec(aiReply)) !== null) {
+                seen++;
                 let payload = null;
                 try { payload = JSON.parse(m[1]); } catch (_) { continue; }
                 const fid = (payload && typeof payload.field === 'string') ? payload.field.trim() : '';
                 if (fid && fields.indexOf(fid) === -1) fields.push(fid);
             }
-            if (!fields.length) return;
+            // v7.20.717: a marker that names no field used to return here SILENTLY (before the SILENT-SKIP
+            // guard below) — the exact path the "fieldId" drift took. Never silent.
+            if (!fields.length) { if (seen) console.warn('[WML FieldFill] @FIELD_COMMIT present but no field could be read', String(aiReply).match(/@FIELD_COMMIT\s*\{[^}]*\}/g)); return; }
             // v7.19.431: NEVER destroy existing content (empty → write; existing → append;
             // exact-dup → skip). v7.19.660: write logic extracted to _writeOutlineRowField
             // (shared with the deterministic CW-Step-1 controller).
@@ -20588,7 +20619,7 @@
                     // so chat, doc cards, sidebar and Score Summary all read corrected numbers.
                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
                     res.reply = _stripDuplicateWalkAsk(res.reply); // v7.20.290: code owns the asks while a walk is armed — never show two competing questions
-                    res.reply = _healKeywordSave(res.reply, canvasChatHistory); // v7.20.706: the confirmed key words file even when the model forgets the marker
+                    res.reply = _healKeywordSave(_normalizeMarkerKeys(res.reply), canvasChatHistory); // v7.20.706 + v7.20.717: one marker key, then the confirmed key words file even when the model forgets the marker
                     let cleanReply = stripAIInternals(res.reply);
                     // v7.19.989: hard-strip the raw progress breadcrumb + any improvised bar at the
                     // SOURCE too (belt-and-braces with withProgressChip — the pin must never show).
@@ -43991,7 +44022,7 @@
                                     // v7.19.832: deterministic mark integrity (see pipeline 1 twin).
                                     res.reply = _normalizeAssessmentReply(_enforceGradeLadder(_auditAssessmentArithmetic(_auditGoldDistinctness(res.reply)))); // v7.19.854: + gate-row synthesis + rejected-penalty strip · v7.19.932: + gold-distinctness warn net
                     res.reply = _stripDuplicateWalkAsk(res.reply); // v7.20.290: code owns the asks while a walk is armed — never show two competing questions
-                    res.reply = _healKeywordSave(res.reply, canvasChatHistory); // v7.20.706: the confirmed key words file even when the model forgets the marker
+                    res.reply = _healKeywordSave(_normalizeMarkerKeys(res.reply), canvasChatHistory); // v7.20.706 + v7.20.717: one marker key, then the confirmed key words file even when the model forgets the marker
                                     let cleanReply = stripAIInternals(res.reply);
                                     // v7.19.989: hard-strip raw breadcrumb + bar at source (twin).
                                     cleanReply = _stripRawProgressLines(cleanReply);

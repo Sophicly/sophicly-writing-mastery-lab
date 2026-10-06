@@ -55,6 +55,15 @@ sb.state.task = 'planning'; warns.length = 0;
 ok(heal(SAVED, hist('A) Save these key words', 'Do you want to save these key words?\nA) Save these key words\nB) Tweak them')) === SAVED
    && warns.some(w => /could not be read/.test(w)), 'K12: a presentation with no readable list → nothing filed, warns');
 
+// v7.20.717 — the AQA Literature wording, verbatim from the WML 327 A Macbeth planning walk (staging 1938):
+// one semicolon line, "Does this look right to save?", and the tap "A) Save this".
+const LIT = "That's a sharp reading of the question, Neil.\n\nHere is your keyword focus for the plan:\n\nhow; present; Macbeth; inner conflict; the extract and the play as a whole\n\nDoes this look right to save?\n\nA — Save this\nB — I want to change something";
+ok(fieldSets(heal('Saved!', hist('A) Save this', LIT)))['kw-focus'] === 'how; present; Macbeth; inner conflict; the extract and the play as a whole',
+   'K13: AQA Literature wording (semicolon line + "Save this") files the confirmed key words', JSON.stringify(fieldSets(heal('Saved!', hist('A) Save this', LIT)))));
+ok(heal('Saved!', hist('A) Save this', 'Here is your plan for Body Paragraph 1.\n\nDoes this look right to save?\n\nA — Save this\nB — Change it')) === 'Saved!',
+   'K14: "Save this" after a presentation that is NOT key words → nothing filed');
+ok(heal('Saved!', hist('B) I want to change something', LIT)) === 'Saved!', 'K15: the student chose to change them → nothing filed');
+
 console.log(`— KEYWORD SAVE: ${passed}/${passed + failed} assertions passed.`);
 if (failed) { console.log('\n❌ keyword-save-harness FAILED'); process.exit(1); }
 console.log('✅ keyword-save-harness passed (the confirmed key words file whether or not the model remembers the marker).');

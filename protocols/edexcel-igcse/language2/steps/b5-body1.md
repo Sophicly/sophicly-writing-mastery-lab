@@ -584,7 +584,7 @@ file as TWO turns (Effect 1 → `effects`, Effect 2 → `effects2`).
 ⛔ Edexcel IGCSE Language Paper 2 Section A assesses **AO1 + AO2 only — there is NO context element**.
 Never emit an `outline-body-1-context` marker on this paper; that row is not rendered.
 
-Use exactly these literal fieldIds:
+Copy these markers exactly — the key is `field` (never `fieldId`), and the marker carries no value (code files the student's own words):
 
 **Body Paragraph 1** (Form / Genre):
 @FIELD_COMMIT{"field":"outline-body-1-topic"}

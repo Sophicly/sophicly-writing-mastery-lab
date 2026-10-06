@@ -42,3 +42,7 @@ List the key words or phrases you think are most important."
 
 **[AI_INTERNAL — Confirm Before Save]**
 <!-- @CONFIRM_ELEMENT: element_type="keywords" label="Keywords" -->
+
+**[AI_INTERNAL — write to the document ONLY AFTER the student confirms (v7.20.717 — the same save AQA Literature and AQA poetry use; without it the reply says "Saved!" and the document's Question Focus box stays empty)]:** Present the key-word list and ask the student to confirm it BEFORE anything is written. ONLY once the student chooses **A / "Save"** (their FINAL version, after any tweaks) — in THAT acknowledgement message — output on its own line:
+`@FIELD_SET{"field":"kw-focus","value":"<the confirmed key words>"}`
+This fills the document's **Question Focus: Keywords** box (fieldId `kw-focus`). If the student changes them, re-present and emit the @FIELD_SET ONLY after they finally save — never the placeholder or an example verbatim, never before confirmation.

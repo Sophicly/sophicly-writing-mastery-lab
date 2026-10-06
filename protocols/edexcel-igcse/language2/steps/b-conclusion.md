@@ -33,7 +33,7 @@ As the student's answer to EACH conclusion element above is accepted, emit that 
 on its own line in the SAME accepting reply (verbatim capture — I file the student's own words into the
 box). The PLAN box is NOT filed per element — it fills ONCE, at the Y approval above.
 
-Use exactly these literal fieldIds:
+Copy these markers exactly — the key is `field` (never `fieldId`), and the marker carries no value (code files the student's own words):
 
 **Conclusion** (the four-part quartet):
 @FIELD_COMMIT{"field":"outline-conclusion-thesis"}

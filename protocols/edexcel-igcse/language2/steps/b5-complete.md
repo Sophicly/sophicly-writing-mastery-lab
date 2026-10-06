@@ -106,7 +106,7 @@ box). The PLAN box is NOT filed per element — it fills ONCE, at the Y approval
 The working thesis drafted at B.6 is the SAME element as the introduction's thesis — it files once, to
 `outline-intro-thesis-q1`, and the B.7 refinement re-files that same box. Never open a second thesis box.
 
-Use exactly these literal fieldIds (the `-q1` ending is part of the name — this paper's document labels its
+Copy these markers exactly — the key is `field`, never `fieldId` (the `-q1` ending is part of the name — this paper's document labels its
 introduction rows with the question number):
 
 **Introduction:**

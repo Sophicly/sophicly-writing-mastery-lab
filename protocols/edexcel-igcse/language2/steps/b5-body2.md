@@ -296,7 +296,7 @@ absorbed into the TEI sentence, which files the `evidence` box. Effects file as 
 ⛔ Edexcel IGCSE Language Paper 2 Section A assesses **AO1 + AO2 only — there is NO context element**.
 Never emit an `outline-body-2-context` marker on this paper; that row is not rendered.
 
-Use exactly these literal fieldIds:
+Copy these markers exactly — the key is `field` (never `fieldId`), and the marker carries no value (code files the student's own words):
 
 **Body Paragraph 2** (Structure):
 @FIELD_COMMIT{"field":"outline-body-2-topic"}

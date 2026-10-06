@@ -877,7 +877,7 @@ Work these six elements IN ORDER, one per turn; each files its OUTLINE box as th
 As you confirm EACH element (per the six-element sequence above), emit that element's OUTLINE marker on its
 own line in the SAME reply (verbatim capture — the element store). The paragraph PLAN box is NOT filed per
 element — it fills ONCE, at the mirror-back approval (see the mirror-back section). The Technique step
-files nothing. Use exactly these literal fieldIds:
+files nothing. Copy these markers exactly — the key is `field` (never `fieldId`), and the marker carries no value (code files the student's own words):
 
 **Paragraph 1** (anchor quote 1):
 @FIELD_COMMIT{"field":"outline-body-1-topic-q3"}

@@ -288,7 +288,7 @@ line in the SAME accepting reply (verbatim capture — CODE files the student's 
 element store). The paragraph PLAN box is NOT filed per element — it fills ONCE, at the plan approval
 below. The Technique question (element 2's first beats) and the Evidence confirmation (element 3) file
 NOTHING — both are absorbed into the TEI sentence, which files the `evidence` box. Effects file as TWO
-turns (Effect 1 → `effects`, Effect 2 → `effects2`). Use exactly these literal fieldIds:
+turns (Effect 1 → `effects`, Effect 2 → `effects2`). Copy these markers exactly — the key is `field` (never `fieldId`), and the marker carries no value (code files the student's own words):
 
 **Body Paragraph 1** (Beginning anchor):
 @FIELD_COMMIT{"field":"outline-body-1-topic"}

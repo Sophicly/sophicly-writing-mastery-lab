@@ -645,7 +645,7 @@ For each anchor quote, in order:
 As you confirm EACH element (per the six-element sequence above), emit that element's OUTLINE marker on its
 own line in the SAME reply (verbatim capture — the element store). The paragraph PLAN box is NOT filed per
 element — it fills ONCE, at the mirror-back approval (see the mirror-back section). The Technique step
-files nothing. Use exactly these literal fieldIds:
+files nothing. Copy these markers exactly — the key is `field` (never `fieldId`), and the marker carries no value (code files the student's own words):
 
 **Paragraph 1** (anchor quote 1):
 @FIELD_COMMIT{"field":"outline-body-1-topic-q2"}
@@ -763,7 +763,7 @@ the structural swap:
 ### Q3 filing — OUTLINE per element; PLAN box at mirror-back approval (v7.20.216)
 As you confirm EACH element, emit its OUTLINE marker on its own line in the SAME reply (verbatim element
 store). The paragraph PLAN box fills ONCE at the mirror-back approval. The structural-
-feature step files nothing. Use exactly these literal fieldIds:
+feature step files nothing. Copy these markers exactly — the key is `field` (never `fieldId`), and the marker carries no value (code files the student's own words):
 
 **Paragraph 1** (anchor 1):
 @FIELD_COMMIT{"field":"outline-body-1-topic-q3"}

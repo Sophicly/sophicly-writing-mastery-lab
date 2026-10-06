@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.716';
+var WML_BUILD = '7.20.717';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -624,7 +624,10 @@ window.WML = (function() {
         if (subject.skipTextSelect) return subject.label;
         // For poetry/prose anthology, check board-specific texts first
         if (subjectId === 'poetry_anthology' && POETRY_ANTHOLOGY_BY_BOARD[state.board]) {
-            const boardText = POETRY_ANTHOLOGY_BY_BOARD[state.board].find(t => t.id === textId);
+            // v7.20.716: the course map and user_meta use the canonical '_poetry' slug
+            // ('power_conflict_poetry'); the picker keys the short id — match both, or the screen shows
+            // the raw id ("your Power conflict poetry diagnostic essay", root §14).
+            const boardText = POETRY_ANTHOLOGY_BY_BOARD[state.board].find(t => t.id === textId || t.id + '_poetry' === textId);
             if (boardText) return boardText.label;
         }
         if (subjectId === 'prose_anthology' && PROSE_ANTHOLOGY_BY_BOARD[state.board]) {
