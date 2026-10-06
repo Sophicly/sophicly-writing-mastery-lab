@@ -67,7 +67,7 @@ AQA body paragraph, out of 8, in the order the student writes it:
 | 7 | Effect 2 | 0.5 | 0.25 · +0.25 perceptive | same |
 | 8 | Author's purpose | 1.0 | 0.75 · +0.25 perceptive | same |
 | 9 | Context | 1.0 | 0.75 · +0.25 perceptive | same |
-| 10 | Coherence and flow | 0.5 | **0.25 every sentence links back to the topic sentence and the question** (one that drifts off the idea loses it) · **+0.25 every sentence flows on from the one before** — it picks up the previous sentence's idea or links to it ("It follows that…", "In that anger…", "Therefore…" in the Mrs Birling essay); a list of separate facts loses it (#738p) | Analysis links to topic sentence, 0.5 |
+| 10 | Coherence and flow | 0.5 | **0.25 every sentence links back to the topic sentence and the question** (one that drifts off the idea loses it; the toolkit: "Keep the question's key word alive… Repeat that key idea on purpose") · **+0.25 every sentence flows on from the one before**, by ANY of the toolkit's nine linking methods (`sentence-transitions`): a linking word chosen for its meaning ("Therefore…"), a transitional phrase ("It follows that…", "Such judging of the poor…"), or a deliberately repeated key word ("That shame deepens…") — not only discourse markers (#738s). A list of separate facts loses it, and so does a linking word with the wrong meaning ("Additionally" before a result). A missed quarter carries a chip to the toolkit's **Linking Sentences & Paragraphs** (#738p, #738s) | Analysis links to topic sentence, 0.5 |
 | 11 | **Judicious supporting quotations** | 0.25 | short quotations beyond the anchor, each **integrated** (embedded, or correctly introduced, as row 3; ideally embedded) and carrying its own inference; quality not number (the essay uses 2–3 per paragraph) | **new (+0.25)** |
 | | **Total** | **8** | unchanged | **the only mark that moves: 0.25 from close analysis to row 11** |
 
@@ -289,6 +289,25 @@ supporting-quotation row**, so every total is unchanged; the gate (§6) proves i
    - `bin/para-gap-check-harness.js` gate A counts criteria and fails until both are mapped.
 3. **Feedback card parsing** — the measured prod card shape parses to 11 rows (`para-gap-check-harness.js`
    gate B). Still 11 rows; the harness fixture must use the new names.
+4. **Coherence aligned with the Mastery Toolkit (#738s, PEDAGOGY §53.20).** Read 2026-10-06: the toolkit already
+   teaches Neil's three kinds of link and more — section `sentence-transitions` ("Linking Sentences & Paragraphs",
+   nine methods, "Keep the question's key word alive"; live on prod and staging, checked in the served bundle) and
+   `cohesion` ("Coherence & Cohesion", linking-word groups + "Strategic repetition"). WML today sends the flow
+   element to `cohesion` (`frontend/wml-core.js` ELEMENT_TOOLKIT_MAP "flow from one sentence to the next"; penalty
+   chips T2 and R1, :5091–5092), and the code's own comment calls `cohesion` "a connectives list". Changes:
+   - `sentence-transitions` added to `RESOURCE_TOOLKIT_IDS`; the ELEMENT_TOOLKIT_MAP flow row and the **T2** chip
+     point to it (R1 stays on `cohesion`, whose "Strategic repetition" box is exactly R1's fault);
+     `bin/toolkit-link-gate.js` proves the id exists in the built bundle.
+   - A missed coherence quarter carries that chip (the existing `@RESOURCE_LINK` path — Sophia copies the line,
+     never composes an id).
+   - **T2** (`aqa/literature/modules/penalty-codes.md:15`, `aqa/poetry/modules/penalty-codes-poetry.md`) restated:
+     a sentence with no link of any kind to the one before (linking word, transitional phrase or repeated key word),
+     or a linking word with the wrong meaning; its Fix shows the student's own sentence linked by echoing a key word
+     or by the right linking word — never "add Furthermore". Not charged on a body paragraph whose coherence row
+     already charged the same missing link (Rule 3).
+   - The gold-rewrite rule `shared/literature/modules/model-answer.md:54` ("Always begin sentences with a discourse
+     marker…") and `aqa/literature/modules/protocol-a-assessment.md:406` aligned the same way, so Sophia's gold
+     models vary their links as the toolkit does.
 
 ## 6. The gates that prove it
 

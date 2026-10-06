@@ -2909,6 +2909,24 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
 19. **Coherence is two quarters** (#738p, his proposal, agreed): 0.25 every sentence links back to the topic
     sentence and the question + 0.25 every sentence flows on from the one before (*"every sentence essentially
     flowing on from each other"*). Two different faults — drifting off the idea, and a list of separate facts.
+20. **A link is not only a discourse marker — the marking follows the Mastery Toolkit** (#738s, Neil, 2026-10-06):
+    *"we don't necessarily always have to use discourse markers. Sometimes it can be a transitional phrase.
+    Sometimes it can be a deliberate repetition of keywords. What have we done for that in the toolkit? Basically,
+    it should be aligned with that. And again, if the students get it wrong, then we can give them a quick action
+    button to open that up so a deep link."* The toolkit's own rule (section `sentence-transitions`, "Linking
+    Sentences & Paragraphs", live on prod): *"Every sentence must follow logically from the one before. That is
+    different from gluing a word on the front. If every sentence opens with a linking word, the linking becomes its
+    own repetition."* — nine methods (a linking word chosen for its meaning, never twice in a paragraph · echo a key
+    word · That/Such + a summing-up noun, never a bare "this" · a word from the quotation · the link inside the
+    sentence · a time or place clause · cause then effect · contrast · general then specific), and *"Keep the
+    question's key word alive… Repeat that key idea on purpose."* So the flow quarter is earned by ANY of these,
+    and a linking word with the wrong meaning ("Additionally" before a result) is the toolkit's "wrong link". A
+    missed quarter carries a chip to `sentence-transitions`. ⚠️ Consequences for the build: penalty **T2** ("Lacks
+    transitional phrases/discourse markers… Fix: Add Furthermore, Consequently…", `aqa/literature/modules/penalty-codes.md:15`,
+    also `aqa/poetry/modules/penalty-codes-poetry.md`) is restated to the toolkit's meaning and is never charged on a
+    body paragraph whose coherence row already charged the same missing link (Rule 3, one fault one charge); the gold
+    rewrite rule `shared/literature/modules/model-answer.md:54` ("Always begin sentences with a discourse marker…")
+    is aligned the same way.
 
 Still open on the Actions page: the body table as a whole; where the freed 0.25 goes (recommended close analysis,
 so the only mark that moves against today's table is close analysis 1.5 → 1.25 for the supporting quotations);
