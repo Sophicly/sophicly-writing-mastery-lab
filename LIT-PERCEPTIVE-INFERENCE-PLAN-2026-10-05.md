@@ -1,6 +1,6 @@
 # Perceptive inferences in Literature marking — the plan (FIXLIST #738, #738b, #738c)
 
-**Status:** PLAN v2, nothing built. Waiting on Neil's ruling (WML Actions page, card 2).
+**Status:** RULED 2026-10-06 (PEDAGOGY §53.23–§53.29, Neil's Actions taps) — BUILDING, AQA Literature first (§7).
 **v1 (2026-10-05)** merged three rows into one and dissolved a fourth. **Neil rejected that on 2026-10-06 (#738c):
 each of those rows teaches something.** v2 keeps every row and every worth.
 **Totals:** unchanged on every paper. Against today's AQA table the only mark that moves is 0.25, from close analysis (1.5 → 1.25) to the new judicious-supporting-quotations row; every other row keeps its mark and gets a sharper definition (§3, v5).
@@ -78,6 +78,8 @@ part of any row is awarded **only when Sophia's Why names the student's reading 
 it rests on** (*"perceptive — 'naturally' turns prejudice into common sense"*). If she cannot point to the words,
 the part is not awarded. Calibrated against the Mrs Birling lines in §3b. Build-time check: every awarded
 convincing/perceptive part in a marked paragraph carries a quoted fragment in its Why (measured after release).
+
+**Sound devices (§53.28):** Alliteration, Assonance, Consonance, Sibilance and Onomatopoeia CAN be the sentence-2 technique. Plosive and Tense belong in close analysis; when a student uses one as the sentence-2 technique, both quarters are still credited (as an examiner would) and the feedback encourages naming the bigger method first, without deducting.
 
 **Techniques elsewhere still count** (#738k: *"that's not how they'll be marked in the exam… they can [talk about
 techniques elsewhere]. It's just that I want them to follow that structure so that they have a logical sequence"*):
@@ -198,7 +200,7 @@ Where the essay does two rows in one sentence, the same sentence is quoted for b
 | Hook | 1.0 | "*An Inspector Calls* was written by J.B. Priestley in 1945 and is set in 1912." | "In 1910 the British state paid no unemployment benefit, so anyone without work might have to ask a charity, whose committees of wealthier people (like Mrs Birling) granted relief as a favour, not a right…" | a specific fact that already carries the essay's argument (favour vs right) and points at the characters |
 | Building: contextual backdrop | 0.5 | "Priestley wrote the play after the Second World War." | "Priestley, writing in 1944–45 after the Beveridge Report proposed making help for people in need a right, chose 1912 for the story…" | a precise, dated context, not the period in general |
 | Building: how context shapes purpose | 0.5 | "This made him want to show that society should change." | "…so audiences would see that a right, unlike a favour, cannot be withheld because the giver dislikes the person asking." | turns the context into the writer's REASON for a choice |
-| Thesis | 1.0 | "Priestley presents Mrs Birling as prejudiced against the working class in three ways." | "Mrs Birling, therefore, personifies the consequences of class prejudice being prioritised over communal welfare: she puts the status quo that rewards her before her daughter; she punishes a girl for claiming the family's name; and she believes her class is above questioning." | one concept that answers the question, and three points that are each arguable |
+| Thesis | 1.0 = 0.5 three points that map the essay · +0.25 they set up ONE core argument that answers the question · +0.25 perceptive (§53.26: *"do more than simply say what the essay will cover… set up the core argument"*) | Roadmap only (0.5): "Priestley presents Mrs Birling as prejudiced against the working class in three ways." Core argument, not yet perceptive (0.75): "Priestley presents Mrs Birling's prejudice as cruelty dressed as respectability: towards her daughter, at her charity and against the Inspector." | "Mrs Birling, therefore, personifies the consequences of class prejudice being prioritised over communal welfare: she puts the status quo that rewards her before her daughter; she punishes a girl for claiming the family's name; and she believes her class is above questioning." | one concept that answers the question, and three points that are each arguable |
 
 **Conclusion (out of 7)**
 

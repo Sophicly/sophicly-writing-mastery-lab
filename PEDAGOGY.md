@@ -2943,7 +2943,39 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
     `interpretation-ladder`. Built as fairness Rule 6 (`marking-fairness-universal.md`), every board — the scope
     recommended on the card. Close analysis stays 1.25.
 
-Still open on the Actions page: the body table as a whole; where the freed 0.25 goes (recommended close analysis,
-so the only mark that moves against today's table is close analysis 1.5 → 1.25 for the supporting quotations);
-AQA 19th-century bodies (recommended: topic sentence whole; purpose 0.5, close analysis 1.0, context 0.75); and
-the introduction/conclusion definitions.
+**THE ACTIONS-PAGE TAPS OF 6 OCTOBER (v44, Copy my answers, FIXLIST #738w) — the plan is RULED and goes to build:**
+
+23. **The v5 body table — *"Yes, build it this way."*** Eleven rows, AQA out of 8, as plan §3 (row 2 = technique +
+    anchor quote + inference in one sentence; row 10 coherence two quarters by the toolkit's nine links; row 11
+    judicious supporting quotations 0.25).
+24. **The one mark that moves — *"Yes, close analysis 1.5 to 1.25."***
+25. **AQA 19th-century bodies (out of 7) — *"Yes: topic sentence whole, purpose 0.5, close analysis 1.0, context
+    0.75."*** Supersedes the 21 July split (topic sentence 0.5) in `class-protocol-router.php:3128-3140`.
+26. **Introduction and conclusion perceptive too; the thesis sets up the core argument** (no tap; his note):
+    *"Ideally these are going to be perceptive as well. The thesis should also do more than simply say what the essay
+    will cover; it should also set up the core argument."* The plan §3d definitions stand. The thesis row (1.0) is
+    built as: **0.5** three points that map the essay · **+0.25** they set up ONE core argument that answers the
+    question · **+0.25** perceptive (AQA: conceptualised). A roadmap alone ("this essay will explore three ways…")
+    earns the 0.5 only. Today's protocol says "giving the essay's roadmap" (`aqa/literature/modules/protocol-a-assessment.md:233`,
+    and :438) — rewritten in the build. (The split is the build's reading of his note, stated to him.)
+27. **The overall criteria scorecard goes above the Action Priorities** — *"Above the Action Priorities."* Next: its
+    own end-to-end plan + a picture for his tap before any build (plan §8.2).
+28. **Sound devices** (his note): *"Alliteration, Assonance, Consonance, Sibilance, Onomatopoeia can be the technique
+    in the second sentence. Plosive and Tense belong in the second sentence; what should we do if the student uses
+    them in the second sentence? A real examiner would still credit them."* Read as: the five sound devices CAN be
+    the sentence-2 technique; **Plosive and Tense belong in close analysis** ("belong in the second sentence" read as
+    a slip — the question that follows only makes sense that way; stated to him). When a student does use Plosive or
+    Tense as the sentence-2 technique, **both quarters are credited** (named correctly + the sequence), as an
+    examiner would, and the feedback encourages naming the bigger method first without deducting — the same shape as
+    the colon-led quotation (§53.18). Supersedes the recommended "close analysis" for the five. Library gate
+    `bin/verify-big-technique.mjs` to be switched (handoff).
+29. **The "type Y" step is dropped — *"Drop it: Continue starts the marking."*** ✓ Got it — continue starts the next
+    section's marking directly; the fixed Y-gate call (#687b) is gone. In Language, the line repeating the student's
+    own level and mark is drawn by code while the marking loads.
+30. **Operational answers (not pedagogy, recorded for the next chat):** read Mishel's and Qamar's marked P1
+    diagnostics — *"Yes, read them"* (#729) · Mishel's device — *"I don't know"* (#730 → instrument, never guess) ·
+    recover six students' quiz grades — *"Yes, recover all six"* (#736) · the quick exam story — *"Every board's
+    creative question"* (#727, plan first).
+
+Nothing in §53 is still open after 6 October: rulings 23–29 settled the table, the moved mark, the 19th-century
+split and the introduction/conclusion definitions.
