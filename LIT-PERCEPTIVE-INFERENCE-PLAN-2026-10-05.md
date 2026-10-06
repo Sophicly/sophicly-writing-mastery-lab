@@ -3,7 +3,7 @@
 **Status:** PLAN v2, nothing built. Waiting on Neil's ruling (WML Actions page, card 2).
 **v1 (2026-10-05)** merged three rows into one and dissolved a fourth. **Neil rejected that on 2026-10-06 (#738c):
 each of those rows teaches something.** v2 keeps every row and every worth.
-**Totals:** unchanged on every paper: 0.5 moves out of close analysis, 0.25 into the one-sentence structure and 0.25 into the supporting quotation (§3c).
+**Totals:** unchanged on every paper. Against today's AQA table the only mark that moves is 0.25, from close analysis (1.5 → 1.25) to the new judicious-supporting-quotations row; every other row keeps its mark and gets a sharper definition (§3, v5).
 
 ## 1. What Neil asked (verbatim in the FIXLIST)
 
@@ -56,21 +56,20 @@ each of those rows teaches something.** v2 keeps every row and every worth.
 
 AQA body paragraph, out of 8, in the order the student writes it:
 
-| # | Row | Worth | How it is marked (v4, Neil 2026-10-06 #738g + #738h) |
-|---|---|---|---|
-| 1 | Topic sentence links to thesis and question | 1.0 | **0.25** links to thesis and question · **+0.5 a CONVINCING concept** (AQA: conceptualised — "conceptualization is actually the most important thing") · **+0.25** that concept is drawn from the ANCHOR QUOTE ("they don't always base their ideas on the anchor quote") |
-| 2 | **Technique + anchor quote + inference, in ONE sentence** (replaces "Strategic selection of quotes") | 1.0 | **0.25 the structure** (the technique, then the anchor quote, then what it shows, together in one sentence; a technique named elsewhere in the paragraph does not earn it). **The technique is the writer's METHOD — a big technique such as a metaphor, juxtaposition, dramatic irony, euphemism or rhetorical question — never a word class on its own** ("an adverb"); word classes, sounds and punctuation are close analysis (#738j) · **0.25** an inference the quote supports · **+0.5 a CONVINCING, perceptive inference** (terminology's freed 0.25 lands here, pending Neil's tap — mirrors the topic sentence) |
-| 3 | Accurate technical terminology (the name of that technique) | 0.25 (was 0.5) | **correct = 0.25 · wrong term = 0** (metaphor for a simile). Accuracy row: no perceptive quarter. |
-| 4 | Quotation, integrated | 0.5 | a quote that hangs = 0.25 · woven into the sentence = 0.5. Accuracy row: no perceptive quarter. |
-| 5 | Close analysis — fine-grained | 1.0 (was 1.5) | breaks the technique and the quote into small parts: individual words and their word classes, sounds, punctuation (AQA L6: "a fine-grained and insightful analysis of methods") · 0.75 · +0.25 perceptive |
-| 6 | Technique interplay | 0.5 | 0.25 · +0.25 perceptive |
-| 7 | Effect 1 | 0.5 | 0.25 · +0.25 perceptive |
-| 8 | Effect 2 | 0.5 | 0.25 · +0.25 perceptive |
-| 9 | Author's purpose | 1.0 | 0.75 · +0.25 perceptive |
-| 10 | Context | 1.0 | 0.75 · +0.25 perceptive |
-| 11 | Coherence: every sentence links back to the topic sentence and the question | 0.5 | every sentence links = 0.5 · one drifts = 0.25 · two or more, or a list of facts = 0 |
-| 12 | **Judicious supporting quotations** (ruled 2026-10-06, scored not bonus; name Neil's, #738i) | 0.25 | short quotations beyond the anchor, each woven into a sentence and carrying its own inference that moves the paragraph's argument on. No count is required and none is rewarded: one judicious quotation can earn it, and three dropped in cannot. (The essay uses 2–3 per paragraph.) |
-| | **Total** | **8** | unchanged |
+| # | Row | Worth | How it is marked (v5, Neil 2026-10-06 #738g–#738k) | Today's AQA row it replaces |
+|---|---|---|---|---|
+| 1 | Topic sentence links to thesis and question | 1.0 | **0.25** links to thesis and question · **+0.5 a CONVINCING concept** (AQA: conceptualised) · **+0.25** that concept is drawn from the ANCHOR QUOTE | Topic sentence, 1.0 |
+| 2 | **Technique + anchor quote + inference, in ONE sentence** | 1.0 | **0.25 the technique, named accurately** — any of the 304 techniques in the Table of Techniques (`sophicly-writing-mastery-lab/protocols/shared/reference/techniques.json`, 0 of which is a bare word class); a wrong term = 0 for this part; it counts wherever it is named (#738k) · **0.25 the sequence** — technique, then the anchor quote, then an inference the quote supports, together in one sentence · **+0.5 a CONVINCING, perceptive inference** | Strategic selection 0.5 + Accurate terminology 0.5 = 1.0 |
+| 3 | Quotation, integrated | 0.5 | a quote that hangs = 0.25 · woven into the sentence = 0.5 | Integrated quotes, 0.5 |
+| 4 | Close analysis, fine-grained | 1.25 | breaks the technique and the quote into small parts: words and their word classes, sounds, punctuation (AQA L6: "a fine-grained and insightful analysis of methods") · 1.0 · +0.25 perceptive | Close analysis, 1.5 (**−0.25**) |
+| 5 | Technique interplay | 0.5 | 0.25 · +0.25 perceptive | same |
+| 6 | Effect 1 | 0.5 | 0.25 · +0.25 perceptive | same |
+| 7 | Effect 2 | 0.5 | 0.25 · +0.25 perceptive | same |
+| 8 | Author's purpose | 1.0 | 0.75 · +0.25 perceptive | same |
+| 9 | Context | 1.0 | 0.75 · +0.25 perceptive | same |
+| 10 | Coherence: every sentence links back to the topic sentence and the question | 0.5 | every sentence links = 0.5 · one drifts = 0.25 · two or more, or a list of facts = 0 | Analysis links to topic sentence, 0.5 |
+| 11 | **Judicious supporting quotations** | 0.25 | short quotations beyond the anchor, each woven in with its own inference; quality not number (the essay uses 2–3 per paragraph) | **new (+0.25)** |
+| | **Total** | **8** | unchanged | **the only mark that moves: 0.25 from close analysis to row 11** |
 
 **What "convincing" means, so it can be checked (#738h: "it does have to be convincing. So I'm not sure what
 we can do about that"):** AQA's own top level is titled *"Convincing, critical analysis"* (AQA Literature June
@@ -80,11 +79,11 @@ it rests on** (*"perceptive — 'naturally' turns prejudice into common sense"*)
 the part is not awarded. Calibrated against the Mrs Birling lines in §3b. Build-time check: every awarded
 convincing/perceptive part in a marked paragraph carries a quoted fragment in its Why (measured after release).
 
-**Rows 2–4 together are the technique + anchor quote + inference sentence** Neil described, in his order (#738j):
-the one-sentence structure plus its inference (row 2), the accurate name of the technique (row 3), integration
-(row 4). Funding: rows 2 (+0.25 structure)
-and 12 (+0.25) come out of close analysis, 1.5 → 1.0 (pending Neil's tap, §3c). AQA Language Paper 1 already
-weights the inference sentence above close analysis: *"the inference IS the analysis"* (`aqa/language1/modules/protocol-a-assessment.md:510`).
+**Techniques elsewhere still count** (#738k: *"that's not how they'll be marked in the exam… they can [talk about
+techniques elsewhere]. It's just that I want them to follow that structure so that they have a logical sequence"*):
+a technique named accurately in any sentence earns row 2's first 0.25; only the 0.25 for the SEQUENCE rewards the
+one-sentence structure. Techniques analysed in close analysis or interplay are credited in those rows. A wrong term
+used elsewhere is judged in the row where it appears.
 
 **Why coherence stays its own row** (v1 folded it into every row): one graded row is easy for a student to
 see and act on ("your effect 2 drifted"), and it charges a drift once. Folding it into ten rows hid it and
@@ -99,8 +98,6 @@ risked charging the same drift twice (`marking-fairness-universal.md` Rule 3: on
 - The Why says which quarter was missed: *"clear; not yet perceptive"* / *"perceptive — [the reading]"* /
   *"the quote hangs — work it into your sentence"* / *"Effect 2 drifts from your topic sentence"*.
 
-**The alternative, for Neil's note box:** keep "Strategic selection" as its own row, and give the inference
-0.5 taken from close analysis (1.5 → 1.0).
 
 ## 3b. What earns the last 0.25 — the Mrs Birling standard (#738d)
 
@@ -159,11 +156,12 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
   more, because the boards reward the quality of references, never their number: AQA *"Judicious use of precise
   references"*, OCR *"precise, pertinent and skilfully interwoven"*, Edexcel *"Discerning references are an
   integral part of the response"*.
-- **Where the 0.5 comes from (supporting quotation 0.25 + one-sentence structure 0.25) — OPEN, Neil's tap.
-  Recommended: close analysis, 1.5 → 1.0** (0.75 + 0.25 perceptive). One rule that works on every table; AQA
-  Language Paper 1 already weights the inference sentence above close analysis (1.0 vs 0.5: *"the inference IS the
-  analysis"*, `aqa/language1/modules/protocol-a-assessment.md:510`). Author's purpose fails as a source on the
-  AQA 19th-century body, where it is already 0.5. Alternative: close analysis 1.25 + context 0.75.
+- **Where the marks come from (v5, after #738k) — recommended, pending Neil's tap.** Terminology merges into row 2
+  (Neil's suggestion; row 2 = strategic selection 0.5 + terminology 0.5 = 1.0, unchanged in total), so the
+  one-sentence structure is paid for inside row 2. The supporting quotation's 0.25 comes from close analysis,
+  1.5 → 1.25: the only source that works on every table (author's purpose is already 0.5 in the AQA 19th-century
+  body), and close analysis stays the biggest analytical row, as AQA's top level names it ("a fine-grained and
+  insightful analysis of methods"). Alternative: coherence 0.5 → 0.25 instead.
 - **Other boards (rule for the build, no per-board ruling):** each new part is funded from that table's largest
   analytical row, and no row with a perceptive quarter drops below 0.5 (so it keeps a clear part under the
   quarter). Boards whose topic sentence is 0.5 (Eduqas literature, OCR, SQA) are raised to 1.0 the same way, so
@@ -173,13 +171,13 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
 
 Neil approved on 2026-07-21: 19th-century bodies are out of 7 by cutting the topic sentence to 0.5 and author's
 purpose to 0.5 (`includes/class-protocol-router.php:3128-3140`). **His three-part topic sentence (0.5 + 0.25 +
-0.25) cannot fit in 0.5.** Recommended (v4, after #738h), keeping both rulings' intent:
+0.25) cannot fit in 0.5.** Recommended (v5, after #738k), keeping both rulings' intent:
 
 | Row | Shakespeare / Modern | 19th century (recommended) |
 |---|---|---|
 | Topic sentence | 1.0 (0.25 + 0.5 + 0.25) | **1.0, kept whole** — the concept is "the most important thing" (#738h) |
 | Author's purpose | 1.0 | **0.5** (as July) |
-| Close analysis | 1.0 | **0.75** |
+| Close analysis | 1.25 | **1.0** |
 | Context | 1.0 | **0.75** |
 | every other row | as §3 | unchanged |
 | **Body total** | **8** | **7** |

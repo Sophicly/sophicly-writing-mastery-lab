@@ -2891,6 +2891,16 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
     analysis of methods"* — "judicious", not "sophisticated". Order: topic sentence → technique + anchor quote +
     inference (one sentence) → accurate technical terminology → quotation integrated → close analysis → the rest.
 
-Still open on the Actions page: the body table as a whole, where the marks come from (close analysis 1.5 → 1.0;
-terminology's 0.25 → the inference), AQA 19th-century bodies (recommended: topic sentence whole; purpose 0.5,
-close analysis 0.75, context 0.75), and the introduction/conclusion definitions.
+15. **The technique can be anything in the Table of Techniques, and techniques elsewhere still count** (#738k):
+    *"those are just examples… it could literally be anything if you check the table of techniques"*; *"that's
+    not how they'll be marked in the exam. I think it should still count… I want them to follow that structure so
+    that they have a logical sequence to follow."* The 304-entry table holds no bare word class, so "anything in
+    the table" and "a method, not a word class" are one rule. Naming the technique accurately counts wherever it is
+    done; only the sequence 0.25 rewards the one-sentence structure.
+16. **Terminology merges into the technique + anchor quote + inference line** (#738k, his suggestion, agreed):
+    that row is 1.0 = technique named accurately 0.25 + the sequence 0.25 + a convincing, perceptive inference 0.5.
+
+Still open on the Actions page: the body table as a whole; where the freed 0.25 goes (recommended close analysis,
+so the only mark that moves against today's table is close analysis 1.5 → 1.25 for the supporting quotations);
+AQA 19th-century bodies (recommended: topic sentence whole; purpose 0.5, close analysis 1.0, context 0.75); and
+the introduction/conclusion definitions.
