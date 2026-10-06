@@ -277,6 +277,25 @@ any valid interpretations"* (AQA Literature June 2024 MS) — the word is *valid
 - **Cost:** ≈ 150 tokens of cached instructions (≈ $0.00003 a call); no new calls; no new output — the Why already
   names the quoted words (§3).
 
+**How it is scored (#738u).** Neil floated a separate mark: close analysis 1.25 → 1.0 (0.75 for breaking the technique
+into small parts + 0.25 perceptive), and the freed 0.25 for *"the paragraph making sense convincingly"*.
+**Recommended instead: no separate mark — a reading that does not make sense is not counted** in the row it sits in,
+and the row is scored on its valid content only. This is the boards' own shape: no board has a "makes sense" row;
+they reward "any valid interpretations" and an invalid one earns nothing. Why not the separate 0.25:
+1. **It caps the cost of nonsense at 0.25 a paragraph.** Three wrong readings would cost the same as one, and a
+   close analysis that is wrong would still keep its 1.0. "Not counted" costs each wrong reading what it spoils.
+2. **It charges the same fault twice** (Rule 3) — Neil's own point: *"the inference needs to be convincing… but
+   we've already allocated a mark for that."* The inference's 0.5 and every perceptive quarter already require
+   "convincing"; validity is the floor under them, not a third mark.
+3. **Close analysis would fall from 1.5 to 1.0** against today's table, though AQA's top level is built on "a
+   fine-grained and insightful analysis of methods". And breaking a quote into parts earns credit only with a
+   meaning drawn from them (the ladder: naming is rung 0, "not yet analysis") — so 0.75 for the breaking-down alone
+   would pay for identification.
+Worked example (close analysis, 1.25): a valid, clear reading of the parts = 1.0; valid and perceptive = 1.25; two
+readings, one valid and clear, one that doesn't make sense = scored on the valid one; no valid reading = 0. The
+paragraph as a whole holding together is already the coherence row's first quarter (every sentence links back to
+the topic sentence and the question). Neil's option stays on card 9.
+
 ## 4. Every board
 
 The same meanings apply wherever the same rows exist. **One worth moves: 0.25 from close analysis into the
