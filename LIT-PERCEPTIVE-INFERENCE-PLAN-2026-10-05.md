@@ -69,7 +69,7 @@ AQA body paragraph, out of 8, in the order the student writes it:
 | 9 | Author's purpose | 1.0 | 0.75 · +0.25 perceptive |
 | 10 | Context | 1.0 | 0.75 · +0.25 perceptive |
 | 11 | Coherence: every sentence links back to the topic sentence and the question | 0.5 | every sentence links = 0.5 · one drifts = 0.25 · two or more, or a list of facts = 0 |
-| 12 | Supporting quotation (ruled 2026-10-06, scored not bonus) | 0.25 | a quotation beyond the anchor, woven into a sentence, carrying its own perceptive inference. More earn nothing more. |
+| 12 | **Judicious supporting quotations** (ruled 2026-10-06, scored not bonus; name Neil's, #738i) | 0.25 | short quotations beyond the anchor, each woven into a sentence and carrying its own inference that moves the paragraph's argument on. No count is required and none is rewarded: one judicious quotation can earn it, and three dropped in cannot. (The essay uses 2–3 per paragraph.) |
 | | **Total** | **8** | unchanged |
 
 **What "convincing" means, so it can be checked (#738h: "it does have to be convincing. So I'm not sure what
@@ -133,10 +133,21 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
   (his premise): a one-anchor essay loses 0.75 of 34. (I first recommended a capped bonus, arguing that a scored
   row contradicts "grade 9 with one anchor". It does not, because grade 9 is not full marks. Recorded so the
   next reader does not re-raise it.)
-- **What the essay does:** besides the anchor, each body paragraph works in other short quotations, each carrying
-  its own inference: Body 2 *"called herself Mrs. Birling"*; Body 3 *"an old friend of mine"* and *"was an
-  alderman for years"*. Library ruling N472: a supporting quotation is not analysed, it carries a perceptive
-  inference.
+- **What the essay does (measured 2026-10-06 against its own Essay Plan, which names each anchor):**
+
+  | Body | Anchor | Supporting quotations woven in |
+  |---|---|---|
+  | 1 | "men with important work to do" | "important work", "have to", "just as I had" (3) |
+  | 2 | "naturally that was one of the things that prejudiced me against her case" | "a piece of gross impertinence", "called herself Mrs. Birling", "prejudiced against her case" (3) |
+  | 3 | "Didn't I say I couldn't imagine a real police inspector talking like that to us" | "an old friend of mine", "was an alderman for years" (2) |
+
+  Each is short (2–6 words), sits in a different sentence, carries its own inference, and is never analysed in a
+  sentence of its own (Library ruling N472). So the row is plural and judged on quality: **"Judicious supporting
+  quotations"** (Neil, #738i), AQA's own word ("Judicious use of precise references").
+- ⚠️ **The essay's Body 2 breaks the new row-4 rule:** its second sentence is built on a SUPPORT quote ("a piece
+  of gross impertinence"); the anchor arrives in sentence 3. Rule built as Neil stated it (anchor); handoff to the
+  Library lane to rework Body 2: `~/.claude/handoffs/open/wml-to-library-2026-10-06-mrs-birling-body2-second-sentence-must-use-the-anchor.md`
+  (also messaged to Library 44). Until it lands, the calibration example uses Bodies 1 and 3 for row 4.
 - **The row (body paragraphs only):** 0.25 when at least one quotation beyond the anchor is woven into a sentence
   and carries its own perceptive inference that supports the paragraph's point. A second or third earns nothing
   more, because the boards reward the quality of references, never their number: AQA *"Judicious use of precise

@@ -2879,6 +2879,9 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
 12. **"Convincing" is checkable** (#738h asked how): a convincing/perceptive part is awarded only when the Why
     names the student's reading and the exact quoted words it rests on (AQA Level 6 title: "Convincing, critical
     analysis"; Rule 5: "traceable to the words on the page"). (My proposal, carried with the plan; not yet ruled.)
+13. **The row is "Judicious supporting quotations", 0.25** (#738i: *"it's not just necessarily one quote… judicious
+    supporting quotations, 0.25"*). Judged on quality, not number: short quotations beyond the anchor, each woven in
+    with its own inference (the Mrs Birling essay uses 2–3 per paragraph). One can earn it; three dropped in cannot.
 
 Still open on the Actions page: the body table as a whole, where the marks come from (close analysis 1.5 → 1.0;
 terminology's 0.25 → the inference), AQA 19th-century bodies (recommended: topic sentence whole; purpose 0.5,
