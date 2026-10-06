@@ -2222,6 +2222,25 @@ class SWML_Protocol_Router {
                 'gold'   => ['protocols/aqa/language2/modules/knowledge-mark-scheme.md'],
                 'engine' => 'language',
             ],
+            // v7.20.719 — Edexcel International GCSE English Language A (4EA1). Rubrics written by the
+            // 2026-09-13 port (branch ports-2026-09-13) and reconciled on 2026-10-06 against the protocols
+            // that mark students today. Slugs traced to the real courses (44760 map → edexcel_igcse_lang_a;
+            // 55070 post meta → edexcel_igcse_lang_a_paper_2).
+            'edexcel_igcse_lang_a' => [
+                'cell'   => 'edexcel-igcse/language1',
+                'rubric' => 'rubric-edexcel-igcse-lang-p1-nonfiction.md',
+                'gold'   => ['protocols/edexcel-igcse/language1/modules/knowledge-hub.md'],
+                'engine' => 'language',
+            ],
+            'edexcel_igcse_lang_a_paper_2' => [
+                'cell'   => 'edexcel-igcse/language2',
+                'rubric' => 'rubric-edexcel-igcse-lang-p2-anthology.md',
+                'gold'   => [
+                    'protocols/edexcel-igcse/language2/modules/knowledge-model-answer.md',
+                    'protocols/edexcel-igcse/language2/modules/knowledge-mark-scheme.md',
+                ],
+                'engine' => 'language',
+            ],
         ];
         // ── LITERATURE — one row per SUBJECT FAMILY (board/subject), because the rubric, the gold
         // model and the penalty registry are per family while the TEXT varies per lesson (macbeth,

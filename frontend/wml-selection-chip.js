@@ -712,7 +712,9 @@
         // reference. Keyed on the TEXT slug like NF_TEXTS above, and it MUST agree with the router's
         // essay_polishing_env rows (bin/essay-polishing-env-gate.js asserts the two lists match —
         // the §5d write-key / read-key law across two languages, exactly as the CW polishing gate).
-        const ESSAY_POLISH_ENV_TEXTS = ['aqa_lang_paper_1', 'aqa_lang_paper_2'];
+        // v7.20.719: Edexcel IGCSE Spec A Papers 1 and 2 join — both take the AQA P2 ladder (each has a
+        // reading section and one writing question, which isWritingQuestion finds from the spec: Q6 / Q2).
+        const ESSAY_POLISH_ENV_TEXTS = ['aqa_lang_paper_1', 'aqa_lang_paper_2', 'edexcel_igcse_lang_a', 'edexcel_igcse_lang_a_paper_2'];
         const envText = String((taskCtx && taskCtx.text) || '').toLowerCase().replace(/-/g, '_');
         const isPolishing = !!(taskCtx && taskCtx.task === 'polishing');
         const isLangEnv = isPolishing && ESSAY_POLISH_ENV_TEXTS.includes(envText);

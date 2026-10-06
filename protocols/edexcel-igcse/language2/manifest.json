@@ -52,13 +52,7 @@
         ]
     },
     "polishing": {
-        "always": [
-            "modules/foundation.md",
-            "modules/knowledge-model-answer.md",
-            "modules/knowledge-mark-scheme.md",
-            "modules/workflow-entry.md",
-            "modules/polishing-section-a.md",
-            "modules/polishing-section-b.md"
-        ]
+        "_retired": "v7.20.719 \u2014 polishing is an ENVIRONMENT (PROTOCOL-STANDARD Part D), served by the essay_polishing_env row for edexcel_igcse_lang_a_paper_2 in class-protocol-router.php (inline-coaching stack + rubric-edexcel-igcse-lang-p2-anthology.md + knowledge-model-answer.md + knowledge-mark-scheme.md). modules/polishing-section-a.md and polishing-section-b.md (the walk that asked students to paste their work) stay on disk as source and must NEVER be loaded at a student again (retained-source law, WML CLAUDE.md \u00a75). No 'always' list on purpose: if the router row is ever removed, this cell loads nothing and fails loud rather than the old walk.",
+        "always": []
     }
 }
