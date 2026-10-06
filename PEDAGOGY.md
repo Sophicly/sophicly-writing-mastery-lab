@@ -2933,8 +2933,15 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
     toolkit's nine methods, or by a linking word with the wrong meaning. Scope (Rule 3, already law — stated to Neil,
     not a new ruling): T2 is charged on introductions, conclusions and tables with no coherence row; never on a
     Literature body paragraph, whose coherence row already charges the same fault. Costs no calls and no output.
-    **Open on the Actions page (card 9):** his "the interpretation is actually making sense" — proposed as fairness
-    Rule 6 (plan §3g): only a VALID reading earns its row's reading part (AQA: "reward any valid interpretations").
+22. **A reading that does not make sense is not counted** (#738t–#738v, Neil, 2026-10-06). He asked *"the
+    interpretation is actually making sense"* and floated a separate 0.25 for *"the paragraph making sense
+    convincingly"*, taken from close analysis; on the recommendation he ruled *"yes, that sounds better."* So: no
+    separate mark. Each row is scored on its VALID readings only — the quoted words can carry it, it follows
+    logically, it is true to the text (AQA: "Examiners are encouraged to reward any valid interpretations"). A row
+    with no valid reading scores 0; an unusual reading the words support still counts and can be perceptive; no
+    extra penalty (Rule 3). Sophia's Why names the words that do not carry it; the chip opens the toolkit's
+    `interpretation-ladder`. Built as fairness Rule 6 (`marking-fairness-universal.md`), every board — the scope
+    recommended on the card. Close analysis stays 1.25.
 
 Still open on the Actions page: the body table as a whole; where the freed 0.25 goes (recommended close analysis,
 so the only mark that moves against today's table is close analysis 1.5 → 1.25 for the supporting quotations);

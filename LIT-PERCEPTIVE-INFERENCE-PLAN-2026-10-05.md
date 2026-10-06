@@ -250,7 +250,7 @@ Prod usage record (`swml_api_usage_daily`, the last 7 days with traffic, read 20
   re-measured from the same record after release.)
 - The overall scorecard (§8) is built by code from marks already written, so it costs no tokens.
 
-## 3g. A reading that does not make sense earns nothing (#738t) — PROPOSED, Actions card 9
+## 3g. A reading that does not make sense is not counted (#738t–#738v) — RULED 2026-10-06 ("yes, that sounds better")
 
 Neil, 2026-10-06: *"what about… one more thing, which is… the interpretation is actually making sense."*
 
@@ -264,7 +264,7 @@ there. If the answer is none, that is the finding."* (`protocols/shared/modules/
 POLISHING loads that file; the assessment manifests do not. AQA's mark scheme: *"Examiners are encouraged to reward
 any valid interpretations"* (AQA Literature June 2024 MS) — the word is *valid*.
 
-**Proposed — Rule 6 in `marking-fairness-universal.md` (every board, loaded by all 31 manifests):**
+**Ruled — Rule 6 in `marking-fairness-universal.md` (every board, loaded by all 31 manifests):**
 - A reading earns credit only when it is **valid**: the quoted words can carry it, it follows logically, and it is
   true to the text. A reading that fails any of the three (verdict 6) scores **0 for that reading part** of its row —
   inference, close analysis, effects, purpose, context, the topic sentence's concept. Rule 2 never credits it.
@@ -294,7 +294,7 @@ they reward "any valid interpretations" and an invalid one earns nothing. Why no
 Worked example (close analysis, 1.25): a valid, clear reading of the parts = 1.0; valid and perceptive = 1.25; two
 readings, one valid and clear, one that doesn't make sense = scored on the valid one; no valid reading = 0. The
 paragraph as a whole holding together is already the coherence row's first quarter (every sentence links back to
-the topic sentence and the question). Neil's option stays on card 9.
+the topic sentence and the question). Neil chose this over his separate 0.25 (PEDAGOGY §53.22).
 
 ## 4. Every board
 
