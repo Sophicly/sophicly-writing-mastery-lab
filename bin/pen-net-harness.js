@@ -51,12 +51,12 @@ function suite(src) {
     const ctx = { console: { warn: () => {}, log: () => {} } };
     vm.createContext(ctx);
     try {
-        vm.runInContext(src.slice(B, E) + '\nthis.n = { _stripStrongVerbPenalties, _stripUnverbatimPenalties, _stripDuplicatePenalties, _mergeSameSentenceVerbPenalties, _reconcileCardPenaltyTotals };', ctx);
+        vm.runInContext(src.slice(B, E) + '\nthis.n = { _stripStrongVerbPenalties, _stripUnverbatimPenalties, _stripDuplicatePenalties, _mergeSameSentenceVerbPenalties, _reconcileCardPenaltyTotals, _alignStatedPenaltyTotals };', ctx);
     } catch (e) { ok(false, 'the sliced code runs', String(e)); return { pass, fail, msgs }; }
     const n = ctx.n;
-    // The production order: 0b → 0c → 0d → 0e → 0f.
-    const run = (t, s) => n._reconcileCardPenaltyTotals(n._mergeSameSentenceVerbPenalties(
-        n._stripDuplicatePenalties(n._stripUnverbatimPenalties(n._stripStrongVerbPenalties(t))), s));
+    // The production order: 0b → 0c → 0d → 0e → 0f → 0g.
+    const run = (t, s) => n._alignStatedPenaltyTotals(n._reconcileCardPenaltyTotals(n._mergeSameSentenceVerbPenalties(
+        n._stripDuplicatePenalties(n._stripUnverbatimPenalties(n._stripStrongVerbPenalties(t))), s)));
 
     // H1 — the case Neil ruled on.
     let out = run(card('Q2', [F1('to show how beautiful the snow makes London'), T1('Munby uses positive adjectives')], 'Total penalties: −1.0'), MUNBY);
@@ -122,12 +122,28 @@ function suite(src) {
     out = run(card('Q2', [F1('to show how beautiful the snow makes London'), ql], 'Total penalties: −1.0'), MUNBY);
     ok(penOf(out) === 1.0, 'H13: a charge with no quotation stands', penOf(out));
 
+    // G1 — #743e, the real shape (Qamar's diagnostic Q3 ¶2): two listed lines, a stated −1.5.
+    const S1two = '- **S1 — weak or repetitive sentence starters (−0.5):** "**This** can be used to reflect..." and "**This** change brings out empathy..." both open with "This"';
+    out = run(card('Q3', [F1('the write shows how happiness and excitement and quickly change into sadness'), S1two], 'Total penalties: −1.5'),
+        'the write shows how happiness and excitement and quickly change into sadness. This can be used to reflect it. This change brings out empathy.');
+    ok(penOf(out) === 1.0, 'G1: a stated −1.5 over two −0.5 lines now takes off 1.0', penOf(out));
+    // G2 — the max-3 cap keeps its cap (listed 2.0 > stated 1.5).
+    out = run(card('Q2', [PEN('C1', 'the reader on this hand'), PEN('P1', 'leading him to become more ambitious'), PEN('S2', 'It is good'), PEN('D1', 'the sea is big')], 'Total penalties: −1.5'), '');
+    ok(penOf(out) === 1.5, 'G2: four listed, capped at −1.5 — the cap stands', penOf(out));
+    // G3 — a line whose amount cannot be read: the stated total is the only reading, so it stands.
+    out = run(card('Q2', [F1('Munby uses positive adjectives to show how beautiful'), '- **S1 — weak or repetitive sentence starters (−0.5 each):** "This is" and "This was"'], 'Total penalties: −1.5'), MUNBY);
+    ok(penOf(out) === 1.5, 'G3: a readable line beside a "(−0.5 each)" line → the stated −1.5 stands (never under-deduct a list we cannot read)', penOf(out));
+    // G4 — no parseable line at all: leave it (the existing fail-open guard owns this case).
+    out = run(card('Q2', ['Penalty: comma splice, minus half a mark'], 'Total penalties: −0.5'), '');
+    ok(penOf(out) === 0.5, 'G4: nothing parseable → the stated total is untouched', penOf(out));
+
     // W — production wiring: the new passes run after the three older nets, before Pass 1.
     const a = src.indexOf('out = _stripDuplicatePenalties(out);');
     const m = src.indexOf('out = _mergeSameSentenceVerbPenalties(out, _penSentenceSource());');
     const r = src.indexOf('out = _reconcileCardPenaltyTotals(out);');
     const p1 = src.indexOf('// ---- Pass 1: each card — recompute total from its own table ----');
-    ok(a > 0 && m > a && r > m && p1 > r, 'W1: 0d → 0e merge → 0f reconcile → Pass 1, in that order', [a, m, r, p1]);
+    const g = src.indexOf('out = _alignStatedPenaltyTotals(out);');
+    ok(a > 0 && m > a && r > m && g > r && p1 > g, 'W1: 0d → 0e merge → 0f reconcile → 0g align → Pass 1, in that order', [a, m, r, g, p1]);
     ok((src.match(/return lead \+ _penDropMark\(whole\);/g) || []).length === 2, 'W2: the strong-verb and verbatim nets leave the marker');
     return { pass, fail, msgs };
 }
@@ -137,6 +153,8 @@ const MUTATIONS = [
     ['the merge keeps T1 instead of F1', "if (ch[m[k]].code === 'F1')", "if (ch[m[k]].code === 'T1')"],
     ['the merge ignores which sentence a quote is in', "const groupOf = ch.map(c => (c.cand.length === 1 ? 's' + c.cand[0] : null));", "const groupOf = ch.map(c => 'all');"],
     ['an older net stops leaving the marker', 'return lead + _penDropMark(whole);', 'return lead;'],
+    ['the align pass trusts an unreadable amount', "if (body.split('\\n').some(l => codeLine.test(l)", "if (false && body.split('\\n').some(l => codeLine.test(l)"],
+    ['the align pass zeroes a card with no parseable line', 'if (!n || !(listed < stated)) return whole;', 'if (!(listed < stated)) return whole;'],
 ];
 
 if (process.argv.includes('--self-test')) {

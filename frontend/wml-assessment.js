@@ -11633,6 +11633,39 @@
             });
         } catch (_) { return text; }
     }
+    // v7.20.720 (FIXLIST #743e): A CARD NEVER TAKES OFF MORE THAN IT LISTS. Every penalty is a listed
+    // line priced on that line ("CODE — name (−0.5): …", AQA L1 protocol), but Pass 1 trusts the stated
+    // "Total penalties" — so a stated total ABOVE the listed lines deducted marks no penalty supports
+    // (measured 6 Oct: Qamar's diagnostic Q3 ¶2 stated −1.5 over two −0.5 lines; corrected by hand).
+    // The stated total is lowered to the listed sum. Left alone, on purpose: a stated total BELOW the
+    // listed sum (the max-3 cap), a card with no parseable line, and a card where any penalty line's
+    // amount cannot be read ("(−0.5 each)", "(−0.5 × 2)") — there the stated total is the only reading.
+    function _alignStatedPenaltyTotals(text) {
+        try {
+            const s = String(text);
+            if (s.indexOf('Total penalties') === -1) return s;
+            const r2 = x => Math.round(x * 100) / 100;
+            const tpRe = /(Total penalties:?\*{0,2}\s*)([−–-]\s*)([\d.]+)/i;
+            const bRe = /(?:^|\n)\s*(?:[·•*-]\s*)?\*{0,2}[A-Z]{1,3}\d(?:-[A-Z]+)?\*{0,2}[^\n]{0,80}?\([−–-]\s*([\d.]+)\)/g;
+            const codeLine = /^\s*(?:[·•*-]\s*)?\*{0,2}[A-Z]{1,3}\d(?:-[A-Z]+)?\*{0,2}/;
+            return s.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
+                const tm = body.match(tpRe);
+                if (!tm) return whole;
+                const stated = parseFloat(tm[3]);
+                let listed = 0, n = 0, pm;
+                bRe.lastIndex = 0;
+                while ((pm = bRe.exec(body)) !== null) { listed += parseFloat(pm[1]); n++; }
+                listed = r2(listed);
+                if (!n || !(listed < stated)) return whole;
+                if (body.split('\n').some(l => codeLine.test(l) && /\([−–-]/.test(l) && !/\([−–-]\s*[\d.]+\)/.test(l))) return whole;
+                let str = String(listed);
+                if (tm[3].indexOf('.') !== -1 && str.indexOf('.') === -1) str += '.0';
+                console.warn('WML MarkAudit: card "Total penalties" ' + tm[3] + ' → ' + str + ' — the stated total was more than the penalties listed');
+                const head = whole.slice(0, whole.length - '@FB_END'.length - body.length);
+                return head + body.replace(tpRe, (m0, label, sign) => label + sign + str) + '@FB_END';
+            });
+        } catch (_) { return text; }
+    }
     // ── @PEN-NET-PURE-END ──
     // The student's own writing, for placing a quoted charge in its sentence: the response
     // sections' rendered text (innerText keeps the paragraph breaks), else the whole document.
@@ -11715,6 +11748,8 @@
             // ---- Pass 0f (v7.20.718): every net above gives its marks back — the card's stated
             // "Total penalties" falls by what was stripped (Pass 1 prefers that line to the bullets).
             out = _reconcileCardPenaltyTotals(out);
+            // ---- Pass 0g (v7.20.720): a card never takes off more than it lists — see _alignStatedPenaltyTotals.
+            out = _alignStatedPenaltyTotals(out);
             // ---- Pass 1: each card — recompute total from its own table ----
             out = out.replace(/@FB_BEGIN\s*(\{[^}]*\})([\s\S]*?)@FB_END/g, (whole, metaRaw, body) => {
                 let meta = null;
