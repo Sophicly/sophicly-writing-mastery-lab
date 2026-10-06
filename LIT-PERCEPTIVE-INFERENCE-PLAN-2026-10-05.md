@@ -3,7 +3,7 @@
 **Status:** PLAN v2, nothing built. Waiting on Neil's ruling (WML Actions page, card 2).
 **v1 (2026-10-05)** merged three rows into one and dissolved a fourth. **Neil rejected that on 2026-10-06 (#738c):
 each of those rows teaches something.** v2 keeps every row and every worth.
-**Totals:** unchanged on every paper: the only worth that moves is 0.25 from one row into the new supporting-quotation row (§3c).
+**Totals:** unchanged on every paper: 0.5 moves out of close analysis, 0.25 into the one-sentence structure and 0.25 into the supporting quotation (§3c).
 
 ## 1. What Neil asked (verbatim in the FIXLIST)
 
@@ -56,24 +56,26 @@ each of those rows teaches something.** v2 keeps every row and every worth.
 
 AQA body paragraph, out of 8, in the order the student writes it:
 
-| # | Row | Worth | How it is marked |
+| # | Row | Worth | How it is marked (v3, Neil 2026-10-06 #738g) |
 |---|---|---|---|
-| 1 | Topic sentence links to thesis and question | 1.0 | 0.75 clear · +0.25 when **conceptualised** (AQA's word) |
-| 2 | Accurate technical terminology | 0.5 | **Wrong term = 0** (metaphor for a simile), as now · correct = 0.25 · correct AND precise ("sibilance", not "sound") = 0.5. AQA: terminology "used judiciously". |
-| 3 | **Quotation, integrated** (was "Integrated quotes & supporting evidence") | 0.5 | **A quote that hangs = 0.25** · **integrated into the sentence = 0.5**. Neil's +0.25 for integrating. |
-| 4 | **Inference from a well-chosen quote** (was "Strategic selection of quotes") | 0.5 | 0.25 = the quote proves the point AND the student says what it shows · **+0.25 when the inference is perceptive**. Follows AQA's own bullet: judicious references to support interpretation. |
-| 5 | Close analysis | **1.25** (was 1.5 — recommended source of row 12's 0.25, pending Neil's tap) | last 0.25 perceptive |
-| 6 | Technique interplay | 0.5 | last 0.25 perceptive |
-| 7 | Effect 1 | 0.5 | last 0.25 perceptive |
-| 8 | Effect 2 | 0.5 | last 0.25 perceptive |
-| 9 | Author's purpose | 1.0 | last 0.25 perceptive |
-| 10 | Context | 1.0 | last 0.25 perceptive |
-| 11 | **Coherence: every sentence links back to the topic sentence and the question** (was "Analysis links to topic sentence") | 0.5 | **every sentence links = 0.5 · one sentence drifts = 0.25 · two or more drift, or the paragraph is a list of facts = 0.** The Why names the sentence that drifted. |
-| 12 | **Supporting quotation** (NEW, ruled 2026-10-06 #738e) | 0.25 | **0.25 when at least one quotation beyond the anchor is woven into a sentence and carries its own perceptive inference** that supports the paragraph's point (Library N472). More quotations earn nothing more. |
+| 1 | Topic sentence links to thesis and question | 1.0 | **0.5** links to thesis and question · **+0.25** conceptualised (AQA's word) · **+0.25** that concept is drawn from the ANCHOR QUOTE ("they don't always base their ideas on the anchor quote") |
+| 2 | Accurate technical terminology | 0.5 | **correct = 0.5 · wrong term = 0** (metaphor for a simile). Accuracy row: no perceptive quarter. |
+| 3 | Quotation, integrated | 0.5 | a quote that hangs = 0.25 · woven into the sentence = 0.5. Accuracy row: no perceptive quarter. |
+| 4 | **Technique + anchor quote + inference, in ONE sentence** (replaces "Strategic selection of quotes") | 0.75 | **0.25 the structure** (technique, then the anchor quote, then what it shows, together in one sentence; a technique named elsewhere in the paragraph does not earn it) · **0.25** an inference the quote supports · **+0.25 perceptive** |
+| 5 | Close analysis | 1.0 (was 1.5) | 0.75 · +0.25 perceptive |
+| 6 | Technique interplay | 0.5 | 0.25 · +0.25 perceptive |
+| 7 | Effect 1 | 0.5 | 0.25 · +0.25 perceptive |
+| 8 | Effect 2 | 0.5 | 0.25 · +0.25 perceptive |
+| 9 | Author's purpose | 1.0 | 0.75 · +0.25 perceptive |
+| 10 | Context | 1.0 | 0.75 · +0.25 perceptive |
+| 11 | Coherence: every sentence links back to the topic sentence and the question | 0.5 | every sentence links = 0.5 · one drifts = 0.25 · two or more, or a list of facts = 0 |
+| 12 | Supporting quotation (ruled 2026-10-06, scored not bonus) | 0.25 | a quotation beyond the anchor, woven into a sentence, carrying its own perceptive inference. More earn nothing more. |
 | | **Total** | **8** | unchanged |
 
-**Rows 2–4 together are the technique + evidence + inference sentence** Neil described: the structure earns
-rows 2–3 and the first quarter of row 4; a perceptive inference earns the last quarter.
+**Rows 2–4 together are the technique + anchor quote + inference sentence** Neil described: accuracy (row 2),
+integration (row 3), and the one-sentence structure plus its inference (row 4). Funding: rows 4 (+0.25 structure)
+and 12 (+0.25) come out of close analysis, 1.5 → 1.0 (pending Neil's tap, §3c). AQA Language Paper 1 already
+weights the inference sentence above close analysis: *"the inference IS the analysis"* (`aqa/language1/modules/protocol-a-assessment.md:510`).
 
 **Why coherence stays its own row** (v1 folded it into every row): one graded row is easy for a student to
 see and act on ("your effect 2 drifted"), and it charges a drift once. Folding it into ten rows hid it and
@@ -100,7 +102,7 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
 
 | Row | Clear (all but the last 0.25) | Perceptive (the last 0.25) — the essay | What makes it perceptive |
 |---|---|---|---|
-| Topic sentence | "Mrs Birling shows prejudice towards Sheila." | "A first instance of Mrs Birling's prejudice is, ironically, directed towards her own daughter…" | the concept is turned to show something unexpected (prejudice aimed at her own child) |
+| Topic sentence | "Mrs Birling shows prejudice towards Sheila." | "A first instance of Mrs Birling's prejudice is, ironically, directed towards her own daughter when she encourages Sheila to accept Gerald's infidelity…" | the concept is turned to show something unexpected (prejudice aimed at her own child), and it is drawn from the anchor quote itself (her advice to Sheila about "men with important work to do") |
 | Inference | "'men with important work to do' shows Mrs Birling defends Gerald." | "Priestley implies that loyalty to the status quo matters more to Mrs Birling than loyalty to another human being, since Gerald's 'important work' was his months with Daisy Renton, a working-class girl he used and discarded." | reads what the words HIDE, and proves it from the text |
 | Close analysis | "'have to' shows Sheila has no choice." | "the modal 'have to' combined with the comparison 'just as I had' suggests a sordid, immutable custom handed from mother to daughter for generations." | names the word class, and draws a meaning from one small word that goes beyond the obvious |
 | Interplay | "Priestley also uses a comparison." | "The hyperbole, therefore, inflates Mrs Birling's outrage while the sentence adverb 'naturally'… converts her prejudice into upper-class common sense" | two methods working together toward ONE meaning |
@@ -132,12 +134,29 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
   more, because the boards reward the quality of references, never their number: AQA *"Judicious use of precise
   references"*, OCR *"precise, pertinent and skilfully interwoven"*, Edexcel *"Discerning references are an
   integral part of the response"*.
-- **Where the 0.25 comes from — OPEN, Neil's tap. Recommended: close analysis, 1.5 → 1.25**, because it works
-  as ONE rule on every table: close analysis is at least 1.0 everywhere (SQA, already an exception, is 0.5).
-  Author's purpose looked better first (AO1 to AO1), but **the AQA 19th-century body (out of 7) already has
-  purpose at 0.5**; taking 0.25 there leaves 0.25, which is only the perceptive quarter with nothing clear
-  under it, so purpose would need a second rule for AQA's own 19th-century course. Close analysis at 1.25 is
-  still the biggest analytical row. Cost: 0.25 per body moves from AO2 to AO1.
+- **Where the 0.5 comes from (supporting quotation 0.25 + one-sentence structure 0.25) — OPEN, Neil's tap.
+  Recommended: close analysis, 1.5 → 1.0** (0.75 + 0.25 perceptive). One rule that works on every table; AQA
+  Language Paper 1 already weights the inference sentence above close analysis (1.0 vs 0.5: *"the inference IS the
+  analysis"*, `aqa/language1/modules/protocol-a-assessment.md:510`). Author's purpose fails as a source on the
+  AQA 19th-century body, where it is already 0.5. Alternative: close analysis 1.25 + context 0.75.
+- **Other boards (rule for the build, no per-board ruling):** each new part is funded from that table's largest
+  analytical row, and no row with a perceptive quarter drops below 0.5 (so it keeps a clear part under the
+  quarter). Boards whose topic sentence is 0.5 (Eduqas literature, OCR, SQA) are raised to 1.0 the same way, so
+  the three parts fit. Every result goes in §4 and the gate.
+
+### 3c-ii. AQA 19th-century novels (essay out of 30, body out of 7) — a conflict with the July ruling
+
+Neil approved on 2026-07-21: 19th-century bodies are out of 7 by cutting the topic sentence to 0.5 and author's
+purpose to 0.5 (`includes/class-protocol-router.php:3128-3140`). **His three-part topic sentence (0.5 + 0.25 +
+0.25) cannot fit in 0.5.** Recommended, keeping both rulings' intent:
+
+| Row | Shakespeare / Modern | 19th century (recommended) |
+|---|---|---|
+| Topic sentence | 1.0 (0.5 + 0.25 + 0.25) | **0.75** (0.25 links + 0.25 conceptualised + 0.25 from the anchor quote) |
+| Author's purpose | 1.0 | **0.5** (as July) |
+| Close analysis | 1.0 | **0.75** |
+| every other row | as §3 | unchanged |
+| **Body total** | **8** | **7** |
 
 ## 3d. The introduction and the conclusion (#738f) — what earns the last 0.25
 

@@ -2861,4 +2861,17 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
    close analysis 1.5 → 1.25, the one source that works on every table; author's purpose fails on the AQA
    19th-century body, where it is already 0.5).
 
-Still open on the Actions page: the plan as a whole (card 2) and the introduction/conclusion definitions (card 4).
+6. **The topic sentence has three parts** (#738g): *"zero point five plus zero point two five when conceptualized,
+   and another zero point two five when that conceptualization is based on the anchor quote, because… they don't
+   always base their ideas on the anchor quote."*
+7. **The second sentence is technique + anchor quote + inference, in that structure, and the structure earns
+   marks** (#738g): *"otherwise… the students put the technique all over the place and… it ruins the logical flow
+   of breaking that technique down."* A technique named elsewhere in the paragraph does not earn the structure.
+8. **Terminology: correct = 0.5, wrong = 0. Integrated quote = 0.5** (#738g, confirmed). No split for "precise"
+   terms (an addition of mine he did not ask for; removed).
+9. **Every reading row shows its perceptive 0.25: close analysis, interplay, effect 1, effect 2, purpose, context**
+   (#738g: *"Everything… I did say that."*).
+
+Still open on the Actions page: the body table as a whole, where the 0.5 for the two new parts comes from
+(recommended close analysis 1.5 → 1.0), AQA 19th-century bodies (the July 0.5 topic sentence cannot hold three
+parts), and the introduction/conclusion definitions.
