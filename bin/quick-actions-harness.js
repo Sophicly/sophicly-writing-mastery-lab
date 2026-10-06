@@ -33,6 +33,11 @@ const TARGETS = 'Which up to three targets do you want to pin?\nA) Replace shows
 ok(qa(TARGETS).length === 6 && qa(TARGETS)[5].value === 'F', 'Q4: a real A–F menu keeps its F option', labels(TARGETS));
 const PLAIN = 'Pick one:\nA) Yes, use my feedback to set Planning Targets\nB) No, skip this and move on to choosing quotations';
 ok(qa(PLAIN).length === 2, 'Q5: an ordinary A/B menu is unchanged', labels(PLAIN));
+// v7.20.721 (#747) — IGCSE P1 planning walk, Vision sensory-detail ask (staging 59205, 2026-10-06), verbatim tail.
+const SEEHEAR = 'Now the sensory details. Your scene already has one touch, the strap, and that is what your listeners feel. Give them more to work with: what can they see or hear in the moment someone says "what are you into?" Think about the gate on that same Monday. What is the one detail, other than the strap, that will make your listeners feel they are standing there?';
+ok(qa(SEEHEAR).length === 0, 'Q6: an open "see or hear" question is not split into two chips', labels(SEEHEAR));
+const WHICHEXTRACT = 'Which extract would you like to use: Act 1 Scene 4 (fate and dreams) or Act 3 Scene 1 (fortune) for your essay?';
+ok(labels(WHICHEXTRACT).join('|') === 'Act 1 Scene 4|Act 3 Scene 1', 'Q7: the v7.15.74 "Which X: A or B?" choice still gives two chips', labels(WHICHEXTRACT));
 
 console.log(`— QUICK ACTIONS: ${passed}/${passed + failed} assertions passed.`);
 if (failed) { console.log('\n❌ quick-actions-harness FAILED'); process.exit(1); }

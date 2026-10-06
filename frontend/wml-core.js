@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.720';
+var WML_BUILD = '7.20.721';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -3822,6 +3822,21 @@ window.WML = (function() {
         ];
     }
 
+    // @DISPLAY-MARKERS-PURE-BEGIN
+    // v7.20.721 (#745): whole-line markers that formatAI RENDERS as a control. The generic sweep
+    // in stripAIInternals (v7.20.335) deletes every whole-line @NAME as a machine signal — and
+    // stripAIInternals runs BEFORE formatAI in both pipelines, so @DEVICE_MENU was deleted before
+    // it could become the "Device templates" chip: the menu has not appeared since .335 (AQA P2
+    // Q5 planning, IGCSE P1 Section B), while the reply still told the student it was "below".
+    // A name formatAI turns into a control belongs in this set; bin/display-marker-harness.js
+    // fails the build when formatAI renders an @NAME this set does not hold.
+    const DISPLAY_MARKERS = new Set(['DEVICE_MENU']);
+    function sweepMachineLines(text) {
+        return text.replace(/^[ \t]*@([A-Z][A-Z0-9_]{2,})(?:[ \t]*:[^\n]*)?[ \t]*$/gm,
+            (line, name) => (DISPLAY_MARKERS.has(name) ? line : ''));
+    }
+    // @DISPLAY-MARKERS-PURE-END
+
     // Strip AI internal content (JSON, function calls, protocol markers) — shared by both chat systems
     function stripAIInternals(text) {
         // Strip [PANEL:...][/PANEL] tags (keep inner text)
@@ -3881,7 +3896,8 @@ window.WML = (function() {
         //
         // Deliberately conservative: the marker must occupy a WHOLE line on its own. An @NAME
         // mid-sentence is left alone, so ordinary prose cannot be eaten.
-        text = text.replace(/^[ \t]*@[A-Z][A-Z0-9_]{2,}(?:[ \t]*:[^\n]*)?[ \t]*$/gm, '').trim();
+        // v7.20.721: display markers (DISPLAY_MARKERS above) are left for formatAI to render.
+        text = sweepMachineLines(text).trim();
         // Collapse the blank line the sweep leaves behind.
         text = text.replace(/\n{3,}/g, '\n\n').trim();
 

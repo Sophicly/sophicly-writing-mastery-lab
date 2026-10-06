@@ -5002,17 +5002,23 @@
         // Extract both option phrases; strip trailing parenthetical hints + "for X"
         // tail; expose as buttons so student doesn't have to type the phrase.
         if (!hasLetterChoices && isQuestion) {
+            // v7.20.721 (#747): the "Which/What X …:" lead-in may not cross a sentence end, and an
+            // option may not itself be a question. Before, "…that is what your listeners feel. Give
+            // them more to work with: what can they see or hear in the moment…?" became two chips,
+            // "what can they see" and "hear in the moment…" (IGCSE P1 planning walk, staging).
             const whichMatch = text.match(
-                /(?:Which|What)\s+\w+[^:?]{0,80}:\s*([^?]+?)\s+or\s+([^?]+?)(?:\s+for\s+[^?]+)?\s*\?/i
+                /(?:Which|What)\s+\w+[^:?.!\n]{0,80}:\s*([^?]+?)\s+or\s+([^?]+?)(?:\s+for\s+[^?]+)?\s*\?/i
             );
             if (whichMatch) {
                 const stripParens = (s) => s.replace(/\s*\([^)]*\)\s*$/, '').replace(/[\s,.;:]+$/, '').trim();
                 const labelA = stripParens(whichMatch[1]);
                 const labelB = stripParens(whichMatch[2]);
+                const asksAgain = /^(?:what|which|how|why|where|who|when)\b/i;
                 // Guard: both sides must be meaningful (2–60 chars) and neither can be a single letter
                 if (labelA.length >= 2 && labelA.length <= 60
                     && labelB.length >= 2 && labelB.length <= 60
-                    && !/^[A-Z]$/i.test(labelA) && !/^[A-Z]$/i.test(labelB)) {
+                    && !/^[A-Z]$/i.test(labelA) && !/^[A-Z]$/i.test(labelB)
+                    && !asksAgain.test(labelA)) {
                     return [
                         { label: labelA, value: labelA },
                         { label: labelB, value: labelB }

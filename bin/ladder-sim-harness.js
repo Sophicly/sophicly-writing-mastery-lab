@@ -648,6 +648,29 @@ const ig1Fade = {}; for (const s of IG1_BODY) ig1Fade[`outline-body-1-${s}-q4`] 
 mkDoc(igcse1Doc(ig1Fade));
 st1 = call('deriveLadderState', [stamp('outline-body-1-topic-q4', 'resolved', { rung: 3, question: 'q4' })].concat(ig1Tech));
 ok(st1 && st1.el === 'outline-body-2-topic-q4' && st1.base === 2 && st1.fade === true, 'IG1-C1: paragraph-1 topic resolved ≥L3 → paragraph-2 topic opens L2 (fade across Q4 paragraphs)', st1 && `${st1.el} base=${st1.base}`);
+// v7.20.721 (#748) — OPTIONAL Point 3 (walk 59205, 6 Oct): the student chose "two points are enough", Point 3's box stayed
+// empty, and the ladder named `q6-method-point-3` as ACTIVE through Vision, Counter-argument and Conclusion — every
+// verdict booked to it, `done` unreachable.
+const ig1Pts = Object.assign({}, ig1Q5Done, { 'outline-iumvcc-intro': 'i', 'outline-iumvcc-urgency': 'u', 'outline-iumvcc-method-point-1': 'p1', 'outline-iumvcc-method-point-2': 'p2' });
+const ig1B = ig1Stamps.concat([stamp('q6-task-analysis', 'resolved', { question: 'q6' })]);
+mkDoc(igcse1Doc(ig1Pts));
+st1 = call('deriveLadderState', ig1B);
+ok(st1 && st1.el === 'q6-method-point-3' && st1.alt === 'q6-vision-image', 'IG1-OPT1: two points filed → optional Point 3 is active and names Vision as its alternative', st1 && `${st1.el}/${st1.alt}`);
+ok(call('_ladderPostPayload', st1, null).alt === 'q6-vision-image', 'IG1-OPT2: the chat POST carries the alternative to the TELL');
+const judgedAlt = call('applyElementJudge', 'Relief fits. @ELEMENT_JUDGE{"el":"q6-vision-image","verdict":"weak"}', st1, null, ig1B);
+ok(judgedAlt && judgedAlt.el === 'q6-vision-image' && judgedAlt.verdict === 'weak', 'IG1-OPT3: a verdict naming the alternative is booked to Vision, not to Point 3', judgedAlt && `${judgedAlt.el}/${judgedAlt.verdict}`);
+st1 = call('deriveLadderState', ig1B.concat([{ role: 'assistant', content: 'x', ladder: judgedAlt }]));
+ok(st1 && st1.el === 'q6-vision-image' && !st1.alt, 'IG1-OPT4: once Vision carries a verdict, Point 3 is passed and Vision is active', st1 && `${st1.el}/${st1.alt}`);
+mkDoc(igcse1Doc(Object.assign({}, ig1Pts, { 'outline-iumvcc-vision': 'v' })));
+st1 = call('deriveLadderState', ig1B);
+ok(st1 && st1.el === 'q6-counter-objection', 'IG1-OPT5: Vision filed → Counter-argument active (Point 3 left empty)', st1 && st1.el);
+mkDoc(igcse1Doc(Object.assign({}, ig1Pts, { 'outline-iumvcc-vision': 'v', 'outline-iumvcc-counter': 'c', 'outline-iumvcc-conclusion': 'k' })));
+st1 = call('deriveLadderState', ig1B);
+ok(st1 && st1.done === true, 'IG1-OPT6: every section filed but the optional Point 3 → done', st1 && JSON.stringify(st1).slice(0, 80));
+mkDoc(igcse1Doc(ig1Pts));
+const stOwn = call('deriveLadderState', ig1B);
+const jOwn = call('applyElementJudge', 'Good third point. @ELEMENT_JUDGE{"el":"q6-method-point-3","verdict":"weak"}', stOwn, null, ig1B);
+ok(jOwn && jOwn.el === 'q6-method-point-3', 'IG1-OPT7: a student who writes Point 3 is still judged on Point 3', jOwn && jOwn.el);
 sandbox.state.board = 'aqa';
 ok(call('_ladderPaperKey') === 'p1', 'IG1-R5: same subject on AQA → AQA P1 registry (board first, no cross-board bleed)');
 sandbox.state.board = 'aqa'; sandbox.state.subject = 'language2'; sandbox.state.marks = 12; sandbox.state.question = 'Q3';

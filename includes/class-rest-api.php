@@ -1676,6 +1676,8 @@ class SWML_REST_API {
             // Frontend sends null off AQA Lang P2 planning → no ladder directive is built.
             'ladder'  => (isset($params['ladder']) && is_array($params['ladder'])) ? [
                 'el'          => sanitize_text_field($params['ladder']['el'] ?? ''),
+                // v7.20.721 (#748): the element after an OPTIONAL active element (IUMVCC Point 3).
+                'alt'         => sanitize_text_field($params['ladder']['alt'] ?? ''),
                 'rung'        => max(0, min(4, absint($params['ladder']['rung'] ?? 0))),
                 'rung_label'  => sanitize_text_field($params['ladder']['rungLabel'] ?? ''),
                 'regime'      => sanitize_text_field($params['ladder']['regime'] ?? ''),

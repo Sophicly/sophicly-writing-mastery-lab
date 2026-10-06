@@ -859,6 +859,9 @@ node bin/pen-net-harness.js >/dev/null || { node bin/pen-net-harness.js; fail=1;
 node bin/pen-net-harness.js --self-test >/dev/null || { node bin/pen-net-harness.js --self-test; fail=1; }
 node bin/lit-perceptive-gate.js >/dev/null || { node bin/lit-perceptive-gate.js; fail=1; }
 node bin/lit-perceptive-gate.js --self-test >/dev/null || { node bin/lit-perceptive-gate.js --self-test; fail=1; }
+# DISPLAY MARKERS SURVIVE THE SWEEP (v7.20.721, #745): @DEVICE_MENU was deleted by stripAIInternals' generic
+# whole-line sweep before formatAI could render it — the device-template chip had not appeared since .335.
+node bin/display-marker-harness.js >/dev/null || { node bin/display-marker-harness.js; fail=1; }
 
 
 if [ "$fail" -ne 0 ]; then

@@ -4501,7 +4501,7 @@
             r.push({ el: 'q6-urgency-image', type: 'image', resolveBy: 'outline-iumvcc-urgency' });
             r.push({ el: 'q6-method-point-1', type: 'point', resolveBy: 'outline-iumvcc-method-point-1' });
             r.push({ el: 'q6-method-point-2', type: 'point', resolveBy: 'outline-iumvcc-method-point-2' });
-            r.push({ el: 'q6-method-point-3', type: 'point', resolveBy: 'outline-iumvcc-method-point-3' });
+            r.push({ el: 'q6-method-point-3', type: 'point', resolveBy: 'outline-iumvcc-method-point-3', optional: true });
             r.push({ el: 'q6-vision-image', type: 'image', resolveBy: 'outline-iumvcc-vision' });
             r.push({ el: 'q6-counter-objection', type: 'objection', resolveBy: 'outline-iumvcc-counter' });
             r.push({ el: 'q6-conclusion-image', type: 'image', resolveBy: 'outline-iumvcc-conclusion' });
@@ -4596,7 +4596,7 @@
             r.push({ el: 'q5-urgency-image', type: 'image', resolveBy: 'outline-iumvcc-urgency' });
             r.push({ el: 'q5-method-point-1', type: 'point', resolveBy: 'outline-iumvcc-method-point-1' });
             r.push({ el: 'q5-method-point-2', type: 'point', resolveBy: 'outline-iumvcc-method-point-2' });
-            r.push({ el: 'q5-method-point-3', type: 'point', resolveBy: 'outline-iumvcc-method-point-3' });
+            r.push({ el: 'q5-method-point-3', type: 'point', resolveBy: 'outline-iumvcc-method-point-3', optional: true });
             r.push({ el: 'q5-vision-image', type: 'image', resolveBy: 'outline-iumvcc-vision' });
             r.push({ el: 'q5-counter-objection', type: 'objection', resolveBy: 'outline-iumvcc-counter' });
             r.push({ el: 'q5-conclusion-image', type: 'image', resolveBy: 'outline-iumvcc-conclusion' });
@@ -4631,6 +4631,15 @@
     function _ladderElResolved(history, el) {
         var st = _ladderStampsForEl(history, el);
         for (var i = 0; i < st.length; i++) if (st[i].verdict === 'resolved') return true;
+        return false;
+    }
+    // v7.20.721 (#748): has the plan moved beyond the optional element at r[i]? True when any later
+    // filing element of the question is filed, or any later element already carries a verdict.
+    function _ladderOptionalPassed(history, r, i, states) {
+        for (var k = i + 1; k < r.length; k++) {
+            if (states[k] === 'filled') return true;
+            if (_ladderStampsForEl(history, r[k].el).length) return true;
+        }
         return false;
     }
     // Elements resolved at rung ≥ 3 (each counted once) — feeds PACE (≥3 → open rest at L2) and
@@ -4750,7 +4759,15 @@
                     active = e; activeQ = qk; break;
                 } else {
                     if (states[i] === 'absent') continue;
-                    if (states[i] === 'empty') { active = e; activeQ = qk; break; }
+                    if (states[i] === 'empty') {
+                        // v7.20.721 (#748): an OPTIONAL element (IUMVCC Point 3 — "2–3 points") the
+                        // student left out is passed once the plan has moved beyond it: a later
+                        // element of this question is filed, or a verdict is booked to one. Before,
+                        // it stayed ACTIVE through Vision, Counter-argument and Conclusion, every
+                        // verdict was booked to it, and `done` could never arrive.
+                        if (e.optional && _ladderOptionalPassed(history, r, i, states)) continue;
+                        active = e; activeQ = qk; break;
+                    }
                 }
             }
         }
@@ -4784,9 +4801,19 @@
         }
         var rung = Math.min(4, base + climb);
         var regime = idkPending ? 'idk-pending' : (pushSpent ? 'owned-push' : 'normal');
+        // v7.20.721 (#748): an optional active element names the element after it, so a student
+        // who declines it is judged on the section they are actually writing (see the TELL).
+        var alt = '';
+        if (active.optional) {
+            var at = 0;
+            while (at < reg.length && reg[at].el !== active.el) at++;
+            for (var ai = at + 1; ai < reg.length; ai++) {
+                if (reg[ai].resolveBy !== 'stamp' && _ladderFieldState(reg[ai].resolveBy) === 'empty') { alt = reg[ai].el; break; }
+            }
+        }
 
         return {
-            el: active.el, type: active.type, rung: rung, rungLabel: _LADDER_RUNGS[rung] || '',
+            el: active.el, alt: alt, type: active.type, rung: rung, rungLabel: _LADDER_RUNGS[rung] || '',
             regime: regime, pushSpent: pushSpent, idkPending: idkPending,
             paceValve: paceValve, fade: fade, base: base, climb: climb,
             question: qKey, wallet: _ladderWallet(history, qKey), done: false
@@ -4870,7 +4897,11 @@
             }
             {
                 if (payload && payload.verdict) {
-                    if (payload.el && payload.el !== told.el) {
+                    // v7.20.721 (#748): the TELL offers `alt` when the active element is optional;
+                    // a verdict naming it is booked to it (the student declined the optional one).
+                    if (told.alt && payload.el === told.alt) {
+                        stamp.el = told.alt;
+                    } else if (payload.el && payload.el !== told.el) {
                         console.warn('[WML ladder] el echo mismatch — told', told.el, 'got', payload.el, '(trusting told)');
                     }
                     var v = String(payload.verdict).toLowerCase();
@@ -4918,7 +4949,7 @@
     function _ladderPostPayload(told, pre) {
         if (!told) return null;
         return {
-            el: told.el || '', rung: told.rung || 0, rungLabel: told.rungLabel || '',
+            el: told.el || '', alt: told.alt || '', rung: told.rung || 0, rungLabel: told.rungLabel || '',
             regime: told.regime || '', walletLeft: told.wallet ? told.wallet.left : _LADDER_WALLET_CEILING,
             walletSub: told.wallet ? told.wallet.subCapLeft : 1, pushSpent: !!told.pushSpent,
             done: !!told.done, question: told.question || '',

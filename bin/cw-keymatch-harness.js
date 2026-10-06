@@ -372,8 +372,10 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
 {
     console.log('CW MARKERS — a machine signal can never render to a student');
     const core = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
-    const SWEEP = /text = text\.replace\(\/\^\[ \\t\]\*@\[A-Z\]\[A-Z0-9_\]\{2,\}/;
-    ok(SWEEP.test(core),
+    // v7.20.721 (#745): the sweep moved into sweepMachineLines() so display markers (@DEVICE_MENU)
+    // survive it; stripAIInternals must still call it (bin/display-marker-harness.js tests the set).
+    const SWEEP = /return text\.replace\(\/\^\[ \\t\]\*@\(\[A-Z\]\[A-Z0-9_\]\{2,\}\)/;
+    ok(SWEEP.test(core) && /text = sweepMachineLines\(text\)/.test(core),
         'the generic marker sweep is gone from formatAI — every new marker would have to be '
         + 'remembered by hand again, which is how @WEAK reached a live lesson');
 

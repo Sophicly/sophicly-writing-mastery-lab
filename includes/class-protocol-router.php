@@ -5491,6 +5491,11 @@ TEMPLATE;
             } elseif (!empty($L['el'])) {
                 $ld  = "\n### C-LADDER — CURRENT TURN (code-owned state — never announce it to the student)\n";
                 $ld .= "**ACTIVE ELEMENT:** `{$L['el']}` — echo this id BYTE-FOR-BYTE as the \"el\" in your @ELEMENT_JUDGE marker; never invent or change it.\n";
+                // v7.20.721 (#748): the active element is OPTIONAL (IUMVCC Point 3). If the student
+                // declined it, the turn belongs to the next element — name that id instead.
+                if (!empty($L['alt'])) {
+                    $ld .= "**OPTIONAL:** `{$L['el']}` is optional. If the student has chosen not to write it and the conversation has moved on to the next section, the active element is `{$L['alt']}` — use that id in your @ELEMENT_JUDGE instead.\n";
+                }
                 // v7.20.206 (review): the judge instruction must carry the annex's exemptions —
                 // positioned last, this block WINS over the cached protocol, so without the
                 // qualifier an obedient model judges gate clicks / quote selection / predictions,
