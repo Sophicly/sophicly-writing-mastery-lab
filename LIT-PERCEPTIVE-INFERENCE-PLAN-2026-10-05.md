@@ -59,10 +59,10 @@ AQA body paragraph, out of 8, in the order the student writes it:
 | # | Row | Worth | How it is marked (v4, Neil 2026-10-06 #738g + #738h) |
 |---|---|---|---|
 | 1 | Topic sentence links to thesis and question | 1.0 | **0.25** links to thesis and question · **+0.5 a CONVINCING concept** (AQA: conceptualised — "conceptualization is actually the most important thing") · **+0.25** that concept is drawn from the ANCHOR QUOTE ("they don't always base their ideas on the anchor quote") |
-| 2 | Accurate technical terminology | 0.25 (was 0.5) | **correct = 0.25 · wrong term = 0** (metaphor for a simile). Accuracy row: no perceptive quarter. |
-| 3 | Quotation, integrated | 0.5 | a quote that hangs = 0.25 · woven into the sentence = 0.5. Accuracy row: no perceptive quarter. |
-| 4 | **Technique + anchor quote + inference, in ONE sentence** (replaces "Strategic selection of quotes") | 1.0 | **0.25 the structure** (technique, then the anchor quote, then what it shows, together in one sentence; a technique named elsewhere in the paragraph does not earn it) · **0.25** an inference the quote supports · **+0.5 a CONVINCING, perceptive inference** (terminology's freed 0.25 lands here, pending Neil's tap — mirrors the topic sentence) |
-| 5 | Close analysis | 1.0 (was 1.5) | 0.75 · +0.25 perceptive |
+| 2 | **Technique + anchor quote + inference, in ONE sentence** (replaces "Strategic selection of quotes") | 1.0 | **0.25 the structure** (the technique, then the anchor quote, then what it shows, together in one sentence; a technique named elsewhere in the paragraph does not earn it). **The technique is the writer's METHOD — a big technique such as a metaphor, juxtaposition, dramatic irony, euphemism or rhetorical question — never a word class on its own** ("an adverb"); word classes, sounds and punctuation are close analysis (#738j) · **0.25** an inference the quote supports · **+0.5 a CONVINCING, perceptive inference** (terminology's freed 0.25 lands here, pending Neil's tap — mirrors the topic sentence) |
+| 3 | Accurate technical terminology (the name of that technique) | 0.25 (was 0.5) | **correct = 0.25 · wrong term = 0** (metaphor for a simile). Accuracy row: no perceptive quarter. |
+| 4 | Quotation, integrated | 0.5 | a quote that hangs = 0.25 · woven into the sentence = 0.5. Accuracy row: no perceptive quarter. |
+| 5 | Close analysis — fine-grained | 1.0 (was 1.5) | breaks the technique and the quote into small parts: individual words and their word classes, sounds, punctuation (AQA L6: "a fine-grained and insightful analysis of methods") · 0.75 · +0.25 perceptive |
 | 6 | Technique interplay | 0.5 | 0.25 · +0.25 perceptive |
 | 7 | Effect 1 | 0.5 | 0.25 · +0.25 perceptive |
 | 8 | Effect 2 | 0.5 | 0.25 · +0.25 perceptive |
@@ -80,8 +80,9 @@ it rests on** (*"perceptive — 'naturally' turns prejudice into common sense"*)
 the part is not awarded. Calibrated against the Mrs Birling lines in §3b. Build-time check: every awarded
 convincing/perceptive part in a marked paragraph carries a quoted fragment in its Why (measured after release).
 
-**Rows 2–4 together are the technique + anchor quote + inference sentence** Neil described: accuracy (row 2),
-integration (row 3), and the one-sentence structure plus its inference (row 4). Funding: rows 4 (+0.25 structure)
+**Rows 2–4 together are the technique + anchor quote + inference sentence** Neil described, in his order (#738j):
+the one-sentence structure plus its inference (row 2), the accurate name of the technique (row 3), integration
+(row 4). Funding: rows 2 (+0.25 structure)
 and 12 (+0.25) come out of close analysis, 1.5 → 1.0 (pending Neil's tap, §3c). AQA Language Paper 1 already
 weights the inference sentence above close analysis: *"the inference IS the analysis"* (`aqa/language1/modules/protocol-a-assessment.md:510`).
 
@@ -144,7 +145,7 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
   Each is short (2–6 words), sits in a different sentence, carries its own inference, and is never analysed in a
   sentence of its own (Library ruling N472). So the row is plural and judged on quality: **"Judicious supporting
   quotations"** (Neil, #738i), AQA's own word ("Judicious use of precise references").
-- ✅ **Body 2 now follows the row-4 rule** (found 2026-10-06; the Library lane reworked it the same day, commit
+- ✅ **Body 2 now follows the row-2 rule** (found 2026-10-06; the Library lane reworked it the same day, commit
   3e986a82, verified here by reading the file). Sentence 2: *"Indeed, in "naturally that was one of the things that
   prejudiced me against her case", the sentence adverb "naturally" suggests that she treats her prejudice as
   obvious, since Eva, pregnant and alone, had "called herself Mrs. Birling"…"* The Library also removed a

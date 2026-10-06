@@ -2882,6 +2882,14 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
 13. **The row is "Judicious supporting quotations", 0.25** (#738i: *"it's not just necessarily one quote… judicious
     supporting quotations, 0.25"*). Judged on quality, not number: short quotations beyond the anchor, each woven in
     with its own inference (the Mrs Birling essay uses 2–3 per paragraph). One can earn it; three dropped in cannot.
+14. **"Technique" in sentence 2 is the writer's METHOD — a big technique — and the row order follows the
+    sentence** (#738j): *"what they really mean are the bigger techniques… they don't really want students going
+    straight into like adverbs… they want them to talk about the metaphors and the juxtapositions and the dramatic
+    ironies… and then break it down into the individual parts."* Fine-grained work (individual words, word classes,
+    sounds, phonology, punctuation) is CLOSE ANALYSIS. AQA's own wording (Lit Paper 2 June 2024 MS, Level 6):
+    *"Analysis of writer's methods with subject terminology used judiciously"*; *"a fine-grained and insightful
+    analysis of methods"* — "judicious", not "sophisticated". Order: topic sentence → technique + anchor quote +
+    inference (one sentence) → accurate technical terminology → quotation integrated → close analysis → the rest.
 
 Still open on the Actions page: the body table as a whole, where the marks come from (close analysis 1.5 → 1.0;
 terminology's 0.25 → the inference), AQA 19th-century bodies (recommended: topic sentence whole; purpose 0.5,
