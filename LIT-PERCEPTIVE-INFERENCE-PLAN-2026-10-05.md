@@ -67,7 +67,7 @@ AQA body paragraph, out of 8, in the order the student writes it:
 | 7 | Effect 2 | 0.5 | 0.25 · +0.25 perceptive | same |
 | 8 | Author's purpose | 1.0 | 0.75 · +0.25 perceptive | same |
 | 9 | Context | 1.0 | 0.75 · +0.25 perceptive | same |
-| 10 | Coherence: every sentence links back to the topic sentence and the question | 0.5 | every sentence links = 0.5 · one drifts = 0.25 · two or more, or a list of facts = 0 | Analysis links to topic sentence, 0.5 |
+| 10 | Coherence and flow | 0.5 | **0.25 every sentence links back to the topic sentence and the question** (one that drifts off the idea loses it) · **+0.25 every sentence flows on from the one before** — it picks up the previous sentence's idea or links to it ("It follows that…", "In that anger…", "Therefore…" in the Mrs Birling essay); a list of separate facts loses it (#738p) | Analysis links to topic sentence, 0.5 |
 | 11 | **Judicious supporting quotations** | 0.25 | short quotations beyond the anchor, each **integrated** (embedded, or correctly introduced, as row 3; ideally embedded) and carrying its own inference; quality not number (the essay uses 2–3 per paragraph) | **new (+0.25)** |
 | | **Total** | **8** | unchanged | **the only mark that moves: 0.25 from close analysis to row 11** |
 
@@ -116,7 +116,7 @@ really want to reach."* Source: the AQA model answer, `sophicly_library_cpts_v1_
 | Effect 2 | "The audience think Mrs Birling is a bad person." | "spectators could face the sobering reality that those who benefit from the status quo will defend it even at the cost of someone they love." | moves from a feeling about one character to a truth about society |
 | Purpose | "Priestley wants to show that prejudice is wrong." | "Priestley perhaps intended to expose why help for people in need cannot depend on how one powerful person feels about the one asking: it must be guaranteed by law." | an argument the audience is pushed towards, tied to the essay's thesis |
 | Context | "In 1912 there was a big gap between rich and poor." | "Such judging of the poor was a legacy of the Poor Law of 1834, still in force in 1912, which made workhouses deliberately worse than the worst life outside so that only the desperate would apply." | a specific, dated fact that explains THIS moment, not the period in general |
-| Coherence (0.5) | — | Body 1 links every sentence: "It follows that…" · "In that anger…" · "Therefore…" · "That devotion even had a hymn…" | each sentence picks up the last one and returns to the topic sentence's idea |
+| Coherence and flow (0.25 + 0.25) | — | Body 1 links every sentence: "It follows that…" · "In that anger…" · "Therefore…" · "That devotion even had a hymn…" | every sentence returns to the topic sentence's idea (first quarter) and picks up the one before (second quarter) |
 
 **Two more things the essay does, which the marking must credit rather than penalise:**
 - **Readings are hedged** ("may", "might", "perhaps", "appears designed to"): a perceptive reading is offered

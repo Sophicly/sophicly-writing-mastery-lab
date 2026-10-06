@@ -2906,6 +2906,9 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
     quote is valid); embedding is the ideal** (#738n: *"if you use a colon and then you use a quote, that is also
     valid… Ideally, though, we do want them to embed because that's usually the skill that they're actually
     missing."*). Feedback on a colon-led quote encourages embedding without deducting.
+19. **Coherence is two quarters** (#738p, his proposal, agreed): 0.25 every sentence links back to the topic
+    sentence and the question + 0.25 every sentence flows on from the one before (*"every sentence essentially
+    flowing on from each other"*). Two different faults — drifting off the idea, and a list of separate facts.
 
 Still open on the Actions page: the body table as a whole; where the freed 0.25 goes (recommended close analysis,
 so the only mark that moves against today's table is close analysis 1.5 → 1.25 for the supporting quotations);
