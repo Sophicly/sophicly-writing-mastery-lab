@@ -864,6 +864,8 @@ node bin/lit-perceptive-gate.js --self-test >/dev/null || { node bin/lit-percept
 node bin/display-marker-harness.js >/dev/null || { node bin/display-marker-harness.js; fail=1; }
 # NO SIDEBAR STEP NOBODY RUNS (v7.20.723, #755): the skills Self-Assessment step appears only where its walk runs.
 node bin/sa-sidebar-harness.js >/dev/null || { node bin/sa-sidebar-harness.js; fail=1; }
+# A QUESTION'S MARK COMES FROM ITS "Qn Total" LINE, NEVER PROSE (v7.20.724, #756).
+node bin/question-mark-harness.js >/dev/null || { node bin/question-mark-harness.js; fail=1; }
 
 
 if [ "$fail" -ne 0 ]; then

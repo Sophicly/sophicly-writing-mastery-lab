@@ -48,5 +48,11 @@ r = run('aqa', 'redraft_assessment', false);
 ok(r.steps.present === false, 'AQA redraft (the walk does not run there): no step');
 ok(run('edexcel-igcse', 'assessment', false).eligible === false && run('aqa', 'assessment', false).eligible === true, 'the walk itself is unchanged: AQA first assessment only');
 
+// v7.20.724 (#755c): Document Progress and the "Date Completed" check follow the SAME rule — the IGCSE walk's closing
+// check told the student to fill the Self-Assessment before Mark Complete, with nothing that would ever ask them to.
+const comp = slice('_isAssessmentComplete'), prog = slice('_computeAssessmentProgress');
+ok(/_saWalkRunsHere\(\) && !done\('\.swml-section-block\[data-section-label="Self-Assessment"\]'\)/.test(comp), '"Date Completed" requires the Self-Assessment only where its walk runs');
+ok(/label === 'Self-Assessment' && !_saWalkRunsHere\(\)\) return;/.test(prog), 'Document Progress counts the Self-Assessment only where its walk runs');
+
 console.log((fail ? '❌' : '✅') + ' sa-sidebar-harness: ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

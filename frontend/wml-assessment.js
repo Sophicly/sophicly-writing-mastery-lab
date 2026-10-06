@@ -3318,8 +3318,12 @@
                     beats.push({ label: pName + ' · Gold', done: pMarked });
                 });
                 if (!names.length) {                          // not yet started — element fallback
-                    beats.push({ label: 'Mark & Feedback', done: behind });
-                    beats.push({ label: 'Gold Models', done: behind });
+                    // v7.20.724 (#755b): a MARKED question is done. The paragraph names above come from
+                    // AQA's "Mark Breakdown — X" headings; Edexcel IGCSE cards are headed "Q5 — Introduction",
+                    // so names stay empty, and `behind` alone left the LAST marked question pending for ever
+                    // (IGCSE P1 walk: Q5 filed 0/22, its rows never ticked).
+                    beats.push({ label: 'Mark & Feedback', done: behind || q.marked });
+                    beats.push({ label: 'Gold Models', done: behind || (q.marked && q.hasGold) });
                 }
             }
             let di = 0;
@@ -7374,7 +7378,12 @@
     // (handles "2.25 + 1.5 = 3.75/8" and "AO5 17/24 + AO6 11/16 = 28/40"); rounds to whole.
     function _extractQuestionMark(reply, qNum) {
         const t = String(reply || '');
-        const lm = t.match(new RegExp('Q(?:uestion)?\\s*' + qNum + '\\s*Total\\b[^\\n]*', 'i'));
+        // v7.20.724 (#756): prefer the CANONICAL line — one that STARTS with "Qn Total" (bold allowed).
+        // The first loose match can be prose: on the IGCSE P1 strong walk Sophia wrote "…Paragraph 2
+        // therefore stands at 3.0/4 … in your Q4 total" above "Q4 Total: 10/12", and the label became
+        // "Feedback: Q4 (3 / 4)" — a paragraph's mark on a 12-mark question.
+        const lm = t.match(new RegExp('^[\\s*_>#-]*Q(?:uestion)?\\s*' + qNum + '\\s*Total\\b[^\\n]*', 'im'))
+            || t.match(new RegExp('Q(?:uestion)?\\s*' + qNum + '\\s*Total\\b[^\\n]*', 'i'));
         if (!lm) return null;
         // v7.19.829: drop parenthesised asides BEFORE taking the last X/Y pair. Neil's live
         // Q5 line ended "= 25/40 (ceilinged at 27/40 — … does not reduce your mark)" and the
@@ -16512,7 +16521,9 @@
         if (!editorEl) return false;
         const done = (sel) => { const s = editorEl.querySelector(sel); return !!(s && s.getAttribute('data-section-complete') === 'true'); };
         if (!done('.swml-section-block[data-section-type="scores"]')) return false;       // essay marked
-        if (!done('.swml-section-block[data-section-label="Self-Assessment"]')) return false;
+        // v7.20.724 (#755c): the skills Self-Assessment is required only where its walk runs (_saWalkRunsHere) —
+        // elsewhere nothing asks the student to do it, so "Date Completed" could never stamp.
+        if (_saWalkRunsHere() && !done('.swml-section-block[data-section-label="Self-Assessment"]')) return false;
         if (!done('.swml-section-block[data-section-label="Analytics"]')) return false;
         if (!done('.swml-section-block[data-section-label="Action Plan"]')) return false;
         // Essay Plan: required everywhere EXCEPT the first diagnostic (Topic 1, Phase 1).
@@ -16923,6 +16934,9 @@
             // project creation, so a live check would flip mid-exercise and move the card's
             // goalposts under them). Queued as its own build; see the handoff.
             if (type === 'plan' && firstDiag) return;
+            // v7.20.724 (#755c): a Self-Assessment nobody is walked through is not a step to count — on the IGCSE P1
+            // walk the closing check told the student to fill it before Mark Complete, with no way to be asked.
+            if (label === 'Self-Assessment' && !_saWalkRunsHere()) return;
             // v7.19.828 (Neil 2026-07-03): count only what the student can SEE at this
             // stage. The diagnostic environment CSS-hides the results family
             // (feedback/SA/analytics/action — wml-canvas.css ~4767) as cognitive-load
