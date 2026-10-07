@@ -3016,6 +3016,14 @@ technique interplay."*
   marking reply (estimated from Zayan's Body 1 card).
 - **Scope:** the seven Literature tables on the 6 October marking (AQA + the #760 siblings). Every other Literature
   protocol takes it when it is ported. **Enforced:** `bin/lit-perceptive-gate.js` §A3 (+3 mutations).
+- **AMENDED THE SAME DAY — THE CLARITY ALLOWANCE (FIXLIST #772b, Actions v57 note).** Verbatim: *"The goal is one
+  sentence per element but that can't come at the expense of clarity. So, there has to be some allowance for clarity
+  but at the same time, we can't make an exception for every paragraph."* **THE RULE (v7.20.733):** one detailed
+  sentence per element stays the rule; an element may take a SECOND sentence only when one sentence would be unclear —
+  **at most ONE element per model paragraph**, and most model paragraphs need none. Never two elements stretched,
+  never a third sentence. Written into rule 2 and the body Sentence Plan of all seven tables; §A3 checks both (+2
+  mutations: the cap removed, the plan line dropped). If he wants it stricter, the next step is one allowance per
+  CARD (both models together).
 
 **2. A FILED MARK MAY CHANGE — AND SOPHIA SAYS WHY (FIXLIST #757, closes #721).** Actions v56: *"Let the mark change,
 and say why."* When Sophia finds a paragraph she has already marked was over- or under-marked, the document follows

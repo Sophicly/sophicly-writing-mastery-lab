@@ -439,7 +439,7 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
   * **Internal AI Note for MANDATORY Model Rewrites:** You MUST ALWAYS provide complete rewrites for EVERY section assessed. The rewritten models MUST:  
       
     1. **Be COMPLETE paragraphs to Level 5 standard** \- Never provide partial or shortened rewrites  
-    2. **ONE detailed sentence per element — the Sentence Plan sets the length (Neil, 7 Oct 2026).** Introduction = 3 sentences: hook · building sentence · thesis. Body paragraph = topic sentence · technique + anchor quotation + inference · close analysis · technique interplay · effect 1 · effect 2 · author's purpose · context (8; 7 where this paper has no context row). Conclusion = 4: restated thesis · controlling concept · central purpose · universal message. Never two sentences for one element, never a sentence for no element: integrated and supporting quotations, perceptive concepts and the links between sentences all live INSIDE these sentences. Section 2.B sets tone and depth, never length.  
+    2. **ONE detailed sentence per element — the Sentence Plan sets the length (Neil, 7 Oct 2026).** Introduction = 3 sentences: hook · building sentence · thesis. Body paragraph = topic sentence · technique + anchor quotation + inference · close analysis · technique interplay · effect 1 · effect 2 · author's purpose · context (8; 7 where this paper has no context row). Conclusion = 4: restated thesis · controlling concept · central purpose · universal message. Never a sentence for no element. **Clarity allowance (Neil, 7 Oct 2026):** an element may take a SECOND sentence ONLY when one sentence would be unclear — at most ONE element per model paragraph, and most model paragraphs need none; never two elements stretched, never a third sentence. Integrated and supporting quotations, perceptive concepts and the links between sentences all live INSIDE these sentences. Section 2.B sets tone and depth, never length.  
     3. **Each sentence must be detailed** \- Complex/compound sentences of 2-3 lines each (except topic sentences which may be shorter)  
     4. **Address ALL assessment criteria to achieve full marks** \- Every criterion listed in the mark breakdown must be met  
     5. **Meet ALL Prose Polishing Criteria (Section 2.E)** \- Clarity, flow, transitions, vocabulary, etc.  
@@ -772,6 +772,7 @@ SAY: "Thank you. Now here's my formal assessment."
         * S8 Context: the historical/social context that drives the choice — only where this paper's table has a context row (otherwise the paragraph ends at S7).  
         * Supporting quotation: one SHORT quotation beyond the anchor, embedded inside S3, S4 or S7 with its own inference — never a sentence of its own.  
         * Link every sentence to the one before by VARYING the toolkit's nine methods (never a linking word on every sentence), avoiding a bare 'The' or 'This' opener.  
+        * Clarity allowance: if one sentence would make an element unclear, that ONE element may run to two sentences — at most one element per paragraph; most paragraphs need none.  
       * **Sequencing Safeguard (Edexcel IGCSE Literature only):**  
         * Body Paragraph 1 → use a quotation from the beginning of the text.  
         * Body Paragraph 2 → use a quotation from the middle of the text.  

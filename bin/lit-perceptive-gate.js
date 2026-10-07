@@ -312,6 +312,9 @@ function checkAll(T, log) {
         const plan = (t.match(/\* \*\*Sentence Plan — ONE detailed sentence per element, in this order[\s\S]*?(?=\n\s*\* \*\*|\n\*\*Now output)/) || [''])[0];
         ok(k + ': the body Sentence Plan runs S1–S8, technique interplay at S4', /S1 Topic sentence[\s\S]*S2 Technique \+ anchor quotation \+ inference[\s\S]*S3 Close analysis[\s\S]*S4 Technique interplay[\s\S]*S5 Effect 1[\s\S]*S6 Effect 2[\s\S]*S7 Author's purpose[\s\S]*S8 Context/.test(plan));
         ok(k + ': the supporting quotation sits inside a sentence, never its own', /Supporting quotation:[^\n]*never a sentence of its own/.test(plan));
+        // #772b (Neil, 7 Oct): "some allowance for clarity… but we can't make an exception for every paragraph"
+        ok(k + ': the clarity allowance is capped at ONE element per model paragraph (rule 2)', /\*\*Clarity allowance \(Neil, 7 Oct 2026\):\*\* an element may take a SECOND sentence ONLY when one sentence would be unclear — at most ONE element per model paragraph, and most model paragraphs need none/.test(t));
+        ok(k + ': the Sentence Plan carries the same capped allowance', /Clarity allowance: if one sentence would make an element unclear, that ONE element may run to two sentences — at most one element per paragraph/.test(plan));
         ok(k + ': no old sentence ranges left', !/\((?:4-5|7-10|5-7) sentences\)|7—10 well-crafted|Length & Structure Standard \(TTECEA\)/.test(t), (t.match(/\((?:4-5|7-10|5-7) sentences\)|7—10 well-crafted/g) || []).slice(0, 3));
         ok(k + ': introduction = hook · building sentence · thesis, one sentence each', /\* \*\*Hook \(ONE sentence — a historical concept, a question or a metaphor/.test(t) && /\* \*\*Building Sentence \(ONE sentence/.test(t) && /\* \*\*Thesis Statement \(ONE sentence\)/.test(t));
         ok(k + ': conclusion = four elements, one sentence each', ['Restated Thesis', 'Controlling Concept', 'Central Purpose', 'Universal Message'].every(e => t.indexOf('* **' + e + ' (ONE sentence)') !== -1));
@@ -367,6 +370,8 @@ if (process.argv.includes('--self-test')) {
         ['the old 7-10 sentence range back (A3)', T => { T.proto = T.proto.replace('(ONE sentence per element, per the Sentence Plan)', '(7-10 sentences)'); }],
         ['technique interplay dropped from a sibling plan (A3)', T => { T.sibOcr = T.sibOcr.replace('S4 Technique interplay: two methods working together toward ONE meaning.', 'S4 Reader effects.'); }],
         ['the supporting quotation given its own sentence (A3)', T => { T.sibEdq = T.sibEdq.replace('never a sentence of its own', 'as its own closing sentence'); }],
+        ['the clarity allowance uncapped — every element may stretch (A3, #772b)', T => { T.sibIgM = T.sibIgM.replace('at most ONE element per model paragraph, and most model paragraphs need none', 'as often as clarity needs'); }],
+        ['the clarity allowance dropped from a Sentence Plan (A3, #772b)', T => { T.sibShared = T.sibShared.replace(/\n {8}\* Clarity allowance: [^\n]*/, ''); }],
     ];
     M.forEach(([name, mut]) => {
         const T = Object.assign({}, base);
