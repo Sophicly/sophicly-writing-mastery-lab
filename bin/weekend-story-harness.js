@@ -105,6 +105,7 @@ const consts = (name) => { const i = SRC.indexOf('const ' + name + ' = '); const
 const CONSTS = ['CW9_GREETING', 'CW9_INTRO', 'CW9_UNIT'].map(consts).join('\n');
 const ARCH = (() => { const i = SRC.indexOf('cwPlotArchetypes:'); return eval('(' + braceSliceFrom(SRC, i + 'cwPlotArchetypes:'.length, '{', '}').text + ')'); })();   // eslint-disable-line no-eval
 const island = { props: null };
+const OWNERS = {};
 let CUR = null;
 const dropdowns = [];
 function world(opts) {
@@ -122,6 +123,7 @@ function world(opts) {
             _cwWriteOutlineRowLines: function (fid, lines) { if (!CUR.rows.has(fid)) { CUR.lostWrite = fid; return false; } CUR.rows.set(fid, lines.join('\n')); return true; },
             _setOutlineDropdown: function (fid, label) { dropdowns.push({ fid, label }); return true; },
             closeCanvasOverlay: function () {}, escapeHTML: (s) => s, sectionHTML: () => '<section></section>', _migrationActive: false,
+            _CW_TURN_OWNERS: OWNERS,   // v7.20.740: the factory registers its owns(text) here
         },
         externalSurface: function () { return !!island.props; },
     });
@@ -190,6 +192,13 @@ const SEVEN = (hook, setup) => [
         ok(/Story Spine is untouched/.test(rep) && !/plot outline/i.test(rep), 'the transfer report speaks about the spine');
         ok(!!w.store.scene_selection_state && JSON.parse(w.store.scene_selection_state).arch === 'story-spine', 'selection persisted under the usual key, marked as a spine selection');
         ok(w.sends.length === 0, 'zero API calls');
+        // v7.20.740: the RESUME replay redrew our numbered intro through chip detection (three fake
+        // buttons, measured on staging). The walk must claim every turn it authored, and only those.
+        const owns = OWNERS.cw_step_9;
+        ok(typeof owns === 'function', 'the walk registers which stored turns it wrote');
+        const mine = w.bubbles.filter((b) => /Choose Your Scene|Here’s how it works|Here’s why we pick|a \*\*scene is a mini story\*\*/.test(b) && !/I can’t find/.test(b));   // the gate is ephemeral — never stored, never replayed
+        ok(mine.length >= 3 && mine.every((b) => owns(b)), '⭐ the greeting and every intro chunk are claimed (so a resume draws no fake "1. 2. 3." buttons)', mine.length);
+        ok(!owns('Great question! A hook is the first line that grabs your reader.') && !owns(''), '…and a genuine Sophia reply is NOT claimed (its chips still work)');
         island.props = null;
         // beat 1 and beat 6 land in the outer thirds
         dropdowns.length = 0;
@@ -266,6 +275,19 @@ const SEVEN = (hook, setup) => [
         const ni = RT.indexOf('public static function cw_weekend_unit_note');
         const note = RT.slice(ni, RT.indexOf('\n    }\n', ni));
         ok(/Story Spine/.test(note) && /Never name a lesson by a course step number/.test(note) && /cw_words_exam/.test(note), 'the note: spine instead of plot, no step numbers, the board\'s word targets');
+        ok((SRC.match(/_cwTurnOwned\(state\.task, clean\) \? \{ suppressActions: true \} : undefined/g) || []).length === 2,
+            'BOTH replay pipelines draw a walk-owned turn without chip detection (dual pipeline)');
+        // v7.20.740 — lesson 6, the GUIDED Draft 1 (plan §4 step 3): Step 10 as a polishing lesson in a unit.
+        ok(/\$cw_unit_polishing_lenses = \[\s*'weekend' => \[ 'cw_step_10' => 'prose_style' \],/.test(RT)
+            && /if \(isset\(\$cw_unit_polishing_lenses\[\$cw_unit\]\[\$task\]\)\)/.test(RT),
+            'lesson 6: the router serves weekend Step 10 the polishing stack with the prose lens');
+        ok(/if \(\$cw_unit === 'weekend'\) \$parts\[\] = self::cw_weekend_unit_note\(\$context\);/.test(RT),
+            'lesson 6: the unit note rides the polishing branch too (it returns before the protocol map)');
+        const di6 = SRC.indexOf("if (_unitDraft && stepDef.draft === 1) info = {");
+        const d6 = SRC.slice(di6, SRC.indexOf('};', di6));
+        ok(di6 > 0 && /tap <strong>Sophia<\/strong>/.test(d6) && /WML\.cwWordTarget\('d1'\)/.test(d6) && /Choose Your Scene lesson/.test(d6)
+            && !LEAK_RE.test(d6.replace(/<[^>]+>/g, ' ')),
+            'lesson 6: the page names Sophia, states the board\'s Draft-1 target, and names no step, plot or stage');
         ok(/const CW_UNIT_DEP_SOURCE = \{ plot_outline: 'brief_outline' \}/.test(SRC) && /const key = _cwDepSource\(depKey\);/.test(SRC),
             'free-typed chat in a unit lesson is primed with the spine where the plot outline would have been');
     }

@@ -2720,6 +2720,17 @@ class SWML_Protocol_Router {
         $cw_polishing_lenses = [
             'cw_step_14' => 'character_arc',
         ];
+        // v7.20.740 (PEDAGOGY §34.1, §55): a step run as a UNIT variant can be a polishing step too —
+        // the weekend story's guided Draft 1 is Step 10 with Sophia reached from a selection. Same
+        // contract as above, keyed on the unit; mirrors `unitEnv`/`unitLens` on CW_STEPS (the gate
+        // asserts both sides agree). Step 10 stays in $cw_protocol_map for the FULL course.
+        $cw_unit_polishing_lenses = [
+            'weekend' => [ 'cw_step_10' => 'prose_style' ],
+        ];
+        $cw_unit = (string) ($context['cw_unit'] ?? '');
+        if (isset($cw_unit_polishing_lenses[$cw_unit][$task])) {
+            $cw_polishing_lenses[$task] = $cw_unit_polishing_lenses[$cw_unit][$task];
+        }
         if (isset($cw_polishing_lenses[$task])) {
             $modules_dir = $plugin_dir . 'protocols/shared/modules/';
             $rubrics_dir = $modules_dir . 'rubrics/';
@@ -2747,6 +2758,9 @@ class SWML_Protocol_Router {
             $parts[] = "## THIS LESSON'S LENS\n\nCoach the selected passage through the lens "
                 . "`{$lens}` and no other. A layer belonging to a later draft is one the student "
                 . "has not been taught yet — do not raise it.";
+            // v7.20.737/740: a weekend-story lesson gets the unit note here too — this branch returns
+            // before the CW protocol map, which is where the note is otherwise appended.
+            if ($cw_unit === 'weekend') $parts[] = self::cw_weekend_unit_note($context);
             $content = implode("\n\n---\n\n", $parts);
             error_log("WML Router: Loaded CW polishing protocol for '{$task}': " . count($parts)
                 . " parts, " . strlen($content) . " chars (lens={$lens})");

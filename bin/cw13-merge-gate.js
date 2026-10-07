@@ -87,6 +87,7 @@ function world(task) {
             OUTLINE_CRITERIA: { cwPlotArchetypes: ARCH }, _cw6RowFieldId,
             _cwWriteOutlineRowLines: function (fid, lines) { const W = CUR; if (!W.rows.has(fid)) { W.lostWrite = fid; return false; } W.rows.set(fid, lines.join('\n')); return true; },
             _setOutlineDropdown: function () { return true; }, closeCanvasOverlay: function () {}, escapeHTML: (s) => s,
+            _CW_TURN_OWNERS: {},   // v7.20.740: the factory registers its owns(text) here
             sectionHTML: () => '<section></section>', _migrationActive: false,
         },
         externalSurface: function () { return !!island.props; },

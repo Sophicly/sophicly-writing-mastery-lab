@@ -5540,6 +5540,16 @@
         finally { _cwReplayDepth--; }
     }
     function _cwIsReplay() { return _cwReplayDepth > 0; }
+    // v7.20.740 — WHO WROTE THIS STORED TURN? A code-served walk draws its own bubbles with chip
+    // detection OFF (#511: its numbered teaching is a SEQUENCE, not a menu). The transcript REPLAY
+    // redraws stored turns through the generic path, where detection was ON — so on every resume the
+    // Step-9 intro's "1. 2. 3." came back as three fake buttons (measured on staging, weekend lesson 5).
+    // A walk registers `owns(text)` here; BOTH replay pipelines ask it before drawing.
+    const _CW_TURN_OWNERS = {};
+    function _cwTurnOwned(task, text) {
+        const f = _CW_TURN_OWNERS[task];
+        try { return !!(f && f(text)); } catch (e) { return false; }
+    }
 
     // v7.20.340 — IS THE ASK ACTUALLY ON SCREEN?
     // The resume path re-attaches a walk's help/chips to `chatMessages.lastElementChild` on the
@@ -31820,6 +31830,18 @@
                 return ensureChip();
             }
 
+            // v7.20.740: the turns THIS walk authored (both variants), so the replay draws them as the
+            // live walk did — no chip detection over our own numbered teaching. Signatures match the
+            // probes above: 100 chars for a greeting, 60 for every chunk.
+            function owns(text) {
+                const t = String(text || '');
+                const u = cfg.unit;
+                const greets = [cfg.greeting, u && u.greeting].filter(Boolean).map(function (g) { return g.slice(0, 100); });
+                const chunks = [].concat(cfg.intro || [], u && u.intro ? u.intro() : [], WRITEOUT(), [OVERVIEW_ASK, OVERVIEW_MORE])
+                    .filter(Boolean).map(function (c) { return String(c).slice(0, 60); });
+                return greets.concat(chunks).some(function (sig) { return sig && t.indexOf(sig) === 0; });
+            }
+            _CW_TURN_OWNERS[cfg.task] = owns;
             return {
                 // v7.20.500: ONE typed ask (the Scene Overview). `active` is true only while it
                 // is outstanding, so every other turn in this step still goes to the AI.
@@ -39215,7 +39237,7 @@
         const isCwSi = isCwTask && cwStepDef?.tier === 'si';
         // v7.20.505: DOC-ONLY is a capability, not a tier. A diagnostic CW step renders through the
         // proven workbook path (document + guidance, no chat) rather than a new branch of its own.
-        const isCwWorkbook = isCwTask && (cwStepDef?.tier === 'workbook' || cwStepDef?.env === 'diagnostic');
+        const isCwWorkbook = isCwTask && (cwStepDef?.tier === 'workbook' || WML.cwStepEnv(cwStepDef) === 'diagnostic');   // v7.20.740: unit variant via the one resolver
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz', 'mastery_codex'];
         const isExamPrep = EXAM_PREP_TASKS.includes(state.task);
         // v7.14.37: Environment detection from manifest (free/training/flexible)
@@ -41903,7 +41925,7 @@
                             let _h = formatAI(clean);
                             const _rb = (_cnReplayBeat && _i === _lastAiIdx) ? _cnReplayBeat : msg.beat;
                             if (_rb) _h = _beatChipBlock(_rb) + _h;
-                            tp.addChatMessage(_h, 'ai', clean);
+                            tp.addChatMessage(_h, 'ai', clean, _cwTurnOwned(state.task, clean) ? { suppressActions: true } : undefined);   // v7.20.740
                         } else if (msg.role === 'user') {
                             tp.addChatMessage(msg.content, 'user');
                         }
@@ -45099,7 +45121,7 @@
                                                     let _h = formatAI(clean);
                                                     const _rb = (_cnReplayBeat2 && _i === _lastAiIdx2) ? _cnReplayBeat2 : msg.beat;
                                                     if (_rb) _h = _beatChipBlock(_rb) + _h;
-                                                    addChatMessage(_h, 'ai', clean);
+                                                    addChatMessage(_h, 'ai', clean, _cwTurnOwned(state.task, clean) ? { suppressActions: true } : undefined);   // v7.20.740 (twin)
                                                 } else if (msg.role === 'user') {
                                                     addChatMessage(msg.content, 'user');
                                                 }
@@ -55580,10 +55602,16 @@
                 6: { layer: 'genre conventions', journey: 'Adding the Emotional Contract', desc: 'Genre is a <em>promise</em> to the reader about what emotional experience they will have. John Truby writes that most sophisticated stories <strong>blend genres</strong>. Your job is to deliver on that promise while keeping the character arc at the centre.' },
                 7: { layer: 'structural elements', journey: 'The Final Trial', desc: 'This is where everything comes together. You\u2019ve built this scene through six progressive drafts. Now add the final layer: hooks, irony, dialogue, symbolism, and pacing \u2014 the sophisticated techniques that separate good writing from writing that stays with the reader.' },
             };
-            const info = draftInfo[stepDef.draft] || { layer: '', journey: '', desc: '' };
+            let info = draftInfo[stepDef.draft] || { layer: '', journey: '', desc: '' };
+            // ⭐ v7.20.740 (PEDAGOGY §34.1, §55): in the weekend story Draft 1 is the GUIDED lesson —
+            // Sophia is there (select a sentence, tap Sophia) — so the page must not promise "no
+            // Sophia"; it names the lessons by what they do (no step numbers), drops the Hero's
+            // Journey line (a plot idea this student never met) and states their board's target.
+            const _unitDraft = !!(WML.cwInUnit && WML.cwInUnit() && WML.cwStepEnv(stepDef) === 'polishing');
+            if (_unitDraft && stepDef.draft === 1) info = { layer: info.layer, journey: '', desc: 'Your scene from the last lesson is waiting in the box below, exactly as you transferred it. Read it through and make every line real prose: what the reader would see and hear happen. Stephen King says in <em>On Writing</em>: \u201cThe first draft is just you telling yourself the story.\u201d Work on strong nouns and dynamic verbs, show rather than tell, and aim for around ' + WML.cwWordTarget('d1') + ' words.<br><br><strong>Sophia can help.</strong> Select any sentence in your draft and tap <strong>Sophia</strong>. She points to one thing that would make it stronger, and you write it.<br><br><em>If the box below is empty, go back to the Choose Your Scene lesson and tap \u201cTransfer my scene\u201d \u2014 that is what sends your writing here.</em>' };
             html += sectionHTML('question', 'About This Draft', false, null,
                 `<h2>Draft ${stepDef.draft}: ${info.layer.charAt(0).toUpperCase() + info.layer.slice(1)}</h2>` +
-                `<p><strong>The Hero\u2019s Journey Stage:</strong> ${info.journey}</p>` +
+                (info.journey ? `<p><strong>The Hero\u2019s Journey Stage:</strong> ${info.journey}</p>` : '') +
                 `<p>${info.desc}</p>`
             );
             html += dividerHTML('YOUR WRITING');

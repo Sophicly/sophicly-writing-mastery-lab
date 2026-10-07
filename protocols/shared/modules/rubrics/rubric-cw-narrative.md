@@ -198,6 +198,23 @@ Each polishing step adds ONE layer to the same scene. The lens is declared on th
 on, and do not pull in a later draft's layer — a student redrafting for character arc should not be
 asked about genre.
 
+### Lens `prose_style` — Draft 1 (the weekend story's guided draft)
+
+Used only by the weekend story (PEDAGOGY §55): there, Draft 1 is a guided lesson, not a test. The
+student wrote each of the seven elements out as sentences in the lesson before and the joined scene
+is in the document. **The lens is Layer 1 above — prose — and nothing else.** Character arc,
+archetypes, empathy, theme, genre and structure belong to later drafts. The student has not been
+taught them, so do not raise them.
+
+Check two things, in this order:
+1. **Is it prose yet?** A line that still reads like a plan note (*"she goes to the door, sad"*) is
+   the first thing to change. Ask what the reader would see or hear happen in that moment.
+2. **Then Layer 1:** the verb first, then the noun, then adjectives and adverbs, then whether the
+   technique serves the emotional moment.
+
+**Pointer phrase:** *This line still reads like your plan. What would the reader actually see happen here?*
+(Layer 1's pointer phrases apply as written.)
+
 ### Lens `character_arc` — Draft 2
 
 The student has already defined, in Steps 11–12: **external goal · internal goal · need · stakes ·

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.739';
+var WML_BUILD = '7.20.740';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1135,7 +1135,10 @@ window.WML = (function() {
         // `env` is a CAPABILITY, never a `step === 10` literal (canvas task-scoping rule #2):
         // getExerciseConfig reads it, so a future step opts in by adding the word, and no sibling
         // step can inherit this environment by accident.
-        { step: 10, label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1, env: 'diagnostic', tools: 'minimal' },
+        // v7.20.740 (PEDAGOGY §34.1, §55): in the weekend story this step is the GUIDED Draft 1 — the
+        // same lesson as a polishing environment (Sophia from a selection, prose lens). `unitEnv` /
+        // `unitLens` are read ONLY through cwStepEnv / cwStepLens below; the full project is untouched.
+        { step: 10, label: 'Draft 1: Prose Style',      tier: 'si', phase: 'drafting', draft: 1, env: 'diagnostic', tools: 'minimal', unitEnv: 'polishing', unitLens: 'prose_style' },
         { id: 'trial_1', label: 'Trial 1: Story Coherence', tier: 'si', phase: 'drafting', trial: 1 },
         // v7.20.563 (#428, Neil): Step 11 gets a code-served WALK — so the SI manifest (chat + sidebar).
         { step: 11, label: 'Character Profile',         tier: 'si', phase: 'drafting' },
@@ -1191,8 +1194,13 @@ window.WML = (function() {
     // is how a student ends up with the notes tab in a lesson whose rail says it is a test.
     function cwToolsMinimal(task) {
         const d = getCwStepDef(task);
-        return !!(d && d.tools === 'minimal');
+        // v7.20.740: a step run as its unit variant is not the unaided test (the guided Draft 1).
+        return !!(d && d.tools === 'minimal' && !(cwInUnit() && d.unitEnv));
     }
+    // v7.20.740: a step's ENVIRONMENT and polishing LENS, unit variant applied. ONE resolver, so the
+    // exercise config, the workbook test and the router's lens can never disagree about a step.
+    function cwStepEnv(def) { return def ? ((cwInUnit() && def.unitEnv) || def.env || '') : ''; }
+    function cwStepLens(def) { return def ? ((cwInUnit() && def.unitLens) || def.lens || '') : ''; }
 
     // Lookup helper: task string → CW_STEPS entry
     function getCwStepDef(task) {
@@ -2318,10 +2326,11 @@ window.WML = (function() {
             if (stepDef) {
                 // v7.20.507 (#366): `env` wins over `tier` — a step that declares a diagnostic
                 // environment gets it whatever its tier says. Capability first, never a literal.
-                const base = stepDef.env === 'diagnostic' ? EXERCISE_MANIFEST.cw_diagnostic
+                const env = cwStepEnv(stepDef);   // v7.20.740: the unit variant, applied in one place
+                const base = env === 'diagnostic' ? EXERCISE_MANIFEST.cw_diagnostic
                     // v7.20.577: the polishing env joins the same `env`-wins ladder, so a draft
                     // step opts in by declaring it — no literal step number decides this.
-                    : stepDef.env === 'polishing' ? EXERCISE_MANIFEST.cw_polishing
+                    : env === 'polishing' ? EXERCISE_MANIFEST.cw_polishing
                     : stepDef.tier === 'si' ? EXERCISE_MANIFEST.cw_si
                     : EXERCISE_MANIFEST.cw_workbook;
                 const stepKey = stepDef.step || stepDef.id;
@@ -2330,7 +2339,7 @@ window.WML = (function() {
                 // v7.20.577: the polishing env has no chat PANEL either — Sophia is reached from a
                 // text selection, not a walk — so it takes the same no-walk-sidebar treatment. A
                 // sidebar of sub-steps nothing can ever tick is the §4d "screen that lies" shape.
-                const noChat = stepDef.env === 'diagnostic' || stepDef.env === 'polishing';
+                const noChat = env === 'diagnostic' || env === 'polishing';
                 return {
                     ...base,
                     label: stepDef.label,
@@ -6028,7 +6037,7 @@ window.WML = (function() {
         EXERCISE_MANIFEST,
         // Creative Writing
         CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
-        cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget,
+        cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget, cwStepEnv, cwStepLens,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
         // Revision map
         REVISION_MAP,

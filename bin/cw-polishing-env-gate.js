@@ -133,6 +133,29 @@ for (const j of jsPolishing) {
         { js: j.lens, php: p ? p.lens : 'MISSING' });
 }
 
+// v7.20.740 (PEDAGOGY §55): the UNIT variants. A step may polish only inside a unit (the weekend
+// story's guided Draft 1 = Step 10). Same cross-language contract: JS `unitEnv`/`unitLens` ↔ the
+// router's $cw_unit_polishing_lenses. Such a step KEEPS its walk-protocol row for the full course,
+// so the exclusion check below is (correctly) not applied to it.
+const unitBlock = ROUTER.match(/\$cw_unit_polishing_lenses\s*=\s*\[([\s\S]*?)\];\n/);
+ok('the router declares a $cw_unit_polishing_lenses map', !!unitBlock);
+const phpUnit = unitBlock ? [...unitBlock[1].matchAll(/'(cw_step_\d+)'\s*=>\s*'([a-z_]+)'/g)].map(m => ({ task: m[1], lens: m[2] })) : [];
+const jsUnit = WML.CW_STEPS.filter(s => s.unitEnv === 'polishing').map(s => ({ task: 'cw_step_' + s.step, lens: s.unitLens }));
+ok('unit variants: both sides list the SAME steps and lenses',
+    JSON.stringify(phpUnit.sort((a, b) => a.task < b.task ? -1 : 1)) === JSON.stringify(jsUnit.sort((a, b) => a.task < b.task ? -1 : 1)),
+    { php: phpUnit, js: jsUnit });
+ok('every unit lens has its own section in the CW rubric (an unwritten lens must never be coached)',
+    jsUnit.every(j => new RegExp('### Lens `' + j.lens + '`').test(fs.readFileSync(path.join(ROOT, 'protocols/shared/modules/rubrics/rubric-cw-narrative.md'), 'utf8'))));
+// in a unit, the variant actually applies — and leaves the full course alone (checked above)
+WML.state.cwUnit = 'weekend';
+const u10 = cfg('cw_step_10');
+ok('in a weekend-story lesson Step 10 IS a polishing step (inline-coaching, chat panel off)',
+    u10.environment === 'inline-coaching' && u10.panels.chat === false && !u10.sidebarSteps, { env: u10.environment, panels: u10.panels });
+ok('…is not the unaided test (tools are not minimal)', !WML.cwToolsMinimal('cw_step_10'));
+ok('…and resolves its lens through the one resolver', WML.cwStepLens(WML.getCwStepDef('cw_step_10')) === 'prose_style');
+WML.state.cwUnit = '';
+ok('outside a unit Step 10 is back to the diagnostic test', cfg('cw_step_10').environment === 'free' && WML.cwToolsMinimal('cw_step_10'));
+
 // A polishing step must NOT also be in the walk-protocol map, or its old teaching walk loads.
 const mapBlock = ROUTER.match(/\$cw_protocol_map\s*=\s*\[([\s\S]*?)\];/);
 ok('the router still declares $cw_protocol_map', !!mapBlock);
