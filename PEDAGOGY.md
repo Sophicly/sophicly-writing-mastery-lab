@@ -3064,3 +3064,23 @@ genuinely is one paragraph?… we used to just give zero for the second paragrap
   Introduction/Conclusion essay shape); the label header names it whenever fewer paragraphs arrive than taught; the
   router's Q2 bucket map uses Parts; and "Part N" is the same slot as "Paragraph N" in the sidebar rows, the mark
   correction and the question re-sum. **Enforced:** `bin/mark-correct-harness.js` (+10).
+
+## §55. ⭐⭐ THE WEEKEND STORY — seven Emergency-unit lessons plus one ADAPTING lesson, every board (Neil, ruled 2026-10-07; FIXLIST #727, #774, #774b, #777)
+
+**His words.** The ask (#774b): *"the story needs to be based somehow on our creative writing course but what we've got in
+there is too extensive for an exam preparation so we need to pick out the key exercises where a student can get a story
+up within a weekend"*. Scope (6 Oct, §53.30): *"Every board's creative question"*. The choice (Actions v59, card 4):
+**"Seven lessons plus the adapting lesson (about 3 to 5 hours)."**
+
+**What it is.**
+- **Lessons 1–7 = the first seven lessons of the Emergency unit (§34), unchanged in shape:** Writer's Profile · Story
+  Ideas · Logline · Story Spine · choose the scene (Step 9, spine fallback) · guided Draft 1 (the Step-10 VARIANT, never a
+  copied protocol) · Trial 1 (marked). No plot work — §34.3 stands.
+- **Lesson 8 = NEW: adapt the story to the exam question.** §41 says students adapt their prepared story on the day;
+  nothing in the course practised it. The lesson uses the student's OWN board's real prompt shapes (each board's
+  papers, not general knowledge — CLAUDE.md §2c) and ends in a timed rewrite. Why it matters, measured: AQA's 2026 mark
+  scheme caps AO5 at 12 if the story does not address the task's focus.
+- **Drafts 2 and 3 (§34 lessons 8–13) are NOT in the weekend story.** A student with more time continues into them.
+- The ~3–5 hours is an ESTIMATE (no student time is recorded anywhere); measure it once real students take it.
+
+**Build plan:** `WEEKEND-STORY-PLAN.md` (plugin root). Research: `~/.claude/handoffs/open/wml-CW-EXAM-STORY-FACTS-2026-10-07.md`.
