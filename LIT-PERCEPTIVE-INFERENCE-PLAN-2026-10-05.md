@@ -324,6 +324,20 @@ supporting-quotation row**, so every total is unchanged; the gate (§6) proves i
 - **Not yet mapped** (different table format): `aqa/unseen`, `ccea/unseen-prose`, `edexcel/unseen`,
   `edexcel/modern` (body), `edexcel-igcse/modern-prose`, `eduqas/unseen`, `ocr/poetry`.
 
+**STATUS 2026-10-07 (WML 329 A, v7.20.726) — the six sibling tables are PORTED** (`bin/lit-perceptive-gate.js` §A2,
+244 checks + 3 new mutations). Six files, because CCEA prose and Eduqas modern both load
+`protocols/shared/assessment/protocol-a-assessment.md` (their own `modules/protocol-a-assessment.md` are not loaded).
+Each: the LITERATURE MARKING STANDARD (Rule 5 with the board's own word — CCEA "assured / persuasive, evaluative",
+the rest "perceptive"; the Mrs Birling bar with a §23 fit line), the v5 body rows in writing order with every worth kept
+except close analysis −0.25 → supporting 0.25, "Marked:" splits on every intro/body/conclusion row, H1/P2/TTE1 off the
+body lists, P2 off every list, and T2 "missing TTE" renamed TTE1 where defined. **Three disclosed adaptations (Neil to
+confirm, Actions v55):** (a) Eduqas literature + OCR topic sentence is worth 0.5, so it splits 0.25 link + 0.25 a
+perceptive concept drawn from the anchor; (b) their thesis is worth 3.0 → 1.5 three points + 1.25 one core argument +
+0.25 perceptive (the AQA rule "a roadmap alone earns half" kept); (c) Edexcel IGCSE heritage + literature bodies had
+over-summed since the first commit (7.5 rows vs a stated 7) → effects 0.75 → 0.5 each, as on AQA. Still PENDING:
+the comparative-poetry, unseen and "already in sentence order" exceptions below, SQA, and these boards' FILING (all
+seven are KNOWN_UNFILED in `bin/feedback-filing-gate.js` — their marking is chat-only until each board's full port).
+
 ## 5. What else must change in the same build (key-match, root §5d)
 
 1. **AQA 19th-century override** — `includes/class-protocol-router.php:3128-3140` names "Topic sentence links

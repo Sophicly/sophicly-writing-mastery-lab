@@ -47,6 +47,17 @@ const FILES = {
     poetryProto: P('protocols', 'aqa', 'poetry', 'modules', 'protocol-a-assessment-poetry.md'),
     penLit: P('protocols', 'aqa', 'literature', 'modules', 'penalty-codes.md'),
     penPoetry: P('protocols', 'aqa', 'poetry', 'modules', 'penalty-codes-poetry.md'),
+    // v7.20.726 (plan §4): the six sibling tables — the files the manifests actually LOAD (CCEA prose and
+    // Eduqas modern both load the SHARED protocol, so it is one table for two papers).
+    sibShared: P('protocols', 'shared', 'assessment', 'protocol-a-assessment.md'),
+    sibIgH: P('protocols', 'edexcel-igcse', 'heritage', 'modules', 'protocol-a-assessment.md'),
+    sibIgL: P('protocols', 'edexcel-igcse', 'literature', 'modules', 'protocol-a-assessment.md'),
+    sibIgM: P('protocols', 'edexcel-igcse', 'modern', 'modules', 'protocol-a-assessment.md'),
+    sibEdq: P('protocols', 'eduqas', 'literature', 'modules', 'protocol-a-assessment.md'),
+    sibOcr: P('protocols', 'ocr', 'literature', 'modules', 'protocol-a-assessment.md'),
+    tte1Ccea: P('protocols', 'ccea', 'prose', 'modules', 'knowledge-hub.md'),
+    tte1Edq: P('protocols', 'eduqas', 'literature', 'modules', 'penalty-codes.md'),
+    tte1Ocr: P('protocols', 'ocr', 'literature', 'modules', 'penalty-codes.md'),
     penAqaL2: P('protocols', 'aqa', 'language2', 'modules', 'knowledge-penalties.md'),
     penEdxL2: P('protocols', 'edexcel', 'language2', 'modules', 'knowledge-penalties.md'),
     penEdqL2: P('protocols', 'eduqas', 'language2', 'modules', 'knowledge-penalties.md'),
@@ -72,27 +83,42 @@ const OLD_NAMES = ['Strategic selection of quotes', 'Accurate technical terminol
 
 // Literature assessment protocols, by manifest dir. PORTED = checked in A. PENDING = the plan §4 port
 // list (status quoted from the plan); a literature manifest dir in neither list FAILS (F).
-const LIT_PORTED = ['aqa/literature'];
+// v7.20.726 — plan §4: the sibling tables. Same v5 rows, each paper's own worths (one worth moves: close
+// analysis −0.25 → supporting quotations 0.25). IGCSE heritage/literature also lose the 0.5 their rows had
+// always over-summed (effects 0.75 → 0.5 each, 7.5 → the stated 7). Topic sentence 0.5 on Eduqas/OCR keeps
+// its worth (link 0.25 + a perceptive concept from the anchor 0.25) — disclosed to Neil.
+const TS = 'Topic sentence links to thesis and question (AO1)', TEI = 'Technique + anchor quotation + inference, in one sentence (AO2/AO1)',
+    INT = 'Quotation integrated into the sentence (AO1)', CA = 'Fine-grained close analysis of words, sounds and punctuation (AO2)',
+    IP = 'Analysis of technique interplay (AO2)', E1 = 'First detailed sentence on reader effects (AO2)', E2 = 'Second detailed sentence on reader effects (AO2)',
+    PU = "Evaluates author's purpose (AO1)", CO = 'Coherence and flow (AO1)', SU = 'Judicious supporting quotations (AO1)';
+const SIBLINGS = [
+    { key: 'sibShared', dirs: ['ccea/prose', 'eduqas/modern'], total: 9, word: /CCEA[\s\S]*Assured interpretation[\s\S]*Eduqas[\s\S]*perceptive interpretation/,
+      body: [[TS, 1], [TEI, 1], [INT, 0.5], [CA, 1.25], [IP, 1], [E1, 1], [E2, 1], [PU, 1.5], [CO, 0.5], [SU, 0.25]] },
+    { key: 'sibIgH', dirs: ['edexcel-igcse/heritage'], total: 7, word: /Edexcel IGCSE's word is \*\*perceptive\*\*/,
+      body: [[TS, 1], [TEI, 1], [INT, 0.5], [CA, 0.75], [IP, 0.5], [E1, 0.5], [E2, 0.5], [PU, 1], ["Context drives author's choices (AO4)", 0.5], [CO, 0.5], [SU, 0.25]] },
+    { key: 'sibIgL', dirs: ['edexcel-igcse/literature'], total: 7, word: /Edexcel IGCSE's word is \*\*perceptive\*\*/,
+      body: [[TS, 1], [TEI, 1], [INT, 0.5], [CA, 0.75], [IP, 0.5], [E1, 0.5], [E2, 0.5], [PU, 1], ["Context drives author's choices (AO4)", 0.5], [CO, 0.5], [SU, 0.25]] },
+    { key: 'sibIgM', dirs: ['edexcel-igcse/modern'], total: 7, word: /Edexcel IGCSE's word is \*\*perceptive\*\*/,
+      body: [[TS, 1], [TEI, 1], [INT, 0.5], [CA, 0.75], [IP, 0.5], [E1, 0.75], [E2, 0.75], [PU, 1], [CO, 0.5], [SU, 0.25]] },
+    { key: 'sibEdq', dirs: ['eduqas/literature'], total: 9, word: /Eduqas's word is \*\*perceptive\*\*/,
+      body: [[TS, 0.5], [TEI, 1], [INT, 0.5], [CA, 0.75], [IP, 1], [E1, 1], [E2, 1], [PU, 1.5], ["Context drives author's conceptual and technical choices (AO3)", 1], [CO, 0.5], [SU, 0.25]] },
+    { key: 'sibOcr', dirs: ['ocr/literature'], total: 9, word: /OCR's word is \*\*perceptive\*\*/,
+      body: [[TS, 0.5], [TEI, 1], [INT, 0.5], [CA, 1.25], [IP, 0.5], [E1, 1], [E2, 1], [PU, 1], ["Context drives author's conceptual and technical choices (AO3)", 1.5], [CO, 0.5], [SU, 0.25]] },
+];
+const LIT_PORTED = ['aqa/literature'].concat(...SIBLINGS.map(x => x.dirs));
 const LIT_PENDING = {
     'aqa/poetry': 'comparative poetry — no links row, so no coherence row (plan §4 exceptions)',
     'aqa/unseen': 'not yet mapped (plan §4)',
-    'ccea/prose': 'six sibling tables (plan §4) — body 9',
     'ccea/unseen-prose': 'not yet mapped (plan §4)',
-    'edexcel-igcse/heritage': 'six sibling tables (plan §4) — body 7.5',
-    'edexcel-igcse/literature': 'six sibling tables (plan §4) — body 7.5',
-    'edexcel-igcse/modern': 'six sibling tables (plan §4) — body 7',
     'edexcel-igcse/modern-prose': 'not yet mapped (plan §4)',
     'edexcel/19th_century': 'already in sentence order — one TEI row, needs a ruling (plan §4)',
     'edexcel/modern': 'not yet mapped (plan §4)',
     'edexcel/poetry': 'comparative poetry — no links / selection row (plan §4 exceptions)',
     'edexcel/shakespeare': 'already in sentence order — one TEI row, needs a ruling (plan §4)',
     'edexcel/unseen': 'not yet mapped (plan §4)',
-    'eduqas/literature': 'six sibling tables (plan §4) — body 9',
-    'eduqas/modern': 'six sibling tables (plan §4) — body 9',
     'eduqas/poetry': 'comparative poetry (plan §4 exceptions)',
     'eduqas/shakespeare': 'already in sentence order — one TEI row, needs a ruling (plan §4)',
     'eduqas/unseen': 'not yet mapped (plan §4)',
-    'ocr/literature': 'six sibling tables (plan §4) — body 9',
     'ocr/poetry': 'not yet mapped (plan §4)',
     'sqa/critical-reading': 'no strategic-selection row — needs a ruling (plan §4)',
 };
@@ -243,6 +269,41 @@ function checkAll(T, log) {
     ok('the in-doc healer reads rows (learnChipsForLine falls back to the row reading)', /if \(!m\) return rowChipsFor\(_rowFromDocLine\(t\)\);/.test(T.core));
     ok('the Feedback pad reads rows (appendLearnChips)', /rowChipsFor\(_rowFromDocLine\(t\)\)/.test(T.core.slice(T.core.indexOf('function appendLearnChips('))));
 
+    // ── A2 · the six sibling tables (plan §4) ───────────────────────────────────────────────
+    H('A2 · the sibling Literature tables (plan §4) — same rows, each paper\'s own worths, the standard, the penalties');
+    SIBLINGS.forEach(sb => {
+        const t = T[sb.key], tag = sb.key + ' (' + sb.dirs.join(' + ') + ')';
+        const sIntro = rowsBetween(t, '**1\\. Introduction Assessment', '**2\\. Body Paragraph Assessments');
+        const sBody = rowsBetween(t, '**2\\. Body Paragraph Assessments', '**3\\. Conclusion Assessment');
+        const sConc = rowsBetween(t, '**3\\. Conclusion Assessment', '**Total Mark for conclusion:**');
+        ok(tag + ': the three section tables are found', !!(sIntro && sBody && sConc));
+        if (!(sIntro && sBody && sConc)) return;
+        const outOf = (seg, re) => num((seg.match(re) || [])[1] || 'NaN');
+        const iTot = outOf(sIntro.seg, /Total Mark for Introduction:\*\* [^\n]*out of ([\d.]+)/);
+        const cTot = outOf(t.slice(t.indexOf('**3\\. Conclusion Assessment')), /Total Mark for conclusion:\*\* [^\n]*out of ([\d.]+)/);
+        ok(tag + ': Introduction rows sum to its stated total (' + iTot + ')', sum(sIntro.rows.map(r => r[1])) === iTot, sIntro.rows.map(r => r[1]));
+        ok(tag + ': Conclusion rows sum to its stated total (' + cTot + ')', sum(sConc.rows.map(r => r[1])) === cTot, sConc.rows.map(r => r[1]));
+        ok(tag + ': Body has exactly ' + sb.body.length + ' rows', sBody.rows.length === sb.body.length, sBody.rows.length);
+        sb.body.forEach((b, i) => ok(tag + ': Body row ' + (i + 1) + ' is "' + b[0] + '" worth ' + b[1], !!sBody.rows[i] && sBody.rows[i][0] === b[0] && sBody.rows[i][1] === b[1], sBody.rows[i]));
+        ok(tag + ': Body rows sum to the stated ' + sb.total, sum(sBody.rows.map(r => r[1])) === sb.total && new RegExp('out of ' + sb.total + '\\b').test(sBody.seg), sum(sBody.rows.map(r => r[1])));
+        OLD_NAMES.forEach(n => ok(tag + ': retired row "' + n + '" is gone from the body', sBody.seg.indexOf(n) === -1));
+        const marked = (seg) => (seg.match(/^\s*- Marked: /gm) || []).length;
+        ok(tag + ': every row says how it is marked', marked(sIntro.seg) === sIntro.rows.length && marked(sBody.seg) === sBody.rows.length && marked(sConc.seg) === sConc.rows.length,
+            [marked(sIntro.seg), marked(sBody.seg), marked(sConc.seg)]);
+        const bp = (sBody.seg.match(/Apply maximum 3 penalties from codes: ([A-Z0-9, ]+)/) || [])[1] || '';
+        ok(tag + ': body penalty list found', !!bp);
+        ['T2', 'TTE1', 'H1', 'P2'].forEach(c => ok(tag + ': body list does NOT offer ' + c, !new RegExp('(?:^|[ ,])' + c + '(?:,|$|\\s)').test(bp), bp));
+        const ic = [sIntro.seg, t.slice(t.indexOf('**3\\. Conclusion Assessment'))].map(x => (x.match(/Apply maximum 2 penalties from codes: ([A-Z0-9, ]+)/) || [])[1] || '');
+        ok(tag + ': Introduction + Conclusion lists never offer P2', ic.every(l => l && !/\bP2\b/.test(l)), ic);
+        const st = (t.match(/LITERATURE MARKING STANDARD[\s\S]*?(?=\*\*1\\\. Introduction Assessment)/) || [''])[0];
+        ok(tag + ': the LITERATURE MARKING STANDARD block sits before the Introduction table', st.length > 2000, st.length);
+        ok(tag + ': Rule 5 restated with the board\'s own word', /marking-fairness Rule 5/.test(st) && sb.word.test(st));
+        ok(tag + ': Rule 6 + the "Not valid —" Why shape', /Rule 6/.test(st) && /`Not valid —`/.test(st));
+        ok(tag + ': coherence = any of the nine methods; discourse markers never required', /nine linking methods/.test(st) && /Discourse markers are ONE method and are never required/.test(st));
+        ok(tag + ': the calibration bar carries its §23 fit line', /Fit \(root §23\) — Built for: AQA Literature/.test(st));
+    });
+    ['tte1Ccea', 'tte1Edq', 'tte1Ocr'].forEach(k => ok(k + ': "missing TTE" is TTE1 (T2 now means a missing link)', /^TTE1 – Missing TTE in second sentence/m.test(T[k]) && !/^T2 – Missing TTE/m.test(T[k])));
+
     // ── F · the literature inventory, counted from the manifests ──────────────────────────
     H('F · every literature assessment protocol is either PORTED or listed PENDING');
     const dirs = [];
@@ -286,6 +347,9 @@ if (process.argv.includes('--self-test')) {
         ['the override cuts the topic sentence again (sum ≠ 7)', T => { T.router = T.router.replace('is worth **0.75** (not 1.0', 'is worth **1.0** (not 1.0'); }],
         ['the coherence row chip removed', T => { T.core = T.core.replace("{ arg: 'sentence-transitions', label: 'Linking Sentences & Paragraphs', test:", "{ arg: 'cohesion', label: 'Coherence & Cohesion', test:"); }],
         ['T2 back to "Add Furthermore"', T => { T.penPoetry = T.penPoetry.replace('T2 – Sentence not linked to the one before', 'T2 – Lacks transitional phrases/discourse markers (-0.5) Fix: Add Furthermore, Consequently'); }],
+        ['a sibling worth changed (OCR close analysis back to 1.5)', T => { T.sibOcr = T.sibOcr.replace('punctuation (AO2)** \\- Worth: 1.25', 'punctuation (AO2)** \\- Worth: 1.5'); }],
+        ['H1 back on a sibling body list', T => { T.sibIgH = T.sibIgH.replace('Apply maximum 3 penalties from codes: C1,', 'Apply maximum 3 penalties from codes: C1, H1,'); }],
+        ['the IGCSE over-sum back (effects 0.75)', T => { T.sibIgL = T.sibIgL.replace('reader effects (AO2)** \\- Worth: 0.5 marks', 'reader effects (AO2)** \\- Worth: 0.75 marks'); }],
         ['a poetry Y gate restored', T => { T.poetryProto = T.poetryProto.replace('**STEP 2a — Acknowledge, then mark in the SAME message', '**STEP 2a — type **Y** to see your mark breakdown'); }],
     ];
     M.forEach(([name, mut]) => {

@@ -280,6 +280,41 @@ SAY: "Now we'll move into self-assessment where you'll reflect on your own work 
 
 ---
 
+**Internal AI Note — LITERATURE MARKING STANDARD (v7.20.726 — PEDAGOGY §53, Neil 2026-10-06; plan §4 port of the AQA anchor). Governs every criterion in the Introduction, Body and Conclusion tables below.**
+
+1. **The perceptive quarter (marking-fairness Rule 5, restated for Literature).** Every reading or argument part's LAST 0.25 is for perceptive work; OCR's word is **perceptive** (top level: "consistently perceptive understanding"). Met clearly and accurately but not perceptively = that part's worth minus 0.25. On this paper the topic sentence is worth 0.5: 0.25 for the link, and its perceptive quarter is a CONVINCING concept drawn from the anchor quotation. Sentence 2's inference carries the quarter INSIDE a larger part (0.5 — a clear inference 0.25, a convincing, perceptive one 0.5). The ACCURACY parts carry no perceptive quarter and are scored by their own steps in the table: the technique named correctly, the sentence-2 sequence, quotation integration, coherence and flow, judicious supporting quotations, and the thesis's three points and core argument. What earns the quarter, row by row — judge the student's thinking against these descriptions, never against particular sentences:
+
+   | Row | What makes it perceptive |
+   |---|---|
+   | Hook | a specific fact that already carries the essay's argument and points at the characters |
+   | Building sentences | a precise, dated context, turned into the writer's REASON for a choice |
+   | Thesis | one concept that answers the question, and three points that are each arguable |
+   | Topic sentence | the concept turned to show something unexpected, and drawn from the anchor quotation itself |
+   | Inference (sentence 2) | reads what the words hide, and proves it from the text |
+   | Close analysis | names the word class or sound, and draws from one small part a meaning beyond the obvious |
+   | Interplay | two methods working together toward ONE meaning |
+   | Effects | precise, rising feelings aimed at the idea just analysed; effect 2 moves from a feeling to a truth about people or society |
+   | Author's purpose | an argument the audience is pushed towards, tied to the thesis |
+   | Context | a specific, dated fact that explains THIS moment, not the period in general |
+   | Restated thesis | the thesis comes back sharpened, as a named concept |
+   | Controlling concept | one idea that ties the three paragraphs together and says something none of them said alone |
+   | Concept + techniques (conclusion) | whole-text methods, not a list of the paragraphs' techniques |
+   | Purpose / context / message (conclusion) | the purpose of the WHOLE text, supported by the writer's own words; a message that reaches beyond the text |
+
+2. **"Convincing" is checkable.** Award a convincing or perceptive part ONLY when your Why names the student's reading AND quotes the words it rests on (*"perceptive — 'naturally' turns prejudice into common sense"*). If you cannot point to the words, the part is not awarded. A hedged reading ("may", "perhaps", "arguably") is still a reading — never withhold credit for a hedge.
+
+3. **Only valid readings count (marking-fairness Rule 6).** A reading earns credit only when the quoted words can carry it, it follows logically, and it is true to the text. Mark each row on its VALID readings only; a row with no valid reading scores 0 for its reading part. An unusual reading the words support is valid and can be perceptive. There is no extra penalty (one fault, one charge). When a row loses marks this way its Why MUST begin `Not valid —` and name the words that do not carry it (≤10 words), e.g. `Not valid — "naturally" normalises prejudice, not kindness`. The platform attaches the Interpretation Ladder link to that row; never name toolkit sections yourself.
+
+4. **Coherence and flow (body row, 0.5).** First 0.25: every sentence links back to the topic sentence and the question (keep the question's key word alive). Second 0.25: every sentence flows on from the one before, by ANY of the Mastery Toolkit's nine linking methods — a linking word chosen for its meaning (never the same one twice in a paragraph) · echoing a key word from the sentence before · That/Such + a summing-up noun (never a bare "this") · a word from the quotation · the link inside the sentence · a time or place clause · cause, then effect · contrast · general, then specific. Discourse markers are ONE method and are never required. A list of separate facts loses the quarter, and so does a linking word with the wrong meaning ("Additionally" before a result). When this row loses marks the platform attaches the toolkit link.
+
+5. **One fault, one charge — the rows now carry these faults.** On a body paragraph never charge **H1** for a hanging quotation (the integration row charges it), and never charge a broken technique → anchor → inference sentence as a penalty (row 2's sequence quarter charges it; on this paper the old code for it is TTE1). In ANY section never charge **P2** (every row's perceptive quarter already charges a missing perceptive layer).
+
+6. **The technique in sentence 2** is anything in the Table of Techniques. Alliteration, Assonance, Consonance, Sibilance and Onomatopoeia may be the sentence-2 technique. Plosive and Tense belong in close analysis — if a student uses one as the sentence-2 technique, credit both quarters (named correctly + the sequence) and suggest naming the bigger method first, without deducting. A bare word class ("an adverb") is not a Table entry: it does not earn the naming quarter in sentence 2, and it is credited in close analysis. A technique named accurately anywhere in the paragraph still counts.
+
+7. **Quotations.** Every quotation — the anchor and every supporting one — must be integrated: embedded in the sentence's grammar (the ideal), or correctly introduced (after a colon is valid and earns full credit; encourage embedding without deducting). A quotation that hangs earns 0.25 of the integration row. **Judicious supporting quotations (0.25):** at least one short quotation beyond the anchor, integrated, carrying its own inference that supports the paragraph's point; quality, not number — a second or third earns nothing more.
+
+8. **Calibration — the house standard (INTERNAL: never shown to the student, never offered as a template; your examples vary across texts).** The AQA An Inspector Calls model answer on Mrs Birling's class prejudice is the bar for the perceptive quarter: topic sentence *"A first instance of Mrs Birling's prejudice is, ironically, directed towards her own daughter…"*; inference *"Priestley implies that loyalty to the status quo matters more to Mrs Birling than loyalty to another human being…"*; close analysis *"the modal 'have to' combined with the comparison 'just as I had' suggests a sordid, immutable custom handed from mother to daughter for generations"*; effect 2 *"spectators could face the sobering reality that those who benefit from the status quo will defend it even at the cost of someone they love"*; context *"Such judging of the poor was a legacy of the Poor Law of 1834, still in force in 1912…"*; flow *"It follows that…" · "In that anger…" · "That devotion even had a hymn…"*. A "clear" version of the same sentence (e.g. *"'have to' shows Sheila has no choice"*) earns all but the last quarter. *Fit (root §23) — Built for: AQA Literature, AO1–AO3. This paper: AO1 + AO2 + AO3. The bar transfers because it is a bar for the quality of a reading, not for a board's AO split.*
+
 **1\. Introduction Assessment (5 Marks Total)**
 
 **STEP 1: Student Metacognitive Reflection**
@@ -328,6 +363,7 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
     
   1. **Compelling hook that establishes an intriguing concept/contextual factor (AO1/AO3)** \- Worth: 1.0 mark  
        
+     - Marked: 0.75 a hook (a fact, a question or a quotation, never plot) that establishes a concept or contextual factor · +0.25 perceptive (a specific fact that already carries the essay's argument)  
      - Your score: \[X\]/1.0  
      - Why: \[Specific explanation \- e.g., "Your hook references context but doesn't make an argument-led claim"\]
 
@@ -335,6 +371,7 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
 
   2. **Building sentence(s) that establishe(s) pertinent contextual backdrop (AO3)** \- Worth: 0.5 marks  
        
+     - Marked: 0.25 a relevant contextual backdrop · +0.25 perceptive (precise and dated, not the period in general)  
      - Your score: \[X\]/0.5  
      - Why: \[Specific explanation if not full marks\]
 
@@ -342,21 +379,23 @@ SAY: "Thank you for that reflection. Now let me provide my formal assessment of 
 
   3. **Building sentence(s) that evaluate(s) how context shapes themes/purpose/choices (AO3)** \- Worth: 0.5 marks  
        
+     - Marked: 0.25 says how the context shapes the writer's themes, purpose or choices · +0.25 perceptive (turns the context into the writer's REASON for a choice)  
      - Your score: \[X\]/0.5  
      - Why: \[Specific explanation if not full marks\]
 
      
 
-  4. **Clear, precise three-point thesis with powerful argument (AO1)** \- Worth: 3.0 marks (1.0 mark per element)  
+  4. **Clear, precise three-point thesis with powerful argument (AO1)** \- Worth: 3.0 marks  
        
+     - Marked: 1.5 three points that map the essay · +1.25 the three points set up ONE core argument that answers the question · +0.25 perceptive (one concept, and three points that are each arguable). A roadmap alone ("this essay will explore three ways…") earns the 1.5 only (PEDAGOGY §53.26)  
      - Your score: \[X\]/3.0  
-     - Why: \[Specific explanation if not full marks \- assess each element: 1st point \[X\]/1.0, 2nd point \[X\]/1.0, 3rd point \[X\]/1.0\]
+     - Why: \[Specific explanation if not full marks\]
 
 
   **Penalties Applied (max 2 penalties \= \-1.0 total):**
 
 
-  * **Internal AI Note:** Apply maximum 2 penalties from codes: C1, T1, S2, L1, R1, G1, I1, P2, D1, M1, X1, H1, U1, W1, S1, K1  
+  * **Internal AI Note:** Apply maximum 2 penalties from codes: C1, T1, S2, L1, R1, G1, I1, D1, M1, X1, H1, U1, W1, S1, K1  
   * When applying, cite code and show fix: "Penalty W1 (-0.5): 'This shows the theme...' Fix: 'This reveals the theme...'"
 
 
@@ -550,57 +589,52 @@ SAY: "Thank you. Now here's my formal assessment."
   **Criteria Assessment:**
 
 
+  *(The rows follow the order the student writes the paragraph. Marked by the LITERATURE MARKING STANDARD above — PEDAGOGY §53. Total 9.)*
+
+
   1. **Topic sentence links to thesis and question (AO1)** \- Worth: 0.5 marks  
        
+     - Marked: 0.25 links to the thesis and the question · +0.25 a CONVINCING, perceptive concept drawn from the ANCHOR quotation (a clear concept, or one not drawn from the anchor, earns the link quarter only)  
      - Your score: \[X\]/0.5  
      - Why: \[Explanation if not full marks\]
 
      
 
-  2. **Integrated quotes & supporting evidence (AO1)** \- Worth: 0.5 marks  
+  2. **Technique + anchor quotation + inference, in one sentence (AO2/AO1)** \- Worth: 1.0 mark  
        
+     - Marked: 0.25 a technique used in the sequence — technique, then the anchor quotation, then an inference, together in one sentence (the SHAPE only) · +0.25 the technique is named correctly (any entry in the Table of Techniques; a wrong name loses only this quarter; a technique named correctly anywhere in the paragraph still earns it) · +0.5 the inference (a clear inference 0.25; a CONVINCING, perceptive one 0.5)  
+     - Your score: \[X\]/1.0  
+     - Why: \[Explanation if not full marks\]
+
+     
+
+  3. **Quotation integrated into the sentence (AO1)** \- Worth: 0.5 marks  
+       
+     - Marked: a quotation that hangs (dropped in, not part of the sentence) 0.25 · integrated 0.5 — embedded in the sentence's grammar, or correctly introduced (after a colon is valid and earns the 0.5; encourage embedding, never deduct for the colon)  
      - Your score: \[X\]/0.5  
      - Why: \[Explanation if not full marks\]
 
      
 
-  3. **Strategic selection of quotes (AO1)** \- Worth: 0.5 marks  
+  4. **Fine-grained close analysis of words, sounds and punctuation (AO2)** \- Worth: 1.25 marks  
        
+     - Marked: breaks the technique and the quotation into small parts — single words and their word classes, sounds, punctuation — and draws a meaning from them: 1.0 · +0.25 perceptive. Naming a part without a meaning drawn from it earns nothing (naming is not yet analysis)  
+     - Your score: \[X\]/1.25  
+     - Why: \[Explanation if not full marks\]
+
+     
+
+  5. **Analysis of technique interplay (AO2)** \- Worth: 0.5 marks  
+       
+     - Marked: 0.25 two methods analysed together · +0.25 perceptive (they work together toward ONE meaning). Credit interplay wherever it sits, including inside the close-analysis sentence  
      - Your score: \[X\]/0.5  
      - Why: \[Explanation if not full marks\]
 
      
 
-  4. **Accurate technical terminology (AO2)** \- Worth: 0.5 marks  
+  6. **First detailed sentence on reader effects (AO2)** \- Worth: 1.0 mark  
        
-     - Your score: \[X\]/0.5  
-     - Why: \[Explanation if not full marks\]
-
-     
-
-  5. **Analysis links to topic sentence (AO1/AO2)** \- Worth: 0.5 marks  
-       
-     - Your score: \[X\]/0.5  
-     - Why: \[Explanation if not full marks\]
-
-     
-
-  6. **Perceptive close analysis of words/sound/structure (AO2)** \- Worth: 1.5 marks  
-       
-     - Your score: \[X\]/1.5  
-     - Why: \[Explanation if not full marks\]
-
-     
-
-  7. **Analysis of technique interplay (AO2)** \- Worth: 0.5 marks  
-       
-     - Your score: \[X\]/0.5  
-     - Why: \[Explanation if not full marks\]
-
-     
-
-  8. **First detailed sentence on reader effects (AO2)** \- Worth: 1.0 mark  
-       
+     - Marked: 0.75 · +0.25 perceptive (precise, rising feelings aimed at the idea just analysed)  
      - Should explore effects following the logical chain: focus → emotions → thoughts → real-world actions  
      - May cover 1-2 effects from this chain (e.g., focus and emotion, or emotion and thought)  
      - Must connect effects to meaning/author's concepts  
@@ -609,11 +643,12 @@ SAY: "Thank you. Now here's my formal assessment."
 
      
 
-  9. **Second detailed sentence on reader effects (AO2)** \- Worth: 1.0 mark  
+  7. **Second detailed sentence on reader effects (AO2)** \- Worth: 1.0 mark  
        
-     - Should continue the logical progression from sentence 8  
-     - Must explore different effect(s) than sentence 8  
-     - If S8 covered early chain (focus/emotion), S9 should cover later chain (thoughts/actions)  
+     - Marked: 0.75 · +0.25 perceptive (moves from a feeling to a truth about people or society)  
+     - Should continue the logical progression from the first effects sentence  
+     - Must explore different effect(s) than the first effects sentence  
+     - If the first covered the early chain (focus/emotion), this one should cover the later chain (thoughts/actions)  
      - Must connect effects to meaning/author's concepts  
      - Your score: \[X\]/1.0  
      - Why: \[Explanation if not full marks\]
@@ -622,25 +657,43 @@ SAY: "Thank you. Now here's my formal assessment."
   **Effects Guidance & Note on Effects Chain:** Authors typically work through effects sequentially: first directing **the reader/audience's focus** to specific words/images, then evoking **emotions in the reader/audience** through that focus, then shaping **the reader/audience's thoughts** about key concepts, and sometimes inspiring **the reader/audience's real-world actions**. Strong analysis considers how authors guide **reader/audience** response through these interconnected effects. Students should trace this logical progression across their two sentences, though they have flexibility in how they distribute these elements. The key is showing how each effect on **the reader/audience** leads to the next, how they build on each other to reveal the author's concepts, and ultimately how they create meaning. Students should explore this chain naturally across both sentences. **Important:** These are effects on **the reader/audience**, not effects on characters within the text.
 
 
-  10. **Evaluates author's purpose (AO1)** \- Worth: 1.0 mark  
+  8. **Evaluates author's purpose (AO1)** \- Worth: 1.0 mark  
+       
+     - Marked: 0.75 · +0.25 perceptive (an argument the audience is pushed towards, tied to the thesis)  
+     - **CRITICAL:** Author's purpose statements MUST use evaluative/tentative language (could be, possibly, might, perhaps, may, arguably, seems to, appears to) \- we cannot definitively know authorial intent
+     - **Marking:** Full marks (1.0) requires evaluative modals. Definitive statements without modals receive partial marks (0.5) if analysis otherwise strong
+     - Your score: \[X\]/1.0  
+     - Why: \[Explanation if not full marks \- note if definitive language used: "Strong analysis but lacks evaluative language (-0.5). Use modals like 'could be,' 'possibly,' or 'might' to acknowledge we're interpreting textual evidence"\]
+
+     
+
+  9. **Context drives author's conceptual and technical choices (AO3)** \- Worth: 1.5 marks  
+       
+     - Marked: 1.25 · +0.25 perceptive (a specific, dated fact that explains THIS moment, not the period in general)  
+     - Your score: \[X\]/1.5  
+     - Why: \[Explanation if not full marks\]
+
+     
+
+  10. **Coherence and flow (AO1)** \- Worth: 0.5 marks  
         
-      - **CRITICAL:** Author's purpose statements MUST use evaluative/tentative language (could be, possibly, might, perhaps, may, arguably, seems to, appears to) \- we cannot definitively know authorial intent  
-      - **Marking:** Full marks (1.0) requires evaluative modals. Definitive statements without modals receive partial marks (0.5) if analysis otherwise strong  
-      - Your score: \[X\]/1.0  
-      - Why: \[Explanation if not full marks \- note if definitive language used: "Strong analysis but lacks evaluative language (-0.5). Use modals like 'could be,' 'possibly,' or 'might' to acknowledge we're interpreting textual evidence"\]
+      - Marked: 0.25 every sentence links back to the topic sentence and the question (one that drifts off the idea loses it) · +0.25 every sentence flows on from the one before, by ANY of the Mastery Toolkit's nine linking methods (see the STANDARD). A list of separate facts loses the second quarter, and so does a linking word with the wrong meaning  
+      - Your score: \[X\]/0.5  
+      - Why: \[Explanation if not full marks\]
 
       
 
-  11. **Context drives author's conceptual and technical choices (AO3)** \- Worth: 1.5 marks  
+  11. **Judicious supporting quotations (AO1)** \- Worth: 0.25 marks  
         
-      - Your score: \[X\]/1.5  
+      - Marked: at least one SHORT quotation beyond the anchor, integrated (embedded, or correctly introduced), carrying its own inference that supports the paragraph's point · quality, not number — a second or third earns nothing more  
+      - Your score: \[X\]/0.25  
       - Why: \[Explanation if not full marks\]
 
 
   **Penalties Applied (max 3 penalties \= \-1.5 total):**
 
 
-  * **Internal AI Note:** Apply maximum 3 penalties from codes: C1, T1, S2, L1, R1, Q1, H1, G1, I1, E1, E2, F1, D1, M1, X1, P2, U1, W1, S1, K1
+  * **Internal AI Note:** Apply maximum 3 penalties from codes: C1, T1, S2, L1, R1, Q1, G1, I1, E1, E2, F1, D1, M1, X1, U1, W1, S1, K1 **Not on body paragraphs (one fault, one charge — the rows carry them):** H1 for a hanging quotation (the integration row), P2 (every row's perceptive quarter), TTE1 (row 2's sequence quarter)
 
 
   Priority order for body paragraphs:
@@ -648,7 +701,7 @@ SAY: "Thank you. Now here's my formal assessment."
 
   1. Structural issues (F1, Q1)  
   2. Analysis weaknesses (M1, I1, E2)  
-  3. Writing mechanics (W1, S1, S2, H1)
+  3. Writing mechanics (W1, S1, S2)
 
 
   **Penalties actually applied to this paragraph:** \[List specific penalties applied\]
@@ -801,6 +854,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
   1. **Restates thesis (AO1)** \- Worth: 0.5 marks  
        
+     - Marked: 0.25 restates the thesis · +0.25 perceptive (it comes back sharpened, as a named concept)  
      - Your score: \[X\]/0.5  
      - Why: \[Explanation if not full marks\]
 
@@ -808,6 +862,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
   2. **Links to question (AO1)** \- Worth: 0.5 marks  
        
+     - Marked: 0.25 uses the question's focus · +0.25 perceptive (answers the question's HOW — what the writer uses the character or theme FOR)  
      - Your score: \[X\]/0.5  
      - Why: \[Explanation if not full marks\]
 
@@ -815,6 +870,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
   3. **Evaluates controlling concept (AO1)** \- Worth: 1.0 mark  
        
+     - Marked: 0.75 · +0.25 perceptive (one idea that ties the three paragraphs together and says something none of them said alone)  
      - Your score: \[X\]/1.0  
      - Why: \[Explanation if not full marks\]
 
@@ -822,6 +878,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
   4. **Links concept to key techniques (AO1/AO2)** \- Worth: 1.0 mark  
        
+     - Marked: 0.75 · +0.25 perceptive (whole-text methods, not a list of the paragraphs' techniques)  
      - Your score: \[X\]/1.0  
      - Why: \[Explanation if not full marks\]
 
@@ -831,6 +888,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
        
      - **CRITICAL:** Author's purpose statements MUST use evaluative/tentative language (could be, possibly, might, perhaps, may, arguably, seems to, appears to)  
      - **Marking:** Full marks (2.0) requires evaluative modals. Definitive statements without modals receive partial marks (1.0) if analysis otherwise strong, or (0.5) if basic  
+     - Marked: 1.75 · +0.25 perceptive (the purpose of the WHOLE text, offered as a reading, supported by the writer's own words where known)  
      - Your score: \[X\]/2.0  
      - Why: \[Explanation if not full marks \- note if definitive language used: "Strong analysis but lacks evaluative language (-0.5). Use modals like 'could be,' 'possibly,' or 'might' to acknowledge we're interpreting textual evidence"\]
 
@@ -838,6 +896,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
   6. **Context drives author's central purpose (AO1/AO3)** \- Worth: 1.5 marks  
        
+     - Marked: 1.25 · +0.25 perceptive (context that is the writer's own documented intention, not background)  
      - Your score: \[X\]/1.5  
      - Why: \[Explanation if not full marks\]
 
@@ -845,6 +904,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
 
   7. **Evaluates moral/message (AO1)** \- Worth: 1.5 marks  
        
+     - Marked: 1.25 · +0.25 perceptive (a message that reaches beyond the text to the audience's world)  
      - Your score: \[X\]/1.5  
      - Why: \[Explanation if not full marks\]
 
@@ -852,7 +912,7 @@ SAY: "Thank you. Here's my assessment of your conclusion."
   **Penalties Applied (max 2 penalties \= \-1.0 total):**
 
 
-  * **Internal AI Note:** Apply maximum 2 penalties from codes: C1, T1, S2, L1, R1, G1, I1, P2, D1, M1, X1, H1, U1, W1, S1, K1
+  * **Internal AI Note:** Apply maximum 2 penalties from codes: C1, T1, S2, L1, R1, G1, I1, D1, M1, X1, H1, U1, W1, S1, K1
 
 
   **Penalties actually applied to this conclusion:** \[List specific penalties applied\]
