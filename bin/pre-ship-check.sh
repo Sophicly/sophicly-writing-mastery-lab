@@ -870,6 +870,8 @@ node bin/question-mark-harness.js >/dev/null || { node bin/question-mark-harness
 node bin/grade-ladder-harness.js >/dev/null || { node bin/grade-ladder-harness.js; fail=1; }
 # A FILED MARK MAY CHANGE — the record follows Sophia's @MARK_CORRECT; the summary follows the record (v7.20.729, #757).
 node bin/mark-correct-harness.js >/dev/null || { node bin/mark-correct-harness.js; fail=1; }
+# A CARD IS THE RECORD, A QUESTION IS THE CONVERSATION — the Calibration ask stays in the chat (v7.20.731, #768).
+node bin/card-ask-harness.js >/dev/null || { node bin/card-ask-harness.js; fail=1; }
 
 
 if [ "$fail" -ne 0 ]; then

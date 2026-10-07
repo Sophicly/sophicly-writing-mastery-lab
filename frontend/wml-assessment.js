@@ -6841,6 +6841,33 @@
         return body ? [{ q: 'Q' + qm[1], title: title, body: body, _detected: true }] : null;
     }
 
+    // @TRAILING-ASK-PURE-START
+    // v7.20.731 (FIXLIST #768, Neil 7 Oct: "it's put that in the actual feedback but that's actually part of the
+    // message… it shouldn't really be in the feedback"). A card is the RECORD; a question to the student is the
+    // CONVERSATION. The Calibration Check's closing ask ("Which ONE … do you think …?") and its lettered options were
+    // filed into the Feedback. The comparison before it stays in the card (Neil's #709 ruling); only a trailing ask
+    // that speaks to the student ("you"/"your") and its options are dropped — a gold model that ends on a rhetorical
+    // question is third person and never touched. No lookbehind: older iPad Safari cannot parse it.
+    function _dropTrailingAsk(body) {
+        const lines = String(body || '').split('\n');
+        const isOpt = s => /^\s*[`*_]{0,3}\s*[A-H]\)\s+\S/.test(s);
+        const asksStudent = s => /\?\s*[`*_]{0,3}\s*$/.test(s) && /\byou(?:r|rs|rself)?\b/i.test(s);
+        let end = lines.length;
+        let sawOpt = false;
+        while (end > 0 && (/^\s*$/.test(lines[end - 1]) || isOpt(lines[end - 1]))) { if (isOpt(lines[end - 1])) sawOpt = true; end--; }
+        if (end > 0 && asksStudent(lines[end - 1])) {
+            const ln = lines[end - 1];
+            const sentences = ln.replace(new RegExp('([.!?])\\s+(?=[`*_]{0,3}[A-Z\\u0022\\u201c\\u2018\\u0027(])', 'g'), '$1\u0001').split('\u0001');
+            let k = sentences.length;
+            while (k > 0 && asksStudent(sentences[k - 1])) k--;
+            const kept = sentences.slice(0, k).join(' ').trim();
+            const out = lines.slice(0, end - 1);
+            if (kept) out.push(kept);
+            return out.join('\n').replace(/\s+$/, '');
+        }
+        return sawOpt ? lines.slice(0, end).join('\n').replace(/\s+$/, '') : String(body || '');
+    }
+    // @TRAILING-ASK-PURE-END
     // v7.19.605: the QUESTION-LEVEL total + key-targets ("**Q2 Total: 4.5/8** … key targets …")
     // is emitted OUTSIDE the @FB_BEGIN/@FB_END markers (after @FB_END), so the marker pass never
     // captures it and, because markers WERE found, the _detectFeedbackCard fallback is skipped —
@@ -7483,6 +7510,7 @@
             const qTotal = _detectQuestionTotal(aiReply);
             if (qTotal) cards.push(qTotal);
             if (!cards.length) return;
+            cards.forEach(c => { c.body = _dropTrailingAsk(c.body); });   // v7.20.731 (#768): the ask stays in the chat
             const numOf = s => { const x = String(s || '').match(/\d+/); return x ? x[0] : ''; }; // still used by the ACTUAL-mark autofill + scroll-target below
             let wrote = false;
             cards.forEach(card => {
@@ -57234,15 +57262,24 @@
             clone.querySelectorAll('[data-checklist-item], .swml-ana-strip, .swml-ctl-row, button').forEach(el => el.remove());
             if (!keepEm) clone.querySelectorAll('em').forEach(el => el.remove());
             const raw = clone.innerHTML || '';
-            const hasBlocks = /<\/(p|div|h[1-6]|li)>/i.test(raw);
-            // An inputField holds plain text whose ONLY separator is <br>, so there the soft
-            // break is all the student has and it stays a paragraph boundary.
-            const h = hasBlocks
-                ? raw.replace(/(?:<br\b[^>]*>(?:\s|&nbsp;| )*){2,}/gi, '\n').replace(/<br\b[^>]*>/gi, ' ').replace(/<\/(p|div|h[1-6]|li)>/gi, '\n')
-                : raw.replace(/<br\b[^>]*>/gi, '\n');
+            // ⭐⭐ v7.20.731 (#766/#770 — Neil 7 Oct: "fix the issue of not detecting the paragraphs universally for
+            // every single protocol"). ONE rule, wherever the answer was typed: a new block or a blank line is a
+            // paragraph break; a SINGLE line break is a paragraph break when it ends a sentence and the next line
+            // starts one — what the student sees on screen — and a soft wrap only when it falls mid-sentence
+            // (#418: never split a paragraph the student merely wrapped). The old switch tested the WHOLE section
+            // for a closing block tag, and a Language answer box is itself a <div>, so its "a single <br> is a
+            // break" branch never ran: a single Enter in a Language box was merged (42 of 110 real answers, 7 Oct).
+            // A retrieval answer (asStatements) keeps every line as its own statement.
+            const SBR = '\uE000';
+            const h = raw.replace(/(?:<br\b[^>]*>(?:\s|&nbsp;|\u00a0)*){2,}/gi, '\n')
+                .replace(/<br\b[^>]*>/gi, SBR)
+                .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n');
             const tmp = document.createElement('div');
             tmp.innerHTML = h;
-            const text = (tmp.textContent || '').replace(/ /g, ' ');
+            const _sentenceBreak = new RegExp('([.!?][\\u0022\\u0027\\u201d\\u2019)\\]]*)[ \\t\\u00a0]*' + SBR + '\\s*(?=[A-Z0-9\\u0022\\u0027\\u201c\\u2018(])', 'g');
+            const text = (tmp.textContent || '').replace(/\u00a0/g, ' ')
+                .replace(asStatements ? new RegExp(SBR, 'g') : _sentenceBreak, asStatements ? '\n' : '$1\n')
+                .replace(new RegExp('\\s*' + SBR + '\\s*', 'g'), ' ');
             const paras = [];
             let lead = '';
             // ⭐ v7.20.716 (measured on the WML 327 A Macbeth walk): the essay template ships its prompt as

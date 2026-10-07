@@ -191,6 +191,31 @@ const CASES = [
         expect: 0,
         why: 'nothing written must read as nothing written, never as one empty paragraph',
     },
+    // ── v7.20.731 (#766/#770, Neil 7 Oct: "fix… universally for every single protocol") — ONE rule ───
+    {
+        name: 'Language box: two paragraphs made with ONE Enter (the 42-of-110 case)',
+        html: '<div data-input-field="true" class="swml-input-field">The writer opens with a storm that mirrors the fear inside the house.<br>In addition, the sea is personified as a monster that attacks the cliffs.</div>',
+        expect: 2,
+        why: '#770: a Language answer box is itself a <div>, so the old switch never treated its single <br> as a break — u1298 was told "one continuous piece rather than three separate paragraphs"',
+    },
+    {
+        name: 'Language box: a line wrapped mid-sentence stays one paragraph',
+        html: '<div data-input-field="true" class="swml-input-field">' + words(20) + '<br>' + words(20) + '.</div>',
+        expect: 1,
+        why: 'a hard-wrapped paste breaks lines mid-sentence — a paragraph never ends mid-sentence (#418 holds)',
+    },
+    {
+        name: 'Language box: one unbroken paragraph stays one (Anaya’s Q2 shape)',
+        html: '<div data-input-field="true" class="swml-input-field">The writer powerfully conveys the storm. ' + words(60) + '.</div>',
+        expect: 1,
+        why: 'the reader never invents a break — her Q2 was split by the marking frame, not by the reader (#767)',
+    },
+    {
+        name: 'essay box: a single line break between two full sentences is a paragraph break',
+        html: '<p>Shakespeare presents Macbeth as a brave soldier at first. ' + words(30) + '.<br>Firstly, the witches awaken an ambition that is already there. ' + words(30) + '.</p>',
+        expect: 2,
+        why: '#766: what the student sees is a new line starting a new sentence — a paragraph; u1180 wrote an 818-word essay this way',
+    },
 ];
 
 // v7.20.672 (#682): the Literature essay path must use THIS rule, never a textContent read again.

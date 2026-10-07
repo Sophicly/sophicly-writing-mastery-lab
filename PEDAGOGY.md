@@ -3027,10 +3027,16 @@ trust one over the other. ASSESSMENT-MECHANICS #19: do it in code.
 0.25 + 0.25 perceptive; Eduqas/OCR thesis 3.0 = 1.5 roadmap + 1.25 core argument + 0.25 perceptive; Edexcel IGCSE
 heritage/literature effects 0.5 each (the body now sums to its 7).
 
-**4. A STUDENT IS NEVER TOLD THEIR OWN STRUCTURE IS WRONG BY A READING WE GOT WRONG (FIXLIST #766).** Neil: *"How can
-we make sure that that is avoided completely in the future?"* — after Zayan's introduction was marked "not submitted"
-because our reader joined his first four paragraphs. Measured on prod the same day: 9 of 260 real essays separate
-paragraphs with a single line break inside one block; 7 of them still read as one paragraph. The rule: before marking,
-code checks the essay's shape; when it reads as too few paragraphs and the student used single line breaks between
-full sentences, the student is shown how we split it and confirms or fixes it — one tap, no AI. A student who says a
-part exists is never argued with.
+**4. A STUDENT'S PARAGRAPHS ARE READ THE WAY THEY SEE THEM — ONE RULE FOR EVERY PROTOCOL (FIXLIST #766, #770).**
+Neil: *"How can we make sure that that is avoided completely in the future?"* and *"can we fix the issue of not
+detecting the paragraphs universally for every single protocol"* — after Zayan's introduction was marked "not
+submitted" because our reader joined his first four paragraphs. **Measured on prod, 7 Oct:** 9 of 260 essay answers
+used single line breaks between paragraphs inside one block, and **42 of 110 Language answers** were made with a single
+Enter — which the reader merged, because its "a single break counts in an answer box" branch never ran (the box is
+itself a `<div>`). **THE RULE (v7.20.731, `_mqParas`):** a new paragraph or a blank line is always a break; a SINGLE
+line break is a break when it ends one sentence and the next line starts another — what the student sees on screen —
+and a soft wrap when it falls mid-sentence (Neil's #418 "it mustn't falsely detect them" still holds for a wrapped
+line). A retrieval answer keeps every line as its own statement. And Sophia never argues a student's structure: if
+they say a part exists that the labels do not show, she asks for its first words and marks what they point to
+(router assessment block). The tap-to-confirm check proposed the same day was dropped: the sentence-boundary rule
+settles the ambiguous case without asking the student anything.
