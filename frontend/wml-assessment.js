@@ -5546,6 +5546,22 @@
     // Step-9 intro's "1. 2. 3." came back as three fake buttons (measured on staging, weekend lesson 5).
     // A walk registers `owns(text)` here; BOTH replay pipelines ask it before drawing.
     const _CW_TURN_OWNERS = {};
+    // v7.20.740 — UNIT COPY EDITS, ONE table (PEDAGOGY §55). A shared CW turn that points at a full-
+    // course step the weekend story does not contain is edited where it is SERVED in a unit lesson —
+    // never in its literal, which the gates read and the full course keeps. A drifted literal makes an
+    // edit a silent no-op, so bin/weekend-story-harness.js runs every edit against its real source.
+    const CW_UNIT_TEXT_EDITS = [
+        ['arrives at the **stunning surprise**, and you’ll build that in Step 6.', 'often arrives a little later in the story.'],   // lesson 3 (Step 3 goal ask)
+        ['you planned back in Step 9', 'you planned in the Choose Your Scene lesson'],                                              // lesson 7 (Trial 1 intro)
+        ['carry on to Step 11 and come back to this.', 'carry on to the next lesson and come back to this.'],                      // lesson 7 (marking failed)
+        ['open **My Plot** to see what you planned', 'open **My Story Spine** to see what you planned'],                              // lesson 7 (ask failed)
+    ];
+    function _cwUnitText(t) {
+        if (!(WML.cwInUnit && WML.cwInUnit())) return t;
+        let out = String(t);
+        CW_UNIT_TEXT_EDITS.forEach(function (ed) { out = out.split(ed[0]).join(ed[1]); });
+        return out;
+    }
     function _cwTurnOwned(task, text) {
         const f = _CW_TURN_OWNERS[task];
         try { return !!(f && f(text)); } catch (e) { return false; }
@@ -24622,14 +24638,7 @@
             // have (the stunning surprise is built in Step 6, and the unit does no plot work). The text is
             // edited where it is SERVED, never in STEPS — the literal is what the gates read, and the full
             // course must keep it. bin/weekend-story-harness.js proves each edit still matches.
-            const UNIT_ASK_EDITS = [
-                ['arrives at the **stunning surprise**, and you’ll build that in Step 6.', 'often arrives a little later in the story.'],
-            ];
-            function askOf(st) {
-                let t = st.ask;
-                if (WML.cwInUnit && WML.cwInUnit()) UNIT_ASK_EDITS.forEach(function (ed) { t = t.split(ed[0]).join(ed[1]); });
-                return t;
-            }
+            function askOf(st) { return _cwUnitText(st.ask); }   // the edit lives in CW_UNIT_TEXT_EDITS
             function chunksFor(i, withIntro) {
                 const out = [];
                 if (withIntro) { out.push(SEG.intro); out.push(SEG.intro2); }
@@ -32703,9 +32712,9 @@
                     className: 'swml-quick-btn', textContent: 'Guidance', icon: WML.icon('guide', 15),
                     onClick: function () { try { if (typeof showGuidePanel === 'function') showGuidePanel(GUIDE_ANCHOR); } catch (e) {} },
                 }));
-                bar.appendChild(el('button', {
+                bar.appendChild(el('button', {   // v7.20.740: "My Plot" opens the plot (it opened My Values)
                     className: 'swml-quick-btn', textContent: 'My Plot', icon: WML.icon('spine', 15),
-                    onClick: function () { try { const t = document.querySelector('.swml-mv-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (err) {} },
+                    onClick: function () { try { const t = document.querySelector('.swml-mp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (err) {} },
                 }));
                 bar.appendChild(el('button', {
                     className: 'swml-quick-btn swml-cw-help-last', textContent: 'Still stuck — ask Sophia', icon: WML.phoenixIconHTML(16),
@@ -33217,10 +33226,13 @@
                         onClick: function () { serveMoreExample(e); },
                     }));
                 }
+                // v7.20.740: this chip said "My Plot" but opened My VALUES (`.swml-mv-trigger`) — it opens
+                // the plot now; in a weekend-story lesson (no plot) it opens the Story Spine instead.
+                const _unitPlan = !!(WML.cwInUnit && WML.cwInUnit());
                 bar.appendChild(el('button', {
-                    className: 'swml-quick-btn', textContent: 'My Plot', icon: WML.icon('spine', 15),
+                    className: 'swml-quick-btn', textContent: _unitPlan ? 'My Story Spine' : 'My Plot', icon: WML.icon('spine', 15),
                     onClick: function () {
-                        try { const t = document.querySelector('.swml-mv-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (err) {}
+                        try { const t = document.querySelector(_unitPlan ? '.swml-ss-trigger' : '.swml-mp-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (err) {}
                     },
                 }));
                 bar.appendChild(el('button', {
@@ -33272,9 +33284,9 @@
                     // 14-year-old decides the page is broken. Say it plainly, re-offer the free rungs.
                     if (!reply || (meta && meta.timedOut)) {
                         console.warn('WML trial1: ask-Sophia failed/timed out for ' + e.id + ' — degraded honest message served.');
-                        aiBubble('I can’t think this through with you right now — I couldn’t reach my own thinking. '
+                        aiBubble(_cwUnitText('I can’t think this through with you right now — I couldn’t reach my own thinking. '
                             + 'Try **More examples**, or open **My Plot** to see what you planned. Your question is '
-                            + 'saved here so your tutor can see where you got stuck.');
+                            + 'saved here so your tutor can see where you got stuck.'));
                     }
                     setTimeout(function () { try { reAttachAsk(e); } catch (err) {} }, 400);
                     resetSend();
@@ -33293,7 +33305,7 @@
 
             // ── serving ───────────────────────────────────────────────────────────────────
             function orientationChunks() {
-                return [
+                return ([
                     'Time to see how your first draft holds together as a **story**. Not the spelling, not the '
                         + 'word choices — those come later. Just this: does it work as a piece of storytelling?',
                     // AO framing (PEDAGOGY §33.11): plain name FIRST, exam code attached.
@@ -33321,7 +33333,7 @@
                         + 'hopeful high one tells you nothing.\n\nWhen you have marked every part, I will read your '
                         + 'draft and make my own level calls — and the places where we disagree are the most '
                         + 'useful thing in this lesson.',
-                ];
+                ]).map(_cwUnitText);   // v7.20.740: unit lessons name no full-course step
             }
 
             function askText(e, i) {
@@ -33715,9 +33727,9 @@
                     console.warn('WML trial1: marking call failed/timed out — honest message + retry chip served.');
                     active = true; persist();
                     _cwReplay(function () {
-                        aiBubble('I could not read your draft just now — that is my end, not yours. **Your '
+                        aiBubble(_cwUnitText('I could not read your draft just now — that is my end, not yours. **Your '
                             + 'judgements are saved** in your document, so nothing is lost. Try again when you are '
-                            + 'ready, or carry on to Step 11 and come back to this.');
+                            + 'ready, or carry on to Step 11 and come back to this.'));
                     });
                     chipBarOrRetry(['Try again →'], function () { pickTurn('Try again →'); serveMarking(); },
                         '**Your judgements are saved.**');
@@ -37675,6 +37687,10 @@
             // those into a null path to chase. Not appending is the smallest change that holds.
             const _toolsMin = !!(WML.cwToolsMinimal && WML.cwToolsMinimal(state.task));
             const _railAdd = (btn) => { if (!_toolsMin) btnColumn.appendChild(btn); };
+            // v7.20.740 (PEDAGOGY §55): a weekend-story lesson never has a Step-6 plot, Step-7 values or
+            // the beats flagged in Step 6 — those three panels could only ever open empty there.
+            const _inUnit = !!(WML.cwInUnit && WML.cwInUnit());
+            const _railAddFull = (btn) => { if (!_inUnit) _railAdd(btn); };
 
             wpTrigger = el('button', {
                 className: 'swml-outline-btn swml-wp-trigger',
@@ -37713,7 +37729,7 @@
                 'aria-label': 'My Values — your Step 7 audit', innerHTML: SVG_VALUES,
                 onClick: (e) => { e.stopPropagation(); _openWpMode('myValues'); }
             });
-            _railAdd(mvTrigger);
+            _railAddFull(mvTrigger);
 
             // ⭐ v7.20.535 (#396) — My Plot. Placed here because the rail reads in STEP order and
             // this shell's other origins are 1, 3, 4 and 7; the plot is Step 6.
@@ -37723,7 +37739,7 @@
                 'aria-label': 'My Plot — your Step 6 outline', innerHTML: SVG_PLOT,
                 onClick: (e) => { e.stopPropagation(); _openWpMode('myPlot'); }
             });
-            _railAdd(mpTrigger);
+            _railAddFull(mpTrigger);
 
             // v7.20.410 (#207) — "Coming back to": every beat the student flagged, click to jump.
             // Its own rail button (unlike the beat-examples mode) because the question "what did I
@@ -37734,7 +37750,7 @@
                 'aria-label': 'Beats you flagged to come back to', innerHTML: SVG_REVISIT,
                 onClick: (e) => { e.stopPropagation(); _openWpMode('revisit'); }
             });
-            _railAdd(rvTrigger);
+            _railAddFull(rvTrigger);
 
             // ── float / dock / drag / resize — v7.20.319: the ONE shared rail-panel layer ──
             // This shell serves three rail buttons, so the dock re-anchor resolves through the

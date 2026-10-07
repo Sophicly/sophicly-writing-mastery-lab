@@ -241,19 +241,30 @@ const SEVEN = (hook, setup) => [
         ok(di > 0 && de > di && !LEAK_RE.test(about.replace(/sectionHTML\('question', 'About This Lesson'/, '')), 'the lesson 5 page\'s "About This Lesson" is clean');
         ok(/_unit\s*\n?\s*\?\s*outlineRowHTML\(\{ id: 'plot-position', label: 'Part of the Story', type: 'dropdown', items: CW_SPINE_POSITIONS\.slice\(\)/.test(SRC),
             'the page\'s position dropdown lists the SAME labels the walk sets (write-key = read-key, §5d)');
-        // lesson 3's one leak — edited where it is SERVED (askOf), the STEPS literal untouched for the gates.
-        // A drifted literal would make the edit a silent no-op, so the edit is run against the real ask.
+        // Shared CW turns edited where SERVED in a unit (one table, CW_UNIT_TEXT_EDITS). A drifted literal
+        // makes an edit a silent no-op, so EVERY edit's "from" must still occur in the shipped source.
+        const ti = SRC.indexOf('const CW_UNIT_TEXT_EDITS = [');
+        const fi2 = SRC.indexOf('function _cwUnitText(t) {', ti);
+        const UT = SRC.slice(ti, braceSliceFrom(SRC, fi2, '{', '}').end);
+        const mkUT = (unit) => new Function('WML', UT + '\nreturn { E: CW_UNIT_TEXT_EDITS, f: _cwUnitText };')({ cwInUnit: () => unit });   // eslint-disable-line no-new-func
+        const U1 = mkUT(true), U0 = mkUT(false);
+        const SRC_NO_TABLE = SRC.slice(0, ti) + SRC.slice(braceSliceFrom(SRC, fi2, '{', '}').end);
+        U1.E.forEach((ed) => ok(SRC_NO_TABLE.indexOf(ed[0]) !== -1 && !LEAK_RE.test(ed[1]),
+            'unit edit still matches its source and the replacement is clean: "' + ed[0].slice(0, 50) + '"'));
         const gi = SRC.indexOf("{ fid: 'cw-step-3-goal', label: 'Goal', criteria:");
-        ok(gi > 0, 'lesson 3: the Step-3 goal ask is found');
         const goal = new Function('HELP_LINE', 'return (' + braceSliceFrom(SRC, gi, '{', '}').text + ');')('');   // eslint-disable-line no-new-func
-        const ei = SRC.indexOf('const UNIT_ASK_EDITS = [');
-        const fe = SRC.indexOf('function askOf(st) {', ei);
-        const ASKOF = SRC.slice(ei, braceSliceFrom(SRC, fe, '{', '}').end);
-        const askOf = (unit) => new Function('WML', ASKOF + '\nreturn askOf;')({ cwInUnit: () => unit })(goal);   // eslint-disable-line no-new-func
-        ok(/build that in Step 6/.test(askOf(false)) && askOf(false) === goal.ask, 'lesson 3 (Step 3 goal ask): the full course is served its text unchanged');
-        ok(!/Step 6/.test(askOf(true)) && /often arrives a little later in the story/.test(askOf(true)), '⭐ …and a unit lesson is served it without the Step-6 pointer (the edit matched)');
+        ok(U0.f(goal.ask) === goal.ask && /build that in Step 6/.test(goal.ask), 'lesson 3: the full course is served the goal ask unchanged');
+        ok(!/Step 6/.test(U1.f(goal.ask)) && /often arrives a little later in the story/.test(U1.f(goal.ask)), '⭐ lesson 3: a unit lesson is served it without the Step-6 pointer');
         const LOG = SRC.slice(SRC.indexOf('const _cwLoglineCtl = (function'), SRC.indexOf('const _cwSpineCtl = (function'));
-        ok(!/[^\w](STEPS\[i\]|st|step)\.ask\b/.test(LOG.replace(/let t = st\.ask;/, '')), 'every place the logline walk SERVES an ask goes through askOf', (LOG.match(/.{0,40}(STEPS\[i\]|[^\w]st|step)\.ask\b.{0,20}/) || [])[0]);
+        ok(/function askOf\(st\) \{ return _cwUnitText\(st\.ask\); \}/.test(LOG) && !/[^\w](STEPS\[i\]|st|step)\.ask\b/.test(LOG.replace(/return _cwUnitText\(st\.ask\)/, '')),
+            'every place the logline walk SERVES an ask goes through askOf → _cwUnitText');
+        const T1 = SRC.slice(SRC.indexOf('const _cwTrial1Ctl = (function'), SRC.indexOf('const _cwTrial1Ctl = (function') + 60000);
+        ok(/\]\)\.map\(_cwUnitText\);/.test(T1) && (T1.match(/aiBubble\(_cwUnitText\(/g) || []).length === 2, 'lesson 7: Trial 1\'s intro and both failure bubbles are served through _cwUnitText');
+        ok((SRC.match(/textContent: 'My Plot'[\s\S]{0,260}?\.swml-mv-trigger/g) || []).length === 0, 'no "My Plot" button opens My VALUES any more (full-course bug)');
+        ok(/textContent: _unitPlan \? 'My Story Spine' : 'My Plot'/.test(T1) && /_unitPlan \? '\.swml-ss-trigger' : '\.swml-mp-trigger'/.test(T1), 'lesson 7: in a unit the plan chip opens the Story Spine');
+        ok(/_railAddFull\(mvTrigger\);/.test(SRC) && /_railAddFull\(mpTrigger\);/.test(SRC) && /_railAddFull\(rvTrigger\);/.test(SRC)
+            && /const _railAddFull = \(btn\) => \{ if \(!_inUnit\) _railAdd\(btn\); \};/.test(SRC),
+            'a unit lesson\'s rail never offers My Values, My Plot or Coming back to (they could only open empty)');
     }
 
     // ── F · wiring ──

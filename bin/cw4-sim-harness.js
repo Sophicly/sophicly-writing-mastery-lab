@@ -185,6 +185,8 @@ function makeWorld(opts) {
         },
         _cwStep3Value: function (fid) { return 'his step-3 answer for ' + fid; },
         _cwLoadDocValues: function () { return Promise.resolve({}); },
+        _cwUnitText: function (t) { return t; },   // v7.20.740: parity with walk-sim-lib
+        _CW_TURN_OWNERS: {},
         // The walk loads its Step-3 echoes before the first serve; resolve instantly here.
         _cwLoadStep3Values: function () { return Promise.resolve({}); },
         CW_STEP4_SPINE: BEAT_FIDS.map(function (f, i) { return { fid: f, label: 'Beat ' + (i + 1) }; }),

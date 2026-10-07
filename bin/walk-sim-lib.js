@@ -411,6 +411,10 @@ function makeWorld(ctl, opts) {
         saveCanvasContent: function () {},
         CANVAS_SAVE_KEY: function () { return 'sim'; },
         _cwLoadDocValues: function () { return Promise.resolve({}); },
+        // v7.20.740: module-scope unit helpers every walk may call — a sim runs the FULL course (no unit),
+        // so unit edits are identity; the scene factory's turn-owner registry is a plain object.
+        _cwUnitText: function (t) { return t; },
+        _CW_TURN_OWNERS: {},
         _cwLoadStep3Values: function () { return Promise.resolve({}); },
         _cwDocValue: function () { return ''; },
         _cwStep3Value: function (fid) { return 'step-3 value for ' + fid; },

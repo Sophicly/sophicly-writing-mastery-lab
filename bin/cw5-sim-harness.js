@@ -217,6 +217,8 @@ function makeWorld(opts) {
             return '';
         },
         _cwLoadDocValues: function () { return Promise.resolve({}); },
+        _cwUnitText: function (t) { return t; },   // v7.20.740: parity with walk-sim-lib
+        _CW_TURN_OWNERS: {},
         CW_STEP4_SPINE: [{ fid: 'cw-step-4-beat1', label: 'Beat 1' }, { fid: 'cw-step-4-beat6', label: 'Beat 6' }],
         OUTLINE_CRITERIA: { cwPlotArchetypes: ARCH },
         CW_PLOT_ARCHETYPE_META: META,

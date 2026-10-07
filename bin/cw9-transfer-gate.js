@@ -183,8 +183,9 @@ ok('Trial 1 (the assessment after) keeps its tools', !WML.cwToolsMinimal('cw_tri
 ok('the notes scratchpad reads the SAME predicate as the rail (one source, cannot drift)',
     /cwToolsMinimal\(state\.task\)\)\) \{\s*\n\s*if \(snFab\)/.test(SRC));
 ok('all five reference panels route through the rail gate, not a bare appendChild',
-    (SRC.match(/_railAdd\((?:wp|sc|ss|mv|rv)Trigger\);/g) || []).length === 5,
-    (SRC.match(/_railAdd\((?:wp|sc|ss|mv|rv)Trigger\);/g) || []).length);
+    // v7.20.740: `_railAddFull` is the same gate plus "not in a weekend-story lesson" (no Step 6/7 there)
+    (SRC.match(/_railAdd(?:Full)?\((?:wp|sc|ss|mv|rv)Trigger\);/g) || []).length === 5,
+    (SRC.match(/_railAdd(?:Full)?\((?:wp|sc|ss|mv|rv)Trigger\);/g) || []).length);
 ok('…and none of the five is still appended directly',
     !/btnColumn\.appendChild\((?:wp|sc|ss|mv|rv)Trigger\)/.test(SRC));
 ok('Resources is gated too (Neil named that button)',
