@@ -866,6 +866,8 @@ node bin/display-marker-harness.js >/dev/null || { node bin/display-marker-harne
 node bin/sa-sidebar-harness.js >/dev/null || { node bin/sa-sidebar-harness.js; fail=1; }
 # A QUESTION'S MARK COMES FROM ITS "Qn Total" LINE, NEVER PROSE (v7.20.724, #756).
 node bin/question-mark-harness.js >/dev/null || { node bin/question-mark-harness.js; fail=1; }
+# A CARD'S % AND GRADE FOLLOW ITS OWN AUDITED TOTAL — Literature "Total Mark for" form + "gave you" calibration (v7.20.727, #762).
+node bin/grade-ladder-harness.js >/dev/null || { node bin/grade-ladder-harness.js; fail=1; }
 
 
 if [ "$fail" -ne 0 ]; then

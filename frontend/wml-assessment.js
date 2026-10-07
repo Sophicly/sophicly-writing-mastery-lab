@@ -12105,13 +12105,18 @@
     // ladder is already in the protocol, but a live run still printed "60%, which is a
     // Grade 8". Numbers are code's job: when a "X%, which is a Grade N" line follows a
     // `Total: A/B` line, the % is recomputed from A/B; every such line is then re-banded.
+    // v7.20.727 (FIXLIST #762): a Literature card's total line is "Total Mark for Body Paragraph 1: 3.75/8",
+    // never "Total:", so this net never saw it — a card whose total the audit had corrected (#743e: 3.25 → 3.75)
+    // kept "40.6%, which is a Grade 4" and "gave you 3.25/8" from Sophia's own sum (Zayan, prod, 6 Oct). Now the
+    // "Total Mark for …" form counts as a total, "gave you X/B" is calibration prose like "actual", the % after an
+    // audited calibration value is recomputed, and a % on the total's OWN line (the final readout) is re-banded.
     function _ladderGrade(pct) {
         return pct >= 85 ? 9 : pct >= 75 ? 8 : pct >= 65 ? 7 : pct >= 55 ? 6 : pct >= 45 ? 5
             : pct >= 35 ? 4 : pct >= 25 ? 3 : pct >= 15 ? 2 : 1;
     }
     function _enforceGradeLadder(reply) {
         try {
-            if (!reply || !/%\s*[,—–-]?\s*(?:which is a\s*)?\*{0,2}Grade|Grade:\s*\d|\bactual\b[^\n]{0,24}[\d.]+\s*\/|\byou scored\b[^\n]{0,10}[\d.]+\s*\//i.test(reply)) return reply;
+            if (!reply || !/%\s*[,—–-]?\s*(?:which is a\s*)?\*{0,2}Grade|Grade:\s*\d|\bactual\b[^\n]{0,24}[\d.]+\s*\/|\byou scored\b[^\n]{0,10}[\d.]+\s*\/|\bgave you\b[^\n]{0,10}[\d.]+\s*\//i.test(reply)) return reply;
             const lines = String(reply).split('\n');
             let lastTotal = null, sinceTotal = 99;
             // v7.19.932 (Reeham P2 run): a second, LONGER window for calibration prose —
@@ -12121,22 +12126,28 @@
             // v7.19.932: tolerate the dash form ("25% — Grade 2") alongside the canonical
             // "X%, which is a Grade N" — the run emitted the dash form and this net skipped.
             const gradeLineRe = /([\d.]+)\s*%(\s*,?\s*which is a\s*\*{0,2}|\s*[—–-]\s*\*{0,2})(Grade\s*)(\d)/i;
+            const reband = (i, gm, tot) => {
+                let pct = parseFloat(gm[1]);
+                if (tot && tot.b > 0) pct = Math.round((tot.a / tot.b) * 1000) / 10;
+                const trueG = _ladderGrade(pct);
+                const pctStr = String(Number(pct.toFixed(1)));
+                if (String(gm[4]) !== String(trueG) || parseFloat(gm[1]) !== pct) {
+                    console.warn('WML Ladder: corrected grade line —', gm[1] + '% Grade ' + gm[4], '→', pctStr + '% Grade ' + trueG);
+                    lines[i] = lines[i].replace(gradeLineRe, pctStr + '%$2$3' + trueG);
+                }
+            };
             for (let i = 0; i < lines.length; i++) {
-                const totalM = lines[i].match(/^\s*\*{0,2}(?:Q\d+\s*)?Total:\s*\*{0,2}\s*([\d.]+)\s*\/\s*(\d+)/i);
-                if (totalM) { lastTotal = { a: parseFloat(totalM[1]), b: parseFloat(totalM[2]) }; sinceTotal = 0; lastQ = lastTotal; sinceQ = 0; continue; }
+                const totalM = lines[i].match(/^\s*\*{0,2}(?:Q\d+\s*)?Total(?:\s+Mark\s+for\s+[^:\n]{1,60})?:\s*\*{0,2}\s*([\d.]+)\s*\/\s*(\d+)/i);
+                if (totalM) {
+                    lastTotal = { a: parseFloat(totalM[1]), b: parseFloat(totalM[2]) }; sinceTotal = 0; lastQ = lastTotal; sinceQ = 0;
+                    const sm = lines[i].match(gradeLineRe);   // "**Total: 20/34** — 58.8%, which is a **Grade 6**"
+                    if (sm) { reband(i, sm, lastTotal); lastTotal = null; }
+                    continue;
+                }
                 sinceTotal++; sinceQ++;
                 const gm = lines[i].match(gradeLineRe);
                 if (gm) {
-                    let pct = parseFloat(gm[1]);
-                    if (lastTotal && sinceTotal <= 3 && lastTotal.b > 0) {
-                        pct = Math.round((lastTotal.a / lastTotal.b) * 1000) / 10;
-                    }
-                    const trueG = _ladderGrade(pct);
-                    const pctStr = String(Number(pct.toFixed(1)));
-                    if (String(gm[4]) !== String(trueG) || parseFloat(gm[1]) !== pct) {
-                        console.warn('WML Ladder: corrected grade line —', gm[1] + '% Grade ' + gm[4], '→', pctStr + '% Grade ' + trueG);
-                        lines[i] = lines[i].replace(gradeLineRe, pctStr + '%$2$3' + trueG);
-                    }
+                    reband(i, gm, (lastTotal && sinceTotal <= 3) ? lastTotal : null);
                     lastTotal = null;
                     continue;
                 }
@@ -12158,13 +12169,18 @@
                 // out of grand-total scope and vice versa; anchoring on "actual"/"you scored"
                 // leaves "predicted X/B" untouched — the prediction is the student's number,
                 // only the ACTUAL is code's.
-                if (lastQ && sinceQ <= 12 && lastQ.b > 0 && /\b(actual|you scored)\b/i.test(lines[i])) {
+                if (lastQ && sinceQ <= 12 && lastQ.b > 0 && /\b(actual|you scored|gave you)\b/i.test(lines[i])) {
                     const before = lines[i];
                     const aStr = String(Number(lastQ.a.toFixed(2)));
                     const bStr = String(lastQ.b);
+                    const pctStr = String(Number((Math.round((lastQ.a / lastQ.b) * 1000) / 10).toFixed(1)));
                     lines[i] = lines[i]
                         .replace(new RegExp('(\\bactual\\b[^\\d\\n]{0,24})([\\d.]+)(\\s*\\/\\s*' + bStr + '\\b)', 'i'), '$1' + aStr + '$3')
-                        .replace(new RegExp('(\\byou scored\\b[^\\d\\n]{0,10})([\\d.]+)(\\s*\\/\\s*' + bStr + '\\b)', 'i'), '$1' + aStr + '$3');
+                        .replace(new RegExp('(\\byou scored\\b[^\\d\\n]{0,10})([\\d.]+)(\\s*\\/\\s*' + bStr + '\\b)', 'i'), '$1' + aStr + '$3')
+                        .replace(new RegExp('(\\bgave you\\b[^\\d\\n]{0,10})([\\d.]+)(\\s*\\/\\s*' + bStr + '\\b)', 'i'), '$1' + aStr + '$3')
+                        // the protocol's own line: "gave you [X]/8 marks for this paragraph, which is [percentage]%"
+                        .replace(new RegExp('(\\b(?:actual|you scored|gave you)\\b[^\\d\\n]{0,24}' + aStr.replace('.', '\\.')
+                            + '\\s*\\/\\s*' + bStr + '\\b[^%\\n]{0,60}?\\bwhich is\\s*)([\\d.]+)(\\s*%)', 'i'), '$1' + pctStr + '$3');
                     if (lines[i] !== before) console.warn('WML Ladder: corrected calibration/scored value to audited', aStr + '/' + bStr);
                 }
             }
