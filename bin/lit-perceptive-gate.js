@@ -304,6 +304,19 @@ function checkAll(T, log) {
     });
     ['tte1Ccea', 'tte1Edq', 'tte1Ocr'].forEach(k => ok(k + ': "missing TTE" is TTE1 (T2 now means a missing link)', /^TTE1 – Missing TTE in second sentence/m.test(T[k]) && !/^T2 – Missing TTE/m.test(T[k])));
 
+    // ── A3 · gold models: ONE detailed sentence per element (Neil, 7 Oct — FIXLIST #765) ──────
+    H('A3 · gold models: one detailed sentence per element — every ported Literature table');
+    ['proto'].concat(SIBLINGS.map(sb => sb.key)).forEach(k => {
+        const t = T[k];
+        ok(k + ': the length rule is one sentence per element', /\*\*ONE detailed sentence per element — the Sentence Plan sets the length/.test(t));
+        const plan = (t.match(/\* \*\*Sentence Plan — ONE detailed sentence per element, in this order[\s\S]*?(?=\n\s*\* \*\*|\n\*\*Now output)/) || [''])[0];
+        ok(k + ': the body Sentence Plan runs S1–S8, technique interplay at S4', /S1 Topic sentence[\s\S]*S2 Technique \+ anchor quotation \+ inference[\s\S]*S3 Close analysis[\s\S]*S4 Technique interplay[\s\S]*S5 Effect 1[\s\S]*S6 Effect 2[\s\S]*S7 Author's purpose[\s\S]*S8 Context/.test(plan));
+        ok(k + ': the supporting quotation sits inside a sentence, never its own', /Supporting quotation:[^\n]*never a sentence of its own/.test(plan));
+        ok(k + ': no old sentence ranges left', !/\((?:4-5|7-10|5-7) sentences\)|7—10 well-crafted|Length & Structure Standard \(TTECEA\)/.test(t), (t.match(/\((?:4-5|7-10|5-7) sentences\)|7—10 well-crafted/g) || []).slice(0, 3));
+        ok(k + ': introduction = hook · building sentence · thesis, one sentence each', /\* \*\*Hook \(ONE sentence — a historical concept, a question or a metaphor/.test(t) && /\* \*\*Building Sentence \(ONE sentence/.test(t) && /\* \*\*Thesis Statement \(ONE sentence\)/.test(t));
+        ok(k + ': conclusion = four elements, one sentence each', ['Restated Thesis', 'Controlling Concept', 'Central Purpose', 'Universal Message'].every(e => t.indexOf('* **' + e + ' (ONE sentence)') !== -1));
+    });
+
     // ── F · the literature inventory, counted from the manifests ──────────────────────────
     H('F · every literature assessment protocol is either PORTED or listed PENDING');
     const dirs = [];
@@ -351,6 +364,9 @@ if (process.argv.includes('--self-test')) {
         ['H1 back on a sibling body list', T => { T.sibIgH = T.sibIgH.replace('Apply maximum 3 penalties from codes: C1,', 'Apply maximum 3 penalties from codes: C1, H1,'); }],
         ['the IGCSE over-sum back (effects 0.75)', T => { T.sibIgL = T.sibIgL.replace('reader effects (AO2)** \\- Worth: 0.5 marks', 'reader effects (AO2)** \\- Worth: 0.75 marks'); }],
         ['a poetry Y gate restored', T => { T.poetryProto = T.poetryProto.replace('**STEP 2a — Acknowledge, then mark in the SAME message', '**STEP 2a — type **Y** to see your mark breakdown'); }],
+        ['the old 7-10 sentence range back (A3)', T => { T.proto = T.proto.replace('(ONE sentence per element, per the Sentence Plan)', '(7-10 sentences)'); }],
+        ['technique interplay dropped from a sibling plan (A3)', T => { T.sibOcr = T.sibOcr.replace('S4 Technique interplay: two methods working together toward ONE meaning.', 'S4 Reader effects.'); }],
+        ['the supporting quotation given its own sentence (A3)', T => { T.sibEdq = T.sibEdq.replace('never a sentence of its own', 'as its own closing sentence'); }],
     ];
     M.forEach(([name, mut]) => {
         const T = Object.assign({}, base);

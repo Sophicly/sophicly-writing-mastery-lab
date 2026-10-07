@@ -2989,3 +2989,48 @@ Plan and evidence: `LIT-PERCEPTIVE-INFERENCE-PLAN-2026-10-05.md` (plugin root). 
 
 Nothing in §53 is still open after 6 October: rulings 23–29 settled the table, the moved mark, the 19th-century
 split and the introduction/conclusion definitions.
+
+---
+
+## §54. ⭐⭐ THE RULINGS OF 7 OCTOBER 2026 — one sentence per element, a filed mark may change, the sibling adaptations stand (Neil; FIXLIST #757, #760, #764, #765)
+
+**1. GOLD MODELS: ONE DETAILED SENTENCE PER ELEMENT (FIXLIST #765, voice, on Zayan's Macbeth marking).**
+Verbatim: *"ideally we want to try to write one detailed sentence per element rather than several sentences per
+element… the structure has to be the TTECEA plus C structure… while meeting all of the criteria."* Then, on being
+shown the interplay row: *"Yeah, you're right about the technique interplay. I forgot about that. Leave it with the
+technique interplay."*
+- **Body paragraph:** topic sentence · technique + anchor quotation + inference · close analysis · **technique
+  interplay** · effect 1 · effect 2 · author's purpose · context — **8 sentences** (7 where the paper has no context row).
+- **Introduction:** hook (*"a historical concept or a question or maybe a metaphor"*, rooted in the historical
+  context) · building sentence (historical context — one sentence carries both building-sentence rows) · thesis —
+  **3 sentences**.
+- **Conclusion:** restated thesis · controlling concept · central purpose · universal message — **4 sentences**.
+- **Every criterion is still earned, INSIDE those sentences:** the integrated anchor quotation, the supporting
+  quotation (inside S3, S4 or S7 — never a sentence of its own), perceptive concepts, the links between sentences.
+- **Why it was wrong before, measured:** the protocols themselves said "introductions (4-5 sentences), body paragraphs
+  (7-10 sentences), conclusions (5-7 sentences)", and the 6 October table added two rows Sophia wrote as extra
+  sentences (Zayan's Body 1 gold: 9 sentences for 7 elements). The model obeyed the instruction; the instruction was
+  the defect. Section 2.B now sets tone and depth, never length.
+- **Why it is right:** one sentence = one element is the same unit the outline lesson trains (one box per element), so
+  the gold model is something a student can map onto their own work line by line. It also trims roughly 8% of each
+  marking reply (estimated from Zayan's Body 1 card).
+- **Scope:** the seven Literature tables on the 6 October marking (AQA + the #760 siblings). Every other Literature
+  protocol takes it when it is ported. **Enforced:** `bin/lit-perceptive-gate.js` §A3 (+3 mutations).
+
+**2. A FILED MARK MAY CHANGE — AND SOPHIA SAYS WHY (FIXLIST #757, closes #721).** Actions v56: *"Let the mark change,
+and say why."* When Sophia finds a paragraph she has already marked was over- or under-marked, the document follows
+her: the code applies the change to the filed card and its label, the total follows, and she tells the student the
+reason in one plain sentence. The chat and the document must never disagree, and Sophia must never tell a student to
+trust one over the other. ASSESSMENT-MECHANICS #19: do it in code.
+
+**3. THE THREE §4 ADAPTATIONS STAND (FIXLIST #760).** Actions v56: *"Keep all three."* Eduqas/OCR topic sentence 0.5 =
+0.25 + 0.25 perceptive; Eduqas/OCR thesis 3.0 = 1.5 roadmap + 1.25 core argument + 0.25 perceptive; Edexcel IGCSE
+heritage/literature effects 0.5 each (the body now sums to its 7).
+
+**4. A STUDENT IS NEVER TOLD THEIR OWN STRUCTURE IS WRONG BY A READING WE GOT WRONG (FIXLIST #766).** Neil: *"How can
+we make sure that that is avoided completely in the future?"* — after Zayan's introduction was marked "not submitted"
+because our reader joined his first four paragraphs. Measured on prod the same day: 9 of 260 real essays separate
+paragraphs with a single line break inside one block; 7 of them still read as one paragraph. The rule: before marking,
+code checks the essay's shape; when it reads as too few paragraphs and the student used single line breaks between
+full sentences, the student is shown how we split it and confirms or fixes it — one tap, no AI. A student who says a
+part exists is never argued with.
