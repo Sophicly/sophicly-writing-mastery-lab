@@ -117,11 +117,11 @@ const Q2_P1 = 'The writer uses the storm as a reflection of Alex fears, building
 const Q2_P2 = 'In addition the storm becomes a violent monster, and the adjective furious makes the '
     + 'sea an attacker rather than a setting, which externalises the fear he cannot say aloud.';
 
-function run(sections) {
+function run(sections, subject) {
     const sandbox = {
         document: makeDocument(sections),
         console: { log() {}, warn() {}, error() {} },
-        state: { subject: 'language1', topicNumber: 2, phase: 'initial', board: 'aqa' },
+        state: { subject: subject || 'language1', topicNumber: 2, phase: 'initial', board: 'aqa' },
         lookupQuestionSpec: id => SPECS[id] || null,
         _lastQWordCounts: {},
         _sectionBWcCeiling: () => null,
@@ -195,6 +195,15 @@ let lost = 0;
 [Q2_P1, Q2_P2, 'The bird flew into the house.', 'The bird crashed through the window.']
     .forEach(t => { if (payload.indexOf(t) < 0) lost++; });
 ok(lost === 0, 'every sampled sentence survives into the payload (' + lost + ' lost)');
+
+// v7.20.736 (#771): a NON-Language paper with two answer parts (Eduqas Part A / Part B) used to read each part with
+// textContent, so a part written as two paragraphs arrived as one welded block ("…ends.The second…").
+console.log('\na two-part literature answer keeps its paragraphs:');
+const LIT_A1 = 'Shakespeare opens the extract with a storm that frames the witches as agents of chaos.';
+const LIT_A2 = 'The second paragraph turns to Macbeth and the language of his own disordered mind.';
+const lit = run([makeSection('Part A', P(LIT_A1 + '<br><br>' + LIT_A2)), makeSection('Part B', P('A short answer on the whole play that stays one paragraph here.'))], 'shakespeare');
+ok(/=== PART A ===/.test(lit) && lit.indexOf(LIT_A1 + '\n\n' + LIT_A2) !== -1, 'Part A arrives as two paragraphs, never welded (' + JSON.stringify(lit.slice(0, 80)) + ')');
+ok(lit.indexOf('agents of chaos.The second') === -1, 'no "…chaos.The second…" weld');
 
 console.log('');
 if (fails) {

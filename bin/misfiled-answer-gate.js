@@ -230,6 +230,21 @@ console.log('\n8 · the student is TOLD, live, while they type (v7.20.584 — Ne
     ok((SRC.match(/write the paragraph itself in the Response box below/g) || []).length === 2, 'and so do both per-paragraph plan prompts');
 }
 
+console.log('\n6 · a moved answer keeps its line breaks (v7.20.736, #771):');
+{
+    // a document-model field whose two paragraphs are separated by a blank line (two hard breaks)
+    const kids = [{ isText: true, text: 'First paragraph ends.' }, { type: { name: 'hardBreak' } }, { type: { name: 'hardBreak' } }, { isText: true, text: 'Second one starts.' }];
+    const node = {
+        textContent: 'First paragraph ends.Second one starts.',
+        content: { size: 40 },
+        textBetween: (f, t, bsep, leaf) => kids.map(k => (k.isText ? k.text : (typeof leaf === 'function' ? leaf(k) : (leaf || '')))).join(''),
+    };
+    const fn = new Function('_WC_PLACEHOLDERS', extractFunction('_fieldTextFromNode') + '\nreturn _fieldTextFromNode;')([]);
+    ok(fn(node) === 'First paragraph ends.\n\nSecond one starts.', 'the plan text is read WITH its breaks (it was welded: "ends.Second")');
+    const setter = extractFunction('_setInputFieldText');
+    ok(/s\.split\('\\n'\)\.forEach\(\(line, i\) => \{ if \(i\) nodes\.push\(hb\.create\(\)\);/.test(setter), 'and each line break is written back as a real line break, not a raw newline inside the text');
+}
+
 console.log('\n' + (checks - fails) + '/' + checks + ' passed.');
 if (INJECT) {
     if (!fails) { console.error('\n⛔ GATE IS BLIND: removing the intercept did not fail it.'); process.exit(1); }

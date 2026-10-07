@@ -327,9 +327,15 @@
             tops.forEach((n) => {
                 const isField = !!(n.getAttribute && n.getAttribute('data-input-field') === 'true')
                     || !!(n.classList && n.classList.contains('swml-input-field'));
-                const texts = isField
-                    ? splitParagraphs(_blockText(n))
-                    : [(n.textContent || '').replace(/\s+/g, ' ').trim()];
+                // v7.20.736 (#771, PEDAGOGY §54.4): THE paragraph reader when the engine is loaded — the paragraphs the
+                // chip counts are then exactly the ones marking counts (a single Enter between sentences, blank lines
+                // inside one <p>, the template's prompt line). splitParagraphs stays as the stand-alone fallback.
+                const ONE = (typeof window !== 'undefined' && window.WML && typeof window.WML.answerParas === 'function') ? window.WML.answerParas : null;
+                const texts = ONE
+                    ? ONE(n, true, false).map((t) => String(t || '').replace(/\s+/g, ' ').trim())
+                    : (isField
+                        ? splitParagraphs(_blockText(n))
+                        : [(n.textContent || '').replace(/\s+/g, ' ').trim()]);
                 texts.forEach((t, i) => { if (t) units.push({ el: n, text: t, within: i }); });
             });
         } catch (e) { /* an unparseable section reports nothing rather than a wrong number */ }

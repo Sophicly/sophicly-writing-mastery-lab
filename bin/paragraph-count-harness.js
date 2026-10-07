@@ -329,6 +329,45 @@ console.log('\nan over-long answer keeps its content paragraphs:');
     ok(/const _bodyRank = isEssayShape \? null : _taughtParagraphRank\(paras, taught\);/.test(SRC), 'the payload labeller uses the chooser');
 })();
 
+// v7.20.736 (#771): the planning / polishing payload (getDocumentText + its DOM fallback) read every section with
+// textContent, so plan rows and paragraphs ran together ("…sentence.Technique…"). _docSectionText keeps them apart.
+console.log('\nthe planning and polishing payload keeps rows and paragraphs apart:');
+(function () {
+    const sliceFn = head => { const at = SRC.indexOf(head); if (at < 0) return ''; let i = SRC.indexOf('{', at + head.length - 1), d = 0; for (; i < SRC.length; i++) { if (SRC[i] === '{') d++; else if (SRC[i] === '}') { d--; if (!d) return SRC.slice(at, i + 1); } } return ''; };
+    const docFn = sliceFn('function _docSectionText(section, type) {');
+    ok(docFn.length > 100, '_docSectionText exists');
+    const DOMParserShim = function () { this.parseFromString = h => ({ body: { textContent: stripTags(h) } }); };
+    const read = new Function('document', 'DOMParser', RULE_SRC + '\nfunction _sectionContentOf(s) { return s; }\n' + docFn + '\nreturn _docSectionText;')(documentShim, DOMParserShim);
+    const plan = read(makeSection('<div data-input-field="true">Topic sentence about power.</div><div data-input-field="true">Technique: the metaphor of the crown.</div>'), 'plan');
+    ok(plan === 'Topic sentence about power.\nTechnique: the metaphor of the crown.', 'two plan rows arrive on two lines, never "…power.Technique…"', JSON.stringify(plan));
+    const resp = read(makeSection('<p>First paragraph of the answer ends here.<br><br>Second paragraph of the answer starts here.</p>'), 'response');
+    ok(resp === 'First paragraph of the answer ends here.\n\nSecond paragraph of the answer starts here.', 'the answer arrives as the paragraphs marking sees', JSON.stringify(resp));
+    ok((SRC.match(/const text = _docSectionText\(section, type\);/g) || []).length === 2 && !/const text = _sectionContentOf\(section\)\.textContent/.test(SRC), 'both payload readers use it (no textContent read left)');
+    ok(/new DOMParser\(\)\.parseFromString\(h, 'text\/html'\)/.test(docFn), 'the markup is read in an inert document');
+    // the polishing selection chip counts paragraphs with the SAME reader (its own splitter is only the fallback)
+    const CHIP = require('fs').readFileSync(require('path').join(__dirname, '..', 'frontend', 'wml-selection-chip.js'), 'utf8');
+    ok(/try \{ window\.WML\.answerParas = _answerParas; \} catch/.test(SRC) && /const ONE = \(typeof window !== 'undefined' && window\.WML && typeof window\.WML\.answerParas === 'function'\) \? window\.WML\.answerParas : null;/.test(CHIP) && /\? ONE\(n, true, false\)/.test(CHIP),
+        'the polishing chip reads paragraphs through THE reader (exported as WML.answerParas)');
+})();
+
+// v7.20.736 (#771): _healStrayResponseProse moves a paragraph the student typed OUTSIDE the answer box into it. That
+// block was their own new paragraph, so it must arrive behind a BLANK line: behind one break that falls mid-sentence
+// the reading rule (correctly) treats it as a wrapped line and merges it.
+console.log('\na paragraph moved into the answer box stays a paragraph:');
+(function () {
+    const A = 'The writer opens with a storm that mirrors the grief the narrator cannot name ' + words(8);   // no full stop
+    const B = 'Later the light returns and the mother finally speaks to her son ' + words(8) + '.';
+    ok(mqParas(makeSection('<div data-input-field="true">' + A + '<br>' + B + '</div>')).length === 1,
+        'behind ONE break after an unfinished sentence, the moved paragraph would merge (why one break is not enough)');
+    ok(mqParas(makeSection('<div data-input-field="true">' + A + '<br><br>' + B + '</div>')).length === 2,
+        'behind a BLANK line it stays its own paragraph');
+    const healer = (SRC.match(/function _healStrayResponseProse\(\) \{[\s\S]*?\n    \}\n/) || [''])[0];
+    ok(/var ins = \(fieldEmpty \|\| !hb\) \? inline : \[hb\.create\(\), hb\.create\(\)\]\.concat\(inline\);/.test(healer),
+        'the healer inserts a blank line (two breaks) before the moved paragraph');
+    ok(/job\.stray\.node\.forEach\(function\(n\) \{ if \(n\.isText \|\| \(hb && n\.type === hb\)\) inline\.push\(n\); \}\);/.test(healer),
+        'and moves the paragraph\'s own nodes (its line breaks and formatting), never its welded text');
+})();
+
 console.log('');
 if (fails) {
     console.log('❌ paragraph-count-harness FAILED (' + fails + ' of ' + checks + ').');

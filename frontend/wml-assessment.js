@@ -10943,6 +10943,21 @@
     // response is one inline input field whose paragraphs are separated by a blank line of hard
     // breaks), never from Sophia's quote, which she shortens with "…". One response section →
     // it is the answer for every box (literature essays); several → matched by question key.
+    // v7.20.736 (#771): a document section as text Sophia can read — the student's ANSWER through THE paragraph reader
+    // (exactly what marking sees), every other section with its block and line breaks kept. textContent welded every
+    // block and break together ("…sentence.Technique…"), so the planning and polishing payload ran plan rows into one.
+    try { window.WML.answerParas = _answerParas; } catch (_) {}   // v7.20.736 (#771): the selection chip reads with it too
+    function _docSectionText(section, type) {
+        const el = _sectionContentOf(section);
+        if (!el) return '';
+        if (type === 'response') return _answerParas(el, true).join('\n\n');
+        const clone = el.cloneNode(true);
+        clone.querySelectorAll('.swml-ana-strip, .swml-ctl-row, button').forEach(x => x.remove());
+        const h = (clone.innerHTML || '').replace(/<br\b[^>]*>/gi, '\n').replace(/<\/(p|div|h[1-6]|li)>/gi, '\n');
+        // DOMParser builds an inert document: nothing in the markup can run while it is read.
+        const txt = new DOMParser().parseFromString(h, 'text/html').body.textContent || '';
+        return txt.replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    }
     function _responseParagraphs(base) {
         try {
             if (!canvasEditor || canvasEditor.isDestroyed) return [];
@@ -16809,8 +16824,16 @@
         if (pos === null || !node) return false;
         const from = pos + 1, to = pos + node.nodeSize - 1;
         try {
+            // v7.20.736 (#771): a line break in the text becomes a real line break in the box (a raw "\n" inside a
+            // text node is not one), so a moved answer keeps its paragraphs — a blank line stays a paragraph break.
+            const hb = canvasEditor.schema.nodes.hardBreak;
+            const s = String(text || '');
+            const nodes = [];
+            if (s && hb && s.indexOf('\n') !== -1) {
+                s.split('\n').forEach((line, i) => { if (i) nodes.push(hb.create()); if (line) nodes.push(canvasEditor.schema.text(line)); });
+            } else if (s) nodes.push(canvasEditor.schema.text(s));
             canvasEditor.chain().command(({ tr }) => {
-                if (text) tr.replaceWith(from, to, canvasEditor.schema.text(String(text)));
+                if (nodes.length) tr.replaceWith(from, to, nodes);
                 else tr.delete(from, to);
                 return true;
             }).run();
@@ -16940,7 +16963,7 @@
                         if (child.type.name === 'paragraph'
                             && !(child.attrs && (child.attrs.locked === true || child.attrs.locked === 'true'))
                             && (child.textContent || '').trim()) {
-                            stray = { from: pos + 1 + offset, to: pos + 1 + offset + child.nodeSize, text: (child.textContent || '').trim() };
+                            stray = { from: pos + 1 + offset, to: pos + 1 + offset + child.nodeSize, text: (child.textContent || '').trim(), node: child };
                         }
                     });
                     if (stray) { job = { field: fld, stray: stray }; return false; }
@@ -16952,7 +16975,13 @@
                 var hb = schema.nodes.hardBreak;
                 var fieldEmpty = (fNode.textContent || '').trim() === '';
                 var innerEnd = fPos + fNode.nodeSize - 1;
-                var ins = (fieldEmpty || !hb) ? [schema.text(job.stray.text)] : [hb.create(), schema.text(job.stray.text)];
+                // v7.20.736 (#771): the stray block was the student's own NEW paragraph — it joins behind a BLANK line
+                // (two breaks: a paragraph break under the one reading rule; one break mid-sentence is a soft wrap and
+                // merged it), and keeps its own line breaks and formatting (its inline nodes, not its welded text).
+                var inline = [];
+                job.stray.node.forEach(function(n) { if (n.isText || (hb && n.type === hb)) inline.push(n); });
+                if (!inline.length) inline = [schema.text(job.stray.text)];
+                var ins = (fieldEmpty || !hb) ? inline : [hb.create(), hb.create()].concat(inline);
                 _migrationActive = true;
                 try {
                     var tr = canvasEditor.state.tr;
@@ -20886,7 +20915,7 @@
                                 sections.forEach(section => {
                                     const type = section.getAttribute('data-section-type') || '';
                                     const label = section.getAttribute('data-section-label') || '';
-                                    const text = _sectionContentOf(section).textContent?.trim() || ''; // v7.19.951: skip control-row chrome
+                                    const text = _docSectionText(section, type); // v7.19.951 chrome skip · v7.20.736 breaks kept (#771)
                                     if (type === 'divider') return;
                                     if (!text) {
                                         // v7.19.421: same empty-marker rule as getDocumentText —
@@ -56423,7 +56452,11 @@
 
     function _fieldTextFromNode(n) {
         if (!n) return '';
-        const t = (n.textContent || '').trim();
+        // v7.20.736 (#771): keep the student's line breaks — textContent welded "end.⏎Next", and the misfiled-answer
+        // move then wrote that weld into the Response box.
+        let raw = '';
+        try { raw = n.textBetween(0, n.content.size, '\n', leaf => (leaf.type && leaf.type.name === 'hardBreak' ? '\n' : '')); } catch (_) { raw = n.textContent || ''; }
+        const t = (raw || '').trim();
         if (!t || _WC_PLACEHOLDERS.indexOf(t.toLowerCase()) !== -1) return '';
         return t;
     }
@@ -56632,6 +56665,11 @@
         });
     }
 
+    // v7.20.736 (#771): a block's text with a SPACE at every line break. `textContent` drops a hard break, so
+    // "…the end.⏎Next…" counted as ONE word — every line break in an answer lost a word against the 650 ceiling.
+    function _wcText(n) {
+        try { return n.textBetween(0, n.content.size, ' ', ' ') || ''; } catch (_) { return n.textContent || ''; }
+    }
     function _responseWordCountFromDoc(editor) {
         if (!editor || !editor.state || !editor.state.doc) return null;
         let total = 0, sawResponse = false;
@@ -56649,7 +56687,7 @@
                 if (!n.type) return true;
                 if (n.type.name === 'checklistItem') return false; // never count statements
                 if (n.isTextblock) {
-                    const t = n.textContent || '';
+                    const t = _wcText(n);
                     const tl = t.trim().toLowerCase();
                     if (_WC_PLACEHOLDERS.indexOf(tl) !== -1) return false;      // scaffold placeholder
                     if (n.attrs && (n.attrs.locked === true || n.attrs.locked === 'true')) return false; // locked instruction
@@ -56676,7 +56714,7 @@
                 if (node.attrs && node.attrs.sectionType === 'response') return; // already counted
                 node.descendants(n => {
                     if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')) {
-                        const t = (n.textContent || '').trim();
+                        const t = _wcText(n).trim();
                         if (!t || _WC_PLACEHOLDERS.indexOf(t.toLowerCase()) !== -1) return false;
                         total += t.split(/\s+/).filter(w => w.length > 0).length;
                         return false;
@@ -56884,7 +56922,7 @@
         sections.forEach(section => {
             const type = section.getAttribute('data-section-type') || '';
             const label = section.getAttribute('data-section-label') || '';
-            const text = _sectionContentOf(section).textContent?.trim() || ''; // v7.19.951: skip control-row chrome
+            const text = _docSectionText(section, type); // v7.19.951 chrome skip · v7.20.736 breaks kept (#771)
             if (type === 'divider') return;
             if (!text) {
                 // v7.19.421: empty sections used to be silently DROPPED from the AI
@@ -57331,10 +57369,9 @@
                     // instruction italics before extracting text. Same surgical
                     // exclusion as the PM-state walker above. (Non-language
                     // multi-part path — e.g. Eduqas Part A/B — unchanged.)
-                    const clone = section.cloneNode(true);
-                    clone.querySelectorAll('[data-checklist-item]').forEach(el => el.remove());
-                    clone.querySelectorAll('em').forEach(el => el.remove());
-                    const text = clone.textContent?.trim() || '';
+                    // v7.20.736 (#771): read through THE paragraph reader (same strips: statements, instruction
+                    // italics) — textContent welded "end.⏎Next" and sent a multi-paragraph part as one block.
+                    const text = _mqParas(section, false).join('\n\n');
                     if (text) parts.push(label ? `=== ${label.toUpperCase()} ===\n${text}` : text);
                     return;
                 }
