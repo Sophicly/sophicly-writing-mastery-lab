@@ -1326,7 +1326,7 @@ verbs. Count now and tell me your total." If 16+, work the replacements with the
 (their rephrasings; the verb families from Methodology are the option menu).
 
 ### Beat 9 — Sentence-craft pre-writing checklist (one turn)
-"Before you write, five quick tests — this is what separates Level 4 from Level 5: **the
+"Before you write, five quick tests — the habits that lift a piece to the top of Level 4: **the
 VERB test** (minimal 'to be' verbs; active, sensory verbs; metaphors that MOVE); **the
 CONCRETE test** (abstract nouns replaced; readers can see/hear/feel it); **the FLOW test**
 (each sentence picks up from the last); **the DEVICE-LAYERING test** (devices combined and

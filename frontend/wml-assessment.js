@@ -3245,9 +3245,12 @@
             // live run: Q4 jumped ¶1 → ¶3). Every marked region emits exactly one
             // "Mark Breakdown — X" heading (protocol card format), so it is the one reliable
             // region marker. Intro/Conclusion are real regions only on essay-weight Qs (~20).
+            // v7.20.725 (#755d): Edexcel IGCSE cards carry no "Mark Breakdown — X" line; their filed card
+            // heading is "Q5 — Introduction" / "Q4 — Paragraph 1" / "Q5 — Comparative Paragraph 2". Read that
+            // heading too (the "Qn —" prefix is a card heading, never prose), so IGCSE shows live per-paragraph rows.
             const re = qmax >= 16
-                ? /Mark\s+Breakdown\s*[—–-]+\s*((?:Body\s+Paragraph|Paragraph)\s*\d+|Introduction|Conclusion)/gi
-                : /Mark\s+Breakdown\s*[—–-]+\s*(?:Body\s+Paragraph|Paragraph)\s*(\d+)/gi;
+                ? /(?:Mark\s+Breakdown|\bQ\d+)\s*[—–-]+\s*((?:Body\s+|Comparative\s+)?Paragraph\s*\d+|Introduction|Conclusion)/gi
+                : /(?:Mark\s+Breakdown|\bQ\d+)\s*[—–-]+\s*(?:Body\s+|Comparative\s+)?Paragraph\s*(\d+)/gi;
             const out = []; let m;
             while ((m = re.exec(t)) !== null) {
                 const raw = String(m[1] || '');

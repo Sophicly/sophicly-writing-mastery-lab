@@ -593,8 +593,9 @@ powered by an action verb ("Each day we wait, opportunities crumble like chalk i
 now"). Their rephrase, their words.
 
 **The NO-FAKE-FACTS RULE (standing):** evidence here is visual scenarios, hypothetical examples, common observations,
-consequence chains — real statistics only if genuinely known. Examiners dislike invented facts; never let a made-up
-statistic into the plan.
+consequence chains — real statistics only if genuinely known. An invented fact costs the writer the reader's trust;
+never let a made-up statistic into the plan. (Say it in those terms — never claim it as an examiner's rule: Pearson's
+mark scheme and reports on the drive say nothing about it.)
 
 **No word quotas.** The board sets none, and the assessment judges each section by whether it does its job for the
 form the task named — never quote a word count at the student. Sections are as long as their job needs.
@@ -746,7 +747,7 @@ half with active, sensory verbs. Count now and tell me your total." If 16+, work
 rephrasings; the verb families from Methodology are the option menu).
 
 ### Beat 9 — Form and craft pre-writing checklist (one turn)
-"Before you write, six quick tests — this is what separates Level 4 from Level 5: **the FORM test** (it reads like a
+"Before you write, six quick tests — the habits that lift a piece towards Level 5: **the FORM test** (it reads like a
 real [their form] — its layout, its address to the reader, its register); **the VERB test** (minimal 'to be' verbs;
 active, sensory verbs; metaphors that MOVE); **the CONCRETE test** (abstract nouns replaced; readers can see, hear,
 feel it); **the FLOW test** (each sentence picks up from the last); **the DEVICE-LAYERING test** (devices combined and
