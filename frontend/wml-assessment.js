@@ -3248,9 +3248,10 @@
             // v7.20.725 (#755d): Edexcel IGCSE cards carry no "Mark Breakdown — X" line; their filed card
             // heading is "Q5 — Introduction" / "Q4 — Paragraph 1" / "Q5 — Comparative Paragraph 2". Read that
             // heading too (the "Qn —" prefix is a card heading, never prose), so IGCSE shows live per-paragraph rows.
+            // v7.20.734 (#767): "Q2 — Part 2 of your paragraph" is the same row as "Q2 — Paragraph 2".
             const re = qmax >= 16
-                ? /(?:Mark\s+Breakdown|\bQ\d+)\s*[—–-]+\s*((?:Body\s+|Comparative\s+)?Paragraph\s*\d+|Introduction|Conclusion)/gi
-                : /(?:Mark\s+Breakdown|\bQ\d+)\s*[—–-]+\s*(?:Body\s+|Comparative\s+)?Paragraph\s*(\d+)/gi;
+                ? /(?:Mark\s+Breakdown|\bQ\d+)\s*[—–-]+\s*((?:Body\s+|Comparative\s+)?(?:Paragraph|Part)\s*\d+|Introduction|Conclusion)/gi
+                : /(?:Mark\s+Breakdown|\bQ\d+)\s*[—–-]+\s*(?:Body\s+|Comparative\s+)?(?:Paragraph|Part)\s*(\d+)/gi;
             const out = []; let m;
             while ((m = re.exec(t)) !== null) {
                 const raw = String(m[1] || '');
@@ -3305,7 +3306,7 @@
                 // instead of guessed ("Paragraph 4" while the Conclusion was being marked,
                 // Neil's run). Phrase drift → falls back to the numbered guess (old behaviour).
                 if (isActive) {
-                    const _gateM = _lastCanvasReplyForSidebar.match(/Type\s+\**Y\**\s+(?:for|to\s+see)\s+(?:the\s+|your\s+)?\**\s*(Conclusion|Introduction|(?:Body\s+)?Paragraph\s+\d+)/i);
+                    const _gateM = _lastCanvasReplyForSidebar.match(/Type\s+\**Y\**\s+(?:for|to\s+see)\s+(?:the\s+|your\s+)?\**\s*(Conclusion|Introduction|(?:Body\s+)?(?:Paragraph|Part)\s+\d+)/i);
                     if (_gateM) {
                         const g = _gateM[1];
                         const norm = /conclusion/i.test(g) ? 'Conclusion'
@@ -11348,6 +11349,20 @@
             return line.replace(/(Actual performance:\s*)(\d+(?:\.\d+)?)(\s*%)/i, (mm, pre, n, s) => pre + fmt(v) + s);
         }).join('\n');
     }
+    // v7.20.734 (#767, PEDAGOGY §54.5 — Neil 7 Oct: "Mark both parts, call it one paragraph, teach the split"): a
+    // student's ONE paragraph that makes two points is marked as "Part 1 / Part 2 of your paragraph", so a Language
+    // card's total line may read "Total Mark for Part 2: 3/4". Part N is the same slot as Paragraph N everywhere.
+    function _langParaTotalRe(para) {
+        return para
+            ? new RegExp('Total Mark for (?:Paragraph|Part)\\s*' + String(para).replace(/\D/g, '') + '\\s*:\\s*([\\d.]+)\\s*\\/\\s*(\\d+(?:\\.\\d+)?)(\\s*\\(corrected from [\\d.]+\\))?', 'i')
+            : /Total Mark for [^:\n]{1,60}:\s*([\d.]+)\s*\/\s*(\d+(?:\.\d+)?)(\s*\(corrected from [\d.]+\))?/i;
+    }
+    function _langParaTotals(secText) {
+        return [...String(secText || '').matchAll(/Total Mark for (?:Paragraph|Part)\s*\d+\s*:\s*([\d.]+)\s*\//gi)].map(x => parseFloat(x[1]));
+    }
+    function _langParaCardCount(secText, qk) {
+        return (String(secText || '').match(new RegExp('\\bQ' + qk + '\\s*[\\u2014\\u2013-]\\s*(?:Paragraph|Part)\\s*\\d+', 'g')) || []).length;
+    }
     // @MARK-CORRECT-PURE-END
     // Each MARKED Literature section's own percentage, from its filed label ("Feedback: Body 1 (3.75 / 8)").
     function _labelSectionPcts() {
@@ -11379,9 +11394,7 @@
         };
         const sec = findSec();
         if (!sec) { console.warn('WML MarkAudit: @MARK_CORRECT — no filed card for ' + q); return false; }
-        const lineRe = para
-            ? new RegExp('Total Mark for Paragraph\\s*' + String(para).replace(/\D/g, '') + '\\s*:\\s*([\\d.]+)\\s*\\/\\s*(\\d+(?:\\.\\d+)?)(\\s*\\(corrected from [\\d.]+\\))?', 'i')
-            : /Total Mark for [^:\n]{1,60}:\s*([\d.]+)\s*\/\s*(\d+(?:\.\d+)?)(\s*\(corrected from [\d.]+\))?/i;
+        const lineRe = _langParaTotalRe(para);
         // Match per TEXTBLOCK (textContent), then map back to document positions — a total line split by bold
         // ("Total Mark for Paragraph 3: **3.25/4**") is several text runs and must still be found.
         let hit = null;
@@ -11421,11 +11434,11 @@
         const fresh = findSec();
         const lblMax = parseFloat(((String(fresh && fresh.node.attrs.label || '')).match(/\/\s*(\d+(?:\.\d+)?)\s*\)\s*$/) || [])[1]);
         const secText = String(fresh ? fresh.node.textContent : '');
-        const parts = [...secText.matchAll(/Total Mark for Paragraph\s*\d+\s*:\s*([\d.]+)\s*\//gi)].map(x => parseFloat(x[1]));
+        const parts = _langParaTotals(secText);
         // v7.20.732: re-sum ONLY when every paragraph card shows its total — a filed card can lack the line (measured:
         // a staging Q4 card whose Paragraph 3 holds no total), and a partial sum would set Q4 to 6/12 instead of 9/12.
         // Otherwise the label is left to the question's own total line, which the router asks Sophia to restate.
-        const cardsInQ = (secText.match(new RegExp('\\bQ' + qk + '\\s*[\\u2014\\u2013-]\\s*Paragraph\\s*\\d+', 'g')) || []).length;
+        const cardsInQ = _langParaCardCount(secText, qk);
         if (!parts.length || !(lblMax > 0) || parts.length < cardsInQ) {
             console.warn('WML MarkAudit: @MARK_CORRECT — ' + q + ' label left as filed (' + parts.length + ' of ' + cardsInQ + ' paragraph totals readable); the restated "' + q + ' Total" line sets it');
             return true;
@@ -57424,7 +57437,12 @@
                 };
                 const body = paras.map((p, i) => `--- ${mapQLabel(i, paras.length)} ---\n${p}`).join('\n\n');
                 const taughtNote = taught ? ` | taught structure: ${isEssayShape ? 'Introduction + 3 Body Paragraphs + Conclusion' : `${taught} paragraphs`}` : '';
-                parts.push(`=== ${qId} RESPONSE — ${paras.length} paragraph(s), ${qWords} words (code-counted)${taughtNote} ===\n${body}`);
+                // v7.20.734 (#767, PEDAGOGY §54.5): fewer paragraphs than taught on a body-only question → name the
+                // protocol rule HERE, next to the labels, so it fires on exactly the case it governs.
+                const fewerNote = (!isEssayShape && taught && paras.length && paras.length < taught)
+                    ? ` | FEWER PARAGRAPHS THAN TAUGHT (${paras.length} of ${taught}): before marking any paragraph as missing, apply ONE PARAGRAPH, SEVERAL POINTS — a further point (a new technique, feature or inference with its own quotation) is marked as "Part N of your paragraph"; a paragraph with one point is never split, and the missing paragraph scores 0`
+                    : '';
+                parts.push(`=== ${qId} RESPONSE — ${paras.length} paragraph(s), ${qWords} words (code-counted)${taughtNote}${fewerNote} ===\n${body}`);
             });
             return parts.join('\n\n');
         }

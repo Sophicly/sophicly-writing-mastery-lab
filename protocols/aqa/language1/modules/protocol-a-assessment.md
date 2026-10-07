@@ -282,6 +282,18 @@ its marks ÷ 4 (Q2/Q3: 2; Q4: Intro + 3 BPs + Conclusion). Two regimes:
   critique. Still emit its `@FB` card (so the box region fills) containing: `Total Mark for
   [label]: 0/[max]`, one warm normal-at-this-stage line, ONE line on what the paragraph does, and
   ONE optimal gold model. No reflection change, no scolding on the family-first attempt.
+- **ONE PARAGRAPH, SEVERAL POINTS (PEDAGOGY §54.5 — Neil, 7 Oct 2026: "Mark both parts, call it one
+  paragraph, teach the split").** Body-only questions (never an Introduction/Conclusion essay shape). Before
+  you mark a paragraph as MISSING, read the student's last labelled paragraph: a further POINT inside it — a
+  NEW technique, feature or inference with its OWN quotation, analysed — is not missing, it is in the wrong place. Mark
+  each point as its own card, equal depth, and call them what they are: titles `Part 1 of your paragraph`,
+  `Part 2 of your paragraph` (the `@FB_BEGIN` keeps `"para":"1"`, `"2"` so each files in its slot), total
+  lines `Total Mark for Part 1: X/[max]`, `Total Mark for Part 2: X/[max]` — and never call a part
+  "Paragraph 2". Open Part 1's card with ONE line: *"Your answer is one paragraph that makes two points, so
+  I've marked it in two parts. Next time, start a new paragraph at "[first 5–8 words of Part 2]" — that is
+  where your second point begins."* No penalty for the missing break. ⛔ ONE point (one technique or inference and its
+  quotation, however long the analysis) is never split to fill a slot: the next paragraph is then MISSING
+  exactly as above — 0, teaching, one optimal gold.
 - **EXTRA (more than taught):** mark ONLY the first [taught count] by position — hard cap; extras
   NEVER get a card, a mark, or a re-used label.
   - **Tier 1 — the FAMILY-FIRST attempt ONLY (the state block's code-computed flag, v7.19.854 —

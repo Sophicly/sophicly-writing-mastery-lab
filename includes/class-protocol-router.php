@@ -7740,7 +7740,8 @@ TEMPLATE;
                 // bucket map (runs 9b/10/11) when it lived only in the step file.
                 // Repeat the demand here, adjacent to the user turn.
                 if ($beat_id === 'q2_p1_selfrate') {
-                    $block .= "THIS TURN MUST OPEN with the structural diagnosis + bucket map (teaching rule, the student's paragraph count, which material = Paragraph 1, which = Paragraph 2, and that the buckets never overlap) BEFORE the 1-5 rating ask — all in ONE message, exactly per the step file. Omitting the bucket map caused double-marked paragraphs in past runs.\n";
+                    // v7.20.734 (#767, PEDAGOGY §54.5): a single paragraph's parts are PARTS, never "Paragraph 2".
+                    $block .= "Q2 OPENS with the structural diagnosis + bucket map (teaching rule, the student's paragraph count, which material is marked first and which second, and that the buckets never overlap). If the student wrote FEWER paragraphs than taught, apply ONE PARAGRAPH, SEVERAL POINTS: a second point (a new technique, feature or inference with its own quotation) is \"Part 2 of your paragraph\" — never \"Paragraph 2\" — and you quote the words where Part 2 begins as the place to start a new paragraph; a paragraph with ONE point is never split, and the missing paragraph scores 0. Omitting the bucket map caused double-marked paragraphs in past runs.\n";
                 }
                 // v7.19.402 (FIX P): Q2 ¶2 turns carry the server's record of what
                 // ¶1 already credited. Runs 9b/10/11 each re-marked ¶1's material
@@ -7753,7 +7754,7 @@ TEMPLATE;
                     $p1_anchors = self::q2_p1_credited_anchors(!empty($swml_chat_history) && is_array($swml_chat_history) ? $swml_chat_history : null);
                     if ($p1_anchors) {
                         $block .= "PARAGRAPH 1 ALREADY CREDITED (server record): " . implode(' · ', array_map(static function ($a) { return '"' . $a . '"'; }, $p1_anchors)) . "\n";
-                        $block .= "Paragraph 2 may use NONE of those quotations or inference phrasings — each earns marks ONCE across Q2. Paragraph 2 covers ONLY the student's remaining material. If no remaining material exists, this paragraph's steps collapse to the exact line: \"**Paragraph 2 score: 0/4 — not present in your submission.**\" plus one mode-appropriate framing line; any extra quality routes through the holistic top-up at the Q2 summary, never through a second walk over credited material.\n";
+                        $block .= "Paragraph 2 (or Part 2 of a single paragraph) may use NONE of those quotations or inference phrasings — each earns marks ONCE across Q2. It covers ONLY the student's remaining material. If no remaining material exists, this paragraph's steps collapse to the exact line: \"**Paragraph 2 score: 0/4 — not present in your submission.**\" plus one mode-appropriate framing line; any extra quality routes through the holistic top-up at the Q2 summary, never through a second walk over credited material.\n";
                     }
                 }
             }

@@ -3048,3 +3048,19 @@ line). A retrieval answer keeps every line as its own statement. And Sophia neve
 they say a part exists that the labels do not show, she asks for its first words and marks what they point to
 (router assessment block). The tap-to-confirm check proposed the same day was dropped: the sentence-boundary rule
 settles the ambiguous case without asking the student anything.
+
+**5. ONE PARAGRAPH THAT MAKES TWO POINTS — MARK BOTH PARTS, CALL IT ONE PARAGRAPH, TEACH THE SPLIT (FIXLIST #767,
+#773).** Actions v57, item 3: *"Mark both parts, call it one paragraph, teach the split."* There was no earlier ruling
+from him: the "bucket" split dates from 10 June (v7.19.402), an engineering fix to stop Sophia marking the same
+material twice, and it called the second bucket "Paragraph 2". Then the same day, on the obvious edge: *"what if it
+genuinely is one paragraph?… we used to just give zero for the second paragraph. If there wasn't one."*
+- **The discriminator is CONTENT, never line breaks:** a part exists only where the paragraph moves to a NEW
+  technique, feature or inference with its OWN quotation. Two points in one block → two cards titled "Part 1 / Part 2
+  of your paragraph", equal depth, no penalty for the missing break, and one line quoting where Part 2 begins as the
+  place to start a new paragraph. **One point → never split**: the second paragraph is missing and scores 0, with
+  teaching and one optimal gold, exactly as before. So a student who really wrote one paragraph gets no credit for a
+  second.
+- **Where it lives (v7.20.734):** the rule in AQA P1, AQA P2 and Edexcel IGCSE P1 (body-only questions — never an
+  Introduction/Conclusion essay shape); the label header names it whenever fewer paragraphs arrive than taught; the
+  router's Q2 bucket map uses Parts; and "Part N" is the same slot as "Paragraph N" in the sidebar rows, the mark
+  correction and the question re-sum. **Enforced:** `bin/mark-correct-harness.js` (+10).

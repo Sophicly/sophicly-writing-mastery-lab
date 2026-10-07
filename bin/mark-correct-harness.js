@@ -23,7 +23,17 @@ const a = SRC.indexOf('// @MARK-CORRECT-PURE-START'), b = SRC.indexOf('// @MARK-
 ok(a !== -1 && b > a, 'the pure correction block exists (sentinels)');
 if (!(a !== -1 && b > a)) done();
 const _w = console.warn; console.warn = () => {};
-const P = new Function(SRC.slice(a, b) + '\nreturn { _markCorrectionsIn, _applyCorrectionsToAudit, _rewriteActualPerformance };')();
+const P = new Function(SRC.slice(a, b) + '\nreturn { _markCorrectionsIn, _applyCorrectionsToAudit, _rewriteActualPerformance, _langParaTotalRe, _langParaTotals, _langParaCardCount };')();
+
+// 0. #767 (PEDAGOGY §54.5): ONE paragraph with two points is marked as "Part 1 / Part 2 of your paragraph" — the
+//    same slots as Paragraph 1 / 2, so a correction, the re-sum and the card count read both words.
+const PARA_CARD = 'Q2 — Paragraph 1\nTotal Mark for Paragraph 1: 3/4\nQ2 — Paragraph 2\nTotal Mark for Paragraph 2: **2.5/4**';
+const PART_CARD = 'Q2 — Part 1 of your paragraph\nTotal Mark for Part 1: 3/4\nQ2 — Part 2 of your paragraph\nTotal Mark for Part 2: 2.5/4';
+ok(P._langParaTotals(PARA_CARD.replace('**2.5/4**', '2.5/4')).join(',') === '3,2.5' && P._langParaTotals(PART_CARD).join(',') === '3,2.5', 'the re-sum reads paragraph totals AND part totals', P._langParaTotals(PART_CARD));
+ok(P._langParaCardCount(PARA_CARD, '2') === 2 && P._langParaCardCount(PART_CARD, '2') === 2, 'the card count sees "Q2 — Part 2 of your paragraph" as a card', P._langParaCardCount(PART_CARD, '2'));
+const pr = P._langParaTotalRe('2');
+ok(pr.test('Total Mark for Part 2: 2.5/4') && pr.test('Total Mark for Paragraph 2: 2.5/4') && !pr.test('Total Mark for Part 1: 3/4'), 'a correction to para 2 finds "Part 2" and never "Part 1"');
+ok(P._langParaTotals('Total Mark for Part of the essay: 3/4').length === 0, 'a "Part" with no number is never a paragraph total');
 
 // 1. Reading the marker
 let cs = P._markCorrectionsIn('I gave Body 1 too much — it comes down to 3.\n@MARK_CORRECT{"q":"Body 1","to":3}\n');
@@ -80,5 +90,13 @@ if (strip) {
 }
 ok(/parts\.length < cardsInQ/.test(SRC) && /label left as filed/.test(SRC), 'a Language label is re-summed ONLY when every paragraph card shows its total (a partial sum set Q4 to 6/12 — measured on a staging card)');
 ok(/restates that question's total on its own line/.test(ROUTER), 'after a Language paragraph correction Sophia restates the question total, which sets the label through the tested path');
+// #767 wiring: the sidebar rows, the code-side trigger, the three body-only Language protocols and the router
+ok((SRC.match(/\(\?:Body\\s\+\|Comparative\\s\+\)\?\(\?:Paragraph\|Part\)\\s\*/g) || []).length === 2, 'the sidebar reads "Q2 — Part 2 …" as the Paragraph 2 row (both question sizes)');
+ok(/FEWER PARAGRAPHS THAN TAUGHT \(\$\{paras\.length\} of \$\{taught\}\): before marking any paragraph as missing, apply ONE PARAGRAPH, SEVERAL POINTS/.test(SRC) && /!isEssayShape && taught && paras\.length && paras\.length < taught/.test(SRC), 'fewer paragraphs than taught on a body-only question → the label header names the rule');
+['aqa/language1/modules/protocol-a-assessment.md', 'aqa/language2/modules/protocol-a-assessment.md', 'edexcel-igcse/language1/modules/protocol-a-assessment.md'].forEach(f => {
+    const t = fs.readFileSync(path.join(ROOT, 'protocols', f), 'utf8');
+    ok(/\*\*ONE PARAGRAPH, SEVERAL POINTS \(PEDAGOGY §54\.5/.test(t) && /never call a part\n  "Paragraph 2"/.test(t) && /ONE point \(one technique or inference and its\n  quotation, however long the analysis\) is never split/.test(t) && /exactly as above — 0, teaching, one optimal gold/.test(t), f + ': one paragraph, several points → parts; one point → never split, the missing paragraph scores 0 (#773)');
+});
+ok(/is \\"Part 2 of your paragraph\\" — never \\"Paragraph 2\\"/.test(ROUTER) && /a paragraph with ONE point is never split, and the missing paragraph scores 0/.test(ROUTER), 'the router\'s Q2 bucket map uses Parts for a single paragraph and keeps the 0 for a genuinely missing one');
 ok(/### A MARK YOU ALREADY FILED — CORRECT IT THROUGH THE RECORD/.test(ROUTER) && /never tell the student to trust the chat over their document/.test(ROUTER), 'the router tells Sophia how to correct a filed mark — and never to set the chat against the document');
 done();
