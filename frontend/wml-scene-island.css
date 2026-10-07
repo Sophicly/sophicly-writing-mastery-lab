@@ -163,6 +163,13 @@ body[data-swml-theme="light"] .swml-scene-island {
 .swml-scene-island .stage-card.is-sel .roman { color:var(--teal); }
 .swml-scene-island .stage-card .name { font-weight:700; font-size:14.5px; margin:4px 0 4px; }
 .swml-scene-island .stage-card .meta { font-size:12px; color:var(--muted2); }
+/* v7.20.739 (weekend story lesson 5): a card can now carry the student's own beat sentence, so card
+   heights differ within a row. A <button> centres its content vertically by default, which left the
+   short cards' text floating mid-card beside a tall one — start every card's content at the top, and
+   keep a very long beat to five lines (phase 2 shows each beat in full). A one-line "N beats written"
+   meta (the full project) renders exactly as before. */
+.swml-scene-island .stage-card { display:flex; flex-direction:column; justify-content:flex-start; }
+.swml-scene-island .stage-card .meta { display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
 .swml-scene-island .shake { animation:ssiShake .3s ease; }
 @keyframes ssiShake { 20%{transform:translateX(-4px);} 50%{transform:translateX(4px);} 80%{transform:translateX(-2px);} }
 .swml-scene-island .hint { font-size:12.5px; color:var(--warn); margin-top:12px; min-height:18px; }
