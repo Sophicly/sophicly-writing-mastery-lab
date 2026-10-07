@@ -168,7 +168,7 @@ const SEVEN = (hook, setup) => [
         w.tap(chip(w, /Let’s go/)); await settle();
         for (let i = 0; i < 4 && chip(w, /Continue/); i++) { w.tap(chip(w, /Continue/)); await settle(); }
         const intro = w.bubbles.join('\n');
-        ok(/about 350–450/.test(intro), 'the intro states the student\'s OWN board\'s length (Cambridge 350–450)', intro.match(/write about [^.]*/));
+        ok(/about 350–450 words/.test(intro), 'the intro states the student\'s OWN board\'s length (Cambridge 350–450)', intro.match(/write about [^.]*/));
         ok(!LEAK_RE.test(intro), 'no step number, plot or stage anywhere in the unit intro', (intro.match(new RegExp('.{0,40}(' + LEAK_RE.source + ').{0,40}', 'i')) || [])[0]);
         const pick = chip(w, /Choose my scene/);
         ok(!!pick, 'the intro ends on the scene chip (liveness)');
@@ -197,7 +197,7 @@ const SEVEN = (hook, setup) => [
         W2.ctl.start(); await until(W2, () => W2.bubbles.length > 0);
         W2.tap(chip(W2, /Let’s go/)); await settle();
         for (let i = 0; i < 4 && chip(W2, /Continue/); i++) { W2.tap(chip(W2, /Continue/)); await settle(); }
-        ok(/about 650–700/.test(W2.bubbles.join('\n')), 'an AQA student is told the default exam length (no printed figure)');
+        ok(/about 650–700 words/.test(W2.bubbles.join('\n')), 'an AQA student is told the default exam length (no printed figure)');
         W2.tap(chip(W2, /Choose my scene/)); await until(W2, () => !!island.props);
         await island.transfer({ stageIds: ['spine-beat-6'], elements: SEVEN([island.props.stages[5].beats[0]], []) });
         ok((dropdowns.pop() || {}).label === 'End (Beats 5–6)', 'beat 6 → End (Beats 5–6)');
@@ -287,6 +287,16 @@ const SEVEN = (hook, setup) => [
         ok(D.stageMeta({ beats: [1, 2, 3] }) === '3 beats written' && /\{st\.beats\.length\} beats written/.test(OLD), 'default card meta = "N beats written", as before');
         ok(toJsx(D.status1Some(2)) === '<strong>2 stages</strong> selected.' && toJsx(D.status2Some(1)).indexOf('<strong>1 beat</strong> in your run — one continuous stretch') === 0,
             'default footer statuses render as before');
+        // v7.20.738 — the measured miss: the bridge passed `labels`, but mount() forwards props ONE BY ONE
+        // and dropped it, so the real island showed "Pick your stage(s)" while every sim (stubbed island)
+        // passed. Every key the bridge hands mount() must be forwarded to <SceneSelection>.
+        const INDEX = fs.readFileSync(path.join(ROOT, 'island/src/index.jsx'), 'utf8');
+        const mi = SRC.indexOf('window.WMLSceneIsland.mount({');
+        const bridgeKeys = (braceSliceFrom(SRC, mi, '{', '}').text.match(/^\s{20}([a-zA-Z]+):/gm) || []).map((k) => k.trim().replace(':', ''));
+        const si = INDEX.indexOf('<SceneSelection');
+        const elem = INDEX.slice(si, INDEX.indexOf('/>', si));
+        const dropped = bridgeKeys.filter((k) => k !== 'onClose' && elem.indexOf(k + '={opts.' + k) === -1);
+        ok(bridgeKeys.indexOf('labels') !== -1 && dropped.length === 0, '⭐ mount() forwards every prop the bridge passes (labels included)', { bridgeKeys, dropped });
         const BUNDLE = fs.readFileSync(path.join(ROOT, 'frontend/wml-scene-island.min.js'), 'utf8');
         ok(BUNDLE.indexOf('hintApart') !== -1 && BUNDLE.indexOf('Which part of your story is the scene from?') !== -1,
             'the committed bundle is BUILT from this source (npm run build in island/)');

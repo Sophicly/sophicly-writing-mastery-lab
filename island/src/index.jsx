@@ -6,8 +6,10 @@
  * contracts:
  *
  *   Step 9 — scene selection (beats in → placements out):
- *     WMLSceneIsland.mount({ stages, elements, nudgeRules, initial,
+ *     WMLSceneIsland.mount({ stages, elements, nudgeRules, initial, labels,
  *                            onStateChange, onTransfer, onClose })
+ *     (`labels` v7.20.738: the words — beats vs plot stages — see DEFAULT_LABELS in SceneSelection.jsx.
+ *      mount() forwards props ONE BY ONE, so a new prop must be added here too or it never arrives.)
  *   Step 8 — values into the plot (traits + beats in → ports out):
  *     WMLPlotIsland.mount({ traits, stages, bands, initial,
  *                           onStateChange, onPort, onClose })
@@ -65,6 +67,7 @@ function mount(opts) {
             elements={opts.elements}
             nudgeRules={opts.nudgeRules || []}
             initial={opts.initial || null}
+            labels={opts.labels || null}
             onStateChange={opts.onStateChange}
             onTransfer={opts.onTransfer}
             onClose={close}
