@@ -1106,6 +1106,31 @@ RUN-THE-FLOW (§11.2), which proves the wiring.
 4. Batch discipline: ONE version bump per distinct fix, ONE commit, ONE Neil test cycle with
    "TEST THIS" + "QUEUED" lists. Staging → Neil → prod (`echo y | deploy-production.sh`).
 
+## §11b. ⭐⭐ A FILED MARK MAY CHANGE — THE RECORD FOLLOWS, IN CODE (v7.20.729; FIXLIST #757, closes #721; Neil 7 Oct: "Let the mark change, and say why")
+
+**The failure, measured twice:** Sophia found a paragraph she had already marked was wrong and said so in prose
+(#721 on a finished session; #757 mid-marking). Nothing could change a filed card, so the code re-summed the OLD
+cards and "corrected" her corrected total straight back (9/12 → 10/12); the chat, the card and the total disagreed
+three ways, and she told the student to trust the chat over the tracker.
+
+**The mechanism (one path, both pipelines):**
+1. Sophia: ONE plain sentence (paragraph, new mark, why) + on its own line `@MARK_CORRECT{"q":"Body 1","to":3}` —
+   a Language paragraph card adds `"para":"2"`. Router assessment block "A MARK YOU ALREADY FILED".
+2. **Pass 1b** (`_applyCorrectionsToAudit`, inside `_auditAssessmentArithmetic`, BEFORE Pass 2): an in-flight
+   question total takes the corrected paragraph value (Pass 1 now records `_fbAudit.paraIdx[q][para]`).
+3. **The document** (`_applyMarkCorrections` → `_correctFiledCard`, straight after `applyAssessmentFeedback` in BOTH
+   pipelines, and in the heal replay in history order): the card's own `Total Mark for …` line is rewritten in one
+   PM transaction with "(corrected from X)", and the label follows (`_setFeedbackMark`; a Language question
+   re-sums its paragraph cards with Pass 2's half-up-once rule).
+4. **The summary follows the record:** the doc-label grand total now corrects in BOTH directions (was downward-only,
+   v7.19.929 — safe because the essay word-count ceiling is applied after); the Self-Rating Pattern's
+   "Actual performance: Y%" figures come from the filed sections (`_rewriteActualPerformance`).
+5. The student never sees the marker (`stripAIInternals`). Gate: `bin/mark-correct-harness.js` (24 checks; pre-fix
+   code fails; a single reverted rule fails).
+
+**Out-of-band corrections** (a re-mark done by us, e.g. Zayan's introduction #761) write the card and label directly
+— the summary then follows the label by step 4.
+
 ## §12. SIGN-OFF CHECKLIST — what "sharp" means for the anchor (and every port after it)
 
 An assessment experience is signed off when, on a clean staging run by Neil:

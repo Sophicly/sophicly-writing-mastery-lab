@@ -868,6 +868,8 @@ node bin/sa-sidebar-harness.js >/dev/null || { node bin/sa-sidebar-harness.js; f
 node bin/question-mark-harness.js >/dev/null || { node bin/question-mark-harness.js; fail=1; }
 # A CARD'S % AND GRADE FOLLOW ITS OWN AUDITED TOTAL — Literature "Total Mark for" form + "gave you" calibration (v7.20.727, #762).
 node bin/grade-ladder-harness.js >/dev/null || { node bin/grade-ladder-harness.js; fail=1; }
+# A FILED MARK MAY CHANGE — the record follows Sophia's @MARK_CORRECT; the summary follows the record (v7.20.729, #757).
+node bin/mark-correct-harness.js >/dev/null || { node bin/mark-correct-harness.js; fail=1; }
 
 
 if [ "$fail" -ne 0 ]; then

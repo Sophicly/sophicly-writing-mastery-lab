@@ -6671,7 +6671,9 @@
             history.forEach(m => {
                 if (!m || m.role !== 'assistant' || !m.content) return;
                 if (overallPlaceholder) _routeOverallFeedback(m.content); // self-guards: summary signal + placeholder check
-                if (m.content.indexOf('@FB_BEGIN') === -1) return;
+                // v7.20.729 (#757): a correction replays in history order — AFTER the card it corrects is re-filed.
+                const _hasCorr = m.content.indexOf('@MARK_CORRECT') !== -1;
+                if (m.content.indexOf('@FB_BEGIN') === -1) { if (_hasCorr) _applyMarkCorrections(m.content); return; }
                 const metaRe = /@FB_BEGIN\s*(\{[^}]*\})/g;
                 let mm, hit = false;
                 while ((mm = metaRe.exec(m.content)) !== null) {
@@ -6680,8 +6682,9 @@
                         if (q && placeholderQs.has(q)) { hit = true; break; }
                     } catch (_) { /* malformed meta — skip this card */ }
                 }
-                if (!hit) return;
+                if (!hit) { if (_hasCorr) _applyMarkCorrections(m.content); return; }
                 applyAssessmentFeedback(m.content);
+                if (_hasCorr) _applyMarkCorrections(m.content);
                 replayed++;
             });
             } finally { _suppressFillScroll = false; }
@@ -11200,7 +11203,7 @@
     // Q5 is exempt from the Qn-Total pass (word-count ceiling = MIN rule lives AI-side).
     // Runs on the RAW reply before display/history/filing, so chat, doc cards, sidebar
     // and Score Summary all read the same corrected numbers.
-    const _fbAudit = { totals: {}, failed: {} };
+    const _fbAudit = { totals: {}, failed: {}, paraIdx: {} };   // paraIdx (v7.20.729, #757): q → para → index in totals[q]
     // ── v7.19.868: THE single audited grade for the current assessment doc ──────────────
     // {total,max,pct,grade,perQ,docKey}. Set ONCE, atomically, from the completion reply
     // (all Qn Totals + a grand Total / completion marker present). Persist
@@ -11265,6 +11268,124 @@
             if (!(mx > 0)) return null;
             return { total: Math.round(tot * 100) / 100, max: mx, perQ: perQ };
         } catch (_) { return null; }
+    }
+    // v7.20.729 (FIXLIST #757, Neil 7 Oct: "Let the mark change, and say why"). Sophia may correct a
+    // paragraph she has ALREADY filed — one plain sentence saying why, then on its own line
+    //   @MARK_CORRECT{"q":"Body 1","to":3}            (a Literature section)
+    //   @MARK_CORRECT{"q":"Q4","para":"2","to":2.75}  (a Language paragraph card)
+    // The RECORD follows her, in code: the in-flight question-total check (Pass 1b), the filed card's
+    // own "Total Mark for" line and its label (the grade source every surface reads), and the summary.
+    // @MARK-CORRECT-PURE-START
+    function _markCorrectionsIn(txt) {
+        const out = [];
+        const re = /@MARK_CORRECT\s*(\{[^}\n]*\})/g; let m;
+        while ((m = re.exec(String(txt || ''))) !== null) {
+            let c = null; try { c = JSON.parse(m[1]); } catch (_) { c = null; }
+            const to = c ? parseFloat(c.to) : NaN;
+            if (!c || !c.q || !isFinite(to) || to < 0) { console.warn('WML MarkAudit: unreadable @MARK_CORRECT ignored —', m[1]); continue; }
+            out.push({ q: String(c.q), para: c.para == null ? '' : String(c.para), to: Math.round(to * 100) / 100 });
+        }
+        return out;
+    }
+    function _applyCorrectionsToAudit(audit, corrections) {
+        let n = 0;
+        (corrections || []).forEach(c => {
+            const qKey = String(c.q).toUpperCase().replace(/[^Q0-9]/g, '');
+            if (!/^Q\d+$/.test(qKey) || !audit.totals[qKey] || !audit.paraIdx[qKey]) return;
+            const idx = audit.paraIdx[qKey][c.para];
+            if (idx == null || audit.totals[qKey][idx] === c.to) return;
+            console.warn('WML MarkAudit: correction reaches the ' + qKey + ' total check — paragraph ' + c.para + ' ' + audit.totals[qKey][idx] + ' → ' + c.to);
+            audit.totals[qKey][idx] = c.to;
+            n++;
+        });
+        return n;
+    }
+    // "- **Introduction:** … Actual performance: 40%." / "- **Body Paragraphs:** … Actual performance: 47%, 50%, 55%."
+    function _rewriteActualPerformance(txt, pct) {
+        const fmt = v => String(Number(v.toFixed(1)));
+        return String(txt).split('\n').map(line => {
+            const m = line.match(/^\s*[-*•]\s*\*\*(Introduction|Body Paragraphs|Conclusion):\*\*/i);
+            if (!m || !/Actual performance:/i.test(line)) return line;
+            if (/^body/i.test(m[1])) {
+                const bodies = Object.keys(pct).filter(k => /^Body \d+$/.test(k)).sort((a, b) => parseInt(a.slice(5), 10) - parseInt(b.slice(5), 10)).map(k => pct[k]);
+                if (!bodies.length) return line;
+                return line.replace(/(Actual performance:\s*)(\d+(?:\.\d+)?%(?:\s*,\s*(?:and\s+)?\d+(?:\.\d+)?%)*)/i, (mm, pre, list) => {
+                    const n = (list.match(/\d+(?:\.\d+)?%/g) || []).length;
+                    if (n !== bodies.length) return mm;
+                    return pre + bodies.map(v => fmt(v) + '%').join(', ');
+                });
+            }
+            const v = pct[/^intro/i.test(m[1]) ? 'Introduction' : 'Conclusion'];
+            if (typeof v !== 'number') return line;
+            return line.replace(/(Actual performance:\s*)(\d+(?:\.\d+)?)(\s*%)/i, (mm, pre, n, s) => pre + fmt(v) + s);
+        }).join('\n');
+    }
+    // @MARK-CORRECT-PURE-END
+    // Each MARKED Literature section's own percentage, from its filed label ("Feedback: Body 1 (3.75 / 8)").
+    function _labelSectionPcts() {
+        try {
+            const editorEl = document.getElementById('swml-tiptap-editor');
+            if (!editorEl) return null;
+            const out = {};
+            editorEl.querySelectorAll('[data-section-type="feedback"]').forEach(sec => {
+                const m = (sec.getAttribute('data-section-label') || '').match(/^Feedback:\s*(Introduction|Body \d+|Conclusion)\s*\(\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*\)\s*$/i);
+                if (m && +m[3] > 0) out[m[1].charAt(0).toUpperCase() + m[1].slice(1)] = Math.round((+m[2] / +m[3]) * 1000) / 10;
+            });
+            return Object.keys(out).length ? out : null;
+        } catch (_) { return null; }
+    }
+    // The DOCUMENT half: rewrite the filed card's own total line (one transaction) and its label.
+    function _correctFiledCard(q, para, to) {
+        if (!canvasEditor) return false;
+        const qk = _paraKey(q);
+        if (!qk) return false;
+        const findSec = () => {
+            let sec = null;
+            canvasEditor.state.doc.descendants((node, pos) => {
+                if (sec) return false;
+                if (node.type.name === 'sectionBlock' && node.attrs && node.attrs.sectionType === 'feedback'
+                    && _paraKey(String(node.attrs.label || '')) === qk) { sec = { node: node, pos: pos }; return false; }
+                return true;
+            });
+            return sec;
+        };
+        const sec = findSec();
+        if (!sec) { console.warn('WML MarkAudit: @MARK_CORRECT — no filed card for ' + q); return false; }
+        const lineRe = para
+            ? new RegExp('Total Mark for Paragraph\\s*' + String(para).replace(/\D/g, '') + '\\s*:\\s*([\\d.]+)\\s*\\/\\s*(\\d+(?:\\.\\d+)?)(\\s*\\(corrected from [\\d.]+\\))?', 'i')
+            : /Total Mark for [^:\n]{1,60}:\s*([\d.]+)\s*\/\s*(\d+(?:\.\d+)?)(\s*\(corrected from [\d.]+\))?/i;
+        let hit = null;
+        sec.node.descendants((n, p) => {
+            if (hit) return false;
+            if (n.isText) {
+                const m = lineRe.exec(n.text || '');
+                if (m) hit = { from: sec.pos + 1 + p + m.index, len: m[0].length, text: m[0], old: parseFloat(m[1]), max: m[2] };
+            }
+            return !hit;
+        });
+        if (!hit) { console.warn('WML MarkAudit: @MARK_CORRECT — the card for ' + q + (para ? ' ¶' + para : '') + ' has no single-run "Total Mark for" line; nothing changed'); return false; }
+        if (hit.old !== to) {
+            const nextText = hit.text.replace(/([\d.]+)(\s*\/\s*)(\d+(?:\.\d+)?)(\s*\(corrected from [\d.]+\))?$/, to + '$2$3 (corrected from ' + hit.old + ')');
+            canvasEditor.view.dispatch(canvasEditor.state.tr.insertText(nextText, hit.from, hit.from + hit.len));
+            console.warn('WML MarkAudit: @MARK_CORRECT applied — ' + q + (para ? ' ¶' + para : '') + ' ' + hit.old + ' → ' + to);
+        }
+        // the label: a Literature section takes the new mark; a Language question re-sums its paragraph cards
+        if (!para) return _setFeedbackMark(q, to, parseFloat(hit.max)) || true;
+        const fresh = findSec();
+        const lblMax = parseFloat(((String(fresh && fresh.node.attrs.label || '')).match(/\/\s*(\d+(?:\.\d+)?)\s*\)\s*$/) || [])[1]);
+        const parts = [...String(fresh ? fresh.node.textContent : '').matchAll(/Total Mark for Paragraph\s*\d+\s*:\s*([\d.]+)\s*\//gi)].map(x => parseFloat(x[1]));
+        if (!parts.length || !(lblMax > 0)) return true;
+        const sum = Math.min(Math.floor(parts.reduce((a, b) => a + b, 0) + 0.5), lblMax);   // Pass 2's rule: half-up ONCE, capped
+        _setFeedbackMark(q, sum, lblMax);
+        return true;
+    }
+    function _applyMarkCorrections(txt) {
+        if (!txt || String(txt).indexOf('@MARK_CORRECT') === -1) return 0;
+        let n = 0;
+        _markCorrectionsIn(txt).forEach(c => {
+            try { if (_correctFiledCard(c.q, c.para, c.to)) n++; } catch (e) { console.warn('WML MarkAudit: @MARK_CORRECT failed', e && e.message); }
+        });
+        return n;
     }
     // v7.19.839: per-card applied-penalty ledger (code-owned). Run 3 showed the AI-authored
     // "Penalty & Ceiling Ledger" materially wrong (claimed −5.0, cards deducted −6.5, one
@@ -11900,6 +12021,7 @@
                 // Q4 conclusion poisoned the whole Q4 verify and let 9.4→"10" through).
                 if (tm && scoredRows === 0 && parseFloat(tm[2]) === 0) {
                     (_fbAudit.totals[qKey] = _fbAudit.totals[qKey] || []).push(0);
+                    (_fbAudit.paraIdx[qKey] = _fbAudit.paraIdx[qKey] || {})[String((meta && meta.para) || '')] = _fbAudit.totals[qKey].length - 1;
                     return whole;
                 }
                 if (!tm || scoredRows < 3) {
@@ -11917,18 +12039,23 @@
                     computed = bCeil.cap;
                 }
                 (_fbAudit.totals[qKey] = _fbAudit.totals[qKey] || []).push(computed);
+                (_fbAudit.paraIdx[qKey] = _fbAudit.paraIdx[qKey] || {})[String((meta && meta.para) || '')] = _fbAudit.totals[qKey].length - 1;
                 const suffixBad = /round/i.test(tm[4] || '');
                 if (Math.abs(computed - stated) <= 0.049 && !suffixBad) return whole;
                 console.warn('WML MarkAudit:', qKey, String(tm[1]).trim(), 'stated', tm[2] + '/' + tm[3],
                     '→ corrected', computed + '/' + tm[3], '(elements', r2(scoreSum), '− penalties', pen + ')');
                 return whole.replace(totalRe, (m, pre, v, d) => pre + computed + '/' + d);
             });
+            // ---- Pass 1b (v7.20.729, #757): a correction Sophia makes in THIS reply to a paragraph she filed
+            // earlier reaches the question-total check BEFORE it runs — otherwise Pass 2 re-adds the old card
+            // total and "corrects" her corrected Qn Total straight back (#757: her 9/12 became 10/12).
+            _applyCorrectionsToAudit(_fbAudit, _markCorrectionsIn(out));
             // ---- Pass 2: verify each Qn Total against its audited paragraph totals ----
             out = out.replace(/(Q(\d+)\s*Total:\s*)([\d.]+)(\s*\/\s*\d+)/g, (whole, prefix, qn, val, den) => {
                 const qKey = 'Q' + qn;
                 const arr = _fbAudit.totals[qKey];
                 const bad = _fbAudit.failed[qKey];
-                delete _fbAudit.totals[qKey]; delete _fbAudit.failed[qKey];
+                delete _fbAudit.totals[qKey]; delete _fbAudit.failed[qKey]; delete _fbAudit.paraIdx[qKey];
                 if (qn === '5') {
                     // v7.19.841: Q5 is single-card (no sum-verify), but its Total line must
                     // respect the code-owned WC ceiling — Run 4 filed 30/40 past a 27 cap.
@@ -11972,7 +12099,12 @@
                     const _lg = _labelGrandFromDoc();
                     if (_lg) {
                         const _probe = new RegExp('(?:^|\\n)\\s*[`*]{0,3}\\s*(?:Grand\\s+)?Total:\\s*[`*]{0,3}\\s*([\\d.]+)\\s*\\/\\s*' + _lg.max + '\\b', 'i').exec(out);
-                        if (_probe && parseFloat(_probe[1]) > _lg.total) {
+                        // v7.20.729 (#757, Neil 7 Oct: "Let the mark change, and say why"): BOTH directions now.
+                        // A filed mark can be corrected after it was shown (Sophia's @MARK_CORRECT, or a re-mark),
+                        // so the summary must follow the record up as well as down. The downward-only rule protected
+                        // a word-count-ceilinged total — and that ceiling is now applied to `grand` just below, so
+                        // following the labels upward can never undo it.
+                        if (_probe && parseFloat(_probe[1]) !== _lg.total) {
                             grand = _lg;
                             console.warn('WML MarkAudit: grand total sourced from DOC labels —', _probe[1], '→', grand.total + '/' + grand.max);
                         }
@@ -12026,6 +12158,10 @@
                             console.warn('WML MarkAudit: Per-Q summary Q' + qn, a + '·' + outof, '→', pq.a + '·' + outof);
                             return pre + pq.a + tail;
                         });
+                        // v7.20.729 (#757): the Self-Rating Pattern's "Actual performance: Y%" figures are the
+                        // filed sections' own percentages — never the model's memory of a mark since corrected.
+                        const _secPct = _labelSectionPcts();
+                        if (_secPct) out = _rewriteActualPerformance(out, _secPct);
                     }
                 }
             } catch (e) { console.warn('WML MarkAudit: grand-total reconcile skipped (non-fatal)', e && e.message); }
@@ -21240,6 +21376,7 @@
                         // assessment turns, which are NOT cw_ tasks, so it lives OUTSIDE the cw_ guard
                         // below. Self-guards (no-op unless the reply carries @FB markers or a marking block).
                         applyAssessmentFeedback(res.reply);
+                        _applyMarkCorrections(res.reply); // v7.20.729 (#757): a corrected filed mark changes the record
                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
                         { // v7.19.907/911: mirror the fresh sidebar pointer into the reply's beat-chip AND store it for refresh replay
                             const _mb = _syncMarkingBeatChip(res.reply);
@@ -44330,6 +44467,7 @@
 
                                         // v7.19.600: auto-file assessment feedback (runs for ALL tasks, outside the cw_ guard).
                                         applyAssessmentFeedback(res.reply);
+                                        _applyMarkCorrections(res.reply); // v7.20.729 (#757): twin — a corrected filed mark changes the record
                                         _refreshLangSidebar(); // v7.19.625: advance per-Q Language sidebar as marks land
                                         { // v7.19.907/911: sidebar-derived beat-chip + store for refresh replay (twin)
                                             const _mb = _syncMarkingBeatChip(res.reply);

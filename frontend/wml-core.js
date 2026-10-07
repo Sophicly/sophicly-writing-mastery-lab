@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.728';
+var WML_BUILD = '7.20.729';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -3897,6 +3897,9 @@ window.WML = (function() {
         // Deliberately conservative: the marker must occupy a WHOLE line on its own. An @NAME
         // mid-sentence is left alone, so ordinary prose cannot be eaten.
         // v7.20.721: display markers (DISPLAY_MARKERS above) are left for formatAI to render.
+        // v7.20.729 (#757): @MARK_CORRECT{…} carries JSON, which the line sweep does not match — the code
+        // has already applied it to the record; the student reads only Sophia's sentence saying why.
+        text = text.replace(/[ \t]*@MARK_CORRECT\s*\{[^}\n]*\}[ \t]*/g, '');
         text = sweepMachineLines(text).trim();
         // Collapse the blank line the sweep leaves behind.
         text = text.replace(/\n{3,}/g, '\n\n').trim();
