@@ -54,6 +54,30 @@ function Arrow({ dir }) {
     );
 }
 
+/* v7.20.737 — THE WORDS ARE A PROP (the weekend story, PEDAGOGY §55). The full project picks a
+   scene from PLOT STAGES; the weekend story has no plot work and picks it from the six beats of
+   the Story Spine, so the same island must speak about beats, not stages — a student who never
+   met a plot stage would be reading a word nobody taught them (root §5c-ii). DEFAULT_LABELS are
+   the prototype's strings VERBATIM (root §13), so the full project renders exactly what it did;
+   a host passes `labels` to override any of them. `**x**` marks the prototype's <strong>. */
+const DEFAULT_LABELS = {
+    sub: 'Your exam story is one **scene** — a mini story with the same structure. Pick the part of your plot it will cover, then shape it into the 7 elements.',
+    steps: ['Pick your stage(s)', 'Pick your beats', 'Shape the scene'],
+    stagesH2: 'Which part of your story is the scene from?',
+    stagesLead: 'Choose **one or two stages next to each other** — two works well when your scene sits across a boundary, like the end of Stage I and the start of Stage II. A scene is one continuous stretch of your story, so the stages must touch — and more than two stops being a scene.',
+    stageMeta: (st) => st.beats.length + ' beats written',
+    hintTooMany: 'One or two stages only — deselect one first. A scene that spans more stops being a scene.',
+    hintApart: 'Choose stages next to each other — a scene is one continuous stretch of your story.',
+    status1None: 'Choose one or two stages.',
+    status1Some: (n) => '**' + n + ' stage' + (n > 1 ? 's' : '') + '** selected.',
+    beatsLead: "These are your own beats from the stages you chose, in **story order**. Your scene is **one continuous run**: tap the first beat, then tap the last — everything between comes with it. Tap an end beat to trim it back; widen the run at either end any time. When you draft, you can still leave out a beat you don't need — but the run you select stays unbroken.",
+    status2Some: (n) => '**' + n + ' beat' + (n > 1 ? 's' : '') + '** in your run — one continuous stretch, in story order. Enough to cover the 7 elements; too many and the writing goes shallow.',
+    summaryLead: 'This is exactly what will land in your **Scene Structure** (not your plot outline — that stays untouched). Your own words, in story order, moved not retyped. You can go back and change any of it.',
+};
+function rich(s) {
+    return String(s).split('**').map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part));
+}
+
 /* Module-level (stable identity — defined inside the parent they would REMOUNT on every
    parent render and lose their input state). */
 function AddForm({ show, placeholder, buttonLabel, onAdd }) {
@@ -111,6 +135,7 @@ function AskPanel({ elm, ask, remaining, mapNode, onAddMoment, onBack }) {
 
 export default function SceneSelection(props) {
     const { stages, elements, nudgeRules, onStateChange, onTransfer, onClose } = props;
+    const L = Object.assign({}, DEFAULT_LABELS, props.labels || {});   // v7.20.737
 
     // ── state (mirrors the prototype's `state` object) ──
     const [phase, setPhase] = useState(1);
@@ -201,13 +226,13 @@ export default function SceneSelection(props) {
         }
         if (stageIds.length >= 2) {
             setShakeId(st.id);
-            setStageHint('One or two stages only — deselect one first. A scene that spans more stops being a scene.');
+            setStageHint(L.hintTooMany);
             setTimeout(() => setShakeId(null), 350);
             return;
         }
         if (stageIds.length === 1 && Math.abs(stageIdx(stageIds[0]) - stageIdx(st.id)) !== 1) {
             setShakeId(st.id);
-            setStageHint('Choose stages next to each other — a scene is one continuous stretch of your story.');
+            setStageHint(L.hintApart);
             setTimeout(() => setShakeId(null), 350);
             return;
         }
@@ -407,8 +432,8 @@ export default function SceneSelection(props) {
     const renderStages = () => (
         <section className="phase is-live">
             <p className="eyebrow">Step 1 of 3</p>
-            <h2>Which part of your story is the scene from?</h2>
-            <p className="lead">Choose <strong>one or two stages next to each other</strong> — two works well when your scene sits across a boundary, like the end of Stage I and the start of Stage II. A scene is one continuous stretch of your story, so the stages must touch — and more than two stops being a scene.</p>
+            <h2>{L.stagesH2}</h2>
+            <p className="lead">{rich(L.stagesLead)}</p>
             <div className="stage-grid">
                 {stages.map((st) => (
                     <button type="button" key={st.id}
@@ -416,7 +441,7 @@ export default function SceneSelection(props) {
                         onClick={() => tapStage(st)}>
                         <div className="roman">{st.roman}</div>
                         <div className="name">{st.name}</div>
-                        <div className="meta">{st.beats.length} beats written</div>
+                        <div className="meta">{L.stageMeta(st)}</div>
                     </button>
                 ))}
             </div>
@@ -484,7 +509,7 @@ export default function SceneSelection(props) {
             <section className="phase is-live">
                 <p className="eyebrow">Step 2 of 3</p>
                 <h2>Which beats will your scene cover?</h2>
-                <p className="lead">These are your own beats from the stages you chose, in <strong>story order</strong>. Your scene is <strong>one continuous run</strong>: tap the first beat, then tap the last — everything between comes with it. Tap an end beat to trim it back; widen the run at either end any time. When you draft, you can still leave out a beat you don't need — but the run you select stays unbroken.</p>
+                <p className="lead">{rich(L.beatsLead)}</p>
                 {renderStrip()}
                 <div ref={beatAreaRef}
                     onPointerDown={(e) => {
@@ -698,7 +723,7 @@ export default function SceneSelection(props) {
         <section className="phase is-live">
             <p className="eyebrow">Check it over</p>
             <h2>Your scene, element by element</h2>
-            <p className="lead">This is exactly what will land in your <strong>Scene Structure</strong> (not your plot outline — that stays untouched). Your own words, in story order, moved not retyped. You can go back and change any of it.</p>
+            <p className="lead">{rich(L.summaryLead)}</p>
             <div className="panel">
                 {elements.map((elm, i) => {
                     const chips = ranges[i].pending ? [] : runBeats.slice(ranges[i].start, ranges[i].end);
@@ -739,12 +764,12 @@ export default function SceneSelection(props) {
     let statusNode, nextLabel, nextDisabled;
     if (phase === 1) {
         const n = stageIds.length;
-        statusNode = n ? <><strong>{n} stage{n > 1 ? 's' : ''}</strong> selected.</> : 'Choose one or two stages.';
+        statusNode = n ? <>{rich(L.status1Some(n))}</> : L.status1None;
         nextLabel = 'Continue'; nextDisabled = !n;
     } else if (phase === 2) {
         const n = runBeats.length;
         statusNode = n
-            ? <><strong>{n} beat{n > 1 ? 's' : ''}</strong> in your run — one continuous stretch, in story order. Enough to cover the 7 elements; too many and the writing goes shallow.</>
+            ? <>{rich(L.status2Some(n))}</>
             : 'Tap the first beat of your scene, then the last — the run in between comes with it.';
         nextLabel = 'Continue'; nextDisabled = !n;
     } else if (phase === 3) {
@@ -773,12 +798,12 @@ export default function SceneSelection(props) {
                     <div className="ssi-head">
                         <div>
                             <h1>Choose the scene you’ll write</h1>
-                            <p className="sub">Your exam story is one <strong>scene</strong> — a mini story with the same structure. Pick the part of your plot it will cover, then shape it into the 7 elements.</p>
+                            <p className="sub">{rich(L.sub)}</p>
                         </div>
                         <button type="button" className="ssi-close" aria-label="Close" onClick={onClose}>✕</button>
                     </div>
                     <div className="stepper">
-                        {[['1', 'Pick your stage(s)'], ['2', 'Pick your beats'], ['3', 'Shape the scene']].map(([n, label]) => {
+                        {L.steps.map((label, i) => [String(i + 1), label]).map(([n, label]) => {
                             const k = +n;
                             const live = k === Math.min(phase, 3);
                             const done = k < phase;

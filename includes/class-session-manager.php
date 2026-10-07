@@ -45,6 +45,12 @@ class SWML_Session_Manager {
             // Poetry poem selection
             'poem'            => sanitize_key($params['poem'] ?? ''),
             'poem_title'      => sanitize_text_field($params['poem_title'] ?? ''),
+            // v7.20.737 (PEDAGOGY §55): a CW step run as a weekend-story lesson (router appends the unit note)
+            'cw_unit'         => in_array($params['cw_unit'] ?? '', ['weekend'], true) ? $params['cw_unit'] : '',
+            // The unit's word targets, RESOLVED by the client's one board→target map (wml-core
+            // CW_WORD_TARGETS) and echoed here so the server never holds a second copy of it.
+            'cw_words_d1'     => preg_replace('/[^0-9~\x{2013}-]/u', '', (string) ($params['cw_words_d1'] ?? '')),
+            'cw_words_exam'   => preg_replace('/[^0-9~\x{2013}-]/u', '', (string) ($params['cw_words_exam'] ?? '')),
         ];
 
         if ($mode === 'guided' && $unit_id) {

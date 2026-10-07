@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.736
+ * Version: 7.20.737
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.736');
+define('SWML_VERSION', '7.20.737');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -901,6 +901,7 @@ class Sophicly_Writing_Mastery_Lab {
             'fq_stage' => '',
             'cn_stage' => '',
             'author'   => '',   // v7.20.589: live-modelling designated author (uid)
+            'unit'     => '',   // v7.20.737: CW unit variant — 'weekend' (PEDAGOGY §55)
         ], $atts, 'writing_mastery_lab');
 
         $post_id = get_the_ID();
@@ -1152,6 +1153,12 @@ class Sophicly_Writing_Mastery_Lab {
             'fqStage'     => $fq_stage,  // v7.19.952: per-lesson FQ stage (bridge, unified fq_stage=N)
             'fqRoundSize' => $fq_round_size, // v7.19.968: boot-time round size (first-paint sidebar)
             'cnStage'     => $cn_stage,  // v7.20.38: per-lesson CN stage (anthology staged-delivery)
+            // v7.20.737 (PEDAGOGY §55): the weekend story runs CW steps as lessons of its own unit.
+            // Whitelisted, never free text. The board is captured HERE because the client pins every
+            // CW lesson to `universal` (canvas keys depend on it) — this is the only place the
+            // student's exam board is still known, and the unit's word targets are keyed on it.
+            'cwUnit'      => in_array($atts['unit'], ['weekend'], true) ? $atts['unit'] : '',
+            'cwExamBoard' => in_array($atts['unit'], ['weekend'], true) ? $board : '',
         ];
 
         // v7.20.634 (#588): the Mark Complete gate — its mode, a one-shot "the server refused a

@@ -90,6 +90,10 @@
         if (embedConfig.fqStage) state.fqStage = embedConfig.fqStage;
         // v7.20.38: per-lesson CN stage (anthology staged-delivery). Independent of fqStage.
         if (embedConfig.cnStage) state.cnStage = embedConfig.cnStage;
+        // v7.20.737 (PEDAGOGY §55): weekend-story unit + the student's exam board (the CW pin
+        // overwrites state.board with `universal`, so the board rides separately).
+        state.cwUnit = embedConfig.cwUnit || '';
+        state.cwExamBoard = embedConfig.cwExamBoard || '';
         // v7.19.968 (Neil C): server-computed FQ round size → the sidebar shows the REAL
         // step count from FIRST PAINT (no 5-step placeholder that morphs mid-lesson). The
         // quiz controller's _syncFqSidebar remains the self-heal if the served round differs.
@@ -558,6 +562,8 @@
                         topic_number: state.topicNumber || 0, topic_label: state.topicLabel || '',
                         draft_type: state.draftType || '', phase: state.phase || '',
                         poem: state.poem || '', poem_title: state.poemTitle || '',
+                        cw_unit: state.cwUnit || '',   // v7.20.737: weekend-story unit note (router)
+                        cw_words_d1: WML.cwWordTarget('d1'), cw_words_exam: WML.cwWordTarget('exam'),
                     })).then(res => {
                         if (res.session_id) { state.sessionId = res.session_id; state.chatId = res.session_id; }
                         console.log('WML Embedded: Session created for training env, task=' + state.task);
@@ -3087,6 +3093,8 @@
                 // Poetry poem selection
                 poem: state.poem || '',
                 poem_title: state.poemTitle || '',
+                cw_unit: state.cwUnit || '',   // v7.20.737: weekend-story unit note (router)
+                cw_words_d1: WML.cwWordTarget('d1'), cw_words_exam: WML.cwWordTarget('exam'),
                 // EDUQAS poetry section
                 question_part: state.questionPart || '',
                 comparison_poem: state.comparisonPoem || '',
@@ -7944,6 +7952,9 @@ Before marking the introduction, ask the student to confirm their essay structur
             state.fqStage     = cfg.fqStage || 0;
             // v7.20.38: CN stage re-set unconditionally (never leak across SPA-navigated lessons).
             state.cnStage     = cfg.cnStage || 0;
+            // v7.20.737: the weekend-story unit flag never leaks into a full-course lesson.
+            state.cwUnit      = cfg.cwUnit || '';
+            state.cwExamBoard = cfg.cwExamBoard || '';
             // v7.19.954: dynamic FQ sidebar length — never leak across lessons.
             // v7.19.968 (Neil C): seed from the server-computed round size so SPA-navigated
             // FQ lessons also paint the real step count immediately (0 when not an FQ lesson).

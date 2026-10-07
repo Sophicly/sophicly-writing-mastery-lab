@@ -47,7 +47,7 @@ ok(/fidPrefix: 'cw-step-13-'/.test(CFG13) && /stateKey: 'scene_selection_2_state
     'Step 13 is bound to its OWN keys, merges from Step 12\'s ledger, and names Step 14 as next');
 // the greeting/intro consts the cfg literals reference
 const consts = (name) => { const i = SRC.indexOf('const ' + name + ' = '); const e = SRC.indexOf('\n            const ', i + 5); return SRC.slice(i, e < 0 ? SRC.indexOf(';\n', i) + 2 : e); };
-const CONSTS = ['CW9_GREETING', 'CW9_INTRO', 'CW13_GREETING', 'CW13_INTRO'].map(consts).join('\n');
+const CONSTS = ['CW9_GREETING', 'CW9_INTRO', 'CW9_UNIT', 'CW13_GREETING', 'CW13_INTRO'].map(consts).join('\n');   // v7.20.737: Step 9's cfg now names its unit variant
 
 // A minimal DOMParser: the walk reads the saved plot from HTML via querySelectorAll on
 // [data-outline-row][data-field-id]. The fixture is built to that exact shape.

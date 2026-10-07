@@ -148,7 +148,7 @@ ok('the seed only ever fills an EMPTY draft box — polishing is never overwritt
 ok('the seed has a fallback source, so one failed artifact write cannot empty Step 10',
     /recovered the scene from the Step-9 document instead/.test(SRC));
 ok('a failed artifact save tells the STUDENT, it does not just log',
-    /so ' \+ cfg\.nextStep \+ ' will not open with it yet/.test(SRC) && /nextStep: 'Step 10'/.test(SRC));
+    /so ' \+ nextStep\(\) \+ ' will not open with it yet/.test(SRC) && /nextStep: 'Step 10'/.test(SRC));   // v7.20.737: nextStep() = the unit variant's name, else cfg's
 ok('empty elements are NAMED before a transfer is refused (§4d: a refusal states the way forward)',
     /still empty: \*\*/.test(SRC));
 ok('the draft box carries the composition flag for the word counter',
@@ -158,7 +158,7 @@ ok('…and that flag is a real schema attr on BOTH canvases (or it dies on the f
 ok('liveness: after the overview there is always a way forward to the write-out',
     /What do I do now\? →/.test(SRC));
 ok('the write-out advice is paced one bubble at a time (§4b), not a wall',
-    /serveCwChunks\(WRITEOUT, \{ emit: aiBubble, startAt: at, onDone: writeOutChips \}\)/.test(SRC));
+    /serveCwChunks\(WRITEOUT\(\), \{ emit: aiBubble, startAt: at, onDone: writeOutChips \}\)/.test(SRC));   // v7.20.737: built at serve time (board word target)
 ok('Step 10 tells the truth when the box is empty, on a page with no chat to ask in',
     /If the box below is empty, go back to Step 9/.test(SRC));
 

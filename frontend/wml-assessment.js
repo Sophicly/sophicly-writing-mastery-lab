@@ -5967,6 +5967,36 @@
         // it is reading an incomplete plan — and the Story Spine rail panel now shows it too.
         { fid: 'cw-step-4-throughline', label: 'Dramatic Throughline' },
     ];
+    // @CW-SPINE-WORLD-PURE-BEGIN
+    // ⭐ v7.20.737 — THE WEEKEND STORY'S SCENE COMES FROM THE SPINE (PEDAGOGY §55, §34.3;
+    // EMERGENCY-CW-UNIT-SPEC §5). The unit does no plot work, so `plot_outline` is never written and
+    // the scene picker would otherwise ask a student to choose from nothing (the spec's "single
+    // highest-risk point"). The six spine beats ARE the story plan, so each becomes one pickable
+    // card — the same island, the same 1-or-2-adjacent rule, now over beats instead of plot stages.
+    // KEYS (§5d, traced): Step 4 saves its document as `brief_outline` (CW_ARTIFACT_MAP[4]); the
+    // spec's "story_spine" is rows `cw-step-4-beat1..6` of it and its "dramatic_throughline" is row
+    // `cw-step-4-throughline` — neither name exists as a key. Pure: map in → world out, so
+    // bin/weekend-story-harness.js runs it against real-shaped maps.
+    const CW_SPINE_POSITIONS = ['Beginning (Beats 1–2)', 'Middle (Beats 3–4)', 'End (Beats 5–6)'];
+    function _cwSpineWorld(map) {
+        const out = { arch: null, stages: [], stageTotal: 6, positions: CW_SPINE_POSITIONS };
+        const m = map || {};
+        let ord = 0;
+        CW_STEP4_SPINE.forEach(function (row) {
+            const mm = /^cw-step-4-beat([1-6])$/.exec(row.fid);
+            if (!mm) return;
+            const text = String(m[row.fid] || '').trim();
+            if (!text) return;                        // only beats WITH the student's words (as the plot picker)
+            const n = +mm[1];
+            const lead = String(row.label).split(' — ')[1] || row.label;
+            ord++;
+            out.stages.push({ id: 'spine-beat-' + n, si: n - 1, roman: 'Beat ' + n, name: lead,
+                beats: [{ id: row.fid, ord: ord, label: lead, text: text }] });
+        });
+        if (out.stages.length) out.arch = 'story-spine';
+        return out;
+    }
+    // @CW-SPINE-WORLD-PURE-END
     // One cache per source artifact: { artifactKey: { id: projectId, map: {fid: text} } }.
     const _cwDocCache = {};
     // ═══════════════════════════════════════════════════════════════════════════════════════
@@ -6328,6 +6358,13 @@
         9: ['plot_outline'], 10: ['plot_outline', 'scene_selection'],
         13: ['plot_outline'],   // v7.20.568 (#440): the Draft-2 scene selection
     };
+    // ⭐ v7.20.737 (PEDAGOGY §55): in a weekend-story lesson the plot outline never exists — the
+    // unit's story plan is the Story Spine, saved in `brief_outline` (EMERGENCY-CW-UNIT-SPEC §5).
+    // The DEPENDENCY stays declared above (one map); only its SOURCE is swapped, and only in a unit.
+    const CW_UNIT_DEP_SOURCE = { plot_outline: 'brief_outline' };
+    function _cwDepSource(key) {
+        return (WML.cwInUnit && WML.cwInUnit() && CW_UNIT_DEP_SOURCE[key]) || key;
+    }
     function _cwDepLabel(key) { return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
     function _cwDepTag(key) { return '[CONTEXT FROM PREVIOUS STEP] ' + _cwDepLabel(key) + ':'; }
 
@@ -6341,7 +6378,13 @@
         const deps = CW_STEP_DEPS[stepNum];
         if (!deps || !projectId || !Array.isArray(history)) return null;
         let missing = null;
-        for (const key of deps) {
+        // v7.20.737: a unit lesson swaps a dependency's SOURCE (plot_outline → the spine); two deps
+        // resolving to one source are primed once.
+        const _seen = {};
+        for (const depKey of deps) {
+            const key = _cwDepSource(depKey);
+            if (_seen[key]) continue;
+            _seen[key] = true;
             const tag = _cwDepTag(key);
             try {
                 const art = await WML.cwProject.loadArtifact(projectId, key);
@@ -24565,6 +24608,18 @@
             // bubble — the run's own intro, and the hand-off into the three formulas — and both
             // used to land as a wall. Each extra bubble is now gated behind a Continue tap; the
             // ask is always LAST and never carries a chip.
+            // v7.20.737 (PEDAGOGY §55): one ask here points forward to a lesson the weekend story does not
+            // have (the stunning surprise is built in Step 6, and the unit does no plot work). The text is
+            // edited where it is SERVED, never in STEPS — the literal is what the gates read, and the full
+            // course must keep it. bin/weekend-story-harness.js proves each edit still matches.
+            const UNIT_ASK_EDITS = [
+                ['arrives at the **stunning surprise**, and you’ll build that in Step 6.', 'often arrives a little later in the story.'],
+            ];
+            function askOf(st) {
+                let t = st.ask;
+                if (WML.cwInUnit && WML.cwInUnit()) UNIT_ASK_EDITS.forEach(function (ed) { t = t.split(ed[0]).join(ed[1]); });
+                return t;
+            }
             function chunksFor(i, withIntro) {
                 const out = [];
                 if (withIntro) { out.push(SEG.intro); out.push(SEG.intro2); }
@@ -24575,7 +24630,7 @@
                     out.push(SEG.formulas_intro + '\n\n' + lines.join('\n'));
                     out.push(SEG.formulas_bridge);
                 }
-                out.push(STEPS[i].ask);
+                out.push(askOf(STEPS[i]));
                 return out;
             }
 
@@ -24838,7 +24893,7 @@
                 _walkSlot.arm('cw3', st.fid, { cycle: st.cycle });
                 aiBubble('Before you choose — your **' + st.label + '** box is still empty, and all three matter: '
                     + 'each lens shows you something different about the same story, and in a moment you choose between them.\n\n'
-                    + '---\n\n' + st.ask);
+                    + '---\n\n' + askOf(st));
                 appendStepButtons(i);
                 persist(); resetSend();
             }
@@ -24858,7 +24913,7 @@
                 aiBubble('⚠️ Hold on — that is word-for-word what you wrote for your **' + dupLabel + '**.\n\n'
                     + 'Each block does a different job, so one sentence cannot honestly answer two of them. '
                     + 'Nothing has been filed. Here is the question again — give this block its own answer.\n\n---\n\n'
-                    + step.ask);
+                    + askOf(step));
                 appendStepButtons(STEPS.indexOf(step));
                 persist(); resetSend();
             }
@@ -30916,6 +30971,24 @@
         // plan line. Everything step-specific rides on `cfg`; the body is Step 9's, unchanged.
         function makeCwSceneCtl(cfg) {
             const WALK = cfg.walk;
+            // ⭐ v7.20.737 — THE UNIT VARIANT (PEDAGOGY §55, EMERGENCY-CW-UNIT-SPEC §3: "ONE protocol
+            // source + a variant switch, never a copied file"). In a weekend-story lesson `cfg.unit`
+            // overrides the words and the world source; everything else is this walk, unchanged.
+            // Read at RUN time — SPA navigation can move the same page-load between a unit lesson
+            // and a full-course one, so nothing here may be decided once at construction.
+            function U() { return (cfg.unit && WML.cwInUnit && WML.cwInUnit()) ? cfg.unit : null; }
+            function nextStep() { const u = U(); return (u && u.nextStep) || cfg.nextStep; }
+            // The world the picker offers: plot stages (full project) or the spine's beats (unit).
+            async function loadWorld(pid) {
+                if (!pid) return { arch: null, stages: [] };
+                if (U()) {
+                    const map = await _cwLoadDocValues(pid, 'brief_outline', true);
+                    return _cwSpineWorld(map);
+                }
+                let art = null;
+                try { art = await WML.cwProject.loadArtifact(pid, 'plot_outline'); } catch (e) {}
+                return enumerateFromArtifact((art && art.success && art.value) || '');
+            }
             // The 7 elements — labels/prompts byte-matched to the Scene Structure doc builder
             // (the outlineRowHTML rows above); hues are Neil's element→colour ruling (#204
             // addendum 10; a brand pass may re-pitch hexes, the MAPPING stays).
@@ -31142,13 +31215,16 @@
 
             function derivePlotPosition(stageIds) {
                 if (!world || !world.stages.length || !stageIds || !stageIds.length) return null;
-                const total = Math.max.apply(null, world.stages.map(function (s) { return s.si; })) + 1;
+                // v7.20.737: the spine world is always SIX beats long, whichever are written — so its
+                // thirds never shift when a beat is still empty; and its labels name beats, not stages.
+                const total = world.stageTotal || (Math.max.apply(null, world.stages.map(function (s) { return s.si; })) + 1);
                 const first = world.stages.filter(function (s) { return stageIds.indexOf(s.id) !== -1; })[0];
                 if (!first || !total) return null;
                 const frac = first.si / total;
-                if (frac < 1 / 3) return 'Beginning (Stages I–II)';
-                if (frac < 2 / 3) return 'Middle (Stages III–IV)';
-                return 'End (Stages V–VI)';
+                const pos = world.positions || ['Beginning (Stages I–II)', 'Middle (Stages III–IV)', 'End (Stages V–VI)'];
+                if (frac < 1 / 3) return pos[0];
+                if (frac < 2 / 3) return pos[1];
+                return pos[2];
             }
 
             // Neil's Scene glyph (frontend/icons/scene.svg, supplied 2026-08-10) — inlined so a
@@ -31218,8 +31294,10 @@
             // ⚠️ The greeting must NOT match the launch-prompt detector (wml-app.js:
             // /hit the button below|let's get started|let's begin|ready to (begin|start|…)/i)
             // or the detector adds a SECOND "▶ Let's go" — the exact double Neil saw.
-            const GREETING = cfg.greeting;
-            const INTRO = cfg.intro;
+            // v7.20.737: getters, not constants — the unit variant is decided at run time (U()).
+            // A unit `intro` is a FUNCTION so its word target resolves against the live board.
+            function GREETING() { const u = U(); return (u && u.greeting) || cfg.greeting; }
+            function INTRO() { const u = U(); return (u && u.intro) ? u.intro() : cfg.intro; }
             // How far through the intro is the TRANSCRIPT? Durable turns replay, so position is
             // doc-derived — a reload resumes at the exact next chunk, never from the top (§4c.8b).
             function introProgress() {
@@ -31231,13 +31309,14 @@
                     const sig = String(t).slice(0, len || 60);
                     return h.some(function (m) { return m && m.role === 'assistant' && String(m.content || '').indexOf(sig) === 0; });
                 };
-                if (!has(GREETING, 100)) return -1;               // nothing served yet
+                if (!has(GREETING(), 100)) return -1;             // nothing served yet
+                const chunks = INTRO();
                 let n = 0;
-                while (n < INTRO.length && has(INTRO[n])) n++;
+                while (n < chunks.length && has(chunks[n])) n++;
                 return n;                                          // chunks already in transcript
             }
             function serveIntroFrom(n) {
-                serveCwChunks(INTRO, { emit: aiBubble, startAt: n, onDone: ensureChip });
+                serveCwChunks(INTRO(), { emit: aiBubble, startAt: n, onDone: ensureChip });
             }
 
             function start() {
@@ -31246,14 +31325,18 @@
                 (async function () {
                     const pid = state.cwProjectId;
                     let w = { arch: null, stages: [] };
-                    if (pid) {
-                        try {
-                            const art = await WML.cwProject.loadArtifact(pid, 'plot_outline');
-                            w = enumerateFromArtifact((art && art.success && art.value) || '');
-                        } catch (e) {}
-                    }
+                    try { w = await loadWorld(pid); } catch (e) {}
                     if (!w.arch || !w.stages.length) {
                         // EPHEMERAL gate (the .284 rule) — re-derives on every entry, never persisted.
+                        const u = U();
+                        if (u) {
+                            // v7.20.737: the unit has no Steps page to go back to (its lessons live in
+                            // the course sidebar), so the way forward is a re-check that re-derives —
+                            // §4d: a chip on screen, never a dead end.
+                            noteBubble(u.noBeatsGate);
+                            chipBar([{ label: 'I’ve finished my Story Spine — check again', go: function () { introServed = false; start(); } }]);
+                            return;
+                        }
                         noteBubble(cfg.stepTitle + '\n\nI can’t find any written beats in your plot outline yet — this step selects a scene FROM that outline, so it needs Step 6 (and ideally Steps 7–8) done first.\n\nPlease go back and write your plot outline, then come back here.');
                         chipBar([{ label: 'Back to Steps', go: function () { try { closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); } catch (e) {} } }]);
                         return;
@@ -31261,9 +31344,9 @@
                     world = w;
                     const at = introProgress();
                     if (at === -1) {
-                        aiBubble(GREETING);
+                        aiBubble(GREETING());
                         chipBar([{ label: '▶ Let’s go', go: function () { serveIntroFrom(0); } }]);
-                    } else if (at < INTRO.length) {
+                    } else if (at < INTRO().length) {
                         chipBar([{ label: 'Continue →', go: function () { serveIntroFrom(at); } }]);
                     } else {
                         ensureChip();
@@ -31281,12 +31364,12 @@
                 }
                 const pid = state.cwProjectId;
                 if (!pid) { noteBubble('I can’t find your story project on this page — open this step from your Creative Writing dashboard.'); ensureChip(); return; }
-                let art = null;
-                try { art = await WML.cwProject.loadArtifact(pid, 'plot_outline'); } catch (e) {}
                 // EVERY open re-reads the CURRENT plot (#204 addendum 12) — upstream edits appear.
-                const w = enumerateFromArtifact((art && art.success && art.value) || '');
+                // v7.20.737: …or the current Story Spine, in a weekend-story lesson (loadWorld).
+                let w = { arch: null, stages: [] };
+                try { w = await loadWorld(pid); } catch (e) {}
                 if (!w.arch || !w.stages.length) {
-                    noteBubble('Your plot outline has no written beats right now — finish Step 6 first, then come back.');
+                    noteBubble(U() ? U().noBeatsOpen : 'Your plot outline has no written beats right now — finish Step 6 first, then come back.');
                     ensureChip();
                     return;
                 }
@@ -31299,6 +31382,7 @@
                 opened = true;
                 window.WMLSceneIsland.mount({
                     stages: w.stages,
+                    labels: U() ? U().islandLabels : undefined,   // v7.20.737: beats, not stages
                     elements: ELEMENTS,
                     nudgeRules: NUDGE_RULES,
                     initial: ini.value,
@@ -31372,7 +31456,7 @@
                     const merged = cfg.mergeFrom ? payload.elements.reduce(function (n, pe) { return n + pe.beats.filter(function (b) { return !!proseFor(b.id); }).length; }, 0) : 0;
                     if (filedEls.length) parts.push('I’ve filed your scene into the Scene Structure — ' + beatTotal + ' beat' + (beatTotal === 1 ? '' : 's') + (addTotal ? ' plus ' + addTotal + ' added moment' + (addTotal === 1 ? '' : 's') : '') + ', in story order, in your own words.'
                         + (merged ? ' **' + merged + ' of them arrived with your Draft 1 prose already in** — nothing you wrote is lost; only the new beats are still your plan lines.' : '')
-                        + ' Your plot outline is untouched.');
+                        + (U() ? ' Your Story Spine is untouched.' : ' Your plot outline is untouched.'));
                     if (pendingConflicts.length) parts.push('You’ve edited ' + pendingConflicts.length + ' element' + (pendingConflicts.length === 1 ? '' : 's') + ' since the last transfer — I’ll check those with you one at a time when you close the picker, so nothing of yours is overwritten.');
                     if (parts.length) aiBubble(parts.join('\n\n'));
                     // IN ORDER (his words): the overview follows the transfer. When elements are
@@ -31501,11 +31585,15 @@
             // Style guidance is DERIVED from the Step-10 protocol's own stylistic principles
             // (protocols/shared/creative-writing/CW-STEP-10-draft-1-prose-style.md §1.3) — its
             // worked contrasts, not invented ones (§5c: student content derives from the protocols).
-            const WRITEOUT = [
+            // v7.20.737: built at SERVE time — the Draft-1 word target is the student's board's (one map,
+            // WML.cwWordTarget; the full project resolves to the same figure it always said) and the
+            // next-lesson name follows the unit variant. Chunk openings are unchanged, so the 60-char
+            // transcript probes below still find chunks served before this change.
+            function WRITEOUT() { return [
                 'Your scene is filed. Every beat you chose is sitting in the seven elements above, in story order, in your own words.\n\nWhat is in those boxes right now is shorthand — the plan. **Those seven elements are your scene**, and the next job is to turn each one into real sentences.',
-                '**Write each element out, in the document above.**\n\nWork down the seven boxes and expand what is in each one into proper prose:\n\n- **Concrete nouns, dynamic verbs.** *She darted across the kitchen* — not *she went quickly across the room*.\n- **Show it happening**, rather than reporting it. *His fist tightened around the strap of his bag* — not *he was angry*.\n- **Around 450–600 words** across the whole scene.\n\nRough is fine. Getting it down beats getting it perfect — polishing is exactly what ' + cfg.nextStep + ' is for.',
-                '**When you are happy with all seven, tap Transfer my scene.**\n\nI will join them into one continuous piece of prose — no labels, no headings, just your story — and put it at the bottom of this document so you can read it the way a reader would.\n\nThat is what **' + cfg.nextStep + '** opens with, waiting for you to polish.',
-            ];
+                '**Write each element out, in the document above.**\n\nWork down the seven boxes and expand what is in each one into proper prose:\n\n- **Concrete nouns, dynamic verbs.** *She darted across the kitchen* — not *she went quickly across the room*.\n- **Show it happening**, rather than reporting it. *His fist tightened around the strap of his bag* — not *he was angry*.\n- **Around ' + WML.cwWordTarget('d1') + ' words** across the whole scene.\n\nRough is fine. Getting it down beats getting it perfect — polishing is exactly what ' + nextStep() + ' is for.',
+                '**When you are happy with all seven, tap Transfer my scene.**\n\nI will join them into one continuous piece of prose — no labels, no headings, just your story — and put it at the bottom of this document so you can read it the way a reader would.\n\nThat is what **' + nextStep() + '** opens with, waiting for you to polish.',
+            ]; }
 
             // Transcript probes. Both phases resume from the DURABLE transcript, so a reload lands
             // on the exact chunk rather than replaying the advice from the top (§4c.8b).
@@ -31516,15 +31604,15 @@
             }
             function writeOutProgress() {
                 let n = 0;
-                while (n < WRITEOUT.length && _txHas(WRITEOUT[n], 60)) n++;
+                while (n < WRITEOUT().length && _txHas(WRITEOUT()[n], 60)) n++;
                 return n;
             }
             function writeOutServed() { return writeOutProgress() > 0; }
 
             function serveWriteOut() {
                 const at = writeOutProgress();
-                if (at >= WRITEOUT.length) { writeOutChips(); return; }
-                serveCwChunks(WRITEOUT, { emit: aiBubble, startAt: at, onDone: writeOutChips });
+                if (at >= WRITEOUT().length) { writeOutChips(); return; }
+                serveCwChunks(WRITEOUT(), { emit: aiBubble, startAt: at, onDone: writeOutChips });
             }
             function writeOutChips() {
                 return chipBar([
@@ -31571,7 +31659,7 @@
             function draftSectionHTML(paras) {
                 return sectionHTML('response', DRAFT_LABEL, false, null,
                     '<h3>Your Scene</h3>'
-                    + '<p><em>Your seven elements, joined in story order — no labels, just the story. Read it the way a reader would. This is exactly what ' + cfg.nextStep + ' opens with. To change it, edit the elements above and tap Transfer again.</em></p>'
+                    + '<p><em>Your seven elements, joined in story order — no labels, just the story. Read it the way a reader would. This is exactly what ' + nextStep() + ' opens with. To change it, edit the elements above and tap Transfer again.</em></p>'
                     + draftParasHTML(paras));
             }
             function draftSectionExists() {
@@ -31671,11 +31759,11 @@
                     console.warn('WML CW9: no cwProjectId — the joined scene was written to the document but not saved as an artifact.');
                 }
                 if (sent) {
-                    aiBubble('**Transferred — ' + words + ' words.**\n\nYour scene is joined at the bottom of this document under **Your Scene**. Read it once, the way a reader would: does it flow from one moment to the next?\n\nIt is saved, and **' + cfg.nextStep + ' will open with it already written in**, ready for you to polish.');
+                    aiBubble('**Transferred — ' + words + ' words.**\n\nYour scene is joined at the bottom of this document under **Your Scene**. Read it once, the way a reader would: does it flow from one moment to the next?\n\nIt is saved, and **' + nextStep() + ' will open with it already written in**, ready for you to polish.');
                 } else {
                     // FAIL LOUD: the document has it, the next step will not — say so plainly
                     // rather than let a student find an empty Step 10.
-                    noteBubble('**Your scene is joined** at the bottom of this document — but I could not save it to your story, so ' + cfg.nextStep + ' will not open with it yet. Tap **Transfer again** in a moment; if it keeps failing, tell your tutor.');
+                    noteBubble('**Your scene is joined** at the bottom of this document — but I could not save it to your story, so ' + nextStep() + ' will not open with it yet. Tap **Transfer again** in a moment; if it keeps failing, tell your tutor.');
                 }
                 afterDraftChips();
             }
@@ -31711,7 +31799,7 @@
                 // the exact position (liveness §4d + resume-to-the-exact-item §4c.8b).
                 const at = introProgress();
                 if (at === -1) { introServed = false; start(); return true; }
-                if (at < INTRO.length) return chipBar([{ label: 'Continue →', go: function () { serveIntroFrom(at); } }]);
+                if (at < INTRO().length) return chipBar([{ label: 'Continue →', go: function () { serveIntroFrom(at); } }]);
                 // v7.20.500: an unanswered Scene Overview is re-ARMED on resume. The bubble
                 // replays from the durable transcript, but the slot is session state — without
                 // this the student sees the question and their answer goes to the AI instead of
@@ -31725,7 +31813,7 @@
                 // to ensureChip, which now knows the write-out and transfer phases.
                 if (transferDone() && overviewDone() && !draftSectionExists()) {
                     const at = writeOutProgress();
-                    if (at > 0 && at < WRITEOUT.length) {
+                    if (at > 0 && at < WRITEOUT().length) {
                         return chipBar([{ label: 'Continue →', go: serveWriteOut }]);
                     }
                 }
@@ -31754,11 +31842,44 @@
                 'What a lot of students don’t realise is that a **scene is a mini story**. It has the same structure — its own hook, its own setup, reaction, epiphany, proaction, climax and denouement. So one well-chosen scene can do everything a whole story does, at a depth the examiner rewards.\n\nThat’s why we select a scene.',
                 'Here’s how it works:\n\n1. **Pick your stage(s)** — one or two that sit next to each other.\n2. **Pick your beats** — one continuous run: tap the first, tap the last, everything between comes with it.\n3. **Shape the scene** — element by element, decide where each part of your run belongs.\n\nAnd from the moment shaping starts, you can **drag any beat by its ⠿ handle** to change where it goes — nothing is final as you go, and your beats never leave story order. Rough is fine; you can reopen this and change everything later.',
             ];
+            // ⭐ v7.20.737 — Step 9 as LESSON 5 OF THE WEEKEND STORY (PEDAGOGY §55). Same walk, same
+            // island, same filing; the student picks from the six beats of their Story Spine (there
+            // is no plot outline in this unit) and every word on screen says so. No step numbers
+            // (the unit numbers its own lessons), no "plot" or "stage" (words this student was never
+            // taught — root §5c-ii). Chunks 2 and 3 of the intro are the full lesson's, unchanged.
+            const CW9_UNIT = {
+                greeting: 'Welcome to **Choose Your Scene**\n\nYour Story Spine is finished: six beats, each one causing the next. Now we choose the part of it your exam story will actually tell.',
+                intro: function () {
+                    return [
+                        'Here’s why we pick a scene instead of writing the whole story. Examiners have seen that when students try to tell a full story in the exam, the writing goes shallow — there are simply too many events to cover. We’ve seen exactly the same thing.\n\nA full story really needs about 5,000–10,000 words (novels run 50,000–100,000). In your exam you can only write about ' + WML.cwWordTarget('exam') + '.',
+                        CW9_INTRO[1],
+                        'Here’s how it works:\n\n1. **Pick your beat** — one beat of your Story Spine, or two that sit next to each other.\n2. **Mark the run** — tap the first beat of your scene, then the last.\n3. **Shape the scene** — element by element, decide where each part belongs. One sentence of your spine will not fill seven elements on its own, so you will **add in** the moments in between. That is where your scene comes to life.\n\nFrom the moment shaping starts, you can **drag any beat by its ⠿ handle** to change where it goes. Nothing is final as you go. Rough is fine; you can reopen this and change everything later.',
+                    ];
+                },
+                nextStep: 'the next lesson',
+                noBeatsGate: 'Welcome to **Choose Your Scene**\n\nI can’t find the beats of your Story Spine yet. This lesson chooses your scene from those six beats, so your Story Spine needs to be written first.\n\nGo back to the Story Spine lesson, write your beats, then come back here.',
+                noBeatsOpen: 'Your Story Spine has no written beats right now. Write them in the Story Spine lesson first, then come back.',
+                islandLabels: {
+                    sub: 'Your exam story is one **scene** — a mini story with the same structure. Pick the part of your Story Spine it will cover, then shape it into the 7 elements.',
+                    steps: ['Pick your beat', 'Mark the run', 'Shape the scene'],
+                    stagesH2: 'Which beat of your Story Spine is the scene from?',
+                    stagesLead: 'Choose **one beat, or two next to each other**. Two works well when your scene starts near the end of one beat and carries on into the next. A scene is one continuous stretch of your story, so two beats must touch — and more than two stops being a scene.',
+                    stageMeta: function (st) { return (st.beats[0] && st.beats[0].text) || ''; },
+                    hintTooMany: 'One or two beats only — deselect one first. A scene that spans more stops being a scene.',
+                    hintApart: 'Choose beats next to each other — a scene is one continuous stretch of your story.',
+                    status1None: 'Choose one or two beats.',
+                    status1Some: function (n) { return '**' + n + ' beat' + (n > 1 ? 's' : '') + '** selected.'; },
+                    beatsLead: 'These are the beats you chose, in **story order**. Your scene is **one continuous run**: tap the first beat, then tap the last. If you chose two beats, you can keep both or use just one.',
+                    status2Some: function (n) { return '**' + n + ' beat' + (n > 1 ? 's' : '') + '** in your run. Next you shape them into the 7 elements, adding in the moments in between.'; },
+                    summaryLead: 'This is exactly what will land in your **Scene Structure**. Your Story Spine stays untouched. Your own words, in story order, moved not retyped. You can go back and change any of it.',
+                },
+            };
             const _cw9SceneCtl = makeCwSceneCtl({
                 task: 'cw_step_9', walk: 'cw9', fidPrefix: 'cw-step-8-',
                 stateKey: 'scene_selection_state', draftKey: 'scene_draft',
                 nextStep: 'Step 10', stepTitle: 'Welcome to Step 9: **Scene Selection**',
                 greeting: CW9_GREETING, intro: CW9_INTRO, mergeFrom: null, displayText: null,
+                unit: CW9_UNIT,
             });
             // ⭐ v7.20.568 (#440, Neil): "they'll need to decide again for draft two which beats they're
             // going to write about, and they'll need to see that … another exercise after step twelve,
@@ -55350,7 +55471,19 @@
 
         // ── Step 9: Scene Selection (v7.13.74: full workbook match) ──
         if (step === 9) {
-            html += sectionHTML('question', 'About This Step', false, null,
+            // ⭐ v7.20.737 (PEDAGOGY §55): as lesson 5 of the weekend story the page teaches the same
+            // scene principles without the parts that assume a plot outline (the Hero's Journey
+            // stage, "stages are arcs") — the student has a six-beat Story Spine and nothing else.
+            const _unit = !!(WML.cwInUnit && WML.cwInUnit());
+            if (_unit) html += sectionHTML('question', 'About This Lesson', false, null,
+                '<h2>Choose Your Scene</h2>' +
+                '<p>In the exam you almost certainly won\u2019t have time to write a complete story from beginning to end. So you write <strong>one scene</strong>: a single part of your story, told in full, that reads as a story of its own.</p>' +
+                '<p><strong>Keep these three ideas in mind:</strong></p>' +
+                '<p><strong>1. Know where you are in the story.</strong> Notice whether your scene comes from the beginning, middle or end of your Story Spine. Your protagonist should be at that point in their journey.</p>' +
+                '<p><strong>2. Choose a moment that carries weight.</strong> The strongest scenes show a moment of change \u2014 a decision that can\u2019t be undone, or a discovery that alters everything.</p>' +
+                '<p><strong>3. A scene is built from small moments.</strong> One beat of your Story Spine is one sentence. Your scene opens it up into the moments inside it \u2014 action, reaction and change.</p>'
+            );
+            else html += sectionHTML('question', 'About This Step', false, null,
                 '<h2>Step 9: Pick the Scene(s) You Want to Focus On</h2>' +
                 '<p><strong>The Hero\u2019s Journey Stage:</strong> Selecting the Most Dramatically Powerful Moment \u2014 the scene you\u2019ll bring to life first.</p>' +
                 '<p>In the exam, you almost certainly won\u2019t have time to write a complete story from beginning to end. Instead, you have two options: write a short story with a compressed arc, or focus on one or two key scenes that read as a self-contained narrative. Either approach can achieve top marks \u2014 but both require careful planning.</p>' +
@@ -55373,7 +55506,9 @@
                 // the row from ticking. `controlOnly` + no `prompt` is the existing, tested
                 // idiom (CTL.controlOnly, wml-core.js ~5071); existing docs are brought to this
                 // shape by migrateStep9PlotPositionControlOnly (the baked-scaffold law).
-                outlineRowHTML({ id: 'plot-position', label: 'Part of the Plot', type: 'dropdown', items: ['Beginning (Stages I\u2013II)', 'Middle (Stages III\u2013IV)', 'End (Stages V\u2013VI)'], controlOnly: true }, 'cw-step-8-plot-position') +
+                (_unit
+                    ? outlineRowHTML({ id: 'plot-position', label: 'Part of the Story', type: 'dropdown', items: CW_SPINE_POSITIONS.slice(), controlOnly: true }, 'cw-step-8-plot-position')
+                    : outlineRowHTML({ id: 'plot-position', label: 'Part of the Plot', type: 'dropdown', items: ['Beginning (Stages I\u2013II)', 'Middle (Stages III\u2013IV)', 'End (Stages V\u2013VI)'], controlOnly: true }, 'cw-step-8-plot-position')) +
                 // v7.20.500 (#204 add.21): this was a bare <p> with no fieldId \u2014 which is WHY the
                 // walk could skip it (Neil: "the structure of the walk has allowed me to skip it").
                 // Nothing can gate on, file into, or resume an anonymous paragraph. As a real row it

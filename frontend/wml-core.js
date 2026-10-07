@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.736';
+var WML_BUILD = '7.20.737';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1560,6 +1560,31 @@ window.WML = (function() {
     // *"it transfers all of it as just prose with no labels into some sort of area that the student
     // can check. And then that area will then seed step ten."*
     const CW_SEED_FROM = { 10: 'scene_draft', 14: 'scene_draft_2' };   // v7.20.568 (#440): Step 13 → Draft 2
+
+    // ⭐ v7.20.737 — THE WEEKEND STORY (PEDAGOGY §55, WEEKEND-STORY-PLAN.md). A lesson whose
+    // shortcode carries `unit="weekend"` runs a CW step as a lesson of the eight-lesson weekend
+    // unit: no plot work (PEDAGOGY §34.3), so Steps 5–8 never run and the story plan is Step 4's
+    // six-beat spine. ONE predicate, read by every unit variant — never a per-step literal.
+    const CW_UNITS = ['weekend'];
+    function cwUnit() { return CW_UNITS.indexOf(state.cwUnit) !== -1 ? state.cwUnit : ''; }
+    function cwInUnit() { return !!cwUnit(); }
+    // ONE board → word-target map (PEDAGOGY §34.2, EMERGENCY-CW-UNIT-SPEC §4). The full project has
+    // no exam board (its lessons are pinned `universal`), so it always reads `_default` — the
+    // numbers its copy already used. Only a unit lesson knows the student's board (the course's
+    // board, captured before the CW pin as `cwExamBoard`). Printed on the paper: Cambridge 0500 P2
+    // Section B "350–450 words" (all 40 past papers) · Eduqas C700U10 Section B "450–600 words"
+    // (June 2023 QP). Every other board prints no figure and keeps our ladder until its lane rules.
+    // `exam` = the length of the whole exam piece (the Step-9 intro's "about 650–700").
+    const CW_WORD_TARGETS = {
+        _default:          { d1: '450–600', d2: '~700', d3: '650–750', exam: '650–700' },
+        'cambridge-igcse': { d1: '350–450', d2: '350–450', d3: '350–450', exam: '350–450' },
+        eduqas:            { d1: '450–600', d2: '450–600', d3: '450–600', exam: '450–600' },
+    };
+    function cwWordTarget(kind) {
+        const board = cwInUnit() ? String(state.cwExamBoard || '').toLowerCase().replace(/_/g, '-') : '';
+        const row = CW_WORD_TARGETS[board] || CW_WORD_TARGETS._default;
+        return row[kind] || CW_WORD_TARGETS._default[kind] || '';
+    }
 
     // ── EXERCISE MANIFEST — single source of truth for all exercise types (v7.13.11) ──
     // Each entry defines what panels render, which protocol loads, how completion is detected,
@@ -6003,6 +6028,7 @@ window.WML = (function() {
         EXERCISE_MANIFEST,
         // Creative Writing
         CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
+        cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
         // Revision map
         REVISION_MAP,

@@ -473,7 +473,7 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         ok(/_walkSlot\.arm\('/.test(body) && /aiBubble\(/.test(body),
             `${walk}: a refused duplicate does not re-arm the slot AND say something — a refusal with `
             + `nothing in its place is a DEAD END (law 4d)`);
-        ok(/\.ask\)/.test(body),
+        ok(/\.ask\)|askOf\(step\)\)/.test(body),   // v7.20.737: cw3 serves asks through askOf (weekend-story edits)
             `${walk}: the refusal does not re-serve the ASK, so the student is told "no" with no `
             + `question on screen (staging .329: help chips and no question)`);
     });
