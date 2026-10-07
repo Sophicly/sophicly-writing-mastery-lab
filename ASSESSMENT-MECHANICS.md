@@ -386,6 +386,22 @@ to be equivalent to, so they are scoped OUT of that sweep and covered by their o
 well-formedness gate on the authored rows; **the harness PRINTS both counts** so a shrinking sweep
 can never read as a passing one.
 
+### §3c. THE PARAGRAPH READER — ONE rule, every reader (v7.20.731 / .735 / .736; PEDAGOGY §54.4)
+
+**The rule** (`_answerParas(section, keepEm, asStatements)`, module scope in wml-assessment.js, also
+`WML.answerParas`): a new block or a blank line is a paragraph break; a SINGLE line break is a break when it
+ends a sentence and the next line starts one, and a soft wrap when it falls mid-sentence; the template
+prompt line is never a paragraph; a retrieval answer keeps every line as a statement.
+**Every reader of a student's answer goes through it** — the marking payload (`getResponseText`, via
+`const _mqParas = _answerParas`), the planning/polishing payload (`_docSectionText`), the pop-out pad
+(`_responseParagraphs`) and the polishing selection chip. Block text that is not split into paragraphs
+(word counts, a field's text) is read **with its breaks** (`_wcText`, `_fieldTextFromNode`) — never
+`textContent`, which welds "…the end.⏎Next…" into one word. A write that puts a line into an answer box
+writes real `hardBreak` nodes, and a paragraph moved in arrives behind a blank line.
+**Gates:** `paragraph-count-harness` (the rule, every reader wired to it, no second copy),
+`word-count-harness`, `marking-payload-harness`, `misfiled-answer-gate`, `para-pop-harness`.
+**Still owed:** `_stripUnverbatimPenalties` (a quote that spans a break fails verbatim matching).
+
 ## §4. NUMBERS ARE CODE-OWNED (the v832–929 settlement — never re-litigate)
 
 The LLM never does arithmetic — or number RECALL — that reaches a student. The engine: parses
