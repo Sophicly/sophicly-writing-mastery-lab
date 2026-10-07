@@ -11354,19 +11354,38 @@
         const lineRe = para
             ? new RegExp('Total Mark for Paragraph\\s*' + String(para).replace(/\D/g, '') + '\\s*:\\s*([\\d.]+)\\s*\\/\\s*(\\d+(?:\\.\\d+)?)(\\s*\\(corrected from [\\d.]+\\))?', 'i')
             : /Total Mark for [^:\n]{1,60}:\s*([\d.]+)\s*\/\s*(\d+(?:\.\d+)?)(\s*\(corrected from [\d.]+\))?/i;
+        // Match per TEXTBLOCK (textContent), then map back to document positions — a total line split by bold
+        // ("Total Mark for Paragraph 3: **3.25/4**") is several text runs and must still be found.
         let hit = null;
         sec.node.descendants((n, p) => {
             if (hit) return false;
-            if (n.isText) {
-                const m = lineRe.exec(n.text || '');
-                if (m) hit = { from: sec.pos + 1 + p + m.index, len: m[0].length, text: m[0], old: parseFloat(m[1]), max: m[2] };
-            }
-            return !hit;
+            if (!n.isTextblock) return true;
+            const m = lineRe.exec(n.textContent || '');
+            if (!m) return false;
+            const base = sec.pos + p + 2;   // content start of this textblock
+            const segs = []; n.forEach((ch, off) => segs.push({ off: off, len: ch.isText ? ch.text.length : 0 }));
+            const posAt = (i, isEnd) => {
+                let acc = 0;
+                for (const s of segs) {
+                    if (s.len > 0 && (isEnd ? (i > acc && i <= acc + s.len) : (i >= acc && i < acc + s.len))) return base + s.off + (i - acc);
+                    acc += s.len;
+                }
+                return -1;
+            };
+            const from = posAt(m.index, false), until = posAt(m.index + m[0].length, true);
+            if (from > 0 && until > from) hit = { from: from, to: until, text: m[0], old: parseFloat(m[1]), max: m[2] };
+            return false;
         });
-        if (!hit) { console.warn('WML MarkAudit: @MARK_CORRECT — the card for ' + q + (para ? ' ¶' + para : '') + ' has no single-run "Total Mark for" line; nothing changed'); return false; }
+        const lblOf = s => String((s && s.node.attrs.label) || '');
+        if (!hit) {
+            console.warn('WML MarkAudit: @MARK_CORRECT — no "Total Mark for" line found in the card for ' + q + (para ? ' ¶' + para : ''));
+            if (para) return false;   // a Language question cannot be re-summed from a card that still shows the old figure
+            const lm = lblOf(sec).match(/\/\s*(\d+(?:\.\d+)?)\s*\)\s*$/);
+            return lm ? (_setFeedbackMark(q, to, parseFloat(lm[1])) || true) : false;   // the record still follows her
+        }
         if (hit.old !== to) {
             const nextText = hit.text.replace(/([\d.]+)(\s*\/\s*)(\d+(?:\.\d+)?)(\s*\(corrected from [\d.]+\))?$/, to + '$2$3 (corrected from ' + hit.old + ')');
-            canvasEditor.view.dispatch(canvasEditor.state.tr.insertText(nextText, hit.from, hit.from + hit.len));
+            canvasEditor.view.dispatch(canvasEditor.state.tr.insertText(nextText, hit.from, hit.to));
             console.warn('WML MarkAudit: @MARK_CORRECT applied — ' + q + (para ? ' ¶' + para : '') + ' ' + hit.old + ' → ' + to);
         }
         // the label: a Literature section takes the new mark; a Language question re-sums its paragraph cards
