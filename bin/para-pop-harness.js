@@ -41,37 +41,20 @@ function ok(cond, label, detail) {
     else { failN++; console.log('  ✗ ' + label + (detail ? ' — ' + detail : '')); }
 }
 
-console.log('\n1 · the matcher (extracted from the shipped file)');
-const a = js.indexOf('// ── @PARA-POP-PURE');
-const b = js.indexOf('// ── @PARA-POP-PURE-END ──');
-ok(a !== -1 && b > a, '@PARA-POP-PURE sentinels present');
-const ctx = {};
-vm.createContext(ctx);
-vm.runInContext(js.slice(a, b), ctx);
-const run = (fn, ...args) => ctx[fn](...args);
-
-const paras = [
-    'Allende begins the extract by focusing on the emotional instability in Alex’s mind. The simile compares him to a boat adrift at sea. It makes us feel as though we do not belong anywhere.',
-    'Allende employs an image of a storm as a way to describe how Alex is being swallowed and consumed by grief.',
-    'Allende uses a whole text shift to move the focus of the extract from Alex’s dream to his mother.',
-    'Hallucinations are a common theme experienced by those who are losing a loved one, and they appear here. This startles the reader.',
-];
-ok(run('_paraPopMatch', run('_paraPopQuote', 'Your paragraph: "Allende begins the extract by focusing on the emotional instability in Alex\'s mind. The simile…"'), paras) === 0,
-    'quote cut by "…" → paragraph 1 (straight apostrophe in the quote, curly in the answer)');
-ok(run('_paraPopMatch', run('_paraPopQuote', 'Your paragraph: “Allende employs an image of a storm as a way to describe how Alex…”'), paras) === 1,
-    'curly quotes around the quote → paragraph 2');
-ok(run('_paraPopMatch', run('_paraPopQuote', 'Your paragraph: "Hallucinations are a common theme experienced by those who are losing a loved one... This sta"'), paras) === 3,
-    'an ellipsis in the MIDDLE: only the words before it are matched → paragraph 4');
-ok(run('_paraPopMatch', run('_paraPopQuote', 'Your paragraph: "The simile compares him to a boat adrift at sea…"'), paras) === 0,
-    'a quote that starts mid-paragraph still finds its paragraph');
-ok(run('_paraPopMatch', run('_paraPopQuote', 'Your paragraph: "Allende uses a whole text shift to move the focus"'), paras) === 2,
-    'two paragraphs open with "Allende …" — the longer run of matching words wins');
-ok(run('_paraPopMatch', run('_paraPopQuote', 'Your paragraph: "The writer describes a storm to show grief"'), paras) === null,
-    'a PARAPHRASE is not claimed as a match (null → the caller falls back to the line’s position)');
-ok(run('_paraPopMatch', run('_paraPopQuote', 'Your paragraph: "Alex"'), paras) === null,
-    'too short to be evidence (under three words) → null, never a guess');
-ok(run('_paraPopQuote', 'Your introduction: "As a reader, I mostly agree…"') === 'As a reader, I mostly agree',
-    '_paraPopQuote strips the label, the opening quote and everything after the ellipsis');
+console.log('\n1 · every chip opens the WHOLE answer (#769, v7.20.735)');
+// Neil, 7 Oct: "an essay will be multiple paragraphs, but it'll just be one pop out for the entire essay… if there was
+// a second paragraph, you would need to be the same pop out as paragraph one, right? Because it's part of the same
+// answer." The per-paragraph quote matcher (v7.20.650) is retired with it.
+const openFn = (js.match(/function _paraPopOpenFromChip\(chip\) \{[\s\S]*?\n    \}\n/) || [''])[0];
+ok(openFn.length > 200, '_paraPopOpenFromChip found');
+ok(/idx: null \}\)/.test(openFn) && !/_paraPopMatch|idx = ord/.test(openFn), 'a chip always opens the whole answer (idx null — the pad lists Paragraph 1…N)');
+ok(/const key = \(single \? 'essay' : base\) \+ '\|whole';/.test(openFn), 'ONE pad per question (Language) / per essay (Literature) — the same key from every chip, so a second chip toggles that pad');
+ok(/const title = single \? 'Your essay' : \(\(base \|\| 'Your answer'\) \+ ' · your answer'\);/.test(openFn), 'titled "Your essay" / "Qn · your answer"');
+ok(!/function _paraPopMatch|function _paraPopQuote|function _paraPopNorm|@PARA-POP-PURE/.test(js), 'the retired matcher is gone, not left as dead code');
+const respFn = (js.match(/function _responseParagraphs\(base\) \{[\s\S]*?\n    \}\n/) || [''])[0];
+ok(/const read = _answerParas\(sec, els\.length === 1, false\);/.test(respFn) && respFn.indexOf('_answerParas(') < respFn.indexOf('textBetween('), 'the pad reads the live answer through THE paragraph reader first (what Sophia was sent; Literature keeps <em>)');
+ok(/function _answerParas\(section, keepEm, asStatements\) \{/.test(js) && /const _mqParas = _answerParas;/.test(js), 'the marking payload and the pad share ONE reader');
+ok(/r\.fields === 0 && r\.text/.test(js), 'a Literature essay (<p>-based, no input field) gets its pop-out chip too');
 
 console.log('\n2 · which lines get a chip');
 const reM = js.match(/const PARA_POP_LINE_RE = (\/.+\/i);/);
@@ -96,7 +79,6 @@ ok(/window\.__swmlParaPopBound/.test(js) && /closest\('\.swml-para-pop-node'\)/.
 ok(/textBetween\(0, c\.content\.size, '\\n', leaf => \(leaf\.type\.name === 'hardBreak' \? '\\n' : ''\)\)/.test(js), 'paragraphs are read from the DOCUMENT MODEL (hard breaks), never from Sophia’s quote');
 ok(/_openParaPadHook = \(o\) => \{[\s\S]{0,2600}_makePanelInteractive\(panel\);/.test(js), 'the pad is the shared floating shell (drag + 8-way resize)');
 ok(/This answer is not in the document yet/.test(js), 'an empty pad FAILS LOUD, never blank (§4d)');
-ok(/if \(idx == null && ord >= 0 && ord < paras\.length\) idx = ord;/.test(js), 'no confident quote match → the line’s position, stated as "Paragraph N of M"');
 
 console.log('\n4 · reachability (the pad scrolls to its end)');
 ok(/\.swml-para-pad \{[^}]*max-height: 60vh; max-height: 60dvh;/.test(css), 'vh carries its dvh twin (iOS bars)');

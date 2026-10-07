@@ -51,8 +51,21 @@ function sliceArrowFn(name) {
     }
     throw new Error('unbalanced braces in ' + name);
 }
-const RULE_SRC = sliceArrowFn('_mqParas');
-ok(RULE_SRC.length > 400, 'sliced the real _mqParas whole (' + RULE_SRC.length + ' chars)');
+// v7.20.735 (#769/#771): the rule moved to module scope as `function _answerParas` (the pop-out pad reads with it
+// too); getResponseText keeps `const _mqParas = _answerParas;`. Slice whichever form the source holds.
+function sliceRule() {
+    const at = SRC.indexOf('function _answerParas(section, keepEm, asStatements) {');
+    if (at < 0) return sliceArrowFn('_mqParas');
+    let i = SRC.indexOf('{', at), depth = 0;
+    for (; i < SRC.length; i++) {
+        if (SRC[i] === '{') depth++;
+        else if (SRC[i] === '}') { depth--; if (depth === 0) return SRC.slice(at, i + 1) + '\nconst _mqParas = _answerParas;'; }
+    }
+    throw new Error('unbalanced braces in _answerParas');
+}
+const RULE_SRC = sliceRule();
+ok(RULE_SRC.length > 400, 'sliced the real paragraph rule whole (' + RULE_SRC.length + ' chars)');
+ok(/const _mqParas = _answerParas;/.test(SRC) && !/const _mqParas = \(section/.test(SRC), 'getResponseText reads through the ONE module-scope reader (no second copy)');
 
 // ── the smallest DOM that lets the real rule run ────────────────────────────
 function stripTags(html) {

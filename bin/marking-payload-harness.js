@@ -67,7 +67,9 @@ function extractFunction(name) {
     }
     throw new Error('unbalanced braces reading ' + name);
 }
-const FN_SRC = extractFunction('getResponseText');
+// v7.20.735 (#769/#771): getResponseText reads paragraphs through the module-scope `_answerParas` (shared with the
+// pop-out pad) — bring the real reader along, exactly as shipped.
+const FN_SRC = extractFunction('_answerParas') + '\n' + extractFunction('getResponseText');
 
 // ── the smallest DOM the real builder needs ─────────────────────────────────
 const stripTags = h => h.replace(/<[^>]*>/g, '');

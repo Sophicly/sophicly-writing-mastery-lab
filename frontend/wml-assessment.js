@@ -10834,14 +10834,15 @@
                         if ((c.textContent || '').trim()) filledIds.add(id);
                         return false;
                     });
-                    responses.push({ label: (node.attrs && node.attrs.label) || '', fields: ids.size, filled: filledIds.size });
+                    responses.push({ label: (node.attrs && node.attrs.label) || '', fields: ids.size, filled: filledIds.size, text: !!(node.textContent || '').trim() });
                 }
                 return false;
             });
             const proseAnswer = (base) => {
                 const r = responses.length === 1 ? responses[0]
                     : (responses.find(x => _paraKey(x.label) === _paraKey(base)) || null);
-                return !!(r && r.fields === 1 && r.filled === 1);
+                // v7.20.735 (#769): a Literature essay is <p> blocks with no input field — it is still one answer.
+                return !!(r && ((r.fields === 1 && r.filled === 1) || (r.fields === 0 && r.text)));
             };
             const inserts = [];
             doc.descendants((node, pos) => {
@@ -10879,6 +10880,65 @@
             if (typeof saveCanvasContent === 'function') saveCanvasContent();
         } catch (e) { console.warn('WML para-pop heal: skipped —', e && e.message); }
     }
+    // ⭐ v7.20.735 (#769/#771): THE paragraph reader — every reader of a student's answer (the marking payload
+    // and the pop-out pad) splits it with this ONE rule, so the pad shows exactly the paragraphs Sophia was sent.
+    // Moved out of getResponseText unchanged (bin/paragraph-count-harness.js drives it). The rule's history is
+    // documented where it is still called, in getResponseText (v7.20.548 #418 · v7.20.672 #682 · v7.20.731 #766).
+    function _answerParas(section, keepEm, asStatements) {
+        const clone = section.cloneNode(true);
+        clone.querySelectorAll('[data-checklist-item], .swml-ana-strip, .swml-ctl-row, button').forEach(el => el.remove());
+        if (!keepEm) clone.querySelectorAll('em').forEach(el => el.remove());
+        const raw = clone.innerHTML || '';
+        // ⭐⭐ v7.20.731 (#766/#770 — Neil 7 Oct: "fix the issue of not detecting the paragraphs universally for
+        // every single protocol"). ONE rule, wherever the answer was typed: a new block or a blank line is a
+        // paragraph break; a SINGLE line break is a paragraph break when it ends a sentence and the next line
+        // starts one — what the student sees on screen — and a soft wrap only when it falls mid-sentence
+        // (#418: never split a paragraph the student merely wrapped). The old switch tested the WHOLE section
+        // for a closing block tag, and a Language answer box is itself a <div>, so its "a single <br> is a
+        // break" branch never ran: a single Enter in a Language box was merged (42 of 110 real answers, 7 Oct).
+        // A retrieval answer (asStatements) keeps every line as its own statement.
+        const SBR = '\uE000';
+        const h = raw.replace(/(?:<br\b[^>]*>(?:\s|&nbsp;|\u00a0)*){2,}/gi, '\n')
+            .replace(/<br\b[^>]*>/gi, SBR)
+            .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n');
+        const tmp = document.createElement('div');
+        tmp.innerHTML = h;
+        const _sentenceBreak = new RegExp('([.!?][\\u0022\\u0027\\u201d\\u2019)\\]]*)[ \\t\\u00a0]*' + SBR + '\\s*(?=[A-Z0-9\\u0022\\u0027\\u201c\\u2018(])', 'g');
+        const text = (tmp.textContent || '').replace(/\u00a0/g, ' ')
+            .replace(asStatements ? new RegExp(SBR, 'g') : _sentenceBreak, asStatements ? '\n' : '$1\n')
+            .replace(new RegExp('\\s*' + SBR + '\\s*', 'g'), ' ');
+        const paras = [];
+        let lead = '';
+        // ⭐ v7.20.716 (measured on the WML 327 A Macbeth walk): the essay template ships its prompt as
+        // real text — <p data-locked="true"><em>Write your essay here.</em></p> (older docs: the same
+        // line unlocked) — and the Literature path keeps <em>, so since v7.20.672 (a short line that
+        // ends a sentence stays a paragraph) the prompt reached Sophia as PARAGRAPH 1 and was marked as
+        // the student's Introduction ("contains only the placeholder line"), shifting every paragraph
+        // after it. The word counter has stripped exactly these lines since v7.19.696; the payload now
+        // drops them too. Text-level, so it holds for both doc generations and every reader.
+        const _PROMPT_LINES = ['write your essay here.', 'write your response here.'];
+        const _lines = text.split(/\n+/).map(s => s.trim()).filter(Boolean).filter(line => _PROMPT_LINES.indexOf(line.toLowerCase()) === -1);
+        // v7.20.723 (#751): a RETRIEVAL answer is a list of statements, one per Point box. The merge
+        // rules below are for essays (a short unpunctuated first line is a title; a ≤3-word line joins
+        // its neighbour) — on Q1 they welded "it's like they occupy different planets" and the next box
+        // into ONE statement, and Sophia told the student their quotations "ran together in one line"
+        // (IGCSE P1 walk, staging, 6 Oct). Short, unpunctuated phrases are exactly what retrieval asks for.
+        if (asStatements) return _lines;
+        _lines.forEach(line => {
+            const wc = line.split(/\s+/).filter(Boolean).length;
+            // Closing quotes/brackets after the full stop still count as "ends a sentence". Kept as a
+            // STRING, not a regex class: the repo's brace-slicing harnesses read string literals
+            // correctly but not quote characters inside a regex.
+            let _end = line;
+            while (_end && '"\'”’)]'.indexOf(_end[_end.length - 1]) !== -1) _end = _end.slice(0, -1);
+            const titleLike = !paras.length && wc < 20 && !/[.!]$/.test(_end);
+            if (wc > 3 && !titleLike) { paras.push(lead ? lead + ' ' + line : line); lead = ''; }
+            else if (paras.length) paras[paras.length - 1] += ' ' + line;
+            else lead += (lead ? ' ' : '') + line;   // merged forward, never dropped
+        });
+        if (lead) paras.push(lead);                  // the whole answer was one short line
+        return paras;
+    }
     // The student's own answer to a question, as paragraphs — read from the DOCUMENT MODEL (a
     // response is one inline input field whose paragraphs are separated by a blank line of hard
     // breaks), never from Sophia's quote, which she shortens with "…". One response section →
@@ -10886,6 +10946,17 @@
     function _responseParagraphs(base) {
         try {
             if (!canvasEditor || canvasEditor.isDestroyed) return [];
+            // v7.20.735 (#769/#771): the live answer through THE paragraph reader — exactly the paragraphs Sophia
+            // was sent (a Literature essay keeps its <em>, as the payload does). The model read below is the
+            // fallback for an editor with no DOM yet; it never ran for a <p>-based essay, which is why the pad
+            // showed nothing for Literature.
+            const root = canvasEditor.view && canvasEditor.view.dom;
+            const els = root ? Array.from(root.querySelectorAll('[data-section-type="response"]')) : [];
+            const sec = els.length === 1 ? els[0] : (els.find(n => _paraKey(n.getAttribute('data-section-label') || '') === _paraKey(base)) || null);
+            if (sec) {
+                const read = _answerParas(sec, els.length === 1, false);
+                if (read.length) return read;
+            }
             const rs = [];
             canvasEditor.state.doc.descendants(node => {
                 if (node.type.name !== 'sectionBlock') return true;
@@ -10904,57 +10975,21 @@
             return out;
         } catch (e) { return []; }
     }
-    // ── @PARA-POP-PURE (bin/para-pop-harness.js drives these three; keep them pure) ──
-    function _paraPopNorm(s) {
-        return String(s || '').toLowerCase().replace(/[‘’“”"'`´]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-    }
-    // The quoted text after "Your …:", cut at Sophia's first ellipsis (what follows it is a
-    // later sentence, not a continuation).
-    function _paraPopQuote(line) {
-        const m = /:\s*["“‘']?([\s\S]*)$/.exec(String(line || ''));
-        const q = (m ? m[1] : String(line || '')).split(/\.\.\.|…/)[0];
-        return q.replace(/["”’']\s*$/, '');
-    }
-    // Index of the paragraph whose text contains the longest run of the quote's opening words
-    // (≥4, or the whole quote when shorter). null = no confident match — the caller falls back
-    // to the line's position, never to a guess dressed as a match.
-    function _paraPopMatch(quote, paras) {
-        const qw = _paraPopNorm(quote).split(' ').filter(Boolean).slice(0, 12);
-        if (qw.length < 3 || !Array.isArray(paras)) return null;
-        let best = null, bestScore = 0;
-        paras.forEach((p, i) => {
-            const pn = ' ' + _paraPopNorm(p) + ' ';
-            let k = 0;
-            while (k < qw.length && pn.indexOf(' ' + qw.slice(0, k + 1).join(' ') + ' ') !== -1) k++;
-            if (k > bestScore) { bestScore = k; best = i; }
-        });
-        return bestScore >= Math.min(4, qw.length) ? best : null;
-    }
-    // ── @PARA-POP-PURE-END ──
     function _paraPopOpenFromChip(chip) {
         try {
             const box = chip.closest('[data-section-label]');
             const bm = /^Feedback:\s*(.+?)\s*\(/.exec(box ? (box.getAttribute('data-section-label') || '') : '');
             const base = bm ? bm[1] : '';
-            const whole = chip.getAttribute('data-para-pop') === 'whole';
-            const line = chip.closest('p, h1, h2, h3, h4, li');
             const paras = _responseParagraphs(base);
-            // The block heading above this line ("Q2 — Paragraph 1") names the pad.
-            let heading = '';
-            if (box && line) {
-                box.querySelectorAll('h2, h3, h4').forEach(h => {
-                    if (h === line || (h.compareDocumentPosition(line) & 4)) heading = (h.textContent || '').trim();
-                });
-            }
-            let idx = null, ord = -1;
-            if (!whole && line && box) {
-                idx = _paraPopMatch(_paraPopQuote(line.textContent || ''), paras);
-                ord = Array.from(box.querySelectorAll('p, li')).filter(n => PARA_POP_LINE_RE.test(n.textContent || '')).indexOf(line);
-                if (idx == null && ord >= 0 && ord < paras.length) idx = ord;   // positional fallback
-            }
-            const title = (heading || base || 'Your answer') + ' · your writing';
-            const key = base + '|' + (whole ? 'whole' : (idx != null ? 'p' + idx : 'l' + ord));
-            if (typeof _openParaPadHook === 'function') _openParaPadHook({ key: key, title: title, paras: paras, idx: whole ? null : idx });
+            // ⭐ v7.20.735 (#769 — Neil 7 Oct: "an essay will be multiple paragraphs, but it'll just be one pop out for
+            // the entire essay… if there was a second paragraph, you would need to be the same pop out as paragraph
+            // one, right? Because it's part of the same answer."). EVERY chip opens the WHOLE answer: one pad per
+            // question (Language), one for the essay (Literature) — the same key, so a second chip toggles the same pad.
+            let single = false;
+            try { single = canvasEditor.view.dom.querySelectorAll('[data-section-type="response"]').length === 1; } catch (_) {}
+            const title = single ? 'Your essay' : ((base || 'Your answer') + ' · your answer');
+            const key = (single ? 'essay' : base) + '|whole';
+            if (typeof _openParaPadHook === 'function') _openParaPadHook({ key: key, title: title, paras: paras, idx: null });
             else console.warn('WML para-pop: pad system not mounted — chip ignored');
         } catch (e) { console.warn('WML para-pop: open failed —', e && e.message); }
     }
@@ -57278,61 +57313,7 @@
         //      Literature; it now holds everywhere). A short line that ENDS a sentence stays a
         //      paragraph, so a one-sentence introduction or conclusion is no longer swallowed.
         // keepEm: the Literature path never stripped <em> (a student's italics are their words).
-        const _mqParas = (section, keepEm, asStatements) => {
-            const clone = section.cloneNode(true);
-            clone.querySelectorAll('[data-checklist-item], .swml-ana-strip, .swml-ctl-row, button').forEach(el => el.remove());
-            if (!keepEm) clone.querySelectorAll('em').forEach(el => el.remove());
-            const raw = clone.innerHTML || '';
-            // ⭐⭐ v7.20.731 (#766/#770 — Neil 7 Oct: "fix the issue of not detecting the paragraphs universally for
-            // every single protocol"). ONE rule, wherever the answer was typed: a new block or a blank line is a
-            // paragraph break; a SINGLE line break is a paragraph break when it ends a sentence and the next line
-            // starts one — what the student sees on screen — and a soft wrap only when it falls mid-sentence
-            // (#418: never split a paragraph the student merely wrapped). The old switch tested the WHOLE section
-            // for a closing block tag, and a Language answer box is itself a <div>, so its "a single <br> is a
-            // break" branch never ran: a single Enter in a Language box was merged (42 of 110 real answers, 7 Oct).
-            // A retrieval answer (asStatements) keeps every line as its own statement.
-            const SBR = '\uE000';
-            const h = raw.replace(/(?:<br\b[^>]*>(?:\s|&nbsp;|\u00a0)*){2,}/gi, '\n')
-                .replace(/<br\b[^>]*>/gi, SBR)
-                .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n');
-            const tmp = document.createElement('div');
-            tmp.innerHTML = h;
-            const _sentenceBreak = new RegExp('([.!?][\\u0022\\u0027\\u201d\\u2019)\\]]*)[ \\t\\u00a0]*' + SBR + '\\s*(?=[A-Z0-9\\u0022\\u0027\\u201c\\u2018(])', 'g');
-            const text = (tmp.textContent || '').replace(/\u00a0/g, ' ')
-                .replace(asStatements ? new RegExp(SBR, 'g') : _sentenceBreak, asStatements ? '\n' : '$1\n')
-                .replace(new RegExp('\\s*' + SBR + '\\s*', 'g'), ' ');
-            const paras = [];
-            let lead = '';
-            // ⭐ v7.20.716 (measured on the WML 327 A Macbeth walk): the essay template ships its prompt as
-            // real text — <p data-locked="true"><em>Write your essay here.</em></p> (older docs: the same
-            // line unlocked) — and the Literature path keeps <em>, so since v7.20.672 (a short line that
-            // ends a sentence stays a paragraph) the prompt reached Sophia as PARAGRAPH 1 and was marked as
-            // the student's Introduction ("contains only the placeholder line"), shifting every paragraph
-            // after it. The word counter has stripped exactly these lines since v7.19.696; the payload now
-            // drops them too. Text-level, so it holds for both doc generations and every reader.
-            const _PROMPT_LINES = ['write your essay here.', 'write your response here.'];
-            const _lines = text.split(/\n+/).map(s => s.trim()).filter(Boolean).filter(line => _PROMPT_LINES.indexOf(line.toLowerCase()) === -1);
-            // v7.20.723 (#751): a RETRIEVAL answer is a list of statements, one per Point box. The merge
-            // rules below are for essays (a short unpunctuated first line is a title; a ≤3-word line joins
-            // its neighbour) — on Q1 they welded "it's like they occupy different planets" and the next box
-            // into ONE statement, and Sophia told the student their quotations "ran together in one line"
-            // (IGCSE P1 walk, staging, 6 Oct). Short, unpunctuated phrases are exactly what retrieval asks for.
-            if (asStatements) return _lines;
-            _lines.forEach(line => {
-                const wc = line.split(/\s+/).filter(Boolean).length;
-                // Closing quotes/brackets after the full stop still count as "ends a sentence". Kept as a
-                // STRING, not a regex class: the repo's brace-slicing harnesses read string literals
-                // correctly but not quote characters inside a regex.
-                let _end = line;
-                while (_end && '"\'”’)]'.indexOf(_end[_end.length - 1]) !== -1) _end = _end.slice(0, -1);
-                const titleLike = !paras.length && wc < 20 && !/[.!]$/.test(_end);
-                if (wc > 3 && !titleLike) { paras.push(lead ? lead + ' ' + line : line); lead = ''; }
-                else if (paras.length) paras[paras.length - 1] += ' ' + line;
-                else lead += (lead ? ' ' : '') + line;   // merged forward, never dropped
-            });
-            if (lead) paras.push(lead);                  // the whole answer was one short line
-            return paras;
-        };
+        const _mqParas = _answerParas;   // v7.20.735: the ONE reader lives at module scope (the pop-out pad uses it too)
         // Multiple response sections (e.g. EDUQAS Part A/B, language papers) — label each
         if (responseSections.length > 1) {
             // v7.19.826: LANGUAGE papers get per-question paragraph pre-labelling +
