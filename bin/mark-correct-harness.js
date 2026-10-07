@@ -78,5 +78,7 @@ if (strip) {
     const shown = 'Body 1 comes down to 3.0, because the device was misnamed.\n@MARK_CORRECT{"q":"Body 1","to":3}\nShall we continue?'.replace(re, '');
     ok(shown.indexOf('@MARK_CORRECT') === -1 && /because the device was misnamed/.test(shown), 'the student sees Sophia\'s reason and never the marker', shown);
 }
+ok(/parts\.length < cardsInQ/.test(SRC) && /label left as filed/.test(SRC), 'a Language label is re-summed ONLY when every paragraph card shows its total (a partial sum set Q4 to 6/12 — measured on a staging card)');
+ok(/restates that question's total on its own line/.test(ROUTER), 'after a Language paragraph correction Sophia restates the question total, which sets the label through the tested path');
 ok(/### A MARK YOU ALREADY FILED — CORRECT IT THROUGH THE RECORD/.test(ROUTER) && /never tell the student to trust the chat over their document/.test(ROUTER), 'the router tells Sophia how to correct a filed mark — and never to set the chat against the document');
 done();

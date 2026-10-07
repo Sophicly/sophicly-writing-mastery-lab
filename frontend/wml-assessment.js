@@ -11420,8 +11420,16 @@
         if (!para) return _setFeedbackMark(q, to, parseFloat(hit.max)) || true;
         const fresh = findSec();
         const lblMax = parseFloat(((String(fresh && fresh.node.attrs.label || '')).match(/\/\s*(\d+(?:\.\d+)?)\s*\)\s*$/) || [])[1]);
-        const parts = [...String(fresh ? fresh.node.textContent : '').matchAll(/Total Mark for Paragraph\s*\d+\s*:\s*([\d.]+)\s*\//gi)].map(x => parseFloat(x[1]));
-        if (!parts.length || !(lblMax > 0)) return true;
+        const secText = String(fresh ? fresh.node.textContent : '');
+        const parts = [...secText.matchAll(/Total Mark for Paragraph\s*\d+\s*:\s*([\d.]+)\s*\//gi)].map(x => parseFloat(x[1]));
+        // v7.20.732: re-sum ONLY when every paragraph card shows its total — a filed card can lack the line (measured:
+        // a staging Q4 card whose Paragraph 3 holds no total), and a partial sum would set Q4 to 6/12 instead of 9/12.
+        // Otherwise the label is left to the question's own total line, which the router asks Sophia to restate.
+        const cardsInQ = (secText.match(new RegExp('\\bQ' + qk + '\\s*[\\u2014\\u2013-]\\s*Paragraph\\s*\\d+', 'g')) || []).length;
+        if (!parts.length || !(lblMax > 0) || parts.length < cardsInQ) {
+            console.warn('WML MarkAudit: @MARK_CORRECT — ' + q + ' label left as filed (' + parts.length + ' of ' + cardsInQ + ' paragraph totals readable); the restated "' + q + ' Total" line sets it');
+            return true;
+        }
         const sum = Math.min(Math.floor(parts.reduce((a, b) => a + b, 0) + 0.5), lblMax);   // Pass 2's rule: half-up ONCE, capped
         _setFeedbackMark(q, sum, lblMax);
         return true;
