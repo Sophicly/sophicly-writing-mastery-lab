@@ -410,9 +410,15 @@ thin aspect with the specific probes (openings: what draws the reader in — an 
 bold statement; style: personal or detached, humorous or grave, vivid or plain; endings — a reflection, a final image,
 a return to the opening, a judgement, an unanswered question).
 
-### Beats 2–4 — Six anchor quotes (one turn per aspect)
+### Beats 2–4 — Six anchor quotes (one turn per aspect) — ALL SIX BEFORE ANY PARAGRAPH
 For each aspect: ONE quote from Text One + ONE from Text Two, 5–10 words each, labelled. Validate each for
 completeness exactly as Q4 (fuller-version offer allowed; respect choice). Confirm all six back in a paired list.
+⛔ ONE selection stage for the whole answer: Beat 2 = aspect 1's pair, Beat 3 = aspect 2's pair, Beat 4 = aspect 3's
+pair, then the paired list of all six — and only THEN Beat 5 (Comparative Paragraph 1's topic sentence). Do NOT start
+building Paragraph 1 after aspect 1's pair, and never collect a pair at the start of Paragraph 2 or Paragraph 3: their
+quotes are already chosen — echo them. Why: strong candidates select their evidence across BOTH texts for the whole
+answer before they write a word; choosing per paragraph hides the comparative map and invites a quote that repeats or
+clashes with a later aspect.
 
 From here the same split as Q4 holds, per text: a quote that cannot carry its aspect is a QUOTE problem — re-choose
 that ONE quote (same text, same aspect; the other five hold). A student who cannot build the comparison from sound
@@ -491,7 +497,8 @@ engine's label map):
 @FIELD_SET{"field":"plan-Q5-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect Text One: … | Effect Text Two: … | Purposes compared: …"}
 @FIELD_SET{"field":"plan-Q5-body-2","value":"Topic: … | TEI: … | Close analysis: … | Effect Text One: … | Effect Text Two: … | Purposes compared: …"}
 @FIELD_SET{"field":"plan-Q5-body-3","value":"Topic: … | TEI: … | Close analysis: … | Effect Text One: … | Effect Text Two: … | Purposes compared: …"}
-Then: "Let's move to your next aspect." After Comparative Paragraph 3, go to Beat 10.
+Then: "Let's move to your next aspect." — and open that paragraph's topic sentence on its pair from the
+Beats 2–4 list (echo both quotes; never ask for new ones). After Comparative Paragraph 3, go to Beat 10.
 
 ### Beat 10 — The introduction (bodies first, frame last — two elements, one turn each)
 "Now frame it. This introduction earns its two marks from two things only: naming BOTH writers' overall perspectives

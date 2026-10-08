@@ -11618,7 +11618,9 @@
                 out = out.replace(/^[ \t]*[-*•][^\n]*(?:no\s+(?:[A-Za-z0-9-]+\s+)?penalt(?:y|ies)\s+(?:is\s+|was\s+)?applied|penalt(?:y|ies)[^\n]*\bnot\s+applied)[^\n]*$\n?/gim, '');
                 if (out.length !== preLen) console.log('WML normalise: stripped rejected-penalty bullet(s) (−' + (preLen - out.length) + ' chars)');
             }
-            const gateRe = /Does that clear it up\?\s*Shall we (?:continue with|move to)/i;
+            // v7.20.764: + "continue to" / "move on to" — AQA Poetry assessment's last gate reads "Shall we continue to
+            // your Final Summary?", the one live 4-button site (of 30) this recogniser missed (audit, 8 Oct).
+            const gateRe = /Does that clear it up\?\s*Shall we (?:continue (?:with|to)|move (?:on )?to)/i;
             if (gateRe.test(out) && !/\[ASSESSMENT_COMPLETE\]/i.test(out) && !/@SUMMARY_COMPLETE/.test(out)) {
                 // v7.20.763 (#805h-1b): ONE set of gate buttons, always the canonical four. The model also writes the
                 // options as its own lines — plain ("✓ Got it — continue"), lettered ("A — ✓ Got it — continue",

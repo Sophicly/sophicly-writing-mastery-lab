@@ -66,6 +66,8 @@ for (const [label, opts] of Object.entries(FORMS)) {
         'one canonical row, no stray option lines, the question kept — ' + label);
 }
 ok(plan('Here is your Paragraph 2:\n\nA) Happy — next paragraph\nB) Change one element') === 'Here is your Paragraph 2:\n\nA) Happy — next paragraph\nB) Change one element', 'a non-gate reply (mirror-back choices) is untouched');
+// v7.20.764: AQA Poetry assessment's last gate is worded "continue TO" — the one live site the recogniser missed
+ok(assess('Section C marked.\n\nDoes that clear it up? Shall we continue to your **Final Summary**?').split(ROW).length === 2, 'the "continue to your Final Summary" gate (AQA Poetry assessment) gets its buttons');
 // display half: the appended row must render as buttons only, never as visible code
 const strip = new Function(slice('_stripResumeMarkers') + '; return _stripResumeMarkers;')();
 ok(strip(outP).indexOf('[✓') === -1 && strip(outP).indexOf('Shall we continue') !== -1, 'display: the row is stripped from the bubble text, the question stays');
@@ -129,11 +131,36 @@ const runTurn = (eng, reply, msg) => { eng.applyFieldSets(reply); eng.applyField
     ok(d.get('outline-body-1-evidence') === 'simile tyre dump fire', 'a commit to a box the fan-out did NOT write files normally in the same reply');
 }
 
-// ── C. protocol keeps the six-quotes-first instruction ─────────────────────────────────────────────
-console.log('C · AQA P2 Q4 planning protocol: all six quotes before any paragraph');
-const beat = PROTO.slice(PROTO.indexOf('### Beats 2–4 — Six anchor quotes'), PROTO.indexOf('### Beats 5–9'));
-ok(/ALL SIX BEFORE ANY PARAGRAPH/.test(beat) && /never collect a pair at the start of Body 2 or Body 3/.test(beat), 'Beats 2–4 forbid building Body 1 before the six are chosen');
-ok(/open that body's topic sentence on its pair from the\s+Beats 2–4 list/.test(PROTO), 'the next-aspect hand-off reuses the chosen pair');
+// ── C. protocols keep the six-quotes-first instruction ─────────────────────────────────────────────
+// v7.20.764: Edexcel IGCSE P1 Q5 was ported from AQA P2 Q4 with the same ambiguous wording — both are held here.
+console.log('C · six-quote comparative planning (AQA P2 Q4 · Edexcel IGCSE P1 Q5): all six quotes before any paragraph');
+const IGCSE = fs.readFileSync(path.join(ROOT, 'protocols', 'edexcel-igcse', 'language1', 'planning', 'protocol-b-planning.md'), 'utf8');
+for (const [name, txt, body] of [['AQA P2 Q4', PROTO, 'Body'], ['IGCSE P1 Q5', IGCSE, 'Paragraph']]) {
+    const beat = txt.slice(txt.indexOf('### Beats 2–4 — Six anchor quotes'), txt.indexOf('### Beats 5–9', txt.indexOf('### Beats 2–4 — Six anchor quotes')));
+    ok(/ALL SIX BEFORE ANY PARAGRAPH/.test(beat) && new RegExp('never collect a pair at the start of ' + body + ' 2 or ' + body + ' 3').test(beat), name + ': Beats 2–4 forbid building the first paragraph before the six are chosen');
+    ok(/topic sentence on its pair from the\s+Beats 2–4 list/.test(txt), name + ': the next-aspect hand-off reuses the chosen pair');
+}
+
+// ── D. every LIVE 4-button gate is one the engine recognises (the 8 Oct audit, made permanent) ─────────
+// A protocol that prints the canonical row after a question the recogniser does not match loses its buttons the
+// first time the model drops the row — silently. Scope = every .md a manifest loads.
+console.log('D · every live protocol\'s 4-button gate question matches the engine\'s recogniser');
+{
+    const src = slice('_normalizeAssessmentReply');
+    const m = /const gateRe = (\/.+\/[a-z]*);/.exec(src);
+    ok(!!m, 'the recogniser is readable from the shipped function');
+    const gate = m ? new Function('return ' + m[1])() : /$^/;
+    const loadedFiles = new Set();
+    (function w(d) { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (f === '_superseded') continue;
+        if (fs.statSync(p).isDirectory()) w(p); else if (f === 'manifest.json') { const j = JSON.parse(fs.readFileSync(p, 'utf8')); const base = j.base_path || path.relative(ROOT, d);
+            const col = v => { if (typeof v === 'string' && /\.md$/.test(v)) { for (const c of [path.join(ROOT, base, v), path.join(ROOT, 'protocols', 'shared', v)]) if (fs.existsSync(c)) { loadedFiles.add(c); break; } }
+                else if (Array.isArray(v)) v.forEach(col); else if (v && typeof v === 'object') Object.values(v).forEach(col); }; col(j); } } })(path.join(ROOT, 'protocols'));
+    let sites = 0; const miss = [];
+    for (const f of loadedFiles) { const L = fs.readFileSync(f, 'utf8').split('\n');
+        L.forEach((l, i) => { if (!/\[\s*✓\s*Got it\s*—\s*continue\s*\]/.test(l)) return; sites++;
+            if (!gate.test(L.slice(Math.max(0, i - 6), i + 1).join(' '))) miss.push(path.relative(ROOT, f) + ':' + (i + 1)); }); }
+    ok(sites >= 20 && !miss.length, sites + ' live 4-button gate sites, all recognised' + (miss.length ? ' — NOT: ' + miss.join(', ') : ''));
+}
 
 console.log(fails ? '\n❌ plan-gate-fanout-harness: ' + fails + ' check(s) failed' : '\n✅ plan-gate-fanout-harness passed');
 process.exit(fails ? 1 : 0);
