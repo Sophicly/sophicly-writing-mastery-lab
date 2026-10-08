@@ -2746,7 +2746,9 @@ class SWML_Protocol_Router {
         // contract as above, keyed on the unit; mirrors `unitEnv`/`unitLens` on CW_STEPS (the gate
         // asserts both sides agree). Step 10 stays in $cw_protocol_map for the FULL course.
         $cw_unit_polishing_lenses = [
-            'weekend' => [ 'cw_step_10' => 'prose_style' ],
+            // v7.20.748 (§55.1): lesson 8 "Polish Your Draft" is Draft 2's step run as a unit lesson;
+            // its lens is the student's Mark Your Draft priority (written on their page).
+            'weekend' => [ 'cw_step_10' => 'prose_style', 'cw_step_14' => 'trial_priority' ],
         ];
         $cw_unit = (string) ($context['cw_unit'] ?? '');
         if (isset($cw_unit_polishing_lenses[$cw_unit][$task])) {

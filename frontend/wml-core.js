@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.747';
+var WML_BUILD = '7.20.748';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1163,7 +1163,9 @@ window.WML = (function() {
         // Step 14 is where the student applies it to Draft 1, by selecting prose and improving it.
         // `lens` names WHICH polish this draft is for — the same engine serves Drafts 3-7, so the
         // lens is data, never a per-step clone.
-        { step: 14, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2, env: 'polishing', lens: 'character_arc' },
+        // v7.20.748 (§55.1): in the weekend story this step is lesson 8, "Polish Your Draft" — same
+        // polishing environment, lens = the student's Mark Your Draft priority (read via cwStepLens).
+        { step: 14, label: 'Draft 2: Character Arc',    tier: 'si', phase: 'drafting', draft: 2, env: 'polishing', lens: 'character_arc', unitLens: 'trial_priority' },
         { id: 'trial_2', label: 'Trial 2: Character Depth', tier: 'si', phase: 'drafting', trial: 2 },
         { step: 15, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },
         { step: 16, label: 'Update Plot: Archetypes',   tier: 'workbook', phase: 'drafting' },

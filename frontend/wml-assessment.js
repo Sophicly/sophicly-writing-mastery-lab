@@ -6105,6 +6105,39 @@
         return out;
     }
     // @CW-POLTI-PURE-END
+    // @CW-POLISH-PURE-BEGIN
+    // ⭐ v7.20.748 — WEEKEND LESSON 8 "Polish Your Draft" (PEDAGOGY §55.1, plan §2b) is Draft 2's step
+    // (cw_step_14, the polishing environment) run as a unit lesson — the lessons-1–7 pattern: one
+    // step, a unit variant, never a new task id (a new id needed ~15 registrations, each a §5d risk).
+    // MEASURED on staging .747: the server's draft lineage hands this step the whole lesson-6 page,
+    // so its About still said "Draft 1: Basic prose style". The About is recomposed with the student's
+    // Mark Your Draft PRIORITY, which then sits in the document Sophia already receives with every
+    // coaching request — the `trial_priority` lens tells her to coach that part only. Pure: html in →
+    // html out, so bin/weekend-story-harness.js runs it.
+    const CW_POLISH_H2 = 'Polish Your Draft';
+    const CW_POLISH_ABOUT_RE = /(<div[^>]*data-section-label="About This Draft"[^>]*>)([\s\S]*?)(<\/div>)(?=\s*<div[^>]*data-section-type=|\s*$)/;
+    function _cwPolishEsc(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function _cwPolishAboutInner(priority) {
+        const p = String(priority || '').replace(/\s+/g, ' ').trim();
+        return '<h2>' + CW_POLISH_H2 + '</h2>'
+            + '<p>Your Draft 1 is in the box below. Mark Your Draft gave you one priority: the part of your scene that would improve the story most. This lesson is where you act on it.</p>'
+            + (p ? '<p><strong>Your priority:</strong> ' + _cwPolishEsc(p) + '</p>'
+                 : '<p><strong>Your priority isn\u2019t ready yet.</strong> Finish lesson 7, Mark Your Draft, first. When you come back, it will be here.</p>')
+            + '<p>Find the sentences that belong to that part of your scene. Select one and tap <strong>Sophia</strong>: she points at one thing that would make it stronger, and you rewrite it yourself. When that part does its job, read the whole scene through once more.</p>'
+            + '<p><em>If the box below is empty, go back to lesson 6, Write Draft 1. This lesson polishes that draft.</em></p>';
+    }
+    // 'ok' = lesson 8's About with a priority · 'pending' = lesson 8's, no priority yet ·
+    // 'foreign' = another lesson's About (the lineage copy) · 'missing' = no About section.
+    function _cwPolishAboutState(html) {
+        const m = CW_POLISH_ABOUT_RE.exec(String(html || ''));
+        if (!m) return 'missing';
+        if (m[2].indexOf('<h2>' + CW_POLISH_H2 + '</h2>') === -1) return 'foreign';
+        return m[2].indexOf('<strong>Your priority:</strong>') !== -1 ? 'ok' : 'pending';
+    }
+    function _cwComposePolishAbout(html, priority) {
+        return String(html || '').replace(CW_POLISH_ABOUT_RE, function (_, open, inner, close) { return open + _cwPolishAboutInner(priority) + close; });
+    }
+    // @CW-POLISH-PURE-END
     // One cache per source artifact: { artifactKey: { id: projectId, map: {fid: text} } }.
     const _cwDocCache = {};
     // ═══════════════════════════════════════════════════════════════════════════════════════
@@ -55885,6 +55918,13 @@
             // Sophia"; it names the lessons by what they do (no step numbers), drops the Hero's
             // Journey line (a plot idea this student never met) and states their board's target.
             const _unitDraft = !!(WML.cwInUnit && WML.cwInUnit() && WML.cwStepEnv(stepDef) === 'polishing');
+            // v7.20.748 (§55.1): lesson 8 with nothing to copy yet — its own page, true while the box is empty.
+            if (_unitDraft && stepDef.draft === 2) {
+                html += sectionHTML('question', 'About This Draft', false, null, _cwPolishAboutInner(''));
+                html += dividerHTML('YOUR WRITING');
+                html += sectionHTML('response', 'Draft', true, null, '<p></p>', { 'student-composition': 'true' });
+                return html;
+            }
             if (_unitDraft && stepDef.draft === 1) info = { layer: info.layer, journey: '', desc: 'Your scene from the last lesson is waiting in the box below, exactly as you transferred it. Read it through and make every line real prose: what the reader would see and hear happen. Stephen King says in <em>On Writing</em>: \u201cThe first draft is just you telling yourself the story.\u201d Work on strong nouns and dynamic verbs, show rather than tell, and aim for around ' + WML.cwWordTarget('d1') + ' words.<br><br><strong>Sophia can help.</strong> Select any sentence in your draft and tap <strong>Sophia</strong>. She points to one thing that would make it stronger, and you write it.<br><br><em>If the box below is empty, go back to lesson 5, Your Dramatic Situation, and tap \u201cTransfer my scene\u201d \u2014 that is what sends your writing here.</em>' };
             html += sectionHTML('question', 'About This Draft', false, null,
                 `<h2>Draft ${stepDef.draft}: ${info.layer.charAt(0).toUpperCase() + info.layer.slice(1)}</h2>` +
@@ -64732,6 +64772,34 @@
         return false;
     }
 
+    // v7.20.748 (§55.1): weekend lesson 8 reads ONE row of the student's Mark Your Draft document —
+    // the priority Trial 1 wrote (`cw-trial-1-priority`). Same endpoint, same project scope, and the
+    // ONE suffix builder the trial saved under (§5d — never a hand-built key). No seedFromSiblings:
+    // a read must never create or seed anything.
+    async function _cwTrial1Priority() {
+        try {
+            const suffix = WML.resolveCanvasSuffix('cw_trial_1', state.phase) || '';
+            const scope = WML.canvasDocScope();
+            const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(scope.text)}${scope.topic ? '&topicNumber=' + scope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=1${cwScopeQuery()}`;
+            const r = await fetch(url, { headers }).then(function (x) { return x.json(); });
+            const html = r && r.doc && r.doc.html;
+            if (!html) return '';
+            return String(_cwParseFieldMap(html)['cw-trial-1-priority'] || '').replace(/\s+/g, ' ').trim();
+        } catch (e) {
+            console.warn('WML CW polish: could not read the Mark Your Draft priority —', e && e.message);
+            return '';
+        }
+    }
+    // Composed BEFORE the editor mounts (the v7.20.453 shape — no NodeView to mutate). Runs while the
+    // page lacks a priority, so a Mark Your Draft finished AFTER the first visit still lands.
+    async function _cwPolishComposeOnLoad(html) {
+        const st = _cwPolishAboutState(html);
+        if (st !== 'foreign' && st !== 'pending') return html;
+        const pri = await _cwTrial1Priority();
+        if (st === 'pending' && !pri) return html;
+        console.log('WML CW polish: About ' + (st === 'foreign' ? 'replaced (lineage copy)' : 'given its priority') + (pri ? '' : ' — no priority yet'));
+        return _cwComposePolishAbout(html, pri);
+    }
     async function tryServerLoad() {
         // v7.17.39: CW canvas doc is now project-scoped server-side (see v7.17.39
         // `/canvas/load` + `cw_project_id` scoping). The pre-v7.17.39 early-exit
@@ -64778,6 +64846,12 @@
             // v7.19.136 instrumentation — record the URL we're about to fetch
             try { console.log('[WML load-debug v7.19.136] tryServerLoad fetch', { url: url, task: state.task, phase: state.phase, attempt: state.attempt, suffix: suffix }); } catch (_) {}
             const res = await fetch(url, { headers }).then(r => r.json());
+            // v7.20.748 (§55.1): weekend lesson 8 — lesson 8's About + the Mark Your Draft priority.
+            if (res && res.doc && typeof res.doc.html === 'string' && state.task === 'cw_step_14'
+                && WML.cwInUnit && WML.cwInUnit() && !state.reviewMode) {
+                try { res.doc.html = await _cwPolishComposeOnLoad(res.doc.html); }
+                catch (e) { console.warn('WML CW polish: compose failed (page left as loaded) —', e && e.message); }
+            }
             // v7.19.136 instrumentation — record server response shape
             try {
                 console.log('[WML load-debug v7.19.136] tryServerLoad response', {

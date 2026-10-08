@@ -140,7 +140,9 @@ for (const j of jsPolishing) {
 const unitBlock = ROUTER.match(/\$cw_unit_polishing_lenses\s*=\s*\[([\s\S]*?)\];\n/);
 ok('the router declares a $cw_unit_polishing_lenses map', !!unitBlock);
 const phpUnit = unitBlock ? [...unitBlock[1].matchAll(/'(cw_step_\d+)'\s*=>\s*'([a-z_]+)'/g)].map(m => ({ task: m[1], lens: m[2] })) : [];
-const jsUnit = WML.CW_STEPS.filter(s => s.unitEnv === 'polishing').map(s => ({ task: 'cw_step_' + s.step, lens: s.unitLens }));
+// v7.20.748: a unit variant may also be a step that ALWAYS polishes and only swaps its lens in a unit
+// (Step 14 = weekend lesson 8, `unitLens` only) — so count every row with a unitLens that polishes in a unit.
+const jsUnit = WML.CW_STEPS.filter(s => s.unitLens && (s.unitEnv || s.env) === 'polishing').map(s => ({ task: 'cw_step_' + s.step, lens: s.unitLens }));
 ok('unit variants: both sides list the SAME steps and lenses',
     JSON.stringify(phpUnit.sort((a, b) => a.task < b.task ? -1 : 1)) === JSON.stringify(jsUnit.sort((a, b) => a.task < b.task ? -1 : 1)),
     { php: phpUnit, js: jsUnit });
@@ -153,7 +155,11 @@ ok('in a weekend-story lesson Step 10 IS a polishing step (inline-coaching, chat
     u10.environment === 'inline-coaching' && u10.panels.chat === false && !u10.sidebarSteps, { env: u10.environment, panels: u10.panels });
 ok('…is not the unaided test (tools are not minimal)', !WML.cwToolsMinimal('cw_step_10'));
 ok('…and resolves its lens through the one resolver', WML.cwStepLens(WML.getCwStepDef('cw_step_10')) === 'prose_style');
+const u14 = cfg('cw_step_14');
+ok('in a weekend-story lesson Step 14 (lesson 8, Polish) is the polishing environment', u14.environment === 'inline-coaching' && u14.panels.chat === false, { env: u14.environment });
+ok('…with the Mark Your Draft priority as its lens', WML.cwStepLens(WML.getCwStepDef('cw_step_14')) === 'trial_priority');
 WML.state.cwUnit = '';
+ok('outside a unit Step 14 keeps its full-course lens (character_arc)', WML.cwStepLens(WML.getCwStepDef('cw_step_14')) === 'character_arc');
 ok('outside a unit Step 10 is back to the diagnostic test', cfg('cw_step_10').environment === 'free' && WML.cwToolsMinimal('cw_step_10'));
 
 // A polishing step must NOT also be in the walk-protocol map, or its old teaching walk loads.

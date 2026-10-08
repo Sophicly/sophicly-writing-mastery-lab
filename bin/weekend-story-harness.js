@@ -359,7 +359,7 @@ const SEVEN = (hook, setup) => [
         ok((SRC.match(/_cwTurnOwned\(state\.task, clean\) \? \{ suppressActions: true \} : undefined/g) || []).length === 2,
             'BOTH replay pipelines draw a walk-owned turn without chip detection (dual pipeline)');
         // v7.20.740 — lesson 6, the GUIDED Draft 1 (plan §4 step 3): Step 10 as a polishing lesson in a unit.
-        ok(/\$cw_unit_polishing_lenses = \[\s*'weekend' => \[ 'cw_step_10' => 'prose_style' \],/.test(RT)
+        ok(/'weekend' => \[ 'cw_step_10' => 'prose_style', 'cw_step_14' => 'trial_priority' \],/.test(RT)
             && /if \(isset\(\$cw_unit_polishing_lenses\[\$cw_unit\]\[\$task\]\)\)/.test(RT),
             'lesson 6: the router serves weekend Step 10 the polishing stack with the prose lens');
         ok(/if \(\$cw_unit === 'weekend'\) \$parts\[\] = self::cw_weekend_unit_note\(\$context\);/.test(RT),
@@ -418,6 +418,26 @@ const SEVEN = (hook, setup) => [
         ok(ui > 0 && /Your Dramatic Situation/.test(ublock) && !/Outline|\bStep \d|\bplot\b|\bstages?\b/i.test(ublock.replace(/step: \d/g, '')), 'lesson 5\'s sidebar rows are the unit\'s own words (no "Review Outline")', ublock.slice(0, 200));
         ok(/cwInUnit\(\) && CW_UNIT_SIDEBAR_STEPS\[stepKey\]/.test(CORE), 'the exercise config picks the unit rows only inside a unit lesson');
         ok(/serveCard\(s\); \} \}; \}\), 'swml-chips-grid'\)/.test(SRC) && /\.swml-quick-actions\.swml-chips-grid\s*\{[^}]*flex-wrap: wrap/.test(fs.readFileSync(path.join(ROOT, 'frontend/wml-canvas.css'), 'utf8')), 'the 33 names wrap as a grid, not one tall column');
+    }
+    // ── J · lesson 8 "Polish Your Draft" (v7.20.748): the About is recomposed with the priority ──
+    console.log(' J · lesson 8 shows the student\'s Mark Your Draft priority');
+    {
+        const jb = SRC.indexOf('// @CW-POLISH-PURE-BEGIN'), je = SRC.indexOf('// @CW-POLISH-PURE-END');
+        ok(jb > 0 && je > jb, 'the polish composer is fenced for this harness');
+        const PO = new Function(SRC.slice(jb, je) + '\nreturn { _cwPolishAboutState, _cwComposePolishAbout, _cwPolishAboutInner };')();   // eslint-disable-line no-new-func
+        // the lineage copy, as measured on staging .747 (lesson 6's page)
+        const COPY = '<div data-section-type="question" data-section-label="About This Draft" class="swml-section-block"><h2>Draft 1: Basic prose style</h2><p>Your scene from the last lesson is waiting…</p></div><div data-section-type="divider" data-section-label="YOUR WRITING"><p>YOUR WRITING</p></div><div data-section-type="response" data-section-label="Draft"><p>The shortcut ran past the asylum.</p></div>';
+        ok(PO._cwPolishAboutState(COPY) === 'foreign', 'the lineage copy is recognised as another lesson\'s About');
+        const pend = PO._cwComposePolishAbout(COPY, '');
+        ok(PO._cwPolishAboutState(pend) === 'pending' && /Finish lesson 7, Mark Your Draft/.test(pend), 'no trial yet → lesson 8\'s About, saying where the priority comes from');
+        const done = PO._cwComposePolishAbout(pend, 'Climax — the girl and the guard never meet; make them collide <now>');
+        ok(PO._cwPolishAboutState(done) === 'ok' && /<strong>Your priority:<\/strong> Climax — the girl and the guard never meet; make them collide &lt;now&gt;/.test(done), '⭐ a later trial lands: the priority is written in, escaped');
+        ok(/The shortcut ran past the asylum\./.test(done) && (done.match(/data-section-label="About This Draft"/g) || []).length === 1, 'the student\'s draft and every other section are untouched (one About, replaced in place)');
+        ok(PO._cwComposePolishAbout(done, 'Hook — x') === PO._cwComposePolishAbout(done, 'Hook — x') && PO._cwPolishAboutState(done) === 'ok', 'once it has a priority the page is left alone (compose runs only for foreign/pending)');
+        const inner = PO._cwPolishAboutInner('Hook — x');
+        ok(!LEAK_RE.test(inner.replace(/lesson \d/g, '')) && /lesson 6, Write Draft 1/.test(inner), 'the page names lessons by the unit\'s own numbers, never a course step; true when the box is empty');
+        ok(/state\.task === 'cw_step_14'\s*\n?\s*&& WML\.cwInUnit && WML\.cwInUnit\(\) && !state\.reviewMode/.test(SRC), 'the compose runs only in a weekend lesson 8, never in tutor review');
+        ok(/WML\.resolveCanvasSuffix\('cw_trial_1', state\.phase\)/.test(SRC) && !/_cwTrial1Priority[\s\S]{0,900}seedFromSiblings/.test(SRC.slice(SRC.indexOf('async function _cwTrial1Priority'), SRC.indexOf('async function _cwTrial1Priority') + 1200)), '§5d: the trial is read under the ONE suffix builder it saved with, and the read never seeds');
     }
     // ── H · the dramatic-situation bank against Neil's source (v7.20.743, PEDAGOGY §55.1) ──
     console.log(' H · the 33 dramatic situations match our source, in plain, safe words');

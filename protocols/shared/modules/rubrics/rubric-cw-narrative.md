@@ -215,6 +215,29 @@ Check two things, in this order:
 **Pointer phrase:** *This line still reads like your plan. What would the reader actually see happen here?*
 (Layer 1's pointer phrases apply as written.)
 
+### Lens `trial_priority` — the weekend story's Polish lesson
+
+Used only by the weekend story (PEDAGOGY §55.1), lesson 8: the student polishes their Draft 1 after
+Mark Your Draft (Trial 1). **Their priority is written at the top of their document, after "Your
+priority:"** — the one part of the scene Trial 1 named (one of the seven elements in the table above,
+or Technical Accuracy), with the line Sophia wrote about it. **Coach that part, and only that part.**
+
+1. **The selection belongs to the priority part:** judge it against that element's job in the table
+   above and point at ONE thing. The student rewrites it; never write it for them.
+2. **The selection belongs to a different part:** say so in one sentence, name their priority, and ask
+   them to select a sentence from that part instead. Do not coach the other part.
+3. **The priority is Technical Accuracy:** coach the spelling, punctuation and grammar of the
+   selection, one kind of error at a time.
+4. **The document says the priority is not ready yet:** coach Layer 1 prose, as the `prose_style`
+   lens does, and tell them once that finishing Mark Your Draft gives them their priority.
+
+Structural techniques (hooks, foreshadowing, a ticking clock, irony) are welcome **when they serve
+the priority part**: a Hook priority can use any hook technique. Do not bring in a technique for a
+part that is not their priority, and do not raise later layers (character arc, archetypes, empathy,
+theme, genre). The student has not been taught them.
+
+**Pointer phrase:** *Your priority is the [part]. Which sentence here belongs to it?*
+
 ### Lens `character_arc` — Draft 2
 
 The student has already defined, in Steps 11–12: **external goal · internal goal · need · stakes ·
