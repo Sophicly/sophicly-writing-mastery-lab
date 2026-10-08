@@ -256,12 +256,13 @@ const SEVEN = (hook, setup) => [
         const beats = W2.chips().map(chipText);
         ok(beats.length === 6 && /^Beat 1: At first/.test(beats[0]), 'the student places it on one of THEIR beats', beats);
         W2.tap(chip(W2, /^Beat 6:/)); await settle();
-        ok(/Your dramatic situation: The Chase/.test(W2.bubbles.join('\n')) && /the one on the run/.test(W2.bubbles.join('\n')), 'a browsed pick confirms with the list\'s own roles');
+        ok(/Your dramatic situation: The Chase/.test(W2.bubbles.join('\n')) && /The one on the run · The hunter/.test(W2.bubbles.join('\n')), 'a browsed pick confirms with the list\'s own roles, each starting with a capital');
         ok(W2.sends.length === 0, '⭐ the browse route costs ZERO API calls', W2.sends.length);
         await until(W2, () => { try { return JSON.parse(W2.store.scene_selection_state || '{}').situation; } catch (e) { return false; } });
         W2.tap(chip(W2, /Choose my scene/)); await until(W2, () => !!island.props);
         ok(island.props && island.props.initial && JSON.stringify(island.props.initial.stageIds) === '["spine-beat-6"]', '⭐ the picker opens ON the situation\'s beat', island.props && island.props.initial);
-        ok(island.props && /The Chase/.test(island.props.labels.sub) && !LEAK_RE.test(island.props.labels.sub), 'the picker is headed by the chosen situation', island.props && island.props.labels.sub);
+        ok(island.props && /The Chase\.\*\* Someone is on the run/.test(island.props.labels.sub) && !LEAK_RE.test(island.props.labels.sub), 'the picker is headed by the chosen situation and its meaning', island.props && island.props.labels.sub);
+        ok(island.props && !/one on the run ·|hunter/i.test(island.props.labels.sub), 'the heading does NOT carry the roles (they ran on into the island\'s sentence, staging .743)', island.props && island.props.labels.sub);
         await island.transfer({ stageIds: ['spine-beat-6'], elements: SEVEN([island.props.stages[5].beats[0]], []) });
         ok((dropdowns.pop() || {}).label === 'End (Beats 5–6)', 'beat 6 → End (Beats 5–6)');
         island.props = null;

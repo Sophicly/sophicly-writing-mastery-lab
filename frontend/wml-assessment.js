@@ -31427,11 +31427,14 @@
                     persistState(pid, st);
                 });
             }
-            function situationLine(sit) {
+            // `withRoles` false = the picker's heading: the name and its meaning only (measured on staging
+            // .743: the roles ran on into the island's own sentence — the chat already shows them).
+            function situationLine(sit, withRoles) {
                 const s = sit && _poltiById(Number(sit.id));
                 if (!s) return '';
+                const cap = function (r) { r = String(r || '').trim(); return r.charAt(0).toUpperCase() + r.slice(1); };
                 return '**Your dramatic situation: ' + s.name + '.** ' + s.what
-                    + ((sit.roles && sit.roles.length) ? '\n\n' + sit.roles.join(' · ') : '');
+                    + ((withRoles !== false && sit.roles && sit.roles.length) ? '\n\n' + sit.roles.map(cap).join(' · ') : '');
             }
             function lastPicksInTranscript() {
                 const h = Array.isArray(canvasChatHistory) ? canvasChatHistory : [];
@@ -31647,7 +31650,7 @@
                     stages: w.stages,
                     // v7.20.737: beats, not stages. v7.20.743: the chosen dramatic situation heads the picker.
                     labels: U() ? Object.assign({}, U().islandLabels, (U().polti && situation)
-                        ? { sub: situationLine(situation).replace(/\n+/g, ' ') + ' ' + U().islandLabels.sub } : {}) : undefined,
+                        ? { sub: situationLine(situation, false) + ' ' + U().islandLabels.sub } : {}) : undefined,
                     elements: ELEMENTS,
                     nudgeRules: NUDGE_RULES,
                     initial: ini.value,
