@@ -843,6 +843,16 @@ const SEVEN = (hook, setup) => [
         const r2 = GF.once(3, [{ role: 'assistant', content: 'Welcome to Step 3: **Create Your Logline**' }], () => drew++);
         console.warn = quiet;
         ok(r1 === false && r2 === false && drew === 0, '⭐ a stored "Welcome to lesson 2:" greeting counts as drawn — the replay and the emitter never both draw it (#240)', { r1, r2, drew });
+        // ONE name per lesson: the greeting's lesson name is the unit document's own heading (staging .756 said "Welcome
+        // to lesson 4: Brief Outline" over a document headed "Your Story Spine"), read through WMLC.cwStepLabel.
+        ok((SRC.match(/const stepLabel = WML\.cwStepLabel\(cwStepDef\) \|\| 'this step';/g) || []).length === 4 && !/const stepLabel = cwStepDef\??\.label \|\| 'this step'/.test(SRC),
+            'all four greeting sites name the lesson through cwStepLabel');
+        const headOf = (step) => { const d = (WMLC.CW_STEPS || []).find((x) => x.step === step); st.cwUnit = 'weekend'; const u = WMLC.cwStepLabel(d); st.cwUnit = ''; return { u, f: WMLC.cwStepLabel(d), label: d && d.label }; };
+        [2, 3, 4].forEach((n) => {
+            const { u, f, label } = headOf(n);
+            ok(D1.f(render(n)).indexOf('<h2>' + u + '</h2>') !== -1, '⭐ lesson ' + n + '\'s greeting name "' + u + '" is its document\'s heading', u);
+            ok(f && f === label, 'lesson ' + n + ': the full course keeps its own label ("' + f + '")');
+        });
     }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }

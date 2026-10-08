@@ -19823,7 +19823,7 @@
                             clearWalkResume();
                             setTimeout(() => { _cwAdaptCtl.reset(); _cwAdaptCtl.start(); }, 200);
                         } else if (isCwTask && cwStepDef) {
-                            const stepLabel = cwStepDef.label || 'this step';
+                            const stepLabel = WML.cwStepLabel(cwStepDef) || 'this step';
                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
                             // v7.20.292: the RESUME greeting must echo the chosen structure too. .286 patched only
                             // the FRESH-entry greeting, so the one Neil actually saw stayed anonymous.
@@ -43398,7 +43398,7 @@
                     // CW SI greeting — same as transition handler
                     setTimeout(async () => {
                     const firstName = (config.userName || '').split(' ')[0] || 'there';
-                    const stepLabel = cwStepDef?.label || 'this step';
+                    const stepLabel = WML.cwStepLabel(cwStepDef) || 'this step';
                     const stepNum = cwStepDef?.step || cwStepDef?.trial || '';
                     const projectId = state.cwProjectId;
 
@@ -44732,7 +44732,7 @@
                                             clearWalkResume();
                                             setTimeout(() => { window.__swmlCw13Ctl.reset(); window.__swmlCw13Ctl.start(); }, 200);
                                         } else if (isCwTask && cwStepDef) {
-                                            const stepLabel = cwStepDef.label || 'this step';
+                                            const stepLabel = WML.cwStepLabel(cwStepDef) || 'this step';
                                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
                                             // v7.20.292: the RESUME greeting must echo the chosen structure too. .286 patched only
                                             // the FRESH-entry greeting, so the one Neil actually saw stayed anonymous.
@@ -46566,7 +46566,7 @@
                                                 return;
                                             }
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
-                                            const stepLabel = cwStepDef?.label || 'this step';
+                                            const stepLabel = WML.cwStepLabel(cwStepDef) || 'this step';
                                             const stepNum = cwStepDef?.step || cwStepDef?.trial || '';
                                             const projectId = state.cwProjectId;
 

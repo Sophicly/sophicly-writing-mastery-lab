@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.756';
+var WML_BUILD = '7.20.757';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1097,8 +1097,10 @@ window.WML = (function() {
         // Planning Phase
         { step: 1,  label: 'Writer Profile',           tier: 'si', phase: 'planning' },
         { step: 2,  label: 'Explore Story Ideas',      tier: 'si', phase: 'planning' },
-        { step: 3,  label: 'Create Logline',            tier: 'si', phase: 'planning' },
-        { step: 4,  label: 'Brief Outline',             tier: 'si', phase: 'planning' },
+        // v7.20.756 (#801): a weekend lesson names these the way its own document does (CW_UNIT_DOC_EDITS) — read ONLY
+        // through cwStepLabel below; the full course keeps its labels.
+        { step: 3,  label: 'Create Logline',            tier: 'si', phase: 'planning', unitLabel: 'Create Your Logline' },
+        { step: 4,  label: 'Brief Outline',             tier: 'si', phase: 'planning', unitLabel: 'Your Story Spine' },
         { step: 5,  label: 'Choose Plot Structure',     tier: 'si', phase: 'planning' },
         { step: 6,  label: 'Plot Outline Workshop',     tier: 'si', phase: 'planning' },
         // ⭐ v7.20.419 (Neil, 2026-08-04) — TRAINING ENVIRONMENT, exactly as Step 5. This one word
@@ -1208,6 +1210,7 @@ window.WML = (function() {
     // exercise config, the workbook test and the router's lens can never disagree about a step.
     function cwStepEnv(def) { return def ? ((cwInUnit() && def.unitEnv) || def.env || '') : ''; }
     function cwStepLens(def) { return def ? ((cwInUnit() && def.unitLens) || def.lens || '') : ''; }
+    function cwStepLabel(def) { return def ? ((cwInUnit() && def.unitLabel) || def.label || '') : ''; }
 
     // Lookup helper: task string → CW_STEPS entry
     function getCwStepDef(task) {
@@ -6063,7 +6066,7 @@ window.WML = (function() {
         EXERCISE_MANIFEST,
         // Creative Writing
         CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
-        cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget, cwStepEnv, cwStepLens,
+        cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget, cwStepEnv, cwStepLens, cwStepLabel,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
         // Revision map
         REVISION_MAP,
