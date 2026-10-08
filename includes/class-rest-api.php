@@ -7224,9 +7224,18 @@ class SWML_REST_API {
      * reason step_completion is per-project. Trials likewise come from this project's own
      * `trials` array, derived exactly as load_cw_project derives trial_completion.
      */
-    private static function cw_new_story_block($user_id) {
+    private static function cw_new_story_block($user_id, $course_context = 'standalone') {
         $index = SWML_Session_Manager::list_projects($user_id);
-        if (!is_array($index) || !count($index)) { return null; }   // first story is always free
+        // v7.20.758 (#802): the weekend story is its OWN kind of project (course_context 'weekend'). The gate reads only
+        // stories of the kind being created, so an unfinished summer story never blocks a first weekend story, and a
+        // weekend story never blocks the full course. Same rule within each kind ("focus on one").
+        $weekend = ($course_context === 'weekend');
+        if (is_array($index)) {
+            $index = array_filter($index, function ($e) use ($weekend) {
+                return is_array($e) && ((($e['course_context'] ?? '') === 'weekend') === $weekend);
+            });
+        }
+        if (!is_array($index) || !count($index)) { return null; }   // first story of this kind is always free
 
         // Most recently touched — 'updated' is a MySQL datetime, which sorts lexically.
         $current = null; $current_id = ''; $best = '';
@@ -7250,8 +7259,9 @@ class SWML_REST_API {
         if ($step_9 && $trial_1) { return null; }
 
         $needs = [];
-        if (!$step_9)  { $needs[] = 'Step 9 (Draft 1)'; }
-        if (!$trial_1) { $needs[] = 'Trial 1'; }
+        // A weekend student names the lessons of the weekend story (Step 9 is its lesson 5, Trial 1 its lesson 7).
+        if (!$step_9)  { $needs[] = $weekend ? 'lesson 5 (Your Dramatic Situation)' : 'Step 9 (Draft 1)'; }
+        if (!$trial_1) { $needs[] = $weekend ? 'lesson 7 (Mark Your Draft)' : 'Trial 1'; }
 
         // Name, never the id — a student must never be shown a machine key (root CLAUDE.md §14).
         return [
@@ -7269,7 +7279,7 @@ class SWML_REST_API {
             // v7.20.309: enforced HERE, at the API boundary, not in the overlays. There are four
             // separate places a new story can be started (entry switcher, step-1 picker, project
             // selector, naming overlay); gating each is how one of them silently misses it.
-            $block = self::cw_new_story_block($user_id);
+            $block = self::cw_new_story_block($user_id, sanitize_key($params['course_context'] ?? 'standalone'));
             if ($block !== null) {
                 return rest_ensure_response([
                     'success'        => false,

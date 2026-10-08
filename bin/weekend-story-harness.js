@@ -854,6 +854,68 @@ const SEVEN = (hook, setup) => [
             ok(f && f === label, 'lesson ' + n + ': the full course keeps its own label ("' + f + '")');
         });
     }
+    // ── N · v7.20.758: the weekend story is its OWN project (Neil, FIXLIST #802: "it should have its own wml document…
+    // students should also be able to create a new weekend course project just like they can for the full creative
+    // writing project"). Before this, a weekend lesson opened the student's most recent project of ANY kind — on prod,
+    // 16 real students' summer stories. Driven through the REAL WML.cwProject (fetch stubbed) and the REAL PHP gate.
+    console.log('\nN · the weekend story is its own project: its own list, its own create, its own pin, its own gate');
+    {
+        const PROJ = [{ id: 'cwp_full', course_context: 'standalone' }, { id: 'cwp_legacy' }, { id: 'cwp_wk', course_context: 'weekend' }];
+        const posts = [];
+        const realFetch = global.fetch;
+        global.fetch = async (url, opts) => {
+            const isPost = !!(opts && opts.method === 'POST');
+            if (isPost) posts.push(JSON.parse(opts.body || '{}'));
+            const body = isPost ? { success: true, project: { id: 'cwp_new' } } : { success: true, projects: PROJ };
+            return { ok: true, status: 200, text: async () => JSON.stringify(body), json: async () => body };
+        };
+        const P = WMLC.cwProject;
+        const ids = (r) => ((r && r.projects) || []).map((p) => p.id).join(',');
+        let wk, fc, wkPin, fcPin;
+        try {
+            st.cwUnit = 'weekend'; wk = await P.list(); wkPin = P.pinKey(); await P.create('A');
+            st.cwUnit = ''; fc = await P.list(); fcPin = P.pinKey(); await P.create('B');
+        } finally { global.fetch = realFetch; st.cwUnit = ''; }
+        ok(ids(wk) === 'cwp_wk', '⭐ a weekend lesson lists ONLY weekend stories (never the student\'s summer story)', ids(wk));
+        ok(ids(fc) === 'cwp_full,cwp_legacy', 'the full course lists every non-weekend story, untagged legacy ones included', ids(fc));
+        ok(posts.length === 2 && posts[0].course_context === 'weekend' && posts[1].course_context === 'standalone', '⭐ create() makes THIS lesson\'s kind, whatever the call site passed', posts.map((b) => b.course_context));
+        ok(fcPin === 'swml_cw_active_project' && wkPin === 'swml_cw_active_project__weekend', 'the "which story am I in" pin is kept per kind; the full course\'s key is unchanged', [fcPin, wkPin]);
+        ok(!/cwProject\.create\([^)]*,\s*'standalone'\)/.test(SRC), 'no call site still passes a kind literal (create() decides)');
+        ok(/bits\.push\(_cwUnitText\(p\.progress_label\)\)/.test(SRC) && /'\+ Start a new weekend story'/.test(SRC) && /'Your weekend stories'/.test(SRC) && /'Name your weekend story'/.test(SRC),
+            'the story picker speaks of weekend stories, and its "Step 4 — …" progress line names the lesson');
+        // the REAL server gate, per kind
+        const RA = fs.readFileSync(path.join(ROOT, 'includes/class-rest-api.php'), 'utf8');
+        const gi3 = RA.indexOf('private static function cw_new_story_block($user_id, $course_context = \'standalone\') {');
+        ok(gi3 > 0 && /self::cw_new_story_block\(\$user_id, sanitize_key\(\$params\['course_context'\] \?\? 'standalone'\)\)/.test(RA), 'the create endpoint gates on the kind being created');
+        if (gi3 > 0) {
+            const FN = RA.slice(gi3, braceSliceFrom(RA, gi3, '{', '}').end).replace('private static function', 'public static function');
+            const tmp = path.join(require('os').tmpdir(), 'wml-gate-' + process.pid + '.php');
+            fs.writeFileSync(tmp, "<?php\nfunction absint($v){return abs((int)$v);}\nclass SWML_Session_Manager { public static $I = []; public static $P = [];\n"
+                + " public static function list_projects($u){return self::$I;} public static function get_project($u,$id){return self::$P[$id] ?? null;} }\n"
+                + "class X {\n" + FN + "\n}\n$o = [];\n"
+                // a student with an UNFINISHED summer story and nothing else
+                + "SWML_Session_Manager::$I = ['cwp_s' => ['id'=>'cwp_s','name'=>'Summer','updated'=>'2026-08-01 10:00:00','course_context'=>'standalone']];\n"
+                + "SWML_Session_Manager::$P = ['cwp_s' => ['step_completion'=>[], 'trials'=>[]]];\n"
+                + "$o['weekendFirst'] = X::cw_new_story_block(1, 'weekend'); $o['fullSecond'] = X::cw_new_story_block(1, 'standalone');\n"
+                // + an unfinished weekend story
+                + "SWML_Session_Manager::$I['cwp_w'] = ['id'=>'cwp_w','name'=>'Weekend','updated'=>'2026-10-08 10:00:00','course_context'=>'weekend'];\n"
+                + "SWML_Session_Manager::$P['cwp_w'] = ['step_completion'=>[], 'trials'=>[]];\n"
+                + "$o['weekendSecond'] = X::cw_new_story_block(1, 'weekend');\n"
+                // the weekend story carried through lessons 5 and 7
+                + "SWML_Session_Manager::$P['cwp_w'] = ['step_completion'=>[9=>true], 'trials'=>[['trial'=>1]]];\n"
+                + "$o['weekendAfterFinish'] = X::cw_new_story_block(1, 'weekend'); $o['fullStillGated'] = X::cw_new_story_block(1, 'standalone');\n"
+                + "echo json_encode($o);\n");
+            let G = {};
+            try { G = JSON.parse(cp.execFileSync('php', [tmp], { encoding: 'utf8' })); }
+            catch (e) { ok(false, 'the PHP gate ran', String(e && e.message).slice(0, 300)); }
+            finally { try { fs.unlinkSync(tmp); } catch (e) { /* gone */ } }
+            ok(G.weekendFirst === null, '⭐ an unfinished summer story never blocks a first weekend story', G.weekendFirst);
+            ok(G.fullSecond && G.fullSecond.story_name === 'Summer', 'the full course\'s own rule still holds (finish the summer story first)', G.fullSecond);
+            ok(G.weekendSecond && G.weekendSecond.story_name === 'Weekend' && (G.weekendSecond.needs || []).join('|') === 'lesson 5 (Your Dramatic Situation)|lesson 7 (Mark Your Draft)',
+                'a second weekend story waits for the current one, named in lessons — never "Step 9"', G.weekendSecond);
+            ok(G.weekendAfterFinish === null && G.fullStillGated && G.fullStillGated.story_name === 'Summer', 'finishing the weekend story frees the weekend kind only', [G.weekendAfterFinish, G.fullStillGated]);
+        }
+    }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }
     console.log('✅ weekend-story-harness passed (lesson 5 offers the six spine beats; the full course is untouched).');

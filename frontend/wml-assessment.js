@@ -66423,6 +66423,9 @@
     // Naming-input overlay. onSave(name) receives trimmed name; onCancel = null when
     // there's no switcher to return to (0-projects path). Returns a promise that
     // resolves once the overlay is dismissed (project saved OR skipped).
+    // v7.20.758 (#802): a weekend lesson's project overlays speak of weekend stories — the list holds ONLY those
+    // (WML.cwProject partitions by kind), so calling them "Creative Writing projects" would describe the wrong set.
+    function _cwpWords(full, weekend) { return (WML.cwInUnit && WML.cwInUnit()) ? weekend : full; }
     function _showCWProjectNameInputOverlay({ mode, onSave, onCancel }) {
         return new Promise((resolve) => {
             const overlay = _cwMountOverlay();
@@ -66453,20 +66456,20 @@
             const title = document.createElement('h2');
             title.id = 'swml-cwp-title';
             title.className = 'swml-cw-project-overlay__title';
-            title.textContent = mode === 'first' ? 'Name your Creative Writing project' : 'Name your new project';
+            title.textContent = mode === 'first' ? _cwpWords('Name your Creative Writing project', 'Name your weekend story') : _cwpWords('Name your new project', 'Name your new weekend story');
             card.appendChild(title);
 
             const hint = document.createElement('p');
             hint.className = 'swml-cw-project-overlay__hint';
             hint.textContent = mode === 'first'
-                ? 'Give your first CW project a title so you can come back to it later. You can create more projects any time.'
-                : 'Give this project a title. You can rename it later.';
+                ? _cwpWords('Give your first CW project a title so you can come back to it later. You can create more projects any time.', 'Give your weekend story a title so you can come back to it later. It is kept separate from any other story you have written.')
+                : _cwpWords('Give this project a title. You can rename it later.', 'Give this weekend story a title. You can rename it later.');
             card.appendChild(hint);
 
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'swml-cw-project-overlay__input';
-            input.placeholder = 'My Creative Writing Project';
+            input.placeholder = _cwpWords('My Creative Writing Project', 'My Weekend Story');
             input.maxLength = 60;
             card.appendChild(input);
 
@@ -66599,15 +66602,15 @@
             title.id = 'swml-cwp-title';
             title.className = 'swml-cw-project-overlay__title';
             title.textContent = _isReview
-                ? 'Their Creative Writing projects'
-                : 'Your Creative Writing projects';
+                ? _cwpWords('Their Creative Writing projects', 'Their weekend stories')
+                : _cwpWords('Your Creative Writing projects', 'Your weekend stories');
             card.appendChild(title);
 
             const hint = document.createElement('p');
             hint.className = 'swml-cw-project-overlay__hint';
             hint.textContent = _isReview
                 ? 'Choose which project to look at. Nothing can be changed while you are reviewing.'
-                : 'Pick up where you left off, or start a new project.';
+                : _cwpWords('Pick up where you left off, or start a new project.', 'Pick up where you left off, or start a new weekend story.');
             card.appendChild(hint);
 
             const list = document.createElement('div');
@@ -66683,7 +66686,7 @@
                 const bits = [];
                 const dateLabel = _formatDate(p.updated || p.created);
                 if (dateLabel) bits.push('last edited ' + dateLabel);
-                if (p.progress_label) bits.push(p.progress_label);
+                if (p.progress_label) bits.push(_cwUnitText(p.progress_label));   // v7.20.758: "Step 4 — …" is "Lesson 4 — …" in a weekend lesson
                 if (bits.length) {
                     const metaEl = document.createElement('div');
                     metaEl.className = 'swml-cw-project-overlay__list-meta';
@@ -66765,7 +66768,7 @@
                 const newBtn = document.createElement('button');
                 newBtn.className = 'swml-cw-project-overlay__new-btn';
                 newBtn.type = 'button';
-                newBtn.textContent = '+ Start new project';
+                newBtn.textContent = _cwpWords('+ Start new project', '+ Start a new weekend story');
                 newBtn.addEventListener('click', async () => {
                     overlay.remove();
                     const r = await _showCWProjectNameInputOverlay({
@@ -66838,7 +66841,7 @@
                 await _showCWProjectNameInputOverlay({
                     mode: 'first',
                     onSave: async (name) => {
-                        const c = await WML.cwProject.create(name, 'standalone');
+                        const c = await WML.cwProject.create(name);
                         if (c && c.success && c.project) _navigateTo(c.project.id, _step1UrlFromCurrent());
                     },
                     onCancel: null,
@@ -66856,7 +66859,7 @@
                     _navigateTo(id, target);
                 },
                 onNew: async (name) => {
-                    const c = await WML.cwProject.create(name, 'standalone');
+                    const c = await WML.cwProject.create(name);
                     if (c && c.success && c.project) _navigateTo(c.project.id, _step1UrlFromCurrent());
                 },
             });
@@ -67321,7 +67324,7 @@
                 await _showCWProjectNameInputOverlay({
                     mode: 'first',
                     onSave: async (name) => {
-                        const c = await WML.cwProject.create(name, 'standalone');
+                        const c = await WML.cwProject.create(name);
                         if (c?.success && c.project) {
                             setStateFromProject(c.project.id, c.project.name || name);
                         }
@@ -67337,7 +67340,7 @@
                         setStateFromProject(id, name);
                     },
                     onNew: _reviewing ? null : async (name) => {
-                        const c = await WML.cwProject.create(name, 'standalone');
+                        const c = await WML.cwProject.create(name);
                         if (c?.success && c.project) {
                             setStateFromProject(c.project.id, c.project.name || name);
                         }
@@ -67371,7 +67374,7 @@
                     console.warn('WML CW review: no projects for this student; creating nothing.');
                 } else {
                     // Genuinely a first-time student: creating is correct here, and cannot fork.
-                    const c = await WML.cwProject.create('My Story', 'standalone');
+                    const c = await WML.cwProject.create('My Story');
                     if (c?.success && c.project) {
                         state.cwProjectId = c.project.id;
                         state.cwProjectName = c.project.name || 'My Story';

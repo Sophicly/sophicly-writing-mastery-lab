@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.757';
+var WML_BUILD = '7.20.758';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -3528,7 +3528,23 @@ window.WML = (function() {
         console.warn('WML CW: refusing to ' + what + ' — review mode is read-only.');
         return Promise.resolve({ success: false, review_readonly: true, message: 'Review mode is read-only.' });
     };
+    // ⭐ v7.20.758 — THE WEEKEND STORY IS ITS OWN PROJECT (Neil, 8 Oct, FIXLIST #802: *"The weekend story needs to be
+    // separate. It can use the same exercises but it should have its own wml document… a mini creative writing course.
+    // Students should also be able to create a new weekend course project just like they can for the full creative
+    // writing project"*). A project's KIND is its `course_context` (stored on every project since v7.13.30, read by
+    // nothing until now): 'weekend' for a weekend story, anything else is the full course. Every document key carries
+    // the project id, so a separate project IS a separate set of documents. Decided HERE, once — list() shows only this
+    // lesson's kind, create() makes this lesson's kind (the call sites' 'standalone' literal is not trusted), and the
+    // "which story am I in" pin is kept per kind — so no picker, resolver or overlay can mix the two by forgetting.
+    const CW_WEEKEND_CONTEXT = 'weekend';
+    const _cwKind = () => (cwInUnit() ? CW_WEEKEND_CONTEXT : 'standalone');
+    const _cwKindMatch = (p) => {
+        const isWeekend = !!p && p.course_context === CW_WEEKEND_CONTEXT;
+        return cwInUnit() ? isWeekend : !isWeekend;
+    };
     const cwProject = {
+        /** v7.20.758: 'weekend' in a weekend lesson, 'standalone' in the full course. */
+        kind() { return _cwKind(); },
         /** True while viewing another user's work. Callers gate creation/naming UI on this. */
         isReviewing() { return !!_cwReviewTarget(); },
         /**
@@ -3541,14 +3557,15 @@ window.WML = (function() {
          */
         pinKey() {
             const t = _cwReviewTarget();
-            return 'swml_cw_active_project' + (t ? '__review_' + t : '');
+            // v7.20.758: a weekend lesson keeps its own pin; the full course's key is unchanged (no live pin invalidated).
+            return 'swml_cw_active_project' + (cwInUnit() ? '__' + CW_WEEKEND_CONTEXT : '') + (t ? '__review_' + t : '');
         },
         /** Create a new project. Returns { success, project }. */
-        create(name, courseContext = 'standalone') {
+        create(name) {   // v7.20.758: the kind is THIS lesson's, never a call site's literal
             const blocked = _cwReadOnly('create a project');
             if (blocked) { return blocked; }
             return _cwBroadcast(
-                apiPost(API.cwProject, { action: 'create', name, course_context: courseContext, lesson_url: _lu() })
+                apiPost(API.cwProject, { action: 'create', name, course_context: _cwKind(), lesson_url: _lu() })
                     .then((res) => {
                         // v7.20.309: the new-story gate refused. Surface it HERE, once, rather than
                         // at each of the four places a story can be started — a refusal the student
@@ -3570,9 +3587,11 @@ window.WML = (function() {
                 { event: 'project_update', project_id: projectId }
             );
         },
-        /** List all projects. Returns { success, projects: [] }. */
+        /** List THIS lesson's kind of project (v7.20.758). Returns { success, projects: [] }. */
         list() {
-            return apiGet(_cwRq(API.cwProject));
+            return apiGet(_cwRq(API.cwProject)).then((res) => (res && Array.isArray(res.projects))
+                ? Object.assign({}, res, { projects: res.projects.filter(_cwKindMatch) })
+                : res);
         },
         /** Load full project data. Returns { success, project }. */
         load(projectId) {

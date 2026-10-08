@@ -1524,7 +1524,7 @@
                 errorMsg.textContent = '';
                 createBtn.disabled = true;
                 createBtn.style.opacity = '0.5';
-                const res = await WML.cwProject.create(name, 'standalone');
+                const res = await WML.cwProject.create(name);
                 if (res?.success && res.project) {
                     onCreated(res.project);
                 } else {
