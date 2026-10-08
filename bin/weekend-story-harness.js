@@ -366,7 +366,7 @@ const SEVEN = (hook, setup) => [
             'lesson 6: the unit note rides the polishing branch too (it returns before the protocol map)');
         const di6 = SRC.indexOf("if (_unitDraft && stepDef.draft === 1) info = {");
         const d6 = SRC.slice(di6, SRC.indexOf('};', di6));
-        ok(di6 > 0 && /tap <strong>Sophia<\/strong>/.test(d6) && /WML\.cwWordTarget\('d1'\)/.test(d6) && /Choose Your Scene lesson/.test(d6)
+        ok(di6 > 0 && /tap <strong>Sophia<\/strong>/.test(d6) && /WML\.cwWordTarget\('d1'\)/.test(d6) && /lesson 5, Your Dramatic Situation/.test(d6)
             && !LEAK_RE.test(d6.replace(/<[^>]+>/g, ' ')),
             'lesson 6: the page names Sophia, states the board\'s Draft-1 target, and names no step, plot or stage');
         ok(/const CW_UNIT_DEP_SOURCE = \{ plot_outline: 'brief_outline' \}/.test(SRC) && /const key = _cwDepSource\(depKey\);/.test(SRC),
@@ -409,6 +409,9 @@ const SEVEN = (hook, setup) => [
     console.log(' I · the sidebar speaks the unit\'s words');
     {
         const CORE = fs.readFileSync(path.join(ROOT, 'frontend/wml-core.js'), 'utf8');
+        // v7.20.747 (#781, PEDAGOGY §35): no student-facing string may claim examiners mark in hurdles.
+        const hurdle = (SRC.match(/^[^\n]*'[^'\n]*(only when ALL|hurdle|unlock the next|pass this level|before you can move up)[^'\n]*'/gim) || []).filter((l) => !/^\s*\/\//.test(l));
+        ok(!hurdle.length, '⭐ no student-facing copy says examiners mark in hurdles (§35)', hurdle.map((l) => l.trim().slice(0, 120)));
         ok((SRC.match(/'Lesson Progress'/g) || []).length === 2, '⭐ BOTH pipelines title a weekend lesson\'s sidebar "Lesson Progress", never "Step N Progress"');
         const ui = CORE.indexOf('const CW_UNIT_SIDEBAR_STEPS = {');
         const ublock = ui > 0 ? CORE.slice(ui, CORE.indexOf('};', ui)) : '';

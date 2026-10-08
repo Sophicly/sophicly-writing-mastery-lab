@@ -5552,7 +5552,7 @@
     // edit a silent no-op, so bin/weekend-story-harness.js runs every edit against its real source.
     const CW_UNIT_TEXT_EDITS = [
         ['arrives at the **stunning surprise**, and you’ll build that in Step 6.', 'often arrives a little later in the story.'],   // lesson 3 (Step 3 goal ask)
-        ['you planned back in Step 9', 'you planned in the Choose Your Scene lesson'],                                              // lesson 7 (Trial 1 intro)
+        ['you planned back in Step 9', 'you planned in lesson 5, Your Dramatic Situation'],   // v7.20.747: lesson 5 renamed (§55.1)                                              // lesson 7 (Trial 1 intro)
         ['carry on to Step 11 and come back to this.', 'carry on to the next lesson and come back to this.'],                      // lesson 7 (marking failed)
         ['open **My Plot** to see what you planned', 'open **My Story Spine** to see what you planned'],                              // lesson 7 (ask failed)
     ];
@@ -32144,7 +32144,7 @@
                     ];
                 },
                 nextStep: 'the next lesson',
-                noBeatsGate: 'Welcome to **Choose Your Scene**\n\nI can’t find the beats of your Story Spine yet. This lesson chooses your scene from those six beats, so your Story Spine needs to be written first.\n\nGo back to the Story Spine lesson, write your beats, then come back here.',
+                noBeatsGate: 'Welcome to **Your Dramatic Situation**\n\nI can’t find the beats of your Story Spine yet. This lesson chooses your scene from those six beats, so your Story Spine needs to be written first.\n\nGo back to the Story Spine lesson, write your beats, then come back here.',
                 noBeatsOpen: 'Your Story Spine has no written beats right now. Write them in the Story Spine lesson first, then come back.',
                 islandLabels: {
                     sub: 'Your exam story is one **scene** — a mini story with the same structure. Pick the part of your Story Spine it will cover, then shape it into the 7 elements.',
@@ -33575,10 +33575,13 @@
                         + 'Edexcel IGCSE numbers them AO4 and AO5, and Cambridge IGCSE folds accuracy into its one '
                         + 'Writing objective. Think of this trial as mock practice for understanding those objectives.',
                     // The examiner method itself (PEDAGOGY §33.10) — taught before it is used.
+                    // v7.20.747 (FIXLIST #781, PEDAGOGY §35): this sentence told students that real examiners
+                    // mark in hurdles ("only when ALL of it is met"). Cambridge's own principles forbid that
+                    // reading, and §35 rules a student must never be told it. The climb stays; the claim goes.
                     'And you are going to mark it **the way a real examiner marks**. Examiners climb: they read '
-                        + '**Level 1** of the mark scheme and, only when ALL of it is met, look at **Level 2**. '
-                        + 'Where the writing stops, they stop — and decide whether it sits at the **top** or the '
-                        + '**bottom** of that level.',
+                        + '**Level 1** of the mark scheme first, and at each level they ask whether the writing is '
+                        + 'still better than that description. Where the description **fits**, they stop — and decide '
+                        + 'whether the writing sits at the **top** or the **bottom** of that level.',
                     'Your draft is on the page beside this chat, and we will walk the **seven parts of a scene** '
                         + 'you planned back in Step 9 — hook, setup, reaction, epiphany, proaction, climax, '
                         + 'denouement. Each part is marked out of **4**: Level 1 is 1–2 marks, Level 2 is 3–4. '
@@ -55770,12 +55773,14 @@
             // stage, "stages are arcs") — the student has a six-beat Story Spine and nothing else.
             const _unit = !!(WML.cwInUnit && WML.cwInUnit());
             if (_unit) html += sectionHTML('question', 'About This Lesson', false, null,
-                '<h2>Choose Your Scene</h2>' +
+                '<h2>Your Dramatic Situation</h2>' +
                 '<p>In the exam you almost certainly won\u2019t have time to write a complete story from beginning to end. So you write <strong>one scene</strong>: a single part of your story, told in full, that reads as a story of its own.</p>' +
                 '<p><strong>Keep these three ideas in mind:</strong></p>' +
                 '<p><strong>1. Know where you are in the story.</strong> Notice whether your scene comes from the beginning, middle or end of your Story Spine. Your protagonist should be at that point in their journey.</p>' +
                 '<p><strong>2. Choose a moment that carries weight.</strong> The strongest scenes show a moment of change \u2014 a decision that can\u2019t be undone, or a discovery that alters everything.</p>' +
-                '<p><strong>3. A scene is built from small moments.</strong> One beat of your Story Spine is one sentence. Your scene opens it up into the moments inside it \u2014 action, reaction and change.</p>'
+                '<p><strong>3. A scene is built from small moments.</strong> One beat of your Story Spine is one sentence. Your scene opens it up into the moments inside it \u2014 action, reaction and change.</p>' +
+                // v7.20.747 (§55.1): the lesson is built on a dramatic situation, so the page says why.
+                '<p><strong>4. Build it on one conflict.</strong> Your dramatic situation names that conflict and the roles your characters play in it. Every part of your scene should push that one conflict forward.</p>'
             );
             else html += sectionHTML('question', 'About This Step', false, null,
                 '<h2>Step 9: Pick the Scene(s) You Want to Focus On</h2>' +
@@ -55880,7 +55885,7 @@
             // Sophia"; it names the lessons by what they do (no step numbers), drops the Hero's
             // Journey line (a plot idea this student never met) and states their board's target.
             const _unitDraft = !!(WML.cwInUnit && WML.cwInUnit() && WML.cwStepEnv(stepDef) === 'polishing');
-            if (_unitDraft && stepDef.draft === 1) info = { layer: info.layer, journey: '', desc: 'Your scene from the last lesson is waiting in the box below, exactly as you transferred it. Read it through and make every line real prose: what the reader would see and hear happen. Stephen King says in <em>On Writing</em>: \u201cThe first draft is just you telling yourself the story.\u201d Work on strong nouns and dynamic verbs, show rather than tell, and aim for around ' + WML.cwWordTarget('d1') + ' words.<br><br><strong>Sophia can help.</strong> Select any sentence in your draft and tap <strong>Sophia</strong>. She points to one thing that would make it stronger, and you write it.<br><br><em>If the box below is empty, go back to the Choose Your Scene lesson and tap \u201cTransfer my scene\u201d \u2014 that is what sends your writing here.</em>' };
+            if (_unitDraft && stepDef.draft === 1) info = { layer: info.layer, journey: '', desc: 'Your scene from the last lesson is waiting in the box below, exactly as you transferred it. Read it through and make every line real prose: what the reader would see and hear happen. Stephen King says in <em>On Writing</em>: \u201cThe first draft is just you telling yourself the story.\u201d Work on strong nouns and dynamic verbs, show rather than tell, and aim for around ' + WML.cwWordTarget('d1') + ' words.<br><br><strong>Sophia can help.</strong> Select any sentence in your draft and tap <strong>Sophia</strong>. She points to one thing that would make it stronger, and you write it.<br><br><em>If the box below is empty, go back to lesson 5, Your Dramatic Situation, and tap \u201cTransfer my scene\u201d \u2014 that is what sends your writing here.</em>' };
             html += sectionHTML('question', 'About This Draft', false, null,
                 `<h2>Draft ${stepDef.draft}: ${info.layer.charAt(0).toUpperCase() + info.layer.slice(1)}</h2>` +
                 (info.journey ? `<p><strong>The Hero\u2019s Journey Stage:</strong> ${info.journey}</p>` : '') +
