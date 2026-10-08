@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.751';
+var WML_BUILD = '7.20.753';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1189,6 +1189,11 @@ window.WML = (function() {
         // Polish Phase
         { step: 30, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
         { step: 31, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
+        // ⭐ v7.20.753 — UNIT-ONLY STEPS live at 90+ (WEEKEND-STORY-PLAN §2c) so a course renumber can never
+        // collide with them. Phase `unit` is in no full-course phase list, so the CW Step Dashboard never
+        // draws it; `unitOnly` is the guard a full-course entry reads (it says so and stops).
+        // Weekend lesson 9, "Adapt It to the Question": a code-served walk (`si` = chat + sidebar).
+        { step: 90, label: 'Adapt It to the Question', tier: 'si', phase: 'unit', unitOnly: 'weekend', words: 'exam' },
     ];
 
     // v7.20.507: "does this step run with the tools stripped?" ONE predicate, so the rail and the
@@ -1371,6 +1376,11 @@ window.WML = (function() {
             { step: 1, label: 'Your Dramatic Situation' },
             { step: 2, label: 'Choose Your Scene' },
             { step: 3, label: 'Scene Plan' },
+        ],
+        90: [   // v7.20.753: weekend lesson 9
+            { step: 1, label: 'Real Exam Questions' },
+            { step: 2, label: 'Choose Your Question' },
+            { step: 3, label: 'Rewrite and Check' },
         ],
     };
     CW_SIDEBAR_STEPS['trial_1'] = [
@@ -3917,6 +3927,8 @@ window.WML = (function() {
         // v7.20.743: weekend lesson 5 — @POLTI_PICKS{…} ends Sophia's dramatic-situation suggestions;
         // code reads it (_poltiParsePicks) and serves the chips. Instructed to be LAST, so strip to the end.
         text = text.replace(/@POLTI\\?_PICKS[\s\S]*$/, '').trim();
+        // v7.20.753: weekend lesson 9 — @ADAPT_CHECK{…} ends Sophia's one check of the rewrite (code files it). LAST.
+        text = text.replace(/@ADAPT\\?_CHECK[\s\S]*$/, '').trim();
         // v7.20.296: CW Step 6 — @CW6_START (greeting done, code serves the outline walk),
         // @STAGE_OK / @STAGE_GAP (the per-stage micro-check verdict) and @OUTLINE_OK /
         // @OUTLINE_GAP (the sampled finish check). Machine-read only: they stay in RAW history

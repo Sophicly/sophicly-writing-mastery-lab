@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.751
+ * Version: 7.20.753
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.751');
+define('SWML_VERSION', '7.20.753');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -206,6 +206,40 @@ class Sophicly_Writing_Mastery_Lab {
     public static function mc_gate_mode() {
         $m = get_option('swml_mc_gate_mode', 'watch');
         return in_array($m, ['off', 'watch', 'enforce'], true) ? $m : 'watch';
+    }
+
+    /**
+     * v7.20.753 (WEEKEND-STORY-PLAN §2c) — weekend lesson 9's real story questions for ONE board, from the
+     * sidecar bank (`_`-prefixed: never loaded into the model). ONE board table (root §5d): the course's board
+     * slug → the bank's board name; every slug is traced in bin/weekend-story-harness.js section L. Text
+     * questions only in v1 (a pictured question needs its picture). A board with none — CCEA's are all
+     * pictures; OCR and others are not in the bank yet — gets real questions from other boards, each flagged
+     * `fallback` so the lesson says so. Only what the page needs ships: no source paths.
+     */
+    public static function cw_adapt_prompts_for_board($board) {
+        $map = [
+            'aqa' => 'AQA', 'edexcel' => 'Edexcel GCSE', 'eduqas' => 'Eduqas',
+            'edexcel-igcse' => 'Edexcel IGCSE', 'cambridge-igcse' => 'Cambridge', 'ccea' => 'CCEA',
+        ];
+        $file = SWML_PROTOCOLS_PATH . 'shared/creative-writing/_adapt-prompts.json';
+        $bank = json_decode((string) @file_get_contents($file), true);
+        if (!is_array($bank)) { error_log('WML adapt: the question bank is missing or unreadable — ' . $file); return []; }
+        $text_shapes = ['opening-of-story', 'story-about', 'title', 'begins', 'ends', 'includes-words', 'element', 'time-when', 'occasion-when'];
+        $pick = function ($name) use ($bank, $text_shapes) {
+            $r = [];
+            foreach ($bank as $p) {
+                if (!is_array($p) || ($p['board'] ?? '') !== $name || !in_array($p['shape'] ?? '', $text_shapes, true)) continue;
+                $r[] = ['board' => (string) $p['board'], 'shape' => (string) $p['shape'], 'prompt' => (string) ($p['prompt'] ?? ''), 'sitting' => (string) ($p['sitting'] ?? '')];
+            }
+            return $r;
+        };
+        $name = $map[strtolower(str_replace('_', '-', (string) $board))] ?? '';
+        $out = $name !== '' ? $pick($name) : [];
+        if (!$out) {
+            $out = array_merge($pick('Eduqas'), $pick('Edexcel GCSE'));
+            foreach ($out as $i => $p) $out[$i]['fallback'] = true;
+        }
+        return $out;
     }
 
     /**
@@ -1160,6 +1194,10 @@ class Sophicly_Writing_Mastery_Lab {
             'cwUnit'      => in_array($atts['unit'], ['weekend'], true) ? $atts['unit'] : '',
             'cwExamBoard' => in_array($atts['unit'], ['weekend'], true) ? $board : '',
         ];
+        // v7.20.753: weekend lesson 9 ("Adapt It to the Question") — the student's own board's story questions.
+        if ($task === 'cw_step_90' && $embed_config['cwUnit'] !== '') {
+            $embed_config['cwAdaptPrompts'] = self::cw_adapt_prompts_for_board($board);
+        }
 
         // v7.20.634 (#588): the Mark Complete gate — its mode, a one-shot "the server refused a
         // completion" flag (so the reloaded lesson can explain itself), and a nonce the footer

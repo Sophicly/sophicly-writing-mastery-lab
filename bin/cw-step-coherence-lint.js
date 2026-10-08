@@ -12,10 +12,14 @@
  * fails silently, so it is a script now.
  *
  * WHAT IT ASSERTS — agreement between the independent number-keyed surfaces:
- *   1. CW_STEPS is contiguous 1..N with no gaps or duplicates.
+ *   1. CW_STEPS is contiguous 1..N with no gaps or duplicates — over the COURSE steps. A unit-only step
+ *      (`unitOnly`, e.g. weekend lesson 9 = step 90) is numbered 90+ so a course renumber can never
+ *      collide with it (WEEKEND-STORY-PLAN §2c); it is asserted to sit there, and no course step may.
  *   2. Every step in CW_STEPS has a protocol file in the router map, and that file EXISTS.
  *   3. The router's filename map and its label map cover exactly the same tasks.
  *   4. Each CW-STEP-NN-*.md file's own H1 says "Step NN" — the filename cannot drift from content.
+ *      A unit-only step's H1 names its weekend lesson instead, and never a course step number: the
+ *      heading reaches the model, and a weekend student must never be shown one (PEDAGOGY §55).
  *   5. Every plot-update step is in CW_ARTIFACT_MAP as 'plot_outline', and the published
  *      "N of M" ladder in the protocols matches the actual number of plot-update steps.
  *
@@ -47,9 +51,10 @@ function slice(src, startRe, endRe) {
 
 // ── 1. CW_STEPS contiguous ────────────────────────────────────────────────────
 const stepsBlock = slice(CORE, /const CW_STEPS = \[/, /^\s{4}\];/m);
-const steps = [...stepsBlock.matchAll(/\{\s*step:\s*(\d+),\s*label:\s*'([^']+)'/g)]
-    .map(m => ({ n: +m[1], label: m[2] }));
-const nums = steps.map(s => s.n).sort((a, b) => a - b);
+const steps = [...stepsBlock.matchAll(/\{\s*step:\s*(\d+),\s*label:\s*'([^']+)'[^}]*\}/g)]
+    .map(m => ({ n: +m[1], label: m[2], unit: /\bunitOnly:/.test(m[0]) }));
+const unitNums = steps.filter(s => s.unit).map(s => s.n);
+const nums = steps.filter(s => !s.unit).map(s => s.n).sort((a, b) => a - b);
 const dupes = nums.filter((n, i) => nums.indexOf(n) !== i);
 if (!steps.length) fail('CW_STEPS not parsed — the lint cannot see the registry');
 else if (dupes.length) fail(`CW_STEPS has duplicate step numbers: ${[...new Set(dupes)].join(', ')}`);
@@ -57,7 +62,10 @@ else {
     const gaps = [];
     for (let i = 1; i <= nums[nums.length - 1]; i++) if (!nums.includes(i)) gaps.push(i);
     if (gaps.length) fail(`CW_STEPS has gaps at: ${gaps.join(', ')}`);
-    else ok(`CW_STEPS is contiguous 1..${nums[nums.length - 1]} (${steps.length} steps, no duplicates)`);
+    else ok(`CW_STEPS is contiguous 1..${nums[nums.length - 1]} (${nums.length} course steps, no duplicates)`);
+    const lowUnit = unitNums.filter(n => n < 90), highCourse = nums.filter(n => n >= 90);
+    if (lowUnit.length || highCourse.length) fail(`90+ is reserved for unit-only steps — unit-only below 90: [${lowUnit}] · course steps at 90+: [${highCourse}]`);
+    else if (unitNums.length) ok(`${unitNums.length} unit-only step(s) in the reserved 90+ range: [${unitNums}]`);
 }
 
 // ── 2 + 3. Router maps agree with each other, and every file exists ───────────
@@ -101,6 +109,10 @@ for (const f of fs.readdirSync(PROTO_DIR).filter(f => /^CW-STEP-\d+-.*\.md$/.tes
     const n = parseInt(f.match(/^CW-STEP-(\d+)/)[1], 10);
     const first = fs.readFileSync(path.join(PROTO_DIR, f), 'utf8').split('\n')[0];
     const said = first.match(/Step (\d+)/);
+    if (unitNums.includes(n)) {
+        if (said || !/Weekend Lesson \d+/.test(first)) { fail(`${f}: a unit-only step's heading names its weekend lesson, never a course step`); hdrBad++; }
+        continue;
+    }
     if (!said) { fail(`${f}: first heading names no step number`); hdrBad++; }
     else if (+said[1] !== n) { fail(`${f}: filename says ${n}, heading says Step ${said[1]}`); hdrBad++; }
 }

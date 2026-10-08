@@ -94,6 +94,7 @@
         // overwrites state.board with `universal`, so the board rides separately).
         state.cwUnit = embedConfig.cwUnit || '';
         state.cwExamBoard = embedConfig.cwExamBoard || '';
+        state.cwAdaptPrompts = Array.isArray(embedConfig.cwAdaptPrompts) ? embedConfig.cwAdaptPrompts : [];   // v7.20.753: weekend lesson 9
         // v7.19.968 (Neil C): server-computed FQ round size → the sidebar shows the REAL
         // step count from FIRST PAINT (no 5-step placeholder that morphs mid-lesson). The
         // quiz controller's _syncFqSidebar remains the self-heal if the served round differs.
@@ -7955,6 +7956,7 @@ Before marking the introduction, ask the student to confirm their essay structur
             // v7.20.737: the weekend-story unit flag never leaks into a full-course lesson.
             state.cwUnit      = cfg.cwUnit || '';
             state.cwExamBoard = cfg.cwExamBoard || '';
+            state.cwAdaptPrompts = Array.isArray(cfg.cwAdaptPrompts) ? cfg.cwAdaptPrompts : [];   // v7.20.753: weekend lesson 9
             // v7.19.954: dynamic FQ sidebar length — never leak across lessons.
             // v7.19.968 (Neil C): seed from the server-computed round size so SPA-navigated
             // FQ lessons also paint the real step count immediately (0 when not an FQ lesson).

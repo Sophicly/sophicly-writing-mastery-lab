@@ -53,6 +53,44 @@ practised that. AQA 2026: AO5 capped at 12 if the task's focus is not addressed 
 **Open, not blocking the build:** OCR J351/02 is not on the drive (facts §8) — OCR students get the generic shapes
 until the paper is found; SQA N5 has no creative question (no lesson 8 for SQA).
 
+### 2c · Lesson 9 — the engineering (WML 333 A, 8 Oct; root §16 — written before code)
+
+**Task id = `cw_step_90`, a UNIT-ONLY step number** (`CW_STEPS` entry `{ step: 90, phase: 'unit', unitOnly: true }`).
+Measured, not assumed: a new string id (`cw_adapt`) misses every `cw_step_(\d+)` parser and ~60 `def.step` sites;
+a step NUMBER plugs into all of them (completion, server integer step, storage suffix `_cw_90`, sign-off,
+`cwStepUrls`, router `cw_step_` branch + CW preamble). Only ONE place lists every step (the CW Step Dashboard,
+`wml-app.js:1746`) and it draws a FIXED phase list, so phase `unit` never appears there. **Numbers 90+ are reserved
+for unit-only steps** so a future course renumber (there have been two) can never collide.
+**Touchpoints:** `CW_STEPS` + `CW_UNIT_SIDEBAR_STEPS[90]` + `CW_STEP_DEPS[90]` (core/assessment) · doc template
+(`_cwDocTemplateInner`, step 90) · walk controller `_cwAdaptCtl` (code-served) · router: protocol map
+`cw_step_90 → CW-STEP-90-adapt-to-the-question.md` (judgement rules ONLY — §5 retained-source law) + step label ·
+the prompt bank → client (PHP adds `cwAdaptPrompts` to the embed config for step 90 only, mapped from the
+student's `cwExamBoard` through ONE board table — §5d key-match, every board traced) · a guard: step 90 opened
+outside `unit="weekend"` says so and stops.
+**The walk (code-served, §4/§4b/§4c):** orientation chunks (paced) → per drill, ONE at a time (§4c.8b): the real
+prompt verbatim + its source line → criteria → the student's ONE line (banked to the drill's box, no API) → the
+worked example on the Scrooge spine (§4c.2; transferable rule first, §5c-ii) → Continue → next. Then a ONE-screen
+pick of the prompt to rewrite to → the rewrite box (seeded with their latest draft) + optional board timer →
+"Check my rewrite" → **the ONE judgement turn**: hidden context (prompt + rewrite + the board's own focus rule,
+quoted only where verified) → `@ADAPT_CHECK{"focus":"yes|partly|no","where":"…","fix":"…"}` → code validates →
+files "Sophia's check" into the document. Fail-open (§4d): no usable marker → a Try-again chip, never a dead screen.
+**v1 scope (named, not silent):** TEXT prompts only. CCEA's question is built on a picture and the papers never
+describe their pictures (FIXLIST #789), so v1 gives CCEA students other boards' text prompts, saying so plainly;
+picture prompts (AQA's picture option, CCEA) follow once the images are cropped from the papers. OCR J351/02
+(June 2024, on the drive) joins the bank as data. SQA: no lesson 9.
+**Gates:** weekend-story-harness section L (template, bank→board mapping for every board, marker validator,
+no step/plot words) · walk sim with liveness (walk-sim-lib) · pre-ship.
+**As built (v7.20.753), where it adds to the above:**
+- The help ladder rides BOTH asks: each question's line, and the rewrite (rung 3 sends their rewrite so far).
+- **ONE check per lesson** (Step 11's `pushed` precedent): after it, a question looked at again leads back to the end, never to a second call.
+- A reload between the verdict reaching the transcript and reaching the document recovers it from the transcript and never buys it twice.
+- The time line is the student's OWN board's sentence (a CCEA student practising another board's question still sits CCEA's 55 minutes). Cambridge prints no section time, so its 55 is ours and says so.
+- AQA's sample paper is shown as "sample paper for exams from 2026".
+- A scene typed into the chat stays on screen and the student is told it goes in the box.
+- `CW_STEP_DEPS[90] = plot_outline`, which a unit swaps for the Story Spine.
+- The bank's `source` paths are relative to the walkthrough folder; none ships to the page.
+- The AQA cap is verified at source: `AQA-8700-1-SMS-2026.pdf` lines 860–861, first exam June 2026.
+
 ## 2a · Lesson 5 — Your Dramatic Situation (Polti-first; replaces the unit's "Choose Your Scene")
 
 **Source of the list:** Neil's own adapted *33 Dramatic Situations based on Georges Polti's Ideas*

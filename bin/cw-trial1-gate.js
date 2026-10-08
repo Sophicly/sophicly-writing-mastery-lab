@@ -227,8 +227,10 @@ ok('…and trials 2–6 no longer share it (six trials looked identical because 
 // ── 4. THE SEVEN WIRING POINTS — a walk missing one ships DEAD, and silently ───────────────────
 console.log('\nAll seven wiring points name the controller (the .490 incident):');
 ok('1 · the dispatcher arm', /state\.task === 'cw_trial_1' && _cwTrial1Ctl\.active && _inboundIsAnswer/.test(SRC));
-ok('2 · the revive map', /cw_trial_1: _cwTrial1Ctl,\s*\n\s*\};\s*\n\s*const _cwCtl = _cwCtls\[state\.task\];/.test(SRC));
-ok('3 · the walk registry', /registerCwWalkCtls\(\[[^\]]*_cwTrial1Ctl\]\)/.test(SRC));
+// v7.20.753: ORDER-INDEPENDENT — this used to demand Trial 1 be the map's LAST entry, so the next walk appended
+// after it (weekend lesson 9) failed a check about Trial 1. The map is identified by what follows it, not by order.
+ok('2 · the revive map', /const _cwCtls = \{[^}]*\bcw_trial_1: _cwTrial1Ctl,[^}]*\};\s*\n\s*const _cwCtl = _cwCtls\[state\.task\];/.test(SRC));
+ok('3 · the walk registry', /registerCwWalkCtls\(\[[^\]]*\b_cwTrial1Ctl\b[^\]]*\]\)/.test(SRC));
 ok('4 · the onReply fan-out', /_cwTrial1Ctl\.onReply\(reply\);/.test(SRC));
 ok('5 · the start-miss fallback map', /t === 'cw_trial_1' \? _cwTrial1Ctl/.test(SRC));
 ok('6 · the nudge AND probe maps (both)', (SRC.match(/cw_trial_1: _cwTrial1Ctl,/g) || []).length === 3,

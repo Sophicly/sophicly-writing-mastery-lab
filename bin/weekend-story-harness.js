@@ -20,12 +20,17 @@
  *   G · the island's DEFAULT words are the prototype's, byte for byte (root §13)
  *   I · the sidebar in a weekend lesson: "Lesson Progress", unit rows, the 33 as a grid (v7.20.746)
  *   H · the 33 dramatic situations (v7.20.743): our source's order + names, plain and safe words, the marker validator
+ *   K · the word-count pill in a weekend draft lesson counts to the board's length (v7.20.751)
+ *   L · lesson 9, Adapt It to the Question (v7.20.753): the REAL PHP board table run for every board, the pure
+ *       helpers, the wiring, no unit-leak words, and the real walk driven like a student — liveness at every
+ *       turn, each line filed to its own row, ONE judgement call, fail-open, recall without a second call,
+ *       resume from the document alone, and a verdict recovered from the transcript instead of bought twice
  */
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
-const { SRC, braceSliceFrom, makeWorld, settle } = require('./walk-sim-lib');
+const { SRC, braceSliceFrom, makeWorld, settle, sliceController } = require('./walk-sim-lib');
 const ROOT = path.resolve(__dirname, '..');
 let fail = 0;
 const asserts = { pass: 0, fail: 0 };
@@ -491,6 +496,226 @@ const SEVEN = (hook, setup) => [
         const paint = pi > 0 ? braceSliceFrom(SRC, pi, '{', '}').text : '';
         ok(/const _cwT = _cwUnitDraftWordTargets\(\);/.test(paint) && /canvasWordTarget = _cwT\.target/.test(paint) && paint.indexOf('_cwUnitDraftWordTargets') < paint.indexOf('widget.textContent = `${wc} / ${canvasWordTarget}`'),
             'the pill\'s ONE painter applies it before it writes "N / target" (and before the colour ladder reads it)');
+        ok(run(true, { words: 'exam' }, '650–700') !== null && eq(run(true, { words: 'exam' }, '650–700'), { min: 650, target: 700, ideal: 700 }), 'lesson 9 names its own length (`words: \'exam\'`) and the pill counts to it');
+    }
+    // ── L · weekend lesson 9, "Adapt It to the Question" (v7.20.753, WEEKEND-STORY-PLAN §2 + §2c) ──
+    console.log('\nL · lesson 9: the board\'s real questions one at a time, one rewrite, ONE judgement turn');
+    {
+        const lb = SRC.indexOf('// @CW-ADAPT-PURE-BEGIN'), le = SRC.indexOf('// @CW-ADAPT-PURE-END');
+        ok(lb > 0 && le > lb, 'the lesson-9 helpers are fenced for this harness');
+        const AD = new Function(SRC.slice(lb, le) + '\nreturn { CW_ADAPT_STEP, CW_ADAPT_SHAPES, CW_ADAPT_ORDER, CW_ADAPT_MIN_DRILLS, CW_ADAPT_MAX_DRILLS, CW_ADAPT_TIME, _cwAdaptPromptText, _cwAdaptSittingLabel, _cwAdaptDrills, _cwAdaptParseCheck };')();   // eslint-disable-line no-new-func
+        const PHP = fs.readFileSync(path.join(ROOT, 'sophicly-writing-mastery-lab.php'), 'utf8');
+        const CORE = fs.readFileSync(path.join(ROOT, 'frontend/wml-core.js'), 'utf8');
+        const APP = fs.readFileSync(path.join(ROOT, 'frontend/wml-app.js'), 'utf8');
+        const ROUTER = fs.readFileSync(path.join(ROOT, 'includes/class-protocol-router.php'), 'utf8');
+        const PROTO = fs.readFileSync(path.join(ROOT, 'protocols/shared/creative-writing/CW-STEP-90-adapt-to-the-question.md'), 'utf8');
+        const BANK = JSON.parse(fs.readFileSync(path.join(ROOT, 'protocols/shared/creative-writing/_adapt-prompts.json'), 'utf8'));
+        const SH = AD.CW_ADAPT_SHAPES;
+        const INSIDER = /\b(protocol|module|component|payload|marker|bank|the system|the platform)\b/i;   // root §5c-ii
+
+        // L1 · the shapes — every shape a board sets is taught, and the PHP ships exactly those
+        const shapes = Object.keys(SH);
+        ok(AD.CW_ADAPT_STEP === 90 && /\{ step: 90, label: 'Adapt It to the Question', tier: 'si', phase: 'unit', unitOnly: 'weekend', words: 'exam' \}/.test(CORE), 'step 90 is a unit-only step (90+ reserved), written to the exam length');
+        ok(JSON.stringify(shapes.slice().sort()) === JSON.stringify(AD.CW_ADAPT_ORDER.slice().sort()), 'the drill order covers exactly the taught shapes', { shapes, order: AD.CW_ADAPT_ORDER });
+        ok(shapes.every((k) => SH[k].name && SH[k].rule && SH[k].ask && SH[k].example && Array.isArray(SH[k].more) && SH[k].more.length >= 1), 'every shape carries its rule, its ask, a worked example and one more (§4c.2, §4c.9)');
+        const phpShapes = ((/\$text_shapes = \[([^\]]*)\]/.exec(PHP) || [])[1] || '').match(/'[^']+'/g) || [];
+        ok(JSON.stringify(phpShapes.map((s) => s.slice(1, -1)).sort()) === JSON.stringify(AD.CW_ADAPT_ORDER.slice().sort()), '§5d: the PHP ships exactly the shapes the page can teach (one list, two languages)', phpShapes);
+        ok(BANK.every((p) => SH[p.shape] || /picture/.test(p.shape)), 'every bank question is a taught shape or a picture question (v1 is text only)', BANK.filter((p) => !SH[p.shape] && !/picture/.test(p.shape)).map((p) => p.shape));
+        const STUDENT_TEXT = shapes.map((k) => [SH[k].name, SH[k].rule, SH[k].ask, SH[k].example].concat(SH[k].more).join(' ')).join(' ');
+        ok(!LEAK_RE.test(STUDENT_TEXT), 'no course step, plot or stage in anything a lesson-9 student reads', (STUDENT_TEXT.match(new RegExp('.{0,40}(' + LEAK_RE.source + ').{0,40}', 'i')) || [])[0]);
+        ok(!INSIDER.test(STUDENT_TEXT), 'no insider words (root §5c-ii)', (STUDENT_TEXT.match(new RegExp('.{0,30}' + INSIDER.source + '.{0,30}', 'i')) || [])[0]);
+        ok(shapes.every((k) => /Scrooge/.test(SH[k].example)), 'every reveal makes the move on Scrooge\'s story (the spine the unit taught in lesson 4)');
+        ok(!shapes.some((k) => PROTO.indexOf(SH[k].example.slice(0, 40)) !== -1 || PROTO.indexOf(SH[k].rule.slice(0, 40)) !== -1),
+            '§5 retained-source law: none of the code-served teaching sits in the protocol the model reads');
+
+        // L2 · the board table — the REAL PHP mapper, run for every board the course emits (root §5d)
+        const pi = PHP.indexOf('public static function cw_adapt_prompts_for_board($board) {');
+        ok(pi > 0, 'the PHP mapper exists');
+        const PHPFN = PHP.slice(pi, braceSliceFrom(PHP, pi, '{', '}').end);
+        const tmp = path.join(require('os').tmpdir(), 'wml-adapt-' + process.pid + '.php');
+        fs.writeFileSync(tmp, "<?php\ndefine('SWML_PROTOCOLS_PATH', " + JSON.stringify(path.join(ROOT, 'protocols') + '/') + ");\nclass X {\n" + PHPFN
+            + "\n}\n$o = [];\nforeach (json_decode($argv[1], true) as $b) $o[$b] = X::cw_adapt_prompts_for_board($b);\necho json_encode($o);\n");
+        const BOARDS = ['aqa', 'edexcel', 'eduqas', 'edexcel-igcse', 'edexcel_igcse', 'cambridge-igcse', 'ccea', 'ocr', 'sqa', ''];
+        let MAP = {};
+        try { MAP = JSON.parse(cp.execFileSync('php', [tmp, JSON.stringify(BOARDS)], { encoding: 'utf8' })); }
+        catch (e) { ok(false, 'the PHP mapper ran', String(e && e.message).slice(0, 300)); }
+        finally { try { fs.unlinkSync(tmp); } catch (e) { /* gone */ } }
+        const want = { aqa: 'AQA', edexcel: 'Edexcel GCSE', eduqas: 'Eduqas', 'edexcel-igcse': 'Edexcel IGCSE', edexcel_igcse: 'Edexcel IGCSE', 'cambridge-igcse': 'Cambridge' };
+        Object.keys(want).forEach((b) => {
+            const out = MAP[b] || [];
+            ok(out.length >= AD.CW_ADAPT_MIN_DRILLS && out.every((p) => p.board === want[b] && !p.fallback), b + ' → only ' + want[b] + '\'s own questions', out.map((p) => p.board + (p.fallback ? '*' : '')));
+            const dr = AD._cwAdaptDrills(out);
+            ok(dr.length >= AD.CW_ADAPT_MIN_DRILLS && dr.length <= AD.CW_ADAPT_MAX_DRILLS && dr.every((d, i) => d.fid === 'cw-adapt-drill-' + (i + 1) && d.text && SH[d.shape]), b + ': 3–4 drills, each a real question with its own row', dr.map((d) => d.shape));
+        });
+        ['ccea', 'ocr', 'sqa', ''].forEach((b) => {
+            const out = MAP[b] || [];
+            ok(out.length > 0 && out.every((p) => p.fallback && (p.board === 'Eduqas' || p.board === 'Edexcel GCSE')), (b || '(none)') + ' → other boards\' real questions, each flagged so the page says so', out.map((p) => p.board + (p.fallback ? '*' : '')).slice(0, 4));
+        });
+        ok(Object.values(MAP).every((list) => list.every((p) => JSON.stringify(Object.keys(p).filter((k) => k !== 'fallback').sort()) === '["board","prompt","shape","sitting"]')), 'only what the page needs ships: no source paths, no context, no marks');
+        ok(!JSON.stringify(BANK).includes('/Users/') && BANK.every((p) => fs.existsSync(path.join(ROOT, '../../..', String(p.source).split(' | ')[0]))), 'the bank names its sources relative to the walkthrough folder (no local path ships), and every one is on the drive');
+        const eg = AD._cwAdaptDrills(MAP['edexcel'] || []);
+        ok(eg.length === 3 && eg.every((d) => d.shape === 'time-when') && eg.filter((d) => d.hasImages).length <= 1, 'Edexcel GCSE (always "a time when") still gets three real questions, picture-free first');
+
+        // L3 · the pure helpers
+        const pt = AD._cwAdaptPromptText({ prompt: 'Look at the images provided. Write about a time when you were lost. You may wish to base your response on one of the images.' });
+        ok(pt.hasImages && pt.text === 'Write about a time when you were lost.', 'a pictured question keeps its exact words; only the sentences ABOUT the pictures come off', pt);
+        ok(AD._cwAdaptSittingLabel('2026 sample assessment materials (new specification, first exam June 2026)') === 'sample paper for exams from 2026' && AD._cwAdaptSittingLabel('June 2024') === 'June 2024', 'the AQA sample paper is named in plain words; a real sitting is left as printed');
+        const P = AD._cwAdaptParseCheck;
+        ok(JSON.stringify(P('It does.\n@ADAPT_CHECK{"focus":"yes","where":"the gate","fix":""}')) === '{"focus":"yes","where":"the gate","fix":""}', 'a well-formed verdict parses');
+        ok(P('@ADAPT\\_CHECK{"focus":"Partly","where":"x","fix":"y"}').focus === 'partly', 'an escaped underscore and a capital still parse');
+        ok(P('@ADAPT_CHECK{"focus":"no","where":"the {odd} brace","fix":"move it"}').where === 'the {odd} brace', 'a brace inside a quoted value does not end the object');
+        ok(P('@ADAPT_CHECK{"focus":"maybe","where":"","fix":""}') === null && P('@ADAPT_CHECK{"focus":"yes"') === null && P('no marker') === null && P(null) === null, 'an unknown verdict, a cut-off marker or none at all → null (and never throws)');
+        ok(P('@ADAPT_CHECK{"focus":"yes","where":"' + 'x'.repeat(500) + '","fix":""}').where.length === 300, 'model text is clipped before it reaches the document');
+
+        // L4 · the wiring — every link of the chain, named (root §15)
+        ok(/'cw_step_90' => 'CW-STEP-90-adapt-to-the-question\.md'/.test(ROUTER) && /'cw_step_90' => 'Adapt It to the Question'/.test(ROUTER), 'the router loads the lesson\'s protocol and names it');
+        ok(/if \(\$task === 'cw_step_90' && \$embed_config\['cwUnit'\] !== ''\) \{\s*\$embed_config\['cwAdaptPrompts'\] = self::cw_adapt_prompts_for_board\(\$board\);/.test(PHP), 'the page config carries the board\'s questions, for lesson 9 in a unit only');
+        ok((APP.match(/state\.cwAdaptPrompts = Array\.isArray\((embedConfig|cfg)\.cwAdaptPrompts\)/g) || []).length === 2, 'both boot paths put them on state');
+        const MARK = '@ADAPT_CHECK{"focus":"yes|partly|no","where":"<the place in their story, a few words>","fix":"<one sentence, empty if yes>"}';
+        ok(PROTO.indexOf(MARK) !== -1 && SRC.indexOf(MARK) !== -1, '§5d: the marker the page asks for is the marker the protocol teaches, byte for byte');
+        ok(/text = text\.replace\(\/@ADAPT\\\\\?_CHECK\[\\s\\S\]\*\$\/, ''\)/.test(CORE), 'the marker never reaches the screen (stripAIInternals)');
+        ok(['cw-adapt-chosen', 'cw-adapt-check', 'cw-adapt-fix'].every((f) => SRC.indexOf("'" + f + "')") !== -1 || SRC.indexOf("'" + f + "'") !== -1)
+            && /outlineRowHTML\(\{ id: 'chosen'[^}]*locked: true \}, 'cw-adapt-chosen'\)/.test(SRC) && /outlineRowHTML\(\{ id: 'check'[^}]*locked: true \}, 'cw-adapt-check'\)/.test(SRC) && /outlineRowHTML\(\{ id: 'fix'[^}]*locked: true \}, 'cw-adapt-fix'\)/.test(SRC)
+            && /const CHOSEN = 'cw-adapt-chosen', CHECK = 'cw-adapt-check', FIX = 'cw-adapt-fix';/.test(SRC), '§5d: the rows the walk files are the rows the page draws (and the student cannot type over them)');
+        ok(/sectionHTML\('response', 'Your Rewrite', true, null, '<p><\/p>', \{ 'student-composition': 'true' \}\)/.test(SRC) && /n\.attrs\.label === 'Your Rewrite'/.test(SRC) && /\[data-section-label="Your Rewrite"\]/.test(SRC), 'the rewrite box the walk reads is the one the page draws (by its label)');
+        ok(/for \(const key of \['draft_2', 'draft_1'\]\)/.test(SRC) && /10: 'draft_1', 14: 'draft_2'/.test(CORE), '§5d: the rewrite starts from the draft lesson 8 (step 14 → draft_2) or lesson 6 (step 10 → draft_1) saved');
+        const SITES = [
+            /\} else if \(state\.task === 'cw_step_90'\) \{[\s\S]{0,400}_cwAdaptCtl\.reset\(\); _cwAdaptCtl\.start\(\);/,          // chat-clear
+            /if \(state\.task === 'cw_step_90' && _cwAdaptCtl\.active && _inboundIsAnswer\)/,                                       // owns the turn
+            /registerCwWalkCtls\(\[[^\]]*_cwAdaptCtl\]\)/,                                                                          // reset on clear
+            /window\.__swmlCwAdaptCtl = _cwAdaptCtl;/, /_cwAdaptCtl\.onReply\(reply\);/, /: t === 'cw_step_90' \? _cwAdaptCtl/,   // twin handle · reply · start-miss net
+            /cwAdaptCtl: _cwAdaptCtl,/, /state\.task === 'cw_step_90' && tp\.cwAdaptCtl\) tp\.cwAdaptCtl\.tryResume\(\)/,          // export · boot resume
+            /state\.task === 'cw_step_90' && !state\.reviewMode && tp\.cwAdaptCtl\) \{[\s\S]{0,400}tp\.cwAdaptCtl\.start\(\);/,     // fresh entry
+            /state\.task === 'cw_step_90' && window\.__swmlCwAdaptCtl\) \{[\s\S]{0,400}__swmlCwAdaptCtl\.start\(\)/,                // twin chat-clear
+            /state\.task === 'cw_step_90' && !state\.reviewMode && window\.__swmlCwAdaptCtl\) \{[\s\S]{0,400}__swmlCwAdaptCtl\.start\(\);/,   // twin greeting
+        ];
+        ok(SITES.every((re) => re.test(SRC)), 'the walk is wired at every entry: fresh, resume, clear, reply, start-miss — on BOTH chat pipelines', SITES.filter((re) => !re.test(SRC)).map(String));
+        ok((SRC.match(/cw_step_90: _cwAdaptCtl,/g) || []).length === 3, 'the nudge, probe and revive maps all know the walk');
+        ok(/90: \['plot_outline'\]/.test(SRC), '"ask Sophia" sees the student\'s plan (the Story Spine, in a unit)');
+
+        // L5 · the walk, driven like a student (AQA)
+        const CTL = sliceController('const _cwAdaptCtl = (function');
+        const HOLD = { w: null, rewrite: '' };
+        const OWN = {};
+        function adaptWorld(board, prompts, o) {
+            o = o || {};
+            const fids = [1, 2, 3, 4].map((n) => 'cw-adapt-drill-' + n).concat(['cw-adapt-chosen', 'cw-adapt-check', 'cw-adapt-fix']);
+            const w = makeWorld(CTL, {
+                task: 'cw_step_90', fids, ok, ls: o.ls, history: o.history, prefill: o.prefill,
+                extraDeps: {
+                    CW_ADAPT_STEP: AD.CW_ADAPT_STEP, CW_ADAPT_SHAPES: SH, CW_ADAPT_TIME: AD.CW_ADAPT_TIME,
+                    _cwAdaptDrills: AD._cwAdaptDrills, _cwAdaptParseCheck: AD._cwAdaptParseCheck,
+                    _CW_TURN_OWNERS: OWN,
+                    // the page's editor: the rows, and the rewrite box as a section of paragraphs
+                    canvasEditor: { state: { doc: { descendants(fn) {
+                        for (const [f, t] of (HOLD.w ? HOLD.w.rows : new Map())) if (fn({ type: { name: 'outlineRow' }, attrs: { fieldId: f }, textContent: t }, 0) === false) return;
+                        fn({ type: { name: 'sectionBlock' }, attrs: { label: 'Your Rewrite' }, forEach(cb) { HOLD.rewrite.split('\n\n').forEach((p) => cb({ textContent: p })); } }, 0);
+                    } } } },
+                },
+            });
+            HOLD.w = w;
+            w.deps.WML.cwInUnit = () => o.unit !== false;
+            w.deps.state.cwExamBoard = board;
+            w.deps.state.cwAdaptPrompts = prompts;
+            return w;
+        }
+        const stored = (w) => (w.deps.canvasChatHistory || []);
+        const tapIf = (w, c) => { if (c) w.tap(c); return !!c; };   // a missing chip FAILS an assertion; it never crashes the rest
+        const last = (w) => w.bubbles[w.bubbles.length - 1] || '';
+        const AQA = MAP.aqa || [];
+        const DR = AD._cwAdaptDrills(AQA);
+        HOLD.rewrite = '';
+        const w = adaptWorld('aqa', AQA, { ls: new Map(), history: [] });
+        ok(w.ctl.atStart(), 'before it starts, the start-miss net may start it (atStart is true)');
+        w.ctl.start();
+        const orient = w.bubbles.join('\n');
+        ok(/last lesson of the weekend story/.test(orient) && w.chips().some((c) => /Continue/.test(c.textContent)), 'the orientation is paced: one chunk, then Continue (§4b)', w.bubbles);
+        ok(w.toAsk(), '⭐ tapping Continue reaches the first question (liveness)');
+        const allOrient = w.bubbles.join('\n');
+        ok(/For AQA, from 2026, a story that does not answer the question is held to a lower mark/.test(allOrient), 'an AQA student is told the 2026 focus rule (verified: 8700/1 SMS 2026, lines 860–861)');
+        ok(last(w).indexOf('[SWML_BEAT:') === 0 && last(w).indexOf('> ' + DR[0].text) !== -1 && last(w).indexOf(SH[DR[0].shape].rule) !== -1, 'question 1: its progress chip, the exact words, then the rule for that kind of question', last(w).slice(0, 300));
+        ok(/AQA, sample paper for exams from 2026|AQA, (June|November) \d{4}/.test(last(w)), 'the source is named in plain words', (last(w).match(/\*\(([^)]*)\)\*/) || [])[1]);
+        ok(w.helpChipNamed(/See an example/) && w.helpChipNamed(/Still stuck/), 'the help ladder is there, Sophia last (§4c.9)');
+        const nb = w.bubbles.length;
+        tapIf(w, w.helpChipNamed(/See an example/));
+        ok(w.bubbles.length === nb + 1 && last(w).indexOf('**Here is the move on another story:**') === 0 && last(w).indexOf(SH[DR[0].shape].more[0]) !== -1 && w.live(), 'rung 1 serves another worked example and keeps the question live (no API)');
+        ok(w.sends.length === 0, 'no API call yet');
+        for (let i = 0; i < DR.length; i++) {
+            const line = 'My line for question ' + (i + 1) + ': the fox at the gate.';
+            w.say(line);
+            ok(w.rows.get(DR[i].fid) === line, 'question ' + (i + 1) + '\'s line is filed, verbatim, into ITS row', w.rows.get(DR[i].fid));
+            ok(last(w).indexOf('**Your line is in your document.**') === 0 && last(w).indexOf(SH[DR[i].shape].example) !== -1, 'the reveal: the same move on Scrooge\'s story', last(w).slice(0, 120));
+            const nx = w.chips().filter((c) => /Next question|Choose my question/.test(c.textContent))[0];
+            ok(!!nx && (i < DR.length - 1 ? /Next question/ : /Choose my question/).test(nx.textContent), 'one chip moves on: ' + (i < DR.length - 1 ? 'Next question' : 'Choose my question'), w.chips().map((c) => c.textContent));
+            tapIf(w, nx);
+        }
+        ok(last(w).indexOf('**Now choose ONE question to rewrite your scene for.**') === 0 && w.chips().length === DR.length && w.chips().every((c, i) => c.textContent.indexOf('Question ' + (i + 1) + ': ') === 0), 'the choice is ONE screen of alternatives (§4c.8)', w.chips().map((c) => c.textContent));
+        tapIf(w, w.chips()[1]);
+        ok(w.rows.get('cw-adapt-chosen') === DR[1].text, 'the chosen question\'s exact words go into its locked row', w.rows.get('cw-adapt-chosen'));
+        const writeAsk = w.bubbles[w.bubbles.length - 2] || '';
+        ok(writeAsk.indexOf('**Your question:**') === 0 && writeAsk.indexOf('> ' + DR[1].text) !== -1 && /about 45 minutes/.test(writeAsk), 'the rewrite ask: the question, its rule and AQA\'s 45 minutes', writeAsk.slice(0, 200));
+        ok(/box is empty, because no draft reached this page/.test(last(w)) && !stored(w).some((m) => /box is empty/.test(m.content || '')), '⭐ §4c.7: "the box is empty" is drawn, never stored (it stops being true the moment they write)');
+        ok(!!w.chips().filter((c) => /Check my rewrite/.test(c.textContent))[0] && w.helpChipNamed(/Still stuck/), 'Check my rewrite, with the help ladder (§4c.9 — every ask)');
+        tapIf(w, w.chips().filter((c) => /Check my rewrite/.test(c.textContent))[0]);
+        ok(w.sends.length === 0 && /nothing to check yet/.test(last(w)) && !!w.chips().filter((c) => /Check my rewrite/.test(c.textContent))[0], 'an empty box is never sent to Sophia, and the button comes back');
+        const typed = 'The fox came out of the hedge and I froze. That was the day I met it.';
+        w.say(typed);
+        ok(stored(w).some((m) => m.role === 'user' && m.content === typed) && /goes in the \*\*Your Rewrite\*\* box/.test(last(w)) && w.sends.length === 0 && w.rows.get('cw-adapt-check') === '',
+            '⭐ a scene typed into the chat is KEPT on screen and they are told where it goes (never "I haven\'t asked")');
+        HOLD.rewrite = 'The fox came out of the hedge.\n\nI froze, and so did it.';
+        tapIf(w, w.chips().filter((c) => /Check my rewrite/.test(c.textContent))[0]);
+        ok(w.sends.length === 1 && w.sends[0].id === 'cw90-check', '⭐ ONE judgement call, armed as the check', w.sends);
+        const hid = stored(w).filter((m) => m.hidden && /^\[ADAPT CHECK/.test(m.content)).pop();
+        ok(!!hid && hid.content.indexOf('THE QUESTION: ' + DR[1].text) !== -1 && hid.content.indexOf('THEIR REWRITE:\nThe fox came out of the hedge.\n\nI froze, and so did it.') !== -1, 'Sophia gets the exact question and the rewrite, paragraphs intact', hid && hid.content.slice(-200));
+        ok(hid && /This student sits AQA/.test(hid.content) && hid.content.indexOf(MARK) !== -1, 'the AQA rule and the marker contract ride with it');
+        w.resolveApi('Lovely writing!');
+        ok(/could not finish checking/.test(last(w)) && !!w.chips().filter((c) => /Check my rewrite/.test(c.textContent))[0] && w.rows.get('cw-adapt-check') === '' && !stored(w).some((m) => /could not finish checking/.test(m.content || '')),
+            '⭐ fail-open (§4d): no usable verdict → nothing filed, Try again on screen, the apology not stored');
+        tapIf(w, w.chips().filter((c) => /Check my rewrite/.test(c.textContent))[0]);
+        ok(w.sends.length === 2, 'the student may ask again after a failed check');
+        w.resolveApi('You have the fox, but the meeting is not yet the centre.\n@ADAPT_CHECK{"focus":"partly","where":"the hedge","fix":"Make the moment the fox looks at you the turning point."}');
+        ok(/^Partly\. .*\(the hedge\)$/.test(w.rows.get('cw-adapt-check')) && w.rows.get('cw-adapt-fix') === 'Make the moment the fox looks at you the turning point.', 'the verdict and the one change are filed into the document', [w.rows.get('cw-adapt-check'), w.rows.get('cw-adapt-fix')]);
+        ok(/That is the whole weekend story/.test(last(w)) && /make the change in your rewrite: \*Make the moment the fox looks at you/.test(last(w)) && /sim endpoint/.test(last(w)), 'the wrap names the change still to make and ends on the shared endpoint', last(w).slice(0, 200));
+        ok(!stored(w).some((m) => /That is the whole weekend story/.test(m.content || '')) && !!w.chips().filter((c) => /Look at a question again/.test(c.textContent))[0], 'the wrap is drawn, not stored, and keeps a way back in (v7.20.340)');
+        tapIf(w, w.chips().filter((c) => /Look at a question again/.test(c.textContent))[0]);
+        tapIf(w, w.chips()[0]);
+        ok(last(w).indexOf('> ' + DR[0].text) !== -1 && w.live(), 'recall re-asks question 1');
+        w.say('A sharper line.');
+        ok(w.rows.get(DR[0].fid) === 'A sharper line.', 'a recalled line REPLACES the old one (§4c.6 rewrite)', w.rows.get(DR[0].fid));
+        const back = w.chips().filter((c) => /Back to the end/.test(c.textContent))[0];
+        ok(!!back, 'after the check, a recalled question leads back to the end', w.chips().map((c) => c.textContent));
+        tapIf(w, back);
+        ok(w.sends.length === 2 && /That is the whole weekend story/.test(last(w)), '⭐ ...and never to a second check (ONE per lesson)', w.sends.length);
+        const assistant = stored(w).filter((m) => m.role === 'assistant' && !m.hidden).map((m) => m.content);
+        ok(assistant.length > 5 && assistant.every((t) => OWN.cw_step_90 && OWN.cw_step_90(t)), '⭐ every turn the walk stores is one owns() claims — the replay draws them as the walk did (#511)', assistant.filter((t) => !(OWN.cw_step_90 && OWN.cw_step_90(t))).map((t) => t.slice(0, 60)));
+        ok(!OWN.cw_step_90('Here is what I think about your story.'), '...and a reply from Sophia is not claimed');
+        const seen = w.bubbles.join('\n');
+        ok(!LEAK_RE.test(seen.replace(/\(sim endpoint\)|That’s this step done\./g, '')) && !INSIDER.test(seen), 'nothing on screen names a course step, a plot, a stage or our machinery', (seen.match(new RegExp('.{0,40}(' + LEAK_RE.source + '|' + INSIDER.source + ').{0,40}', 'i')) || [])[0]);
+
+        // L6 · resume: the document is the position — even with no walk state in this browser
+        HOLD.rewrite = 'x';
+        const r1 = adaptWorld('aqa', AQA, { ls: new Map(), history: stored(w).slice(), prefill: Object.fromEntries(Array.from(w.rows.entries())) });
+        const before = stored(r1).length;
+        ok(r1.ctl.tryResume() === false && /That is the whole weekend story/.test(last(r1)) && stored(r1).length === before && r1.sends.length === 0, 'a finished lesson re-opened elsewhere: the wrap, drawn, nothing stored, nothing sent');
+        const r2 = adaptWorld('aqa', AQA, { ls: new Map(), history: [], prefill: { [DR[0].fid]: 'Line one.' } });
+        ok(r2.ctl.tryResume() === true && last(r2).indexOf('> ' + DR[1].text) !== -1 && r2.live() && stored(r2).length === 0, 'mid-walk with no saved state: it lands on question 2, live, and stores nothing new', last(r2).slice(0, 160));
+        const pre3 = { 'cw-adapt-chosen': DR[2].text };
+        DR.forEach((d) => { pre3[d.fid] = 'line'; });
+        const h3 = [{ role: 'user', hidden: true, content: '[ADAPT CHECK — …]' }, { role: 'assistant', content: 'Yes, it does.\n@ADAPT_CHECK{"focus":"yes","where":"the ending","fix":""}' }];
+        const r3 = adaptWorld('aqa', AQA, { ls: new Map(), history: h3, prefill: pre3 });
+        ok(r3.ctl.tryResume() === false && /^Yes\. /.test(r3.rows.get('cw-adapt-check')) && r3.sends.length === 0, '⭐ a verdict that reached the transcript but not the document is recovered, never bought twice', r3.rows.get('cw-adapt-check'));
+
+        // L7 · the stops and the fallback
+        const s1 = adaptWorld('aqa', AQA, { ls: new Map(), history: [], unit: false });
+        s1.ctl.start();
+        ok(/belongs to the Weekend Story/.test(last(s1)) && stored(s1).length === 0 && !s1.ctl.atStart(), 'opened outside the weekend unit: it says so, stores nothing, and the start-miss net leaves it alone');
+        const s2 = adaptWorld('aqa', [], { ls: new Map(), history: [] });
+        s2.ctl.start();
+        ok(/No exam questions have reached this page/.test(last(s2)) && stored(s2).length === 0, 'no questions reached the page: it says so plainly, and stores nothing');
+        const fb = adaptWorld('ccea', MAP.ccea || [], { ls: new Map(), history: [] });
+        fb.ctl.start();
+        fb.toAsk();
+        ok(/real story questions from past papers/.test(fb.bubbles.join('\n')) && !/your exam board’s past papers/.test(fb.bubbles.join('\n')) && !/For AQA/.test(fb.bubbles.join('\n')), 'a CCEA student is told the questions come from past papers (not "your board\'s"), and no AQA rule');
     }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }

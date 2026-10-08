@@ -224,6 +224,11 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onCw12Recall:     { kind: 'flow', note: 'Step 12 wrap: reopen either picker to add more' },
         onCw12GuardAck:   { kind: 'flow', note: 'Step 12 dead-end guard (no outline / no profile) acknowledgment — files nothing' },
         onCw12Retry:      { kind: 'flow', note: 'Step 12 profile-load failure retry — files nothing' },
+        // v7.20.753 — WEEKEND LESSON 9 (Adapt It to the Question). Each one-line answer is TYPED and filed by
+        // handleTurn before any chip is on screen; the only content chip is the choice of question.
+        onCw90Next:       { kind: 'flow', note: 'Lesson 9: Next question / Choose my question / Back to the end — steers the walk; the line was already filed' },
+        onCw90Pick:       { kind: 'content', note: 'Lesson 9: the chosen question → its exact words filed to cw-adapt-chosen (a locked row)' },
+        onCw90Check:      { kind: 'flow', note: 'Lesson 9: Check my rewrite → the ONE judgement turn; the verdict files to cw-adapt-check / cw-adapt-fix, the chip itself files nothing' },
         // v7.20.566: menus served ONLY through chipBarOrRetry were invisible to this gate until the
         // RETRY_RE below — the examiner ladder (v7.20.547) and Trial 1 (.551–.562) surfaced at once.
         onClimb:          { kind: 'content', note: 'examiner ladder: "met all of this level?" Yes/No → st.metAll / stoppedAt (the sidecar the level row is derived from); the per-criterion pass follows' },

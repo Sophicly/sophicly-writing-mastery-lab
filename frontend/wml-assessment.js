@@ -6138,6 +6138,140 @@
         return String(html || '').replace(CW_POLISH_ABOUT_RE, function (_, open, inner, close) { return open + _cwPolishAboutInner(priority) + close; });
     }
     // @CW-POLISH-PURE-END
+    // ⭐ v7.20.753 — WEEKEND LESSON 9, "Adapt It to the Question" (PEDAGOGY §41 + §55; WEEKEND-STORY-PLAN §2, §2c).
+    // Neil, §41: "stories are malleable… they can almost always be adapted to the question and get a decent score."
+    // The student meets the story questions THEIR board sets, one at a time (§4c.8b): a real question → their ONE
+    // line → the same move made on A Christmas Carol → the next. Then one rewrite to a question they choose, and ONE
+    // judgement turn (does the rewrite answer it?). A unit-only step number: 90+ is reserved (plan §2c).
+    // @CW-ADAPT-PURE-BEGIN — pure; driven by bin/weekend-story-harness.js (section L)
+    const CW_ADAPT_STEP = 90;
+    // Per question SHAPE: the transferable rule first (§5c-ii), the ask, a worked example on Scrooge's story, and
+    // one more from another set text (§4c.9 rung 1). No quotation marks around anything that is not a real question.
+    const CW_ADAPT_SHAPES = {
+        'opening-of-story': { name: 'the opening of a story',
+            rule: 'A question that asks for **the opening of a story** wants the first part only. Set up the character, the place and the trouble, then stop. Do not rush to the end.',
+            ask: 'In one line: where would your opening stop? Name the moment you would end on.',
+            example: 'Asked for “the opening of a story about a stranger”, Scrooge’s story keeps only its first evening: the cold office, the charity collectors turned away, Marley’s face in the door-knocker. It stops as the ghost comes through the door. The reader is left at the moment the trouble begins, which is the job of an opening.',
+            more: ['Asked for “the opening of a story about a prophecy”, Macbeth’s story stops on the heath, as the witches greet him as the future king. The opening plants the trouble, and the rest of the story would pay it off.'] },
+        'story-about': { name: 'a story about…',
+            rule: 'A **“story about”** question names the event that must be at the centre. Find the beat in your story that could hold it, and make that beat the turning point.',
+            ask: 'In one line: which beat of your story would hold this event, and what would change in it?',
+            example: 'Asked for “a story about a second chance”, Scrooge’s story needs nothing new. Christmas morning moves to the centre: he wakes, finds he still has time, and uses it. The ghosts shrink to a few lines of build-up, because the question is about the chance, not the warnings.',
+            more: ['Asked for “a story about a confession”, An Inspector Calls already holds one: Sheila admitting what she did to Eva. A version for this question would make that admission the centre and build up to it.'] },
+        'title': { name: 'a title',
+            rule: 'A **title** question needs the thing the title names to matter in your story. Use the title exactly, and make what it names central.',
+            ask: 'In one line: what in your story could this title name, and which beat would show it?',
+            example: 'Given the title “The Visitor”, Scrooge’s story is already there: Marley’s ghost is the visitor. His night-time visit moves to the front, and the title earns its place. The events stay the same; the title now points at the moment that starts everything.',
+            more: ['Given the title “The Locked Door”, Jekyll and Hyde already holds one: the door to Jekyll’s cabinet, which Utterson and Poole finally break down. A version for this title would build towards that door and open it at the climax.'] },
+        'begins': { name: 'a story that begins…',
+            rule: 'A **“begins with”** question gives you your first line. Copy it word for word, then link it to your own story within the first paragraph.',
+            ask: 'In one line: write the sentence that would come straight after the given opening, in your story.',
+            example: 'Given the opening “It was the coldest night of the year.”, Scrooge’s story starts with those exact words, then moves straight to the counting-house and the clerk’s tiny fire. The given line now belongs to his story, and the reader never sees the join.',
+            more: ['Given the opening “I had never trusted the dark.”, a Jekyll and Hyde story could begin on a London street at night with those exact words, then reach the strange door in the very next sentence.'] },
+        'ends': { name: 'a story that ends…',
+            rule: 'An **“ends with”** question gives you your last line. Plan backwards so your final beat makes that line true, and copy it word for word.',
+            ask: 'In one line: what would happen just before the given last line, in your story?',
+            example: 'Given the ending “…and nothing was ever the same again.”, Scrooge’s story finishes on Christmas morning, with him laughing at the open window. The given last line is true of him, so it lands as the meaning of the story rather than a tag on the end.',
+            more: ['Given the ending “…and the house fell silent.”, An Inspector Calls could finish just after the telephone rings with its last news, the family frozen. The final line would describe the silence the whole evening has built towards.'] },
+        'includes-words': { name: 'a story that includes certain words',
+            rule: 'An **“includes the words”** question needs those exact words in your story, at a moment where they matter. A turning point is the best place for them.',
+            ask: 'In one line: at which moment in your story would these words appear?',
+            example: 'Asked to include the words “I knew I had to go back”, Scrooge’s story places them at the graveside, as the moment he chooses to change. Placed at the turning point, the words carry the story instead of decorating it.',
+            more: ['Asked to include the words “everything went quiet”, Macbeth’s story could place them straight after the murder of the king, when the castle sleeps and the guilt begins.'] },
+        'element': { name: 'a story that must include something',
+            rule: 'Some questions name something that **must happen** in your story: a decision, a letter, a journey. Give it a beat of its own, where it changes what happens next.',
+            ask: 'In one line: where in your story would this happen, and what would it change?',
+            example: 'Asked for “a story that involves finding a letter”, Scrooge’s story could add one: a letter from Belle, found in his desk the night Marley returns. Reading it sends him back to the life he gave up, which the first ghost then shows him.',
+            more: ['Asked for “a story that involves a journey”, Macbeth’s story already has one: his ride home to his castle after meeting the witches, with his letter racing ahead to his wife.'] },
+        'time-when': { name: 'a time when…',
+            rule: 'A **“time when”** question asks about one event and what it meant. It is usually told as “I”, as if it happened to you or to someone you know.',
+            ask: 'In one line: which event in your story fits, and who would tell it?',
+            example: 'Asked to “write about a time when you were given a warning”, Scrooge’s story becomes one night, told as “I”: the night my old partner came back, what he warned me about, and what I did next. The rest of the year falls away, because the question asks about the warning.',
+            more: ['Asked to “write about a time when you had to keep a secret”, Jekyll’s story becomes the night he first drank the potion, told as “I”, and why he told nobody. One night, one secret, and what it cost him.'] },
+        'occasion-when': { name: 'an occasion when…',
+            rule: 'An **“occasion when”** question works like “a time when”: one event, and why it mattered. Keep to that single occasion.',
+            ask: 'In one line: which single occasion in your story fits this question?',
+            example: 'Asked to “write about an occasion when someone changed their mind”, Scrooge’s story narrows to the graveside, where he sees his own name on the stone and begs for a chance to change. Everything before it becomes a few lines of build-up, because the question names one occasion.',
+            more: ['Asked to “write about an occasion when you were proved wrong”, An Inspector Calls becomes the evening Mr Birling’s certainty falls apart, told by someone sitting at his table.'] },
+    };
+    // Drill order: the shapes that change the WHOLE story first, the "time when" family last (it is the most
+    // forgiving). At least three drills, at most four (§4c.8b: serial, and short enough to finish).
+    const CW_ADAPT_ORDER = ['opening-of-story', 'story-about', 'title', 'begins', 'ends', 'includes-words', 'element', 'time-when', 'occasion-when'];
+    const CW_ADAPT_MIN_DRILLS = 3, CW_ADAPT_MAX_DRILLS = 4;
+    // The time the STUDENT'S OWN paper gives the story, as the sentence the lesson says (each from the board's own
+    // paper, verbatim in the bank's `words_or_time`). Keyed by the student's board, not the question's: a CCEA
+    // student practising another board's question still sits CCEA's 55 minutes. Cambridge prints no time for the
+    // section, so the number there is ours and says so.
+    const CW_ADAPT_TIME = {
+        aqa: 'In the exam you have about 45 minutes for this.',
+        edexcel: 'In the exam you have about 45 minutes for this.',
+        'edexcel-igcse': 'In the exam you have about 45 minutes for this.',
+        eduqas: 'In the exam you have about 10 minutes to plan and about 35 minutes to write.',
+        'cambridge-igcse': 'Your paper sets no time for this question, so we suggest about 55 minutes.',
+        ccea: 'In the exam you have 15 minutes to plan, 30 minutes to write and 10 minutes to check.',
+        _default: 'In the exam, keep to the time your paper gives you.',
+    };
+    // A question printed with pictures keeps its exact words; only the sentences ABOUT the pictures come off,
+    // and the lesson says so (papers never describe their pictures — FIXLIST #789).
+    function _cwAdaptPromptText(p) {
+        let t = String((p && p.prompt) || '').replace(/\s+/g, ' ').trim();
+        const hasImages = /^Look at the images provided\.\s*/i.test(t);
+        if (hasImages) t = t.replace(/^Look at the images provided\.\s*/i, '').replace(/\s*You may wish to base your response on one of the images\.?\s*$/i, '').trim();
+        return { text: t, hasImages: hasImages };
+    }
+    // The sitting as a student reads it beside the question. The bank keeps the board's own wording (provenance);
+    // only AQA's 2026 sample paper needs plain words, because its wording is exam-board jargon in brackets.
+    function _cwAdaptSittingLabel(s) {
+        const t = String(s || '').trim();
+        return /sample assessment materials/i.test(t) ? 'sample paper for exams from 2026' : t;
+    }
+    // One question per shape in CW_ADAPT_ORDER, a question without pictures preferred; then, for a board that
+    // sets only one or two shapes (Edexcel GCSE always asks "a time when"), more real questions of those shapes
+    // until there are three. Never more than four.
+    function _cwAdaptDrills(prompts) {
+        const pool = (Array.isArray(prompts) ? prompts : []).filter(function (p) {
+            return p && CW_ADAPT_SHAPES[p.shape] && String(p.prompt || '').trim();
+        });
+        const rank = function (p) { return _cwAdaptPromptText(p).hasImages ? 1 : 0; };
+        const picked = [];
+        CW_ADAPT_ORDER.forEach(function (shape) {
+            const c = pool.filter(function (p) { return p.shape === shape; }).sort(function (a, b) { return rank(a) - rank(b); })[0];
+            if (c) picked.push(c);
+        });
+        const extra = pool.filter(function (p) { return picked.indexOf(p) === -1; })
+            .sort(function (a, b) { return (CW_ADAPT_ORDER.indexOf(a.shape) - CW_ADAPT_ORDER.indexOf(b.shape)) || (rank(a) - rank(b)); });
+        while (picked.length < CW_ADAPT_MIN_DRILLS && extra.length) picked.push(extra.shift());
+        return picked.slice(0, CW_ADAPT_MAX_DRILLS).map(function (p, i) {
+            const pt = _cwAdaptPromptText(p);
+            return { n: i + 1, shape: p.shape, text: pt.text, hasImages: pt.hasImages, sitting: _cwAdaptSittingLabel(p.sitting),
+                board: String(p.board || ''), fid: 'cw-adapt-drill-' + (i + 1) };
+        });
+    }
+    // Sophia's ONE judgement turn ends on @ADAPT_CHECK{"focus":"yes|partly|no","where":"…","fix":"…"}.
+    // String-aware brace matching (a brace inside a quoted value must not end the object). null = unusable.
+    function _cwAdaptParseCheck(reply) {
+        const s = String(reply || '').replace(/@ADAPT\\_CHECK/g, '@ADAPT_CHECK');
+        const at = s.lastIndexOf('@ADAPT_CHECK');
+        if (at < 0) return null;
+        const open = s.indexOf('{', at);
+        if (open < 0) return null;
+        let depth = 0, end = -1, inStr = false, esc = false;
+        for (let i = open; i < s.length; i++) {
+            const ch = s[i];
+            if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === '"') inStr = false; continue; }
+            if (ch === '"') inStr = true;
+            else if (ch === '{') depth++;
+            else if (ch === '}') { depth--; if (depth === 0) { end = i; break; } }
+        }
+        if (end < 0) return null;
+        let o = null;
+        try { o = JSON.parse(s.slice(open, end + 1)); } catch (e) { return null; }
+        const focus = String((o && o.focus) || '').toLowerCase().trim();
+        if (['yes', 'partly', 'no'].indexOf(focus) === -1) return null;
+        const clip = function (v) { return String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, 300); };
+        return { focus: focus, where: clip(o.where), fix: clip(o.fix) };
+    }
+    // @CW-ADAPT-PURE-END
     // One cache per source artifact: { artifactKey: { id: projectId, map: {fid: text} } }.
     const _cwDocCache = {};
     // ═══════════════════════════════════════════════════════════════════════════════════════
@@ -6498,6 +6632,9 @@
         8: ['plot_outline', 'universal_values'],
         9: ['plot_outline'], 10: ['plot_outline', 'scene_selection'],
         13: ['plot_outline'],   // v7.20.568 (#440): the Draft-2 scene selection
+        // v7.20.753: weekend lesson 9 — so "ask Sophia" can use THEIR story; in a unit this is the Story Spine
+        // (CW_UNIT_DEP_SOURCE). Its fresh entry is code-served, so a missing plan never reaches the prereq greeting.
+        90: ['plot_outline'],
     };
     // ⭐ v7.20.737 (PEDAGOGY §55): in a weekend-story lesson the plot outline never exists — the
     // unit's story plan is the Story Spine, saved in `brief_outline` (EMERGENCY-CW-UNIT-SPEC §5).
@@ -19605,6 +19742,10 @@
                             // v7.20.568 (#440): the Draft-2 scene selection owns chat-clear the same way.
                             clearWalkResume();
                             setTimeout(() => { _cw13SceneCtl.reset(); _cw13SceneCtl.start(); }, 200);
+                        } else if (state.task === 'cw_step_90') {
+                            // v7.20.753: weekend lesson 9's walk owns chat-clear too (the document keeps its place).
+                            clearWalkResume();
+                            setTimeout(() => { _cwAdaptCtl.reset(); _cwAdaptCtl.start(); }, 200);
                         } else if (isCwTask && cwStepDef) {
                             const stepLabel = cwStepDef.label || 'this step';
                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
@@ -20508,7 +20649,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -20522,7 +20663,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -20734,7 +20875,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl,
+                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -20855,6 +20996,11 @@
             // v7.20.567 (#440): Step 12's goals walk owns the turn while it runs (one typed ask).
             if (state.task === 'cw_step_12' && _cwGoalsPlotCtl.active && _inboundIsAnswer) {
                 await _cwGoalsPlotCtl.handleTurn(msg);
+                return;
+            }
+            // v7.20.753: weekend lesson 9 (Adapt It to the Question) owns the turn while its walk runs.
+            if (state.task === 'cw_step_90' && _cwAdaptCtl.active && _inboundIsAnswer) {
+                await _cwAdaptCtl.handleTurn(msg);
                 return;
             }
             if (state.task === 'cw_step_7' && _cwValuesCtl.active && _inboundIsAnswer) {
@@ -33340,6 +33486,577 @@
         })();
 
         // ══════════════════════════════════════════════════════════════════════════════════════
+        // ⭐⭐ v7.20.753 — WEEKEND LESSON 9: ADAPT IT TO THE QUESTION, a code-served WALK
+        // (PEDAGOGY §41 + §55; WEEKEND-STORY-PLAN §2, §2c). Real story questions from the student's
+        // OWN board, one at a time (§4c.8b): the exact words + what this kind of question wants →
+        // their ONE line, filed verbatim to the question's row (§4c.6 rewrite) → the same move on
+        // A Christmas Carol (the reveal) → Next. Then ONE pick (§4c.8: alternatives on one screen),
+        // the rewrite in the document (seeded with their latest draft by tryFillCwAdaptRewrite) and
+        // the ONE judgement turn: does the rewrite answer the question? (@ADAPT_CHECK, validated by
+        // _cwAdaptParseCheck, filed into the document). Fail-open (§4d): no usable verdict → Try
+        // again, never a dead screen. Same shape as _cwCharProfileCtl, the document is the position.
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        const _cwAdaptCtl = (function () {
+            let active = false, pending = false;
+            let emitted = 0;
+            let st = null;
+            let drills = [];
+            const WALK = 'cw90';
+            const CHOSEN = 'cw-adapt-chosen', CHECK = 'cw-adapt-check', FIX = 'cw-adapt-fix';
+            const SUBSTEPS = { 1: 'Real Exam Questions', 2: 'Choose Your Question', 3: 'Rewrite and Check' };
+            // The openings of the turns this walk STORES. Each serving line starts with its constant, and owns()
+            // (registered below) is built from the same list, so the transcript replay draws them as the live walk
+            // did — no chip detection over our own text (#511) — and the two can never drift apart.
+            const T = {
+                reveal: '**Your line is in your document.**',
+                more: '**Here is the move on another story:**',
+                pick: '**Now choose ONE question to rewrite your scene for.**',
+                write: '**Your question:**',
+                recall: '**Which question do you want to look at again?**',
+                inChat: 'Your rewrite goes in the **Your Rewrite** box',
+                cant: 'I can’t think this through with you right now.',
+            };
+
+            const lsKey = () => {
+                try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw90') + '_cw90'; } catch (e) { return 'swml_cw90'; }
+            };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ st: st, active: active })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                emitted++;
+                addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function pickTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function boardKey() { return String(state.cwExamBoard || '').toLowerCase().replace(/_/g, '-'); }
+            function isFallback() { return (state.cwAdaptPrompts || []).some(function (p) { return p && p.fallback; }); }
+
+            // ── the document is the position (§4c.8b resume lands on the exact ask) ────────
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField') && n.attrs && n.attrs.fieldId === fid) {
+                                out = (typeof _cwNodeText === 'function' ? _cwNodeText(n) : (n.textContent || '')).trim();
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            function rewriteText() {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && n.type.name === 'sectionBlock' && n.attrs && n.attrs.label === 'Your Rewrite') {
+                                // br-aware (a response box holds its paragraphs as <br><br>; textContent welds them)
+                                const parts = [];
+                                n.forEach(function (c) { const t = ((typeof _cwNodeText === 'function' ? _cwNodeText(c) : c.textContent) || '').trim(); if (t) parts.push(t); });
+                                out = parts.join('\n\n');
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            function firstEmpty() { for (let n = 0; n < drills.length; n++) if (!rowText(drills[n].fid)) return n; return drills.length; }
+            function chosenDrill() {
+                const t = rowText(CHOSEN);
+                if (!t) return null;
+                return drills.filter(function (d) { return d.text === t; })[0] || null;
+            }
+
+            // ── chips (a PRIVATE copy per controller, per the walk contract) ───────────────
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+                return true;
+            }
+            function chipBarOrRetry(options, onPick, retryText) {
+                if (chipBar(options, onPick)) return true;
+                _cwReplay(function () { aiBubble(retryText); });
+                return chipBar(options, onPick);
+            }
+            // ── the help ladder (§4c.9): free rungs first, Sophia last ──────────────────────
+            function helpBar(d) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
+                const sh = CW_ADAPT_SHAPES[d.shape] || { more: [] };
+                const spent = (st && st.moreSpent && st.moreSpent[d.fid]) || 0;
+                if (spent < (sh.more || []).length) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: 'See an example', icon: WML.icon('examples', 15),
+                        onClick: function () { serveMore(d); },
+                    }));
+                }
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn swml-cw-help-last', textContent: 'Still stuck — ask Sophia', icon: WML.phoenixIconHTML(16),
+                    onClick: function () { askSophia(d); },
+                }));
+                bc.appendChild(bar);
+            }
+            // Two asks carry the ladder: a question's one line, and the rewrite of the scene (§4c.9 — every ask).
+            function rewriting() { return !!st && st.phase === 'write'; }
+            function serveMore(d) {
+                const pool = (CW_ADAPT_SHAPES[d.shape] || {}).more || [];
+                st.moreSpent = st.moreSpent || {};
+                const spent = st.moreSpent[d.fid] || 0;
+                if (spent >= pool.length) return;
+                st.moreSpent[d.fid] = spent + 1;
+                persist();
+                aiBubble(T.more + '\n\n' + pool[spent] + '\n\n'
+                    + (rewriting() ? 'Now back to your rewrite in the document.' : 'Now yours, for the question above. One rough line is enough.'));
+                reAttach(d);
+            }
+            // Rung 3 — an API call, only on an explicit tap.
+            function askSophia(d) {
+                if (pending) return;
+                const rw = rewriting();
+                userTurn(rw ? 'Still stuck — how do I rewrite my scene for this question?' : 'Still stuck — how could my story answer this question?');
+                const ctx = (rw
+                    ? '[THE STUDENT IS ON WEEKEND LESSON 9 and is stuck REWRITING their scene so it answers the exam question below. '
+                        + 'Follow section 2 of your instructions: in two or three sentences, say what this question needs their scene to do, '
+                        + 'using their own scene below (which moment to move, what to make central), then hand it straight back: they make the '
+                        + 'change themselves in the document. Never rewrite it for them, never give a mark, and do NOT emit any marker.]'
+                    : '[THE STUDENT IS ON WEEKEND LESSON 9 (adapting their prepared story to real exam questions) and is stuck on ONE question. '
+                        + 'Follow section 2 of your instructions: in two or three sentences, explain what this kind of question wants, using their own '
+                        + 'story if you can see it, then hand it straight back and ask them to write their own one line. Never write it for them, never '
+                        + 'move to another question, and do NOT emit any marker.]')
+                    + '\n\nTHE QUESTION: ' + d.text
+                    + (rw ? '\n\nTHEIR REWRITE SO FAR:\n' + (rewriteText().slice(0, 6000) || '(the box is empty)') : '');
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                active = false; pending = true;
+                armWalkResume('cw90-help-' + (rw ? 'rewrite' : d.fid), function (reply, meta) {
+                    pending = false; active = true; persist();
+                    if (!reply || (meta && meta.timedOut)) {
+                        console.warn('WML CW90: ask-Sophia failed/timed out for ' + (rw ? 'the rewrite' : d.fid) + ' — degraded honest message served.');
+                        aiBubble(T.cant + (rw
+                            ? ' Look again at what the question names, and make that the centre of your scene.'
+                            : ' Try **See an example**, then write your one line.'));
+                    }
+                    setTimeout(function () { try { reAttach(d); } catch (err) {} }, 400);
+                    resetSend();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = rw ? 'I’m stuck rewriting my scene for this question.' : 'I’m stuck on this question — how could my story answer it?';
+                sendCanvasMessage();
+            }
+
+            // ── §4c.10: the document scrolls to the surface being worked ───────────────────
+            function scrollTo(selector) {
+                try {
+                    const editor = document.getElementById('swml-tiptap-editor');
+                    const target = editor ? editor.querySelector(selector) : null;
+                    if (target && target.offsetParent !== null) _swmlScrollToTop(target);
+                } catch (err) {}
+            }
+            function file(fid, text) {
+                const clean = String(text || '').trim();
+                if (!clean) return false;
+                let wrote = false;
+                try { wrote = _writeOutlineRowField(fid, clean, { replace: true }); }
+                catch (e) { console.warn('WML CW90: write failed (non-fatal) for ' + fid + ' —', e && e.message); }
+                try { _tickOutlineRow(fid); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                return wrote;
+            }
+            function progress(sub) { try { applyCwSubstepProgress({ stepNum: CW_ADAPT_STEP, substepNum: sub, name: SUBSTEPS[sub] }); } catch (e) {} }
+
+            // ── serving ───────────────────────────────────────────────────────────────────
+            function heading(d) { return cwProgressBar(drills.indexOf(d) + 1, drills.length, 'Real Exam Questions', 'Question ' + d.n); }
+            function reAttach(d) {
+                // The ask is still the one above; re-offer its controls (§4d).
+                if (rewriting()) {
+                    _walkSlot.clear(WALK);   // the rewrite is typed in the DOCUMENT; the chat holds the buttons
+                    chipBarOrRetry(['Check my rewrite →'], onCw90Check, '**Tap Check my rewrite when you are ready.**');
+                } else {
+                    _walkSlot.arm(WALK, d.fid, { cycle: 'rewrite' });
+                }
+                helpBar(d);
+                resetSend();
+            }
+            function chosen() { return chosenDrill() || drills[((st && st.chosen) || 1) - 1] || null; }
+            function askText(d) {
+                const sh = CW_ADAPT_SHAPES[d.shape] || { name: 'a story question', rule: '', ask: 'In one line: how would your story answer this question?' };
+                const src = [d.board, d.sitting].filter(Boolean).join(', ');
+                return heading(d) + '**Question ' + d.n + ': ' + sh.name + '**' + (src ? ' *(' + src + ')*' : '')
+                    + '\n\n> ' + d.text
+                    + (d.hasImages ? '\n\n*On the paper this question also had pictures. The words are what matter here.*' : '')
+                    + '\n\n' + sh.rule
+                    + '\n\n**' + sh.ask + '**';
+            }
+            function serveAsk(opts) {
+                const d = drills[st.i];
+                if (!d) { servePick(opts); return; }
+                st.phase = 'ask';
+                persist();
+                const attach = function () { _walkSlot.arm(WALK, d.fid, { cycle: 'rewrite' }); helpBar(d); resetSend(); scrollTo('[data-field-id="' + d.fid + '"]'); };
+                if (opts && opts.defer) { serveCwChunks([askText(d)], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(askText(d));
+                attach();
+            }
+            // ONE check per lesson (plan §2c, and Step 11's `pushed` precedent): once Sophia's check is in the
+            // document, a question looked at again leads back to the end, never to a second check.
+            function checked() { return !!rowText(CHECK); }
+            function nextLabel() { return checked() ? 'Back to the end →' : (firstEmpty() < drills.length) ? 'Next question →' : 'Choose my question →'; }
+            function serveReveal(d, opts) {
+                st.phase = 'reveal'; st.i = drills.indexOf(d);
+                persist();
+                _walkSlot.clear(WALK);
+                const sh = CW_ADAPT_SHAPES[d.shape] || { example: '' };
+                const text = T.reveal + ' Here is the same move on Scrooge’s story:\n\n' + sh.example;
+                const attach = function () { chipBarOrRetry([nextLabel()], onCw90Next, '**Ready for the next one?**'); resetSend(); };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            // Named for cw-keymatch: FLOW — Next moves to the first question without a line; none left → the pick;
+            // after the check, back to the end.
+            function onCw90Next(label) {
+                pickTurn(label);
+                if (checked()) { serveWrap(); return; }
+                st.i = firstEmpty();
+                persist();
+                if (st.i >= drills.length) { servePick(); return; }
+                serveAsk();
+            }
+            function shortQ(d) { const t = d.text.replace(/\s+/g, ' '); return 'Question ' + d.n + ': ' + (t.length > 70 ? t.slice(0, 67).replace(/\s+\S*$/, '') + '…' : t); }
+            function servePick(opts) {
+                st.phase = 'pick';
+                persist();
+                _walkSlot.clear(WALK);
+                progress(1);
+                const text = T.pick + ' Pick the one your story fits best. On the day, that choice is yours too.';
+                const attach = function () { chipBarOrRetry(drills.map(shortQ), onCw90Pick, text); resetSend(); };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            // Named for cw-keymatch: CONTENT — the chosen question's exact words go into its locked row.
+            function onCw90Pick(label) {
+                pickTurn(label);
+                const m = /^Question (\d+)/.exec(label);
+                const d = m ? drills[parseInt(m[1], 10) - 1] : null;
+                if (!d) { servePick(); return; }
+                file(CHOSEN, d.text);
+                st.chosen = d.n;
+                persist();
+                serveWrite();
+            }
+            function serveWrite(opts) {
+                const d = chosenDrill() || drills[(st.chosen || 1) - 1];
+                if (!d) { servePick(opts); return; }
+                st.phase = 'write'; st.chosen = d.n;
+                persist();
+                _walkSlot.clear(WALK);
+                progress(2);
+                const sh = CW_ADAPT_SHAPES[d.shape] || { rule: '' };
+                // ⭐ FOSSIL LAW (§4c.7): this turn is STORED, so it states nothing about the box that can change.
+                // Whether the box is empty RIGHT NOW is said in a separate turn that is drawn, never stored.
+                const text = T.write + '\n\n> ' + d.text
+                    + '\n\nRewrite the scene in the **Your Rewrite** box in your document so it answers this question.'
+                    + '\n\nRemember: ' + sh.rule
+                    + '\n\n' + (CW_ADAPT_TIME[boardKey()] || CW_ADAPT_TIME._default)
+                    + ' Change only what the question needs.'
+                    + '\n\n**When your rewrite answers the question, tap Check my rewrite.**';
+                const attach = function () {
+                    if (!rewriteText()) _cwReplay(function () { aiBubble(EMPTY_BOX); });
+                    reAttach(d);
+                    scrollTo('[data-section-label="Your Rewrite"]');
+                };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            const EMPTY_BOX = 'The **Your Rewrite** box is empty, because no draft reached this page. Write your scene there from the start, or open the lesson where you wrote your draft and check it is in its box.';
+            // Named for cw-keymatch: FLOW — the only door to the judgement turn.
+            function onCw90Check(label) {
+                pickTurn(label);
+                if (!rewriteText()) {
+                    _cwReplay(function () { aiBubble('The **Your Rewrite** box is empty, so there is nothing to check yet. Write your scene in the box, then tap **Check my rewrite**.'); });
+                    reAttach(chosen());
+                    return;
+                }
+                fireCheck();
+            }
+            // The verdict goes into the document, which is the record of it (and the position, on resume).
+            function applyVerdict(v) {
+                const verdict = v.focus === 'yes' ? 'Yes. Your rewrite answers the question.'
+                    : v.focus === 'partly' ? 'Partly. The question is there, but not yet at the centre of your story.'
+                    : 'Not yet. A reader could not tell which question your story was written for.';
+                file(CHECK, verdict + (v.where ? ' (' + v.where + ')' : ''));
+                file(FIX, v.fix || (v.focus === 'yes' ? 'Nothing to change for the question.' : 'Look again at what the question names, and make it the centre of your scene.'));
+                st.phase = 'done'; st.focus = v.focus; persist();
+            }
+            function focusFromDoc() {
+                const c = rowText(CHECK);
+                return /^Yes\b/.test(c) ? 'yes' : /^Partly\b/.test(c) ? 'partly' : /^Not yet\b/.test(c) ? 'no' : '';
+            }
+            // A verdict that reached the saved transcript but not the document (a reload between the two) is
+            // recovered from it, never bought a second time. Only a reply AFTER the latest check request counts.
+            function recoverCheck() {
+                try {
+                    const h = Array.isArray(canvasChatHistory) ? canvasChatHistory : [];
+                    let at = -1;
+                    for (let k = h.length - 1; k >= 0; k--) {
+                        const m = h[k];
+                        if (m && m.role === 'user' && m.hidden && typeof m.content === 'string' && m.content.indexOf('[ADAPT CHECK') === 0) { at = k; break; }
+                    }
+                    if (at < 0) return null;
+                    for (let k = h.length - 1; k > at; k--) {
+                        const m = h[k];
+                        if (m && m.role === 'assistant' && typeof m.content === 'string') { const v = _cwAdaptParseCheck(m.content); if (v) return v; }
+                    }
+                } catch (e) {}
+                return null;
+            }
+
+            // ── ⭐ THE ONE API CALL — does the rewrite answer the question? ──────────────────
+            function fireCheck() {
+                const d = chosenDrill() || drills[(st.chosen || 1) - 1];
+                if (!d) { servePick(); return; }
+                const aqa = boardKey() === 'aqa' && !isFallback();
+                const ctx = '[ADAPT CHECK — the ONE judgement turn of weekend lesson 9. The student has rewritten their prepared scene to '
+                    + 'answer the exam question below. Judge ONE thing: does the rewrite answer this question? Follow section 1 of your '
+                    + 'instructions exactly. Two to four sentences, plain words for a twelve-year-old, British English. Name the place in '
+                    + 'THEIR rewrite that answers it, or should. If the answer is partly or no, give ONE concrete change using their own '
+                    + 'characters. Never rewrite the story for them, never give a mark or a grade, never list criteria. '
+                    + (aqa ? 'This student sits AQA: if it is partly or no, say plainly that the examiner would hold the mark down for this, without giving a number. ' : '')
+                    + 'END YOUR REPLY WITH EXACTLY ONE MARKER ON ITS OWN LINE: '
+                    + '@ADAPT_CHECK{"focus":"yes|partly|no","where":"<the place in their story, a few words>","fix":"<one sentence, empty if yes>"} '
+                    + '— it is machine-read and never shown.]'
+                    + '\n\nTHE QUESTION: ' + d.text
+                    + '\n\nTHEIR REWRITE:\n' + rewriteText().slice(0, 12000);
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                active = false; pending = true; st.phase = 'check'; persist();
+                armWalkResume('cw90-check', function (reply, meta) {
+                    pending = false; active = true;
+                    const v = (!reply || (meta && meta.timedOut)) ? null : _cwAdaptParseCheck(reply);
+                    if (!v) {
+                        // FAIL-OPEN (§4d): no usable verdict still leaves a way forward.
+                        console.warn('WML CW90: the check gave no usable verdict' + ((meta && meta.timedOut) ? ' (timed out)' : '') + ' — Try again offered.');
+                        st.phase = 'write'; persist();
+                        _cwReplay(function () { aiBubble('I could not finish checking your rewrite just now. Your writing is safe in the document. Tap **Check my rewrite** to try again.'); });
+                        reAttach(d);
+                        return;
+                    }
+                    applyVerdict(v);
+                    setTimeout(function () { try { serveWrap(); } catch (err) {} }, 300);
+                }, { timeoutMs: 90000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'Does my rewrite answer the question?';
+                sendCanvasMessage();
+            }
+
+            function serveWrap() {
+                _walkSlot.clear(WALK);
+                st.phase = 'done';
+                active = false;
+                persist();
+                progress(3);
+                const fix = rowText(FIX);
+                const focus = st.focus || focusFromDoc();
+                _cwReplay(function () {
+                    aiBubble('**That is the whole weekend story.** You prepared one story, wrote it, marked it, polished it, and adapted it to a real exam question.'
+                        + ((focus === 'partly' || focus === 'no') && fix ? '\n\nBefore you finish, make the change in your rewrite: *' + fix + '*' : '')
+                        + '\n\nOn the day, do the same: read the question, decide what it needs your story to do, and change only that.'
+                        + cwEndpointLine());
+                });
+                chipBarOrRetry(['Look at a question again →'], onWrapRecall, '**This lesson is finished.**');
+                resetSend();
+            }
+            // ⭐ THE WAY BACK IN (v7.20.340 law): a finished walk keeps a route into every question.
+            function onWrapRecall(label) { pickTurn(label); st.phase = 'recall'; persist(); serveRecallPicker(); }
+            function serveRecallPicker(opts) {
+                st.phase = 'recall'; active = true; persist();
+                const text = T.recall;
+                const attach = function () { chipBarOrRetry(drills.map(shortQ), onRecallPick, text); resetSend(); };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            function onRecallPick(label) {
+                pickTurn(label);
+                const m = /^Question (\d+)/.exec(label);
+                const d = m ? drills[parseInt(m[1], 10) - 1] : null;
+                if (!d) { serveWrap(); return; }
+                st.i = d.n - 1; persist();
+                serveAsk();
+            }
+            function serveCurrent(opts) {
+                if (!st) st = { i: 0, phase: 'ask', moreSpent: {} };
+                if (st.phase === 'done') { serveWrap(); return; }
+                if (st.phase === 'recall') { serveRecallPicker(opts); return; }
+                if (st.phase === 'write' || st.phase === 'check') { serveWrite(opts); return; }
+                if (st.phase === 'pick') { servePick(opts); return; }
+                if (st.phase === 'reveal' && drills[st.i]) { serveReveal(drills[st.i], opts); return; }
+                serveAsk(opts);
+            }
+
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                const slot = _walkSlot.consume(WALK);
+                if (!slot) {
+                    // While rewriting, the ask WAS served — its answer just belongs in the document. Keep what they
+                    // typed on screen (it may be their whole scene) and say where it goes; never "I haven't asked".
+                    if (rewriting() && chosen()) {
+                        userTurn(clean);
+                        aiBubble(T.inChat + ' in your document, not here in the chat. If you wrote it here, copy it into the box. When it is there, tap **Check my rewrite**.');
+                        reAttach(chosen());
+                        return;
+                    }
+                    _cwNoAskGuard(WALK, function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                userTurn(clean);
+                const d = drills.filter(function (x) { return x.fid === slot.fid; })[0] || drills[st.i];
+                if (!d) { serveCurrent(); return; }
+                file(d.fid, clean);
+                serveReveal(d);
+            }
+
+            function orientationChunks() {
+                const aqa = boardKey() === 'aqa' && !isFallback();
+                return [
+                    'This is the last lesson of the weekend story. In the exam you do not choose the question; the exam does. You bring the story you have prepared, and you **adapt it** to the question in front of you.',
+                    'Stories bend. A title, a first line, a last line, an event the question names: you can almost always move your story towards it. What the examiner checks first is that your story **answers the question**.'
+                        + (aqa ? ' For AQA, from 2026, a story that does not answer the question is held to a lower mark, however well it is written.' : ''),
+                    'Here is how it works. I show you real story questions' + (isFallback() ? ' from past papers' : ' from your exam board’s past papers') + ', one at a time. For each one you write **one line** saying how your story would answer it, and I show you the same move on a story you know. Then you choose one question, rewrite your scene for it, and I check that it answers it.',
+                    '**Don’t overthink the lines.** One rough sentence each is enough. The thinking is the point.',
+                ];
+            }
+            function load() { drills = _cwAdaptDrills(state.cwAdaptPrompts); return drills.length > 0; }
+            // Where the document says the student is: a filed check → done; a chosen question → write; all lines → pick.
+            function positionFromDoc() {
+                if (rowText(CHECK)) return { phase: 'done' };
+                const c = chosenDrill();
+                if (c) return { phase: 'write', chosen: c.n };
+                const n = firstEmpty();
+                return n >= drills.length ? { phase: 'pick', i: n } : { phase: 'ask', i: n };
+            }
+            function start() {
+                if (active || pending) return false;
+                // Both stops are true only while their condition holds, so they are drawn, never stored (§4c.7),
+                // and `blocked` keeps the start-miss net from re-firing them on every reply.
+                if (!(WML.cwInUnit && WML.cwInUnit())) {
+                    st = { i: 0, phase: 'blocked' };
+                    _cwReplay(function () { aiBubble('This lesson belongs to the Weekend Story. Open it from the Weekend Story unit in your course.'); });
+                    return true;
+                }
+                if (!load()) {
+                    console.warn('WML CW90: no exam questions reached this page (cwAdaptPrompts empty for board "' + boardKey() + '").');
+                    st = { i: 0, phase: 'blocked' };
+                    _cwReplay(function () { aiBubble('No exam questions have reached this page. Reload it once. If this message stays, tell your teacher.'); });
+                    return true;
+                }
+                const pos = positionFromDoc();
+                st = { i: pos.i || 0, phase: pos.phase, chosen: pos.chosen || 0, moreSpent: {} };
+                active = true; pending = false;
+                persist();
+                console.log('WML CW90: code-served adapt walk start — ' + drills.length + ' question(s), phase ' + st.phase);
+                if (st.phase === 'done') { serveWrap(); return true; }
+                if (st.phase === 'write') { serveWrite(); return true; }
+                if (st.phase === 'pick') { servePick(); return true; }
+                if (st.i === 0) { st.phase = 'orient'; persist(); serveCwChunks(orientationChunks(), { emit: aiBubble, onDone: function () { serveAsk(); } }); return true; }
+                serveAsk();
+                return true;
+            }
+            function reset() { active = false; pending = false; st = null; _walkSlot.clear(WALK); clearPersist(); }
+            function tryResume() {
+                try {
+                    // A finished walk in THIS page is not revived: the send's REVIVE check calls here on every typed
+                    // message, and a free question after the lesson must reach Sophia without the wrap redrawn above it.
+                    if (st && (st.phase === 'done' || st.phase === 'blocked') && !active) return false;
+                    if (!(WML.cwInUnit && WML.cwInUnit()) || !load()) return false;
+                    let saved = null;
+                    try { const raw = localStorage.getItem(lsKey()); saved = raw ? JSON.parse(raw) : null; } catch (e) {}
+                    // No walk state in THIS browser (another device, cleared storage): the document still says where
+                    // the student is, so build the position from it rather than leaving a replayed ask with no controls.
+                    st = (saved && saved.st) ? saved.st : { i: 0, phase: 'ask', chosen: 0, moreSpent: {} };
+                    st.moreSpent = st.moreSpent || {};
+                    const mark = emitted;
+                    // The document is the authority on position — except a recall (the student chose to go back).
+                    if (st.phase !== 'recall') {
+                        const pos = positionFromDoc();
+                        st.phase = pos.phase === 'done' ? 'done' : (st.phase === 'reveal' && pos.phase === 'ask' && rowText((drills[st.i] || {}).fid || '') ? 'reveal' : pos.phase);
+                        if (pos.chosen) st.chosen = pos.chosen;
+                        if (st.phase !== 'reveal' && typeof pos.i === 'number') st.i = pos.i;
+                    }
+                    // A reload during the check: if its verdict reached the transcript, file it (never buy it twice);
+                    // if it did not, the student is still at the rewrite and Check is offered again.
+                    if (st.phase === 'write') { const v = recoverCheck(); if (v) { console.log('WML CW90: verdict recovered from the transcript.'); applyVerdict(v); } }
+                    if (st.phase === 'orient') st.phase = 'ask';
+                    if (st.phase === 'done') {
+                        active = false; pending = false;
+                        setTimeout(function () { if (emitted !== mark) return; _cwReplay(serveWrap); }, 500);
+                        return false;
+                    }
+                    active = true; pending = false;
+                    persist();
+                    console.log('WML CW90: resumed — phase ' + st.phase + (st.phase === 'ask' ? ' (question ' + (st.i + 1) + ')' : ''));
+                    setTimeout(function () { if (emitted !== mark) return; _cwReplay(function () { serveCurrent(); }); }, 400);
+                    return true;
+                } catch (e) { return false; }
+            }
+            function nudge() { if (!active || pending) return false; serveCurrent(); return true; }
+            // Every question ask opens on its progress chip; every other stored turn on a constant in T; the
+            // orientation chunks on their own first words (fixed across boards — only their endings vary).
+            function owns(text) {
+                const t = String(text || '');
+                if (t.indexOf('[SWML_BEAT:') === 0) return true;
+                const sigs = Object.keys(T).map(function (k) { return T[k]; })
+                    .concat(orientationChunks().map(function (c) { return String(c).slice(0, 40); }));
+                return sigs.some(function (s) { return s && t.indexOf(s) === 0; });
+            }
+            _CW_TURN_OWNERS.cw_step_90 = owns;
+
+            return {
+                handleTurn, onReply: function () { /* code-started: the check reply arrives through armWalkResume */ },
+                reset, tryResume, nudge, start, forceStart: start,
+                // True before the walk has started too, so the start-miss net can code-serve a walk that never began.
+                atStart: function () { return !st || ((st.i || 0) === 0 && (st.phase === 'ask' || st.phase === 'orient')); },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
+        // ══════════════════════════════════════════════════════════════════════════════════════
         // ⭐⭐ v7.20.551 (CW trials slice 4) — TRIAL 1: STORY COHERENCE, as a focused diagnostic.
         //
         // WHAT IT REPLACES. `CW-TRIAL-01-story-coherence.md` was a pre-law stub that broke three
@@ -35159,12 +35876,13 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwAdaptCtl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
         window.__swmlCw9Ctl = _cw9SceneCtl;
         window.__swmlCw13Ctl = _cw13SceneCtl;   // v7.20.568 (#440): the twin pipeline's Step-13 handle
+        window.__swmlCwAdaptCtl = _cwAdaptCtl;  // v7.20.753: the twin pipeline's weekend-lesson-9 handle
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
@@ -35178,6 +35896,7 @@
             _cwTrial1Ctl.onReply(reply);
             _cwCharProfileCtl.onReply(reply);
             _cwGoalsPlotCtl.onReply(reply);
+            _cwAdaptCtl.onReply(reply);
 
             const t = (state && state.task) || '';
             // ⚠️ Every walk task needs its arm HERE as well as in onReply above — the .490
@@ -35198,7 +35917,8 @@
                 // makes the start-miss guard inert for exactly the step that has no controller.
                 : t === 'cw_trial_1' ? _cwTrial1Ctl
                 : t === 'cw_step_11' ? _cwCharProfileCtl
-                : t === 'cw_step_12' ? _cwGoalsPlotCtl : null;
+                : t === 'cw_step_12' ? _cwGoalsPlotCtl
+                : t === 'cw_step_90' ? _cwAdaptCtl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
             if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
@@ -35245,6 +35965,7 @@
             cw13SceneCtl: _cw13SceneCtl,       // v7.20.568 (#440) — the same walk for Draft 2's scene
             cwTrial1Ctl: _cwTrial1Ctl,         // v7.20.551 — fresh entry calls forceStart(), boot resume tryResume()
             cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
+            cwAdaptCtl: _cwAdaptCtl,             // v7.20.753 — weekend lesson 9; same two entry points
             cwGoalsPlotCtl: _cwGoalsPlotCtl,     // v7.20.567 (#440) — fresh entry calls start(), boot resume tryResume()
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
@@ -42400,6 +43121,7 @@
                     if (state.task === 'cw_trial_1' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();
                     if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
                     if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
+                    if (state.task === 'cw_step_90' && tp.cwAdaptCtl) tp.cwAdaptCtl.tryResume();               // v7.20.753 (weekend lesson 9)
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
                     // active (last poem finished, or none picked yet). The picker bubble is DOM-only
@@ -42608,6 +43330,13 @@
                     if (state.task === 'cw_step_12' && !state.reviewMode && tp.cwGoalsPlotCtl) {
                         console.log('WML v7.20.567: CW Step 12 — deterministic goals-walk start (isCwSi entry)');
                         tp.cwGoalsPlotCtl.start();
+                        return;
+                    }
+                    // v7.20.753: weekend lesson 9 owns its fresh entry — never the generic "Welcome to Step 90"
+                    // greeting, which would put a course step number on a weekend screen (PEDAGOGY §55).
+                    if (state.task === 'cw_step_90' && !state.reviewMode && tp.cwAdaptCtl) {
+                        console.log('WML v7.20.753: weekend lesson 9 — deterministic adapt walk start (isCwSi entry)');
+                        tp.cwAdaptCtl.start();
                         return;
                     }
 
@@ -43875,6 +44604,9 @@
                                         if (state.task === 'cw_step_9' && window.__swmlCw9Ctl) {
                                             clearWalkResume();
                                             setTimeout(() => { window.__swmlCw9Ctl.reset(); window.__swmlCw9Ctl.start(); }, 200);
+                                        } else if (state.task === 'cw_step_90' && window.__swmlCwAdaptCtl) {   // v7.20.753 (weekend lesson 9)
+                                            clearWalkResume();
+                                            setTimeout(() => { window.__swmlCwAdaptCtl.reset(); window.__swmlCwAdaptCtl.start(); }, 200);
                                         } else if (state.task === 'cw_step_13' && window.__swmlCw13Ctl) {   // v7.20.568 (#440)
                                             clearWalkResume();
                                             setTimeout(() => { window.__swmlCw13Ctl.reset(); window.__swmlCw13Ctl.start(); }, 200);
@@ -45705,6 +46437,11 @@
                                             if (state.task === 'cw_step_13' && !state.reviewMode && window.__swmlCw13Ctl) {   // v7.20.568 (#440)
                                                 console.log('WML v7.20.568: CW Step 13 — deterministic scene-selection (Draft 2) start (transition-handler entry)');
                                                 window.__swmlCw13Ctl.start();
+                                                return;
+                                            }
+                                            if (state.task === 'cw_step_90' && !state.reviewMode && window.__swmlCwAdaptCtl) {   // v7.20.753 (weekend lesson 9)
+                                                console.log('WML v7.20.753: weekend lesson 9 — deterministic adapt walk start (transition-handler entry)');
+                                                window.__swmlCwAdaptCtl.start();
                                                 return;
                                             }
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
@@ -50740,6 +51477,39 @@
                 console.warn('WML CW trial draft refresh failed (document untouched) —', e && e.message);
             }
         };
+        // ⭐ v7.20.753 — WEEKEND LESSON 9: the rewrite box starts with the student's latest draft (Draft 2 from
+        // lesson 8, else Draft 1 from lesson 6), so "rewrite your scene" begins from THEIR scene. Seeded ONCE, only
+        // while the box is empty — after that it is the student's own writing and is never touched again.
+        const tryFillCwAdaptRewrite = async () => {
+            if (!isCwTask || !canvasEditor || !cwStepDef || cwStepDef.step !== CW_ADAPT_STEP || state.reviewMode) return;
+            if (!state.cwProjectId) { console.warn('WML CW adapt: no cwProjectId on this page — the rewrite box stays empty.'); return; }
+            try {
+                const box = document.createElement('div');
+                box.innerHTML = canvasEditor.getHTML();
+                const sec = box.querySelector('[data-section-label="Your Rewrite"]');
+                if (!sec) { console.warn('WML CW adapt: no "Your Rewrite" section on this page.'); return; }
+                if ((sec.textContent || '').trim()) return;   // the student's own writing — never overwritten
+                let prose = '', from = '';
+                for (const key of ['draft_2', 'draft_1']) {
+                    try {
+                        const art = await WML.cwProject.loadArtifact(state.cwProjectId, key);
+                        prose = (art && art.success && art.value) ? _cwDraftProseFromDoc(String(art.value)) : '';
+                    } catch (e) { prose = ''; }
+                    if (prose) { from = key; break; }
+                }
+                if (!prose) { console.warn('WML CW adapt: no writing under draft_2 or draft_1 — the box stays empty and the walk says so.'); return; }
+                sec.innerHTML = prose;
+                const _was = _migrationActive;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(box.innerHTML, false); }
+                finally { _migrationActive = _was; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW adapt: rewrite box seeded from ' + from + '.');
+            } catch (e) {
+                console.warn('WML CW adapt: seeding the rewrite box failed (document untouched) —', e && e.message);
+            }
+        };
         // ⭐ v7.20.554 (#424 / PEDAGOGY §33.9) — PIN THE TRIAL'S TARGET TO THE TOP OF THE NEXT
         // DRAFT. The trial's closing ask banks the student's own one-sentence target; this reads
         // it back (LAST saved entry for that trial — a redo supersedes) and pins it above the
@@ -52364,7 +53134,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwAdaptRewrite()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -56377,6 +57147,48 @@
             return html;
         }
 
+        // ── v7.20.753: weekend lesson 9, Adapt It to the Question (unit-only step 90; WEEKEND-STORY-PLAN §2c) ──
+        // The questions are the student's OWN board's, from the embed config. Each gets a section with its exact
+        // words and one row for the student's line; the walk (_cwAdaptCtl) serves them one at a time.
+        if (step === CW_ADAPT_STEP) {
+            const prompts = Array.isArray(state.cwAdaptPrompts) ? state.cwAdaptPrompts : [];
+            const drills = _cwAdaptDrills(prompts);
+            const fallback = prompts.some(function (p) { return p && p.fallback; });
+            html += sectionHTML('question', 'About This Lesson', false, null,
+                '<h2>Adapt It to the Question</h2>' +
+                '<p>In the exam you are given a question, and you bring the story you have prepared. Stories bend: you can almost always adapt yours to answer the question, as long as it really does answer it.</p>' +
+                (fallback
+                    ? '<p>Your exam board builds its story question around a picture, and this lesson cannot show you those pictures yet. So the questions below come from other boards’ real papers. The skill is exactly the same.</p>'
+                    : '<p>The questions below are real story questions from your exam board’s past papers.</p>') +
+                '<p>For each one you write one line saying how your story would answer it. Then you choose one question and rewrite your scene to answer it, and Sophia checks that it does.</p>'
+            );
+            html += dividerHTML('REAL EXAM QUESTIONS');
+            if (!drills.length) {
+                html += sectionHTML('plan', 'Questions', false, null,
+                    '<p data-locked="true">No exam questions have reached this page. Reload it once. If this message stays, tell your teacher, because this lesson needs the questions from your exam board.</p>');
+            }
+            drills.forEach(function (d) {
+                const shape = CW_ADAPT_SHAPES[d.shape] || { name: 'a story question' };
+                const src = [d.board, d.sitting].filter(Boolean).join(', ');
+                html += sectionHTML('plan', 'Question ' + d.n, true, null,
+                    '<h3>Question ' + d.n + ': ' + escapeHTML(shape.name) + '</h3>' +
+                    '<p data-locked="true"><em>' + escapeHTML(d.text) + '</em>' + (src ? ' (' + escapeHTML(src) + ')' : '') +
+                    (d.hasImages ? '. On the paper this question also had pictures.' : '') + '</p>' +
+                    outlineRowHTML({ id: 'drill-' + d.n, label: 'Your line', prompt: 'One line: how would your story answer this question?' }, d.fid));
+            });
+            html += dividerHTML('YOUR REWRITE');
+            html += sectionHTML('plan', 'Your Question', true, null,
+                '<h3>The question you chose</h3>' +
+                outlineRowHTML({ id: 'chosen', label: 'Your question', prompt: 'You choose it in the chat.', locked: true }, 'cw-adapt-chosen'));
+            html += sectionHTML('response', 'Your Rewrite', true, null, '<p></p>', { 'student-composition': 'true' });
+            html += dividerHTML('SOPHIA’S CHECK');
+            html += sectionHTML('plan', 'Sophia’s Check', true, null,
+                '<h3>Does your rewrite answer the question?</h3>' +
+                outlineRowHTML({ id: 'check', label: 'Sophia’s check', prompt: 'Appears when you tap Check my rewrite.', locked: true }, 'cw-adapt-check') +
+                outlineRowHTML({ id: 'fix', label: 'One change to make', prompt: 'Appears when you tap Check my rewrite.', locked: true }, 'cw-adapt-fix'));
+            return html;
+        }
+
         // ── Trial steps ──
         if (stepDef.trial) {
             const _trialSrc = (window.WML && WML.cwTrialSource) ? WML.cwTrialSource('cw_trial_' + stepDef.trial) : null;
@@ -56591,8 +57403,12 @@
     function _cwUnitDraftWordTargets() {
         if (!(WML.cwInUnit && WML.cwInUnit())) return null;
         const def = WML.getCwStepDef ? WML.getCwStepDef(state.task) : null;
-        if (!def || !def.draft || WML.cwStepEnv(def) !== 'polishing') return null;
-        const nums = String(WML.cwWordTarget('d1') || '').match(/\d+/g);
+        if (!def) return null;
+        // v7.20.753: a unit step names the length it is written to (`words`: lesson 9's rewrite IS the exam piece);
+        // a draft lesson in the polishing environment writes Draft 1's length.
+        const kind = def.words || ((def.draft && WML.cwStepEnv(def) === 'polishing') ? 'd1' : '');
+        if (!kind) return null;
+        const nums = String(WML.cwWordTarget(kind) || '').match(/\d+/g);
         if (!nums) return null;
         const lo = +nums[0], hi = +nums[nums.length - 1];
         return { min: lo, target: hi, ideal: hi };
