@@ -266,6 +266,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   tail -1 /tmp/sync-arb.out
 fi
 
+# v7.20.765 (#806): first-attempt plan notes never cross into a redraft doc — the shipped seed strip,
+# checked by an independent DOM parse on a real-shaped Phase-1 doc (mutation proof built in).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'class-rest-api\.php|plan-notes-strip-gate\.php|plan-notes-strip-fixture\.txt'; then
+  php bin/plan-notes-strip-gate.php >/tmp/plan-notes-strip.out 2>&1 || { cat /tmp/plan-notes-strip.out; fail=1; }
+  tail -1 /tmp/plan-notes-strip.out
+fi
+
 # v7.20.252 (Fable F1): the JS build-stamp (frontend/wml-core.js WML_BUILD, logged on load for
 # stale-client diagnosis) must equal the plugin version, or the console log lies about freshness.
 JS_BUILD=$(grep -oE "var WML_BUILD = '[^']+'" frontend/wml-core.js 2>/dev/null | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")

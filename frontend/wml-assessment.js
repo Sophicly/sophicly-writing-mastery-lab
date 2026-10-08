@@ -70705,9 +70705,11 @@
      * migrateMissingPlans cannot see it — it bails the moment ANY plan section exists.
      *
      * This heal upgrades each question's diagnostic plan area to the redraft scaffold through THE
-     * SAME BUILDER a born redraft doc uses. The student's first-attempt notes are never lost: they
-     * move into the FIRST box of the new scaffold (Neil's ruling, 2026-09-21: "Leave them in
-     * Paragraph 1's box" — the approved plan then lands beneath them, the v7.20.217 append rule).
+     * SAME BUILDER a born redraft doc uses. Any words already in the old box move into the FIRST
+     * box of the new scaffold, so nothing is ever destroyed. v7.20.765 (#806, Neil 2026-10-08: "Stop
+     * for everyone", reversing #571 "Leave them in Paragraph 1's box"): the server seed no longer
+     * carries first-attempt notes into Phase 2 (strip_plan_notes_for_redraft), so on a newly seeded
+     * doc that box is empty and this move carries nothing from the first attempt.
      * Idempotent: after one run no `Plan — Qn` section remains. Never runs in tutor/review view.
      */
     // v7.20.644 (#625): existing docs carry the OLD marks-derived hint baked into each read-only
@@ -70820,7 +70822,8 @@
      * (Anam 1298: her diagnostic Q4 notes, carried forward in June, pinned her doc to the old
      * shape). Neil's #571 ruling — "Leave them in Paragraph 1's box" — is applied exactly as
      * _upgradeDiagnosticPlanAreas applies it: the notes move, in order, into the FIRST box of the
-     * new shape. Student words are still never destroyed.
+     * new shape. Student words are still never destroyed. v7.20.765 (#806): #571 is reversed — the
+     * seed no longer carries first-attempt notes, so the legacy boxes arrive empty and nothing moves.
      */
     function _healP2Q4ComparativePlan() {
         if (!canvasEditor || !_planPreChainActive()) return;

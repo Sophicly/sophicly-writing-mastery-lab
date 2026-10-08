@@ -2777,7 +2777,7 @@ Recorded here in the same session, as §0 requires. Each line is his tap; a quot
    to make students score 100% over 2 rounds of the same quiz; we need them to hit 100% at least once."*)
 4. **AQA Paper 1 Question 5 — we only teach STORIES.** (card 7, his note: *"We only teach stories"*) No
    description plan, no description branch in marking or polishing.
-5. **AQA Paper 1 Question 5 — first-attempt notes go in a separate "First attempt" box.** (card 8)
+5. ~~**AQA Paper 1 Question 5 — first-attempt notes go in a separate "First attempt" box.** (card 8)~~ **SUPERSEDED 2026-10-08 by §56** (Neil: today's ruling replaces it — no "First attempt" box anywhere; never built).
 6. **AQA Paper 1 Question 1 — switch to the 2026 multiple-choice format.** (card 9)
 7. **Retire the old chatbot lessons — add ours and retire the old ones.** (card 10)
 8. **Edexcel IGCSE Paper 1 Question 5 — the plan MUST compare the writers' purposes.** (card 11: "Required";
@@ -3135,3 +3135,58 @@ create a new weekend course project just like they can for the full creative wri
 - **Separation (#802, built v7.20.758):** a weekend story is its own project (`course_context: 'weekend'`), with its
   own documents; nothing done in it can change a full-course story, and the reverse.
 - EST total ≈ 4.5–6.5 h; still unmeasured.
+
+## §56. ⭐⭐ A REDRAFT PLAN STARTS EMPTY — first-attempt notes are never carried into it (Neil, ruled 2026-10-08; FIXLIST #806; REVERSES #571 and SUPERSEDES §51.5)
+
+**THE RULING (his taps, WML 336 A).** To *"should first-attempt notes stop being copied into redraft plan boxes, for
+every student?"* he chose **"Stop for everyone"**; to *"does that replace the 5 Oct 'First attempt' box for AQA P1
+Q5?"* he chose **"Yes, replace it"**. So:
+- A Phase-2 document (planning → outlining → polishing → reassessment → discussion) inherits **no** words from the
+  Phase-1 plan boxes. Its plan boxes start empty, on every board, paper and question.
+- There is **no** separate "First attempt" box anywhere (§51.5 is withdrawn, never built).
+- The first attempt is not lost: the **diagnostic document keeps it**, and **"Reflection: Last Attempt"** brings it
+  into the redraft session as a reflection, not as a plan.
+- #571 (21 Sep, *"Leave them in Paragraph 1's box"*) is reversed.
+
+**WHY — the evidence that changed it.** Qamar 857, AQA P1 Topic 1 redraft planning, turn 15 — Sophia: *"Looking at
+your document, you've already got two strong anchor quotes lined up from these lines: Paragraph 1: 'being adrift in a
+boat' · Paragraph 2: 'roaring Pacific Ocean'"*. Both quotes were her FIRST-ATTEMPT notes carried into
+`plan-Q2-para-1`, so **the redraft's quote-choice beat was skipped** — she never chose this redraft's evidence. A
+student who did not carry notes (Mishel 1237, Q2) was asked for both quotes first. Anything in the document is read by
+Sophia, which is also why a separate "First attempt" box was withdrawn: it would invite the same reuse. Visual cost
+too: Anam 1298's whole untaught four-point Q4 plan sat in her Q4 Introduction box (#805). This is §1 applied —
+*diagnostic tests, redraft trains*: the redraft trains each step, so it starts each step clean.
+
+**MECHANISM.** `strip_plan_notes_for_redraft()` (`includes/class-rest-api.php`) empties every box inside a plan section
+whenever `seed_from_sibling_stage()` walks back across the Phase 1→2 boundary (seed AND reseed). Gate:
+`bin/plan-notes-strip-gate.php` (pre-ship; the shipped function on a real-shaped doc, checked by an independent DOM
+parse, mutation-proven; run on prod's 138 real Phase-1 docs: 184 filled plan boxes emptied, nothing else touched).
+Existing documents: a reseedable (untyped) doc re-seeds clean on its next load; the four students whose frozen docs
+already hold carried notes (857, 1237, 1352, 1109) are cleaned with a backup, keeping any approved plan written under
+the notes.
+
+## §57. ⭐⭐ "PRACTICE KEPT" — a student's own planned practice time joins the Process Score, framed as grade-9 HABITS, never punishment (Neil, ruled 2026-10-08; dashboard FIXLIST #517/#519/#520)
+
+Recorded here at the dashboard lane's request (handoff `dashboard-to-wml-NEIL-RULING-practice-kept-grade-9-habits-for-
+PEDAGOGY-md-2026-10-08.md`); the dashboard lane builds it. Cross-reference **§16** — the precedent it follows.
+
+**Neil, verbatim (8 Oct, ~18:05 UK, voice, dashboard chat):** *"it's not a punishment right it's not about punishing
+the student it's about the fact that… these students all say they want a grade nine and what I want them to try to do
+is… stick to the behaviors for a grade nine… if you miss your session if you miss your time if you don't practice
+enough it could have a consequence for your exam… if we don't teach them that then when they get to the exam if they
+struggle then a lot of times they don't understand why… some people will be so upset they won't even say anything they
+won't even contact us they'll just keep quiet… I think the penalty is fine. I agree with number two."* Earlier the same
+day: *"they need to try and find a couple of hours every week… 20 minutes a day… or four half hour sessions"*; *"they
+chose those times… if they can't adhere to it, then they need to change it. Or they need to catch up another time and
+then log it."*
+
+**THE MECHANICS HE APPROVED:**
+- **Practice kept** is a Process Score component. Each WEEK it compares the student's own planned practice time (Grade
+  9 Core Skills lesson 55476 "4. ACTIVITY: Sorting Out Your Calendar"; saved as `sc_calendar_*` user meta) with the
+  time actually practised. A catch-up anywhere in the same week counts. **It is never applied to grades.**
+- **7 days' grace** after a plan is made. The plan must reach about **2 hours a week**; a smaller plan gets a note.
+- **No plan** (his "number two"): 7 days after the dashboard first asks for one, "no plan" counts 0.
+- Follows §16: grace → the ONE existing pool → clears instantly; *"a consequence only changes behaviour when the
+  student can predict it."*
+- **Student-facing words: grade-9 HABITS and their EXAM consequence. Never "penalty" or "punishment".**
+

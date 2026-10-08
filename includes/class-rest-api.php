@@ -5996,6 +5996,36 @@ class SWML_REST_API {
     }
 
     /**
+     * ⭐ v7.20.765 (FIXLIST #806 — Neil, 2026-10-08: "Stop for everyone"; REVERSES #571 "Leave them in
+     * Paragraph 1's box"). A Phase-2 doc seeded across the phase boundary inherits NO first-attempt
+     * plan notes: every box inside a plan section is emptied, exactly as response prose already is.
+     * Proof the carry cost the lesson: Qamar 857's redraft planning skipped the quote-choice beat
+     * because Sophia read the two quotes sitting in her carried notes as this redraft's choices.
+     * The first attempt is not lost — the diagnostic keeps it, and "Reflection: Last Attempt" brings
+     * it into the session. Plan sections are top-level siblings, so a section's body runs to the next
+     * section start; a box whose body nests a div is left untouched (same guard as above).
+     */
+    public static function strip_plan_notes_for_redraft($html) {
+        if (empty($html) || strpos($html, 'data-section-type="plan"') === false) return $html;
+        return preg_replace_callback(
+            '/(<div[^>]*data-section-type="plan"[^>]*>)(.*?)(?=<div[^>]*data-section-type=|$)/s',
+            function ($sec) {
+                $body = preg_replace_callback(
+                    '/(<div[^>]*data-field-id="[^"]+"[^>]*>)(.*?)(<\/div>)/s',
+                    function ($m) {
+                        if (trim($m[2]) === '') return $m[0];
+                        if (stripos($m[2], '<div') !== false) return $m[0];
+                        return $m[1] . $m[3];
+                    },
+                    $sec[2]
+                );
+                return $sec[1] . $body;
+            },
+            $html
+        );
+    }
+
+    /**
      * v7.19.856 (Neil 2026-07-04): THE canonical stage order — the ONE place the lesson
      * sequence lives for seeding. Each stage is its own snapshot and builds from the
      * nearest EARLIER stage with content. Per-phase, in walk order:
@@ -6333,6 +6363,8 @@ class SWML_REST_API {
                 $seed = (strpos($exclude_key, '_planning') !== false || $crosses_boundary)
                     ? self::strip_responses_for_planning($d['html'])
                     : $d['html'];
+                // v7.20.765 (#806): Phase-1 plan notes never cross into Phase 2 either.
+                if ($crosses_boundary) $seed = self::strip_plan_notes_for_redraft($seed);
                 // v7.20.646 (FIXLIST #630, Qamar 857, prod 2026-09-28): the REASSESSMENT is a marking
                 // stage — it must open with EMPTY marks. The Phase-2 chain carried the Phase-1
                 // Feedback boxes (with their marks) all the way down from planning, so on load the
