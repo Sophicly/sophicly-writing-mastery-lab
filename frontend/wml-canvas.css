@@ -5247,6 +5247,12 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     padding: 6px 12px;
     line-height: 1.4;
 }
+/* v7.20.746: a pick among MANY short alternatives (weekend lesson 5's 33 dramatic situations) wraps
+   as a grid. As one column the 33 chips pushed their own explanation off screen (staging .745). */
+.swml-canvas-chat-messages .swml-quick-actions.swml-chips-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
 /* Multi-select toggle-on for canvas dark mode (v7.12.6) */
 .swml-canvas-chat-messages .swml-quick-btn.swml-quick-toggle-on {
     /* v7.20.446 (#293): flat teal, no shadow — matches the base chip's new treatment.

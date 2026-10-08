@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.745';
+var WML_BUILD = '7.20.746';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1362,6 +1362,15 @@ window.WML = (function() {
     // criteria no trial ever assessed, and the same four rows were shared by all six trials, which
     // is why six differently-named trials looked identical. Trials 2-6 keep the generic list until
     // slice 5 gives each its own dimension.
+    // v7.20.746 (PEDAGOGY §55.1): a weekend lesson's own sidebar rows where the course's would name
+    // something the unit never teaches ("Review Outline"). Same sub-step numbers, unit words.
+    const CW_UNIT_SIDEBAR_STEPS = {
+        9: [
+            { step: 1, label: 'Your Dramatic Situation' },
+            { step: 2, label: 'Choose Your Scene' },
+            { step: 3, label: 'Scene Plan' },
+        ],
+    };
     CW_SIDEBAR_STEPS['trial_1'] = [
         { step: 1, label: 'Read Your Draft' },
         { step: 2, label: 'Judge the Seven Parts' },
@@ -2347,7 +2356,7 @@ window.WML = (function() {
                     storageSuffix: '_cw_' + stepKey,
                     // A step with no chat has no walk, so a walk sidebar would be a list of
                     // sub-steps nothing can ever tick — the §4d "screen that lies" shape.
-                    sidebarSteps: noChat ? null : (CW_SIDEBAR_STEPS[stepKey] || null),
+                    sidebarSteps: noChat ? null : ((cwInUnit() && CW_UNIT_SIDEBAR_STEPS[stepKey]) || CW_SIDEBAR_STEPS[stepKey] || null),   // v7.20.746
                     chatHeaderLabel: noChat ? null : ('Step ' + stepKey + ': ' + stepDef.label),
                 };
             }

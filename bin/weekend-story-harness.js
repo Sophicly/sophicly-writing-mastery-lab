@@ -18,6 +18,7 @@
  *   E · no unit string names a course step, a plot or a stage (root §5c-ii; plan §5 grep gate)
  *   F · the wiring: shortcode → embed config → state → session → router note
  *   G · the island's DEFAULT words are the prototype's, byte for byte (root §13)
+ *   I · the sidebar in a weekend lesson: "Lesson Progress", unit rows, the 33 as a grid (v7.20.746)
  *   H · the 33 dramatic situations (v7.20.743): our source's order + names, plain and safe words, the marker validator
  */
 'use strict';
@@ -404,6 +405,17 @@ const SEVEN = (hook, setup) => [
             'the committed bundle is BUILT from this source (npm run build in island/)');
     }
 
+    // ── I · the unit's chrome never names a course step (v7.20.746, measured on staging .745) ──
+    console.log(' I · the sidebar speaks the unit\'s words');
+    {
+        const CORE = fs.readFileSync(path.join(ROOT, 'frontend/wml-core.js'), 'utf8');
+        ok((SRC.match(/'Lesson Progress'/g) || []).length === 2, '⭐ BOTH pipelines title a weekend lesson\'s sidebar "Lesson Progress", never "Step N Progress"');
+        const ui = CORE.indexOf('const CW_UNIT_SIDEBAR_STEPS = {');
+        const ublock = ui > 0 ? CORE.slice(ui, CORE.indexOf('};', ui)) : '';
+        ok(ui > 0 && /Your Dramatic Situation/.test(ublock) && !/Outline|\bStep \d|\bplot\b|\bstages?\b/i.test(ublock.replace(/step: \d/g, '')), 'lesson 5\'s sidebar rows are the unit\'s own words (no "Review Outline")', ublock.slice(0, 200));
+        ok(/cwInUnit\(\) && CW_UNIT_SIDEBAR_STEPS\[stepKey\]/.test(CORE), 'the exercise config picks the unit rows only inside a unit lesson');
+        ok(/serveCard\(s\); \} \}; \}\), 'swml-chips-grid'\)/.test(SRC) && /\.swml-quick-actions\.swml-chips-grid\s*\{[^}]*flex-wrap: wrap/.test(fs.readFileSync(path.join(ROOT, 'frontend/wml-canvas.css'), 'utf8')), 'the 33 names wrap as a grid, not one tall column');
+    }
     // ── H · the dramatic-situation bank against Neil's source (v7.20.743, PEDAGOGY §55.1) ──
     console.log(' H · the 33 dramatic situations match our source, in plain, safe words');
     {

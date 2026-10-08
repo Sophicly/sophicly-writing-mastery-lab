@@ -18798,7 +18798,7 @@
 
         // Protocol Progress label — v7.17.16: skip entirely when manifest sets panels.progress=false (mark_scheme_unit).
         if (exerciseConfig?.panels?.progress !== false) {
-            const progressLabel = isCwTask ? `Step ${cwStepDef?.step || ''} Progress` : 'Protocol Progress';
+            const progressLabel = isCwTask ? ((WML.cwInUnit && WML.cwInUnit()) ? 'Lesson Progress' : `Step ${cwStepDef?.step || ''} Progress`) : 'Protocol Progress';   // v7.20.746: a weekend lesson never shows a course step number (root §5c-ii)
             protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
 
             // Steps — manifest-driven. v7.18.17: render via shared helper that
@@ -31335,12 +31335,12 @@
             // chip can carry it; fill rides currentColor so it matches the chip text colour.
             const SCENE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="15" height="15" fill="currentColor" style="vertical-align:-2px;margin-right:6px" aria-hidden="true"><path d="M13,16.53998l-2.29999-1.53998h-5.70001v8h8v-6.46002ZM10,20c-.55231,0-1-.44775-1-1,0-.55231.44769-1,1-1s1,.44769,1,1c0,.55225-.44769,1-1,1Z"/><polygon points="27.80023 16.05927 30.68274 5.97064 27.68311 6.24902 24.80048 16.33832 27.80023 16.05927"/><polygon points="32.93677 15.58148 35.81891 5.4939 32.81934 5.77228 29.93695 15.86053 32.93677 15.58148"/><path d="M42.09003,14.72998c.26996-.02997.50995-.15997.67999-.35999.16998-.21002.25-.47003.22998-.73999l-.77002-7.73004c-.06-.54999-.54999-.94995-1.08997-.89996l-3.18451.29559-2.88202,10.0871,7.01654-.65271Z"/><path d="M6,13h5c.20001,0,.39001.06.54999.16998l3,2c.28003.17999.45001.5.45001.83002v1.25l2.52722-.23511,2.88306-10.09082-14.50031,1.34589c-.26996.03003-.50995.16003-.67999.36005-.16998.20996-.25.46997-.22998.73999l.37,3.63h.63Z"/><polygon points="22.6637 16.53711 25.54651 6.44733 22.54688 6.72577 19.66394 16.81616 22.6637 16.53711"/><polygon points="35.38861 21 32.46857 21 30.1828 29 33.10291 29 35.38861 21"/><polygon points="30.38861 21 27.46857 21 25.1828 29 28.10291 29 30.38861 21"/><path d="M20.38861,21h-5.38861v3c0,.54999-.45001,1-1,1H5v3c0,.54999.45001,1,1,1h12.10291l2.28571-8Z"/><polygon points="20.1828 29 23.10291 29 25.38861 21 22.46857 21 20.1828 29"/><path d="M42,21h-4.53143l-2.28577,8h6.8172c.54999,0,1-.45001,1-1v-6c0-.54999-.45001-1-1-1Z"/><path d="M8,42c0,.54999.45001,1,1,1h30c.54999,0,1-.45001,1-1v-11H8v11ZM30,39h7c.55225,0,1,.44775,1,1s-.44775,1-1,1h-7c-.55225,0-1-.44775-1-1s.44775-1,1-1ZM26,39c.55231,0,1,.44769,1,1,0,.55225-.44769,1-1,1s-1-.44775-1-1c0-.55231.44769-1,1-1ZM10,36c0-.55225.44775-1,1-1s1,.44775,1,1v3h2c.55225,0,1,.44775,1,1s-.44775,1-1,1h-3c-.55225,0-1-.44775-1-1v-4Z"/></svg>';
 
-            function chipBar(items) {
+            function chipBar(items, extraClass) {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
                 if (!bc) return false;
                 if (bc.querySelector('.swml-cw9-chips')) return true;   // idempotent per bubble
-                const bar = el('div', { className: 'swml-quick-actions swml-cw9-chips' });
+                const bar = el('div', { className: 'swml-quick-actions swml-cw9-chips' + (extraClass ? ' ' + extraClass : '') });
                 items.forEach(function (it) {
                     const btn = el('button', { className: 'swml-quick-btn', onClick: function () { bar.remove(); it.go(); } });
                     if (it.svg) { btn.innerHTML = it.svg; btn.appendChild(document.createTextNode(it.label)); }
@@ -31504,7 +31504,7 @@
             // opens its card, so the wall of explanations is never drawn at once.
             function serveBrowse() {
                 noteBubble('Here are all **33 dramatic situations**. Tap one to see what it means and an example, then decide.');
-                return chipBar(CW_POLTI_33.map(function (s) { return { label: s.name, go: function () { serveCard(s); } }; }));
+                return chipBar(CW_POLTI_33.map(function (s) { return { label: s.name, go: function () { serveCard(s); } }; }), 'swml-chips-grid');
             }
             function serveCard(s) {
                 noteBubble('**' + s.name + '**\n\n' + s.what + '\n\n**The roles:** ' + s.roles.join(' · ') + '\n\n**For example:** ' + s.eg);
@@ -43569,7 +43569,7 @@
                         // Protocol Progress — v7.17.16: skip entirely when manifest sets panels.progress=false (mark_scheme_unit).
                         if (exerciseConfig?.panels?.progress !== false) {
                             // v7.13.35: CW shows step name
-                            const progressLabel = isCwTask ? `Step ${cwStepDef?.step || ''} Progress` : 'Protocol Progress';
+                            const progressLabel = isCwTask ? ((WML.cwInUnit && WML.cwInUnit()) ? 'Lesson Progress' : `Step ${cwStepDef?.step || ''} Progress`) : 'Protocol Progress';   // v7.20.746: a weekend lesson never shows a course step number (root §5c-ii)
                             protoBody.appendChild(el('div', { className: 'swml-sidebar-section-label', textContent: progressLabel }));
 
                             // Steps — manifest-driven (v7.13.11, replaces hardcoded if/else)
