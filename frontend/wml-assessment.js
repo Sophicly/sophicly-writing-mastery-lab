@@ -22268,7 +22268,15 @@
             // quiz-session-id (qsid) sent to the server so the accumulator + bank meta key
             // off the identical scope — one clobber-proof identity, client and server, for
             // FQ/MSQ/MSA uniformly (MSQ/MSA are stage 0 → suffix `_s0`, still unique).
-            const lsKey = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, (state.fqBank || state.text), (state.attempt || 1), 's' + (state.fqStage || 0)].join('_');
+            const _lsKeyBase = () => (quizType === 'foundational' ? 'swml_fq_' : quizType === 'mark_scheme_assessment' ? 'swml_msa_' : 'swml_msq_') + [state.board, state.subject, (state.fqBank || state.text), (state.attempt || 1), 's' + (state.fqStage || 0)].join('_');
+            // ⭐ v7.20.760 (#803, root §5e KEY GRANULARITY): a Mark Scheme Assessment is ONE QUIZ PER TOPIC — every
+            // literature course runs MSA 1, 2, 3… (Neil's per-topic cycles), all on the same text·board bank. Without
+            // the topic, MSA N and MSA N−1 shared this key, so starting MSA N overwrote MSA N−1's resume record AND its
+            // server accumulator (this string is the qsid), and reopening MSA N−1 resumed MSA N's round. A round saved
+            // BEFORE this ship lives under the old key: rehydrate() finds it there and keeps using that key (and its
+            // server session) until the next fresh round, so no student mid-quiz at deploy loses their place.
+            let _msaLegacyKey = false;
+            const lsKey = () => _lsKeyBase() + ((quizType === 'mark_scheme_assessment' && !_msaLegacyKey) ? '_t' + (state.topicNumber || 0) : '');
             function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ qs, idx, total, round, roundResults, msaAttempts, predictedScore, awaitingPrediction, goalGrade, awaitingGoal })); } catch (e) {} }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             // v7.20.87 (Neil): the ONE canonical round-load failure line — emit sites,
@@ -22312,7 +22320,11 @@
                     return true; // controller owns the turn; fresh round incoming
                 };
                 try {
-                    const raw = localStorage.getItem(lsKey());
+                    let raw = localStorage.getItem(lsKey());
+                    if (!raw && quizType === 'mark_scheme_assessment' && !_msaLegacyKey) {   // v7.20.760: a pre-topic-key round
+                        const old = localStorage.getItem(_lsKeyBase());
+                        if (old) { _msaLegacyKey = true; raw = old; console.log('[WML quiz] MSA: resuming a round saved before v7.20.760 under its original key'); }
+                    }
                     if (!raw) return _healRestart();
                     const d = JSON.parse(raw);
                     // v7.20.89 (B10): goal-gate resume — a reload while the grade ask is
@@ -23269,6 +23281,7 @@
                 // v7.19.747: every fresh MSA set of 10 (first attempt OR a re-sit) clears the
                 // prediction so the student commits a NEW /20 guess before the new reveal.
                 if (quizType === 'mark_scheme_assessment') { predictedScore = null; awaitingPrediction = false; }
+                _msaLegacyKey = false;   // v7.20.760: every FRESH round lives under the topic key
                 busy = true; showCanvasTyping();
                 try {
                     const res = await apiPost(API.quizStart, {

@@ -764,6 +764,8 @@ node bin/weekend-story-harness.js || fail=1
 # student's undo history (Cmd+Z emptied a fresh document on staging .748). Executes the lock's decision
 # table on real-shaped docs, 3/3 planted defects caught, and the wiring. Whole-repo by nature.
 node bin/structure-lock-harness.js || fail=1
+# v7.20.760 (#803): one Mark Scheme Assessment per topic → one quiz key (resume record + server session) per topic.
+node bin/msa-topic-key-harness.js || fail=1
 # v7.20.549 (Neil: "we've had this problem before, so I think you need to make a gate for that").
 # The two gates above guard PARTS — which reader answers, and where a paragraph begins. This one
 # guards the ARTEFACT: the exact payload the marker is handed for a real multi-question paper.
