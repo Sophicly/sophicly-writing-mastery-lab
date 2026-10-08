@@ -595,7 +595,7 @@ const SEVEN = (hook, setup) => [
 
         // L5 · the walk, driven like a student (AQA)
         const CTL = sliceController('const _cwAdaptCtl = (function');
-        const HOLD = { w: null, rewrite: '' };
+        const HOLD = { w: null, rewrite: '', crit: null };
         const OWN = {};
         function adaptWorld(board, prompts, o) {
             o = o || {};
@@ -608,7 +608,7 @@ const SEVEN = (hook, setup) => [
                     _CW_TURN_OWNERS: OWN,
                     // the page's editor: the rows, and the rewrite box as a section of paragraphs
                     canvasEditor: { state: { doc: { descendants(fn) {
-                        for (const [f, t] of (HOLD.w ? HOLD.w.rows : new Map())) if (fn({ type: { name: 'outlineRow' }, attrs: { fieldId: f }, textContent: t }, 0) === false) return;
+                        for (const [f, t] of (HOLD.w ? HOLD.w.rows : new Map())) if (fn({ type: { name: 'outlineRow' }, attrs: { fieldId: f, criteria: (HOLD.crit && HOLD.crit[f]) || '{}' }, textContent: t }, 0) === false) return;
                         fn({ type: { name: 'sectionBlock' }, attrs: { label: 'Your Rewrite' }, forEach(cb) { HOLD.rewrite.split('\n\n').forEach((p) => cb({ textContent: p })); } }, 0);
                     } } } },
                 },
@@ -634,7 +634,11 @@ const SEVEN = (hook, setup) => [
         const allOrient = w.bubbles.join('\n');
         ok(/For AQA, from 2026, a story that does not answer the question is held to a lower mark/.test(allOrient), 'an AQA student is told the 2026 focus rule (verified: 8700/1 SMS 2026, lines 860–861)');
         ok(last(w).indexOf('[SWML_BEAT:') === 0 && last(w).indexOf('> ' + DR[0].text) !== -1 && last(w).indexOf(SH[DR[0].shape].rule) !== -1, 'question 1: its progress chip, the exact words, then the rule for that kind of question', last(w).slice(0, 300));
-        ok(/AQA, sample paper for exams from 2026|AQA, (June|November) \d{4}/.test(last(w)), 'the source is named in plain words', (last(w).match(/\*\(([^)]*)\)\*/) || [])[1]);
+        ok(/\*AQA, (sample paper for exams from 2026|(June|November) \d{4})\*/.test(last(w)), 'the source is named in plain words, under the chip', last(w).slice(0, 220));
+        const beatOf = (t) => { const m = /\[SWML_BEAT:(\{[^}]*\})\]/.exec(String(t || '')); try { return m ? JSON.parse(m[1]) : null; } catch (e) { return null; } };
+        const b1 = beatOf(last(w)), nm1 = SH[DR[0].shape].name;
+        ok(!!b1 && b1.unit === 'Question' && b1.step === 1 && b1.total === DR.length && b1.heading === nm1.charAt(0).toUpperCase() + nm1.slice(1),
+            '⭐ the chip counts QUESTIONS and names the kind ("Question 1 of 3 · A title") — staging .753 first showed "Step 1 of 3"', b1);
         ok(w.helpChipNamed(/See an example/) && w.helpChipNamed(/Still stuck/), 'the help ladder is there, Sophia last (§4c.9)');
         const nb = w.bubbles.length;
         tapIf(w, w.helpChipNamed(/See an example/));
@@ -692,6 +696,14 @@ const SEVEN = (hook, setup) => [
         const seen = w.bubbles.join('\n');
         ok(!LEAK_RE.test(seen.replace(/\(sim endpoint\)|That’s this step done\./g, '')) && !INSIDER.test(seen), 'nothing on screen names a course step, a plot, a stage or our machinery', (seen.match(new RegExp('.{0,40}(' + LEAK_RE.source + '|' + INSIDER.source + ').{0,40}', 'i')) || [])[0]);
 
+        ok(w.bubbles.map(beatOf).filter(Boolean).every((x) => x.unit === 'Question'), 'every lesson-9 chip says Question, never Step');
+        // the root of that leak: the progress chip's DEFAULT counter word, run for real with a WML stub
+        const pbi = SRC.indexOf('function cwProgressBar(');
+        const PB = (wml) => new Function('WML', 'return (' + SRC.slice(pbi, braceSliceFrom(SRC, pbi, '{', '}').end) + ');')(wml);   // eslint-disable-line no-new-func
+        ok(beatOf(PB({ cwInUnit: () => true })(1, 7, 'Your Logline')).unit === 'Part' && beatOf(PB({ cwInUnit: () => false })(1, 7, 'Your Logline')).unit === 'Step'
+            && beatOf(PB(undefined)(1, 7, 'Your Logline')).unit === 'Step' && beatOf(PB({ cwInUnit: () => true })(1, 7, 'X', '', 'Beat')).unit === 'Beat',
+            '⭐ in a weekend lesson an unnamed counter says "Part" (lesson 3\'s Logline said "Step N of 7"); the full course keeps "Step"; a named one is untouched');
+
         // L6 · resume: the document is the position — even with no walk state in this browser
         HOLD.rewrite = 'x';
         const r1 = adaptWorld('aqa', AQA, { ls: new Map(), history: stored(w).slice(), prefill: Object.fromEntries(Array.from(w.rows.entries())) });
@@ -716,6 +728,26 @@ const SEVEN = (hook, setup) => [
         fb.ctl.start();
         fb.toAsk();
         ok(/real story questions from past papers/.test(fb.bubbles.join('\n')) && !/your exam board’s past papers/.test(fb.bubbles.join('\n')) && !/For AQA/.test(fb.bubbles.join('\n')), 'a CCEA student is told the questions come from past papers (not "your board\'s"), and no AQA rule');
+        // L8 · the DOCUMENT keeps its questions (each row saved its question's identity) — a bank change never splits
+        // the chat from the page. Here the page was made with Cambridge's questions; the bank now says AQA.
+        ok(/adapt: \{ shape: d\.shape, text: d\.text, board: d\.board, sitting: d\.sitting, hasImages: d\.hasImages, fallback: d\.fallback \}/.test(SRC), 'each question row saves its question with the page');
+        const CAM = AD._cwAdaptDrills(MAP['cambridge-igcse'] || []);
+        HOLD.crit = {}; CAM.forEach((d) => { HOLD.crit[d.fid] = JSON.stringify({ id: 'drill-' + d.n, adapt: { shape: d.shape, text: d.text, board: d.board, sitting: d.sitting, hasImages: d.hasImages, fallback: d.fallback } }); });
+        const dk = adaptWorld('aqa', AQA, { ls: new Map(), history: [] });
+        dk.ctl.start(); dk.toAsk();
+        ok(CAM.length > 0 && last(dk).indexOf('> ' + CAM[0].text) !== -1 && last(dk).indexOf('> ' + DR[0].text) === -1, '⭐ a page made with one board\'s questions keeps asking THOSE after the bank changes', last(dk).slice(0, 200));
+        const CF = (MAP.ccea || []).slice(); const cfd = AD._cwAdaptDrills(CF);
+        HOLD.crit = {}; cfd.forEach((d) => { HOLD.crit[d.fid] = JSON.stringify({ adapt: { shape: d.shape, text: d.text, board: d.board, sitting: d.sitting, hasImages: d.hasImages, fallback: true } }); });
+        const dk2 = adaptWorld('ccea', AQA.map((p) => Object.assign({}, p, { board: 'CCEA' })), { ls: new Map(), history: [] });
+        dk2.ctl.start(); dk2.toAsk();
+        ok(/real story questions from past papers/.test(dk2.bubbles.join('\n')), '...and "other boards\' questions" is read from the page too, not from today\'s bank');
+        HOLD.crit = null;
+        // L9 · the shared walk ending says "lesson" in a weekend lesson (v7.20.754), "step" in the full course
+        const epi = SRC.indexOf('function cwEndpointLine()');
+        const EP = (inUnit, btn) => new Function('WML', 'document', 'return (' + SRC.slice(epi, braceSliceFrom(SRC, epi, '{', '}').end) + ');')(   // eslint-disable-line no-new-func
+            { cwInUnit: () => inUnit }, { querySelector: () => (btn ? {} : null) })();
+        ok(/That’s this lesson done\./.test(EP(true, false)) && /That’s this lesson done\./.test(EP(true, true)) && /That’s this step done\./.test(EP(false, true)) && /Mark Complete/.test(EP(true, true)),
+            'the walk ending says "lesson" in a weekend lesson and "step" in the full course (staging .753 said "step" after "the whole weekend story")');
     }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }

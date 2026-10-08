@@ -90,6 +90,10 @@ no step/plot words) · walk sim with liveness (walk-sim-lib) · pre-ship.
 - `CW_STEP_DEPS[90] = plot_outline`, which a unit swaps for the Story Spine.
 - The bank's `source` paths are relative to the walkthrough folder; none ships to the page.
 - The AQA cap is verified at source: `AQA-8700-1-SMS-2026.pdf` lines 860–861, first exam June 2026.
+**Found in the staging browser walk of .753, fixed in .754:**
+- The progress chip read "Step 1 of 3". The chip's default counter word leaked into the weekend unit, lesson 3's Logline walk included ("Step N of 7"). In a unit the default is now "Part"; lesson 9 counts "Question N of 3", headed by the kind of question.
+- The shared walk ending said "That’s this step done". In a unit it now says "lesson".
+- **The page keeps its questions:** each question row saves its question's identity (`criteria.adapt`), and the walk reads the page first. A bank change (OCR and picture questions are planned) can never ask one question in the chat while the page shows another.
 
 ## 2a · Lesson 5 — Your Dramatic Situation (Polti-first; replaces the unit's "Choose Your Scene")
 

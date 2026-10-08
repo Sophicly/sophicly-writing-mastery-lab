@@ -4030,12 +4030,15 @@
         try {
             hasBtn = !!document.querySelector('.spl-footer .learndash_mark_complete_button, .learndash_mark_complete_button, .swml-ld-complete');
         } catch (_) { hasBtn = false; }
+        // v7.20.754: a weekend-story page is a LESSON — the unit numbers its own lessons and never says "step"
+        // (PEDAGOGY §55). Staging lesson 9 ended "That is the whole weekend story… That’s this step done."
+        const what = (WML.cwInUnit && WML.cwInUnit()) ? 'lesson' : 'step';
         return hasBtn
-            ? '\n\n---\n\n**That’s this step done.** Everything above is saved in your document. '
+            ? '\n\n---\n\n**That’s this ' + what + ' done.** Everything above is saved in your document. '
               + 'When you’re happy with it, press **Mark Complete** at the bottom of the lesson to finish and move on.'
             // No button on screen: already complete, a unit page, or review mode. Say what is
             // true instead of naming a control they cannot see.
-            : '\n\n---\n\n**That’s this step done.** Everything above is saved in your document — '
+            : '\n\n---\n\n**That’s this ' + what + ' done.** Everything above is saved in your document — '
               + 'you can keep editing it here whenever you like.';
     }
 
@@ -5705,8 +5708,12 @@
         // slice truncates mid-body and every CW sim dies with "Invalid regular expression". Cost me
         // a gate run to find; leave the escapes alone.
         const safe = (s) => String(s == null ? '' : s).replace(/[\u007D\u005D]/g, '');
+        // v7.20.754: in a weekend-story lesson the DEFAULT counter word is "Part". The unit numbers its own lessons,
+        // and "Step" is the full course's word (PEDAGOGY §55). Measured on staging lesson 9, "Real Exam Questions /
+        // Step 1 of 3"; lesson 3's Logline walk showed "Step N of 7" the same way, because the default leaked into it.
+        const inUnit = typeof WML !== 'undefined' && !!WML && typeof WML.cwInUnit === 'function' && WML.cwInUnit();
         return '[SWML_BEAT:' + JSON.stringify({
-            section: safe(section), unit: safe(unit) || 'Step', step: n, total: t, heading: safe(heading),
+            section: safe(section), unit: safe(unit) || (inUnit ? 'Part' : 'Step'), step: n, total: t, heading: safe(heading),
         }) + ']\n\n';
     }
 
@@ -6244,7 +6251,7 @@
         return picked.slice(0, CW_ADAPT_MAX_DRILLS).map(function (p, i) {
             const pt = _cwAdaptPromptText(p);
             return { n: i + 1, shape: p.shape, text: pt.text, hasImages: pt.hasImages, sitting: _cwAdaptSittingLabel(p.sitting),
-                board: String(p.board || ''), fid: 'cw-adapt-drill-' + (i + 1) };
+                board: String(p.board || ''), fallback: !!p.fallback, fid: 'cw-adapt-drill-' + (i + 1) };
         });
     }
     // Sophia's ONE judgement turn ends on @ADAPT_CHECK{"focus":"yes|partly|no","where":"…","fix":"…"}.
@@ -33541,7 +33548,11 @@
                 saveCanvasChat(canvasChatHistory, canvasChatId);
             }
             function boardKey() { return String(state.cwExamBoard || '').toLowerCase().replace(/_/g, '-'); }
-            function isFallback() { return (state.cwAdaptPrompts || []).some(function (p) { return p && p.fallback; }); }
+            // Whether these are other boards' questions is a fact about the questions THIS page holds (see load()).
+            function isFallback() {
+                return drills.length ? drills.some(function (d) { return d.fallback; })
+                    : (state.cwAdaptPrompts || []).some(function (p) { return p && p.fallback; });
+            }
 
             // ── the document is the position (§4c.8b resume lands on the exact ask) ────────
             function rowText(fid) {
@@ -33696,7 +33707,11 @@
             function progress(sub) { try { applyCwSubstepProgress({ stepNum: CW_ADAPT_STEP, substepNum: sub, name: SUBSTEPS[sub] }); } catch (e) {} }
 
             // ── serving ───────────────────────────────────────────────────────────────────
-            function heading(d) { return cwProgressBar(drills.indexOf(d) + 1, drills.length, 'Real Exam Questions', 'Question ' + d.n); }
+            // The chip counts QUESTIONS and names the kind of question ("Question 1 of 3 · A title"); never "Step".
+            function heading(d) {
+                const nm = String((CW_ADAPT_SHAPES[d.shape] || {}).name || 'A story question');
+                return cwProgressBar(drills.indexOf(d) + 1, drills.length, 'Real Exam Questions', nm.charAt(0).toUpperCase() + nm.slice(1), 'Question');
+            }
             function reAttach(d) {
                 // The ask is still the one above; re-offer its controls (§4d).
                 if (rewriting()) {
@@ -33712,8 +33727,8 @@
             function askText(d) {
                 const sh = CW_ADAPT_SHAPES[d.shape] || { name: 'a story question', rule: '', ask: 'In one line: how would your story answer this question?' };
                 const src = [d.board, d.sitting].filter(Boolean).join(', ');
-                return heading(d) + '**Question ' + d.n + ': ' + sh.name + '**' + (src ? ' *(' + src + ')*' : '')
-                    + '\n\n> ' + d.text
+                return heading(d) + (src ? '*' + src + '*\n\n' : '')
+                    + '> ' + d.text
                     + (d.hasImages ? '\n\n*On the paper this question also had pictures. The words are what matter here.*' : '')
                     + '\n\n' + sh.rule
                     + '\n\n**' + sh.ask + '**';
@@ -33961,7 +33976,35 @@
                     '**Don’t overthink the lines.** One rough sentence each is enough. The thinking is the point.',
                 ];
             }
-            function load() { drills = _cwAdaptDrills(state.cwAdaptPrompts); return drills.length > 0; }
+            // THE DOCUMENT FIRST: a page made earlier keeps the questions it was made with (each row saved its
+            // question's identity). Only a page with none takes them from the bank. Without this, a bank change would
+            // ask one question in the chat while the student's page shows another, and the check would judge the wrong one.
+            function drillsFromDoc() {
+                const out = [];
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            const fid = (n.attrs && n.attrs.fieldId) || '';
+                            if (n.type && n.type.name === 'outlineRow' && /^cw-adapt-drill-\d+$/.test(fid)) {
+                                let c = null;
+                                try { c = JSON.parse(n.attrs.criteria || '{}'); } catch (e) { c = null; }
+                                const a = c && c.adapt;
+                                if (a && a.text && CW_ADAPT_SHAPES[a.shape]) {
+                                    out.push({ n: parseInt(fid.split('-').pop(), 10), shape: a.shape, text: String(a.text), hasImages: !!a.hasImages,
+                                        sitting: String(a.sitting || ''), board: String(a.board || ''), fallback: !!a.fallback, fid: fid });
+                                }
+                            }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out.sort(function (x, y) { return x.n - y.n; });
+            }
+            function load() {
+                const fromDoc = drillsFromDoc();
+                drills = fromDoc.length ? fromDoc : _cwAdaptDrills(state.cwAdaptPrompts);
+                return drills.length > 0;
+            }
             // Where the document says the student is: a filed check → done; a chosen question → write; all lines → pick.
             function positionFromDoc() {
                 if (rowText(CHECK)) return { phase: 'done' };
@@ -57174,7 +57217,10 @@
                     '<h3>Question ' + d.n + ': ' + escapeHTML(shape.name) + '</h3>' +
                     '<p data-locked="true"><em>' + escapeHTML(d.text) + '</em>' + (src ? ' (' + escapeHTML(src) + ')' : '') +
                     (d.hasImages ? '. On the paper this question also had pictures.' : '') + '</p>' +
-                    outlineRowHTML({ id: 'drill-' + d.n, label: 'Your line', prompt: 'One line: how would your story answer this question?' }, d.fid));
+                    // `adapt` = the question's identity, saved WITH the row: once a student's page exists, the walk asks
+                    // THESE questions even if the bank later changes (OCR and picture questions are planned additions).
+                    outlineRowHTML({ id: 'drill-' + d.n, label: 'Your line', prompt: 'One line: how would your story answer this question?',
+                        adapt: { shape: d.shape, text: d.text, board: d.board, sitting: d.sitting, hasImages: d.hasImages, fallback: d.fallback } }, d.fid));
             });
             html += dividerHTML('YOUR REWRITE');
             html += sectionHTML('plan', 'Your Question', true, null,
