@@ -8718,6 +8718,97 @@
         } catch (e) { console.warn('WML PLAN-FILE: repair skipped —', e && e.message); }
     }
 
+    // ⭐ v7.20.769 (FIXLIST #812/#812b — Neil, 2026-10-09: "I've answered some questions on the speaker. But
+    // nothing auto-filed into the slots"; then "check all documents and protocols that have similar functions").
+    // PROOF (prod, user 1, AQA Power & Conflict CN, Ozymandias): the reply showed the Speaker notes as three
+    // [PANEL: poem_ozymandias_speaker…] blocks + "A — ✅ Save this"; the student tapped A; the next reply said
+    // "Notes saved! ✅" and carried NO @FIELD_SET → nothing filed. The canvas strips [PANEL] tags for display
+    // (stripAIInternals) but nothing on the canvas ever FILED them — the main chat's reader (wml-app.js ~4474) never
+    // runs here. Two code-owned layers, decided by what the turn CONTAINS, never by task name:
+    //   1. _filePanelsOnApproval — the approval tap files every [PANEL: <id>] of the preview whose <id> is a real
+    //      box in this document (programmatic-first: the content is already on screen; no API call, no model).
+    //   2. _maybeRepairClaimedSave — a reply that claims a save after a save offer + approval, carries no filing
+    //      marker, and had no panel to file gets ONE silent repair turn (the planning net, made universal).
+    // (The source half: sessions whose protocol files by markers now get the markers-only RULE 7 — router.)
+    // @PANEL-FILE-PURE-BEGIN
+    const _PANEL_BLOCK_RE = /\[PANEL:\s*([A-Za-z0-9_\-]+)\]([\s\S]*?)\[\/PANEL\]/g;
+    const _SAVE_OFFER_RE = /(save this|save these|happy to save|\[PANEL:)/i;
+    const _SAVE_CLAIM_RE = /(notes?\s+(are\s+)?saved|saved\s+(to|in|into)\s+your|filed\s+(to|in|into)\b|now\s+saved|\b(is|are|been)\s+(now\s+)?(saved|filed)\b|\bsaved\s*!|saved\s*✅)/i;
+    const _FILING_MARKER_RE = /@(FIELD_SET|FIELD_COMMIT|SECTION_BEGIN|FB_BEGIN)\b/;
+    // A short, unqualified yes to a save offer: the option letter A ("A", "A)", "A —", "A."), "Save this", or a
+    // plain yes. Anything asking for a change is NOT an approval ("yes but change…" files nothing).
+    function _isSaveApproval(msg) {
+        const s = String(msg || '').replace(/[*_`]/g, '').replace(/\s+/g, ' ').trim();
+        if (!s || s.length > 60) return false;
+        if (/\b(change|edit|but|not|no|instead|wrong|rather|fix|alter|tweak|adjust)\b/i.test(s)) return false;
+        return /^a\s*([)\].:—–-]|$)/i.test(s) || /\bsave (this|it|them|these)\b/i.test(s) || /^✅/.test(s)
+            || /^(yes|yep|yeah|yup|happy|ok|okay|sure|perfect|great|looks good|go ahead)\b/i.test(s);
+    }
+    // The [PANEL] blocks of a reply that name a box this document holds → [{ field, value }] (first one per id wins).
+    function _panelSetsFor(text, boxIds) {
+        const sets = [];
+        const re = new RegExp(_PANEL_BLOCK_RE.source, 'g');
+        let m;
+        while ((m = re.exec(String(text || ''))) !== null) {
+            const fid = m[1].trim(), val = m[2].replace(/\s*\n+\s*/g, ' ').trim();
+            if (boxIds.has(fid) && val && !sets.some(x => x.field === fid)) sets.push({ field: fid, value: val });
+        }
+        return sets;
+    }
+    // @PANEL-FILE-PURE-END
+    function _docBoxIdSet() {
+        const ids = new Set();
+        if (!canvasEditor) return ids;
+        canvasEditor.state.doc.descendants(n => {
+            const nm = n.type && n.type.name;
+            if ((nm === 'inputField' || nm === 'outlineRow') && n.attrs && n.attrs.fieldId) ids.add(n.attrs.fieldId);
+            return true;
+        });
+        return ids;
+    }
+    let _panelFiledPreview = '';   // the preview whose panels an approval already filed — the repair net skips it
+    function _filePanelsOnApproval(msg, history) {
+        try {
+            if (state.reviewMode || !canvasEditor || !_isSaveApproval(msg)) return 0;
+            let prev = '';
+            for (let i = (history || []).length - 1; i >= 0; i--) { const t = history[i]; if (t && t.role === 'assistant') { prev = String(t.content || ''); break; } }
+            if (prev.indexOf('[PANEL:') === -1) return 0;
+            const sets = _panelSetsFor(prev, _docBoxIdSet());
+            if (!sets.length) return 0;
+            _applyFieldValueSets(sets);
+            _panelFiledPreview = prev;
+            console.log('WML PANEL-FILE: the approval filed ' + sets.length + ' box(es) from the preview:', sets.map(x => x.field).join(', '));
+            return sets.length;
+        } catch (e) { console.warn('WML PANEL-FILE: skipped —', e && e.message); return 0; }
+    }
+    const _claimRepairFired = {};
+    let _claimRepairCount = 0;
+    function _maybeRepairClaimedSave(reply) {
+        try {
+            if (state.reviewMode || !canvasEditor || !reply) return;
+            // Planning has its own box-precise net (_maybeRepairPlanFile); CW files by CODE (walk banking), so a
+            // CW "your idea is saved" is true by construction and needs no marker.
+            if (state.task === 'planning' && _planPreChainActive()) return;
+            if (state.task && state.task.indexOf('cw_') === 0) return;
+            if (_FILING_MARKER_RE.test(reply)) return;                                   // it filed something
+            if (!_SAVE_CLAIM_RE.test(String(reply).replace(/\*/g, ''))) return;          // it claimed nothing
+            const h = (_chatShell && _chatShell.history) || [];
+            let ui = -1;
+            for (let i = h.length - 1; i >= 0; i--) { if (h[i] && h[i].role === 'user') { ui = i; break; } }
+            if (ui < 1 || !_isSaveApproval(h[ui].content)) return;                        // not an approval turn
+            let preview = '';
+            for (let i = ui - 1; i >= 0; i--) { if (h[i] && h[i].role === 'assistant') { preview = String(h[i].content || ''); break; } }
+            if (!_SAVE_OFFER_RE.test(preview)) return;                                   // no save was on offer
+            if (preview === _panelFiledPreview) return;                                  // layer 1 already filed it
+            if (!_docBoxIdSet().size) return;                                            // nothing in this doc files by box
+            const key = String(reply).length + ':' + String(reply).slice(0, 80);
+            if (_claimRepairFired[key] || _claimRepairCount >= 2) return;               // once per reply, two per page load
+            _claimRepairFired[key] = true; _claimRepairCount++;
+            console.warn('WML CLAIM-FILE: the reply said the notes were saved but carried no filing marker — firing one silent repair turn');
+            _silentSystemSend('SYSTEM NOTE (not from the student — they have not sent anything, and they cannot see this note): your last message told the student their notes were saved, but it contained no @FIELD_SET marker, so nothing reached their document. File what they just approved now: output one @FIELD_SET marker per line, exactly as the protocol\'s filing contract specifies for that element — the same field ids the protocol names (never guess an id). Each marker is {"field":"<id>","value":"<text>"} — valid JSON with straight double quotes, no line breaks inside the value; the value is the note the student just approved, word for word. Never use [PANEL] tags. Your visible reply is ONE short line saying those notes are now in their document. Do not mention this note, do not say a message did not arrive, and do not repeat or re-ask the question you have already asked — the student\'s next message answers it. Do not show the markers to the student.');
+        } catch (e) { console.warn('WML CLAIM-FILE: repair skipped —', e && e.message); }
+    }
+
     // v7.20.145 (celebration-lane hand-off — wml-emit-sophiclyGradeUpdated-on-all-grading-paths):
     // the WRITING assessment (task='assessment'/'redraft_assessment') was the ONE graded WML path
     // that NEVER emitted `sophiclyGradeUpdated` — quizzes/MSQ/MSA already do (applyQuizResultToEditor
@@ -20892,6 +20983,7 @@
             // identity (self-guarding no-op everywhere else — see _poetryCnEnsurePoemMarker).
             const msg = _poetryCnEnsurePoemMarker(chatTextarea.value.trim(), canvasChatHistory);
             if (!msg || canvasChatLoading) return;
+            _filePanelsOnApproval(msg, canvasChatHistory);   // v7.20.769 (#812): an approval tap files the preview's [PANEL] boxes
 
             // v7.20.327 — STOP DICTATION HERE, at the top, on EVERY send path.
             // This used to live further down (just before the AI round-trip), which is BELOW the
@@ -21981,6 +22073,7 @@
                             const _r = res.reply;
                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
                             setTimeout(() => _maybeRepairPlanFile(_r), 1300);   // v7.20.629 — approved plan with no marker (#570)
+                            setTimeout(() => _maybeRepairClaimedSave(_r), 1350);   // v7.20.769 (#812b) — said saved, filed nothing
                             // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);
@@ -46114,6 +46207,7 @@
                             // the poem identity (self-guarding — see _poetryCnEnsurePoemMarker).
                             const msg = _poetryCnEnsurePoemMarker(chatTextarea.value.trim(), canvasChatHistory);
                             if (!msg || canvasChatLoading) return;
+                            _filePanelsOnApproval(msg, canvasChatHistory);   // v7.20.769 (#812): an approval tap files the preview's [PANEL] boxes
 
                             // v7.20.327 (twin of the primary pipeline): stop dictation at the TOP, on every send
                             // path. The stop below sits under the code-owned walk gates, which return early — so a
@@ -46521,6 +46615,7 @@
                                             const _r = res.reply;
                                             setTimeout(() => _maybeRepairActionPlanFile(_r), 1200);
                                             setTimeout(() => _maybeRepairPlanFile(_r), 1300);   // v7.20.629 — approved plan with no marker (#570)
+                                            setTimeout(() => _maybeRepairClaimedSave(_r), 1350);   // v7.20.769 (#812b) — said saved, filed nothing
                                             // v7.20.145: emit sophiclyGradeUpdated on the writing-assessment closing
                                             // turn — after AP-file settles so the doc grade is final (1400 > 1200).
                                             setTimeout(() => _maybeEmitAssessmentGrade(_r), 1400);

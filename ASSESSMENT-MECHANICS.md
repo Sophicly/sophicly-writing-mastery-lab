@@ -181,6 +181,16 @@ whole mechanism is five steps, and every current and future auto-fill follows th
    (closing chain); every unresolvable marker `console.warn`s loudly — a marker that names a
    target that doesn't resolve is a defect, never a silent skip.
 
+6. ⭐ **THE CONFIRM TURN IS THE WEAK POINT — and it is now code-owned (v7.20.769, FIXLIST #812/#812b).** A filing
+   that waits for "A — Save this" depends on the model putting the marker in the NEXT reply, and it can say
+   "Notes saved! ✅" and file nothing (prod, user 1, AQA Power & Conflict CN, Speaker: three `[PANEL: …]` boxes
+   shown, A tapped, no `@FIELD_SET` — Context, same flow, filed). Three layers, all universal: (a) the router gives
+   every session whose protocol files by `@FIELD_SET`/`@FIELD_COMMIT` (and has no `@CONFIRM_ELEMENT`) the
+   markers-only RULE 7 in place of the legacy `[PANEL]` rule — 32 manifest tasks; (b) `_filePanelsOnApproval`
+   files a preview's `[PANEL: <box id>]` blocks on the approval tap, no model involved; (c) `_maybeRepairClaimedSave`
+   sends ONE silent repair when a reply claims a save after an approval and carries no marker. The canvas STRIPS
+   `[PANEL]` for display (`stripAIInternals`) but had no reader until (b). Gate: `bin/panel-file-harness.js`.
+
 Porting auto-fill to a NEW surface (planning boards, CW scaffolds, conceptual notes) = define
 the marker in the protocol + B-COMMON §12, add ONE self-guarding extractor called from both
 pipelines, resolve targets by canonical key, write via PM transaction, store for replay. No new

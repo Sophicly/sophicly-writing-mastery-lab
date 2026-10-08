@@ -1460,6 +1460,13 @@ class SWML_Protocol_Router {
                 );
             }
 
+            // v7.20.769 (#812b): RULE 7 follows how THIS session actually files. A protocol that files by
+            // @FIELD_SET/@FIELD_COMMIT gets the markers-only rule in place of the legacy [PANEL] rule (exact-match
+            // swap of the verbatim block, so every other session's preamble — and its prompt cache — is unchanged).
+            if ($preamble && self::protocol_files_by_markers($modular_protocol)) {
+                $_r7 = self::rule7_legacy_block();
+                if (strpos($preamble, $_r7) !== false) $preamble = str_replace($_r7, self::rule7_markers_block(), $preamble);
+            }
             // Assemble: preamble → skip block → protocol
             $parts = [];
             if ($preamble) $parts[] = $preamble;
@@ -3966,6 +3973,60 @@ TEMPLATE;
         return false;
     }
 
+    /**
+     * The LEGACY main-chat save rule (RULE 7): [PANEL] tags + an A/B "Save this" prompt + save_session_element.
+     * Moved here verbatim at v7.20.769 so the assembly step can swap it out by exact match.
+     * Correct ONLY where the protocol uses @CONFIRM_ELEMENT (the main-chat confirm interceptor) — the canvas has
+     * no [PANEL] reader that files anything.
+     */
+    private static function rule7_legacy_block() {
+        $b = '';
+        $b .= "**RULE 7: CONFIRM BEFORE EVERY SAVE — USE [PANEL] TAGS.**\n";
+        $b .= "You MUST NEVER call `save_session_element` without first presenting an explicit confirmation prompt to the student.\n";
+        $b .= "For EVERY element that gets saved to the right panel, follow this exact sequence:\n";
+        $b .= "1. Gather all parts of the element through your Socratic questioning\n";
+        $b .= "2. Wrap the saveable content in `[PANEL: element_type]...[/PANEL]` tags — the frontend uses these to identify what to save\n";
+        $b .= "3. Show a confirmation prompt:\n";
+        $b .= "**A** — ✅ Save this\n";
+        $b .= "**B** — ✏️ I want to change something\n";
+        $b .= "4. ONLY call `save_session_element` when the student picks A\n";
+        $b .= "5. If B: ask what they want to change, revise, then re-present with [PANEL] tags and the same A/B choice. Loop until A.\n\n";
+        $b .= "**[PANEL] TAG FORMAT — MANDATORY:**\n";
+        $b .= "Every time you present content for confirmation, wrap it in:\n";
+        $b .= "`[PANEL: element_type]exact content to save[/PANEL]`\n";
+        $b .= "Examples:\n";
+        $b .= "- `[PANEL: goal]Level 6 critical, exploratory response — focusing on AO3 context integration[/PANEL]`\n";
+        $b .= "- `[PANEL: keywords]ambition; moral conflict; psychological tension; regicide; conscience[/PANEL]`\n";
+        $b .= "- `[PANEL: anchor_quote_start]\"Stars, hide your fires; let not light see my black and deep desires\"[/PANEL]`\n";
+        $b .= "- `[PANEL: body_para_1]Topic: Macbeth's ambition is presented as a destructive force...[/PANEL]`\n";
+        $b .= "The student will NOT see the [PANEL] tags — they are stripped from the display. The content inside IS what appears in the right panel.\n";
+        $b .= "This rule has NO exceptions. The `@CONFIRM_ELEMENT` markers in the protocol expand into the full confirmation flow with [PANEL] tags. Follow them exactly.\n\n";
+        return $b;
+    }
+
+    /**
+     * ⭐ v7.20.769 (FIXLIST #812/#812b — Neil, 2026-10-09: Speaker notes "nothing auto-filed"; "check all documents
+     * and protocols that have similar functions"). RULE 7 for every session whose protocol files by markers.
+     * Proof it mattered (prod, user 1, AQA Power & Conflict CN, Ozymandias): with the legacy rule in context the
+     * model showed the Speaker notes as [PANEL: poem_ozymandias_speaker]…, the student tapped "A) Save this", and the
+     * reply said "Notes saved! ✅" with no @FIELD_SET — nothing filed (Context, same flow, carried the markers and
+     * filed). It deliberately does NOT forbid offering a "Save this" choice: the Literature CN protocol uses one.
+     */
+    private static function rule7_markers_block() {
+        $b  = "**RULE 7: FILING IN THIS SESSION IS BY MARKERS ONLY.**\n";
+        $b .= "The protocol below files the student's work into their document through its literal `@FIELD_SET{...}` (and `@FIELD_COMMIT{...}`) markers, exactly where it says to emit them. Emit every marker it specifies, on its own line, in the SAME message.\n";
+        $b .= "NEVER write `[PANEL: ...]` tags and NEVER mention or call `save_session_element` — neither files anything in this session.\n";
+        $b .= "NEVER say 'Notes saved', 'Saved' or 'Filed' (or any wording that claims something was saved) unless that SAME message carries the literal marker for it. When the student confirms a save, that confirmation reply MUST contain every marker the protocol specifies for what they confirmed.\n\n";
+        return $b;
+    }
+
+    /** v7.20.769 (#812b): does this protocol file into the document by markers (and not via the legacy @CONFIRM_ELEMENT flow)? */
+    public static function protocol_files_by_markers($protocol) {
+        $protocol = (string) $protocol;
+        if (strpos($protocol, '@CONFIRM_ELEMENT') !== false) return false;
+        return strpos($protocol, '@FIELD_SET{') !== false || strpos($protocol, '@FIELD_COMMIT{') !== false;
+    }
+
     public function build_preamble($context, $user_id) {
         $this->dynamic_profile = '';   // v7.20.660: one request = one profile block
         // v7.15.38: normalize board slug upstream so all downstream $board references
@@ -4478,26 +4539,7 @@ TEMPLATE;
             $preamble .= "NEVER write `[PANEL: ...]` tags, NEVER offer 'Save this / I want to change something', NEVER mention or call `save_session_element` — none of those exist in this session and anything wrapped in them is LOST.\n";
             $preamble .= "NEVER say 'Filed to your plan' (or any wording that claims something was saved) unless that SAME message carries the literal marker for it. After a paragraph's mirror-back is approved, the approval reply MUST contain that paragraph's `@FIELD_SET` marker.\n\n";
         } else {
-            $preamble .= "**RULE 7: CONFIRM BEFORE EVERY SAVE — USE [PANEL] TAGS.**\n";
-            $preamble .= "You MUST NEVER call `save_session_element` without first presenting an explicit confirmation prompt to the student.\n";
-            $preamble .= "For EVERY element that gets saved to the right panel, follow this exact sequence:\n";
-            $preamble .= "1. Gather all parts of the element through your Socratic questioning\n";
-            $preamble .= "2. Wrap the saveable content in `[PANEL: element_type]...[/PANEL]` tags — the frontend uses these to identify what to save\n";
-            $preamble .= "3. Show a confirmation prompt:\n";
-            $preamble .= "**A** — ✅ Save this\n";
-            $preamble .= "**B** — ✏️ I want to change something\n";
-            $preamble .= "4. ONLY call `save_session_element` when the student picks A\n";
-            $preamble .= "5. If B: ask what they want to change, revise, then re-present with [PANEL] tags and the same A/B choice. Loop until A.\n\n";
-            $preamble .= "**[PANEL] TAG FORMAT — MANDATORY:**\n";
-            $preamble .= "Every time you present content for confirmation, wrap it in:\n";
-            $preamble .= "`[PANEL: element_type]exact content to save[/PANEL]`\n";
-            $preamble .= "Examples:\n";
-            $preamble .= "- `[PANEL: goal]Level 6 critical, exploratory response — focusing on AO3 context integration[/PANEL]`\n";
-            $preamble .= "- `[PANEL: keywords]ambition; moral conflict; psychological tension; regicide; conscience[/PANEL]`\n";
-            $preamble .= "- `[PANEL: anchor_quote_start]\"Stars, hide your fires; let not light see my black and deep desires\"[/PANEL]`\n";
-            $preamble .= "- `[PANEL: body_para_1]Topic: Macbeth's ambition is presented as a destructive force...[/PANEL]`\n";
-            $preamble .= "The student will NOT see the [PANEL] tags — they are stripped from the display. The content inside IS what appears in the right panel.\n";
-            $preamble .= "This rule has NO exceptions. The `@CONFIRM_ELEMENT` markers in the protocol expand into the full confirmation flow with [PANEL] tags. Follow them exactly.\n\n";
+            $preamble .= self::rule7_legacy_block();   // v7.20.769 (#812): text moved verbatim — swapped at assembly when the protocol files by markers
         }
 
         // ── ANTI-DUPLICATION GUARD: when conversation history exists, the welcome has already been sent ──

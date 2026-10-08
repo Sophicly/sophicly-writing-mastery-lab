@@ -282,6 +282,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   tail -1 /tmp/free-assess-refl.out
 fi
 
+# v7.20.769 (#812/#812b): a save the student approved reaches the document even when the model forgets the marker —
+# the approval tap files [PANEL] boxes, the save-claim net repairs, and RULE 7 follows how the session files.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|class-protocol-router\.php|manifest\.json|panel-file-harness\.js'; then
+  node bin/panel-file-harness.js >/tmp/panel-file.out 2>&1 || { cat /tmp/panel-file.out; fail=1; }
+  tail -1 /tmp/panel-file.out
+fi
+
 # v7.20.252 (Fable F1): the JS build-stamp (frontend/wml-core.js WML_BUILD, logged on load for
 # stale-client diagnosis) must equal the plugin version, or the console log lies about freshness.
 JS_BUILD=$(grep -oE "var WML_BUILD = '[^']+'" frontend/wml-core.js 2>/dev/null | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
