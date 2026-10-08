@@ -44672,12 +44672,16 @@
             const _sessionAttSuffix = (state.task === 'outlining' && _canvasAttempt() > 1) ? `__a${_canvasAttempt()}` : ''; // v7.20.78: pinned resolver
             const _sessionTopicPart = state.task === 'outlining' ? `_t${state.topicNumber || 0}` : '';
             const startKey = `swml_${_sessionKeyTask}_start_${state.board}_${(state.text || '').replace(/\s/g, '_')}${_sessionTopicPart}${_sessionAttSuffix}`;
-            let startTime = localStorage.getItem(startKey);
-            if (!startTime) {
+            // v7.20.767 (#808): the Mastery Codex NEVER reads or writes this browser timer. The key has no user id, so
+            // under view_as it showed the VIEWER's own first open (Neil on new student 1414: "Started 15 weeks ago ·
+            // Overdue by 102 days"), and on the student's device it invented a 7-day window no deadline engine set.
+            const _codexTask = state.task === 'mastery_codex';
+            let startTime = _codexTask ? null : localStorage.getItem(startKey);
+            if (!startTime && !_codexTask) {
                 startTime = new Date().toISOString();
                 localStorage.setItem(startKey, startTime);
             }
-            const startDate = new Date(startTime);
+            const startDate = startTime ? new Date(startTime) : new Date();
             // v7.15.111: Outlining is Phase 2 → 14-day cycle; diagnostic stays on 10-day.
             // v7.19.212: Mastery Codex induction = 7-day cycle.
             const _deadlineDays = state.task === 'outlining' ? 14 : state.task === 'mastery_codex' ? 7 : 10;
@@ -44693,7 +44697,10 @@
             const _codexCfg = (state.task === 'mastery_codex' && window.swmlConfig && swmlConfig.courseDeadline
                 && swmlConfig.courseDeadline.days_left !== undefined && swmlConfig.courseDeadline.days_left !== null)
                 ? swmlConfig.courseDeadline : null;
-            const _codexStartDate = (_codexCfg && _codexCfg.start_date) ? new Date(_codexCfg.start_date) : startDate;
+            // v7.20.767 (#808): no deadline window (e.g. dashboard d88 paused the Core Skills due dates) → "No due date
+            // yet", same words as the dashboard (2.31.88); a window with no start date shows no "Started" line.
+            const _codexNoWindow = _codexTask && !_codexCfg;
+            const _codexStartDate = (_codexCfg && _codexCfg.start_date) ? new Date(_codexCfg.start_date) : (_codexTask ? null : startDate);
 
             function formatRelativeTime(date) {
                 const diff = Date.now() - date.getTime();
@@ -44725,6 +44732,7 @@
                     if (dl <= 5) return { text: clbl, pct: cpct, colour: '#F1C40F', animated: false };
                     return { text: clbl, pct: cpct, colour: '#51dacf', animated: true };
                 }
+                if (_codexNoWindow) return { text: 'No due date yet', pct: 0, colour: 'rgba(255,255,255,0.25)', animated: false };
                 const remaining = deadlineDate.getTime() - Date.now();
                 if (remaining <= 0) {
                     const _od = Math.ceil(Math.abs(remaining) / (24 * 60 * 60 * 1000));
@@ -44741,8 +44749,7 @@
 
             const timeWrap = el('div', { className: 'swml-canvas-plan-section' });
             timeWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#51dacf">' + SVG_GUIDE_STOPWATCH + '</span> Session' }));
-            const startedLabel = el('p', { textContent: `Started: ${formatRelativeTime(_codexStartDate)}` });
-            timeWrap.appendChild(startedLabel);
+            if (_codexStartDate) timeWrap.appendChild(el('p', { textContent: `Started: ${formatRelativeTime(_codexStartDate)}` }));
             const countdown = formatCountdown();
             const deadlineBar = el('div', { className: 'swml-canvas-progress-bar' });
             const deadlineFill = el('div', { className: 'swml-canvas-progress-fill', id: 'swml-deadline-fill' });
