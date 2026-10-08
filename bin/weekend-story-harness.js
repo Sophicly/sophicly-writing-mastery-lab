@@ -112,6 +112,7 @@ const CONSTS = ['CW9_GREETING', 'CW9_INTRO', 'CW9_UNIT'].map(consts).join('\n');
 const ARCH = (() => { const i = SRC.indexOf('cwPlotArchetypes:'); return eval('(' + braceSliceFrom(SRC, i + 'cwPlotArchetypes:'.length, '{', '}').text + ')'); })();   // eslint-disable-line no-eval
 const island = { props: null };
 const OWNERS = {};
+const SAVED = [];
 let CUR = null;
 const dropdowns = [];
 function world(opts) {
@@ -131,6 +132,7 @@ function world(opts) {
             _setOutlineDropdown: function (fid, label) { dropdowns.push({ fid, label }); return true; },
             closeCanvasOverlay: function () {}, escapeHTML: (s) => s, sectionHTML: () => '<section></section>', _migrationActive: false,
             _CW_TURN_OWNERS: OWNERS,   // v7.20.740: the factory registers its owns(text) here
+            saveCanvasChat: function (h) { SAVED.push((h || []).length); },   // v7.20.745: a pick must be SAVED, not only recorded
         },
         externalSurface: function () { return !!island.props; },
     });
@@ -205,6 +207,7 @@ const SEVEN = (hook, setup) => [
         ok(/Your dramatic situation: The Chase/.test(conf) && /On the run: the boy/.test(conf) && /Beat 4/.test(conf), 'the confirmation names the situation, THEIR roles and the beat', conf);
         ok(!(w.deps.canvasChatHistory || []).some((m) => m.role === 'assistant' && /Your dramatic situation:/.test(m.content)), '§4c.7: the confirmation is drawn, never stored (the student can change it)');
         ok((w.deps.canvasChatHistory || []).some((m) => m.role === 'user' && m.content === 'The Chase'), 'the pick is a transcript-visible user turn');
+        ok(SAVED.length && SAVED[SAVED.length - 1] === (w.deps.canvasChatHistory || []).length, '⭐ ...and the chat is SAVED with it (staging .744: the pick never replayed after a reload)', SAVED.slice(-3));
         await until(w, () => { try { return JSON.parse(w.store.scene_selection_state || '{}').situation; } catch (e) { return false; } });
         const sst = JSON.parse(w.store.scene_selection_state || '{}');
         ok(sst.situation && sst.situation.id === 5 && sst.situation.beat === 4, 'the situation is saved with the scene state', sst.situation);

@@ -31523,6 +31523,9 @@
                 const pid = state.cwProjectId;
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: s.name }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
                 addChatMessage(s.name, 'user');
+                // v7.20.745: SAVE it — nothing after this stores a turn (the confirmation is drawn, not
+                // stored), so on staging .744 the pick never replayed after a reload.
+                saveCanvasChat(canvasChatHistory, canvasChatId);
                 const sit = { id: s.id, beat: p.beat, roles: (p.roles && p.roles.length) ? p.roles : s.roles.slice(), how: how };
                 saveSituation(pid, sit);
                 // Present-state (the student can change it) → drawn, never stored (§4c.7).
