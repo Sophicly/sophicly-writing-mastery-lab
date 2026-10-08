@@ -4001,7 +4001,7 @@ class SWML_REST_API {
      * @return array{words:int|null, projects:array, reason:string}
      *         words === null means "cannot answer", never 0.
      */
-    private function cw_words_for_user($user_id) {
+    private function cw_words_for_user($user_id, $course_id = self::CW_COURSE_ID) {
         if (!class_exists('Sophicly_WML_Listener')
             || !method_exists('Sophicly_WML_Listener', 'cw_project_word_count')) {
             return ['words' => null, 'projects' => [],
@@ -4016,6 +4016,11 @@ class SWML_REST_API {
         foreach ($list as $pid => $meta) {
             $id = is_array($meta) ? ($meta['id'] ?? $pid) : $pid;
             if (!is_string($id) || $id === '') continue;
+            // v7.20.759 (dashboard reply, FIXLIST #802): a weekend story counts in the Language Paper 1 course it was
+            // started in, never in the CW course; every other story stays with the CW course.
+            $weekend = is_array($meta) && (($meta['course_context'] ?? '') === 'weekend');
+            $belongs = $weekend ? (absint($meta['course_id'] ?? 0) === absint($course_id)) : (absint($course_id) === self::CW_COURSE_ID);
+            if (!$belongs) continue;
             $w = Sophicly_WML_Listener::cw_project_word_count($user_id, $id);
             if (!is_int($w) && !is_numeric($w)) continue;   // null = unreadable blob; skip, don't zero
             $w = (int) $w;
@@ -4053,9 +4058,11 @@ class SWML_REST_API {
         // Creative-writing projects are not tied to a course_id (a project carries
         // course_context 'standalone'), so they are attributed to the CW course —
         // which is the course whose certificate and recap report them.
-        $cw = ($course_id === self::CW_COURSE_ID)
-            ? $this->cw_words_for_user($target)
-            : ['words' => 0, 'projects' => [], 'reason' => ''];
+        // v7.20.759: every course asks — the CW course gets its stories, a Language P1 course its weekend stories.
+        $cw = $this->cw_words_for_user($target, $course_id);
+        if ($course_id !== self::CW_COURSE_ID && empty($cw['projects'])) {   // no weekend story here: the old zero shape, unchanged
+            $cw = ['words' => 0, 'projects' => [], 'reason' => ''];
+        }
 
         /** Attach the CW figures to every response shape this endpoint can return. */
         $with_cw = function (array $payload) use ($cw) {
@@ -7298,7 +7305,7 @@ class SWML_REST_API {
 
             $name = sanitize_text_field($params['name'] ?? 'Untitled Story');
             $course_context = sanitize_key($params['course_context'] ?? 'standalone');
-            $entry = SWML_Session_Manager::create_project($user_id, $name, $course_context);
+            $entry = SWML_Session_Manager::create_project($user_id, $name, $course_context, absint($params['course_id'] ?? 0));
 
             // v7.17.29: register the new project in session_records immediately
             // so it shows up in My Work + Currently Working On the moment the

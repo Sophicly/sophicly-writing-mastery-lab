@@ -872,6 +872,7 @@ const SEVEN = (hook, setup) => [
         const P = WMLC.cwProject;
         const ids = (r) => ((r && r.projects) || []).map((p) => p.id).join(',');
         let wk, fc, wkPin, fcPin;
+        WMLC.config.courseId = '42205';   // the AQA Language P1 course the weekend lesson sits in
         try {
             st.cwUnit = 'weekend'; wk = await P.list(); wkPin = P.pinKey(); await P.create('A');
             st.cwUnit = ''; fc = await P.list(); fcPin = P.pinKey(); await P.create('B');
@@ -879,6 +880,7 @@ const SEVEN = (hook, setup) => [
         ok(ids(wk) === 'cwp_wk', '⭐ a weekend lesson lists ONLY weekend stories (never the student\'s summer story)', ids(wk));
         ok(ids(fc) === 'cwp_full,cwp_legacy', 'the full course lists every non-weekend story, untagged legacy ones included', ids(fc));
         ok(posts.length === 2 && posts[0].course_context === 'weekend' && posts[1].course_context === 'standalone', '⭐ create() makes THIS lesson\'s kind, whatever the call site passed', posts.map((b) => b.course_context));
+        ok(posts[0].course_id === 42205 && posts[1].course_id === 0, 'a weekend story records the course its lesson sits in; a full-course story records none', posts.map((x) => x.course_id));
         ok(fcPin === 'swml_cw_active_project' && wkPin === 'swml_cw_active_project__weekend', 'the "which story am I in" pin is kept per kind; the full course\'s key is unchanged', [fcPin, wkPin]);
         ok(!/cwProject\.create\([^)]*,\s*'standalone'\)/.test(SRC), 'no call site still passes a kind literal (create() decides)');
         ok(/bits\.push\(_cwUnitText\(p\.progress_label\)\)/.test(SRC) && /'\+ Start a new weekend story'/.test(SRC) && /'Your weekend stories'/.test(SRC) && /'Name your weekend story'/.test(SRC),
@@ -914,6 +916,31 @@ const SEVEN = (hook, setup) => [
             ok(G.weekendSecond && G.weekendSecond.story_name === 'Weekend' && (G.weekendSecond.needs || []).join('|') === 'lesson 5 (Your Dramatic Situation)|lesson 7 (Mark Your Draft)',
                 'a second weekend story waits for the current one, named in lessons — never "Step 9"', G.weekendSecond);
             ok(G.weekendAfterFinish === null && G.fullStillGated && G.fullStillGated.story_name === 'Summer', 'finishing the weekend story frees the weekend kind only', [G.weekendAfterFinish, G.fullStillGated]);
+        }
+        // v7.20.759 — WORDS COUNT IN THE STORY'S OWN COURSE (dashboard reply): the REAL cw_words_for_user + the
+        // get_words_written call site, run against a summer story, an AQA weekend story and an Eduqas weekend story.
+        const SM = fs.readFileSync(path.join(ROOT, 'includes/class-session-manager.php'), 'utf8');
+        ok(/'course_context' => sanitize_key\(\$course_context\),\n        \];\n[^]*?if \(absint\(\$course_id\) > 0\) \{ \$index_entry\['course_id'\] = absint\(\$course_id\); \}/.test(SM)
+            && /create_project\(\$user_id, \$name, \$course_context, absint\(\$params\['course_id'\] \?\? 0\)\)/.test(RA), 'the course reaches the project index (REST → session manager)');
+        const wi = RA.indexOf('private function cw_words_for_user($user_id, $course_id = self::CW_COURSE_ID) {');
+        const ci = RA.indexOf('$cw = $this->cw_words_for_user($target, $course_id);');
+        ok(wi > 0 && ci > 0, 'words-written asks for every course, not just the CW course');
+        if (wi > 0 && ci > 0) {
+            const WF = RA.slice(wi, braceSliceFrom(RA, wi, '{', '}').end).replace('private function', 'public function');
+            const CALL = RA.slice(ci, RA.indexOf('\n        }\n', ci) + 10);
+            const tmp = path.join(require('os').tmpdir(), 'wml-words-' + process.pid + '.php');
+            fs.writeFileSync(tmp, "<?php\nfunction absint($v){return abs((int)$v);}\n"
+                + "function get_user_meta($u,$k,$s){return json_encode(['cwp_s'=>['id'=>'cwp_s','name'=>'Summer'],'cwp_a'=>['id'=>'cwp_a','name'=>'AQA wk','course_context'=>'weekend','course_id'=>42205],'cwp_e'=>['id'=>'cwp_e','name'=>'Eduqas wk','course_context'=>'weekend','course_id'=>42764]]);}\n"
+                + "class Sophicly_WML_Listener { public static function cw_project_word_count($u,$id){ return ['cwp_s'=>100,'cwp_a'=>20,'cwp_e'=>3][$id]; } }\n"
+                + "class X { const CW_COURSE_ID = 41165;\n" + WF + "\n public function at($course_id){ $target = 1;\n" + CALL + "\n return $cw; } }\n"
+                + "$x = new X(); echo json_encode(['cw'=>$x->at(41165),'aqa'=>$x->at(42205),'eduqas'=>$x->at(42764),'other'=>$x->at(99)]);\n");
+            let Wd = {};
+            try { Wd = JSON.parse(cp.execFileSync('php', [tmp], { encoding: 'utf8' })); }
+            catch (e) { ok(false, 'the PHP words attribution ran', String(e && e.message).slice(0, 300)); }
+            finally { try { fs.unlinkSync(tmp); } catch (e) { /* gone */ } }
+            ok(Wd.cw && Wd.cw.words === 100 && Wd.aqa && Wd.aqa.words === 20 && Wd.eduqas && Wd.eduqas.words === 3,
+                '⭐ a weekend story\'s words count in its own Language P1 course, never in the CW course', [Wd.cw && Wd.cw.words, Wd.aqa && Wd.aqa.words, Wd.eduqas && Wd.eduqas.words]);
+            ok(Wd.other && Wd.other.words === 0 && Wd.other.reason === '' && Wd.other.projects.length === 0, 'a course with no weekend story gets the exact old zero shape', Wd.other);
         }
     }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));

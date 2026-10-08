@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.758';
+var WML_BUILD = '7.20.759';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -3565,7 +3565,9 @@ window.WML = (function() {
             const blocked = _cwReadOnly('create a project');
             if (blocked) { return blocked; }
             return _cwBroadcast(
-                apiPost(API.cwProject, { action: 'create', name, course_context: _cwKind(), lesson_url: _lu() })
+                // v7.20.759: a weekend story records the course its lesson sits in (AQA 42205 / Eduqas 42764), so its
+                // words count in THAT course and the dashboard can scope it (dashboard reply, FIXLIST #802).
+                apiPost(API.cwProject, { action: 'create', name, course_context: _cwKind(), course_id: cwInUnit() ? (parseInt(config.courseId, 10) || 0) : 0, lesson_url: _lu() })
                     .then((res) => {
                         // v7.20.309: the new-story gate refused. Surface it HERE, once, rather than
                         // at each of the four places a story can be started — a refusal the student

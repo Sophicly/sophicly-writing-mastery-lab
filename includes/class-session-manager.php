@@ -451,7 +451,7 @@ class SWML_Session_Manager {
      * Create a new creative writing project.
      * Returns the full project index entry.
      */
-    public static function create_project($user_id, $name, $course_context = 'standalone') {
+    public static function create_project($user_id, $name, $course_context = 'standalone', $course_id = 0) {
         $project_id = 'cwp_' . bin2hex(random_bytes(6));
         $now = current_time('mysql');
 
@@ -465,6 +465,9 @@ class SWML_Session_Manager {
             'status'         => 'in_progress',
             'course_context' => sanitize_key($course_context),
         ];
+        // v7.20.759: the LearnDash course the story was started in — set for weekend stories (their unit sits inside a
+        // Language Paper 1 course); a full-course story has no course_id and belongs to the CW course.
+        if (absint($course_id) > 0) { $index_entry['course_id'] = absint($course_id); }
 
         // Add to project index (stored as JSON string — must decode first)
         $raw = get_user_meta($user_id, 'swml_cw_projects', true);
