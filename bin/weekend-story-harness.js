@@ -434,13 +434,13 @@ const SEVEN = (hook, setup) => [
         const COPY = '<div data-section-type="question" data-section-label="About This Draft" class="swml-section-block"><h2>Draft 1: Basic prose style</h2><p>Your scene from the last lesson is waiting…</p></div><div data-section-type="divider" data-section-label="YOUR WRITING"><p>YOUR WRITING</p></div><div data-section-type="response" data-section-label="Draft"><p>The shortcut ran past the asylum.</p></div>';
         ok(PO._cwPolishAboutState(COPY) === 'foreign', 'the lineage copy is recognised as another lesson\'s About');
         const pend = PO._cwComposePolishAbout(COPY, '');
-        ok(PO._cwPolishAboutState(pend) === 'pending' && /Finish lesson 7, Mark Your Draft/.test(pend), 'no trial yet → lesson 8\'s About, saying where the priority comes from');
+        ok(PO._cwPolishAboutState(pend) === 'pending' && /Finish lesson 8, Mark Your Draft/.test(pend), 'no trial yet → lesson 9\'s About (renumbered .761), saying where the priority comes from');
         const done = PO._cwComposePolishAbout(pend, 'Climax — the girl and the guard never meet; make them collide <now>');
         ok(PO._cwPolishAboutState(done) === 'ok' && /<strong>Your priority:<\/strong> Climax — the girl and the guard never meet; make them collide &lt;now&gt;/.test(done), '⭐ a later trial lands: the priority is written in, escaped');
         ok(/The shortcut ran past the asylum\./.test(done) && (done.match(/data-section-label="About This Draft"/g) || []).length === 1, 'the student\'s draft and every other section are untouched (one About, replaced in place)');
         ok(PO._cwComposePolishAbout(done, 'Hook — x') === PO._cwComposePolishAbout(done, 'Hook — x') && PO._cwPolishAboutState(done) === 'ok', 'once it has a priority the page is left alone (compose runs only for foreign/pending)');
         const inner = PO._cwPolishAboutInner('Hook — x');
-        ok(!LEAK_RE.test(inner.replace(/lesson \d/g, '')) && /lesson 6, Write Draft 1/.test(inner), 'the page names lessons by the unit\'s own numbers, never a course step; true when the box is empty');
+        ok(!LEAK_RE.test(inner.replace(/lesson \d/g, '')) && /lesson 7, Write Draft 1/.test(inner), 'the page names lessons by the unit\'s own numbers, never a course step; true when the box is empty');
         ok(/state\.task === 'cw_step_14'\s*\n?\s*&& WML\.cwInUnit && WML\.cwInUnit\(\) && !state\.reviewMode/.test(SRC), 'the compose runs only in a weekend lesson 8, never in tutor review');
         ok(/WML\.resolveCanvasSuffix\('cw_trial_1', state\.phase\)/.test(SRC) && !/_cwTrial1Priority[\s\S]{0,900}seedFromSiblings/.test(SRC.slice(SRC.indexOf('async function _cwTrial1Priority'), SRC.indexOf('async function _cwTrial1Priority') + 1200)), '§5d: the trial is read under the ONE suffix builder it saved with, and the read never seeds');
     }
@@ -582,7 +582,7 @@ const SEVEN = (hook, setup) => [
         const SITES = [
             /\} else if \(state\.task === 'cw_step_90'\) \{[\s\S]{0,400}_cwAdaptCtl\.reset\(\); _cwAdaptCtl\.start\(\);/,          // chat-clear
             /if \(state\.task === 'cw_step_90' && _cwAdaptCtl\.active && _inboundIsAnswer\)/,                                       // owns the turn
-            /registerCwWalkCtls\(\[[^\]]*_cwAdaptCtl\]\)/,                                                                          // reset on clear
+            /registerCwWalkCtls\(\[[^\]]*_cwAdaptCtl[,\]]/,                                                                          // reset on clear
             /window\.__swmlCwAdaptCtl = _cwAdaptCtl;/, /_cwAdaptCtl\.onReply\(reply\);/, /: t === 'cw_step_90' \? _cwAdaptCtl/,   // twin handle · reply · start-miss net
             /cwAdaptCtl: _cwAdaptCtl,/, /state\.task === 'cw_step_90' && tp\.cwAdaptCtl\) tp\.cwAdaptCtl\.tryResume\(\)/,          // export · boot resume
             /state\.task === 'cw_step_90' && !state\.reviewMode && tp\.cwAdaptCtl\) \{[\s\S]{0,400}tp\.cwAdaptCtl\.start\(\);/,     // fresh entry
@@ -788,14 +788,14 @@ const SEVEN = (hook, setup) => [
         });
         ok(/\[_cwUnitDocText\('You didn’t tick any sparks in Step 1/.test(SRC) && leftovers(D1.f('You didn’t tick any sparks in Step 1 — that’s fine.')).length === 0, 'the no-sparks note says "lesson 1" in a weekend lesson');
         ok(/const inner = _cwUnitDocText\(_cwDocTemplateInner\(stepDef\)\);/.test(SRC), 'every template the page builds goes through the unit edits (getCwDocTemplate)');
-        ok(D1.place(10) === 'lesson 6' && D1.place(9) === 'lesson 5' && D0.place(10) === 'Step 10' && /const where = stepNo \? _cwStepPlace\(stepNo\)/.test(SRC),
-            'lesson 7 points back to "lesson 6", not "Step 10" (and the full course keeps "Step 10")');
+        ok(D1.place(10) === 'lesson 7' && D1.place(27) === 'lesson 6' && D1.place(9) === 'lesson 5' && D0.place(10) === 'Step 10' && /const where = stepNo \? _cwStepPlace\(stepNo\)/.test(SRC),
+            'the trial points back to "lesson 7" (Draft 1, renumbered .761) and Structural Elements is lesson 6, never "Step 10"/"Step 27" (the full course keeps "Step 10")');
         // the CHAT side (v7.20.755): every served sentence of lessons 1–4 and 7 goes through _cwUnitText, which now names
         // every course step the unit HAS by its lesson — the population, not a list of noticed phrases
         const W = D1.w;
         ok(W('It carries straight into Step 3.') === 'It carries straight into lesson 3.' && W('Step 4 turns it') === 'Lesson 4 turns it'
             && W('Done.\n\nStep 3 is next') === 'Done.\n\nLesson 3 is next' && W('In Step 3 you said') === 'In lesson 3 you said'
-            && W('your writing from Step 10') === 'your writing from lesson 6' && W('“Step 1: write something') === '“Step 1: write something'
+            && W('your writing from Step 10') === 'your writing from lesson 7' && W('“Step 1: write something') === '“Step 1: write something'
             && W('build that in Step 6') === 'build that in Step 6' && D0.t('carries into Step 3') === 'carries into Step 3',
             'a step the unit has is named by its lesson (capital at a sentence start); a quotation and a step the unit lacks are left alone; the full course is untouched');
         const WALKS = ['const _cwProfileCtl', 'const _cwIdeasCtl', 'const _cwLoglineCtl', 'const _cwSpineCtl', 'const _cwTrial1Ctl'];
@@ -913,7 +913,7 @@ const SEVEN = (hook, setup) => [
             finally { try { fs.unlinkSync(tmp); } catch (e) { /* gone */ } }
             ok(G.weekendFirst === null, '⭐ an unfinished summer story never blocks a first weekend story', G.weekendFirst);
             ok(G.fullSecond && G.fullSecond.story_name === 'Summer', 'the full course\'s own rule still holds (finish the summer story first)', G.fullSecond);
-            ok(G.weekendSecond && G.weekendSecond.story_name === 'Weekend' && (G.weekendSecond.needs || []).join('|') === 'lesson 5 (Your Dramatic Situation)|lesson 7 (Mark Your Draft)',
+            ok(G.weekendSecond && G.weekendSecond.story_name === 'Weekend' && (G.weekendSecond.needs || []).join('|') === 'lesson 5 (Your Dramatic Situation)|lesson 8 (Mark Your Draft)',
                 'a second weekend story waits for the current one, named in lessons — never "Step 9"', G.weekendSecond);
             ok(G.weekendAfterFinish === null && G.fullStillGated && G.fullStillGated.story_name === 'Summer', 'finishing the weekend story frees the weekend kind only', [G.weekendAfterFinish, G.fullStillGated]);
         }
@@ -942,6 +942,158 @@ const SEVEN = (hook, setup) => [
                 '⭐ a weekend story\'s words count in its own Language P1 course, never in the CW course', [Wd.cw && Wd.cw.words, Wd.aqa && Wd.aqa.words, Wd.eduqas && Wd.eduqas.words]);
             ok(Wd.other && Wd.other.words === 0 && Wd.other.reason === '' && Wd.other.projects.length === 0, 'a course with no weekend story gets the exact old zero shape', Wd.other);
         }
+    }
+    // ── O · v7.20.761: weekend lesson 6, STRUCTURAL ELEMENTS (Neil, 8 Oct, FIXLIST #804, PEDAGOGY §55.2): full-course
+    // Step 27's eleven techniques planned into the scene one at a time, before Draft 1; Trial 1 marks them.
+    console.log('\nO · lesson 6: Structural Elements, planned one technique at a time; the trial marks them');
+    {
+        const INSIDER = /\b(protocol|module|component|payload|marker|bank|the system|the platform)\b/i;   // root §5c-ii (same list as §L)
+        const TE = WMLC.CW_STRUCT_TECHNIQUES || [];
+        // O1 · the data is Step 27's: same eleven, same order, same row ids as the full course's page (§5d)
+        const fs27 = SRC.indexOf("if (step === 27) {\n            html += sectionHTML('question', 'About This Step'");
+        const FULL27 = fs27 > 0 ? SRC.slice(fs27, SRC.indexOf('return html;', fs27)) : '';
+        const fullIds = (FULL27.match(/outlineRowHTML\(\{ id: '([a-z]+)'/g) || []).map((x) => x.replace(/.*'([a-z]+)'/, '$1'));
+        ok(TE.length === 11 && JSON.stringify(TE.map((t) => t.id)) === JSON.stringify(fullIds), 'the eleven techniques are Step 27\'s, in its order', [TE.map((t) => t.id), fullIds]);
+        ok(TE.every((t) => WMLC.cwStructFid(t.id) === 'cw-step-25-' + t.id) && fullIds.every((id) => FULL27.indexOf("'cw-step-25-" + id + "'") !== -1),
+            '⭐ §5d: lesson 6 files into the SAME row ids the full course\'s page creates (cw-step-25-*), so no saved Step 27 document is orphaned');
+        ok(JSON.stringify(TE.filter((t) => t.must).map((t) => t.id)) === JSON.stringify(['irony', 'denouement', 'senses']) && WMLC.CW_STRUCT_MIN === 4,
+            'Step 27\'s rules: irony, a denouement technique and the five senses are compulsory; at least 4 in total');
+        const ALLOW = new Set(fs.readFileSync(path.join(__dirname, 'cw6-prod-technique-symbols.txt'), 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && l[0] !== '#'));
+        const syms = [].concat(...TE.map((t) => (t.syms || []).map((x) => x.s)));
+        ok(syms.length >= 11 && syms.every((x) => ALLOW.has(x)), 'every Table of Techniques chip opens a card the LIVE table carries', syms.filter((x) => !ALLOW.has(x)));
+        const words = (s) => String(s || '').trim().split(/\s+/).length;
+        ok(TE.every((t) => t.what && t.example && t.more && words(t.what) <= 45 && words(t.example) <= 60 && words(t.more) <= 60), 'each card is short: one rule, one example, one more (§5c-ii note-sized)',
+            TE.filter((t) => !(words(t.what) <= 45 && words(t.example) <= 60 && words(t.more) <= 60)).map((t) => t.id));
+        const CARDS = TE.map((t) => [t.label, t.what, t.example, t.more].join(' ')).join(' ');
+        ok(!LEAK_RE.test(CARDS) && !INSIDER.test(CARDS), 'no course step, plot, stage or insider word in anything a lesson-6 student reads', (CARDS.match(new RegExp('.{0,40}(' + LEAK_RE.source + '|' + INSIDER.source + ').{0,40}', 'i')) || [])[0]);
+        ok(!/["“”]/.test(TE.map((t) => t.example + ' ' + t.more).join(' ')), '§5c-i: the examples DESCRIBE, they never quote (nothing to check against an edition)');
+        ok(/unitTier: 'si'/.test(CORE) && /function cwStepTier\(def\)/.test(CORE) && /cwStepTier\(stepDef\) === 'si' \? EXERCISE_MANIFEST\.cw_si/.test(CORE)
+            && /const isCwSi = isCwTask && WML\.cwStepTier\(cwStepDef\) === 'si'/.test(SRC), 'a weekend lesson 6 runs Step 27 with the chat (one tier switch, read through one resolver); the full course keeps its workbook page');
+        // O2 · the page, in a weekend lesson and in the full course
+        const ti2 = SRC.indexOf('function _cwDocTemplateInner(stepDef) {');
+        const TPL2 = SRC.slice(ti2, braceSliceFrom(SRC, ti2, '{', '}').end);
+        const esc2 = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const H2 = {
+            sectionHTML: (type, label, ed, x, inner) => '<div data-section-type="' + type + '" data-section-label="' + label + '">' + inner + '</div>',
+            dividerHTML: (t) => '<div data-section-type="divider"><p>' + t + '</p></div>',
+            outlineRowHTML: (c, fid) => '<div data-outline-row="true" data-prompt="' + esc2(c.prompt || c.label) + '" data-field-id="' + fid + '" data-label="' + esc2(c.label) + '"></div>',
+        };
+        const render27 = (unit) => new Function('sectionHTML', 'dividerHTML', 'outlineRowHTML', 'escapeHTML', 'WML', 'return (' + TPL2 + ')({ step: 27 });')(   // eslint-disable-line no-new-func
+            H2.sectionHTML, H2.dividerHTML, H2.outlineRowHTML, esc2, Object.assign({}, WMLC, { cwInUnit: () => unit }));
+        const U27 = render27(true), F27 = render27(false);
+        ok((U27.match(/data-field-id="cw-step-25-/g) || []).length === 11 && !/\bStep \d|Hero|Stage|plot/i.test(U27) && /Three you must use/.test(U27),
+            '⭐ the weekend page: eleven rows (same ids), no step number, no Hero\'s Journey stage, the three compulsory techniques named', (U27.match(/.{0,40}(\bStep \d|Hero|Stage|plot).{0,40}/i) || [])[0]);
+        ok(/Step 27: Other Key Structural Elements/.test(F27) && (F27.match(/data-field-id="cw-step-25-/g) || []).length === 11, 'the full course\'s page is unchanged');
+        // O3 · the trial marks the plan (weekend only)
+        st.cwUnit = 'weekend';
+        const tu = WMLC.cwTrial1Elements();
+        st.cwUnit = '';
+        const tf = WMLC.cwTrial1Elements();
+        const sum = (L) => L.reduce((a, e) => a + (e.outOf || 4), 0);
+        ok(tu.length === 9 && tu[7].id === 'structure' && tu[8].id === 'accuracy' && sum(tu) === 34 && tf.length === 8 && sum(tf) === 30,
+            '⭐ the weekend trial has nine rows (structure before accuracy), out of 34; the full course keeps eight, out of 30', [tu.map((e) => e.id), sum(tu), sum(tf)]);
+        const T1o = SRC.slice(SRC.indexOf('const _cwTrial1Ctl = (function'), SRC.indexOf('const _cwTrial1Ctl = (function') + 140000);
+        ok(/function els\(\) \{ return \(WML && \(WML\.cwTrial1Elements \? WML\.cwTrial1Elements\(\)/.test(T1o) && /THEIR STRUCTURAL PLAN \(weekend lesson 6\)/.test(T1o) && /function loadPlans\(\)/.test(T1o)
+            && (T1o.match(/loadPlans\(\)\.then/g) || []).length === 2, 'the trial reads THIS lesson\'s rows, loads the lesson-6 plan on start AND resume, and gives Sophia that plan to judge against');
+        ok((SRC.match(/WML\.cwTrial1Elements \? WML\.cwTrial1Elements\(\)/g) || []).length >= 3, 'the trial\'s page blocks build the same rows the walk marks');
+        ok(/THE TRIAL \(Mark Your Draft\) has one extra element|The trial \(Mark Your Draft\) has one extra element/.test(fs.readFileSync(path.join(ROOT, 'includes/class-protocol-router.php'), 'utf8')) || /NINE verdict lines here/.test(fs.readFileSync(path.join(ROOT, 'includes/class-protocol-router.php'), 'utf8')),
+            'the weekend note tells Sophia the trial has a ninth verdict line (the protocol file says eight)');
+        ok(/const tryFillCwStructPlan = async/.test(SRC) && /\.then\(\(\) => tryFillCwStructPlan\(\)\)/.test(SRC), 'Draft 1 (lesson 7) pins the lesson-6 plan above the writing box');
+        // O4 · the wiring, both pipelines
+        const wires = [
+            /\} else if \(state\.task === 'cw_step_27' && WML\.cwInUnit && WML\.cwInUnit\(\)\) \{[\s\S]{0,300}_cwStructCtl\.reset\(\); _cwStructCtl\.start\(\);/,
+            /if \(state\.task === 'cw_step_27' && _cwStructCtl\.active && _inboundIsAnswer\)/,
+            /registerCwWalkCtls\(\[[^\]]*_cwStructCtl[,\]]/, /window\.__swmlCwStructCtl = _cwStructCtl;/, /_cwStructCtl\.onReply\(reply\);/,
+            /\(t === 'cw_step_27' && WML\.cwInUnit && WML\.cwInUnit\(\)\) \? _cwStructCtl/, /cwStructCtl: _cwStructCtl,/,
+            /state\.task === 'cw_step_27' && tp\.cwStructCtl && WML\.cwInUnit && WML\.cwInUnit\(\)\) tp\.cwStructCtl\.tryResume\(\)/,
+            /state\.task === 'cw_step_27' && !state\.reviewMode && tp\.cwStructCtl/, /window\.__swmlCwStructCtl\.reset\(\); window\.__swmlCwStructCtl\.start\(\);/,
+            /state\.task === 'cw_step_27' && !state\.reviewMode && window\.__swmlCwStructCtl/,
+        ];
+        const missW = wires.filter((re) => !re.test(SRC)).map(String);
+        ok(missW.length === 0 && (SRC.match(/cw_step_27: _cwStructCtl,/g) || []).length === 3, 'the walk is wired at every entry: fresh, resume, clear, reply, start-miss — on BOTH chat pipelines; the three maps know it', missW);
+        // O5 · the walk, driven like a student
+        const CTL6 = sliceController('const _cwStructCtl = (function');
+        const OWN6 = {};
+        const H6 = { w: null };
+        const fids6 = TE.map((t) => WMLC.cwStructFid(t.id));
+        const w6 = makeWorld(CTL6, {
+            task: 'cw_step_27', fids: fids6, ok, ls: new Map(), history: [],
+            extraDeps: {
+                _CW_TURN_OWNERS: OWN6,
+                _cwDocValue: (art, fid) => (art === 'scene_selection' && fid === 'cw-step-8-climax') ? 'He finds the grave.' : '',
+                _cwLoadDocValues: () => Promise.resolve({}),
+                canvasEditor: { state: { doc: { descendants(fn) {
+                    for (const [f, t] of (H6.w ? H6.w.rows : new Map())) if (fn({ type: { name: 'outlineRow' }, attrs: { fieldId: f }, textContent: t }, 0) === false) return;
+                } } } },
+            },
+        });
+        H6.w = w6;
+        Object.assign(w6.deps.WML, { CW_STRUCT_TECHNIQUES: TE, CW_STRUCT_MIN: 4, CW_STRUCT_NOT_USING: WMLC.CW_STRUCT_NOT_USING, cwStructFid: WMLC.cwStructFid, CW_SCENE_ELEMENTS: WMLC.CW_SCENE_ELEMENTS, cwInUnit: () => true });
+        if (!w6.deps.WML.techIcon) w6.deps.WML.techIcon = () => '';
+        w6.deps.window.SophiclyTable = { open() {} };   // the Table of Techniques is on the page
+        const last6 = () => w6.bubbles[w6.bubbles.length - 1] || '';
+        const chip6 = (re) => w6.chips().filter((c) => re.test(c.textContent))[0];
+        ok(w6.ctl.atStart(), 'before it starts, the start-miss net may start it');
+        w6.ctl.start();
+        await settle(); await wait(60);
+        ok(w6.bubbles.length === 1 && /structural techniques/.test(w6.bubbles[0]) && !!chip6(/Continue/), 'the orientation is paced: one chunk, then Continue (§4b)', w6.bubbles.slice(-1));
+        for (let g = 0; g < 6 && chip6(/Continue/); g++) w6.tap(chip6(/Continue/));
+        ok(/eleven techniques, one at a time/.test(w6.bubbles.join('\n')) && !!chip6(/Yes, I’ll use it/) && w6.live(), '⭐ Continue reaches the first technique, with its Yes/No on screen (liveness)');
+        const beat6 = (t) => { const m = /\[SWML_BEAT:(\{[^}]*\})\]/.exec(String(t || '')); try { return m ? JSON.parse(m[1]) : null; } catch (e) { return null; } };
+        ok(last6().indexOf('[SWML_BEAT:') === 0 && (beat6(last6()) || {}).unit === 'Technique' && (beat6(last6()) || {}).heading === 'Hooks' && last6().indexOf(TE[0].example) !== -1 && /Will you use it in your scene\?/.test(last6()),
+            'technique 1: its chip ("Technique 1 of 11 · Hooks"), the rule, the example, the question', last6().slice(0, 200));
+        ok(!!chip6(/Yes, I’ll use it/) && !!chip6(/Not this time/) && w6.helpChipNamed(/See another example/) && w6.helpChipNamed(/Action Hook/) && w6.helpChipNamed(/Still stuck/),
+            'one tap each way (§18), with the help ladder: another example, the technique cards, Sophia last (§4c.9)');
+        w6.tap(w6.helpChipNamed(/See another example/));
+        ok(last6().indexOf('**Another example:**') === 0 && last6().indexOf(TE[0].more) !== -1 && w6.live() && w6.sends.length === 0, 'rung 1 serves another example and keeps the question live (no API)');
+        w6.tap(chip6(/Yes, I’ll use it/));
+        ok(/Where in your scene will it go/.test(last6()) && w6.live(), 'a Yes asks where, and what it does there');
+        w6.say('The first line: a knock nobody answers.');
+        ok(w6.rows.get(fids6[0]) === 'The first line: a knock nobody answers.', 'the answer is filed, verbatim, into the technique\'s row', w6.rows.get(fids6[0]));
+        ok(last6().indexOf('**In your plan.**') === 0 && (beat6(last6().split('\n\n').slice(1).join('\n\n')) || {}).heading === 'Irony' && /You must use this one/.test(last6()) && !chip6(/Not this time/),
+            '⭐ irony is COMPULSORY: it is asked where, never whether (no "Not this time")', last6().slice(0, 160));
+        w6.say('At the climax the reader knows the grave is his first.');
+        ok(w6.rows.get(fids6[1]) === 'At the climax the reader knows the grave is his first.', 'irony filed');
+        // dialogue … suspense: say No to every optional one, answer the compulsory two
+        for (let k = 2; k < TE.length; k++) {
+            const t = TE[k];
+            if (t.must) { w6.say('My ' + t.id + ' plan.'); ok(w6.rows.get(fids6[k]) === 'My ' + t.id + ' plan.', t.label + ' (compulsory) filed'); continue; }
+            const no = chip6(/Not this time/);
+            ok(!!no, t.label + ': the No is one tap', w6.chips().map((c) => c.textContent));
+            if (no) w6.tap(no);
+            ok(w6.rows.get(fids6[k]) === WMLC.CW_STRUCT_NOT_USING, t.label + ' declined → "' + WMLC.CW_STRUCT_NOT_USING + '" in its row', w6.rows.get(fids6[k]));
+        }
+        ok(last6().indexOf('**Your plan needs at least') === -1, '⭐ hooks + the three compulsory make 4: the count check passes straight to the wrap', last6().slice(0, 160));
+        ok(/Your structural plan is complete\./.test(last6()) && /You are using 4 techniques/.test(last6()) && !!chip6(/Change a technique/), 'four chosen: the wrap lists the plan and keeps a way back in (§4d)', last6().slice(0, 200));
+        // change one at the end: drop hooks → below the minimum → the check asks for one more
+        w6.tap(chip6(/Change a technique/));
+        ok(/\*\*Which technique do you want to change\?\*\*/.test(last6()) && w6.chips().length === 11, 'Change a technique: one screen of the eleven (a single choice, §4c.8)');
+        w6.tap(chip6(/^Hooks$/));
+        const notAfter = chip6(/Not using it after all/);
+        ok(!!notAfter && /Where in your scene will it go/.test(w6.bubbles.join('\n').split('**Which technique')[1] || ''), 'changing one re-asks where, with "Not using it after all"');
+        if (notAfter) w6.tap(notAfter);
+        ok(w6.rows.get(fids6[0]) === WMLC.CW_STRUCT_NOT_USING && /\*\*Your plan needs at least 4 techniques\.\*\* You have 3\./.test(last6()) && w6.chips().length === 8,
+            '⭐ dropping below four: the check asks for one more, from the eight not in the plan', [w6.rows.get(fids6[0]), last6().slice(0, 120), w6.chips().length]);
+        w6.tap(chip6(/^Pacing$/));
+        w6.say('Short sentences at the grave.');
+        ok(w6.rows.get(fids6[10]) === 'Short sentences at the grave.' && /Your structural plan is complete\./.test(last6()) && /You are using 4 techniques/.test(last6()), 'added: back to four, the wrap again', last6().slice(0, 120));
+        ok(w6.sends.length === 0, '⭐ the whole lesson cost NO API call (Step 27 is a no-AI workbook)');
+        const asst6 = (w6.deps.canvasChatHistory || []).filter((m) => m.role === 'assistant' && !m.hidden).map((m) => m.content);
+        ok(asst6.length > 10 && asst6.every((t) => OWN6.cw_step_27 && OWN6.cw_step_27(t)), '⭐ every turn the walk stores is one owns() claims (#511)', asst6.filter((t) => !(OWN6.cw_step_27 && OWN6.cw_step_27(t))).map((t) => t.slice(0, 60)));
+        const seen6 = w6.bubbles.join('\n');
+        ok(!LEAK_RE.test(seen6.replace(/\(sim endpoint\)/g, '')) && !INSIDER.test(seen6), 'nothing on screen names a course step, a plot, a stage or our machinery', (seen6.match(new RegExp('.{0,40}(' + LEAK_RE.source + '|' + INSIDER.source + ').{0,40}', 'i')) || [])[0]);
+        // O6 · resume from the DOCUMENT alone (another device: no walk state in this browser)
+        const w7 = makeWorld(CTL6, { task: 'cw_step_27', fids: fids6, ok, ls: new Map(), history: [],
+            extraDeps: { _CW_TURN_OWNERS: {}, _cwDocValue: () => '', _cwLoadDocValues: () => Promise.resolve({}),
+                canvasEditor: { state: { doc: { descendants(fn) { for (const [f, t] of (H6.w2 ? H6.w2.rows : new Map())) if (fn({ type: { name: 'outlineRow' }, attrs: { fieldId: f }, textContent: t }, 0) === false) return; } } } } } });
+        H6.w2 = w7;
+        Object.assign(w7.deps.WML, { CW_STRUCT_TECHNIQUES: TE, CW_STRUCT_MIN: 4, CW_STRUCT_NOT_USING: WMLC.CW_STRUCT_NOT_USING, cwStructFid: WMLC.cwStructFid, CW_SCENE_ELEMENTS: WMLC.CW_SCENE_ELEMENTS, cwInUnit: () => true });
+        if (!w7.deps.WML.techIcon) w7.deps.WML.techIcon = () => '';
+        w7.rows.set(fids6[0], 'A knock.'); w7.rows.set(fids6[1], 'The grave.'); w7.rows.set(fids6[2], WMLC.CW_STRUCT_NOT_USING);
+        ok(w7.ctl.tryResume() === true, 'resume with no walk state in this browser');
+        await wait(600);
+        const l7 = w7.bubbles[w7.bubbles.length - 1] || '';
+        ok((beat6(l7) || {}).heading === 'Duality' && !!w7.chips().filter((c) => /Not this time/.test(c.textContent))[0], '⭐ the document says where they are: technique 4, Duality, with its controls', l7.slice(0, 120));
     }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }

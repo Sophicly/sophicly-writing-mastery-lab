@@ -1,4 +1,4 @@
-### Creative Writing Protocol: Weekend Lesson 9 — Adapt It to the Question
+### Creative Writing Protocol: Weekend Lesson 10 — Adapt It to the Question
 
 > ## ⭐ PROGRAMMATIC-FIRST (v7.20.753, WEEKEND-STORY-PLAN.md §2 + §2c). READ THIS BOX BEFORE ANYTHING ELSE.
 >

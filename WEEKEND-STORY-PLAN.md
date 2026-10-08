@@ -134,6 +134,27 @@ Where the priority is structural, the structural techniques (Step 27's list — 
 teaching; hooks are element 1 already, so the lesson sharpens them rather than introducing them. Ends on Mark
 Complete (the §40 gate family `cw`).
 
+## 2d · Lesson 6 — Structural Elements (v7.20.761; PEDAGOGY §55.2, FIXLIST #804) — THE WEEKEND IS NOW TEN LESSONS
+
+⚠️ Renumbered: 1 Profile · 2 Ideas · 3 Logline · 4 Spine · 5 Dramatic Situation · **6 Structural Elements** · 7 Draft 1 ·
+8 Mark (Trial 1) · 9 Polish · 10 Adapt. Section headings above still use the OLD numbers (2 = now lesson 10, 2b = now 9).
+LD shell: topic 59238 `[writing_mastery_lab task="cw_step_27" unit="weekend"]` in 59221 + 59222 (slugs kept, titles renumbered).
+
+- **Data (one source, wml-core):** `CW_STRUCT_TECHNIQUES` — Step 27's 11, its order, its row ids (`cw-step-25-*`, kept so
+  no saved Step 27 doc is orphaned), `what` from the protocol's definitions, one described example + one more each (no
+  quotations), Table cards checked against the live allowlist. Musts: irony, denouement, senses; `CW_STRUCT_MIN` 4.
+- **Engine:** `unitTier:'si'` on step 27 via `cwStepTier` → the chat appears in a unit only. `_cwStructCtl`: orientation
+  (paced) → one technique at a time (musts asked "where", others Yes / Not this time) → typed "where and how" filed to the
+  row → count check (≥4; else pick one more) → wrap with "Change a technique". Zero API except "Still stuck — ask Sophia".
+  Document = position (resume from the rows). Wired at the 12 sites both pipelines use for lesson 10.
+- **Draft 1 (lesson 7):** `tryFillCwStructPlan` pins a locked "Your Structural Plan" above the writing box from the
+  `structural_elements` artifact (mirrored on every save). Coaching lens stays `prose_style` (a structural lens would need
+  rubric content first — not built).
+- **Trial 1 (lesson 8):** `cwTrial1Elements()` adds `CW_TRIAL1_STRUCTURE` (/4, AO5) before accuracy in a unit → /34; the
+  marking context carries the student's lesson-6 plan; the router's weekend note tells Sophia there are NINE verdict lines.
+- **Gates:** weekend harness §O (data · page · trial rows · wiring · the walk driven like a student · resume from the doc),
+  5 mutations red; cw-keymatch knows the four chip menus; lesson-number literals updated (REST gate, lesson 9 About, seed gate).
+
 ## 3 · The four layers (root §15 — every link, up front)
 
 | layer | what it needs | owner |

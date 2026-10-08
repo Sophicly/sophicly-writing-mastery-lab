@@ -229,6 +229,11 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         onCw90Next:       { kind: 'flow', note: 'Lesson 9: Next question / Choose my question / Back to the end — steers the walk; the line was already filed' },
         onCw90Pick:       { kind: 'content', note: 'Lesson 9: the chosen question → its exact words filed to cw-adapt-chosen (a locked row)' },
         onCw90Check:      { kind: 'flow', note: 'Lesson 9: Check my rewrite → the ONE judgement turn; the verdict files to cw-adapt-check / cw-adapt-fix, the chip itself files nothing' },
+        // v7.20.761 — weekend lesson 6 (Structural Elements).
+        onDecide:         { kind: 'content', note: 'Lesson 6: Yes asks where (the typed answer files to the technique row); No files "Not using this one." to cw-step-25-<id>' },
+        onAddPick:        { kind: 'flow', note: 'Lesson 6 check: which technique to add — re-serves that technique\'s where-ask; the typed answer is what files' },
+        onChange:         { kind: 'flow', note: 'Lesson 6 wrap: Change a technique — opens the technique picker; files nothing' },
+        onChangePick:     { kind: 'flow', note: 'Lesson 6: which technique to change — re-serves its where-ask; the typed answer (or Not using it after all) files' },
         // v7.20.566: menus served ONLY through chipBarOrRetry were invisible to this gate until the
         // RETRY_RE below — the examiner ladder (v7.20.547) and Trial 1 (.551–.562) surfaced at once.
         onClimb:          { kind: 'content', note: 'examiner ladder: "met all of this level?" Yes/No → st.metAll / stoppedAt (the sidecar the level row is derived from); the per-criterion pass follows' },

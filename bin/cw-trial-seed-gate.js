@@ -189,8 +189,9 @@ if (proseSrc && innerSrc) {
     const runInner = mkInner(false);
     const unitInner = mkInner(true);
     const D1SRC = { artifactKey: 'draft_1', draftStep: 10, draftNumber: 1, draftLabel: 'Draft 1' };
-    ok('in a weekend lesson the section points back to "lesson 6", never "Step 10" (staging .754, lesson 7)',
-        /lesson 6/.test(unitInner(D1SRC, '<p>x</p>')) && /lesson 6/.test(unitInner(D1SRC, '')) && !/Step 10/.test(unitInner(D1SRC, '<p>x</p>') + unitInner(D1SRC, '')));
+    // v7.20.761: Draft 1 is weekend lesson 7 since Structural Elements became lesson 6 (PEDAGOGY §55.2).
+    ok('in a weekend lesson the section points back to "lesson 7", never "Step 10" (staging .754; renumbered .761)',
+        /lesson 7/.test(unitInner(D1SRC, '<p>x</p>')) && /lesson 7/.test(unitInner(D1SRC, '')) && !/Step 10/.test(unitInner(D1SRC, '<p>x</p>') + unitInner(D1SRC, '')));
     ok('…and the full course still says "Step 10"', /Step 10/.test(runInner(D1SRC, '<p>x</p>')) && /Step 10/.test(runInner(D1SRC, '')));
 
     // A real Step-10 document: teaching section, a divider, then the student's own draft box.

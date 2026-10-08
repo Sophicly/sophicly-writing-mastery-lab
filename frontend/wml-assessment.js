@@ -5562,7 +5562,8 @@
         ['six-beat spine, and Steps 5–10 turn that spine into your story.', 'six-beat Story Spine, and the lessons after that turn the spine into your story.'],
     ];
     // v7.20.755 — the weekend story numbers its OWN lessons (PEDAGOGY §55; LD's shells 59223–59236 carry the numbers).
-    const CW_UNIT_LESSON_OF_STEP = { 1: 1, 2: 2, 3: 3, 4: 4, 9: 5, 10: 6, 14: 8, 90: 9 };
+    // v7.20.761 (PEDAGOGY §55.2): lesson 6 is Structural Elements (Step 27); Draft 1 → 7, Trial 1 → 8, Polish → 9, Adapt → 10.
+    const CW_UNIT_LESSON_OF_STEP = { 1: 1, 2: 2, 3: 3, 4: 4, 9: 5, 27: 6, 10: 7, 14: 9, 90: 10 };
     // A course step the unit HAS is named by its lesson, so a served sentence can never send a weekend student to "Step 3"
     // (measured on staging .754: lessons 2–4 said "carries straight into Step 3", "the goal you named in Step 3"). This
     // covers the whole POPULATION, not a list of phrases someone happened to notice. "Lesson" where a sentence or line
@@ -6198,9 +6199,9 @@
         return '<h2>' + CW_POLISH_H2 + '</h2>'
             + '<p>Your Draft 1 is in the box below. Mark Your Draft gave you one priority: the part of your scene that would improve the story most. This lesson is where you act on it.</p>'
             + (p ? '<p><strong>Your priority:</strong> ' + _cwPolishEsc(p) + '</p>'
-                 : '<p><strong>Your priority isn\u2019t ready yet.</strong> Finish lesson 7, Mark Your Draft, first. When you come back, it will be here.</p>')
+                 : '<p><strong>Your priority isn\u2019t ready yet.</strong> Finish lesson 8, Mark Your Draft, first. When you come back, it will be here.</p>')
             + '<p>Find the sentences that belong to that part of your scene. Select one and tap <strong>Sophia</strong>: she points at one thing that would make it stronger, and you rewrite it yourself. When that part does its job, read the whole scene through once more.</p>'
-            + '<p><em>If the box below is empty, go back to lesson 6, Write Draft 1. This lesson polishes that draft.</em></p>';
+            + '<p><em>If the box below is empty, go back to lesson 7, Write Draft 1. This lesson polishes that draft.</em></p>';
     }
     // 'ok' = lesson 8's About with a priority · 'pending' = lesson 8's, no priority yet ·
     // 'foreign' = another lesson's About (the lineage copy) · 'missing' = no About section.
@@ -19818,6 +19819,10 @@
                             // v7.20.568 (#440): the Draft-2 scene selection owns chat-clear the same way.
                             clearWalkResume();
                             setTimeout(() => { _cw13SceneCtl.reset(); _cw13SceneCtl.start(); }, 200);
+                        } else if (state.task === 'cw_step_27' && WML.cwInUnit && WML.cwInUnit()) {
+                            // v7.20.761: weekend lesson 6's walk owns chat-clear too (the document keeps its place).
+                            clearWalkResume();
+                            setTimeout(() => { _cwStructCtl.reset(); _cwStructCtl.start(); }, 200);
                         } else if (state.task === 'cw_step_90') {
                             // v7.20.753: weekend lesson 9's walk owns chat-clear too (the document keeps its place).
                             clearWalkResume();
@@ -20725,7 +20730,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -20739,7 +20744,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -20951,7 +20956,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl,
+                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -21077,6 +21082,11 @@
             // v7.20.753: weekend lesson 9 (Adapt It to the Question) owns the turn while its walk runs.
             if (state.task === 'cw_step_90' && _cwAdaptCtl.active && _inboundIsAnswer) {
                 await _cwAdaptCtl.handleTurn(msg);
+                return;
+            }
+            // v7.20.761: weekend lesson 6 (Structural Elements) owns the turn while its walk runs.
+            if (state.task === 'cw_step_27' && _cwStructCtl.active && _inboundIsAnswer) {
+                await _cwStructCtl.handleTurn(msg);
                 return;
             }
             if (state.task === 'cw_step_7' && _cwValuesCtl.active && _inboundIsAnswer) {
@@ -33589,6 +33599,412 @@
         // _cwAdaptParseCheck, filed into the document). Fail-open (§4d): no usable verdict → Try
         // again, never a dead screen. Same shape as _cwCharProfileCtl, the document is the position.
         // ══════════════════════════════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        // ⭐⭐ v7.20.761 — WEEKEND LESSON 6: STRUCTURAL ELEMENTS (Neil, 8 Oct, FIXLIST #804, PEDAGOGY §55.2).
+        // Full-course Step 27's eleven techniques, walked ONE AT A TIME (root §18 serial: a "no" costs one tap), each
+        // with its own worked example (§4c.2) and the help ladder (§4c.9: another example → the Table of Techniques →
+        // Sophia last). Step 27 is a no-AI workbook, so the walk is code-served: the only API call is the student's
+        // explicit "Still stuck — ask Sophia". Every answer is filed into its technique's row (the same row ids the full
+        // course uses); the DOCUMENT is the position, so a reload or another device lands on the exact technique.
+        // Rules from CW-STEP-27: irony, a denouement technique and the five senses are compulsory (they are asked
+        // "where", never "whether"), and at least CW_STRUCT_MIN techniques are planned before the lesson ends.
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        const _cwStructCtl = (function () {
+            let active = false, pending = false;
+            let emitted = 0;
+            let st = null;
+            const WALK = 'cw27u';
+            const STEP = 27;
+            const SUBSTEPS = { 1: 'The Techniques', 2: 'Your Plan', 3: 'Technique Check' };
+            // The openings of the turns this walk STORES (owns() is built from the same list — no chip detection over
+            // our own text, #511).
+            const T = {
+                filed: '**In your plan.**',
+                skipped: '**Fine, not this time.**',
+                more: '**Another example:**',
+                need: '**Your plan needs at least ',
+                wrap: '**Your structural plan is complete.**',
+                change: '**Which technique do you want to change?**',
+                cant: 'I can’t think this through with you right now.',
+            };
+            const YES = 'Yes, I’ll use it', NO = 'Not this time', NOT_AFTER_ALL = 'Not using it after all';
+            const NEXT = 'Next lesson: write it →', CHANGE = 'Change a technique';
+            function techs() { return WML.CW_STRUCT_TECHNIQUES || []; }
+            function fidOf(t) { return WML.cwStructFid(t.id); }
+            const lsKey = () => {
+                try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw27') + '_cw27u'; } catch (e) { return 'swml_cw27u'; }
+            };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ st: st, active: active })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                emitted++;
+                addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function pickTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+
+            // ── the document is the position ──────────────────────────────────────────────
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField') && n.attrs && n.attrs.fieldId === fid) {
+                                out = (typeof _cwNodeText === 'function' ? _cwNodeText(n) : (n.textContent || '')).trim();
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            function isUsing(t) { const v = rowText(fidOf(t)); return !!v && v !== WML.CW_STRUCT_NOT_USING; }
+            function firstEmpty() { const L = techs(); for (let n = 0; n < L.length; n++) if (!rowText(fidOf(L[n]))) return n; return L.length; }
+            function usingCount() { return techs().filter(isUsing).length; }
+            function minNeeded() { return WML.CW_STRUCT_MIN || 4; }
+            function positionFromDoc() {
+                const n = firstEmpty();
+                if (n < techs().length) return { phase: 'decide', i: n };
+                return { phase: usingCount() >= minNeeded() ? 'done' : 'need', i: 0 };
+            }
+
+            // ── chips (a PRIVATE copy per controller, per the walk contract) ───────────────
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+                return true;
+            }
+            function chipBarOrRetry(options, onPick, retryText) {
+                if (chipBar(options, onPick)) return true;
+                _cwReplay(function () { aiBubble(retryText); });
+                return chipBar(options, onPick);
+            }
+            // ── the help ladder (§4c.9): another example → the Table of Techniques → Sophia last ─
+            function helpBar(t) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.' + 'swml-bubble-content') || bubble) : null;
+                if (!bc) return;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
+                if (t.more && !(st && st.moreSpent && st.moreSpent[t.id])) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: 'See another example', icon: WML.icon('examples', 15),
+                        onClick: function () { serveMore(t); },
+                    }));
+                }
+                if (window.SophiclyTable && window.SophiclyTable.open) {
+                    (t.syms || []).forEach(function (x) {
+                        bar.appendChild(el('button', {
+                            className: 'swml-quick-btn', textContent: (WML.techIcon(x.s) ? '' : '🗂 ') + x.l, icon: WML.techIcon(x.s, 15),
+                            onClick: function () { try { window.SophiclyTable.open(x.s); } catch (e) {} },
+                        }));
+                    });
+                }
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn swml-cw-help-last', textContent: 'Still stuck — ask Sophia', icon: WML.phoenixIconHTML(16),
+                    onClick: function () { askSophia(t); },
+                }));
+                bc.appendChild(bar);
+            }
+            function serveMore(t) {
+                st.moreSpent = st.moreSpent || {};
+                if (st.moreSpent[t.id]) return;
+                st.moreSpent[t.id] = 1;
+                persist();
+                aiBubble(T.more + '\n\n' + t.more + '\n\n' + (st.phase === 'where'
+                    ? 'Now yours: where in your scene will it go, and what will it do there?'
+                    : 'Will you use it in your scene?'));
+                reAttach(t);
+            }
+            function scenePlanText() {
+                try {
+                    return (WML.CW_SCENE_ELEMENTS || []).map(function (e) {
+                        const v = _cwDocValue('scene_selection', e.planFid) || '';
+                        return v ? '- ' + e.label + ': ' + v : '';
+                    }).filter(Boolean).join('\n');
+                } catch (e) { return ''; }
+            }
+            // Rung 3 — an API call, only on an explicit tap.
+            function askSophia(t) {
+                if (pending) return;
+                userTurn('Still stuck — how could ' + t.label.toLowerCase() + ' work in my scene?');
+                const ctx = '[THE STUDENT IS ON WEEKEND LESSON 6 (Structural Elements), planning which techniques go in their scene, '
+                    + 'and is stuck on ONE technique: ' + t.label + ' (' + t.what + '). In two or three sentences, say how this technique '
+                    + 'could work in THEIR scene (their scene plan is below), then hand it straight back and ask them to write their own one '
+                    + 'or two sentences: where in the scene it goes, and what it does there. Never write it for them, never move to another '
+                    + 'technique, never give a mark, and do NOT emit any marker.]'
+                    + '\n\nTHEIR SCENE PLAN (lesson 5):\n' + (scenePlanText() || '(not filled in yet)');
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                active = false; pending = true;
+                armWalkResume('cw27u-help-' + t.id, function (reply, meta) {
+                    pending = false; active = true; persist();
+                    if (!reply || (meta && meta.timedOut)) {
+                        console.warn('WML CW27u: ask-Sophia failed/timed out for ' + t.id + ' — degraded honest message served.');
+                        aiBubble(T.cant + ' Try **See another example**, or open the technique card, then write your own sentence.');
+                    }
+                    setTimeout(function () { try { reAttach(t); } catch (err) {} }, 400);
+                    resetSend();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'I’m stuck on ' + t.label.toLowerCase() + ' — how could it work in my scene?';
+                sendCanvasMessage();
+            }
+            function scrollTo(fid) {
+                try {
+                    const editor = document.getElementById('swml-tiptap-editor');
+                    const target = editor ? editor.querySelector('[data-field-id="' + fid + '"]') : null;
+                    if (target && target.offsetParent !== null) _swmlScrollToTop(target);
+                } catch (err) {}
+            }
+            function file(fid, text) {
+                const clean = String(text || '').trim();
+                if (!clean) return false;
+                let wrote = false;
+                try { wrote = _writeOutlineRowField(fid, clean, { replace: true }); }
+                catch (e) { console.warn('WML CW27u: write failed (non-fatal) for ' + fid + ' —', e && e.message); }
+                try { _tickOutlineRow(fid); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                return wrote;
+            }
+            function progress(sub) { try { applyCwSubstepProgress({ stepNum: STEP, substepNum: sub, name: SUBSTEPS[sub] }); } catch (e) {} }
+
+            // ── serving ───────────────────────────────────────────────────────────────────
+            function heading(t) {
+                return cwProgressBar(techs().indexOf(t) + 1, techs().length, 'Structural Elements', t.label, 'Technique');
+            }
+            const WHERE_ASK = '**Where in your scene will it go, and what will it do there?** One or two sentences: name the part '
+                + 'of your scene (hook, set-up, reaction, epiphany, proaction, climax or denouement) and say what the technique does to '
+                + 'the reader. *For example: “At the climax, the reader knows the grave is his before he does.”*';
+            function decideText(t, lead) {
+                return (lead ? lead + '\n\n' : '') + heading(t) + t.what + '\n\n' + t.example + '\n\n'
+                    + (t.must ? '**You must use this one.** ' + WHERE_ASK : '**Will you use it in your scene?**');
+            }
+            function reAttach(t) {
+                if (st.phase === 'where') { _walkSlot.arm(WALK, fidOf(t), { cycle: 'rewrite' }); }
+                else if (st.phase === 'decide') { chipBarOrRetry([YES, NO], onDecide, '**Will you use it in your scene?**'); }
+                helpBar(t);
+                resetSend();
+            }
+            function serveDecide(i, lead) {
+                const t = techs()[i];
+                if (!t) { serveCheck(lead); return; }
+                st.i = i; st.phase = t.must ? 'where' : 'decide';
+                persist();
+                aiBubble(decideText(t, lead));
+                reAttach(t);
+                scrollTo(fidOf(t));
+            }
+            function serveWhere(t, lead) {
+                st.i = techs().indexOf(t); st.phase = 'where';
+                persist();
+                aiBubble((lead ? lead + '\n\n' : '') + heading(t) + WHERE_ASK);
+                reAttach(t);
+                scrollTo(fidOf(t));
+            }
+            // Named for cw-keymatch: FLOW — a Yes asks where; a No files "Not using this one." and moves on.
+            function onDecide(label) {
+                const t = techs()[st.i];
+                pickTurn(label);
+                if (!t) { serveCheck(); return; }
+                if (label === YES) { progress(2); serveWhere(t); return; }
+                file(fidOf(t), WML.CW_STRUCT_NOT_USING);
+                advance(T.skipped);
+            }
+            function advance(lead) {
+                if (st.phase === 'change' || st.phase === 'need' || st.phase === 'done') { serveCheck(lead); return; }
+                const n = firstEmpty();
+                if (n < techs().length) { serveDecide(n, lead); return; }
+                serveCheck(lead);
+            }
+            function serveCheck(lead) {
+                progress(3);
+                const have = usingCount(), need = minNeeded();
+                if (have >= need) { serveWrap(lead); return; }
+                st.phase = 'need';
+                persist();
+                const left = techs().filter(function (t) { return !isUsing(t); });
+                aiBubble((lead ? lead + '\n\n' : '') + T.need + need + ' techniques.** You have ' + have + '. Choose one more to add to your scene:');
+                chipBarOrRetry(left.map(function (t) { return t.label; }), onAddPick, '**Choose one more technique to add:**');
+                resetSend();
+            }
+            function onAddPick(label) {
+                const t = techs().filter(function (x) { return x.label === label; })[0];
+                pickTurn(label);
+                if (!t) { serveCheck(); return; }
+                st.mode = 'add';
+                serveWhere(t);
+            }
+            function planSummary() {
+                return techs().filter(isUsing).map(function (t) { return '- **' + t.label + ':** ' + rowText(fidOf(t)); }).join('\n');
+            }
+            function serveWrap(lead) {
+                st.phase = 'done'; st.mode = '';
+                active = false;
+                persist();
+                _walkSlot.clear(WALK);
+                aiBubble((lead ? lead + '\n\n' : '') + T.wrap + ' You are using ' + usingCount() + ' techniques:\n\n' + planSummary()
+                    + '\n\nIn the next lesson you write your draft with them. Your plan stays in this document, and the marking after the draft checks that each one is there.');
+                chipBarOrRetry([CHANGE], onChange, '**Want to change a technique?**');
+                resetSend();
+            }
+            // §4d: the end always offers a way back in.
+            function onChange(label) {
+                pickTurn(label);
+                st.phase = 'change'; active = true;
+                persist();
+                aiBubble(T.change);
+                chipBarOrRetry(techs().map(function (t) { return t.label; }), onChangePick, T.change);
+                resetSend();
+            }
+            function onChangePick(label) {
+                const t = techs().filter(function (x) { return x.label === label; })[0];
+                pickTurn(label);
+                if (!t) { serveCheck(); return; }
+                st.mode = 'change';
+                serveWhere(t);
+                if (!t.must) chipBarOrRetry([NOT_AFTER_ALL], function (l) { pickTurn(l); file(fidOf(t), WML.CW_STRUCT_NOT_USING); _walkSlot.clear(WALK); serveCheck(T.skipped); }, WHERE_ASK);
+            }
+            function serveCurrent() {
+                if (!st) st = { i: 0, phase: 'decide', moreSpent: {} };
+                if (st.phase === 'done') { serveWrap(); return; }
+                if (st.phase === 'need') { serveCheck(); return; }
+                if (st.phase === 'change') { onChange(CHANGE); return; }
+                const t = techs()[st.i];
+                if (!t) { serveCheck(); return; }
+                if (st.phase === 'where' && !t.must) { serveWhere(t); return; }
+                serveDecide(st.i);
+            }
+
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                const slot = _walkSlot.consume(WALK);
+                if (!slot) {
+                    _cwNoAskGuard(WALK, function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                userTurn(clean);
+                const t = techs().filter(function (x) { return fidOf(x) === slot.fid; })[0] || techs()[st.i];
+                if (!t) { serveCurrent(); return; }
+                file(fidOf(t), clean);
+                const wasExtra = st.mode === 'add' || st.mode === 'change';
+                st.mode = '';
+                if (wasExtra) { st.phase = 'need'; serveCheck(T.filed); return; }
+                advance(T.filed);
+            }
+
+            function orientationChunks() {
+                return [
+                    'This lesson adds **structural techniques** to the scene you planned in lesson 5. They are what make a scene stay with a reader: a hook, irony, a setting that does something, an ending with a shape.',
+                    'Here is how it works. I show you **eleven techniques, one at a time**, each with an example. For each one you decide whether it goes in your scene. If it does, you write one or two sentences: where it goes and what it does.',
+                    'Three are compulsory, because every strong scene has them: **irony**, a way to **end** your scene, and all **five senses**. Use at least ' + minNeeded() + ' techniques in total. Your draft in the next lesson is written with them, and the marking checks they are there.',
+                    '**Don’t overthink it.** One rough sentence for each is enough. You can change any of them at the end.',
+                ];
+            }
+            function start() {
+                if (active || pending) return false;
+                // Drawn, never stored (§4c.7): true only while the lesson is opened outside the weekend story.
+                if (!(WML.cwInUnit && WML.cwInUnit())) {
+                    st = { i: 0, phase: 'blocked' };
+                    _cwReplay(function () { aiBubble('This lesson belongs to the Weekend Story. Open it from the Weekend Story unit in your course.'); });
+                    return true;
+                }
+                const pos = positionFromDoc();
+                st = { i: pos.i || 0, phase: pos.phase, moreSpent: {} };
+                active = true; pending = false;
+                persist();
+                console.log('WML CW27u: code-served structural-elements walk start — phase ' + st.phase + ' at technique ' + (st.i + 1));
+                const go = function () {
+                    if (st.phase === 'done') { serveWrap(); return; }
+                    if (st.phase === 'need') { serveCheck(); return; }
+                    progress(1);
+                    if (st.i === 0) { st.phase = 'orient'; persist(); serveCwChunks(orientationChunks(), { emit: aiBubble, onDone: function () { serveDecide(0); } }); return; }
+                    serveDecide(st.i);
+                };
+                try {
+                    if (state.cwProjectId && typeof _cwLoadDocValues === 'function') _cwLoadDocValues(state.cwProjectId, 'scene_selection').then(go, go);
+                    else go();
+                } catch (e) { go(); }
+                return true;
+            }
+            function reset() { active = false; pending = false; st = null; _walkSlot.clear(WALK); clearPersist(); }
+            function tryResume() {
+                try {
+                    if (st && (st.phase === 'done' || st.phase === 'blocked') && !active) return false;
+                    if (!(WML.cwInUnit && WML.cwInUnit())) return false;
+                    let saved = null;
+                    try { const raw = localStorage.getItem(lsKey()); saved = raw ? JSON.parse(raw) : null; } catch (e) {}
+                    st = (saved && saved.st) ? saved.st : { i: 0, phase: 'decide', moreSpent: {} };
+                    st.moreSpent = st.moreSpent || {};
+                    const mark = emitted;
+                    // The document is the authority on position — except an open "change" (the student chose to go back).
+                    if (st.phase !== 'change' && !(st.phase === 'where' && st.mode)) {
+                        const pos = positionFromDoc();
+                        // A "where" ask stays where it was while its row is still empty; everything else follows the document.
+                        if (!(st.phase === 'where' && pos.phase === 'decide' && pos.i === st.i)) { st.phase = pos.phase; st.i = pos.i || 0; }
+                    }
+                    if (st.phase === 'orient') st.phase = 'decide';
+                    if (st.phase === 'done') {
+                        active = false; pending = false;
+                        setTimeout(function () { if (emitted !== mark) return; _cwReplay(serveWrap); }, 500);
+                        return false;
+                    }
+                    active = true; pending = false;
+                    persist();
+                    console.log('WML CW27u: resumed — phase ' + st.phase + ' at technique ' + (st.i + 1));
+                    const go = function () { setTimeout(function () { if (emitted !== mark) return; _cwReplay(function () { serveCurrent(); }); }, 400); };
+                    try {
+                        if (state.cwProjectId && typeof _cwLoadDocValues === 'function') _cwLoadDocValues(state.cwProjectId, 'scene_selection').then(go, go);
+                        else go();
+                    } catch (e) { go(); }
+                    return true;
+                } catch (e) { return false; }
+            }
+            function nudge() { if (!active || pending) return false; serveCurrent(); return true; }
+            function owns(text) {
+                const t = String(text || '');
+                if (t.indexOf('[SWML_BEAT:') === 0) return true;
+                const sigs = Object.keys(T).map(function (k) { return T[k]; })
+                    .concat(orientationChunks().map(function (c) { return String(c).slice(0, 40); }));
+                return sigs.some(function (s) { return s && t.indexOf(s) === 0; });
+            }
+            _CW_TURN_OWNERS.cw_step_27 = owns;
+
+            return {
+                handleTurn, onReply: function () { /* code-started: the help reply arrives through armWalkResume */ },
+                reset, tryResume, nudge, start, forceStart: start,
+                atStart: function () { return !st || ((st.i || 0) === 0 && (st.phase === 'decide' || st.phase === 'orient')); },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
         const _cwAdaptCtl = (function () {
             let active = false, pending = false;
             let emitted = 0;
@@ -34251,7 +34667,8 @@
             // v7.20.559 (#431): the trial's elements are the seven scene parts PLUS the technical-
             // accuracy dimension (out of 2). Every "how many marks" question below is answered from
             // the element (`outOf`), never from a constant — so /30 is a sum, not a number.
-            function els() { return (WML && (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS)) || []; }
+            // v7.20.761: THIS lesson's rows — a weekend trial adds the planned structural techniques (PEDAGOGY §55.2).
+            function els() { return (WML && (WML.cwTrial1Elements ? WML.cwTrial1Elements() : (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS))) || []; }
             function fid(id) { return 'cw-trial-1-' + id; }
             function outOf(e) { return (e && e.outOf) || 4; }
             function perLevel(e) { return outOf(e) / 2; }       // marks each level is worth: 2 (of 4) or 1 (of 2)
@@ -34433,14 +34850,32 @@
             }
 
             // ── their own Step-9 plan for this element — read, never requested (§3) ────────
+            // v7.20.761: the structural-techniques row's plan is the student's lesson-6 plan (the techniques they chose).
+            function structPlanLines() {
+                try {
+                    return (WML.CW_STRUCT_TECHNIQUES || []).map(function (t) {
+                        const v = _cwDocValue('structural_elements', WML.cwStructFid(t.id)) || '';
+                        return (v && v !== WML.CW_STRUCT_NOT_USING) ? t.label + ': ' + v : '';
+                    }).filter(Boolean);
+                } catch (err) { return []; }
+            }
             function planLine(id) {
+                if (id === 'structure') return structPlanLines().join(' · ');
                 const e = els().filter(function (x) { return x.id === id; })[0];
                 if (!e || !e.planFid) return '';
                 try { return _cwDocValue('scene_selection', e.planFid) || ''; } catch (err) { return ''; }
             }
 
+            // The plans the marking reads: lesson 5's scene plan, and in a weekend lesson the lesson-6 structural plan.
+            function loadPlans() {
+                const jobs = [_cwLoadDocValues(state.cwProjectId, 'scene_selection', true)];
+                if (WML.cwInUnit && WML.cwInUnit()) jobs.push(_cwLoadDocValues(state.cwProjectId, 'structural_elements', true));
+                return Promise.all(jobs);
+            }
             // ── serving ───────────────────────────────────────────────────────────────────
             function orientationChunks() {
+                const total = els().reduce(function (a, e) { return a + outOf(e); }, 0);
+                const hasStruct = els().some(function (e) { return e.id === 'structure'; });
                 return ([
                     'Time to see how your first draft holds together as a **story**. Not the spelling, not the '
                         + 'word choices — those come later. Just this: does it work as a piece of storytelling?',
@@ -34466,8 +34901,9 @@
                         + 'you planned back in Step 9 — hook, setup, reaction, epiphany, proaction, climax, '
                         + 'denouement. Each part is marked out of **4**: Level 1 is 1–2 marks, Level 2 is 3–4. '
                         + 'You make the level call, then prove it in one sentence — an examiner who cannot point '
-                        + 'at the evidence does not have a verdict yet.\n\nThen one last judgement, out of **2**, on '
-                        + 'technical accuracy — which takes the whole trial to **30**.',
+                        + 'at the evidence does not have a verdict yet.\n\n'
+                        + (hasStruct ? 'Then the **structural techniques** you planned in lesson 6, also out of **4**. ' : '')
+                        + 'Then one last judgement, out of **2**, on technical accuracy — which takes the whole trial to **' + total + '**.',
                     'Be honest rather than kind. An honest low mark tells you exactly what to fix in Draft 2; a '
                         + 'hopeful high one tells you nothing.\n\nWhen you have marked every part, I will read your '
                         + 'draft and make my own level calls — and the places where we disagree are the most '
@@ -34776,6 +35212,11 @@
                     + 'calls by the system, not by you. Do NOT rewrite their draft. Judge only story coherence: '
                     + 'not spelling, not punctuation.]'
                     + '\n\nWHAT THE STUDENT DECIDED ABOUT THEIR OWN DRAFT (their marks out of 4, with their evidence):\n' + selfSummary()
+                    // v7.20.761: the structural-techniques row is judged against THEIR plan — each technique they chose, where, and how.
+                    + (els().some(function (e) { return e.id === 'structure'; })
+                        ? '\n\nTHEIR STRUCTURAL PLAN (weekend lesson 6) — judge the Structural Techniques element ONLY against these: is each one '
+                            + 'in the draft, at the place they planned, and doing its job?\n' + (structPlanLines().map(function (l) { return '- ' + l; }).join('\n') || '(no plan filed)')
+                        : '')
                     + '\n\nWHAT EACH ELEMENT IS FOR, AND ITS TWO LEVELS:\n'
                     + els().map(function (e) { return '- ' + e.label + ' (out of ' + outOf(e) + '): ' + e.prompt + ' Level 1: ' + l1Body(e) + ' Level 2: ' + e.strong; }).join('\n');
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
@@ -35285,7 +35726,7 @@
                 };
                 try {
                     if (state.cwProjectId && typeof _cwLoadDocValues === 'function') {
-                        _cwLoadDocValues(state.cwProjectId, 'scene_selection', true).then(go).catch(go);
+                        loadPlans().then(go).catch(go);
                     } else { go(); }
                 } catch (e) { go(); }
                 return true;
@@ -35350,7 +35791,7 @@
                     };
                     try {
                         if (state.cwProjectId && typeof _cwLoadDocValues === 'function') {
-                            _cwLoadDocValues(state.cwProjectId, 'scene_selection', true).then(reServe, reServe);
+                            loadPlans().then(reServe, reServe);
                         } else { reServe(); }
                     } catch (e) { reServe(); }
                     return true;
@@ -36006,13 +36447,14 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwAdaptCtl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwAdaptCtl, _cwStructCtl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
         window.__swmlCw9Ctl = _cw9SceneCtl;
         window.__swmlCw13Ctl = _cw13SceneCtl;   // v7.20.568 (#440): the twin pipeline's Step-13 handle
         window.__swmlCwAdaptCtl = _cwAdaptCtl;  // v7.20.753: the twin pipeline's weekend-lesson-9 handle
+        window.__swmlCwStructCtl = _cwStructCtl;   // v7.20.761: the twin pipeline's weekend-lesson-6 handle
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
             _cwLoglineCtl.onReply(reply);
@@ -36027,6 +36469,7 @@
             _cwCharProfileCtl.onReply(reply);
             _cwGoalsPlotCtl.onReply(reply);
             _cwAdaptCtl.onReply(reply);
+            _cwStructCtl.onReply(reply);
 
             const t = (state && state.task) || '';
             // ⚠️ Every walk task needs its arm HERE as well as in onReply above — the .490
@@ -36048,7 +36491,8 @@
                 : t === 'cw_trial_1' ? _cwTrial1Ctl
                 : t === 'cw_step_11' ? _cwCharProfileCtl
                 : t === 'cw_step_12' ? _cwGoalsPlotCtl
-                : t === 'cw_step_90' ? _cwAdaptCtl : null;
+                : t === 'cw_step_90' ? _cwAdaptCtl
+                : (t === 'cw_step_27' && WML.cwInUnit && WML.cwInUnit()) ? _cwStructCtl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
             if (ctl.active || ctl.pending || !ctl.atStart()) { _cwStartMisses = 0; return; }
@@ -36096,6 +36540,7 @@
             cwTrial1Ctl: _cwTrial1Ctl,         // v7.20.551 — fresh entry calls forceStart(), boot resume tryResume()
             cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
             cwAdaptCtl: _cwAdaptCtl,             // v7.20.753 — weekend lesson 9; same two entry points
+            cwStructCtl: _cwStructCtl,           // v7.20.761 — weekend lesson 6; same two entry points
             cwGoalsPlotCtl: _cwGoalsPlotCtl,     // v7.20.567 (#440) — fresh entry calls start(), boot resume tryResume()
             canvasChatHistory,
             get canvasChatId() { return canvasChatId; },
@@ -40490,10 +40935,10 @@
         // `draft_1` ever being saved — silently, and Step 13 seeds from `draft_1`. The environment
         // is what removes the chat (see `useTrainingEnv` below: cw_diagnostic is `free`, so the
         // training panels — chat, walk sidebar, greeting emitters — are never built at all).
-        const isCwSi = isCwTask && cwStepDef?.tier === 'si';
+        const isCwSi = isCwTask && WML.cwStepTier(cwStepDef) === 'si';   // v7.20.761: weekend lesson 6 runs Step 27 as 'si'
         // v7.20.505: DOC-ONLY is a capability, not a tier. A diagnostic CW step renders through the
         // proven workbook path (document + guidance, no chat) rather than a new branch of its own.
-        const isCwWorkbook = isCwTask && (cwStepDef?.tier === 'workbook' || WML.cwStepEnv(cwStepDef) === 'diagnostic');   // v7.20.740: unit variant via the one resolver
+        const isCwWorkbook = isCwTask && (WML.cwStepTier(cwStepDef) === 'workbook' || WML.cwStepEnv(cwStepDef) === 'diagnostic');   // v7.20.740: unit variant via the one resolver
         const EXAM_PREP_TASKS = ['exam_question', 'essay_plan', 'model_answer', 'verbal_rehearsal', 'conceptual_notes', 'memory_practice', 'foundational_quiz', 'mastery_codex'];
         const isExamPrep = EXAM_PREP_TASKS.includes(state.task);
         // v7.14.37: Environment detection from manifest (free/training/flexible)
@@ -43252,6 +43697,7 @@
                     if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
                     if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
                     if (state.task === 'cw_step_90' && tp.cwAdaptCtl) tp.cwAdaptCtl.tryResume();               // v7.20.753 (weekend lesson 9)
+                    if (state.task === 'cw_step_27' && tp.cwStructCtl && WML.cwInUnit && WML.cwInUnit()) tp.cwStructCtl.tryResume();   // v7.20.761 (weekend lesson 6)
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
                     // (student types on); only re-surface the programmatic picker when NO poem is
                     // active (last poem finished, or none picked yet). The picker bubble is DOM-only
@@ -43464,6 +43910,11 @@
                     }
                     // v7.20.753: weekend lesson 9 owns its fresh entry — never the generic "Welcome to Step 90"
                     // greeting, which would put a course step number on a weekend screen (PEDAGOGY §55).
+                    if (state.task === 'cw_step_27' && !state.reviewMode && tp.cwStructCtl && WML.cwInUnit && WML.cwInUnit()) {
+                        console.log('WML v7.20.761: weekend lesson 6 — deterministic structural-elements walk start (isCwSi entry)');
+                        tp.cwStructCtl.start();
+                        return;
+                    }
                     if (state.task === 'cw_step_90' && !state.reviewMode && tp.cwAdaptCtl) {
                         console.log('WML v7.20.753: weekend lesson 9 — deterministic adapt walk start (isCwSi entry)');
                         tp.cwAdaptCtl.start();
@@ -44738,6 +45189,9 @@
                                         if (state.task === 'cw_step_9' && window.__swmlCw9Ctl) {
                                             clearWalkResume();
                                             setTimeout(() => { window.__swmlCw9Ctl.reset(); window.__swmlCw9Ctl.start(); }, 200);
+                                        } else if (state.task === 'cw_step_27' && window.__swmlCwStructCtl && WML.cwInUnit && WML.cwInUnit()) {   // v7.20.761 (weekend lesson 6)
+                                            clearWalkResume();
+                                            setTimeout(() => { window.__swmlCwStructCtl.reset(); window.__swmlCwStructCtl.start(); }, 200);
                                         } else if (state.task === 'cw_step_90' && window.__swmlCwAdaptCtl) {   // v7.20.753 (weekend lesson 9)
                                             clearWalkResume();
                                             setTimeout(() => { window.__swmlCwAdaptCtl.reset(); window.__swmlCwAdaptCtl.start(); }, 200);
@@ -46571,6 +47025,11 @@
                                             if (state.task === 'cw_step_13' && !state.reviewMode && window.__swmlCw13Ctl) {   // v7.20.568 (#440)
                                                 console.log('WML v7.20.568: CW Step 13 — deterministic scene-selection (Draft 2) start (transition-handler entry)');
                                                 window.__swmlCw13Ctl.start();
+                                                return;
+                                            }
+                                            if (state.task === 'cw_step_27' && !state.reviewMode && window.__swmlCwStructCtl && WML.cwInUnit && WML.cwInUnit()) {   // v7.20.761 (weekend lesson 6)
+                                                console.log('WML v7.20.761: weekend lesson 6 — deterministic structural-elements walk start (transition-handler entry)');
+                                                window.__swmlCwStructCtl.start();
                                                 return;
                                             }
                                             if (state.task === 'cw_step_90' && !state.reviewMode && window.__swmlCwAdaptCtl) {   // v7.20.753 (weekend lesson 9)
@@ -51697,6 +52156,44 @@
                 console.warn('WML CW draft target pin failed (document untouched) —', e && e.message);
             }
         };
+        // ⭐ v7.20.761 (PEDAGOGY §55.2) — WEEKEND LESSON 7 (Draft 1) WRITES WITH THE LESSON-6 PLAN. The plan lives in
+        // the `structural_elements` document; this pins a locked copy above the writing box, from the ONE technique list,
+        // every time the page opens (idempotent: no change, no save). A plan that is not there yet says so and where to go.
+        const CW_STRUCT_PLAN_LABEL = 'Your Structural Plan';
+        const tryFillCwStructPlan = async () => {
+            if (!isCwTask || !canvasEditor || state.reviewMode || cwStepDef?.step !== 10) return;
+            if (!(WML.cwInUnit && WML.cwInUnit()) || !state.cwProjectId) return;
+            try {
+                const map = await _cwLoadDocValues(state.cwProjectId, 'structural_elements', true);
+                const rows = (WML.CW_STRUCT_TECHNIQUES || []).map(function (t) {
+                    const v = String((map && map[WML.cwStructFid(t.id)]) || '').trim();
+                    return (v && v !== WML.CW_STRUCT_NOT_USING) ? '<li><strong>' + escapeHTML(t.label) + ':</strong> ' + escapeHTML(v) + '</li>' : '';
+                }).filter(Boolean);
+                const inner = rows.length
+                    ? '<h3>Your structural plan</h3><p><em>From lesson 6. Write each technique into your scene where you planned it. The marking in lesson 8 checks that each one is there.</em></p><ul>' + rows.join('') + '</ul>'
+                    : '<h3>Your structural plan</h3><p><em>Your plan from lesson 6, Structural Elements, is not here yet. Finish that lesson first, then come back: the plan will be here.</em></p>';
+                const box = document.createElement('div');
+                box.innerHTML = canvasEditor.getHTML();
+                const sec = box.querySelector('[data-section-label="' + CW_STRUCT_PLAN_LABEL + '"]');
+                if (sec) {
+                    if (sec.innerHTML === inner) return;      // already current: no churn, no save
+                    sec.innerHTML = inner;
+                } else {
+                    const div = Array.prototype.slice.call(box.querySelectorAll('[data-section-type="divider"]')).filter(function (d) { return /YOUR WRITING/i.test(d.textContent || ''); })[0];
+                    const html = sectionHTML('question', CW_STRUCT_PLAN_LABEL, false, null, inner);
+                    if (div) div.insertAdjacentHTML('beforebegin', html); else box.insertAdjacentHTML('afterbegin', html);
+                }
+                const _was = _migrationActive;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(box.innerHTML, false); }
+                finally { _migrationActive = _was; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW weekend draft: structural plan pinned (' + rows.length + ' technique(s)).');
+            } catch (e) {
+                console.warn('WML CW weekend draft: structural plan pin failed (document untouched) —', e && e.message);
+            }
+        };
         // ══════════════════════════════════════════════════════════════════════════════════════
         // ⭐⭐ v7.20.552 (#419) — HEAL TRIAL-1 DOCUMENTS THAT PREDATE THE .551/.552 SHAPE.
         //
@@ -53276,7 +53773,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwAdaptRewrite()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwStructPlan()).then(() => tryFillCwAdaptRewrite()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -57136,6 +57633,24 @@
         }
 
         // ── Step 26: Structural Elements (v7.13.74: full workbook match) ──
+        // v7.20.761 (PEDAGOGY §55.2): weekend lesson 6 — the same eleven rows (same field ids, so §5d holds), built from
+        // the ONE technique list the lesson-6 walk serves, with weekend words: no step number, no plot stage.
+        if (step === 27 && WML.cwInUnit && WML.cwInUnit()) {
+            const T = WML.CW_STRUCT_TECHNIQUES || [];
+            html += sectionHTML('question', 'About This Lesson', false, null,
+                '<h2>Structural Elements</h2>' +
+                '<p>Eleven techniques that make a scene stay with the reader. In the chat you meet them one at a time and decide whether each one goes in your scene, and where.</p>' +
+                '<p><strong>Three you must use:</strong> irony, a way to end your scene, and all five senses. <strong>Use at least ' + (WML.CW_STRUCT_MIN || 4) + ' techniques in total.</strong> Your draft in the next lesson is written with them, and the marking after it checks they are there.</p>'
+            );
+            html += dividerHTML('YOUR STRUCTURAL PLAN');
+            html += sectionHTML('plan', 'Structural Elements', true, null,
+                '<h3>Your Structural Plan</h3>' +
+                T.map(function (t, k) {
+                    return outlineRowHTML({ id: t.id, label: (k + 1) + '. ' + t.label + (t.must ? ' (you must use this one)' : ''), prompt: t.what }, WML.cwStructFid(t.id));
+                }).join('')
+            );
+            return html;
+        }
         if (step === 27) {
             html += sectionHTML('question', 'About This Step', false, null,
                 '<h2>Step 27: Other Key Structural Elements</h2>' +
@@ -59348,22 +59863,26 @@
     // any `ladder` section a .556/.557 document still carries.
 
     function _cwTrial1JudgementBlock(opts) {
-        const _els = (window.WML && (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS)) || [];
+        // v7.20.761: THIS lesson's rows — the weekend trial adds the planned structural techniques (PEDAGOGY §55.2).
+        const _els = (window.WML && (WML.cwTrial1Elements ? WML.cwTrial1Elements() : (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS))) || [];
         return ((opts && opts.divider === false) ? '' : dividerHTML('YOUR JUDGEMENT'))
             + sectionHTML('plan', 'Your Judgement', true, null,
                 '<h3>Your marking, the way an examiner marks</h3>'
-                + '<p><em>One line per part of your scene, out of 4: Level 1 (the part is there and attempts its job) is 1–2 marks, Level 2 (it does what a strong one does) is 3–4. Then technical accuracy, out of 2. Your own sentence proves the mark — or names what is missing for Draft 2.</em></p>'
+                + '<p><em>One line per part of your scene, out of 4: Level 1 (the part is there and attempts its job) is 1–2 marks, Level 2 (it does what a strong one does) is 3–4. '
+                + ((window.WML && WML.cwInUnit && WML.cwInUnit()) ? 'Then the structural techniques you planned in lesson 6, also out of 4. ' : '')
+                + 'Then technical accuracy, out of 2. Your own sentence proves the mark — or names what is missing for Draft 2.</em></p>'
                 + outlineRowHTML({ id: 'goal', label: 'Grade goal', prompt: 'The grade you are aiming for in creative writing.' }, 'cw-trial-1-goal')
                 + _els.map(function (e) {
                     return outlineRowHTML({ id: e.id, label: e.label, prompt: 'Your mark out of ' + (e.outOf || 4) + ', and your sentence of evidence.' }, 'cw-trial-1-' + e.id);
                 }).join(''));
     }
     function _cwTrial1SophiaBlock() {
-        const _els = (window.WML && (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS)) || [];
+        // v7.20.761: THIS lesson's rows — the weekend trial adds the planned structural techniques (PEDAGOGY §55.2).
+        const _els = (window.WML && (WML.cwTrial1Elements ? WML.cwTrial1Elements() : (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS))) || [];
         return dividerHTML('SOPHIA’S ASSESSMENT')
             + sectionHTML('response', 'Sophia’s Verdict', false, null,
                 '<h3>Her verdict on each part of your scene</h3>'
-                + '<p><em>Filled in after you have judged all seven parts yourself — she reads your draft alongside your own judgement, never instead of it.</em></p>'
+                + '<p><em>Filled in after you have judged every part yourself — she reads your draft alongside your own judgement, never instead of it.</em></p>'
                 + _els.map(function (e) {
                     return outlineRowHTML({ id: 'fb-' + e.id, label: e.label, prompt: 'Her level call on your ' + e.label.toLowerCase() + ', after you have marked it.', locked: true }, 'cw-trial-1-fb-' + e.id);
                 }).join(''))
@@ -59373,7 +59892,10 @@
                 + outlineRowHTML({ id: 'priority', label: 'Priority for Draft 2', prompt: 'The one part that would improve the story most, and what to do to it.', locked: true }, 'cw-trial-1-priority'))
             + sectionHTML('response', 'Story Coherence Mark', false, null,
                 '<h3>Sophia’s mark, and where you two disagreed</h3>'
-                + '<p><em>The mark is worked out from her seven level calls, out of 28. The places where you saw your draft differently are the most useful thing on this page.</em></p>'
+                + '<p><em>' + ((window.WML && WML.cwInUnit && WML.cwInUnit())
+                    ? 'The mark is worked out from her level calls on the seven parts of your scene and your structural techniques, out of 32, plus technical accuracy out of 2.'
+                    : 'The mark is worked out from her seven level calls, out of 28.')
+                + ' The places where you saw your draft differently are the most useful thing on this page.</em></p>'
                 + outlineRowHTML({ id: 'mark', label: 'Mark', prompt: 'Filled in once Sophia has read your draft.', locked: true }, 'cw-trial-1-mark')
                 + outlineRowHTML({ id: 'gap', label: 'Where you differed', prompt: 'Filled in once Sophia has read your draft.', locked: true }, 'cw-trial-1-gap'));
     }

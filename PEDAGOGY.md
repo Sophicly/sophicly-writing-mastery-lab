@@ -3114,3 +3114,24 @@ polishing… structural techniques, like adding hooks and so on. We could add so
 - **Adapt stays, LAST.** His (4) list did not name it, but on 7 Oct he chose "Seven lessons plus the adapting lesson"
   explicitly; nothing since withdraws it, and it now rewrites the POLISHED story — the right input.
 - EST total ≈ 4–6 h (was 3–5 h); still unmeasured.
+
+### §55.2 AMENDED 2026-10-08 (evening) — TEN lessons: STRUCTURAL ELEMENTS before Draft 1, and Trial 1 marks them; the weekend story is its OWN project (FIXLIST #802, #804)
+
+**His words** (voice, 8 Oct): *"you see unit 13, we've got uh, step 27. Structural elements… I think we should add that
+in there, don't you think?… the interesting ones could be structural elements and then prose style that could be the
+drafting and then the assessment"* · and on separation (#802): *"The weekend story needs to be separate. It can use the
+same exercises but it should have its own wml document… a mini creative writing course. Students should also be able to
+create a new weekend course project just like they can for the full creative writing project."*
+
+**Ruled (his taps, same evening):** placement **"Before Draft 1"** and marking **"Yes, mark them"**. So:
+1 Writer's Profile · 2 Story Ideas · 3 Logline · 4 Story Spine · 5 Your Dramatic Situation · **6 Structural Elements** ·
+7 Draft 1 · 8 Mark Your Draft (Trial 1) · 9 Polish Your Draft · 10 Adapt It to the Question.
+- **Lesson 6 = full-course Step 27 run as a weekend lesson**: the same 11 techniques and the same rule (irony
+  compulsory, at least four) — planned INTO the lesson-5 scene plan, one technique at a time (§18 serial; a "no" costs
+  one tap), each with a worked example. It reads the scene plan, not the full course's sixth draft / plot outline.
+- **Draft 1 writes with prose style AND the planned techniques** (the prose-style lens stays; the plan sits beside it).
+- **Trial 1 marks what was taught (§1):** the techniques the student planned are checked in the marking — taught,
+  therefore marked. This supersedes §55.1's "structural techniques only in Polish when structure is the top priority".
+- **Separation (#802, built v7.20.758):** a weekend story is its own project (`course_context: 'weekend'`), with its
+  own documents; nothing done in it can change a full-course story, and the reverse.
+- EST total ≈ 4.5–6.5 h; still unmeasured.

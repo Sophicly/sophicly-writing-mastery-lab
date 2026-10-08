@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.760';
+var WML_BUILD = '7.20.761';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1184,7 +1184,9 @@ window.WML = (function() {
         { step: 24, label: 'Genre',                      tier: 'workbook', phase: 'drafting' },
         { step: 25, label: 'Update Plot: Genre',        tier: 'workbook', phase: 'drafting' },
         { step: 26, label: 'Draft 6: Genre',            tier: 'si', phase: 'drafting', draft: 6 },
-        { step: 27, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting' },
+        // v7.20.761 (#804, PEDAGOGY §55.2): weekend lesson 6 runs this step as a chat-led walk, so in a unit it is 'si'
+        // (read ONLY through cwStepTier). The full course keeps its no-chat workbook page.
+        { step: 27, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting', unitTier: 'si' },
         { step: 28, label: 'Update Plot: Structural',   tier: 'workbook', phase: 'drafting' },
         { step: 29, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7 },
         { id: 'trial_6', label: 'Trial 6: Technical Proficiency', tier: 'si', phase: 'drafting', trial: 6 },
@@ -1211,6 +1213,7 @@ window.WML = (function() {
     function cwStepEnv(def) { return def ? ((cwInUnit() && def.unitEnv) || def.env || '') : ''; }
     function cwStepLens(def) { return def ? ((cwInUnit() && def.unitLens) || def.lens || '') : ''; }
     function cwStepLabel(def) { return def ? ((cwInUnit() && def.unitLabel) || def.label || '') : ''; }
+    function cwStepTier(def) { return def ? ((cwInUnit() && def.unitTier) || def.tier || '') : ''; }
 
     // Lookup helper: task string → CW_STEPS entry
     function getCwStepDef(task) {
@@ -1380,10 +1383,20 @@ window.WML = (function() {
             { step: 2, label: 'Choose Your Scene' },
             { step: 3, label: 'Scene Plan' },
         ],
-        90: [   // v7.20.753: weekend lesson 9
+        90: [   // v7.20.753: weekend lesson 9 (lesson 10 since v7.20.761)
             { step: 1, label: 'Real Exam Questions' },
             { step: 2, label: 'Choose Your Question' },
             { step: 3, label: 'Rewrite and Check' },
+        ],
+        27: [   // v7.20.761: weekend lesson 6, Structural Elements
+            { step: 1, label: 'The Techniques' },
+            { step: 2, label: 'Your Plan' },
+            { step: 3, label: 'Technique Check' },
+        ],
+        trial_1: [   // v7.20.761: the weekend trial also judges the planned techniques
+            { step: 1, label: 'Read Your Draft' },
+            { step: 2, label: 'Judge Your Draft' },
+            { step: 3, label: 'Sophia\u2019s Verdict' },
         ],
     };
     CW_SIDEBAR_STEPS['trial_1'] = [
@@ -1532,6 +1545,81 @@ window.WML = (function() {
         ],
     };
     const CW_TRIAL1_ELEMENTS = CW_SCENE_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
+
+    // ⭐⭐ v7.20.761 — WEEKEND LESSON 6: STRUCTURAL ELEMENTS (Neil, 8 Oct, FIXLIST #804, PEDAGOGY §55.2: *"you see unit 13,
+    // we've got uh, step 27. Structural elements… I think we should add that in there"*; he tapped "Before Draft 1" and
+    // "Yes, mark them"). The eleven techniques are full-course Step 27's, in its order, with its rules (CW-STEP-27:
+    // irony COMPULSORY, at least 4 in total, all five senses, a denouement technique chosen). `what` paraphrases that
+    // protocol's definitions in plain words (root §5c-ii); every example is DESCRIBED, never quoted, so nothing has to be
+    // checked against an edition (§5c-i), and the texts vary (set texts first, then famous stories). `syms` are Table of
+    // Techniques cards checked against the LIVE allowlist (bin/cw6-prod-technique-symbols.txt). `fid` keeps the full
+    // course's row ids (`cw-step-25-*`, a pre-renumber name) — every saved Step 27 document already uses them, so a new
+    // spelling here would orphan them (§5d).
+    const CW_STRUCT_TECHNIQUES = [
+        { id: 'hooks', label: 'Hooks', syms: [{ s: 'Ac', l: 'Action Hook' }, { s: 'Mx', l: 'Mystery Hook' }],
+            what: 'A hook makes the reader hold a question they need answered. Your opening line does it first; small hooks later (a secret half told, a danger on its way) keep them reading.',
+            example: 'Jekyll and Hyde opens with a story about a door: a man tramples a child, then pays with a cheque signed by a respected name. Who is this man, and why would anyone respectable protect him? The reader has to keep going.',
+            more: 'Romeo and Juliet opens with a speech that tells you both lovers will die. Knowing the ending does not kill the suspense. It makes you watch how it happens.' },
+        { id: 'irony', label: 'Irony', must: true, syms: [{ s: 'Di', l: 'Dramatic Irony' }, { s: 'In', l: 'Irony' }],
+            what: 'Irony is a gap the reader can see. Dramatic irony: the reader knows something a character does not. Situational irony: the opposite of what was expected happens. Verbal irony: someone says the opposite of what they mean.',
+            example: 'In An Inspector Calls, Mr Birling tells his family the Titanic is unsinkable and that there will be no war. The audience knows he is wrong on both, so everything else he says sounds less certain.',
+            more: 'Scrooge watches strangers talk about a dead man nobody misses, and asks the Spirit who the man was. The reader has guessed long before Scrooge has.' },
+        { id: 'dialogue', label: 'Dialogue', syms: [{ s: 'Dg', l: 'Dialogue' }],
+            what: 'Good dialogue carries meaning under the words (subtext), lets each character sound like themselves, and has conflict: the speakers want different things.',
+            example: 'When Fred invites Scrooge to Christmas dinner, they are really arguing about whether kindness is worth anything. Neither says that out loud, and each sounds exactly like himself.',
+            more: 'In An Inspector Calls, Sheila keeps asking the questions her parents do not want asked. Her lines show she is changing before she says so.' },
+        { id: 'duality', label: 'Duality', syms: [{ s: 'Dj', l: 'Duality' }],
+            what: 'Duality puts two opposites side by side (light and dark, hope and despair, strength and weakness) so that each makes the other stronger.',
+            example: 'Jekyll and Hyde puts a respectable doctor and a violent stranger in one body. The story becomes an argument about the good and the evil inside every person.',
+            more: 'The Cratchits’ crowded, warm table against Scrooge’s cold, empty rooms: each picture makes the other one stronger.' },
+        { id: 'pov', label: 'Point of View', syms: [{ s: 'Un', l: 'Unreliable Narrator' }, { s: 'Oi', l: 'Omniscient Narrator' }],
+            what: 'Choose whose eyes the reader sees through, and stay there. A narrator who gets things wrong can be a deliberate choice.',
+            example: 'Jekyll and Hyde is told mostly through Utterson, a lawyer who does not know the truth. The reader learns it with him, only at the end, from Jekyll’s own statement.',
+            more: 'Telling Scrooge’s graveyard scene only through Scrooge’s eyes means the reader finds out whose grave it is at the same moment he does.' },
+        { id: 'settings', label: 'Settings', syms: [{ s: 'Se', l: 'Setting' }, { s: 'Pf', l: 'Pathetic Fallacy' }],
+            what: 'Make the place do something: push the character, mirror their feelings (pathetic fallacy), or stand for an idea.',
+            example: 'In Macbeth, the night the king is murdered is wild: chimneys blown down, strange cries in the air. The weather is as wrong as the crime.',
+            more: 'Scrooge keeps his rooms dark and bare because darkness is cheap. The house shows the man before he says a word.' },
+        { id: 'symbols', label: 'Symbols', syms: [{ s: 'Sy', l: 'Symbolism' }],
+            what: 'A symbol is an object or image that carries a bigger meaning, and it can gain meaning each time it comes back.',
+            example: 'Marley’s ghost drags a chain made of cash-boxes and money books, the greed of his whole life. Scrooge is told his own chain is longer. The chain is greed made solid.',
+            more: 'In Macbeth, blood starts as a soldier’s honour and ends as a stain Lady Macbeth cannot wash out. The same symbol grows darker each time.' },
+        { id: 'denouement', label: 'Denouement Techniques', must: true, syms: [{ s: 'De', l: 'Denouement' }, { s: 'Cy', l: 'Cyclical Structure' }],
+            what: 'Choose how your scene ends: back to the opening image, changed (cyclical); a cliffhanger; a twist; an open ending; a story inside a frame; a glimpse of the future; or everything resolved.',
+            example: 'A Christmas Carol begins with Scrooge refusing his nephew’s dinner invitation and ends with him walking to his nephew’s door on Christmas Day. The same invitation, answered the other way: a cyclical ending that shows the change.',
+            more: 'An Inspector Calls ends with a phone call: a girl has died, and an inspector is on his way. A twist and a cliffhanger at once.' },
+        { id: 'senses', label: 'Five Senses', must: true, syms: [{ s: 'Im', l: 'Imagery' }],
+            what: 'Put the reader in the room with sight, sound, smell, taste and touch. All five appear somewhere in your scene; choose which ones lead at each moment.',
+            example: 'A graveyard scene for Scrooge: frost cracking under his boots, the cold of the stone under his hand, the smell of wet earth, a bitter taste in his mouth, and a name he cannot stop staring at.',
+            more: 'After the murder, Macbeth hears knocking at the gate and cannot bear it. One sound carries all his guilt.' },
+        { id: 'suspense', label: 'Suspense', syms: [{ s: 'Sz', l: 'Suspense' }, { s: 'Fo', l: 'Foreshadowing' }],
+            what: 'Make the reader wait for something they need to know: a warning, a deadline, a hard choice, a danger getting closer.',
+            example: 'Romeo and Juliet keeps telling us time is running out: Juliet’s wedding to Paris is moved earlier, and the Friar’s letter never reaches Romeo. We watch the plan fail before the lovers do.',
+            more: 'Jaws hides the shark for most of the film. Two notes of music tell you it is coming, and the waiting is worse than the attack.' },
+        { id: 'pacing', label: 'Pacing', syms: [{ s: 'Pc', l: 'Pacing' }],
+            what: 'Control the speed. Short sentences rush the reader through action; long ones slow them down to feel and think.',
+            example: 'Long, slow sentences as Scrooge walks between the graves, taking in every detail. Then short ones. He knelt. He read the name. It was his.',
+            more: 'Action films cut fast through a chase and then hold one long, still shot after it. Your sentences can do the same.' },
+    ];
+    const CW_STRUCT_MIN = 4;                                     // CW-STEP-27: "at least 4 techniques (including irony)"
+    const CW_STRUCT_NOT_USING = 'Not using this one.';           // the row text for a technique the student turned down
+    function cwStructFid(id) { return 'cw-step-25-' + id; }
+    // The trial's extra row in a weekend lesson. Out of 4 like each scene part (the total becomes 34; the grade is a
+    // percentage, so nothing else moves). Judged against the student's OWN lesson-6 plan, which the marking reads.
+    const CW_TRIAL1_STRUCTURE = {
+        id: 'structure', label: 'Structural Techniques', ao: 'AO5',
+        prompt: 'Use the structural techniques you planned in lesson 6.',
+        strong: 'A strong scene uses the techniques you planned, at the places you planned them, and each one does a job: the irony lets the reader see more than the character, the ending technique shapes how the scene lands, and the five senses put the reader in the room.',
+        example: 'If you planned dramatic irony at the climax, the reader should already know what your character is about to find out, before your character does. If they find out at the same moment, the irony is not there yet.',
+        more: [
+            'Check each technique in your plan against your draft: can you point at the sentence where it happens? If you cannot point at it, it is still only a plan.',
+            'Five senses means all five. Sight and sound arrive on their own; smell, taste and touch are usually the ones a draft is missing.',
+        ],
+    };
+    // The trial's rows for THIS lesson: the weekend trial adds the structure row before accuracy; the full course is unchanged.
+    function cwTrial1Elements() {
+        return cwInUnit() ? CW_SCENE_ELEMENTS.concat([CW_TRIAL1_STRUCTURE, CW_TRIAL1_ACCURACY]) : CW_TRIAL1_ELEMENTS;
+    }
 
     // ⭐ v7.20.550 (CW trials slice 3) — WHICH DRAFT DOES A TRIAL ASSESS?
     // DERIVED from CW_STEPS, never a hand-written trial→draft map. A trial assesses the draft
@@ -2355,7 +2443,7 @@ window.WML = (function() {
                     // v7.20.577: the polishing env joins the same `env`-wins ladder, so a draft
                     // step opts in by declaring it — no literal step number decides this.
                     : env === 'polishing' ? EXERCISE_MANIFEST.cw_polishing
-                    : stepDef.tier === 'si' ? EXERCISE_MANIFEST.cw_si
+                    : cwStepTier(stepDef) === 'si' ? EXERCISE_MANIFEST.cw_si
                     : EXERCISE_MANIFEST.cw_workbook;
                 const stepKey = stepDef.step || stepDef.id;
                 // Scoped to the diagnostic env ONLY — workbook steps keep the fields they have
@@ -6087,7 +6175,8 @@ window.WML = (function() {
         EXERCISE_MANIFEST,
         // Creative Writing
         CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
-        cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget, cwStepEnv, cwStepLens, cwStepLabel,
+        cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget, cwStepEnv, cwStepLens, cwStepLabel, cwStepTier,
+        CW_STRUCT_TECHNIQUES, CW_STRUCT_MIN, CW_STRUCT_NOT_USING, cwStructFid, CW_TRIAL1_STRUCTURE, cwTrial1Elements,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
         // Revision map
         REVISION_MAP,

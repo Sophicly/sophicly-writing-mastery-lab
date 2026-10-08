@@ -2487,11 +2487,14 @@ class SWML_Protocol_Router {
             ? "- **Length:** the exam piece is about {$exam} words; Draft 1 aims for {$d1} words. Use these figures, not any other word count above.\n"
             : '';
         return "[AI_INTERNAL — WEEKEND STORY UNIT. This overrides anything above that conflicts with it.]\n"
-            . "This student is taking the Weekend Story: nine short lessons that get one exam story planned, written, marked, polished and adapted to a real exam question over a weekend. It has NO plot work. The plot lessons of the full course (choosing a plot structure, the plot outline, values, plot updates) are not part of it, and the student has never seen them.\n"
+            . "This student is taking the Weekend Story: ten short lessons that get one exam story planned, written, marked, polished and adapted to a real exam question over a weekend. It has NO plot work. The plot lessons of the full course (choosing a plot structure, the plot outline, values, plot updates) are not part of it, and the student has never seen them.\n"
             . "- **Their story plan is the six-beat Story Spine** they wrote (At first… And then… Until… And because of this… And because of this… Until finally…) and its dramatic throughline. Wherever the instructions above mention a plot outline, plot stages (I–VI), an archetypal plot structure or an authorial intent, use the Story Spine and its throughline instead. Never ask them to choose a plot structure or a stage, and never say anything is missing because they have no plot outline.\n"
             . "- **Never name a lesson by a course step number** (\"Step 6\", \"Step 10\") and never send them to one. Name things by what they are: \"your Story Spine\", \"your scene\", \"the next lesson\".\n"
             // v7.20.743 (PEDAGOGY §55.1): lesson 5 is built around a dramatic situation from OUR adapted list.
             . "- **Dramatic situations are OUR list of 33** (adapted from Georges Polti's 36; the student is given it in this conversation). Never name or suggest a situation that is not on it, and use our plain names, not Polti's original wording.\n"
+            // v7.20.761 (PEDAGOGY §55.2): lesson 6 plans structural techniques; the trial in lesson 8 marks them.
+            . "- **Lesson 6 is Structural Elements:** the student plans eleven techniques (hooks, irony, dialogue, duality, point of view, settings, symbols, a denouement technique, the five senses, suspense, pacing) into their scene, one at a time; irony, a denouement technique and all five senses are compulsory, at least four in total. Never write their sentences for them.\n"
+            . "- **The trial (Mark Your Draft) has one extra element in this unit: `structure` — Structural Techniques, out of 4.** It is judged ONLY against the structural plan given to you with the marking (each technique: is it in the draft, where they planned it, doing its job?). So the trial has NINE verdict lines here, not eight: emit `@TRIAL_VERDICT[structure=…]` and `@TRIAL_EXAMPLE[structure]` between the seven scene elements and accuracy, exactly as the marker list you are given shows.\n"
             . $words;
     }
 

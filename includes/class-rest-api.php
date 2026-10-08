@@ -7266,9 +7266,9 @@ class SWML_REST_API {
         if ($step_9 && $trial_1) { return null; }
 
         $needs = [];
-        // A weekend student names the lessons of the weekend story (Step 9 is its lesson 5, Trial 1 its lesson 7).
+        // A weekend student names the lessons of the weekend story (Step 9 is its lesson 5, Trial 1 its lesson 8 since v7.20.761).
         if (!$step_9)  { $needs[] = $weekend ? 'lesson 5 (Your Dramatic Situation)' : 'Step 9 (Draft 1)'; }
-        if (!$trial_1) { $needs[] = $weekend ? 'lesson 7 (Mark Your Draft)' : 'Trial 1'; }
+        if (!$trial_1) { $needs[] = $weekend ? 'lesson 8 (Mark Your Draft)' : 'Trial 1'; }
 
         // Name, never the id — a student must never be shown a machine key (root CLAUDE.md §14).
         return [
