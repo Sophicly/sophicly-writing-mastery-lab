@@ -5,7 +5,7 @@
 **See also:** `PRODUCT.md` (this dir) for users + voice. `../../../sophicly-plugins/BRAND.md` for design.
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** 7.20.750
+**Current version:** 7.20.751
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, polishing.
 **AI Provider:** `claude-sonnet-5` via MeowApps AI Engine (measured on prod from `mwai_chatbots`, 2026-09-06 — the header said Sonnet 4.6 for months; verify with `wp eval`, never from this line). GPT-5 fallback.
 
@@ -478,6 +478,29 @@ RULES:
 3. **Real content changes go through a PM transaction** (`_setParagraphContentViaPM` / `setNodeMarkup`), never a raw `textContent`/`innerHTML`/`style` write PM will revert.
 4. **Idempotent writes** — guard `if (el.style.x !== want) el.style.x = want;` so a same-value write can't fire a needless MutationRecord.
 5. **Circuit-breaker exists** (`_derivedCardFillOk` in wml-assessment.js): progress/sign-off fills bail + `console.warn` once at >50 fills/sec. If you add a new derived-card fill, route it through the same guard.
+
+---
+
+## ⭐⭐ THE STRUCTURE LOCK — students edit TEXT, code owns the BOXES (v7.20.751, FIXLIST #790/#792)
+
+Neil, 2026-10-08: *"It should not be possible for students to delete rows. for planning or responses on any
+of the documents. The only thing they should be able to do is to edit their own text within the response or
+within the input areas."* `_installStructureLock` (wml-assessment.js) is ONE ProseMirror `filterTransaction`
+on the live canvas editor, installed straight after it is built:
+1. **Only the student's own input enters undo history.** Every code-dispatched transaction — load, heals,
+   migrations, Sophia's fills — is `addToHistory:false` (marked `swmlLockHist`, which the editTs stamp
+   collector ignores). Proof it mattered: on staging .748, Cmd+Z on a freshly opened document went
+   47 sections / 62 boxes → 0 / 0 in five presses, and the autosave posted the empty document.
+2. **No student edit and no undo/redo can remove a box** (sectionBlock · inputField · outlineRow, by count OR
+   field id), and no undo/redo can bring one back. Refused BEFORE it applies. `_migrationActive` passes.
+3. ⛔ **Never "revert" a transaction with `undo()`.** When the bad transaction IS an undo, `undo()` digs further
+   back — that cascade is what emptied documents. Refuse it in `filterTransaction` instead.
+4. **Set `_migrationActive` only inside try/finally** — a throw that leaves it `true` bypasses the lock for the
+   whole session. The harness fails on a bare set.
+5. **A second editor needs the lock too.** `renderExamPrepCanvas` builds one but nothing calls it today; the
+   harness fails the day something does.
+Gate: `bin/structure-lock-harness.js` (pre-ship). Real-browser proof (staging, test student 1938):
+`~/.sophicly/probe/wml-331/w333-repro.mjs` (21 deletion routes) + `w333-undo.mjs` (Cmd+Z press by press).
 
 ---
 

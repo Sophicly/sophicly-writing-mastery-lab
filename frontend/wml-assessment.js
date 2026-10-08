@@ -35594,6 +35594,103 @@
         }
         return true;
     }
+    // ⭐ v7.20.751 (FIXLIST #790) — THE STRUCTURE LOCK. Neil, 8 Oct: "It should not be possible for
+    // students to delete rows. for planning or responses on any of the documents. The only thing they
+    // should be able to do is to edit their own text within the response or within the input areas."
+    // REPRODUCED on staging .748 (AQA P1 T1 diagnostic, test student 1938; bin/structure-lock-harness.js
+    // names the browser probe): 19 of 21 ways of deleting a box were already refused, but Cmd+Z on a
+    // freshly opened document took it from 47 sections / 62 boxes to 0 / 0 in five presses, and the
+    // autosave then posted the empty document. Two defects, both closed in ONE filter that runs BEFORE
+    // any transaction applies:
+    //  (1) the load, heals, migrations and Sophia's fills were in the STUDENT's undo history, so Cmd+Z
+    //      unpicked the document's own construction (press 2 reverted a code fill, presses 3–4 brought
+    //      retired rows back, press 5 emptied it). Now only the student's own input enters undo history.
+    //  (2) the Section Guard reverted a lost box by calling undo() — when the offending transaction WAS
+    //      an undo, that dug further back and the guard then adopted the wreck as its baseline. Now a
+    //      change that would remove a box, or an undo/redo that would add or remove one, is REFUSED —
+    //      nothing to revert, so nothing can cascade. Migrations (_migrationActive) own the boxes and pass.
+    // @STRUCTURE-LOCK-PURE-BEGIN — pure; driven by bin/structure-lock-harness.js
+    const SWML_LOCK_USER_WINDOW_MS = 300;
+    const SWML_LOCK_USER_EVENTS = ['keydown', 'beforeinput', 'input', 'compositionstart', 'compositionupdate',
+        'compositionend', 'paste', 'cut', 'drop', 'mousedown', 'touchstart'];
+    // The boxes in a document: how many, and how many of each field id. A box never sits inside inline
+    // content, so the walk skips every textblock's children (a few hundred nodes, not the whole text).
+    function _swmlBoxShape(doc, types) {
+        const ids = Object.create(null); let n = 0;
+        doc.descendants(node => {
+            if (types.indexOf(node.type.name) !== -1) {
+                n++;
+                const id = node.attrs && node.attrs.fieldId;
+                if (id) ids[id] = (ids[id] || 0) + 1;
+            }
+            return !node.isTextblock;
+        });
+        return { n, ids };
+    }
+    function _swmlBoxesLost(a, b) {
+        if (b.n < a.n) return true;
+        for (const id in a.ids) if ((b.ids[id] || 0) < a.ids[id]) return true;
+        return false;
+    }
+    // ONE decision per transaction. The student's own edits never change the boxes; an undo/redo may
+    // move text, never boxes; a migration owns the boxes and passes. Whatever the student did not do
+    // stays out of their undo history (unless code already said where it belongs).
+    function _swmlStructureLockVerdict(t) {
+        if (!t.docChanged) return { allow: true, markNotUndoable: false };
+        const markNotUndoable = !t.isHistory && (t.migrating || !t.fromStudent) && t.histMeta === undefined;
+        if (t.migrating) return { allow: true, markNotUndoable };
+        const before = t.shapeBefore(), after = t.shapeAfter();
+        const lost = _swmlBoxesLost(before, after);
+        const changed = t.isHistory ? (lost || _swmlBoxesLost(after, before)) : lost;
+        if (!changed) return { allow: true, markNotUndoable };
+        return { allow: false, markNotUndoable, refused: t.isHistory ? 'undo/redo' : (t.fromStudent ? 'student' : 'code'),
+            from: before.n, to: after.n };
+    }
+    // @STRUCTURE-LOCK-PURE-END
+    let _swmlLockToldAt = 0;
+    // Installed on every new canvas editor, straight after construction. `swmlLockHist` marks OUR
+    // addToHistory:false, so the edit-time stamp collector (which reads a CODE-set addToHistory:false
+    // as "programmatic") stamps exactly what it stamped before this lock existed.
+    function _installStructureLock(editor, types) {
+        try {
+            const st = editor && editor.state;
+            // window.TipTap exports no Plugin class — every installed plugin is one, so borrow its constructor.
+            const Plugin = st && st.plugins.length ? st.plugins[0].constructor : null;
+            if (!Plugin) { console.warn('WML structure lock: no ProseMirror Plugin constructor — only the Section Guard protects this document.'); return false; }
+            const hist = st.plugins.find(pl => typeof pl.key === 'string' && pl.key.indexOf('history$') === 0) || null;
+            let userAt = 0;
+            const touched = () => { userAt = Date.now(); return false; };
+            const handleDOMEvents = {};
+            SWML_LOCK_USER_EVENTS.forEach(ev => { handleDOMEvents[ev] = touched; });
+            editor.registerPlugin(new Plugin({
+                props: { handleDOMEvents },
+                filterTransaction(tr, state) {
+                    const v = _swmlStructureLockVerdict({
+                        docChanged: tr.docChanged,
+                        isHistory: !!(hist && tr.getMeta(hist)),
+                        fromStudent: !!tr.getMeta('uiEvent') || (Date.now() - userAt) < SWML_LOCK_USER_WINDOW_MS,
+                        migrating: _migrationActive,
+                        histMeta: tr.getMeta('addToHistory'),
+                        shapeBefore: () => _swmlBoxShape(state.doc, types),
+                        shapeAfter: () => _swmlBoxShape(tr.doc, types),
+                    });
+                    if (v.markNotUndoable) { tr.setMeta('addToHistory', false); tr.setMeta('swmlLockHist', true); }
+                    if (v.allow) return true;
+                    console.warn('WML structure lock: refused a ' + v.refused + ' change to the document’s boxes (' + v.from + ' → ' + v.to + ').');
+                    // §4d: the student's key did nothing — say why, once per burst, in plain words.
+                    if (v.refused === 'student' && Date.now() - _swmlLockToldAt > 2500) {
+                        _swmlLockToldAt = Date.now();
+                        try { showToast('The boxes can’t be removed. You can change the writing inside them.', 4000, true); } catch (_) {}
+                    }
+                    return false;
+                },
+            }));
+            return true;
+        } catch (e) {
+            console.warn('WML structure lock: install failed — only the Section Guard protects this document.', e);
+            return false;
+        }
+    }
     // v7.20.139 (Neil: clicking a non-editable spot still blinked a caret, reading as editable).
     // Caret VISIBILITY tracks the SAME rule as typing-permission — a caret shows only where the
     // student can actually type. Derived from the exact block predicates the input handlers use,
@@ -49574,6 +49671,7 @@
         const _PROTECTED_NODE_TYPES = ['sectionBlock', 'inputField', 'outlineRow'];
         let _sectionCount = 0;
         let _undoGuardActive = false; // v7.14.68: prevents section guard undo cascade
+        let _structureLockOn = false; // v7.20.751 (#790): the structure lock refuses box removals BEFORE they apply
         function countSections(doc) {
             let n = 0;
             doc.descendants(node => { if (_PROTECTED_NODE_TYPES.includes(node.type.name)) n++; });
@@ -49665,7 +49763,9 @@
             try {
                 if (!transaction.docChanged || state.reviewMode || !canvasEditor) return;
                 if (_migrationActive || _undoGuardActive || _suppressFillScroll) return;
-                if (transaction.getMeta('swmlEditTs') || transaction.getMeta('addToHistory') === false) return;
+                // v7.20.751: an addToHistory:false set by the structure lock (swmlLockHist) is NOT a code
+                // "programmatic" signal — skip only the ones code set itself, so stamping is unchanged.
+                if (transaction.getMeta('swmlEditTs') || (transaction.getMeta('addToHistory') === false && !transaction.getMeta('swmlLockHist'))) return;
                 const doc = canvasEditor.state.doc;
                 const maps = transaction.mapping.maps;
                 const txnIds = new Set();
@@ -50224,7 +50324,12 @@
                         return;
                     }
                     const newCount = countSections(editor.state.doc);
-                    if (newCount < _sectionCount) {
+                    // v7.20.751 (#790): with the structure lock on, a lost box is refused BEFORE it applies,
+                    // so a drop seen here is bookkeeping drift — say so and never undo(): an undo-to-revert,
+                    // when the offending transaction was itself an undo, is the cascade that emptied documents.
+                    if (newCount < _sectionCount && _structureLockOn) {
+                        console.warn('WML: section count fell with the structure lock on (' + _sectionCount + ' → ' + newCount + ') — not reverting.');
+                    } else if (newCount < _sectionCount) {
                         console.warn('WML: Section deletion blocked — reverting (' + _sectionCount + ' → ' + newCount + ')');
                         _undoGuardActive = true;
                         editor.commands.undo();
@@ -50470,6 +50575,8 @@
                 _updateCaretVisibility(editor.view); // v7.20.139: hide the caret where typing is blocked
             },
         });
+        // v7.20.751 (#790): before ANY load, heal or fill runs — so none of them can enter the student's undo history.
+        _structureLockOn = _installStructureLock(canvasEditor, _PROTECTED_NODE_TYPES);
 
         // ── Server-side load + topic template (async, after editor is ready) ──
         // v7.13.34: CW workbook pre-population — load artifact from project if no saved content
@@ -52559,7 +52666,9 @@
 
             // v7.14.68: Undo floor — snapshot the loaded state so section guard knows the baseline
             // Note: Direct history plugin reset was removed (corrupted prevTime state).
-            // The section guard + _undoGuardActive flag prevents undo past the loaded content.
+            // v7.20.751 (#790): the floor this claimed did NOT hold — Cmd+Z undid the load itself. It is
+            // real now: the structure lock keeps every code transaction (this load included) out of undo
+            // history, and refuses an undo/redo that would add or remove a box (_installStructureLock).
 
             // ── Auto-extract essay question from document for all paths (v7.12.33) ──
             const autoQ = extractEssayQuestion(canvasEditor);
@@ -56474,6 +56583,20 @@
         });
         return labelled >= 2 ? sum : null;
     }
+    // v7.20.751: a weekend-story DRAFT lesson (6 "Write Draft 1", 8 "Polish Your Draft") prints its
+    // board's length on its own page — "aim for around 350–450 words", WML.cwWordTarget('d1') — but
+    // the pill counted to the essay model's 650 (measured on staging .748: "94 / 650", Cambridge).
+    // ONE source for both: the string the page prints, as numbers. "lo–hi" → minimum lo, target and
+    // ideal hi (the colour ladder tops out at the board's ceiling). null for every other lesson.
+    function _cwUnitDraftWordTargets() {
+        if (!(WML.cwInUnit && WML.cwInUnit())) return null;
+        const def = WML.getCwStepDef ? WML.getCwStepDef(state.task) : null;
+        if (!def || !def.draft || WML.cwStepEnv(def) !== 'polishing') return null;
+        const nums = String(WML.cwWordTarget('d1') || '').match(/\d+/g);
+        if (!nums) return null;
+        const lo = +nums[0], hi = +nums[nums.length - 1];
+        return { min: lo, target: hi, ideal: hi };
+    }
     // v7.19.423: single source of truth for the floating word-count pill.
     // Planning → "X words" (plans are keyword-based; no invented target).
     // Multi-Q paper → "X / [sum of visible per-question targets]".
@@ -56488,6 +56611,8 @@
             return;
         }
         const wc = getResponseWordCount(editor);
+        const _cwT = _cwUnitDraftWordTargets();   // v7.20.751: weekend draft lessons count to the board's length
+        if (_cwT) { canvasWordMinimum = _cwT.min; canvasWordTarget = _cwT.target; canvasWordIdeal = _cwT.ideal; }
         // v7.19.723: Topic 1 Phase 1 diagnostic — the very first attempt shows a SOFT live count
         // only (no "/ target", no colour gate, no minimum). Neil: don't pressure length on the pure
         // diagnostic — mark what's there. Every other stage + every later topic keeps the full
@@ -67194,9 +67319,9 @@
                     try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
                     // Clear stale content from editor so the section-type guard below allows injection
                     // Temporarily disable section deletion guard (it would block and revert the clear)
-                    _migrationActive = true;
-                    canvasEditor.commands.setContent('<p></p>', false);
-                    _migrationActive = false;
+                    _migrationActive = true;   // v7.20.751: try/finally — a throw must not leave the structure lock bypassed
+                    try { canvasEditor.commands.setContent('<p></p>', false); }
+                    finally { _migrationActive = false; }
                     // Fall through to template generation below
                 } else {
                     // v7.17.27: legacy diagnostic/redraft docs saved before plan sections
@@ -67933,9 +68058,9 @@
         const oldDividerRe = /<div[^>]*data-section-type="divider"[^>]*data-section-label="ESSAY QUESTION"[^>]*>[\s\S]*?<\/div>/i;
         if (oldDividerRe.test(html)) {
             html = html.replace(oldDividerRe, '');
-            _migrationActive = true;
-            canvasEditor.commands.setContent(html, false);
-            _migrationActive = false;
+            _migrationActive = true;   // v7.20.751: try/finally — a throw must not leave the structure lock bypassed
+            try { canvasEditor.commands.setContent(html, false); }
+            finally { _migrationActive = false; }
             console.log('WML Migration: Removed obsolete "ESSAY QUESTION" divider');
         }
     }

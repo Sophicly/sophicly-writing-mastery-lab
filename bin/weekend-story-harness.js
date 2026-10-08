@@ -472,6 +472,26 @@ const SEVEN = (hook, setup) => [
         ok(P('@POLTI_PICKS{"picks":[{"id":40,"beat":1},{"id":4,"beat":5}]}', [1, 2]).length === 0, 'an id outside our 33, or a beat the student never wrote, is refused');
         ok(P('@POLTI_PICKS{"picks":[', [1]).length === 0 && P('', [1]).length === 0 && P(null, [1]).length === 0, 'broken or missing markers give nothing (and never throw)');
     }
+    // ── K · v7.20.751: the word-count pill in a weekend DRAFT lesson counts to the length the page prints.
+    // Measured on staging .748 (lesson 8, Cambridge): "94 / 650" while the unit's target is 350–450.
+    console.log('\nK · the word-count pill in lessons 6 + 8 counts to the board\'s length, not the essay model\'s 650');
+    {
+        const ki = SRC.indexOf('function _cwUnitDraftWordTargets()');
+        ok(ki > 0, 'the unit-draft word-target helper exists');
+        const body = braceSliceFrom(SRC, ki, '{', '}').text;
+        const run = (inUnit, def, d1) => new Function('WML', 'state', 'return (function () ' + body + ')();')(   // eslint-disable-line no-new-func
+            { cwInUnit: () => inUnit, getCwStepDef: () => def, cwStepEnv: (d) => (inUnit && d.unitEnv) || d.env || '', cwWordTarget: () => d1 }, { task: 'cw_step_x' });
+        const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+        ok(eq(run(true, { draft: 1, unitEnv: 'polishing' }, '350–450'), { min: 350, target: 450, ideal: 450 }), 'lesson 6, Cambridge: 350 minimum, counts to 450', run(true, { draft: 1, unitEnv: 'polishing' }, '350–450'));
+        ok(eq(run(true, { draft: 2, env: 'polishing' }, '450–600'), { min: 450, target: 600, ideal: 600 }), 'lesson 8, Eduqas (or AQA\'s Draft-1 ladder): counts to 600');
+        ok(run(false, { draft: 1, env: 'polishing' }, '450–600') === null, 'the full course is untouched (its essay-model target stands)');
+        ok(run(true, { step: 9 }, '350–450') === null, 'a unit lesson that is not a draft (lesson 5) is untouched');
+        ok(run(true, { draft: 1, unitEnv: 'polishing' }, '') === null, 'no printed length → no override (never a made-up number)');
+        const pi = SRC.indexOf('function _paintWcWidgetLabel(editor)');
+        const paint = pi > 0 ? braceSliceFrom(SRC, pi, '{', '}').text : '';
+        ok(/const _cwT = _cwUnitDraftWordTargets\(\);/.test(paint) && /canvasWordTarget = _cwT\.target/.test(paint) && paint.indexOf('_cwUnitDraftWordTargets') < paint.indexOf('widget.textContent = `${wc} / ${canvasWordTarget}`'),
+            'the pill\'s ONE painter applies it before it writes "N / target" (and before the colour ladder reads it)');
+    }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }
     console.log('✅ weekend-story-harness passed (lesson 5 offers the six spine beats; the full course is untouched).');

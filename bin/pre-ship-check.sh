@@ -759,6 +759,11 @@ node bin/word-count-harness.js || fail=1
 # (liveness at every turn), checks the full course is untouched, and that no unit string names a step,
 # a plot or a stage. Whole-repo by nature (wiring spans PHP + three JS files). 8/8 mutations caught.
 node bin/weekend-story-harness.js || fail=1
+# v7.20.751 (#790, Neil: "It should not be possible for students to delete rows"): the STRUCTURE LOCK —
+# no student edit or undo/redo can remove (or bring back) a box, and nothing code-dispatched enters the
+# student's undo history (Cmd+Z emptied a fresh document on staging .748). Executes the lock's decision
+# table on real-shaped docs, 3/3 planted defects caught, and the wiring. Whole-repo by nature.
+node bin/structure-lock-harness.js || fail=1
 # v7.20.549 (Neil: "we've had this problem before, so I think you need to make a gate for that").
 # The two gates above guard PARTS — which reader answers, and where a paragraph begins. This one
 # guards the ARTEFACT: the exact payload the marker is handed for a real multi-question paper.
