@@ -11619,10 +11619,20 @@
                 if (out.length !== preLen) console.log('WML normalise: stripped rejected-penalty bullet(s) (−' + (preLen - out.length) + ' chars)');
             }
             const gateRe = /Does that clear it up\?\s*Shall we (?:continue with|move to)/i;
-            if (gateRe.test(out) && !/\[\s*✓?\s*Got it\s*—?\s*continue\s*\]/i.test(out)
-                && !/\[ASSESSMENT_COMPLETE\]/i.test(out) && !/@SUMMARY_COMPLETE/.test(out)) {
-                out = out.replace(/\s*$/, '') + '\n\n`[✓ Got it — continue]` `[🤔 Still confused]` `[💬 Different question]` `[⏸ Pause here]`';
-                console.log('WML normalise: gate line had no button row — canonical Q-GATE row appended');
+            if (gateRe.test(out) && !/\[ASSESSMENT_COMPLETE\]/i.test(out) && !/@SUMMARY_COMPLETE/.test(out)) {
+                // v7.20.763 (#805h-1b): ONE set of gate buttons, always the canonical four. The model also writes the
+                // options as its own lines — plain ("✓ Got it — continue"), lettered ("A — ✓ Got it — continue",
+                // "**A)** Still confused") or bulleted. Lettered lines render as chips of their own, so appending the
+                // canonical row beside them drew EIGHT buttons (staging re-test, 8 Oct, Q4→Q5 gate). Drop every line
+                // that is nothing but a gate option, then make sure the canonical row is there exactly once.
+                const optLine = /^[ \t]*(?:[-*•][ \t]*)?(?:\*\*)?(?:[A-D](?:\)|\.|:|[ \t]*[—–-]))?(?:\*\*)?[ \t]*(?:[✓🤔💬⏸🔁]️?[ \t]*)?(?:Got it(?:[ \t]*[—–-][ \t]*continue)?|Still confused|Different question|Pause here)[ \t]*$\n?/gimu;
+                const before = out;
+                out = out.replace(optLine, '').replace(/\n{3,}/g, '\n\n');
+                if (out !== before) console.log('WML normalise: dropped the model\'s own gate-option lines (one canonical row only)');
+                if (!/\[\s*✓?\s*Got it\s*—?\s*continue\s*\]/i.test(out)) {
+                    out = out.replace(/\s*$/, '') + '\n\n`[✓ Got it — continue]` `[🤔 Still confused]` `[💬 Different question]` `[⏸ Pause here]`';
+                    console.log('WML normalise: gate line had no button row — canonical Q-GATE row appended');
+                }
             }
             return out;
         } catch (_) { return reply; }

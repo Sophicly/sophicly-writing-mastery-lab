@@ -49,6 +49,23 @@ ok(plan(GATE + '\n' + PEN).indexOf(PEN) !== -1, 'planning: a "no penalty applied
 ok(assess('Q2 card\n' + PEN + '\nTotal 5/8').indexOf(PEN) === -1, 'assessment: the rejected-penalty strip still runs');
 ok(assess(GATE).split(ROW).length === 2, 'assessment: the button row is still appended');
 ok(plan('Done.\n\nDoes that clear it up? Shall we continue with Q5?\n[ASSESSMENT_COMPLETE]').indexOf(ROW) === -1, 'a completed assessment never gets the row');
+// v7.20.763: ONE set of buttons whatever form the model wrote its options in. The re-test's Q4→Q5 gate came
+// LETTERED ("A — ✓ Got it — continue"), which renders chips of its own — the appended row beside it drew eight.
+const Q = 'All three body paragraphs are done.\n\nDoes that clear it up? Shall we continue with **Question 5 planning**?\n\n';
+const FORMS = {
+    'plain (the Q3→Q4 walk reply)': '✓ Got it — continue\n🤔 Still confused\n💬 Different question\n⏸ Pause here',
+    'lettered with a dash (the Q4→Q5 re-test reply)': 'A — ✓ Got it — continue\nB — 🤔 Still confused\nC — 💬 Different question\nD — ⏸ Pause here',
+    'bold-lettered': '**A)** Got it — continue\n**B)** Still confused\n**C)** Different question\n**D)** Pause here',
+    'bulleted': '- ✓ Got it — continue\n- 🤔 Still confused\n- 💬 Different question\n- ⏸ Pause here',
+    'lettered lines AND the row already': 'A) Got it — continue\nB) Still confused\nC) Different question\nD) ⏸ Pause here\n\n`[✓ Got it — continue]` `[🤔 Still confused]` `[💬 Different question]` `[⏸ Pause here]`',
+};
+const optLeft = /^[ \t]*(?:[-*•][ \t]*)?(?:\*\*)?(?:[A-D](?:\)|\.|:|[ \t]*[—–-]))?(?:\*\*)?[ \t]*(?:[✓🤔💬⏸]️?[ \t]*)?(?:Got it|Still confused|Different question|Pause here)/mu;
+for (const [label, opts] of Object.entries(FORMS)) {
+    const o = plan(Q + opts);
+    ok(o.split(ROW).length === 2 && !optLeft.test(o) && o.indexOf('All three body paragraphs are done.') === 0 && /Shall we continue with \*\*Question 5 planning\*\*\?/.test(o),
+        'one canonical row, no stray option lines, the question kept — ' + label);
+}
+ok(plan('Here is your Paragraph 2:\n\nA) Happy — next paragraph\nB) Change one element') === 'Here is your Paragraph 2:\n\nA) Happy — next paragraph\nB) Change one element', 'a non-gate reply (mirror-back choices) is untouched');
 // display half: the appended row must render as buttons only, never as visible code
 const strip = new Function(slice('_stripResumeMarkers') + '; return _stripResumeMarkers;')();
 ok(strip(outP).indexOf('[✓') === -1 && strip(outP).indexOf('Shall we continue') !== -1, 'display: the row is stripped from the bubble text, the question stays');
