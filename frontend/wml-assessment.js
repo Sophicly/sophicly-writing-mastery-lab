@@ -44666,26 +44666,13 @@
             rightPanel.appendChild(guidanceContent);
 
             // Session timestamp + countdown
-            // v7.15.111: Outlining lives mid-Phase-2 and must scope by task + topic + attempt
-            // so each attempt gets its own session timer (not shared with the diagnostic pass).
-            const _sessionKeyTask = state.task === 'outlining' ? 'outline' : 'diag';
-            const _sessionAttSuffix = (state.task === 'outlining' && _canvasAttempt() > 1) ? `__a${_canvasAttempt()}` : ''; // v7.20.78: pinned resolver
-            const _sessionTopicPart = state.task === 'outlining' ? `_t${state.topicNumber || 0}` : '';
-            const startKey = `swml_${_sessionKeyTask}_start_${state.board}_${(state.text || '').replace(/\s/g, '_')}${_sessionTopicPart}${_sessionAttSuffix}`;
-            // v7.20.767 (#808): the Mastery Codex NEVER reads or writes this browser timer. The key has no user id, so
-            // under view_as it showed the VIEWER's own first open (Neil on new student 1414: "Started 15 weeks ago ·
-            // Overdue by 102 days"), and on the student's device it invented a 7-day window no deadline engine set.
+            // v7.20.768 (#809, Neil 2026-10-08: "I think it's better if I see what she sees"): NO task reads a browser
+            // timer any more. The old localStorage keys (swml_diag_start_* / swml_outline_start_*) carried no user id, so
+            // tutor view showed the TUTOR's own first open, a sibling on a shared laptop inherited the first child's clock,
+            // and the 10/14-day countdown was invented from that first open. "Started" now comes from the student's own
+            // document (server set-once startedAt = first written response) and the countdown from the deadline engine —
+            // the same window the sidebar badge shows, read for the STUDENT in tutor view.
             const _codexTask = state.task === 'mastery_codex';
-            let startTime = _codexTask ? null : localStorage.getItem(startKey);
-            if (!startTime && !_codexTask) {
-                startTime = new Date().toISOString();
-                localStorage.setItem(startKey, startTime);
-            }
-            const startDate = startTime ? new Date(startTime) : new Date();
-            // v7.15.111: Outlining is Phase 2 → 14-day cycle; diagnostic stays on 10-day.
-            // v7.19.212: Mastery Codex induction = 7-day cycle.
-            const _deadlineDays = state.task === 'outlining' ? 14 : state.task === 'mastery_codex' ? 7 : 10;
-            const deadlineDate = new Date(startDate.getTime() + _deadlineDays * 24 * 60 * 60 * 1000);
 
             // v7.19.288: Mastery Codex Session timer = single source of truth. Reads the SAME
             // course deadline window the dashboard sidebar badge uses (server-side
@@ -44699,8 +44686,9 @@
                 ? swmlConfig.courseDeadline : null;
             // v7.20.767 (#808): no deadline window (e.g. dashboard d88 paused the Core Skills due dates) → "No due date
             // yet", same words as the dashboard (2.31.88); a window with no start date shows no "Started" line.
+            // v7.20.768 (#809): every other task starts with an EMPTY countdown and lets the live deadline poll fill it.
             const _codexNoWindow = _codexTask && !_codexCfg;
-            const _codexStartDate = (_codexCfg && _codexCfg.start_date) ? new Date(_codexCfg.start_date) : (_codexTask ? null : startDate);
+            const _sessionStartIso = () => (_codexCfg && _codexCfg.start_date) ? _codexCfg.start_date : (_codexTask ? '' : (_canvasStartedAt || ''));
 
             function formatRelativeTime(date) {
                 const diff = Date.now() - date.getTime();
@@ -44733,23 +44721,22 @@
                     return { text: clbl, pct: cpct, colour: '#51dacf', animated: true };
                 }
                 if (_codexNoWindow) return { text: 'No due date yet', pct: 0, colour: 'rgba(255,255,255,0.25)', animated: false };
-                const remaining = deadlineDate.getTime() - Date.now();
-                if (remaining <= 0) {
-                    const _od = Math.ceil(Math.abs(remaining) / (24 * 60 * 60 * 1000));
-                    const _ot = _od > 0 ? `Overdue by ${_od} day${_od !== 1 ? 's' : ''}` : 'Overdue';
-                    return { text: _ot, pct: 100, colour: '#dc2626', animated: false };
-                }
-                const daysLeft = Math.ceil(remaining / (24 * 60 * 60 * 1000));
-                const pct = Math.min(100, Math.round(((_deadlineDays - daysLeft) / _deadlineDays) * 100));
-                // 6+ days: animated teal/blue, 3-5: yellow, 1-2: orange, overdue: red
-                if (daysLeft <= 2) return { text: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`, pct, colour: '#E67E22', animated: false };
-                if (daysLeft <= 5) return { text: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`, pct, colour: '#F1C40F', animated: false };
-                return { text: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining`, pct, colour: '#51dacf', animated: true };
+                return { text: '', pct: 0, colour: 'rgba(255,255,255,0.25)', animated: false };   // the live poll fills it
             }
 
             const timeWrap = el('div', { className: 'swml-canvas-plan-section' });
             timeWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#51dacf">' + SVG_GUIDE_STOPWATCH + '</span> Session' }));
-            if (_codexStartDate) timeWrap.appendChild(el('p', { textContent: `Started: ${formatRelativeTime(_codexStartDate)}` }));
+            const startedLabel = el('p', {});
+            const _paintStarted = () => {
+                const iso = _sessionStartIso();
+                const d = iso ? new Date(iso) : null;
+                if (!d || isNaN(d.getTime())) { startedLabel.style.display = 'none'; return; }
+                startedLabel.textContent = `Started: ${formatRelativeTime(d)}`;
+                startedLabel.style.display = '';
+            };
+            _paintStarted();
+            _sessionStartedRefresh = _paintStarted;   // re-painted when /canvas/load delivers the student's startedAt
+            timeWrap.appendChild(startedLabel);
             const countdown = formatCountdown();
             const deadlineBar = el('div', { className: 'swml-canvas-progress-bar' });
             const deadlineFill = el('div', { className: 'swml-canvas-progress-fill', id: 'swml-deadline-fill' });
@@ -44781,13 +44768,19 @@
             // (with course_id + the current lesson_id) and re-polls so it tracks the
             // sidebar in real time. Falls back to the static render above if the
             // course/lesson ids or endpoint are unavailable.
-            if (state.task === 'mastery_codex') {
+            // v7.20.768 (#809): every task that shows the Session card reads the live deadline, not only the Codex.
+            if (!_isLiveModel) {
                 const _dCfg = window.swmlConfig || {};
+                if (!(_dCfg.courseId && _dCfg.wpRestUrl) && !_codexCfg) deadlineLabel.textContent = 'No due date yet';
                 if (_dCfg.courseId && _dCfg.wpRestUrl) {
                     const _dlBase = _dCfg.wpRestUrl + 'sophicly/v1/deadlines/current';
                     const _dlHeaders = { 'X-WP-Nonce': _dCfg.nonce || '' };
                     const _applyLiveDeadline = (d) => {
-                        if (!d || d.days_left === undefined || d.days_left === null) return;
+                        if (!d || d.days_left === undefined || d.days_left === null) {
+                            // v7.20.768: no window for this student. A Codex course window (static, above) stays; otherwise say so.
+                            if (!_codexCfg) deadlineLabel.textContent = 'No due date yet';
+                            return;
+                        }
                         const dl = parseInt(d.days_left, 10);
                         const dt = parseInt(d.days_allowed, 10) || parseInt(d.days_total, 10) || 7;
                         let text, colour, pct, animated = false;
@@ -57962,6 +57955,7 @@
     // _canvasSignoffAt = tutor sign-off timestamp (from /canvas/load-signoff). Both feed
     // recalculateScoreSummary which renders Date Started / Date Completed / Days elapsed.
     let _canvasStartedAt = '';
+    let _sessionStartedRefresh = null;   // v7.20.768 (#809): the Session card's "Started" line, re-painted on load
     let _canvasSignoffAt = '';
     // v7.19.770: _canvasCompletedAt = STUDENT completion (server set-once docCompletedAt,
     // stamped when every required section is done) — feeds the Score-Summary "Date Completed".
@@ -66546,6 +66540,7 @@
             if (res.success && res.doc && res.doc.html) {
                 // v7.19.247: capture the real first-edit start date for the Score Summary.
                 _canvasStartedAt = res.doc.startedAt || _canvasStartedAt || '';
+                if (typeof _sessionStartedRefresh === 'function') { try { _sessionStartedRefresh(); } catch (_) {} }
                 // v7.19.770: STUDENT completion date (set-once server-side; "—" until every
                 // required section is done). Feeds Score-Summary "Date Completed" (not tutor sign-off).
                 _canvasCompletedAt = res.doc.docCompletedAt || _canvasCompletedAt || '';
