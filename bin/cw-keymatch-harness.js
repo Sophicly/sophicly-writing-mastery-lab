@@ -978,8 +978,9 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
         // 14: the emitters build the string, branch on the prerequisite gate, and only THEN emit,
         // so the guard legitimately sits ~17 lines below its greeting. The tighter window reported
         // a correctly-guarded site as unguarded — and a gate that cries wolf is a gate that gets
-        // switched off.
-        const window = lines.slice(n, n + 25).join('\n');
+        // switched off. 32 since v7.20.756: the prereq branch also picks its unit/full-course
+        // button line and routes the text through the unit words before the guard.
+        const window = lines.slice(n, n + 32).join('\n');
         if (!/_cwGreetOnce\(/.test(window)) unguarded.push(n + 1);
     });
     ok(sites >= 4, `only ${sites} CW step-greeting site(s) found — this check has gone blind ` +
@@ -990,7 +991,8 @@ console.log('CW CHIP MENUS — every pick is filed or deliberately ephemeral');
 
     // And the guard must key on the STEP, not the exact string: the two emitters word their
     // second sentence differently, so a byte-comparison would let both through — which is the bug.
-    ok(/indexOf\('Step ' \+ key \+ ':'\)/.test(JS),
+    // v7.20.756: the key list also carries the weekend form ("lesson 2:"), still built from the STEP.
+    ok(/indexOf\('Step ' \+ key \+ ':'\)/.test(JS) || /const tags = \['Step ' \+ key \+ ':'\]/.test(JS),
         'the once-guard compares whole strings rather than keying on the step — the two emitters ' +
         'word their greeting differently, so both would still pass (#240)');
 }

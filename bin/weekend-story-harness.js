@@ -807,6 +807,42 @@ const SEVEN = (hook, setup) => [
             const left = lits.map((q) => D1.t(q)).filter((q) => /\bSteps? \d/.test(q) && !/Step 4 — Your Brief Outline/.test(q));   // that one is a guide ANCHOR (a key), never shown
             ok(lits.length > 20 && left.length === 0, decl.slice(6) + ': after the unit words, no sentence names a course step the weekend story lacks', left.map((q) => q.slice(0, 90)));
         });
+        // v7.20.756 (#801): lessons 2–4 open on the GENERIC CW greeting (both pipelines + both "Welcome back" re-greets).
+        // Staging .755, LD's real pages: "Welcome to Step 2: Explore Story Ideas" / "In Step 1, you built…". Every
+        // greeting site must route through the unit words, and its sentences (steps 1–4 — the unit never runs 5–8) must
+        // come out with no course step; the prereq gate must offer a re-check, never the full course's step dashboard.
+        const GSITES = [];
+        let gp = 0;
+        while ((gp = SRC.indexOf('const cwPrevContext = {', gp + 1)) > 0) GSITES.push(SRC.slice(gp, SRC.indexOf('_cwGreetOnce(stepNum,', gp)));
+        ok(GSITES.length === 2, 'both greeting builders found (the dual pipeline)', GSITES.length);
+        GSITES.forEach((g, i) => {
+            ok(/\n\s*greetingText = _cwUnitText\(greetingText\);\s*\n/.test(g) && /_cwPrereqRecheckLabel\(prereqStep\)/.test(g), 'greeting builder ' + (i + 1) + ' serves its greeting through the unit words and knows the unit re-check');
+            const lits = [];
+            g.split('\n').forEach((line) => {
+                if (/^\s*\/\//.test(line) || /^\s*[5-8]: /.test(line) || /cwPrevContext\[6\] =/.test(line)) return;   // steps 5–8: full course only
+                (line.match(/(["'`])(?:\\.|(?!\1).)*\1/g) || []).forEach((q) => lits.push(q.replace(/\$\{stepNum\}/g, '2').replace(/\$\{prereqStep\}/g, '1').replace(/\$\{[^}]*\}/g, 'X')));
+            });
+            const left = lits.map((q) => D1.t(q)).filter((q) => /\bSteps? \d/.test(q));
+            ok(lits.length > 8 && left.length === 0, '⭐ greeting builder ' + (i + 1) + ': after the unit words no sentence names a course step', left.map((q) => q.slice(0, 90)));
+        });
+        const backs = SRC.match(/const gt = [^\n]*Welcome back to Step[^\n]*/g) || [];
+        ok(backs.length === 2 && backs.every((b) => /^const gt = _cwUnitText\(`Welcome back to Step/.test(b) && /'lesson' : 'step'/.test(b)), 'both "Welcome back" re-greets go through the unit words and say "this lesson" in a unit', backs.length);
+        ok((SRC.match(/textContent: _recheckB? \|\| 'Back to Steps',/g) || []).length === 2 && (SRC.match(/if \(_recheckB?\) \{ window\.location\.reload\(\); return; \}/g) || []).length === 2,
+            'both prereq buttons re-check in a unit instead of opening the full course\'s step dashboard');
+        // the helper and the once-guard, executed: a stored "Welcome to lesson 2:" greeting must count as drawn (#240)
+        const gi2 = SRC.indexOf('function _cwPrereqRecheckLabel(prereqStep) {'), oi = SRC.indexOf('function _cwGreetOnce(stepKey, history, emit) {');
+        const GH = new Function('WML', UD   // eslint-disable-line no-new-func
+            + '\nfunction _cwPrereqRecheckLabel(prereqStep) ' + braceSliceFrom(SRC, gi2, '{', '}').text
+            + '\nlet _cwGreetedFor = "";\nfunction _cwGreetOnce(stepKey, history, emit) ' + braceSliceFrom(SRC, oi, '{', '}').text
+            + '\nreturn { lab: _cwPrereqRecheckLabel, once: _cwGreetOnce };');
+        const GU = GH({ cwInUnit: () => true }), GF = GH({ cwInUnit: () => false });
+        ok(GU.lab(1) === 'I’ve finished lesson 1 — check again' && GF.lab(1) === '' && GU.lab(6) === '', 'the unit prereq button names the lesson to finish; the full course keeps "Back to Steps"', [GU.lab(1), GF.lab(1)]);
+        let drew = 0;
+        const quiet = console.warn; console.warn = () => {};
+        const r1 = GU.once(2, [{ role: 'assistant', content: 'Welcome to lesson 2: **Explore Story Ideas**\n\nIn lesson 1, you built…' }], () => drew++);
+        const r2 = GF.once(3, [{ role: 'assistant', content: 'Welcome to Step 3: **Create Your Logline**' }], () => drew++);
+        console.warn = quiet;
+        ok(r1 === false && r2 === false && drew === 0, '⭐ a stored "Welcome to lesson 2:" greeting counts as drawn — the replay and the emitter never both draw it (#240)', { r1, r2, drew });
     }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }

@@ -5621,6 +5621,14 @@
         if (WML.cwInUnit && WML.cwInUnit() && CW_UNIT_LESSON_OF_STEP[stepNo]) return 'lesson ' + CW_UNIT_LESSON_OF_STEP[stepNo];
         return 'Step ' + stepNo;
     }
+    // v7.20.756 (#801) — the generic CW greeting's prerequisite gate offered "Back to Steps", which in a weekend lesson
+    // opens the FULL course's step dashboard: the unit has no Steps page (its lessons live in the course sidebar). The
+    // way forward there is a re-check, the answer lesson 5's gate already gives (v7.20.737) — §4d, never a dead end.
+    // '' outside a unit (the full course keeps its button).
+    function _cwPrereqRecheckLabel(prereqStep) {
+        if (!(WML.cwInUnit && WML.cwInUnit()) || !CW_UNIT_LESSON_OF_STEP[prereqStep]) return '';
+        return 'I’ve finished ' + _cwStepPlace(prereqStep) + ' — check again';
+    }
     function _cwTurnOwned(task, text) {
         const f = _CW_TURN_OWNERS[task];
         try { return !!(f && f(text)); } catch (e) { return false; }
@@ -5677,9 +5685,14 @@
             return false;
         }
         // Already in the transcript, which the replay is about to draw (or has drawn).
+        // v7.20.756 (#801): a weekend lesson's greeting reads "Welcome to lesson 2:" — recognise that form too, or the
+        // replay and the emitter would both draw it.
+        const _ul = CW_UNIT_LESSON_OF_STEP[key];
+        const tags = ['Step ' + key + ':'].concat(_ul ? ['lesson ' + _ul + ':', 'Lesson ' + _ul + ':'] : []);
         const seen = Array.isArray(history) && history.some(function (m) {
-            return m && m.role === 'assistant' && /^Welcome (back )?to Step /.test(String(m.content || '').trim())
-                && String(m.content || '').indexOf('Step ' + key + ':') !== -1;
+            const c = String(m && m.content || '');
+            return m && m.role === 'assistant' && /^Welcome (back )?to (Step|lesson|Lesson) /.test(c.trim())
+                && tags.some(function (t) { return c.indexOf(t) !== -1; });
         });
         if (seen) {
             _cwGreetedFor = key;
@@ -19815,7 +19828,7 @@
                             // v7.20.292: the RESUME greeting must echo the chosen structure too. .286 patched only
                             // the FRESH-entry greeting, so the one Neil actually saw stayed anonymous.
                             const _emitBack = function (extra) {
-                                const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
+                                const gt = _cwUnitText(`Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this ${(WML.cwInUnit && WML.cwInUnit()) ? 'lesson' : 'step'}. When you\u2019re ready, hit the button below.`);   // v7.20.756 (#801)
                                 // v7.20.420 (#240): the transcript this would have duplicated has just
                                 // been cleared, so re-greeting is correct — reset the once-guard first.
                                 _cwResetGreetOnce();
@@ -43504,15 +43517,19 @@
                     const prevCtx = cwPrevContext[stepNum] || `Let\u2019s continue with **${stepLabel}**.`;
                     const introLine = `Welcome to Step ${stepNum}: **${stepLabel}**\n\n${prevCtx}`;
                     let greetingText;
+                    let prereqStep = 0;
                     if (missingPrereq && stepNum > 1) {
                         const prereqLabel = missingPrereq.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                        const prereqStep = missingPrereq === 'writer_profile' ? 1 : missingPrereq === 'story_ideas' ? 2 : missingPrereq === 'logline' ? 3 : missingPrereq === 'brief_outline' ? 4 : missingPrereq === 'plot_structure_choice' ? 5 : missingPrereq === 'plot_outline' ? 6 : stepNum - 1;
-                        greetingText = `Welcome to Step ${stepNum}: **${stepLabel}**\n\nIt looks like you haven\u2019t completed **Step ${prereqStep}** yet \u2014 I need your **${prereqLabel}** from that step before we can begin this one.\n\nPlease go back to **Step ${prereqStep}** and complete it first.`;
+                        prereqStep = missingPrereq === 'writer_profile' ? 1 : missingPrereq === 'story_ideas' ? 2 : missingPrereq === 'logline' ? 3 : missingPrereq === 'brief_outline' ? 4 : missingPrereq === 'plot_structure_choice' ? 5 : missingPrereq === 'plot_outline' ? 6 : stepNum - 1;
+                        greetingText = `Welcome to Step ${stepNum}: **${stepLabel}**\n\nIt looks like you haven\u2019t completed **Step ${prereqStep}** yet \u2014 I need your **${prereqLabel}** from that ${(WML.cwInUnit && WML.cwInUnit()) ? 'lesson' : 'step'} before we can begin this one.\n\nPlease go back to **Step ${prereqStep}** and complete it first.`;
                     } else if (stepNum === 1) {
                         greetingText = `${introLine}\n\nIn this course, you\u2019ll experience what it\u2019s like to create a story from the inside \u2014 the **Inside Out** technique.\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
                     } else {
                         greetingText = `${introLine}\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
                     }
+                    // v7.20.756 (#801): a weekend lesson names its own lessons, never a course step (PEDAGOGY \u00a755).
+                    greetingText = _cwUnitText(greetingText);
+                    const _recheck = _cwPrereqRecheckLabel(prereqStep);
                     // v7.20.420 (#240): idempotent — the twin emitter or the transcript replay may
                     // already have put this on screen. See _cwGreetOnce.
                     const _greeted = _cwGreetOnce(stepNum, tp.canvasChatHistory, function () {
@@ -43535,8 +43552,8 @@
                         // gets no detector chip and still needs its own "Back to Steps" button.
                         if (!(missingPrereq && stepNum > 1)) return;
                         const startBar = el('div', { className: 'swml-quick-actions' });
-                        startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: 'Back to Steps',
-                            onClick: () => { startBar.remove(); closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
+                        startBar.appendChild(el('button', { className: 'swml-quick-btn', textContent: _recheck || 'Back to Steps',
+                            onClick: () => { startBar.remove(); if (_recheck) { window.location.reload(); return; } closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
                         }));
                         const greetBubble = tp.chatMessages.lastElementChild;
                         if (greetBubble) {
@@ -44727,7 +44744,7 @@
                                             // as the v7.20.284 gate: anything derived re-derives on every entry, and
                                             // persisting it freezes a fact that has since changed (WML CLAUDE.md §4c.7).
                                             const _emitBack = function (extra) {
-                                                const gt = `Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this step. When you\u2019re ready, hit the button below.`;
+                                                const gt = _cwUnitText(`Welcome back to Step ${stepNum}: **${stepLabel}**${extra}\n\nLet\u2019s continue working on this ${(WML.cwInUnit && WML.cwInUnit()) ? 'lesson' : 'step'}. When you\u2019re ready, hit the button below.`);   // v7.20.756 (#801)
                                                 // v7.20.420 (#240): the TWIN of the chat-clear re-greet in the other
                                                 // pipeline. Missed on the first pass because it words the greeting
                                                 // "Welcome BACK to Step" and the patch was an exact-string replace
@@ -46613,11 +46630,16 @@
                                                 ? `Welcome to Step 1: **${stepLabel}**\n\n${prevCtx}`
                                                 : `Welcome to Step ${stepNum}: **${stepLabel}**\n\n${prevCtx}`;
                                             let greetingText;
+                                            let prereqStep = 0;
                                             if (missingPrereq && stepNum > 1) {
                                                 // v7.13.45: Missing prerequisite — guide student back
                                                 const prereqLabel = missingPrereq.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                                                const prereqStep = missingPrereq === 'writer_profile' ? 1 : missingPrereq === 'story_ideas' ? 2 : missingPrereq === 'logline' ? 3 : missingPrereq === 'brief_outline' ? 4 : missingPrereq === 'plot_structure_choice' ? 5 : missingPrereq === 'plot_outline' ? 6 : stepNum - 1;
-                                                greetingText = `Welcome to Step ${stepNum}: **${stepLabel}**\n\nIt looks like you haven\u2019t completed **Step ${prereqStep}** yet \u2014 I need your **${prereqLabel}** from that step before we can begin this one.\n\nPlease go back to **Step ${prereqStep}** and complete it first. You can use the **Back to Steps** button below to return to the step dashboard.\n\nOnce you\u2019ve finished Step ${prereqStep}, come back here and everything will be ready to go.`;
+                                                prereqStep = missingPrereq === 'writer_profile' ? 1 : missingPrereq === 'story_ideas' ? 2 : missingPrereq === 'logline' ? 3 : missingPrereq === 'brief_outline' ? 4 : missingPrereq === 'plot_structure_choice' ? 5 : missingPrereq === 'plot_outline' ? 6 : stepNum - 1;
+                                                // v7.20.756 (#801): a weekend lesson has no step dashboard — its button re-checks instead.
+                                                const backLine = _cwPrereqRecheckLabel(prereqStep)
+                                                    ? 'When it\u2019s done, tap the button below to check again.'
+                                                    : 'You can use the **Back to Steps** button below to return to the step dashboard.';
+                                                greetingText = `Welcome to Step ${stepNum}: **${stepLabel}**\n\nIt looks like you haven\u2019t completed **Step ${prereqStep}** yet \u2014 I need your **${prereqLabel}** from that ${(WML.cwInUnit && WML.cwInUnit()) ? 'lesson' : 'step'} before we can begin this one.\n\nPlease go back to **Step ${prereqStep}** and complete it first. ${backLine}\n\nOnce you\u2019ve finished Step ${prereqStep}, come back here and everything will be ready to go.`;
                                             } else if (stepNum === 1) {
                                                 // Step 1 only: full Inside Out intro
                                                 greetingText = `${introLine}\n\nIn this course, you\u2019ll experience what it\u2019s like to create a story from the inside \u2014 the same process that professional writers use. We call this the **Inside Out** technique.\n\nYou\u2019ll achieve two things: first, you\u2019ll craft a deeply meaningful and satisfying story of your own. Second, by experiencing the creative process yourself, you\u2019ll build a much deeper understanding of *why* authors make the choices they do \u2014 and that insight is exactly what powers top-level essays when you\u2019re analysing literature.\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
@@ -46625,6 +46647,9 @@
                                                 // Steps 2+: context-aware, no generic Inside Out repeat
                                                 greetingText = `${introLine}\n\nWhen you\u2019re ready, hit the button below and let\u2019s get started.`;
                                             }
+                                            // v7.20.756 (#801): a weekend lesson names its own lessons, never a course step (PEDAGOGY §55).
+                                            greetingText = _cwUnitText(greetingText);
+                                            const _recheckB = _cwPrereqRecheckLabel(prereqStep);
                                             // v7.20.420 (#240): idempotent — the twin emitter in the
                                             // main pipeline, or the transcript replay, may already have
                                             // drawn this. See _cwGreetOnce.
@@ -46648,8 +46673,8 @@
                                                 const startBar = el('div', { className: 'swml-quick-actions' });
                                                 startBar.appendChild(el('button', {
                                                     className: 'swml-quick-btn',
-                                                    textContent: 'Back to Steps',
-                                                    onClick: () => { startBar.remove(); closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
+                                                    textContent: _recheckB || 'Back to Steps',
+                                                    onClick: () => { startBar.remove(); if (_recheckB) { window.location.reload(); return; } closeCanvasOverlay(); WML.renderCreativeWritingDashboard(); }
                                                 }));
                                                 const greetBubble = chatMessages.lastElementChild;
                                                 if (greetBubble) {
