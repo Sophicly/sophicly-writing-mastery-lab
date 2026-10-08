@@ -3084,3 +3084,33 @@ up within a weekend"*. Scope (6 Oct, §53.30): *"Every board's creative question
 - The ~3–5 hours is an ESTIMATE (no student time is recorded anywhere); measure it once real students take it.
 
 **Build plan:** `WEEKEND-STORY-PLAN.md` (plugin root). Research: `~/.claude/handoffs/open/wml-CW-EXAM-STORY-FACTS-2026-10-07.md`.
+
+### §55.1 AMENDED 2026-10-08 — NINE lessons: lesson 5 is built around POLTI, and a POLISH lesson joins (FIXLIST #783)
+
+**His words** (8 Oct, voice, to the LD lane while it built lessons 1–7 on staging):
+*"We'll probably need to add one more, which is to polish, I think, no?"* · *"the choose your scene one is actually
+based on the full plot structure, but we're not going to be using the full plot structure… it would need to be much
+more focused on, let's say, Polti's dramatic situations"* · *"or the other option is they do writer's profile, story
+ideas, logline, story spine, and then Polti's dramatic situations, and then write draft one, mark your draft, and then
+polishing… structural techniques, like adding hooks and so on. We could add some of those in."*
+
+**The list (decided by the WML lane from those words; he can overrule):**
+1 Writer's Profile · 2 Story Ideas · 3 Logline · 4 Story Spine · **5 Your Dramatic Situation** · 6 Draft 1 ·
+7 Mark Your Draft (Trial 1) · **8 Polish Your Draft** · 9 Adapt It to the Question.
+- **Lesson 5 is Polti-first.** The dramatic situation is chosen FIRST and decides which moment of the spine the
+  scene tells; the lesson still ENDS on the 7-element scene plan, because Draft 1 and Trial 1 read those seven rows.
+  (His premise "based on the full plot structure" was already out of date for the weekend variant — since v7.20.737
+  it picks from the Story Spine — but Polti was never in the walk at all: the code-served Step 9 walk has no
+  dramatic-situation step. So the change is real.)
+- **The list is OURS, not Polti's raw 36:** Neil's own adapted *"33 Dramatic Situations based on Georges Polti's
+  Ideas"* (`Model Answers/Model Answer Resources/33-Dramatic-Situations-Based-on-Poltis-36-Dramatic-Situations (1).md`;
+  also in the Archetypes Course downloads). The protocol's "Polti's 33" is therefore CORRECT — not a slip for 36.
+  Its 1916 wording ("brigandage", "alienist", "kinsmen") is rewritten in plain words for students (root §5c-ii), and
+  anything sexual in its variants never reaches a student (N566).
+- **Polish (lesson 8) acts on the mark.** A mark nobody acts on is wasted ("diagnostic tests, redraft trains"). The
+  lens is Trial 1's TOP priority for this student, not a generic list; where that priority is structure, the
+  structural techniques he named (hooks and friends) are the teaching. Hooks are already element 1 of the plan, so
+  the lesson polishes them, it does not introduce them.
+- **Adapt stays, LAST.** His (4) list did not name it, but on 7 Oct he chose "Seven lessons plus the adapting lesson"
+  explicitly; nothing since withdraws it, and it now rewrites the POLISHED story — the right input.
+- EST total ≈ 4–6 h (was 3–5 h); still unmeasured.
