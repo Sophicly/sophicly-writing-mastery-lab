@@ -594,7 +594,8 @@ class SWML_Protocol_Router {
         // v7.20.651 (#645): AI Engine 3.8.2's catalogue has no claude-sonnet-5-5, and its
         // final_checks() THROWS "The model '…' is not available" for any id it cannot find —
         // so the bot could not be switched to Sonnet 5.5 at all. Register it (update-safe).
-        add_filter('mwai_anthropic_models', [$this, 'register_claude_sonnet_5_5'], 10, 1);
+        add_filter('mwai_anthropic_models', [$this, 'register_claude_5_5_models'], 10, 1);
+        // v7.20.742: the same filter now also registers claude-haiku-5-5 (Neil's marking test, 8 Oct).
         // Route embeddings to the correct vector store based on subject
         add_filter('mwai_context_search', [$this, 'route_vector_store'], 10, 2);
         // Lock-discipline gate: strip/swap ban-list phrasings from retrieved chunks
@@ -971,6 +972,11 @@ class SWML_Protocol_Router {
         // estimate by 1.5x. (Claude API model reference, cached 2026-09-25.)
         if (preg_match('/^claude-sonnet-5(?:-|$)/', $m)) {
             $p = ['input' => 2.00, 'output' => 10.00, 'cache_read' => 0.20, 'cache_write' => 4.00];
+        } elseif (preg_match('/^claude-haiku-5(?:-|$)/', $m)) {
+            // v7.20.742: Haiku 5.5 at the <=100k-token prompt tier. A prompt over 100k tokens
+            // bills every token of that request at 5x ($0.50 / $2.50 / $0.05 / $1.00) — the
+            // daily aggregate cannot see per-request size, so estimates here are a FLOOR.
+            $p = ['input' => 0.10, 'output' => 0.50, 'cache_read' => 0.01, 'cache_write' => 0.20];
         } elseif (strpos($m, 'haiku') !== false) {
             $p = ['input' => 1.00, 'output' => 5.00, 'cache_read' => 0.10, 'cache_write' => 2.00];
         } elseif (strpos($m, 'opus') !== false) {
@@ -1166,22 +1172,35 @@ class SWML_Protocol_Router {
      * covers it, since its pattern matches claude-sonnet-5-5). A later AI Engine that ships
      * its own entry wins: we never add a duplicate. Adding an entry switches nothing — the
      * model a bot uses is still chosen in AI Engine's settings.
+     * (Renamed from register_claude_sonnet_5_5 at v7.20.742 when Haiku 5.5 joined it.)
      */
-    public function register_claude_sonnet_5_5($models) {
+    public function register_claude_5_5_models($models) {
         if (!is_array($models)) return $models;
-        $base = null;
+        // v7.20.742: also claude-haiku-5-5, cloned from claude-sonnet-5 with Haiku 5.5's own
+        // list price at the <=100k-token tier ($0.10 / $0.50, cache read $0.01). Prompts over
+        // 100k tokens bill at 5x — AI Engine has no tiers, so its own price is a floor there.
+        $add = [
+            'claude-sonnet-5-5' => ['name' => 'Claude Sonnet 5.5', 'price' => null],
+            'claude-haiku-5-5'  => ['name' => 'Claude Haiku 5.5',  'price' => ['in' => 0.10, 'out' => 0.50, 'cached' => 0.01]],
+        ];
+        $base = null; $have = [];
         foreach ($models as $m) {
             if (!is_array($m) || !isset($m['model'])) continue;
-            if ($m['model'] === 'claude-sonnet-5-5') return $models;
+            $have[$m['model']] = true;
             if ($m['model'] === 'claude-sonnet-5') $base = $m;
         }
         if ($base === null) return $models;   // unknown catalogue shape — change nothing
-        $base['model'] = 'claude-sonnet-5-5';
-        $base['name']  = 'Claude Sonnet 5.5';
-        if (isset($base['tags']) && is_array($base['tags']) && !in_array('no-temperature', $base['tags'], true)) {
-            $base['tags'][] = 'no-temperature';
+        foreach ($add as $id => $spec) {
+            if (isset($have[$id])) continue;   // a later AI Engine that ships its own entry wins
+            $e = $base;
+            $e['model'] = $id;
+            $e['name']  = $spec['name'];
+            if ($spec['price'] !== null) $e['price'] = $spec['price'];
+            if (isset($e['tags']) && is_array($e['tags']) && !in_array('no-temperature', $e['tags'], true)) {
+                $e['tags'][] = 'no-temperature';
+            }
+            $models[] = $e;
         }
-        $models[] = $base;
         return $models;
     }
 

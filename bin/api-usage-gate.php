@@ -47,7 +47,7 @@ $code = "class SWML_Protocol_Router {\n    public \$is_wml_outbound = true;\n"
       . slice_method($src, 'record_anthropic_usage') . "\n"
       . slice_method($src, 'maybe_capture_exchange') . "\n"   // v7.20.675: called by the recorder
       . slice_method($src, 'extend_anthropic_cache_ttl') . "\n"
-      . slice_method($src, 'register_claude_sonnet_5_5') . "\n"
+      . slice_method($src, 'register_claude_5_5_models') . "\n"
       . slice_method($src, '_accumulate_usage') . "\n"
       . slice_method($src, 'token_prices') . "\n}";
 eval($code);
@@ -145,12 +145,19 @@ ok($same, 'next turn: every message up to the old cache point is byte-identical 
 $j1 = json_decode($r->extend_anthropic_cache_ttl(['body' => json_encode(['model' => 'claude-sonnet-5', 'system' => [['type' => 'text', 'text' => 'PROTOCOL', 'cache_control' => ['type' => 'ephemeral']]], 'messages' => [['role' => 'user', 'content' => 'first']]])], $URL)['body'], true);
 ok(substr_count(json_encode($j1), 'cache_control') === 1, 'a first turn (no earlier message) keeps only the instructions cache point');
 
-echo "\n7. SONNET 5.5 REGISTRATION (v7.20.651) — AI Engine 3.8.2 throws on an unlisted model\n";
-$cat = [['model' => 'claude-sonnet-5', 'name' => 'Claude Sonnet 5', 'tags' => ['core', 'no-temperature']]];
-$cat2 = $r->register_claude_sonnet_5_5($cat);
-ok(count($cat2) === 2 && $cat2[1]['model'] === 'claude-sonnet-5-5' && in_array('no-temperature', $cat2[1]['tags'], true), 'claude-sonnet-5-5 added, cloned from claude-sonnet-5, no-temperature kept');
-ok(count($r->register_claude_sonnet_5_5($cat2)) === 2, 'never added twice (a later AI Engine entry wins)');
-ok($r->register_claude_sonnet_5_5([['model' => 'claude-haiku-4-5']]) === [['model' => 'claude-haiku-4-5']], 'no sonnet-5 base → catalogue untouched');
+echo "\n7. CLAUDE 5.5 REGISTRATION (v7.20.651 Sonnet, v7.20.742 Haiku) — AI Engine 3.8.x throws on an unlisted model\n";
+$cat = [['model' => 'claude-sonnet-5', 'name' => 'Claude Sonnet 5', 'price' => ['in' => 2.00, 'out' => 10.00, 'cached' => 0.2], 'tags' => ['core', 'no-temperature']]];
+$cat2 = $r->register_claude_5_5_models($cat);
+$ids = array_column($cat2, 'model');
+ok($ids === ['claude-sonnet-5', 'claude-sonnet-5-5', 'claude-haiku-5-5'], 'claude-sonnet-5-5 AND claude-haiku-5-5 added, cloned from claude-sonnet-5');
+ok(in_array('no-temperature', $cat2[1]['tags'], true) && in_array('no-temperature', $cat2[2]['tags'], true), 'both keep no-temperature');
+ok($cat2[1]['price']['in'] == 2.00 && $cat2[2]['price']['in'] == 0.10 && $cat2[2]['price']['out'] == 0.50, 'Sonnet 5.5 keeps $2/$10; Haiku 5.5 carries its own $0.10/$0.50');
+ok(count($r->register_claude_5_5_models($cat2)) === 3, 'never added twice (a later AI Engine entry wins)');
+ok($r->register_claude_5_5_models([['model' => 'claude-haiku-4-5']]) === [['model' => 'claude-haiku-4-5']], 'no sonnet-5 base → catalogue untouched');
+ok(preg_match('/^claude-[a-z]+-5(?:[.-]|$)/', 'claude-haiku-5-5') === 1 && strpos($src, "'/^claude-[a-z]+-5(?:[.-]|\$)/'") !== false, 'the temperature strip still covers claude-haiku-5-5');
+$hp = SWML_Protocol_Router::token_prices('claude-haiku-5-5');
+ok($hp['input'] == 0.10 && $hp['output'] == 0.50 && $hp['cache_read'] == 0.01, 'token_prices: Haiku 5.5 at the <=100k tier, not Haiku 4.5\'s $1/$5');
+ok(SWML_Protocol_Router::token_prices('claude-haiku-4-5')['input'] == 1.00, 'token_prices: Haiku 4.5 unchanged');
 
 echo "\n8. STUDENT PROFILE STAYS OUT OF THE CACHED PREAMBLE (v7.20.660) — it changes mid-marking\n";
 // Measured staging 2026-09-29: "Assessments completed: 1 → 2" inside the cached instructions = a full
