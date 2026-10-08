@@ -108,6 +108,9 @@ $p = SWML_Protocol_Router::token_prices('claude-sonnet-5');
 // Sonnet 4 rate of $3 / $0.30, which overstated every recorded estimate by 1.5x).
 ok($p['input'] == 2.00 && $p['cache_read'] == 0.20 && $p['cache_write'] == 4.00, 'sonnet 5: fresh input $2.00/M vs cache read $0.20/M (10x), 1h write $4.00/M');
 ok(SWML_Protocol_Router::token_prices('claude-sonnet-5-5')['output'] == 10.00, 'sonnet 5.5 priced as sonnet 5 ($10/M output)');
+// v7.20.750: Sonnet 5.5 cache hits halved to 0.05x input = $0.10/M (platform.claude.com, 2026-10-08);
+// Sonnet 5 keeps 0.1x = $0.20 (asserted above) — the two must not share one row any more.
+ok(SWML_Protocol_Router::token_prices('claude-sonnet-5-5')['cache_read'] == 0.10, 'sonnet 5.5 cache read $0.10/M (half of sonnet 5)');
 ok(SWML_Protocol_Router::token_prices('claude-haiku-4-5')['input'] == 1.00, 'haiku priced separately');
 ok(SWML_Protocol_Router::token_prices('claude-opus-5')['input'] == 15.00,   'opus priced separately');
 

@@ -972,6 +972,9 @@ class SWML_Protocol_Router {
         // estimate by 1.5x. (Claude API model reference, cached 2026-09-25.)
         if (preg_match('/^claude-sonnet-5(?:-|$)/', $m)) {
             $p = ['input' => 2.00, 'output' => 10.00, 'cache_read' => 0.20, 'cache_write' => 4.00];
+            // v7.20.750: Sonnet 5.5 cache hits are 0.05x input = $0.10 (platform.claude.com pricing,
+            // read 2026-10-08 — Neil spotted the cut). Sonnet 5 stays 0.1x = $0.20.
+            if (preg_match('/^claude-sonnet-5-5(?:-|$)/', $m)) $p['cache_read'] = 0.10;
         } elseif (preg_match('/^claude-haiku-5(?:-|$)/', $m)) {
             // v7.20.742: Haiku 5.5 at the <=100k-token prompt tier. A prompt over 100k tokens
             // bills every token of that request at 5x ($0.50 / $2.50 / $0.05 / $1.00) — the
