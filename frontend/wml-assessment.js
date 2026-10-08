@@ -6800,12 +6800,16 @@
             // v7.19.431: NEVER destroy existing content (empty → write; existing → append;
             // exact-dup → skip). v7.19.660: write logic extracted to _writeOutlineRowField
             // (shared with the deterministic CW-Step-1 controller).
-            let wrote = false;
-            fields.forEach(fid => { if (_writeOutlineRowField(fid, verbatim)) wrote = true; });
+            let wrote = false, refined = 0;
+            fields.forEach(fid => {
+                // v7.20.762 (#805h-4): this reply's own approval already put the refined line in this box.
+                if (_planFanoutRefined.reply === aiReply && _planFanoutRefined.ids.has(fid)) { refined++; console.log('[WML FieldFill]', fid, 'refined by this reply\'s approval — raw answer not appended'); return; }
+                if (_writeOutlineRowField(fid, verbatim)) wrote = true;
+            });
             // v7.20.209: SILENT-SKIP guard (task-scoping rule 4) — markers present but zero
             // writes is the "saved fine but nothing shows up" class; name the fields loudly.
             // (Exact-dup skips also land here — that's signal too on a fresh turn.)
-            if (!wrote) console.warn('[WML FieldFill] @FIELD_COMMIT present but nothing written', fields);
+            if (!wrote && refined < fields.length) console.warn('[WML FieldFill] @FIELD_COMMIT present but nothing written', fields);
             if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
             // v7.20.50: planning filings advance the granular canvas-derived sidebar.
             if (wrote && state.task === 'planning') setTimeout(_refreshPlanningSidebar, 250);
@@ -8317,6 +8321,12 @@
         if (l.indexOf('context') === 0) return 'context';
         return null;
     }
+    // v7.20.762 (#805h-4): the outline boxes THIS reply's approval refined. A one-exchange beat (AQA P2 Q4
+    // intro/conclusion) carries @FIELD_SET and @FIELD_COMMIT in ONE reply; both pipelines apply the sets
+    // first, so the commit then APPENDED the raw answer under the refined line (staging walk, 8 Oct:
+    // outline-intro-thesis-q4 / outline-conclusion-thesis held both). applyFieldCommits skips a box listed
+    // here for the same reply — the refined line is the approved content, exactly as for body paragraphs.
+    let _planFanoutRefined = { reply: null, ids: new Set() };
     // The fan-out. live=true (approval turn): the refined text supersedes the raw dictation
     // unconditionally — the A)-Happy click IS the consent. live=false (transcript replay):
     // only fills an EMPTY row or re-fills an untouched prior fan-out (provenance hash) —
@@ -8347,10 +8357,11 @@
                 });
                 if (pos === null) { console.warn('WML PlanFan: no row for', w.fid, '(mapping miss — check the protocol registry)'); return; }
                 const existing = (node.textContent || '').trim();
-                if (_fsNorm(existing) === w.norm) return;                 // already refined — idempotent
+                if (_fsNorm(existing) === w.norm) { if (live) _planFanoutRefined.ids.add(w.fid); return; } // already refined — idempotent
                 if (!live && existing && _autoFillRecall('fan:' + w.fid) !== _autoFillHash(_fsNorm(existing))) return; // replay: student work wins
                 canvasEditor.commands.insertContentAt({ from: pos + 1, to: pos + node.nodeSize - 1 }, w.content);
                 _autoFillRemember('fan:' + w.fid, w.norm);
+                if (live) _planFanoutRefined.ids.add(w.fid);
                 wrote++;
             });
             if (wrote) console.log('WML PlanFan:', planField, '→ refined', wrote, 'outline box(es)');
@@ -8385,6 +8396,7 @@
                 if (fid && val) sets.push({ field: fid, value: val });
             }
             if (!sets.length) return;
+            if (!(opts && opts.replay)) _planFanoutRefined = { reply: aiReply, ids: new Set() };   // v7.20.762 (#805h-4)
             _applyFieldValueSets(sets, opts);
         } catch (e) {
             console.warn('WML FieldSet: error (non-fatal)', e && e.message);
@@ -11593,14 +11605,19 @@
     //     penalties ("… — no W1 penalty applied") plus their visible deliberation leaked
     //     into a FILED card. Applied-only is the rule: any penalty bullet ending in a
     //     not-applied verdict is stripped (the protocol keeps the rule; code enforces it).
+    // v7.20.762 (#805h-1): (a) runs for EVERY task — the planning protocols end each question on the
+    // same gate line, and the task-name guard that used to wrap the whole function left a planning
+    // student with the four options as plain text (staging walk, 8 Oct: Q3→Q4 gate, no chips).
+    // (b) stays assessment-only: it edits marking cards, which only assessments file.
     function _normalizeAssessmentReply(reply) {
         try {
             if (!reply) return reply;
-            if (state.task !== 'assessment' && state.task !== 'redraft_assessment') return reply;
             let out = String(reply);
-            const preLen = out.length;
-            out = out.replace(/^[ \t]*[-*•][^\n]*(?:no\s+(?:[A-Za-z0-9-]+\s+)?penalt(?:y|ies)\s+(?:is\s+|was\s+)?applied|penalt(?:y|ies)[^\n]*\bnot\s+applied)[^\n]*$\n?/gim, '');
-            if (out.length !== preLen) console.log('WML normalise: stripped rejected-penalty bullet(s) (−' + (preLen - out.length) + ' chars)');
+            if (state.task === 'assessment' || state.task === 'redraft_assessment') {
+                const preLen = out.length;
+                out = out.replace(/^[ \t]*[-*•][^\n]*(?:no\s+(?:[A-Za-z0-9-]+\s+)?penalt(?:y|ies)\s+(?:is\s+|was\s+)?applied|penalt(?:y|ies)[^\n]*\bnot\s+applied)[^\n]*$\n?/gim, '');
+                if (out.length !== preLen) console.log('WML normalise: stripped rejected-penalty bullet(s) (−' + (preLen - out.length) + ' chars)');
+            }
             const gateRe = /Does that clear it up\?\s*Shall we (?:continue with|move to)/i;
             if (gateRe.test(out) && !/\[\s*✓?\s*Got it\s*—?\s*continue\s*\]/i.test(out)
                 && !/\[ASSESSMENT_COMPLETE\]/i.test(out) && !/@SUMMARY_COMPLETE/.test(out)) {

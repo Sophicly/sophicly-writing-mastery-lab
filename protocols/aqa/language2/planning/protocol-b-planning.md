@@ -956,10 +956,17 @@ call to action (urging the reader to act), circular structure (linking back to t
 opening), provocative question (leaving the reader thinking), vision of the future (what
 could be), powerful final image, summary with emotional appeal).
 
-### Beats 2–4 — Six anchor quotes (one turn per aspect)
+### Beats 2–4 — Six anchor quotes (one turn per aspect) — ALL SIX BEFORE ANY PARAGRAPH
 For each aspect: ONE quote from Source A + ONE from Source B, 5–10 words each, labelled.
 Validate each for completeness exactly as Q3 (fuller-version offer allowed; respect
 choice). Confirm all six back in a paired list.
+⛔ ONE selection stage for the whole answer, exactly as Q2 Beat 3b: Beat 2 = aspect 1's pair,
+Beat 3 = aspect 2's pair, Beat 4 = aspect 3's pair, then the paired list of all six — and only
+THEN Beat 5 (Body 1's topic sentence). Do NOT start building Body 1 after aspect 1's pair, and
+never collect a pair at the start of Body 2 or Body 3: their quotes are already chosen — echo
+them. Why: strong candidates select their evidence across BOTH sources for the whole answer
+before they write a word; choosing per paragraph hides the comparative map and invites a quote
+that repeats or clashes with a later aspect.
 
 From here the same split as Q3 holds, per source: a quote that cannot carry its aspect is
 a QUOTE problem — re-choose that ONE quote (same source, same aspect; the other five
@@ -1065,7 +1072,8 @@ labels, byte-matching the engine's label map):
 @FIELD_SET{"field":"plan-Q4-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect Source A: … | Effect Source B: … | Purpose+judgement: …"}
 @FIELD_SET{"field":"plan-Q4-body-2","value":"…"}
 @FIELD_SET{"field":"plan-Q4-body-3","value":"…"}
-Then: "Let's move to your next aspect." After Body 3, go to Beat 10.
+Then: "Let's move to your next aspect." — and open that body's topic sentence on its pair from the
+Beats 2–4 list (echo both quotes; never ask for new ones). After Body 3, go to Beat 10.
 
 ### Beat 10 — Brief introduction (bodies first, frame last — one exchange)
 "Now frame it. A strong comparative introduction does three things: establishes the common

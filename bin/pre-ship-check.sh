@@ -766,6 +766,10 @@ node bin/weekend-story-harness.js || fail=1
 node bin/structure-lock-harness.js || fail=1
 # v7.20.760 (#803): one Mark Scheme Assessment per topic → one quiz key (resume record + server session) per topic.
 node bin/msa-topic-key-harness.js || fail=1
+# v7.20.762 (#805h, staging walk of AQA P2 Q4 planning): gate buttons in PLANNING (not only assessments), no
+# doubled intro/conclusion outline box when one reply carries @FIELD_SET + @FIELD_COMMIT, and the Q4 protocol keeps
+# "all six quotes before any paragraph". Shipped functions, real walk replies; 5/5 defects caught on the .752 tree.
+node bin/plan-gate-fanout-harness.js || fail=1
 # v7.20.549 (Neil: "we've had this problem before, so I think you need to make a gate for that").
 # The two gates above guard PARTS — which reader answers, and where a paragraph begins. This one
 # guards the ARTEFACT: the exact payload the marker is handed for a real multi-question paper.
