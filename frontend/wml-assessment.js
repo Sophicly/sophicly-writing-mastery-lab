@@ -6023,6 +6023,88 @@
         return out;
     }
     // @CW-SPINE-WORLD-PURE-END
+    // @CW-POLTI-PURE-BEGIN
+    // ⭐ v7.20.743 — LESSON 5 OF THE WEEKEND STORY IS BUILT AROUND A DRAMATIC SITUATION (Neil, 8 Oct:
+    // "much more focused on, let's say, Polti's dramatic situations"; PEDAGOGY §55.1, plan §2a).
+    // THE LIST IS OURS: Neil's adapted "33 Dramatic Situations based on Georges Polti's Ideas"
+    // (protocols/shared/creative-writing/_polti-33-source.md — `src` is that file's heading, in its
+    // order; its index repeats #22 in #23's cell, the detail section is right). Student words are
+    // plain (root §5c-ii): the 1916 wording ("kinsman", "brigandage", "alienist") never reaches a
+    // screen, and the source's sub-variants are not shown at all (several are sexual — N566).
+    // Examples: famous moments, weighted to the texts our students sit (root §5c-i), no quotations.
+    // Gated by bin/weekend-story-harness.js (section H) against the source file.
+    const CW_POLTI_33 = [
+        { id: 1, src: 'Supplication', name: 'Begging for Help', what: 'Someone in trouble begs a powerful person for help, and nobody knows what that person will decide.', roles: ['the one begging', 'the one causing the trouble', 'the powerful one who decides'], eg: 'In *Oliver Twist*, starving Oliver asks the workhouse master for more food, and is punished for asking.' },
+        { id: 2, src: 'Deliverance', name: 'The Rescue', what: 'Someone is about to suffer, and a rescuer arrives in time to save them.', roles: ['the one in danger', 'the threat', 'the rescuer'], eg: 'In *Harry Potter and the Chamber of Secrets*, Harry goes down into the Chamber to save Ginny from Tom Riddle.' },
+        { id: 3, src: 'Crime Pursued by Vengeance', name: 'Revenge', what: 'Someone sets out to punish the person who did them a terrible wrong.', roles: ['the avenger', 'the wrongdoer'], eg: 'In *Macbeth*, Macduff hunts down Macbeth, who had his wife and children murdered.' },
+        { id: 4, src: 'Vengeance Taken for Kindred upon Kindred', name: 'Revenge Inside the Family', what: 'Someone must punish a member of their own family for harming another member of it.', roles: ['the avenger', 'the guilty relative', 'the memory of the victim', 'a relative caught between them'], eg: 'In *Hamlet*, Hamlet must avenge his father on his uncle Claudius, who has married Hamlet’s mother.' },
+        { id: 5, src: 'Pursuit', name: 'The Chase', what: 'Someone is on the run, and someone (or something) is hunting them.', roles: ['the one on the run', 'the hunter'], eg: 'In *Les Misérables*, the police inspector Javert hunts Jean Valjean for years.' },
+        { id: 6, src: 'Disaster', name: 'Disaster Strikes', what: 'Something powerful is defeated or destroyed, and the people who depended on it are left to face what comes next.', roles: ['what is defeated or destroyed', 'the force that wins (or the messenger who brings the news)'], eg: 'The *Titanic*, the ship people called unsinkable, hits an iceberg and sinks.' },
+        { id: 7, src: 'Falling Prey to Cruelty or Misfortune', name: 'At the Mercy of Others', what: 'An innocent person suffers because of someone cruel, or because of terrible luck.', roles: ['the one who suffers', 'the cruel one, or the bad luck'], eg: 'In *An Inspector Calls*, each of the Birlings makes Eva Smith’s life worse until she has nowhere left to turn.' },
+        { id: 8, src: 'Revolt', name: 'Rebellion', what: 'People who are treated unfairly rise up against the one in charge.', roles: ['the one in charge', 'the rebels'], eg: 'In *Animal Farm*, the animals rise up and drive Mr Jones off his farm.' },
+        { id: 9, src: 'Daring Enterprise', name: 'The Daring Mission', what: 'A bold leader attempts something dangerous to win a prize, and an enemy stands in the way.', roles: ['the bold leader', 'the prize', 'the enemy'], eg: 'In *The Hobbit*, Thorin leads his company to win back their treasure from the dragon Smaug.' },
+        { id: 10, src: 'Abduction', name: 'The Kidnap', what: 'Someone is taken away against their will, and someone tries to protect them or bring them back.', roles: ['the kidnapper', 'the one taken', 'the protector'], eg: 'In *Tangled*, Mother Gothel steals baby Rapunzel from the castle and hides her in a tower.' },
+        { id: 11, src: 'The Enigma', name: 'The Mystery', what: 'Someone must solve a puzzle, and a lot depends on the answer.', roles: ['the one who sets the puzzle', 'the one trying to solve it', 'the puzzle'], eg: 'In *Jekyll and Hyde*, Utterson tries to work out what hold the brutal Mr Hyde has over his friend Dr Jekyll.' },
+        { id: 12, src: 'Obtaining', name: 'Winning Someone Over', what: 'Someone tries to get something from a person who keeps saying no, or argues their side in front of a judge.', roles: ['the one asking', 'the one refusing (or the judge between two sides)'], eg: 'In *Macbeth*, Lady Macbeth works on her doubting husband until he agrees to kill King Duncan.' },
+        { id: 13, src: 'Enmity of Kinsmen', name: 'Family at War', what: 'Two members of the same family hate each other, and one means the other harm.', roles: ['the one who means harm', 'the hated relative'], eg: 'In *The Lion King*, Scar plots against his own brother, King Mufasa.' },
+        { id: 14, src: 'Rivalry of Kinsmen', name: 'Family Rivals', what: 'Two people in one family compete for the same thing, and one of them is favoured.', roles: ['the favoured one', 'the one pushed aside', 'the prize'], eg: 'Joseph is his father’s favourite son, so his jealous brothers sell him as a slave.' },
+        { id: 15, src: 'Madness', name: 'A Mind Breaks', what: 'Someone’s mind gives way, and the people around them pay for it.', roles: ['the one losing their mind', 'the victim'], eg: 'In Edgar Allan Poe’s *The Tell-Tale Heart*, a man who insists he is sane murders the old man he lives with.' },
+        { id: 16, src: 'Fatal Imprudence', name: 'The Fatal Mistake', what: 'A careless or reckless choice costs someone dearly.', roles: ['the careless one', 'the person or thing lost'], eg: 'Icarus ignores his father’s warning, flies too close to the sun, and his wax wings melt.' },
+        { id: 17, src: 'Slaying of a Kinsman Unrecognized', name: 'Harming Your Own Without Knowing', what: 'Someone harms a person without knowing that person is family.', roles: ['the one who strikes', 'the relative they do not recognise'], eg: 'In *Blood Brothers*, Mickey and Eddie never learn they are twins until the final scene, when Mickey shoots Eddie.' },
+        { id: 18, src: 'Self-Sacrificing for an Ideal', name: 'Sacrifice for a Cause', what: 'Someone gives up their safety, happiness or life for something they believe in.', roles: ['the hero', 'the cause', 'what they give up'], eg: 'In *Animal Farm*, Boxer works himself to collapse for the farm he believes in, and the pigs sell him to the knacker.' },
+        { id: 19, src: 'Self-Sacrifice for Kindred', name: 'Sacrifice for Family', what: 'Someone gives up something precious to save a member of their family.', roles: ['the hero', 'the relative they save', 'what they give up'], eg: 'In *The Hunger Games*, Katniss volunteers to take her little sister Prim’s place.' },
+        { id: 20, src: 'All Sacrificed for a Passion', name: 'Lost to an Obsession', what: 'Someone throws away everything for the one thing they cannot stop wanting.', roles: ['the obsessed one', 'what they are obsessed with', 'what they lose'], eg: 'In *The Lord of the Rings*, Gollum gives up his friend, his home and finally himself for the Ring.' },
+        { id: 21, src: 'Necessity of Sacrificing Loved Ones', name: 'The Impossible Choice', what: 'Someone is forced to give up a person they love because something else demands it.', roles: ['the one who must choose', 'the person they love', 'what forces the choice'], eg: 'In *Blood Brothers*, Mrs Johnstone cannot afford another baby, so she gives one of her twins to Mrs Lyons.' },
+        { id: 22, src: 'Rivalry of Superior and Inferior', name: 'Unequal Rivals', what: 'Two rivals want the same thing, but one has far more power, money or status.', roles: ['the stronger rival', 'the weaker rival', 'the prize'], eg: 'In *Cinderella*, the stepsisters have every advantage, yet Cinderella is the one who wins the prince.' },
+        { id: 23, src: 'Discovery of the Dishonor of a Loved One', name: 'A Shameful Discovery', what: 'Someone finds out that a person they love has done something shameful.', roles: ['the one who finds out', 'the one who did wrong'], eg: 'In *Jekyll and Hyde*, Utterson discovers that his respected friend Dr Jekyll and the brutal Mr Hyde are the same man.' },
+        { id: 24, src: 'Obstacles to Marriage', name: 'Love Against the Odds', what: 'Two people want to be together, and something stands in their way.', roles: ['the two who love each other', 'the obstacle'], eg: 'In *Romeo and Juliet*, the feud between their families stands between Romeo and Juliet.' },
+        { id: 25, src: 'An Enemy Loved', name: 'Loving the Enemy', what: 'Someone comes to love a person their own side hates.', roles: ['the loved enemy', 'the one who loves them', 'the one who hates them'], eg: 'In *Beauty and the Beast*, Belle comes to love the Beast while Gaston leads the village against him.' },
+        { id: 26, src: 'Ambition', name: 'Ambition', what: 'Someone will do anything to get what they want, and someone stands in their way.', roles: ['the ambitious one', 'what they want', 'whoever stands in the way'], eg: 'In *Macbeth*, Macbeth murders King Duncan to take his crown.' },
+        { id: 27, src: 'Conflict with a God', name: 'Against a Higher Power', what: 'A person takes on something far greater than any human: a god, fate, or nature itself.', roles: ['the person', 'the higher power'], eg: 'In *Moana*, Moana crosses the ocean to face the fiery Te Kā and return the heart of the goddess Te Fiti.' },
+        { id: 28, src: 'Mistaken Jealousy', name: 'Jealousy Built on a Lie', what: 'Someone becomes jealous because they believe something that is not true.', roles: ['the jealous one', 'the one they fear losing', 'the supposed rival', 'whoever caused the mistake'], eg: 'In *Othello*, Iago tricks Othello into believing his wife Desdemona has betrayed him.' },
+        { id: 29, src: 'Erroneous Judgement', name: 'Wrongly Blamed', what: 'An innocent person is blamed for something they did not do.', roles: ['the one who judges wrongly', 'the innocent one', 'whoever caused the mistake', 'the real culprit'], eg: 'In *Animal Farm*, Napoleon blames the exiled Snowball when the windmill collapses.' },
+        { id: 30, src: 'Remorse', name: 'Guilt', what: 'Someone is haunted by a wrong they have done, and something makes them face it.', roles: ['the guilty one', 'the wrong they did (or the person they wronged)', 'whoever makes them face it'], eg: 'In *A Christmas Carol*, the ghosts make Scrooge face the harm his meanness has done.' },
+        { id: 31, src: 'Recovery of a Lost One', name: 'Finding the Lost One', what: 'Someone searches for a person they have lost.', roles: ['the searcher', 'the one who is lost'], eg: 'In *Finding Nemo*, Marlin crosses the ocean to find his son Nemo.' },
+        { id: 32, src: 'Loss of Loved Ones', name: 'Losing Someone You Love', what: 'Someone watches as a person they love is taken from them.', roles: ['the one who is lost', 'the one who watches', 'the one responsible'], eg: 'In *Romeo and Juliet*, Romeo watches his best friend Mercutio die at Tybalt’s hand.' },
+        { id: 33, src: 'Mistaken Identity', name: 'Mistaken Identity', what: 'Someone is taken for somebody else, and the mix-up causes trouble.', roles: ['the one mistaken', 'the person they are taken for', 'the one who makes the mistake'], eg: 'In *The Prince and the Pauper*, a prince and a poor boy who look alike swap places.' },
+    ];
+    function _poltiById(id) { return CW_POLTI_33.filter(function (s) { return s.id === id; })[0] || null; }
+    // Sophia's ONE judgement turn ends on `@POLTI_PICKS{"picks":[{"id":9,"beat":3,"roles":["…"]}]}`.
+    // Code trusts nothing in it: an id must be one of OUR 33, a beat must be one the student WROTE,
+    // roles are short strings, duplicates drop. Anything unusable → [] and the walk offers the full
+    // list instead (fail-open: a dropped marker never strands the student, §4d).
+    function _poltiParsePicks(reply, beatsWritten) {
+        const s = String(reply || '').replace(/@POLTI\\_PICKS/g, '@POLTI_PICKS');
+        const at = s.lastIndexOf('@POLTI_PICKS');
+        if (at === -1) return [];
+        const open = s.indexOf('{', at);
+        if (open === -1) return [];
+        let depth = 0, end = -1;
+        for (let i = open; i < s.length; i++) {
+            if (s[i] === '{') depth++;
+            else if (s[i] === '}') { depth--; if (!depth) { end = i; break; } }
+        }
+        if (end === -1) return [];
+        let obj = null;
+        try { obj = JSON.parse(s.slice(open, end + 1)); } catch (e) { return []; }
+        const raw = (obj && Array.isArray(obj.picks)) ? obj.picks : [];
+        const ok = Array.isArray(beatsWritten) ? beatsWritten : [];
+        const seen = {};
+        const out = [];
+        raw.forEach(function (p) {
+            if (!p || out.length >= 3) return;
+            const id = Number(p.id), beat = Number(p.beat);
+            if (!Number.isInteger(id) || !_poltiById(id) || seen[id]) return;
+            if (!Number.isInteger(beat) || ok.indexOf(beat) === -1) return;
+            const roles = (Array.isArray(p.roles) ? p.roles : [])
+                .map(function (r) { return String(r || '').replace(/\s+/g, ' ').trim(); })
+                .filter(function (r) { return r && r.length <= 90; }).slice(0, 4);
+            seen[id] = true;
+            out.push({ id: id, beat: beat, roles: roles });
+        });
+        return out;
+    }
+    // @CW-POLTI-PURE-END
     // One cache per source artifact: { artifactKey: { id: projectId, map: {fid: text} } }.
     const _cwDocCache = {};
     // ═══════════════════════════════════════════════════════════════════════════════════════
@@ -31065,6 +31147,9 @@
             // longer declare `active: false` by construction — while this is true the student's
             // typed turn belongs to us, not to the AI.
             let askActive = false;
+            // v7.20.743: the weekend lesson's dramatic situation (§2a) — cached from the saved scene state.
+            let situation = null;
+            let poltiPrepped = false;
 
             /* ⭐⭐ v7.20.511 (Neil, live on staging): "it's the three purple chips that actually
                confused me. They shouldn't actually be there."
@@ -31289,7 +31374,166 @@
                         { svg: SCENE_ICON, label: 'Reopen scene selection', go: open },
                     ]);
                 }
+                // v7.20.743 (PEDAGOGY §55.1): in the weekend story the DRAMATIC SITUATION comes first —
+                // it decides what the scene is about, so the picker is not offered until one is chosen.
+                // Not forced on a scene already filed (a student who transferred before this shipped).
+                if (poltiOn()) {
+                    if (!poltiPrepped) { prepPolti().then(ensureChip); return true; }
+                    if (!situation) {
+                        const prev = lastPicksInTranscript();
+                        if (prev.length) return servePickChips(prev);   // resume: never pay for the same suggestion twice
+                        return chipBar([
+                            { label: 'Find my dramatic situation →', go: firePoltiPicks },
+                            { label: 'Show me all 33', go: serveBrowse },
+                        ]);
+                    }
+                    return chipBar([
+                        { svg: SCENE_ICON, label: done ? 'Reopen scene selection' : 'Choose my scene', go: open },
+                        { label: 'Change my dramatic situation', go: changeSituation },
+                    ]);
+                }
                 return chipBar([{ svg: SCENE_ICON, label: done ? 'Reopen scene selection' : 'Choose my scene', go: open }]);
+            }
+
+            // ══════════════════════════════════════════════════════════════════════════════════
+            // v7.20.743 — THE DRAMATIC SITUATION (weekend lesson 5, plan §2a). Unit-only: the full
+            // course's Step 9 never reaches any of this (poltiOn() is false outside a unit lesson).
+            // ONE judgement turn (Sophia reads the spine and suggests three of OUR 33); everything
+            // else — the full list, the cards, the beat, the confirmation — is served from code.
+            // ══════════════════════════════════════════════════════════════════════════════════
+            function poltiOn() { const u = U(); return !!(u && u.polti) && !transferDone(); }
+            function beatsWritten() { return (world && world.stages) ? world.stages.map(function (s) { return s.si + 1; }) : []; }
+            async function prepPolti() {
+                const pid = state.cwProjectId;
+                if (!world) { try { const w = await loadWorld(pid); if (w && w.arch) world = w; } catch (e) {} }
+                try {
+                    const st = await loadState(pid);
+                    situation = (st && st.situation && _poltiById(Number(st.situation.id))) ? st.situation : null;
+                } catch (e) { situation = null; }
+                poltiPrepped = true;   // set even on failure — prepPolti → ensureChip must never loop
+            }
+            // Choosing a situation also chooses where the scene starts: the beat is written into the
+            // SAME saved selection the picker restores from, so the picker opens on it with no new
+            // picker code (restoreInitial does the rest). A changed situation resets the run.
+            function saveSituation(pid, sit) {
+                situation = sit;
+                return loadState(pid).then(function (st) {
+                    st.situation = sit;
+                    if (sit) {
+                        st.arch = 'story-spine';
+                        st.stageIds = ['spine-beat-' + sit.beat];
+                        st.runStartFid = null; st.runEndFid = null; st.cuts = null;
+                    }
+                    persistState(pid, st);
+                });
+            }
+            function situationLine(sit) {
+                const s = sit && _poltiById(Number(sit.id));
+                if (!s) return '';
+                return '**Your dramatic situation: ' + s.name + '.** ' + s.what
+                    + ((sit.roles && sit.roles.length) ? '\n\n' + sit.roles.join(' · ') : '');
+            }
+            function lastPicksInTranscript() {
+                const h = Array.isArray(canvasChatHistory) ? canvasChatHistory : [];
+                for (let i = h.length - 1; i >= 0; i--) {
+                    const m = h[i];
+                    if (m && m.role === 'assistant' && String(m.content || '').indexOf('POLTI') !== -1) {
+                        return _poltiParsePicks(m.content, beatsWritten());
+                    }
+                }
+                return [];
+            }
+            async function firePoltiPicks() {
+                const pid = state.cwProjectId;
+                let map = {};
+                try { map = await _cwLoadDocValues(pid, 'brief_outline', true); } catch (e) {}
+                const w = _cwSpineWorld(map);
+                if (!w.stages.length) { noteBubble(U().noBeatsOpen); poltiPrepped = false; return ensureChip(); }
+                world = w;
+                const spine = w.stages.map(function (s) { return 'Beat ' + (s.si + 1) + ': ' + s.beats[0].text; }).join('\n');
+                const through = String(map['cw-step-4-throughline'] || '').trim();
+                const bank = CW_POLTI_33.map(function (p) {
+                    return p.id + '. ' + p.name + ': ' + p.what + ' Roles: ' + p.roles.join('; ') + '.';
+                }).join('\n');
+                const ctx = '[DRAMATIC SITUATION FINDER — the weekend story, lesson 5. Below are the student’s Story Spine '
+                    + '(the beats they wrote) and OUR list of 33 dramatic situations. Choose the THREE situations from OUR '
+                    + 'list that this spine already contains most strongly. For each one write a short paragraph: its name '
+                    + 'in bold, exactly as our list spells it, then one or two sentences saying where it happens in THEIR '
+                    + 'spine (name the beat by its number) and who plays each role, using their own characters. Plain words '
+                    + 'a twelve-year-old understands, British English. Never use a numbered or lettered list, never ask '
+                    + 'them to type anything (they tap their choice), and never mention a situation that is not on OUR '
+                    + 'list. END YOUR REPLY WITH EXACTLY ONE MARKER ON ITS OWN LINE: '
+                    + '@POLTI_PICKS{"picks":[{"id":<number from our list>,"beat":<the beat number>,"roles":["<role>: <who in their story>"]}]} '
+                    + 'with your three picks in the order you wrote them. The marker is machine-read and never shown.]'
+                    + (through ? '\n\nDRAMATIC THROUGHLINE: ' + through : '')
+                    + '\n\nSTORY SPINE:\n' + spine
+                    + '\n\nOUR 33 DRAMATIC SITUATIONS:\n' + bank;
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                armWalkResume('cw9-polti-picks', function (reply, meta) {
+                    const picks = (!reply || (meta && meta.timedOut)) ? [] : _poltiParsePicks(reply, beatsWritten());
+                    if (!picks.length) {
+                        // FAIL-OPEN (§4d): an unusable or missing marker still leaves a way forward.
+                        noteBubble('I couldn’t match your Story Spine to the list just now, so here are all 33 instead.');
+                        serveBrowse();
+                        return;
+                    }
+                    servePickChips(picks);
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'Which dramatic situations are already in my Story Spine?';
+                sendCanvasMessage();
+            }
+            function servePickChips(picks) {
+                // Our chips ARE the choice: drop any bar the generic detector drew over the reply.
+                try {
+                    const b = chatMessages.lastElementChild;
+                    const bc = b && (b.querySelector('.swml-bubble-content') || b);
+                    if (bc && bc.querySelectorAll) bc.querySelectorAll('.swml-quick-actions:not(.swml-cw9-chips)').forEach(function (n) { n.remove(); });
+                } catch (e) {}
+                const items = picks.map(function (p) {
+                    const s = _poltiById(p.id);
+                    return { label: s.name + ' →', go: function () { choose(p, s, 'suggested'); } };
+                });
+                items.push({ label: 'Show me all 33', go: serveBrowse });
+                return chipBar(items);
+            }
+            // One screen of 33 names (a pick among ALTERNATIVES — §4c.8, not a serial walk); each name
+            // opens its card, so the wall of explanations is never drawn at once.
+            function serveBrowse() {
+                noteBubble('Here are all **33 dramatic situations**. Tap one to see what it means and an example, then decide.');
+                return chipBar(CW_POLTI_33.map(function (s) { return { label: s.name, go: function () { serveCard(s); } }; }));
+            }
+            function serveCard(s) {
+                noteBubble('**' + s.name + '**\n\n' + s.what + '\n\n**The roles:** ' + s.roles.join(' · ') + '\n\n**For example:** ' + s.eg);
+                return chipBar([{ label: 'Use this one →', go: function () { askBeat(s); } }, { label: 'See the others', go: serveBrowse }]);
+            }
+            function askBeat(s) {
+                const st = (world && world.stages) || [];
+                if (!st.length) { noteBubble(U().noBeatsOpen); poltiPrepped = false; return ensureChip(); }
+                noteBubble('Which beat of your Story Spine does **' + s.name + '** happen in? That beat is where your scene will be.');
+                return chipBar(st.map(function (g) {
+                    const t = String(g.beats[0].text || '');
+                    return { label: g.roman + ': ' + (t.length > 60 ? t.slice(0, 57).trim() + '…' : t), go: function () { choose({ id: s.id, beat: g.si + 1, roles: [] }, s, 'browsed'); } };
+                }));
+            }
+            function choose(p, s, how) {
+                const pid = state.cwProjectId;
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: s.name }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
+                addChatMessage(s.name, 'user');
+                const sit = { id: s.id, beat: p.beat, roles: (p.roles && p.roles.length) ? p.roles : s.roles.slice(), how: how };
+                saveSituation(pid, sit);
+                // Present-state (the student can change it) → drawn, never stored (§4c.7).
+                noteBubble(situationLine(sit) + '\n\nYour scene starts at **Beat ' + sit.beat + '** of your Story Spine, and I have selected it for you. If the situation carries on into the next beat, add that one too. Then shape the scene into the 7 elements.');
+                return chipBar([
+                    { svg: SCENE_ICON, label: 'Choose my scene', go: open },
+                    { label: 'Change my dramatic situation', go: changeSituation },
+                ]);
+            }
+            function changeSituation() {
+                saveSituation(state.cwProjectId, null);
+                const prev = lastPicksInTranscript();
+                if (prev.length) { noteBubble('Here are the three I suggested, or you can browse all 33.'); return servePickChips(prev); }
+                return serveBrowse();
             }
             // Transfer is doc-derived, never session-derived: a reload loses lastSnapshot, and
             // the filed rows are the honest record of whether it happened.
@@ -31401,7 +31645,9 @@
                 opened = true;
                 window.WMLSceneIsland.mount({
                     stages: w.stages,
-                    labels: U() ? U().islandLabels : undefined,   // v7.20.737: beats, not stages
+                    // v7.20.737: beats, not stages. v7.20.743: the chosen dramatic situation heads the picker.
+                    labels: U() ? Object.assign({}, U().islandLabels, (U().polti && situation)
+                        ? { sub: situationLine(situation).replace(/\n+/g, ' ') + ' ' + U().islandLabels.sub } : {}) : undefined,
                     elements: ELEMENTS,
                     nudgeRules: NUDGE_RULES,
                     initial: ini.value,
@@ -31860,7 +32106,7 @@
                 atStart: function () { return introProgress() === -1; },
                 start: start,
                 forceStart: function () { introServed = false; start(); },
-                reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; askActive = false; _walkSlot.clear(WALK); try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
+                reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; askActive = false; situation = null; poltiPrepped = false; _walkSlot.clear(WALK); try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
                 onReply: function () { /* zero-API walk: no markers to detect */ },
                 nudge: function () { return ensureChip(); },
                 tryResume: tryResume,
@@ -31877,14 +32123,18 @@
             // island, same filing; the student picks from the six beats of their Story Spine (there
             // is no plot outline in this unit) and every word on screen says so. No step numbers
             // (the unit numbers its own lessons), no "plot" or "stage" (words this student was never
-            // taught — root §5c-ii). Chunks 2 and 3 of the intro are the full lesson's, unchanged.
+            // taught — root §5c-ii). v7.20.743: chunk 3 of the intro is the full lesson's, unchanged; the rest is the Polti lesson's.
             const CW9_UNIT = {
-                greeting: 'Welcome to **Choose Your Scene**\n\nYour Story Spine is finished: six beats, each one causing the next. Now we choose the part of it your exam story will actually tell.',
+                // v7.20.743 (PEDAGOGY §55.1, plan §2a): lesson 5 is "Your Dramatic Situation" — Polti-first.
+                // The situation is chosen before the scene; the rest of the walk is unchanged.
+                polti: true,
+                greeting: 'Welcome to **Your Dramatic Situation**\n\nYour Story Spine is finished: six beats, each one causing the next. Now we find the conflict at the heart of your exam story, and the moment in your spine where it happens.',
                 intro: function () {
                     return [
-                        'Here’s why we pick a scene instead of writing the whole story. Examiners have seen that when students try to tell a full story in the exam, the writing goes shallow — there are simply too many events to cover. We’ve seen exactly the same thing.\n\nA full story really needs about 5,000–10,000 words (novels run 50,000–100,000). In your exam you can only write about ' + WML.cwWordTarget('exam') + ' words.',
+                        'Every gripping scene runs on **one conflict**: someone wants something, and something stands in their way. Over a hundred years ago, a French writer called Georges Polti noticed that stories keep coming back to the same few conflicts: a chase, a rescue, a rebellion, a betrayal. We use a list of **33 of them**, called **dramatic situations**.\n\nEach situation comes with its own roles. In **The Chase**, someone is on the run and someone is hunting them. Your own characters step into those roles.',
+                        'Why choose the situation first? In your exam you write **one scene**, not a whole story: about ' + WML.cwWordTarget('exam') + ' words. A scene built on one clear conflict grips the reader from the first line to the last. A scene that wanders between three conflicts loses them. So your situation decides what the scene is **about**, and that tells you which moment of your Story Spine to write.',
                         CW9_INTRO[1],
-                        'Here’s how it works:\n\n1. **Pick your beat** — one beat of your Story Spine, or two that sit next to each other.\n2. **Mark the run** — tap the first beat of your scene, then the last.\n3. **Shape the scene** — element by element, decide where each part belongs. One sentence of your spine will not fill seven elements on its own, so you will **add in** the moments in between. That is where your scene comes to life.\n\nFrom the moment shaping starts, you can **drag any beat by its ⠿ handle** to change where it goes. Nothing is final as you go. Rough is fine; you can reopen this and change everything later.',
+                        'Here’s how it works:\n\n1. **Find your situation.** I read your Story Spine and suggest the three situations already in it. You can also browse all 33.\n2. **Check the moment.** The beat where your situation happens is selected for you. Keep it, or add the beat next to it.\n3. **Shape the scene.** Element by element, decide where each part belongs. One sentence of your spine will not fill seven elements on its own, so you will **add in** the moments in between. That is where your scene comes to life.\n\nFrom the moment shaping starts, you can **drag any beat by its ⠿ handle** to move it. Rough is fine; you can come back and change everything later.',
                     ];
                 },
                 nextStep: 'the next lesson',

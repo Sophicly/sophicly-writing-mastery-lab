@@ -18,6 +18,7 @@
  *   E · no unit string names a course step, a plot or a stage (root §5c-ii; plan §5 grep gate)
  *   F · the wiring: shortcode → embed config → state → session → router note
  *   G · the island's DEFAULT words are the prototype's, byte for byte (root §13)
+ *   H · the 33 dramatic situations (v7.20.743): our source's order + names, plain and safe words, the marker validator
  */
 'use strict';
 const fs = require('fs');
@@ -71,6 +72,11 @@ const pb = SRC.indexOf('    const CW_STEP4_SPINE = [');
 const pe = SRC.indexOf('// @CW-SPINE-WORLD-PURE-END');
 ok(pb > 0 && pe > pb && SRC.indexOf('// @CW-SPINE-WORLD-PURE-BEGIN') > pb, 'the spine world is fenced for this harness');
 const SPINE = new Function(SRC.slice(pb, pe) + '\nreturn { _cwSpineWorld, CW_SPINE_POSITIONS, CW_STEP4_SPINE };')();   // eslint-disable-line no-new-func
+// ── H-prep · the Polti bank + its marker validator (v7.20.743), executed from the source ─────────
+const qb = SRC.indexOf('// @CW-POLTI-PURE-BEGIN');
+const qe = SRC.indexOf('// @CW-POLTI-PURE-END');
+ok(qb > 0 && qe > qb, 'the dramatic-situation bank is fenced for this harness');
+const POLTI = new Function(SRC.slice(qb, qe) + '\nreturn { CW_POLTI_33, _poltiById, _poltiParsePicks };')();   // eslint-disable-line no-new-func
 const BEAT_TEXT = {
     'cw-step-4-beat1': 'At first, a girl walks the long way to school so she never has to pass the asylum.',
     'cw-step-4-beat2': 'And then, every morning she keeps her hood up and her eyes on the pavement.',
@@ -118,6 +124,7 @@ function world(opts) {
             DOMParser: function () {}, OUTLINE_CRITERIA: { cwPlotArchetypes: ARCH }, _cw6RowFieldId: () => '',
             document: { querySelector() { return null; }, querySelectorAll() { return []; }, getElementById() { return null; }, createTextNode(t) { return { textContent: t }; } },
             _cwSpineWorld: SPINE._cwSpineWorld,
+            CW_POLTI_33: POLTI.CW_POLTI_33, _poltiById: POLTI._poltiById, _poltiParsePicks: POLTI._poltiParsePicks,
             // the REAL loader's contract: artifact → { fid: text } (the fixture IS that map)
             _cwLoadDocValues: (pid, key) => Promise.resolve(key === 'brief_outline' && store.brief_outline ? store.brief_outline : {}),
             _cwWriteOutlineRowLines: function (fid, lines) { if (!CUR.rows.has(fid)) { CUR.lostWrite = fid; return false; } CUR.rows.set(fid, lines.join('\n')); return true; },
@@ -164,16 +171,46 @@ const SEVEN = (hook, setup) => [
         const re = chip(w, /check again/);
         ok(!!re, 'the way forward is a re-check, not a link to the full course\'s Steps page');
         if (re) w.tap(re);
-        await until(w, () => /Choose Your Scene/.test(w.bubbles[w.bubbles.length - 1] || ''));
+        await until(w, () => /Your Dramatic Situation/.test(w.bubbles[w.bubbles.length - 1] || ''));
         const greet = w.bubbles[w.bubbles.length - 1] || '';
-        ok(/Choose Your Scene/.test(greet) && !LEAK_RE.test(greet), 'the re-check re-derives: the lesson greets as "Choose Your Scene"', greet);
+        ok(/Your Dramatic Situation/.test(greet) && !LEAK_RE.test(greet), 'the re-check re-derives: the lesson greets as "Your Dramatic Situation"', greet);
         w.tap(chip(w, /Let’s go/)); await settle();
-        for (let i = 0; i < 4 && chip(w, /Continue/); i++) { w.tap(chip(w, /Continue/)); await settle(); }
+        for (let i = 0; i < 5 && chip(w, /Continue/); i++) { w.tap(chip(w, /Continue/)); await settle(); }
         const intro = w.bubbles.join('\n');
         ok(/about 350–450 words/.test(intro), 'the intro states the student\'s OWN board\'s length (Cambridge 350–450)', intro.match(/write about [^.]*/));
         ok(!LEAK_RE.test(intro), 'no step number, plot or stage anywhere in the unit intro', (intro.match(new RegExp('.{0,40}(' + LEAK_RE.source + ').{0,40}', 'i')) || [])[0]);
+        ok(/Georges Polti/.test(intro) && /33/.test(intro) && /dramatic situations/.test(intro), 'the intro teaches what a dramatic situation is, and that the list is 33');
+        // ⭐ v7.20.743 (§55.1): the SITUATION comes first — the picker is not offered until one is chosen.
+        await until(w, () => !!chip(w, /Find my dramatic situation/));
+        ok(!!chip(w, /Find my dramatic situation/) && !!chip(w, /Show me all 33/), '⭐ the intro ends on the situation chips (liveness)');
+        ok(!chip(w, /Choose my scene/), '⭐ the scene picker is NOT offered before a situation is chosen');
+        ok(w.sends.length === 0, 'no API call until the student asks for suggestions');
+        w.tap(chip(w, /Find my dramatic situation/));
+        await until(w, () => w.sends.length > 0);
+        ok(w.sends.length === 1 && w.sends[0].id === 'cw9-polti-picks', '⭐ ONE judgement turn, armed as the Polti hand-off', w.sends);
+        const hid = (w.deps.canvasChatHistory || []).filter((m) => m.hidden && /DRAMATIC SITUATION FINDER/.test(m.content)).pop();
+        ok(!!hid, 'the hidden context is recorded (durable) for the model');
+        const hctx = hid ? hid.content : '';
+        ok(POLTI.CW_POLTI_33.every((p) => hctx.indexOf(p.id + '. ' + p.name + ':') !== -1), 'it hands Sophia ALL 33 of OUR situations, by our plain names');
+        ok(/Beat 3: Until, one morning, a boy her age is arrested/.test(hctx) && /Beat 6: Until finally/.test(hctx), 'it hands Sophia the student\'s own beats, numbered');
+        ok(/@POLTI_PICKS/.test(hctx) && !/kinsman|brigandage|alienist/i.test(hctx), 'it states the marker contract, in plain words');
+        // the reply: two good picks, one id that is not ours, one beat the student never wrote
+        w.resolveApi('Here are three that fit.\n\n**The Chase** ... **Rebellion** ...\n\n@POLTI_PICKS{"picks":[{"id":5,"beat":4,"roles":["On the run: the boy","Hunting him: the sentinels"]},{"id":34,"beat":2,"roles":[]},{"id":8,"beat":7,"roles":[]},{"id":8,"beat":6,"roles":["In charge: the asylum","Rebels: the girl"]}]}');
+        await until(w, () => !!chip(w, /The Chase/));
+        ok(!!chip(w, /The Chase →/) && !!chip(w, /Rebellion →/) && !!chip(w, /Show me all 33/), '⭐ the valid picks become chips, plus the full list', w.chips().map(chipText));
+        ok(w.chips().filter((c) => / →$/.test(chipText(c))).length === 2, 'an id that is not ours and a beat the student never wrote are DROPPED', w.chips().map(chipText));
+        w.tap(chip(w, /The Chase →/));
+        await until(w, () => /Your dramatic situation: The Chase/.test(w.bubbles.join('\n')));
+        const conf = w.bubbles[w.bubbles.length - 1] || '';
+        ok(/Your dramatic situation: The Chase/.test(conf) && /On the run: the boy/.test(conf) && /Beat 4/.test(conf), 'the confirmation names the situation, THEIR roles and the beat', conf);
+        ok(!(w.deps.canvasChatHistory || []).some((m) => m.role === 'assistant' && /Your dramatic situation:/.test(m.content)), '§4c.7: the confirmation is drawn, never stored (the student can change it)');
+        ok((w.deps.canvasChatHistory || []).some((m) => m.role === 'user' && m.content === 'The Chase'), 'the pick is a transcript-visible user turn');
+        await until(w, () => { try { return JSON.parse(w.store.scene_selection_state || '{}').situation; } catch (e) { return false; } });
+        const sst = JSON.parse(w.store.scene_selection_state || '{}');
+        ok(sst.situation && sst.situation.id === 5 && sst.situation.beat === 4, 'the situation is saved with the scene state', sst.situation);
+        ok(sst.arch === 'story-spine' && JSON.stringify(sst.stageIds) === '["spine-beat-4"]', '⭐ ...and so is its beat, in the selection the picker restores from', sst);
         const pick = chip(w, /Choose my scene/);
-        ok(!!pick, 'the intro ends on the scene chip (liveness)');
+        ok(!!pick && !!chip(w, /Change my dramatic situation/), 'now the scene chip is offered, with a way to change the situation');
         if (pick) w.tap(pick);
         await until(w, () => !!island.props);
         ok(!!island.props, '⭐ the picker mounts');
@@ -191,12 +228,12 @@ const SEVEN = (hook, setup) => [
         const rep = w.bubbles.join('\n');
         ok(/Story Spine is untouched/.test(rep) && !/plot outline/i.test(rep), 'the transfer report speaks about the spine');
         ok(!!w.store.scene_selection_state && JSON.parse(w.store.scene_selection_state).arch === 'story-spine', 'selection persisted under the usual key, marked as a spine selection');
-        ok(w.sends.length === 0, 'zero API calls');
+        ok(w.sends.length === 1, 'exactly ONE API call in the whole lesson — the situation suggestions', w.sends.length);
         // v7.20.740: the RESUME replay redrew our numbered intro through chip detection (three fake
         // buttons, measured on staging). The walk must claim every turn it authored, and only those.
         const owns = OWNERS.cw_step_9;
         ok(typeof owns === 'function', 'the walk registers which stored turns it wrote');
-        const mine = w.bubbles.filter((b) => /Choose Your Scene|Here’s how it works|Here’s why we pick|a \*\*scene is a mini story\*\*/.test(b) && !/I can’t find/.test(b));   // the gate is ephemeral — never stored, never replayed
+        const mine = w.bubbles.filter((b) => /Your Dramatic Situation|Here’s how it works|Every gripping scene|Why choose the situation first|a \*\*scene is a mini story\*\*/.test(b) && !/I can’t find/.test(b));   // the gate is ephemeral — never stored, never replayed
         ok(mine.length >= 3 && mine.every((b) => owns(b)), '⭐ the greeting and every intro chunk are claimed (so a resume draws no fake "1. 2. 3." buttons)', mine.length);
         ok(!owns('Great question! A hook is the first line that grabs your reader.') && !owns(''), '…and a genuine Sophia reply is NOT claimed (its chips still work)');
         island.props = null;
@@ -207,10 +244,38 @@ const SEVEN = (hook, setup) => [
         W2.tap(chip(W2, /Let’s go/)); await settle();
         for (let i = 0; i < 4 && chip(W2, /Continue/); i++) { W2.tap(chip(W2, /Continue/)); await settle(); }
         ok(/about 650–700 words/.test(W2.bubbles.join('\n')), 'an AQA student is told the default exam length (no printed figure)');
+        // v7.20.743: the code-only route — browse all 33, read a card, place it on a beat. Zero API calls.
+        await until(W2, () => !!chip(W2, /Show me all 33/));
+        W2.tap(chip(W2, /Show me all 33/)); await settle();
+        const names = W2.chips().map(chipText);
+        ok(names.length === 33 && names[0] === 'Begging for Help' && names[32] === 'Mistaken Identity', '"Show me all 33" lays out our 33 by plain name, in our order', names.length);
+        W2.tap(chip(W2, /^The Chase$/)); await settle();
+        const card = W2.bubbles[W2.bubbles.length - 1] || '';
+        ok(/\*\*The Chase\*\*/.test(card) && /The roles:/.test(card) && /For example:/.test(card) && /Les Misérables/.test(card), 'a name opens ITS card: what it is, the roles, a famous example', card);
+        W2.tap(chip(W2, /Use this one/)); await settle();
+        const beats = W2.chips().map(chipText);
+        ok(beats.length === 6 && /^Beat 1: At first/.test(beats[0]), 'the student places it on one of THEIR beats', beats);
+        W2.tap(chip(W2, /^Beat 6:/)); await settle();
+        ok(/Your dramatic situation: The Chase/.test(W2.bubbles.join('\n')) && /the one on the run/.test(W2.bubbles.join('\n')), 'a browsed pick confirms with the list\'s own roles');
+        ok(W2.sends.length === 0, '⭐ the browse route costs ZERO API calls', W2.sends.length);
+        await until(W2, () => { try { return JSON.parse(W2.store.scene_selection_state || '{}').situation; } catch (e) { return false; } });
         W2.tap(chip(W2, /Choose my scene/)); await until(W2, () => !!island.props);
+        ok(island.props && island.props.initial && JSON.stringify(island.props.initial.stageIds) === '["spine-beat-6"]', '⭐ the picker opens ON the situation\'s beat', island.props && island.props.initial);
+        ok(island.props && /The Chase/.test(island.props.labels.sub) && !LEAK_RE.test(island.props.labels.sub), 'the picker is headed by the chosen situation', island.props && island.props.labels.sub);
         await island.transfer({ stageIds: ['spine-beat-6'], elements: SEVEN([island.props.stages[5].beats[0]], []) });
         ok((dropdowns.pop() || {}).label === 'End (Beats 5–6)', 'beat 6 → End (Beats 5–6)');
         island.props = null;
+        // FAIL-OPEN (§4d): the suggestions call times out or drops its marker → the full list, never a dead end.
+        for (const bad of [null, 'Here are some ideas, but I forgot the marker.', '@POLTI_PICKS{"picks":[{"id":"x","beat":1}]}']) {
+            const W3 = CUR = world({ unit: true, board: 'aqa', store: { brief_outline: FULL } });
+            W3.ctl.start(); await until(W3, () => W3.bubbles.length > 0);
+            W3.tap(chip(W3, /Let’s go/)); await settle();
+            for (let i = 0; i < 5 && chip(W3, /Continue/); i++) { W3.tap(chip(W3, /Continue/)); await settle(); }
+            await until(W3, () => !!chip(W3, /Find my dramatic situation/));
+            W3.tap(chip(W3, /Find my dramatic situation/)); await until(W3, () => W3.sends.length > 0);
+            W3.resolveApi(bad); await settle();
+            ok(W3.chips().length === 33 && /all 33 instead/.test(W3.bubbles.join('\n')), '⭐ an unusable reply (' + JSON.stringify(bad).slice(0, 30) + ') falls open to the full list', W3.chips().length);
+        }
     }
     console.log(' D · the full course is untouched');
     {
@@ -335,6 +400,39 @@ const SEVEN = (hook, setup) => [
             'the committed bundle is BUILT from this source (npm run build in island/)');
     }
 
+    // ── H · the dramatic-situation bank against Neil's source (v7.20.743, PEDAGOGY §55.1) ──
+    console.log(' H · the 33 dramatic situations match our source, in plain, safe words');
+    {
+        const SRCMD = fs.readFileSync(path.join(ROOT, 'protocols/shared/creative-writing/_polti-33-source.md'), 'utf8');
+        // the DETAIL headings ("| 3\\. CRIME PURSUED BY VENGEANCE. Elements: …") — the index table repeats #22 in #23's cell
+        const heads = [];
+        SRCMD.split('\n').forEach((l) => { const m = /^\|\s*(\d+)\\?\.\s+([A-Z][A-Z' ,\-]+?)[.:]?\s*(?:\(|Elements|\|)/.exec(l); if (m && !heads.some((h) => h.n === +m[1])) heads.push({ n: +m[1], name: m[2].trim() }); });   // UPPER-CASE = the detail headings
+        const B = POLTI.CW_POLTI_33;
+        const norm = (t) => String(t).toLowerCase().replace(/[^a-z]+/g, ' ').trim();
+        ok(heads.length === 33, 'the source file yields 33 detail headings', heads.length);
+        ok(B.length === 33 && B.every((p, i) => p.id === i + 1), 'the bank has 33 entries, ids 1–33 in order', B.length);
+        const mism = B.filter((p) => { const h = heads.find((x) => x.n === p.id); return !h || norm(h.name) !== norm(p.src); });
+        ok(!mism.length, '⭐ every entry\'s `src` is the source\'s own heading for that number (our order, our list)', mism.map((p) => p.id + ':' + p.src));
+        const text = (p) => [p.name, p.what, p.roles.join(' '), p.eg].join(' ');
+        const ARCHAIC = /\b(kinsm[ae]n|kindred|brigandage|alienist|suitors?|imprudence|imprudent|supplication|enigma|abductor|spoliation|despoiled|expiation)\b/i;
+        const UNSAFE = /\b(adulter\w*|seduc\w*|sex\w*|rape\w*|lovers?|affair|unfaithful|mistress|incest\w*|pregnan\w*|naked|dishono(u)?r(ed)? (a|of) (wife|woman|daughter))\b/i;
+        ok(!B.filter((p) => ARCHAIC.test(text(p))).length, 'no 1916 wording reaches a student (root §5c-ii)', B.filter((p) => ARCHAIC.test(text(p))).map((p) => p.id + ':' + (text(p).match(ARCHAIC) || [])[0]));
+        ok(!B.filter((p) => UNSAFE.test(text(p))).length, '⭐ nothing sexual (N566)', B.filter((p) => UNSAFE.test(text(p))).map((p) => p.id));
+        ok(B.every((p) => p.what.length <= 160 && p.eg.length <= 160), 'every line is short enough to read in one go (≤160 chars)', B.filter((p) => p.what.length > 160 || p.eg.length > 160).map((p) => p.id));
+        ok(B.every((p) => p.roles.length >= 2 && p.roles.length <= 4), 'every situation names 2–4 roles');
+        ok(new Set(B.map((p) => p.name)).size === 33, 'every plain name is unique (a chip label must point at one situation)');
+        ok(B.every((p) => !/["“”]/.test(p.eg)), 'no quotation in an example (root §5c-i: quote only what is verified)');
+        const SET = /Macbeth|An Inspector Calls|A Christmas Carol|Romeo and Juliet|Jekyll and Hyde|Animal Farm|Blood Brothers/;
+        const nSet = B.filter((p) => SET.test(p.eg)).length;
+        ok(nSet >= 12, 'the examples lean on the texts our students sit (root §5c-i weighting)', nSet);
+        // the marker validator, as a unit
+        const P = POLTI._poltiParsePicks;
+        ok(P('@POLTI_PICKS{"picks":[{"id":9,"beat":3,"roles":["Leader: Mia"]}]}', [1, 2, 3]).length === 1, 'a well-formed marker parses');
+        ok(P('@POLTI\\_PICKS{"picks":[{"id":9,"beat":3}]}', [3]).length === 1, 'the model\'s escaped underscore still parses');
+        ok(P('@POLTI_PICKS{"picks":[{"id":9,"beat":3},{"id":9,"beat":3},{"id":1,"beat":3},{"id":2,"beat":3},{"id":3,"beat":3}]}', [3]).length === 3, 'duplicates drop; at most three');
+        ok(P('@POLTI_PICKS{"picks":[{"id":40,"beat":1},{"id":4,"beat":5}]}', [1, 2]).length === 0, 'an id outside our 33, or a beat the student never wrote, is refused');
+        ok(P('@POLTI_PICKS{"picks":[', [1]).length === 0 && P('', [1]).length === 0 && P(null, [1]).length === 0, 'broken or missing markers give nothing (and never throw)');
+    }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }
     console.log('✅ weekend-story-harness passed (lesson 5 offers the six spine beats; the full course is untouched).');

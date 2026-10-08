@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.742';
+var WML_BUILD = '7.20.743';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -3903,6 +3903,9 @@ window.WML = (function() {
         // spine. Machine-read only: they stay in history for the resume path but never render.
         text = text.replace(/@COHERENCE\\?_BEAT[:\s]*[1-6]/g, '').trim();
         text = text.replace(/@COHERENCE\\?_OK/g, '').trim();
+        // v7.20.743: weekend lesson 5 — @POLTI_PICKS{…} ends Sophia's dramatic-situation suggestions;
+        // code reads it (_poltiParsePicks) and serves the chips. Instructed to be LAST, so strip to the end.
+        text = text.replace(/@POLTI\\?_PICKS[\s\S]*$/, '').trim();
         // v7.20.296: CW Step 6 — @CW6_START (greeting done, code serves the outline walk),
         // @STAGE_OK / @STAGE_GAP (the per-stage micro-check verdict) and @OUTLINE_OK /
         // @OUTLINE_GAP (the sampled finish check). Machine-read only: they stay in RAW history
