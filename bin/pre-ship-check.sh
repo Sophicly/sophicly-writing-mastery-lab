@@ -274,6 +274,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   tail -1 /tmp/plan-notes-strip.out
 fi
 
+# v7.20.766 (#807): the marking summary answers the student's FREE assessment in their own words — shipped block,
+# stub DB, response-shift guard, both mandates wired.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'class-protocol-router\.php|free-assessment-reflection-gate\.php'; then
+  php bin/free-assessment-reflection-gate.php >/tmp/free-assess-refl.out 2>&1 || { cat /tmp/free-assess-refl.out; fail=1; }
+  tail -1 /tmp/free-assess-refl.out
+fi
+
 # v7.20.252 (Fable F1): the JS build-stamp (frontend/wml-core.js WML_BUILD, logged on load for
 # stale-client diagnosis) must equal the plugin version, or the console log lies about freshness.
 JS_BUILD=$(grep -oE "var WML_BUILD = '[^']+'" frontend/wml-core.js 2>/dev/null | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")

@@ -3190,3 +3190,25 @@ then log it."*
   student can predict it."*
 - **Student-facing words: grade-9 HABITS and their EXAM consequence. Never "penalty" or "punishment".**
 
+## §58. ⭐⭐ THE MARKING SUMMARY ANSWERS WHAT THE STUDENT TOLD US IN THEIR FREE ASSESSMENT — in their own words, never as a before/after grade (Neil, ruled 2026-10-08 via the dashboard lane, d149/d150b; FIXLIST #807)
+
+**THE RULING.** Neil, on the dashboard Feedback card: *"I think the current feedback needs to also reflect back on it"*
+→ *"Both: (a) now, (b) to the marking chat"*. (a) is the dashboard's goal line; **(b) is ours:** when Sophia writes the
+Overall Feedback of a marked response, she answers what the student wrote in their FREE assessment (sophicly-assessment):
+their grade goal, what they find hardest, and the skill they most want to improve. **His approved example:** *"You said
+you never know how much to write about one quote. In this essay, your second paragraph does that well."*
+
+**HOW (v7.20.766):** the SUMMARY turn's server block (`assessment_final_summary_mandate` / `assessment_lit_final_summary_mandate`)
+carries `free_assessment_reflection_block()`: the newest complete `{prefix}sophicly_assessments` row for the student —
+answers 7 (goal, resolved through the assessment plugin's own label map), 39 (hardest), 40 (skill to improve), in their
+words. Sophia adds ONE or TWO sentences inside Key Strength or Priority Targets, pointing at a specific paragraph:
+progress → say so; still the problem → it becomes the priority target in their words; **no evidence either way → leave
+it out, never forced.** A goal set at the start of THIS session outranks the assessment's (it is newer).
+
+**THE GUARD (dashboard FIXLIST #523b — the response shift):** students rate themselves harder once taught, so a before/
+after against the assessment's PREDICTED grade or SELF-RATINGS can show good teaching as going backwards. Only the goal
+(a target) and the stated difficulty (a concern) reach Sophia; she never compares this mark with anything from that
+assessment. **No linked assessment (most students, Oct 2026: 3 linked on prod) → no block, feedback exactly as before**;
+placeholder answers under 8 characters are treated as absent. Gate: `bin/free-assessment-reflection-gate.php` (pre-ship).
+Scope today: the essay/paper marking summary (Language + Literature). CW trial marking does not carry it yet.
+

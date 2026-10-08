@@ -7626,7 +7626,7 @@ TEMPLATE;
             // not been emitted — this IS the wrap-up stretch. Neil's 10 Jun run
             // ended with an action plan and NO whole-paper Total or Grade
             // anywhere. Mandate the headline result instead of going silent.
-            return $this->assessment_final_summary_mandate($order, $scored);
+            return $this->assessment_final_summary_mandate($order, $scored, $user_id);
         }
 
         // v7.19.826: SETUP-PHASE awareness (v809 port). Without it this block
@@ -7894,7 +7894,7 @@ TEMPLATE;
      * v7.19.854: two-phase — once the summary turn has landed (@SUMMARY_COMPLETE),
      * this delegates to the closing-questions block (engine-owned closing chain).
      */
-    private function assessment_final_summary_mandate($order, $scored) {
+    private function assessment_final_summary_mandate($order, $scored, $user_id = 0) {
         if (self::assessment_history_marker_seen('@SUMMARY_COMPLETE')) {
             return self::assessment_closing_questions_block();
         }
@@ -7938,9 +7938,56 @@ TEMPLATE;
         $block .= "1. Emit the FULL Final Summary exactly as the protocol's Final Summary step specifies — the chat result lines above AND the complete Overall Feedback `@SECTION_BEGIN{\"section\":\"Overall Feedback\"}` … `@SECTION_END` fill (Total & Grade with the mark, Technical Accuracy, level pattern, metacognitive journey + headline-goal closure, itemised Penalty & Ceiling Ledger, Key Strength, Priority Targets, word-count advice and extra/missing-paragraph note where applicable).\n";
         $block .= "2. End the message with `@SUMMARY_COMPLETE` on its own line (system marker — the platform strips it from display).\n";
         $block .= "3. Ask NOTHING in this turn: the system asks the action-plan and transfer questions itself, one per turn. Do NOT emit `[ASSESSMENT_COMPLETE]`, do NOT declare the assessment wrapped, do NOT offer to rebuild a paragraph — those come later, code-driven.\n";
+        $block .= self::free_assessment_reflection_block($user_id);
         $block .= "This block is internal bookkeeping — never quote it or mention it to the student.\n";
         $block .= "</assessment_state>\n";
         return $block;
+    }
+
+    /**
+     * ⭐ v7.20.766 (FIXLIST #807 — Neil d150b via the dashboard lane, 2026-10-08: "I think the current feedback needs to
+     * also reflect back on it"). The SUMMARY turn's Overall Feedback answers what the student told us in their FREE
+     * assessment (sophicly-assessment, `{prefix}sophicly_assessments`, newest complete row): the grade goal (key 7),
+     * what they find hardest (key 39) and the skill they most want to improve (key 40) — in THEIR words. Neil's
+     * approved example: "You said you never know how much to write about one quote. In this essay, your second
+     * paragraph does that well." PEDAGOGY §58.
+     * ⛔ Guard (dashboard #523b, response shift): the assessment's predicted grade and self-ratings are never compared
+     * with a marked grade — only the goal (a target) and the stated difficulty (a concern) are passed.
+     * No linked assessment (most students today) → '' and the feedback is exactly as before. Placeholder answers
+     * shorter than 8 characters ("test") are treated as absent.
+     */
+    private static function free_assessment_reflection_block($user_id) {
+        global $wpdb;
+        $uid = (int) $user_id;
+        if ($uid <= 0 || !isset($wpdb)) return '';
+        $t = $wpdb->prefix . 'sophicly_assessments';
+        $prev = $wpdb->suppress_errors(true);
+        $row = $wpdb->get_row($wpdb->prepare("SELECT answers FROM {$t} WHERE user_id = %d AND status = 'complete' ORDER BY id DESC LIMIT 1", $uid));
+        $wpdb->suppress_errors($prev);
+        if (!$row || empty($row->answers)) return '';
+        $a = json_decode((string) $row->answers, true);
+        if (!is_array($a)) return '';
+        $words = function ($v) {
+            $v = trim(preg_replace('/\s+/u', ' ', wp_strip_all_tags((string) $v)));
+            if (mb_strlen($v) < 8) return '';
+            return str_replace('"', "'", mb_substr($v, 0, 300));
+        };
+        $hardest = $words($a['39'] ?? '');
+        $improve = $words($a['40'] ?? '');
+        $goal = '';
+        if (isset($a['7']) && function_exists('soph_assess_question_map')) {
+            $map = soph_assess_question_map();
+            $lab = (string) ($map[7]['opts'][(string) $a['7']] ?? '');
+            $goal = trim(preg_replace('/^\(\w\)\s*To score (?:a )?/i', '', $lab));
+        }
+        if ($hardest === '' && $improve === '') return '';
+        $b  = "THE STUDENT'S OWN WORDS FROM THEIR FREE ASSESSMENT (taken before this course work):";
+        if ($goal !== '') $b .= " grade goal — {$goal};";
+        if ($hardest !== '') $b .= " what they find hardest — \"{$hardest}\";";
+        if ($improve !== '') $b .= " the skill they most want to improve — \"{$improve}\";";
+        $b .= "\nIn the Overall Feedback (inside Key Strength or Priority Targets — no new heading), add ONE or TWO sentences that answer that difficulty using their own words and pointing at a SPECIFIC paragraph of THIS response: where this response shows progress on it, say so (e.g. \"You said you never know how much to write about one quote. In this essay, your second paragraph does that well.\"); where it is still the problem, make it the priority target in the same words. If this response gives no evidence either way, leave it out entirely — never force it. "
+            . "If you mention the goal, it is a target only (\"towards your Grade 8\"); a goal the student gave at the start of THIS session outranks this one. NEVER compare this mark with any grade, prediction or self-rating from that assessment, and never mention that the assessment exists unless you are quoting what they said in it.\n";
+        return $b;
     }
 
     /**
@@ -7949,7 +7996,7 @@ TEMPLATE;
      * ending (R&J 04-Jul: 3-in-one action plan, early wrap line, no section fill,
      * no rebuild offer). Same two-phase engine-owned closing chain as language.
      */
-    private function assessment_lit_final_summary_mandate($subject = '') {
+    private function assessment_lit_final_summary_mandate($subject = '', $user_id = 0) {
         if (self::assessment_history_marker_seen('@SUMMARY_COMPLETE')) {
             return self::assessment_closing_questions_block();
         }
@@ -7969,6 +8016,7 @@ TEMPLATE;
         $block .= "2. The complete Overall Feedback `@SECTION_BEGIN{\"section\":\"Overall Feedback\"}` … `@SECTION_END` fill exactly as the protocol's Final Summary step specifies (Total & Grade with the mark, Technical Accuracy, per-section level pattern, metacognitive journey + headline-goal closure, itemised Penalty & Ceiling Ledger, Key Strength, Priority Targets, word-count-ceiling explanation and extra-paragraph note where applicable).\n";
         $block .= "3. End the message with `@SUMMARY_COMPLETE` on its own line (system marker — the platform strips it from display).\n";
         $block .= "4. Ask NOTHING in this turn: the system asks the action-plan and transfer questions itself, one per turn. Do NOT emit `[ASSESSMENT_COMPLETE]`, do NOT declare the assessment wrapped, do NOT offer to rebuild a paragraph — those come later, code-driven.\n";
+        $block .= self::free_assessment_reflection_block($user_id);
         $block .= "This block is internal bookkeeping — never quote it or mention it to the student.\n";
         $block .= "</assessment_state>\n";
         return $block;
@@ -8107,7 +8155,7 @@ TEMPLATE;
         // code-asked questions phase). Lit previously had NO wrap-up state here: after
         // the Conclusion the model free-styled the ending (R&J 04-Jul verdict).
         if ($current === 'done') {
-            return $this->assessment_lit_final_summary_mandate($context['subject'] ?? '');
+            return $this->assessment_lit_final_summary_mandate($context['subject'] ?? '', $user_id);
         }
         // v7.19.854: family-first leniency flag (lit family) — code-computed; the
         // protocol's first-diagnostic vs trained branches key on THIS line, never on
