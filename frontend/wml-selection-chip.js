@@ -702,6 +702,20 @@
         const isCw = !!(taskCtx && (taskCtx.subject === 'creative_writing'
             || (taskCtx.task && taskCtx.task.indexOf('cw_') === 0)));
         if (isCw) {
+            // v7.20.749 (PEDAGOGY §55.1, root §5c-ii): the weekend story never teaches the character arc
+            // (no Steps 11–12), so its polishing lessons (6 and 8) must not offer it. Measured on
+            // staging .748: lesson 8's menu showed "Character arc" (goal · flaw · stakes · need · change).
+            const _cwUnit = (typeof WML !== 'undefined' && WML.cwInUnit && WML.cwInUnit());
+            if (_cwUnit) {
+                return [
+                    { key: 'cwScan',       actions: ACTION_MAP.cwScan.filter(function (a) { return a !== 'cw-scan-arc'; }) },
+                    { key: 'cwWordChoice', actions: ACTION_MAP.cwWordChoice },
+                    { key: 'polishProse',  actions: ACTION_MAP.polishProse },
+                    { key: 'cw',           actions: ACTION_MAP.cw },
+                    { key: 'fixSpag',      actions: ACTION_MAP.fixSpag },
+                    { key: 'reference',    actions: ACTION_MAP.reference },
+                ];
+            }
             return [
                 { key: 'cwScan',       actions: ACTION_MAP.cwScan },
                 { key: 'cwWordChoice', actions: ACTION_MAP.cwWordChoice },
