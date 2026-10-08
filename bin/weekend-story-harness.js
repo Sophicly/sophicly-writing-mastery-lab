@@ -749,6 +749,65 @@ const SEVEN = (hook, setup) => [
         ok(/That’s this lesson done\./.test(EP(true, false)) && /That’s this lesson done\./.test(EP(true, true)) && /That’s this step done\./.test(EP(false, true)) && /Mark Complete/.test(EP(true, true)),
             'the walk ending says "lesson" in a weekend lesson and "step" in the full course (staging .753 said "step" after "the whole weekend story")');
     }
+    // ── M · v7.20.755: the DOCUMENTS of weekend lessons 1–4 and 7 never name a course step. Staging .754, LD's real
+    // pages, both boards: "Step 2: Explore Story Ideas", "Sparks From Step 1", "go back to Step 3", "your writing from
+    // Step 10". No gate looked at these documents — section E covers lesson 5 and the chat turns only. This is a
+    // POPULATION check: it renders the real templates and reads every character, labels included.
+    console.log('\nM · the documents of weekend lessons 1–4 and 7 never name a course step');
+    {
+        const ui = SRC.indexOf('const CW_UNIT_TEXT_EDITS = [');   // the chat table, the step map, the rule, the doc table
+        const uf = SRC.indexOf('function _cwStepPlace(stepNo) {', ui);
+        ok(ui > 0 && uf > ui && SRC.indexOf('const CW_UNIT_DOC_EDITS = [', ui) < uf, 'the unit edits, the step map and the step-place helper exist, in one block');
+        const UD = SRC.slice(ui, braceSliceFrom(SRC, uf, '{', '}').end);
+        const mk = (unit) => new Function('WML', UD + '\nreturn { E: CW_UNIT_DOC_EDITS, f: _cwUnitDocText, place: _cwStepPlace, t: _cwUnitText, w: _cwUnitStepWords };')({ cwInUnit: () => unit });   // eslint-disable-line no-new-func
+        const D1 = mk(true), D0 = mk(false);
+        const ti = SRC.indexOf('function _cwDocTemplateInner(stepDef) {');
+        const TPL = SRC.slice(ti, braceSliceFrom(SRC, ti, '{', '}').end);
+        const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const H = {   // plain stand-ins with the real helpers' output shape (labels and criteria stay in the HTML)
+            sectionHTML: (type, label, ed, x, inner) => '<div data-section-type="' + type + '" data-section-label="' + label + '">' + inner + '</div>',
+            dividerHTML: (t) => '<div data-section-type="divider"><p>' + t + '</p></div>',
+            outlineRowHTML: (c, fid) => '<div data-outline-row="true" data-prompt="' + esc(c.prompt || c.label) + '" data-field-id="' + fid + '" data-criteria="' + JSON.stringify(c).replace(/"/g, '&quot;') + '"></div>',
+        };
+        const render = (step) => new Function('sectionHTML', 'dividerHTML', 'outlineRowHTML', 'escapeHTML', 'return (' + TPL + ')({ step: ' + step + ' });')(H.sectionHTML, H.dividerHTML, H.outlineRowHTML, esc);   // eslint-disable-line no-new-func
+        const TRUBY = /“Step 1: write something that may change your life[^”]*”/;   // John Truby's words, quoted verbatim (root §5c-i)
+        const leftovers = (html) => (html.replace(/&quot;/g, '"').replace(TRUBY, '').match(/.{0,30}\bSteps? \d+.{0,30}/g) || []);
+        const raws = [1, 2, 3, 4].map(render);
+        raws.forEach((raw, i) => {
+            ok(leftovers(D1.f(raw)).length === 0, '⭐ lesson ' + (i + 1) + '\'s document names no course step in a weekend lesson (labels and rows included)', leftovers(D1.f(raw)));
+            ok(D0.f(raw) === raw && leftovers(raw).length > 0, 'lesson ' + (i + 1) + ': the full course keeps its own words');
+        });
+        ok(TRUBY.test(D1.f(raws[0])), 'Truby\'s quotation survives untouched');
+        // every edit still matches something real — a drifted literal is a silent no-op
+        D1.E.forEach((ed) => ok(raws.some((r) => r.indexOf(ed[0]) !== -1) || SRC.indexOf(ed[0]) !== -1, 'unit document edit still matches its source: "' + ed[0].slice(0, 46) + '"'));
+        // the heals insert the same sections into older documents: their HTML gets the same words
+        [['const sparksHTML = ', 'Sparks section'], ['const carryHTML = ', 'chosen-logline carry'], ["const newSection = sectionHTML('response', 'Seed Loglines'", 'seed loglines']].forEach(([start, name]) => {
+            const a = SRC.indexOf(start), b = SRC.indexOf('_migrationActive = true;', a);
+            ok(a > 0 && b > a && leftovers(D1.f(SRC.slice(a, b))).length === 0, 'the ' + name + ' heal inserts no course step in a weekend lesson', a > 0 ? leftovers(D1.f(SRC.slice(a, b))) : 'not found');
+            ok(/_cwUnitDocText\((sparksHTML|carryHTML|newSection)\)/.test(SRC.slice(b, b + 400)), 'the ' + name + ' heal runs its HTML through the unit edits');
+        });
+        ok(/\[_cwUnitDocText\('You didn’t tick any sparks in Step 1/.test(SRC) && leftovers(D1.f('You didn’t tick any sparks in Step 1 — that’s fine.')).length === 0, 'the no-sparks note says "lesson 1" in a weekend lesson');
+        ok(/const inner = _cwUnitDocText\(_cwDocTemplateInner\(stepDef\)\);/.test(SRC), 'every template the page builds goes through the unit edits (getCwDocTemplate)');
+        ok(D1.place(10) === 'lesson 6' && D1.place(9) === 'lesson 5' && D0.place(10) === 'Step 10' && /const where = stepNo \? _cwStepPlace\(stepNo\)/.test(SRC),
+            'lesson 7 points back to "lesson 6", not "Step 10" (and the full course keeps "Step 10")');
+        // the CHAT side (v7.20.755): every served sentence of lessons 1–4 and 7 goes through _cwUnitText, which now names
+        // every course step the unit HAS by its lesson — the population, not a list of noticed phrases
+        const W = D1.w;
+        ok(W('It carries straight into Step 3.') === 'It carries straight into lesson 3.' && W('Step 4 turns it') === 'Lesson 4 turns it'
+            && W('Done.\n\nStep 3 is next') === 'Done.\n\nLesson 3 is next' && W('In Step 3 you said') === 'In lesson 3 you said'
+            && W('your writing from Step 10') === 'your writing from lesson 6' && W('“Step 1: write something') === '“Step 1: write something'
+            && W('build that in Step 6') === 'build that in Step 6' && D0.t('carries into Step 3') === 'carries into Step 3',
+            'a step the unit has is named by its lesson (capital at a sentence start); a quotation and a step the unit lacks are left alone; the full course is untouched');
+        const WALKS = ['const _cwProfileCtl', 'const _cwIdeasCtl', 'const _cwLoglineCtl', 'const _cwSpineCtl', 'const _cwTrial1Ctl'];
+        WALKS.forEach((decl) => {
+            const a0 = SRC.indexOf(decl), body = a0 > 0 ? braceSliceFrom(SRC, a0, '(', ')').text : '';
+            ok(/function aiBubble\(plain(, opts)?\) \{\s*plain = _cwUnitText\(plain\);/.test(body), decl.slice(6) + ': every bubble it serves goes through the unit words');
+            const lits = [];
+            body.split('\n').forEach((line) => { if (/^\s*\/\//.test(line) || /console\.(log|warn|error)/.test(line)) return; (line.match(/(["'`])(?:\\.|(?!\1).)*\1/g) || []).forEach((q) => lits.push(q)); });
+            const left = lits.map((q) => D1.t(q)).filter((q) => /\bSteps? \d/.test(q) && !/Step 4 — Your Brief Outline/.test(q));   // that one is a guide ANCHOR (a key), never shown
+            ok(lits.length > 20 && left.length === 0, decl.slice(6) + ': after the unit words, no sentence names a course step the weekend story lacks', left.map((q) => q.slice(0, 90)));
+        });
+    }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }
     console.log('✅ weekend-story-harness passed (lesson 5 offers the six spine beats; the full course is untouched).');

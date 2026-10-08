@@ -93,6 +93,7 @@ no step/plot words) · walk sim with liveness (walk-sim-lib) · pre-ship.
 **Found in the staging browser walk of .753, fixed in .754:**
 - The progress chip read "Step 1 of 3". The chip's default counter word leaked into the weekend unit, lesson 3's Logline walk included ("Step N of 7"). In a unit the default is now "Part"; lesson 9 counts "Question N of 3", headed by the kind of question.
 - The shared walk ending said "That’s this step done". In a unit it now says "lesson".
+- **Weekend lessons never name a course step (v7.20.755):** the smoke of LD's real pages found "Step 2: Explore Story Ideas", "Sparks From Step 1", "go back to Step 3" in lessons 1–4's documents and "Step 10" in lesson 7's, and lessons 2–4's walks said "carries straight into Step 3". Documents now go through `CW_UNIT_DOC_EDITS` (template + heals + fill). Every bubble of lessons 1–4 and 7 goes through `_cwUnitText`, which names every course step the unit HAS by its lesson. Steps the unit lacks get a phrase edit, and the harness fails on any left (population checks, §M).
 - **The page keeps its questions:** each question row saves its question's identity (`criteria.adapt`), and the walk reads the page first. A bank change (OCR and picture questions are planned) can never ask one question in the chat while the page shows another.
 
 ## 2a · Lesson 5 — Your Dramatic Situation (Polti-first; replaces the unit's "Choose Your Scene")

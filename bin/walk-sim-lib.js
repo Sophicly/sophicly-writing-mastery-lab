@@ -221,6 +221,16 @@ function attachSlotDeps(deps) {
     deps._cwReplay = _rp._cwReplay;
     deps._cwIsReplay = _rp._cwIsReplay;
 
+    // v7.20.755: the unit-words rule every weekend walk's bubble passes through, lifted WITH its tables (the chat
+    // edits, the step map, the rule). A stub would let a walk send a weekend student to "Step 3" while every rig stayed
+    // green. WML is read at CALL time, so a rig that switches unit mode on later (deps.WML.cwInUnit) is seen.
+    const utIdx = SRC.indexOf('const CW_UNIT_TEXT_EDITS = [');
+    const utFn = utIdx < 0 ? -1 : SRC.indexOf('function _cwUnitText(t) {', utIdx);
+    if (utIdx < 0 || utFn < 0) throw new Error('_cwUnitText not found in wml-assessment.js — the weekend step-word gate would pass vacuously');
+    const wmlAtCall = { cwInUnit: function () { return !!(deps.WML && typeof deps.WML.cwInUnit === 'function' && deps.WML.cwInUnit()); } };
+    // eslint-disable-next-line no-new-func
+    deps._cwUnitText = new Function('WML', SRC.slice(utIdx, braceSliceFrom(SRC, utFn, '{', '}').end) + '\nreturn _cwUnitText;')(wmlAtCall);
+
     // v7.20.343: the closed-question option parser.
     const aoIdx = SRC.indexOf('function cwAnswerOptions');
     if (aoIdx < 0) throw new Error('cwAnswerOptions not found in wml-assessment.js — the closed-question chip gate would pass vacuously');

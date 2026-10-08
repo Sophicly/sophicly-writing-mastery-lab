@@ -5558,12 +5558,68 @@
         ['you planned back in Step 9', 'you planned in lesson 5, Your Dramatic Situation'],   // v7.20.747: lesson 5 renamed (§55.1)                                              // lesson 7 (Trial 1 intro)
         ['carry on to Step 11 and come back to this.', 'carry on to the next lesson and come back to this.'],                      // lesson 7 (marking failed)
         ['open **My Plot** to see what you planned', 'open **My Story Spine** to see what you planned'],                              // lesson 7 (ask failed)
+        // v7.20.755: lesson 3's logline decision told a weekend student the full course's road ahead
+        ['six-beat spine, and Steps 5–10 turn that spine into your story.', 'six-beat Story Spine, and the lessons after that turn the spine into your story.'],
     ];
+    // v7.20.755 — the weekend story numbers its OWN lessons (PEDAGOGY §55; LD's shells 59223–59236 carry the numbers).
+    const CW_UNIT_LESSON_OF_STEP = { 1: 1, 2: 2, 3: 3, 4: 4, 9: 5, 10: 6, 14: 8, 90: 9 };
+    // A course step the unit HAS is named by its lesson, so a served sentence can never send a weekend student to "Step 3"
+    // (measured on staging .754: lessons 2–4 said "carries straight into Step 3", "the goal you named in Step 3"). This
+    // covers the whole POPULATION, not a list of phrases someone happened to notice. "Lesson" where a sentence or line
+    // starts, "lesson" inside one. A step the unit does NOT have ("Step 6", "Steps 5–10") is left for a phrase edit — and
+    // bin/weekend-story-harness.js fails on any that survives. Never inside a quotation (Truby's "Step 1: write…").
+    function _cwUnitStepWords(s) {
+        return String(s).replace(/\bStep (\d+)\b/g, function (m, n, off, str) {
+            const lesson = CW_UNIT_LESSON_OF_STEP[n];
+            if (!lesson) return m;
+            const before = str.slice(Math.max(0, off - 4), off);
+            if (/“$/.test(before)) return m;
+            const cap = off === 0 || /(\n|[.!?]\s|\*\*|#\s|>\s|<h\d>)$/.test(before);
+            return (cap ? 'Lesson ' : 'lesson ') + lesson;
+        });
+    }
     function _cwUnitText(t) {
         if (!(WML.cwInUnit && WML.cwInUnit())) return t;
         let out = String(t);
         CW_UNIT_TEXT_EDITS.forEach(function (ed) { out = out.split(ed[0]).join(ed[1]); });
-        return out;
+        return _cwUnitStepWords(out);
+    }
+    // v7.20.755 — UNIT DOCUMENT EDITS, the document twin of the table above (PEDAGOGY §55). Weekend lessons 1–4 open
+    // the full course's documents, which name course steps ("Step 2: Explore Story Ideas", "go back to Step 3") —
+    // measured on staging .754 on LD's real lesson pages, both boards. Edited where the HTML is BUILT in a unit lesson
+    // (getCwDocTemplate, the heals that insert the same sections, the no-sparks fill), never in the literal, which the
+    // full course keeps. Every label here is display-only: each heal finds its section by FIELD ID, never by label.
+    // bin/weekend-story-harness.js renders the real templates in unit mode and fails on any "Step N" left.
+    const CW_UNIT_DOC_EDITS = [
+        ['<h2>Step 1: Build Your Writer’s Profile</h2>', '<h2>Build Your Writer’s Profile</h2>'],
+        ['seeded from your Step 1 chat.', 'seeded from your answers in this lesson.'],
+        ['they’ll carry into Step 2 as starting sparks.', 'they’ll carry into lesson 2 as starting sparks.'],
+        ['<h2>Step 2: Explore Story Ideas</h2>', '<h2>Explore Story Ideas</h2>'],
+        ['Sparks From Step 1', 'Sparks From Lesson 1'],
+        ['Sparks You Liked from Step 1', 'Sparks You Liked from Lesson 1'],
+        ['The seed ideas you ticked in Step 1 appear here', 'The seed ideas you ticked in lesson 1 appear here'],
+        ['These come from Step 1 — to change them, go back to Step 1 and re-tick.', 'These come from lesson 1 — to change them, go back to lesson 1 and re-tick.'],
+        ['You didn’t tick any sparks in Step 1', 'You didn’t tick any sparks in lesson 1'],
+        ['it carries into Step 3 where you’ll shape it into a logline.', 'it carries into lesson 3, where you’ll shape it into a logline.'],
+        ['<h2>Step 3: Create Your Logline</h2>', '<h2>Create Your Logline</h2>'],
+        ['This is the idea you chose in Step 2 — the foundation for your logline. To change it, go back to Step 2 and tick a different idea',
+            'This is the idea you chose in lesson 2 — the foundation for your logline. To change it, go back to lesson 2 and tick a different idea'],
+        ['From Step 2', 'From Lesson 2'],
+        ['<h2>Step 4: Brief Outline (Story Spine)</h2>', '<h2>Your Story Spine</h2>'],
+        ['The logline you chose in Step 3 — the DNA of the story you’re about to outline. To change it, go back to Step 3.',
+            'The logline you chose in lesson 3 — the DNA of the story you’re about to outline. To change it, go back to lesson 3.'],
+        ['From Step 3', 'From Lesson 3'],
+    ];
+    function _cwUnitDocText(t) {
+        if (!(WML.cwInUnit && WML.cwInUnit())) return t;
+        let out = String(t);
+        CW_UNIT_DOC_EDITS.forEach(function (ed) { out = out.split(ed[0]).join(ed[1]); });
+        return _cwUnitStepWords(out);   // anything the table did not word by hand still names its lesson
+    }
+    // Where a step lives, in the words THIS student uses: "Step 10" in the full course, "lesson 6" in the weekend story.
+    function _cwStepPlace(stepNo) {
+        if (WML.cwInUnit && WML.cwInUnit() && CW_UNIT_LESSON_OF_STEP[stepNo]) return 'lesson ' + CW_UNIT_LESSON_OF_STEP[stepNo];
+        return 'Step ' + stepNo;
     }
     function _cwTurnOwned(task, text) {
         const f = _CW_TURN_OWNERS[task];
@@ -23422,6 +23478,7 @@
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { busy = false; chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain, opts) {
+                plain = _cwUnitText(plain);   // v7.20.755: a weekend lesson never sends its student to a course step (§55)
                 addChatMessage(formatAI(plain), 'ai', plain, opts);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
@@ -24056,6 +24113,7 @@
             function resetSend() { busyOff(); }
             function busyOff() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
+                plain = _cwUnitText(plain);   // v7.20.755: a weekend lesson never sends its student to a course step (§55)
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
@@ -24864,6 +24922,7 @@
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
+                plain = _cwUnitText(plain);   // v7.20.755: a weekend lesson never sends its student to a course step (§55)
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
@@ -25894,6 +25953,7 @@
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
             function aiBubble(plain) {
+                plain = _cwUnitText(plain);   // v7.20.755: a weekend lesson never sends its student to a course step (§55)
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // v7.20.345: a resume re-serve is DRAWN, never saved (§4c.7)
                 WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
@@ -34201,6 +34261,7 @@
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
 
             function aiBubble(plain) {
+                plain = _cwUnitText(plain);   // v7.20.755: a weekend lesson never sends its student to a course step (§55)
                 emitted++;
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // a resume re-serve is DRAWN, never saved (§4c.7)
@@ -52170,7 +52231,7 @@
                 const rowIds = ['cw-step-2-liked-1', 'cw-step-2-liked-2', 'cw-step-2-liked-3'];
                 const fills = slots.some(Boolean)
                     ? slots
-                    : ['You didn’t tick any sparks in Step 1 — that’s fine. Develop your own three ideas below.', '', ''];
+                    : [_cwUnitDocText('You didn’t tick any sparks in Step 1 — that’s fine. Develop your own three ideas below.'), '', ''];   // v7.20.755
                 let wrote = false;
                 rowIds.forEach((fid, i) => {
                     // Re-scan fresh each iteration — a prior row's edit shifts positions.
@@ -52831,7 +52892,7 @@
                         outlineRowHTML({ id: 'liked-2', label: 'Spark 2', prompt: '—', locked: true }, 'cw-step-2-liked-2') +
                         outlineRowHTML({ id: 'liked-3', label: 'Spark 3', prompt: '—', locked: true }, 'cw-step-2-liked-3'));
                 _migrationActive = true;
-                try { canvasEditor.commands.insertContentAt(storyIdeasDividerPos, sparksHTML); }
+                try { canvasEditor.commands.insertContentAt(storyIdeasDividerPos, _cwUnitDocText(sparksHTML)); }   // v7.20.755
                 finally { _migrationActive = false; }
                 try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
@@ -52864,7 +52925,7 @@
                         '<p><em>The logline you chose in Step 3 — the DNA of the story you’re about to outline. To change it, go back to Step 3.</em></p>' +
                         outlineRowHTML({ id: 'chosen-logline', label: 'From Step 3', prompt: 'Your chosen logline', locked: true }, 'cw-step-4-chosen-logline'));
                 _migrationActive = true;
-                try { canvasEditor.commands.insertContentAt(spineDividerPos, carryHTML); }
+                try { canvasEditor.commands.insertContentAt(spineDividerPos, _cwUnitDocText(carryHTML)); }   // v7.20.755
                 finally { _migrationActive = false; }
                 try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
@@ -53022,7 +53083,7 @@
                     outlineRowHTML({ id: 'logline-2', label: 'Logline 2', prompt: 'Character-flaw oriented: a protagonist must change a personal flaw to solve the problem.', type: 'checkbox' }, 'cw-step-1-logline-2') +
                     outlineRowHTML({ id: 'logline-3', label: 'Logline 3', prompt: 'Genre-focused: your preferred genre blended with your core fear or passion.', type: 'checkbox' }, 'cw-step-1-logline-3'));
                 _migrationActive = true;
-                try { canvasEditor.commands.insertContentAt({ from: secPos, to: secPos + secNode.nodeSize }, newSection); }
+                try { canvasEditor.commands.insertContentAt({ from: secPos, to: secPos + secNode.nodeSize }, _cwUnitDocText(newSection)); }   // v7.20.755
                 finally { _migrationActive = false; }
                 try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
@@ -56237,7 +56298,7 @@
     // Uses sectionHTML() + dividerHTML() for proper section blocks (coloured borders, document outline, labels)
     // v7.15.83: wrapper appends tutor sign-off to every CW step doc (optional affordance).
     function getCwDocTemplate(stepDef) {
-        const inner = _cwDocTemplateInner(stepDef);
+        const inner = _cwUnitDocText(_cwDocTemplateInner(stepDef));   // v7.20.755: a weekend lesson's words
         if (!inner || inner === '<p></p>') return inner;
         return inner + buildProgressSection() + buildSignoffSection();
     }
@@ -59294,7 +59355,7 @@
     function _cwTrialDraftInner(src, proseHTML) {
         const stepNo = src ? src.draftStep : null;
         const title = src ? src.draftLabel : 'Your draft';
-        const where = stepNo ? ('Step ' + stepNo) : 'the drafting lesson before this one';
+        const where = stepNo ? _cwStepPlace(stepNo) : 'the drafting lesson before this one';   // v7.20.755: "lesson 6" in a unit
         if (!proseHTML) {
             return '<h3>Your writing has not arrived here yet</h3>' +
                 '<p>This page shows the writing you did in <strong>' + escapeHTML(where) + ' (' + escapeHTML(title) + ')</strong> so you can read it while you assess it. Nothing has come through from that lesson — either it has not been written yet, or it did not save.</p>' +

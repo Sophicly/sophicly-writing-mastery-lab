@@ -173,11 +173,25 @@ if (proseSrc && innerSrc) {
         function _cwDraftProseFromDoc(docHTML) ${proseSrc}
         return _cwDraftProseFromDoc;
     `)(parseHTML);
-    const runInner = new Function(`
+    // v7.20.755: the section names its drafting step through _cwStepPlace ("lesson 6" in a weekend lesson, "Step 10" in
+    // the full course) — lifted from the source WITH its map, never stubbed, and run in both modes.
+    const mapAt = SRC.indexOf('const CW_UNIT_LESSON_OF_STEP = ');
+    const mapSrc = mapAt === -1 ? '' : SRC.slice(mapAt, SRC.indexOf(';', mapAt) + 1);
+    const placeSrc = slice('_cwStepPlace');
+    ok('_cwStepPlace and its step → lesson map exist in the shipped source', !!mapSrc && !!placeSrc);
+    const mkInner = (inUnit) => new Function('WML', `
         function escapeHTML(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+        ${mapSrc}
+        function _cwStepPlace(stepNo) ${placeSrc}
         function _cwTrialDraftInner(src, proseHTML) ${innerSrc}
         return _cwTrialDraftInner;
-    `)();
+    `)({ cwInUnit: () => inUnit });
+    const runInner = mkInner(false);
+    const unitInner = mkInner(true);
+    const D1SRC = { artifactKey: 'draft_1', draftStep: 10, draftNumber: 1, draftLabel: 'Draft 1' };
+    ok('in a weekend lesson the section points back to "lesson 6", never "Step 10" (staging .754, lesson 7)',
+        /lesson 6/.test(unitInner(D1SRC, '<p>x</p>')) && /lesson 6/.test(unitInner(D1SRC, '')) && !/Step 10/.test(unitInner(D1SRC, '<p>x</p>') + unitInner(D1SRC, '')));
+    ok('…and the full course still says "Step 10"', /Step 10/.test(runInner(D1SRC, '<p>x</p>')) && /Step 10/.test(runInner(D1SRC, '')));
 
     // A real Step-10 document: teaching section, a divider, then the student's own draft box.
     const STEP10_DOC =
