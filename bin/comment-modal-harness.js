@@ -65,7 +65,7 @@ ok(unlabelled.length === 0, 'a link outside ELEMENT_TOOLKIT_MAP passes its own l
 const BUNDLE = path.resolve(ROOT, '..', '..', '..', 'sophicly-plugins', 'sophicly-notes', 'assets', 'js', 'sophicly-toolkit.js');
 if (!fs.existsSync(BUNDLE)) ok(false, 'the notes Toolkit bundle was not found at ' + BUNDLE + ' — labels UNVERIFIED');
 else {
-    const titles = new Map([...fs.readFileSync(BUNDLE, 'utf8').matchAll(/id:"([a-z0-9-]+)",t:"([^"]*)"/g)].map(m => [m[1], m[2]]));
+    const titles = new Map([...fs.readFileSync(BUNDLE, 'utf8').matchAll(/id:"([a-z0-9-]+)",(?:goto:"[a-z0-9-]+",)?t:"([^"]*)"/g)].map(m => [m[1], m[2]]));   // some sections carry goto: before t:
     const wrong = tkCalls.filter(c => c.label && titles.get(c.arg) !== c.label);
     ok(wrong.length === 0, 'every own-label matches the section title in the built Toolkit' + (wrong.length ? ' — WRONG: ' + wrong.map(c => c.arg + ' "' + c.label + '" vs "' + titles.get(c.arg) + '"').join('; ') : ''));
 }
@@ -77,6 +77,8 @@ ok(commonItems.length >= 13 && commonNoLink.length === 0, 'every Common Issues c
 const names = new Set([...TOT.matchAll(/^###\s+(.+?)\s+`[^`]{1,4}`\s*$/gm)].map(m => m[1]));
 const badTech = techs.filter(t => !names.has(t));
 ok(techs.length >= 14 && badTech.length === 0, 'every Table link (' + techs.length + ') names a real technique in table-of-techniques.md' + (badTech.length ? ' — MISSING: ' + badTech.join(', ') : ''));
+// v7.20.799 (#851): Polish lands on the Toolkit's own polishing page, not the fixes hub.
+ok(/label: 'Polish'[^\n]*_qcTk\('polishing', 'Polishing Your Answer'\)/.test(qBlock), '"Polish" links to Polishing Your Answer (the page Neil asked the notes lane for)');
 ok(/label: 'Too descriptive'[^\n]*_qcTk\('fix-topic-sentence'\)/.test(qBlock) && /label: 'Not conceptual enough'[^\n]*_qcTk\('conceptual'\)/.test(qBlock)
     && /label: 'Not perceptive enough'[^\n]*_qcTk\('interpretation-ladder'\)/.test(qBlock), 'the three new comments link to Topic Sentences · Conceptual Thinking · The Interpretation Ladder');
 const praise = qBlock.slice(qBlock.indexOf("category: 'Praise'"), qBlock.indexOf("category: 'TTECEA Breakdown'"));

@@ -53,6 +53,27 @@ if grep -q "'cw_step_31'" "$LOCAL_PATH/includes/class-protocol-router.php" 2>/de
     fi
 fi
 
+# ⭐⭐ v7.20.799 (#851) — THE TOOLKIT LINK GUARD. Every id in RESOURCE_TOOLKIT_IDS draws a "Learn" chip that opens
+# a Mastery Toolkit section, and the Toolkit ships in the NOTES plugin on its own release. An id the live notes
+# bundle lacks draws a chip that does nothing when clicked. So the callee must reach prod first: this reads the
+# PRODUCTION bundle's sections and refuses if any linked id is missing. (`ssh -n`: see the v7.20.718 note above.)
+echo "Checking every Toolkit page WML links to is in the PRODUCTION notes bundle..."
+_tk_out=$(ssh -n -i "$SSH_KEY" -o ConnectTimeout=20 "$REMOTE_USER@$REMOTE_HOST" \
+    "grep -o 'id:\"[a-z0-9-]*\"' /home/runcloud/webapps/SophiclyMain/wp-content/plugins/sophicly-notes/assets/js/sophicly-toolkit.js 2>/dev/null" \
+    | node "$LOCAL_PATH/bin/toolkit-prod-guard.js" 2>&1)
+_tk_rc=$?
+if [ "$_tk_rc" != "0" ]; then
+    echo ""
+    echo "❌ REFUSING TO DEPLOY — the live Mastery Toolkit cannot open every page WML links to."
+    echo "   Missing on production: ${_tk_out:-unknown}"
+    echo "   Fix: the notes lane ships its bundle to production FIRST, then deploy WML."
+    echo "   Override (only if you know the notes bundle just went live): TOOLKIT_LINKS_OK=1 ./deploy-production.sh"
+    [ "$TOOLKIT_LINKS_OK" = "1" ] || exit 1
+    echo "   ⚠️  TOOLKIT_LINKS_OK=1 set — proceeding anyway."
+else
+    echo "✅ $_tk_out"
+fi
+
 echo "⚠️  PRODUCTION DEPLOY — Writing Mastery Lab"
 echo "From: $LOCAL_PATH"
 echo "To:   $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH"

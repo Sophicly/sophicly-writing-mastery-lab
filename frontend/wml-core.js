@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.798';
+var WML_BUILD = '7.20.799';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -5594,6 +5594,9 @@ window.WML = (function() {
         // Each section READ before it got a row: Fix My Writing (Redo, Polish) · Examiners' Requirements (Reassess) ·
         // What · How · Why · So What · What Next (More detail) · What & How: Black-Hole Words (Be specific).
         'fix-diagnose', 'examiners', 'whathowwhy', 'fix-what-how',
+        // v7.20.799 (#851) — "Polishing Your Answer" (notes 2.6.274): Neil's macro→micro route (PEDAGOGY §32a), written
+        // by the notes lane at his ask. ⚠️ SHIP ORDER: notes 2.6.274 must be on a site BEFORE this id ships there.
+        'polishing',
     ];
     // ═══════════════════════════════════════════════════════════════════════════════════════
     // ⭐⭐ v7.20.615 (Neil, 2026-09-15) — THE ELEMENT → REFERENCE MAP.
