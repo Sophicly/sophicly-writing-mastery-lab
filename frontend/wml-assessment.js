@@ -20065,6 +20065,10 @@
                             // v7.20.753: weekend lesson 9's walk owns chat-clear too (the document keeps its place).
                             clearWalkResume();
                             setTimeout(() => { _cwAdaptCtl.reset(); _cwAdaptCtl.start(); }, 200);
+                        } else if (state.task === 'cw_step_92') {
+                            // v7.20.777: the weekend bonus lesson's walk owns chat-clear too (the document keeps its place).
+                            clearWalkResume();
+                            setTimeout(() => { _cwEmpathyCtl.reset(); _cwEmpathyCtl.start(); }, 200);
                         } else if (isCwTask && cwStepDef) {
                             const stepLabel = WML.cwStepLabel(cwStepDef) || 'this step';
                             const stepNum = cwStepDef.step || cwStepDef.trial || '';
@@ -20968,7 +20972,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -20982,7 +20986,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -21195,7 +21199,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl,
+                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -21324,6 +21328,10 @@
                 return;
             }
             // v7.20.753: weekend lesson 9 (Adapt It to the Question) owns the turn while its walk runs.
+            if (state.task === 'cw_step_92' && _cwEmpathyCtl.active && _inboundIsAnswer) {   // v7.20.777: the weekend bonus lesson
+                await _cwEmpathyCtl.handleTurn(msg);
+                return;
+            }
             if (state.task === 'cw_step_90' && _cwAdaptCtl.active && _inboundIsAnswer) {
                 await _cwAdaptCtl.handleTurn(msg);
                 return;
@@ -34538,6 +34546,443 @@
             };
         })();
 
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        // ⭐⭐ v7.20.777 — THE WEEKEND BONUS LESSON: MAKE THE READER CARE (Neil, 9 Oct, FIXLIST #813f/#815c; plan §2e.3).
+        // His workbook's Step 16 ("Deepen Empathy for Your Protagonist"): fifteen techniques in three categories, walked
+        // ONE AT A TIME (root §18: a "no" costs one tap), each with a worked example and the help ladder (§4c.9). His rules:
+        // at least 2 from each category, courage compulsory (asked "how", never "whether"). Lesson 6's shape (_cwStructCtl),
+        // with the per-category count. Every answer is filed into its technique's row; the DOCUMENT is the position. After
+        // the plan, the student revises their story (lesson 10's rewrite, copied into "Your Story, Revised") with the plan
+        // beside it; the chat is then the ordinary lesson chat, whose protocol keeps Sophia on empathy and off their pen.
+        // No marking: it is a bonus. The only API call is an explicit "Still stuck — ask Sophia".
+        // ══════════════════════════════════════════════════════════════════════════════════════
+        const _cwEmpathyCtl = (function () {
+            let active = false, pending = false;
+            let emitted = 0;
+            let st = null;
+            const WALK = 'cw92';
+            const STEP = 92;
+            const SUBSTEPS = { 1: 'The Techniques', 2: 'Your Plan', 3: 'Revise Your Story' };
+            const STORY_LABEL = 'Your Story, Revised';
+            // The openings of the turns this walk STORES (owns() is built from the same list).
+            const T = {
+                filed: '**In your plan.**',
+                skipped: '**Fine, not this time.**',
+                more: '**Another example:**',
+                need: '**Your plan needs at least ',
+                wrap: '**Your empathy plan is complete.**',
+                change: '**Which technique do you want to change?**',
+                revise: '**Now revise your story.**',
+                cant: 'I can’t think this through with you right now.',
+            };
+            const YES = 'Yes, I’ll use it', NO = 'Not this time', NOT_AFTER_ALL = 'Not using it after all';
+            const CHANGE = 'Change a technique';
+            function techs() { return WML.CW_EMPATHY_TECHNIQUES || []; }
+            function cats() { return WML.CW_EMPATHY_CATS || []; }
+            function catOf(t) { return cats().filter(function (c) { return c.id === t.cat; })[0] || { id: t.cat, label: '' }; }
+            function fidOf(t) { return t.fid; }
+            function notUsing() { return WML.CW_EMPATHY_NOT_USING || 'Not using this one.'; }
+            function minPerCat() { return WML.CW_EMPATHY_MIN_PER_CAT || 2; }
+            const lsKey = () => {
+                try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cw92') + '_cw92'; } catch (e) { return 'swml_cw92'; }
+            };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ st: st, active: active })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+            function aiBubble(plain) {
+                emitted++;
+                addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function pickTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+
+            // ── the document is the position ──────────────────────────────────────────────
+            function rowText(fid) {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField') && n.attrs && n.attrs.fieldId === fid) {
+                                out = (typeof _cwNodeText === 'function' ? _cwNodeText(n) : (n.textContent || '')).trim();
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out;
+            }
+            function isUsing(t) { const v = rowText(fidOf(t)); return !!v && v !== notUsing(); }
+            function firstEmpty() { const L = techs(); for (let n = 0; n < L.length; n++) if (!rowText(fidOf(L[n]))) return n; return L.length; }
+            function usingIn(catId) { return techs().filter(function (t) { return t.cat === catId && isUsing(t); }).length; }
+            function shortCat() { return cats().filter(function (c) { return usingIn(c.id) < minPerCat(); })[0] || null; }
+            function positionFromDoc() {
+                const n = firstEmpty();
+                if (n < techs().length) return { phase: 'decide', i: n };
+                return { phase: shortCat() ? 'need' : 'done', i: 0 };
+            }
+
+            // ── chips (a PRIVATE copy per controller, per the walk contract) ───────────────
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
+                options.forEach(function (opt) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: opt,
+                        onClick: function () { bar.remove(); onPick(opt); },
+                    }));
+                });
+                bc.appendChild(bar);
+                return true;
+            }
+            function chipBarOrRetry(options, onPick, retryText) {
+                if (chipBar(options, onPick)) return true;
+                _cwReplay(function () { aiBubble(retryText); });
+                return chipBar(options, onPick);
+            }
+            // ── the help ladder (§4c.9): another example → the Table of Techniques → Sophia last ─
+            function helpBar(t) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.' + 'swml-bubble-content') || bubble) : null;
+                if (!bc) return;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
+                if (t.more && !(st && st.moreSpent && st.moreSpent[t.id])) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: 'See another example', icon: WML.icon('examples', 15),
+                        onClick: function () { serveMore(t); },
+                    }));
+                }
+                if (window.SophiclyTable && window.SophiclyTable.open) {
+                    [{ s: 'Ey', l: 'Empathy' }].concat(t.syms || []).forEach(function (x) {
+                        bar.appendChild(el('button', {
+                            className: 'swml-quick-btn', textContent: (WML.techIcon(x.s) ? '' : '🗂 ') + x.l, icon: WML.techIcon(x.s, 15),
+                            onClick: function () { try { window.SophiclyTable.open(x.s); } catch (e) {} },
+                        }));
+                    });
+                }
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn swml-cw-help-last', textContent: 'Still stuck — ask Sophia', icon: WML.phoenixIconHTML(16),
+                    onClick: function () { askSophia(t); },
+                }));
+                bc.appendChild(bar);
+            }
+            function serveMore(t) {
+                st.moreSpent = st.moreSpent || {};
+                if (st.moreSpent[t.id]) return;
+                st.moreSpent[t.id] = 1;
+                persist();
+                aiBubble(T.more + '\n\n' + t.more + '\n\n' + (st.phase === 'where'
+                    ? 'Now yours: how will you show it in your story, and where?'
+                    : 'Will you use it in your story?'));
+                reAttach(t);
+            }
+            function storyText() {
+                let out = '';
+                try {
+                    if (canvasEditor) {
+                        canvasEditor.state.doc.descendants(function (n) {
+                            if (out) return false;
+                            if (n.type && n.type.name === 'sectionBlock' && n.attrs && n.attrs.label === STORY_LABEL) { out = (n.textContent || '').trim(); return false; }
+                            return true;
+                        });
+                    }
+                } catch (e) {}
+                return out.length > 2400 ? out.slice(0, 2400) + '…' : out;
+            }
+            // Rung 3 — an API call, only on an explicit tap.
+            function askSophia(t) {
+                if (pending) return;
+                userTurn('Still stuck — how could ' + t.label.toLowerCase() + ' work in my story?');
+                const ctx = '[THE STUDENT IS ON THE WEEKEND STORY’S BONUS LESSON (Make the Reader Care), planning which empathy '
+                    + 'techniques go in their story, and is stuck on ONE technique: ' + t.label + ' (' + t.what + '). In two or three '
+                    + 'sentences, say how this technique could work for THEIR protagonist in THEIR story (below), then hand it straight back '
+                    + 'and ask them to write their own one or two sentences: how they will show it, and where. Never write it for them, '
+                    + 'never move to another technique, never give a mark, and do NOT emit any marker.]'
+                    + '\n\nTHEIR STORY (lesson 10):\n' + (storyText() || '(not in the document yet)');
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                active = false; pending = true;
+                armWalkResume('cw92-help-' + t.id, function (reply, meta) {
+                    pending = false; active = true; persist();
+                    if (!reply || (meta && meta.timedOut)) {
+                        console.warn('WML CW92: ask-Sophia failed/timed out for ' + t.id + ' — degraded honest message served.');
+                        aiBubble(T.cant + ' Try **See another example**, or open the technique card, then write your own sentence.');
+                    }
+                    setTimeout(function () { try { reAttach(t); } catch (err) {} }, 400);
+                    resetSend();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'I’m stuck on ' + t.label.toLowerCase() + ' — how could it work in my story?';
+                sendCanvasMessage();
+            }
+            function scrollTo(fid) {
+                try {
+                    const editor = document.getElementById('swml-tiptap-editor');
+                    const target = editor ? editor.querySelector('[data-field-id="' + fid + '"]') : null;
+                    if (target && target.offsetParent !== null) _swmlScrollToTop(target);
+                } catch (err) {}
+            }
+            function scrollToStory() {
+                try {
+                    const editor = document.getElementById('swml-tiptap-editor');
+                    const target = editor ? editor.querySelector('[data-section-label="' + STORY_LABEL + '"]') : null;
+                    if (target && target.offsetParent !== null) _swmlScrollToTop(target);
+                } catch (err) {}
+            }
+            function file(fid, text) {
+                const clean = String(text || '').trim();
+                if (!clean) return false;
+                let wrote = false;
+                try { wrote = _writeOutlineRowField(fid, clean, { replace: true }); }
+                catch (e) { console.warn('WML CW92: write failed (non-fatal) for ' + fid + ' —', e && e.message); }
+                try { _tickOutlineRow(fid); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                return wrote;
+            }
+            function progress(sub) { try { applyCwSubstepProgress({ stepNum: STEP, substepNum: sub, name: SUBSTEPS[sub] }); } catch (e) {} }
+
+            // ── serving ───────────────────────────────────────────────────────────────────
+            function heading(t) {
+                return cwProgressBar(techs().indexOf(t) + 1, techs().length, 'Make the Reader Care', t.label, 'Technique');
+            }
+            // The category is named where it starts, so the three groups are felt as three, not as fifteen.
+            function catLead(t) {
+                const L = techs(), k = L.indexOf(t);
+                if (k > 0 && L[k - 1].cat === t.cat) return '';
+                const n = cats().map(function (c) { return c.id; }).indexOf(t.cat) + 1;
+                return '*Group ' + n + ' of ' + cats().length + ': ' + catOf(t).label + '.*\n\n';
+            }
+            const WHERE_ASK = '**How will you show it in your story, and where?** One or two sentences: the moment in your story, and '
+                + 'what the reader sees there. *For example: “In the queue at the gate, the guard laughs at her accent and makes her wait last.”*';
+            function decideText(t, lead) {
+                return (lead ? lead + '\n\n' : '') + heading(t) + catLead(t) + t.what + '\n\n' + t.example + '\n\n'
+                    + (t.must ? '**This one is compulsory.** ' + WHERE_ASK : '**Will you use it in your story?**');
+            }
+            function reAttach(t) {
+                if (st.phase === 'where') { _walkSlot.arm(WALK, fidOf(t), { cycle: 'rewrite' }); }
+                else if (st.phase === 'decide') { chipBarOrRetry([YES, NO], onDecide, '**Will you use it in your story?**'); }
+                helpBar(t);
+                resetSend();
+            }
+            function serveDecide(i, lead) {
+                const t = techs()[i];
+                if (!t) { serveCheck(lead); return; }
+                st.i = i; st.phase = t.must ? 'where' : 'decide';
+                persist();
+                aiBubble(decideText(t, lead));
+                reAttach(t);
+                scrollTo(fidOf(t));
+            }
+            function serveWhere(t, lead) {
+                st.i = techs().indexOf(t); st.phase = 'where';
+                persist();
+                aiBubble((lead ? lead + '\n\n' : '') + heading(t) + WHERE_ASK);
+                reAttach(t);
+                scrollTo(fidOf(t));
+            }
+            // Named for cw-keymatch: FLOW — a Yes asks how and where; a No files "Not using this one." and moves on.
+            function onDecide(label) {
+                const t = techs()[st.i];
+                pickTurn(label);
+                if (!t) { serveCheck(); return; }
+                if (label === YES) { progress(2); serveWhere(t); return; }
+                file(fidOf(t), notUsing());
+                advance(T.skipped);
+            }
+            function advance(lead) {
+                if (st.phase === 'change' || st.phase === 'need' || st.phase === 'done') { serveCheck(lead); return; }
+                const n = firstEmpty();
+                if (n < techs().length) { serveDecide(n, lead); return; }
+                serveCheck(lead);
+            }
+            function serveCheck(lead) {
+                const c = shortCat();
+                if (!c) { serveWrap(lead); return; }
+                st.phase = 'need';
+                persist();
+                const left = techs().filter(function (t) { return t.cat === c.id && !isUsing(t); });
+                aiBubble((lead ? lead + '\n\n' : '') + T.need + minPerCat() + ' from “' + c.label + '”.** You have ' + usingIn(c.id)
+                    + '. Choose one more from that group:');
+                chipBarOrRetry(left.map(function (t) { return t.label; }), onAddPick, '**Choose one more from “' + c.label + '”:**');
+                resetSend();
+            }
+            function onAddPick(label) {
+                const t = techs().filter(function (x) { return x.label === label; })[0];
+                pickTurn(label);
+                if (!t) { serveCheck(); return; }
+                st.mode = 'add';
+                serveWhere(t);
+            }
+            function planSummary() {
+                return cats().map(function (c) {
+                    const rows = techs().filter(function (t) { return t.cat === c.id && isUsing(t); })
+                        .map(function (t) { return '- **' + t.label + ':** ' + rowText(fidOf(t)); });
+                    return rows.length ? '*' + c.label + '*\n' + rows.join('\n') : '';
+                }).filter(Boolean).join('\n\n');
+            }
+            function serveWrap(lead) {
+                st.phase = 'done'; st.mode = '';
+                active = false;
+                persist();
+                _walkSlot.clear(WALK);
+                progress(3);
+                aiBubble((lead ? lead + '\n\n' : '') + T.wrap + '\n\n' + planSummary());
+                // Paced (§4b): the plan, then the job — revising the story with the plan beside it.
+                chipBarOrRetry(['Continue →'], function (l) { pickTurn(l); serveRevise(); }, '**Your plan is in your document.**');
+                resetSend();
+            }
+            function serveRevise() {
+                aiBubble(T.revise + ' It is in the box **' + STORY_LABEL + '**, below your plan, copied from lesson 10. Work your plan into '
+                    + 'it: each technique you chose, at the moment you planned it.\n\nAsk me anything in the chat while you work. I can tell '
+                    + 'you where a reader would care more, but the writing stays yours.');
+                chipBarOrRetry([CHANGE], onChange, '**Want to change a technique?**');
+                scrollToStory();
+                resetSend();
+            }
+            // §4d: the end always offers a way back in.
+            function onChange(label) {
+                pickTurn(label);
+                st.phase = 'change'; active = true;
+                persist();
+                aiBubble(T.change);
+                chipBarOrRetry(techs().map(function (t) { return t.label; }), onChangePick, T.change);
+                resetSend();
+            }
+            function onChangePick(label) {
+                const t = techs().filter(function (x) { return x.label === label; })[0];
+                pickTurn(label);
+                if (!t) { serveCheck(); return; }
+                st.mode = 'change';
+                serveWhere(t);
+                if (!t.must) chipBarOrRetry([NOT_AFTER_ALL], function (l) { pickTurn(l); file(fidOf(t), notUsing()); _walkSlot.clear(WALK); serveCheck(T.skipped); }, WHERE_ASK);
+            }
+            function serveCurrent() {
+                if (!st) st = { i: 0, phase: 'decide', moreSpent: {} };
+                if (st.phase === 'done') { serveRevise(); return; }
+                if (st.phase === 'need') { serveCheck(); return; }
+                if (st.phase === 'change') { onChange(CHANGE); return; }
+                const t = techs()[st.i];
+                if (!t) { serveCheck(); return; }
+                if (st.phase === 'where' && !t.must) { serveWhere(t); return; }
+                serveDecide(st.i);
+            }
+
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                const slot = _walkSlot.consume(WALK);
+                if (!slot) {
+                    _cwNoAskGuard(WALK, function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                userTurn(clean);
+                const t = techs().filter(function (x) { return fidOf(x) === slot.fid; })[0] || techs()[st.i];
+                if (!t) { serveCurrent(); return; }
+                file(fidOf(t), clean);
+                const wasExtra = st.mode === 'add' || st.mode === 'change';
+                st.mode = '';
+                if (wasExtra) { st.phase = 'need'; serveCheck(T.filed); return; }
+                advance(T.filed);
+            }
+
+            function orientationChunks() {
+                return [
+                    'This bonus lesson is about the most important feeling a story can create: **empathy**. Empathy means feeling *with* '
+                        + 'your protagonist, understanding what is going on inside them even when we disagree with their choices. Sympathy '
+                        + 'is only feeling sorry for them. The screenwriting teacher Karl Iglesias calls empathy the most important emotion a '
+                        + 'writer can create, and every protagonist needs it.',
+                    'Here is how it works. I show you **fifteen techniques, one at a time**, in three groups: making your protagonist a '
+                        + '**victim**, giving them **virtues**, and giving them **qualities** a reader admires. For each one you decide whether '
+                        + 'it goes in your story. If it does, you write one or two sentences: how you will show it, and where.',
+                    'Choose at least **' + minPerCat() + ' from each group**, and **courage** is compulsory. Then you revise your story with '
+                        + 'your plan beside it. **Don’t overthink it:** one rough sentence for each is enough, and you can change any of them at the end.',
+                ];
+            }
+            function start() {
+                if (active || pending) return false;
+                // Drawn, never stored (§4c.7): true only while the lesson is opened outside the weekend story.
+                if (!(WML.cwInUnit && WML.cwInUnit())) {
+                    st = { i: 0, phase: 'blocked' };
+                    _cwReplay(function () { aiBubble('This lesson belongs to the Weekend Story. Open it from the Weekend Story unit in your course.'); });
+                    return true;
+                }
+                const pos = positionFromDoc();
+                st = { i: pos.i || 0, phase: pos.phase, moreSpent: {} };
+                active = pos.phase !== 'done'; pending = false;
+                persist();
+                console.log('WML CW92: code-served empathy walk start — phase ' + st.phase + ' at technique ' + (st.i + 1));
+                if (st.phase === 'done') { serveRevise(); return true; }
+                if (st.phase === 'need') { serveCheck(); return true; }
+                progress(1);
+                if (st.i === 0) { st.phase = 'orient'; persist(); serveCwChunks(orientationChunks(), { emit: aiBubble, onDone: function () { serveDecide(0); } }); return true; }
+                serveDecide(st.i);
+                return true;
+            }
+            function reset() { active = false; pending = false; st = null; _walkSlot.clear(WALK); clearPersist(); }
+            function tryResume() {
+                try {
+                    if (st && (st.phase === 'done' || st.phase === 'blocked') && !active) return false;
+                    if (!(WML.cwInUnit && WML.cwInUnit())) return false;
+                    let saved = null;
+                    try { const raw = localStorage.getItem(lsKey()); saved = raw ? JSON.parse(raw) : null; } catch (e) {}
+                    st = (saved && saved.st) ? saved.st : { i: 0, phase: 'decide', moreSpent: {} };
+                    st.moreSpent = st.moreSpent || {};
+                    const mark = emitted;
+                    // The document is the authority on position — except an open "change" (the student chose to go back).
+                    if (st.phase !== 'change' && !(st.phase === 'where' && st.mode)) {
+                        const pos = positionFromDoc();
+                        if (!(st.phase === 'where' && pos.phase === 'decide' && pos.i === st.i)) { st.phase = pos.phase; st.i = pos.i || 0; }
+                    }
+                    if (st.phase === 'orient') st.phase = 'decide';
+                    if (st.phase === 'done') {
+                        // Revising: the chat is the lesson chat now. The way back into the plan comes back with the page (§4d).
+                        active = false; pending = false;
+                        setTimeout(function () { if (emitted !== mark) return; chipBarOrRetry([CHANGE], onChange, '**Want to change a technique?**'); }, 500);
+                        return false;
+                    }
+                    active = true; pending = false;
+                    persist();
+                    console.log('WML CW92: resumed — phase ' + st.phase + ' at technique ' + (st.i + 1));
+                    setTimeout(function () { if (emitted !== mark) return; _cwReplay(function () { serveCurrent(); }); }, 400);
+                    return true;
+                } catch (e) { return false; }
+            }
+            function nudge() { if (!active || pending) return false; serveCurrent(); return true; }
+            function owns(text) {
+                const t = String(text || '');
+                if (t.indexOf('[SWML_BEAT:') === 0) return true;
+                const sigs = Object.keys(T).map(function (k) { return T[k]; })
+                    .concat(orientationChunks().map(function (c) { return String(c).slice(0, 40); }));
+                return sigs.some(function (s) { return s && t.indexOf(s) === 0; });
+            }
+            _CW_TURN_OWNERS.cw_step_92 = owns;
+
+            return {
+                handleTurn, onReply: function () { /* code-started: the help reply arrives through armWalkResume */ },
+                reset, tryResume, nudge, start, forceStart: start,
+                atStart: function () { return !st || ((st.i || 0) === 0 && (st.phase === 'decide' || st.phase === 'orient')); },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
         const _cwAdaptCtl = (function () {
             let active = false, pending = false;
             let emitted = 0;
@@ -37034,13 +37479,15 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwAdaptCtl, _cwStructCtl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwAdaptCtl, _cwStructCtl, _cwEmpathyCtl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
         window.__swmlCw9Ctl = _cw9SceneCtl;
         window.__swmlCw13Ctl = _cw13SceneCtl;   // v7.20.568 (#440): the twin pipeline's Step-13 handle
         window.__swmlCwAdaptCtl = _cwAdaptCtl;  // v7.20.753: the twin pipeline's weekend-lesson-9 handle
+        window.__swmlCwEmpathyCtl = _cwEmpathyCtl;   // v7.20.777: the twin pipeline's weekend-bonus handle
+        window.__swmlCwTrial1Ctl = _cwTrial1Ctl;     // v7.20.777: the twin pipeline's weekend-lesson-11 handle (Mark It Again)
         window.__swmlCwStructCtl = _cwStructCtl;   // v7.20.761: the twin pipeline's weekend-lesson-6 handle
         registerCwWalkOnReply(function (reply) {
             _cwIdeasCtl.onReply(reply);
@@ -37057,6 +37504,7 @@
             _cwGoalsPlotCtl.onReply(reply);
             _cwAdaptCtl.onReply(reply);
             _cwStructCtl.onReply(reply);
+            _cwEmpathyCtl.onReply(reply);
 
             const t = (state && state.task) || '';
             // ⚠️ Every walk task needs its arm HERE as well as in onReply above — the .490
@@ -37080,6 +37528,7 @@
                 : t === 'cw_step_11' ? _cwCharProfileCtl
                 : t === 'cw_step_12' ? _cwGoalsPlotCtl
                 : t === 'cw_step_90' ? _cwAdaptCtl
+                : t === 'cw_step_92' ? _cwEmpathyCtl   // v7.20.777: the weekend bonus lesson
                 : (t === 'cw_step_27' && WML.cwInUnit && WML.cwInUnit()) ? _cwStructCtl : null;
             if (!ctl) { _cwStartMisses = 0; _cwStartMissTask = ''; return; }
             if (t !== _cwStartMissTask) { _cwStartMissTask = t; _cwStartMisses = 0; }
@@ -37127,7 +37576,8 @@
             cw13SceneCtl: _cw13SceneCtl,       // v7.20.568 (#440) — the same walk for Draft 2's scene
             cwTrial1Ctl: _cwTrial1Ctl,         // v7.20.551 — fresh entry calls forceStart(), boot resume tryResume()
             cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
-            cwAdaptCtl: _cwAdaptCtl,             // v7.20.753 — weekend lesson 9; same two entry points
+            cwAdaptCtl: _cwAdaptCtl,
+            cwEmpathyCtl: _cwEmpathyCtl,         // v7.20.777 — the weekend bonus lesson; same two entry points             // v7.20.753 — weekend lesson 9; same two entry points
             cwStructCtl: _cwStructCtl,           // v7.20.761 — weekend lesson 6; same two entry points
             cwGoalsPlotCtl: _cwGoalsPlotCtl,     // v7.20.567 (#440) — fresh entry calls start(), boot resume tryResume()
             canvasChatHistory,
@@ -44285,6 +44735,7 @@
                     if (state.task === 'cw_step_91' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();   // v7.20.776 (weekend lesson 11)
                     if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
                     if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
+                    if (state.task === 'cw_step_92' && tp.cwEmpathyCtl) tp.cwEmpathyCtl.tryResume();         // v7.20.777 (weekend bonus)
                     if (state.task === 'cw_step_90' && tp.cwAdaptCtl) tp.cwAdaptCtl.tryResume();               // v7.20.753 (weekend lesson 9)
                     if (state.task === 'cw_step_27' && tp.cwStructCtl && WML.cwInUnit && WML.cwInUnit()) tp.cwStructCtl.tryResume();   // v7.20.761 (weekend lesson 6)
                     // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
@@ -44508,6 +44959,11 @@
                     if (state.task === 'cw_step_27' && !state.reviewMode && tp.cwStructCtl && WML.cwInUnit && WML.cwInUnit()) {
                         console.log('WML v7.20.761: weekend lesson 6 — deterministic structural-elements walk start (isCwSi entry)');
                         tp.cwStructCtl.start();
+                        return;
+                    }
+                    if (state.task === 'cw_step_92' && !state.reviewMode && tp.cwEmpathyCtl) {
+                        console.log('WML v7.20.777: weekend bonus — deterministic empathy walk start (isCwSi entry)');
+                        tp.cwEmpathyCtl.start();
                         return;
                     }
                     if (state.task === 'cw_step_90' && !state.reviewMode && tp.cwAdaptCtl) {
@@ -45790,6 +46246,12 @@
                                         } else if (state.task === 'cw_step_90' && window.__swmlCwAdaptCtl) {   // v7.20.753 (weekend lesson 9)
                                             clearWalkResume();
                                             setTimeout(() => { window.__swmlCwAdaptCtl.reset(); window.__swmlCwAdaptCtl.start(); }, 200);
+                                        } else if (state.task === 'cw_step_92' && window.__swmlCwEmpathyCtl) {   // v7.20.777 (weekend bonus)
+                                            clearWalkResume();
+                                            setTimeout(() => { window.__swmlCwEmpathyCtl.reset(); window.__swmlCwEmpathyCtl.start(); }, 200);
+                                        } else if (state.task === 'cw_step_91' && window.__swmlCwTrial1Ctl) {   // v7.20.777 (weekend lesson 11)
+                                            clearWalkResume();
+                                            setTimeout(() => { window.__swmlCwTrial1Ctl.reset(); window.__swmlCwTrial1Ctl.forceStart(); }, 200);
                                         } else if (state.task === 'cw_step_13' && window.__swmlCw13Ctl) {   // v7.20.568 (#440)
                                             clearWalkResume();
                                             setTimeout(() => { window.__swmlCw13Ctl.reset(); window.__swmlCw13Ctl.start(); }, 200);
@@ -47632,6 +48094,16 @@
                                             if (state.task === 'cw_step_90' && !state.reviewMode && window.__swmlCwAdaptCtl) {   // v7.20.753 (weekend lesson 9)
                                                 console.log('WML v7.20.753: weekend lesson 9 — deterministic adapt walk start (transition-handler entry)');
                                                 window.__swmlCwAdaptCtl.start();
+                                                return;
+                                            }
+                                            if (state.task === 'cw_step_92' && !state.reviewMode && window.__swmlCwEmpathyCtl) {   // v7.20.777 (weekend bonus)
+                                                console.log('WML v7.20.777: weekend bonus — deterministic empathy walk start (transition-handler entry)');
+                                                window.__swmlCwEmpathyCtl.start();
+                                                return;
+                                            }
+                                            if (state.task === 'cw_step_91' && !state.reviewMode && window.__swmlCwTrial1Ctl) {   // v7.20.777 (weekend lesson 11)
+                                                console.log('WML v7.20.777: weekend lesson 11 — deterministic Mark It Again start (transition-handler entry)');
+                                                window.__swmlCwTrial1Ctl.forceStart();
                                                 return;
                                             }
                                             const firstName = (config.userName || '').split(' ')[0] || 'there';
@@ -52764,6 +53236,48 @@
                 console.warn('WML CW again: refresh failed (document untouched) —', e && e.message);
             }
         };
+        // ⭐ v7.20.777 — THE BONUS LESSON's story box starts with the student's latest story: lesson 10's rewrite, else their
+        // latest draft. Seeded ONCE, only while the box is empty (tryFillCwAdaptRewrite's rule) — after that it is their own
+        // writing and is never touched again. Reads only.
+        const tryFillCwEmpathyStory = async () => {
+            if (!isCwTask || !canvasEditor || !cwStepDef || cwStepDef.step !== 92 || state.reviewMode) return;
+            if (!state.cwProjectId) { console.warn('WML CW92: no cwProjectId on this page — the story box stays empty.'); return; }
+            try {
+                const box = document.createElement('div');
+                box.innerHTML = canvasEditor.getHTML();
+                const sec = box.querySelector('[data-section-label="Your Story, Revised"]');
+                if (!sec) { console.warn('WML CW92: no "Your Story, Revised" section on this page.'); return; }
+                if ((sec.textContent || '').trim()) return;   // the student's own writing — never overwritten
+                let prose = '', from = '';
+                try {
+                    const ah = await _cwStepDocHTML('cw_step_90');
+                    if (ah) {
+                        const ab = document.createElement('div');
+                        ab.innerHTML = ah;
+                        const rw = ab.querySelector('[data-section-label="Your Rewrite"]');
+                        if (rw && (rw.textContent || '').trim()) { prose = Array.from(rw.children).filter((n) => (n.textContent || '').trim()).map((n) => n.outerHTML).join(''); from = 'lesson 10'; }
+                    }
+                } catch (e) { console.warn('WML CW92: lesson 10 page could not be read —', e && e.message); }
+                for (const key of (prose ? [] : ['draft_2', 'draft_1'])) {
+                    try {
+                        const art = await WML.cwProject.loadArtifact(state.cwProjectId, key);
+                        prose = (art && art.success && art.value) ? _cwDraftProseFromDoc(String(art.value)) : '';
+                    } catch (e) { prose = ''; }
+                    if (prose) { from = key; break; }
+                }
+                if (!prose) { console.warn('WML CW92: no story to copy in (lesson 10, draft_2, draft_1) — the box stays empty for them to write in.'); return; }
+                sec.innerHTML = prose;
+                const _was = _migrationActive;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(box.innerHTML, false); }
+                finally { _migrationActive = _was; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW92: story box seeded from ' + from + '.');
+            } catch (e) {
+                console.warn('WML CW92: seeding the story box failed (document untouched) —', e && e.message);
+            }
+        };
         // ⭐ v7.20.554 (#424 / PEDAGOGY §33.9) — PIN THE TRIAL'S TARGET TO THE TOP OF THE NEXT
         // DRAFT. The trial's closing ask banks the student's own one-sentence target; this reads
         // it back (LAST saved entry for that trial — a redo supersedes) and pins it above the
@@ -54426,7 +54940,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwStructPlan()).then(() => tryFillCwAdaptRewrite()).then(() => tryFillCwAgain()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwStructPlan()).then(() => tryFillCwAdaptRewrite()).then(() => tryFillCwAgain()).then(() => tryFillCwEmpathyStory()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -58515,6 +59029,26 @@
         // ── v7.20.776: weekend lesson 11, Mark It Again — Trial 1's marking on the story rewritten in lesson 10 ──
         // Its own page: the SAME judgement and verdict rows (the walk is Trial 1's), the rewritten story where Trial 1 shows
         // the draft (same section label, so the draft pad and the walk find it), and THEN AND NOW beside the verdict.
+        // ── v7.20.777: the weekend BONUS lesson, Make the Reader Care (plan §2e.3) — his workbook's Step 16 techniques, in
+        // its three groups and order (rows aligned with the full course's Step 18 rows, cw-step-16-*), then the story to revise.
+        if (step === 92) {
+            const ET = WML.CW_EMPATHY_TECHNIQUES || [], EC = WML.CW_EMPATHY_CATS || [];
+            html += sectionHTML('question', 'About This Lesson', false, null,
+                '<h2>Make the Reader Care</h2>'
+                + '<p>The most important feeling a story can create is <strong>empathy</strong>: feeling <em>with</em> your protagonist, understanding what is going on inside them even when we disagree with their choices. Sympathy is only feeling sorry for them.</p>'
+                + '<p>In the chat you meet fifteen techniques, one at a time, in three groups. Choose <strong>at least ' + (WML.CW_EMPATHY_MIN_PER_CAT || 2) + ' from each group</strong>; <strong>courage</strong> is compulsory. Then revise your story with your plan beside it.</p>');
+            EC.forEach(function (c, k) {
+                html += dividerHTML('GROUP ' + (k + 1) + ': ' + c.label.toUpperCase());
+                html += sectionHTML('plan', c.label, true, null,
+                    '<h3>' + escapeHTML(c.label) + '</h3>'
+                    + ET.filter(function (t) { return t.cat === c.id; }).map(function (t) {
+                        return outlineRowHTML({ id: t.id, label: t.label + (t.must ? ' (compulsory)' : ''), prompt: t.what }, t.fid);
+                    }).join(''));
+            });
+            html += dividerHTML('YOUR STORY, REVISED');
+            html += sectionHTML('response', 'Your Story, Revised', true, null, '<p></p>', { 'student-composition': 'true' });
+            return html;
+        }
         if (step === 91) {
             html += sectionHTML('question', 'About This Lesson', false, null, _cwMarkAgainAboutHTML());
             html += dividerHTML('YOUR REWRITTEN STORY');

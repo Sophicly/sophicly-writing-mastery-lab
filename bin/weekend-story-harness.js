@@ -1374,6 +1374,122 @@ const SEVEN = (hook, setup) => [
         }
         island.props = null;
     }
+
+    // ── R · v7.20.777 (FIXLIST #813f/#815c, plan §2e.3): THE BONUS LESSON, MAKE THE READER CARE — Neil's workbook Step 16,
+    // walked one technique at a time; at least 2 per group, courage compulsory; then the story to revise.
+    console.log('\nR · the bonus lesson: fifteen empathy techniques from his workbook, then the story revised');
+    {
+        const ET = WMLC.CW_EMPATHY_TECHNIQUES || [], EC = WMLC.CW_EMPATHY_CATS || [];
+        // R1 · the data IS his workbook's (root §13: verbatim labels, his groups, his order, his rules)
+        const WB = fs.readFileSync(path.join(ROOT, '..', 'Sophicly Writing Mastery Creative Writing Workbook', 'CW-STEP-16-deepen-empathy.md'), 'utf8');
+        const wbLabels = (WB.match(/^\| \*\*(.+?)\*\* —/gm) || []).map((l) => l.replace(/^\| \*\*/, '').replace(/\*\* —$/, '').replace(/\s*\(COMPULSORY\)/, ''));
+        ok(ET.length === 15 && wbLabels.length === 15 && JSON.stringify(ET.map((t) => t.label)) === JSON.stringify(wbLabels),
+            '⭐ the fifteen techniques are his workbook\'s, word for word and in his order', ET.map((t) => t.label).filter((l, i) => l !== wbLabels[i]));
+        ok(EC.length === 3 && EC.every((c) => ET.filter((t) => t.cat === c.id).length === 5) && WMLC.CW_EMPATHY_MIN_PER_CAT === 2
+            && /at least 2 techniques from each category/.test(WB), 'his three groups of five, and his rule: at least 2 from each');
+        ok(JSON.stringify(ET.filter((t) => t.must).map((t) => t.id)) === '["courage"]' && /\*\*Courage \(COMPULSORY\)\*\*/.test(WB), 'courage is compulsory, as his workbook says');
+        const ti18 = SRC.indexOf("'<h2>Step 18: Deepen Empathy for Your Protagonist</h2>'");
+        const FULL18 = SRC.slice(ti18, SRC.indexOf('return html;', ti18));
+        const full18 = (FULL18.match(/'cw-step-16-[a-z-]+'/g) || []).map((x) => x.slice(1, -1));
+        ok(ET.filter((t) => t.id !== 'profession').every((t) => full18.indexOf(t.fid) !== -1) && full18.indexOf('cw-step-16-profession') === -1,
+            '⭐ §5d: each row id is the full course\'s Step 18 row id (so the work maps); "profession" is the one his workbook has and the full course omitted (#818)');
+        const words = (s) => String(s || '').trim().split(/\s+/).length;
+        ok(ET.every((t) => t.what && t.example && t.more && words(t.what) <= 50 && words(t.example) <= 60 && words(t.more) <= 60), 'each card is short: one rule, one example, one more');
+        ok(!/["“”]/.test(ET.map((t) => t.example + ' ' + t.more).join(' ')), '§5c-i: the examples DESCRIBE, they never quote');
+        const ALLOW = new Set(fs.readFileSync(path.join(__dirname, 'cw6-prod-technique-symbols.txt'), 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && l[0] !== '#'));
+        const syms = ['Ey'].concat(...ET.map((t) => (t.syms || []).map((x) => x.s)));
+        ok(syms.every((x) => ALLOW.has(x)), 'every Table of Techniques chip opens a card the live table carries', syms.filter((x) => !ALLOW.has(x)));
+        // R2 · the page
+        const ti92 = SRC.indexOf('function _cwDocTemplateInner(stepDef) {');
+        const TPL92 = SRC.slice(ti92, braceSliceFrom(SRC, ti92, '{', '}').end);
+        const esc92 = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const P92 = new Function('sectionHTML', 'dividerHTML', 'outlineRowHTML', 'escapeHTML', 'WML', 'CW_ADAPT_STEP', 'return (' + TPL92 + ')({ step: 92 });')(   // eslint-disable-line no-new-func
+            (type, label, ed, x, inner) => '<div data-section-type="' + type + '" data-section-label="' + label + '">' + inner + '</div>',
+            (lb) => '<div data-section-type="divider"><p>' + lb + '</p></div>',
+            (c, fid) => '<div data-outline-row="true" data-prompt="' + esc92(c.prompt || c.label) + '" data-field-id="' + fid + '" data-label="' + esc92(c.label) + '"></div>',
+            esc92, Object.assign({}, WMLC, { cwInUnit: () => true }), 90);
+        ok(ET.every((t) => P92.indexOf('data-field-id="' + t.fid + '"') !== -1) && (P92.match(/data-section-type="divider"/g) || []).length >= 4
+            && /data-section-label="Your Story, Revised"/.test(P92) && /data-label="Courage \(compulsory\)"/.test(P92) && !/\bStep \d|plot\b/i.test(P92.replace(/<[^>]+>/g, ' ')),
+            '⭐ the page: three groups, fifteen rows, courage marked compulsory, the story box last, no course step', (P92.replace(/<[^>]+>/g, ' ').match(/.{0,40}(\bStep \d|plot\b).{0,40}/i) || [])[0]);
+        // R3 · the walk, driven like a student
+        const CTL92 = sliceController('const _cwEmpathyCtl = (function');
+        const H92 = { w: null };
+        const fids92 = ET.map((t) => t.fid);
+        const mk92 = (unit) => {
+            const w = makeWorld(CTL92, { task: 'cw_step_92', fids: fids92, ok, ls: new Map(), history: [],
+                extraDeps: { _CW_TURN_OWNERS: {}, canvasEditor: { state: { doc: { descendants(fn) {
+                    for (const [f, t] of (H92.w ? H92.w.rows : new Map())) if (fn({ type: { name: 'outlineRow' }, attrs: { fieldId: f }, textContent: t }, 0) === false) return;
+                } } } } } });
+            H92.w = w;
+            Object.assign(w.deps.WML, { CW_EMPATHY_TECHNIQUES: ET, CW_EMPATHY_CATS: EC, CW_EMPATHY_MIN_PER_CAT: 2, CW_EMPATHY_NOT_USING: WMLC.CW_EMPATHY_NOT_USING, cwInUnit: () => unit });
+            if (!w.deps.WML.techIcon) w.deps.WML.techIcon = () => '';
+            w.deps.window.SophiclyTable = { open() {} };
+            return w;
+        };
+        {
+            const w = mk92(false);
+            w.ctl.start();
+            ok(/belongs to the Weekend Story/.test(w.bubbles.join('\n')) && !w.ctl.active, 'opened outside the Weekend Story: it says so and stops');
+        }
+        const w = mk92(true);
+        const last = () => w.bubbles[w.bubbles.length - 1] || '';
+        const chipR = (re) => w.chips().filter((c) => re.test(c.textContent))[0];
+        w.ctl.start();
+        await settle(); await wait(30);
+        ok(/\*\*empathy\*\*/.test(w.bubbles[0] || '') && /Sympathy\s+is only feeling sorry/.test(w.bubbles[0] || '') && !!chipR(/Continue/), 'the orientation is paced and starts with what empathy is (vs sympathy)');
+        for (let g = 0; g < 5 && chipR(/Continue/); g++) w.tap(chipR(/Continue/));
+        ok(/fifteen techniques, one at a time/.test(w.bubbles.join('\n')) && /at least \*\*2 from each group\*\*/.test(w.bubbles.join('\n')), 'it says how it works and his rules');
+        ok(/Group 1 of 3: Make Your Protagonist a Victim/.test(last()) && /Unfair Injury\/Mistreatment/.test(last()) && !!chipR(/Yes, I’ll use it/) && !!chipR(/Not this time/),
+            '⭐ technique 1: its group, its rule, its example, and a one-tap Yes / No (§18)', last().slice(0, 220));
+        ok(w.helpChipNamed(/See another example/) && w.helpChipNamed(/Empathy/) && w.helpChipNamed(/The Underdog/) && w.helpChipNamed(/Still stuck/), 'the help ladder: another example, the Empathy card and the technique\'s card, Sophia last');
+        // Yes to the FIRST of each group only (courage is compulsory anyway): the per-group check must then ask for more
+        for (let k = 0; k < ET.length; k++) {
+            const t = ET[k];
+            const firstOfCat = ET.findIndex((x) => x.cat === t.cat) === k;
+            if (t.must) { ok(/This one is compulsory/.test(last()) && !chipR(/Not this time/), 'courage is asked "how", never "whether"'); w.say('She stays to face the guard when everyone runs.'); continue; }
+            if (firstOfCat) { w.tap(chipR(/Yes, I’ll use it/)); ok(/How will you show it in your story, and where\?/.test(last()), t.label + ': a Yes asks how and where'); w.say('My plan for ' + t.id + '.'); ok(w.rows.get(t.fid) === 'My plan for ' + t.id + '.', t.label + ' filed verbatim'); continue; }
+            const no = chipR(/Not this time/);
+            ok(!!no, t.label + ': No is one tap');
+            if (no) w.tap(no);
+            ok(w.rows.get(t.fid) === WMLC.CW_EMPATHY_NOT_USING, t.label + ' declined → "' + WMLC.CW_EMPATHY_NOT_USING + '"');
+        }
+        ok(/Your plan needs at least 2 from “Make Your Protagonist a Victim”\.\*\* You have 1\./.test(last()) && w.chips().length === 4, '⭐ group 1 has one: the check asks for one more FROM THAT GROUP (its four others)', last().slice(0, 160));
+        w.tap(chipR(/^Jeopardy$/)); w.say('The guard has her name on his list.');
+        ok(/Your plan needs at least 2 from “Give Your Protagonist Humanistic Virtues”/.test(last()), '…then group 2');
+        w.tap(chipR(/^Being Ethical and Dependable$/)); w.say('She keeps her promise to the boy.');
+        // group 3's first technique IS courage (compulsory), so the first-of-each-group answers gave it only one
+        ok(/Your plan needs at least 2 from “Give Your Protagonist Desirable Qualities”\.\*\* You have 1\./.test(last()), '…then group 3 (courage alone is one)', last().slice(0, 160));
+        w.tap(chipR(/^Wisdom, Wit, and Cleverness$/)); w.say('She talks her way past the second gate.');
+        ok(/Your empathy plan is complete\./.test(last()), '⭐ two in every group: the plan is complete', last().slice(0, 160));
+        ok(/Make Your Protagonist a Victim/.test(last()) && /Jeopardy:\*\* The guard has her name/.test(last()) && !!chipR(/Continue/), 'the wrap lists the plan by group, then Continue (paced)');
+        w.tap(chipR(/Continue/));
+        ok(/\*\*Now revise your story\.\*\*/.test(last()) && /Your Story, Revised/.test(last()) && /the writing stays yours/.test(last()) && !!chipR(/Change a technique/) && !w.ctl.active,
+            '⭐ then the revise: the story box, Sophia on hand but the pen theirs, and a way back into the plan (§4d)');
+        // R4 · resume from the document alone
+        {
+            const w2 = mk92(true);
+            w2.rows.set(ET[0].fid, 'A.'); w2.rows.set(ET[1].fid, WMLC.CW_EMPATHY_NOT_USING);
+            ok(w2.ctl.tryResume() === true, 'resume with no walk state in this browser');
+            await wait(600);
+            ok(/Jeopardy/.test(w2.bubbles[w2.bubbles.length - 1] || '') && !!w2.chips().filter((c) => /Not this time/.test(c.textContent))[0], '⭐ the document says where they are: technique 3, Jeopardy, with its controls');
+        }
+        // R5 · wiring, both pipelines, every entry
+        const wires92 = [
+            /\} else if \(state\.task === 'cw_step_92'\) \{[\s\S]{0,300}_cwEmpathyCtl\.reset\(\); _cwEmpathyCtl\.start\(\);/,
+            /if \(state\.task === 'cw_step_92' && _cwEmpathyCtl\.active && _inboundIsAnswer\)/,
+            /registerCwWalkCtls\(\[[^\]]*_cwEmpathyCtl[,\]]/, /window\.__swmlCwEmpathyCtl = _cwEmpathyCtl;/, /_cwEmpathyCtl\.onReply\(reply\);/,
+            /: t === 'cw_step_92' \? _cwEmpathyCtl/, /cwEmpathyCtl: _cwEmpathyCtl,/,
+            /state\.task === 'cw_step_92' && tp\.cwEmpathyCtl\) tp\.cwEmpathyCtl\.tryResume\(\)/,
+            /state\.task === 'cw_step_92' && !state\.reviewMode && tp\.cwEmpathyCtl/, /window\.__swmlCwEmpathyCtl\.reset\(\); window\.__swmlCwEmpathyCtl\.start\(\);/,
+            /state\.task === 'cw_step_92' && !state\.reviewMode && window\.__swmlCwEmpathyCtl/,
+            /window\.__swmlCwTrial1Ctl\.reset\(\); window\.__swmlCwTrial1Ctl\.forceStart\(\);/, /state\.task === 'cw_step_91' && !state\.reviewMode && window\.__swmlCwTrial1Ctl/,
+        ];
+        const miss92 = wires92.filter((re) => !re.test(SRC)).map(String);
+        ok(miss92.length === 0 && (SRC.match(/cw_step_92: _cwEmpathyCtl,/g) || []).length === 3, '⭐ the bonus is wired at every entry, on BOTH chat pipelines (and lesson 11 on the twin too); the three maps know it', miss92);
+        ok(/'cw_step_92' => 'CW-STEP-92-make-the-reader-care\.md'/.test(fs.readFileSync(path.join(ROOT, 'includes/class-protocol-router.php'), 'utf8'))
+            && /Weekend Lesson 12/.test(fs.readFileSync(path.join(ROOT, 'protocols/shared/creative-writing/CW-STEP-92-make-the-reader-care.md'), 'utf8').split('\n')[0]),
+            'its protocol is mapped and names its weekend lesson');
+    }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }
     console.log('✅ weekend-story-harness passed (lesson 5 offers the six spine beats; the full course is untouched).');

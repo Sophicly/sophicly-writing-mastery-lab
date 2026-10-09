@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.776';
+var WML_BUILD = '7.20.777';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1203,6 +1203,10 @@ window.WML = (function() {
         // OWN document (the `cw-trial-1-*` rows are per document). Deliberately NO `trial` key: this is not a second Trial 1
         // record, and every `trial`-keyed path (the draft fill, the heal, the trial save on Mark Complete) must skip it.
         { step: 91, label: 'Mark It Again', tier: 'si', phase: 'unit', unitOnly: 'weekend', words: 'exam' },
+        // ⭐ v7.20.777 — the weekend story's BONUS lesson, "Make the Reader Care" (Neil, 9 Oct: "then empathy as a bonus";
+        // plan §2e.3): his workbook's empathy techniques planned into the story one at a time, then the story revised with
+        // the plan beside it. No marking (it is a bonus).
+        { step: 92, label: 'Make the Reader Care', tier: 'si', phase: 'unit', unitOnly: 'weekend', words: 'exam' },
     ];
 
     // v7.20.507: "does this step run with the tools stripped?" ONE predicate, so the rail and the
@@ -1402,6 +1406,11 @@ window.WML = (function() {
             { step: 1, label: 'Read Your Draft' },
             { step: 2, label: 'Judge Your Draft' },
             { step: 3, label: 'Sophia\u2019s Verdict' },
+        ],
+        92: [   // v7.20.777: the weekend bonus lesson, Make the Reader Care
+            { step: 1, label: 'The Techniques' },
+            { step: 2, label: 'Your Plan' },
+            { step: 3, label: 'Revise Your Story' },
         ],
         91: [   // v7.20.776: weekend lesson 11, Mark It Again
             { step: 1, label: 'Read Your Rewritten Story' },
@@ -1657,11 +1666,11 @@ window.WML = (function() {
     ];
     const CW_EMPATHY_MIN_PER_CAT = 2;
     const CW_EMPATHY_TECHNIQUES = [
-        { id: 'unfair-injury', cat: 'victim', fid: 'cw-step-16-unfair-injury', label: 'Unfair Injury or Mistreatment', syms: [{ s: 'Ud', l: 'The Underdog' }],
+        { id: 'unfair-injury', cat: 'victim', fid: 'cw-step-16-unfair-injury', label: 'Unfair Injury/Mistreatment', syms: [{ s: 'Ud', l: 'The Underdog' }],
             what: 'Your protagonist is hurt in a way they did not deserve: teased, humiliated, falsely accused, or treated unfairly because of who they are. Readers side with someone who suffers unfairly.',
             example: 'Harry Potter sleeps in a cupboard under the stairs while his cousin has two bedrooms. From the first chapter, the reader is on his side.',
             more: 'Cinderella scrubs the floors while her stepsisters get ready for the ball. The unfairness is what makes us want her to go.' },
-        { id: 'not-believed', cat: 'victim', fid: 'cw-step-16-not-believed', label: 'Not Believed or Misunderstood', syms: [{ s: 'Di', l: 'Dramatic Irony' }],
+        { id: 'not-believed', cat: 'victim', fid: 'cw-step-16-not-believed', label: 'Not Believed/Misunderstood (Dramatic Irony)', syms: [{ s: 'Di', l: 'Dramatic Irony' }],
             what: 'Your protagonist tells the truth and nobody believes them, or they are judged unfairly. The reader knows the truth (this is dramatic irony), so the reader feels the injustice with them.',
             example: 'In Romeo and Juliet, Juliet’s father rages at her for refusing to marry Paris. We know she is already married to Romeo, so his anger falls on someone we understand.',
             more: 'In Toy Story, Woody tells the other toys that Buzz falling out of the window was an accident, and nobody believes him. We saw that he never meant it to go that far.' },
@@ -1701,11 +1710,11 @@ window.WML = (function() {
             what: 'Your protagonist is afraid and acts anyway, and solves problems through that courage. It is compulsory: a protagonist too frightened to act cannot carry a story.',
             example: 'Neville Longbottom stands up to his own friends to stop them breaking the school rules. Standing up to your friends can take as much courage as facing your enemies.',
             more: 'Dorothy throws a bucket of water over the Wicked Witch to save the Scarecrow from the fire.' },
-        { id: 'wit', cat: 'qualities', fid: 'cw-step-16-wit', label: 'Wisdom, Wit and Cleverness',
+        { id: 'wit', cat: 'qualities', fid: 'cw-step-16-wit', label: 'Wisdom, Wit, and Cleverness',
             what: 'Let your protagonist solve problems with their brain. Readers admire someone clever, and enjoy watching them think.',
             example: 'Sherlock Holmes works out a stranger’s whole life from tiny details: a tan, a scuffed boot, a way of standing.',
             more: 'Matilda outwits the bullying headmistress, Miss Trunchbull, with nothing but her mind.' },
-        { id: 'profession', cat: 'qualities', fid: 'cw-step-16-profession', label: 'A Glamorous or Interesting Profession or Skill',
+        { id: 'profession', cat: 'qualities', fid: 'cw-step-16-profession', label: 'A Glamorous or Interesting Profession/Skill',
             what: 'Give your protagonist a job or a skill that makes them fascinating to watch: a pilot, a detective, a chef, a code-breaker, a champion swimmer.',
             example: 'In Ratatouille, Remy is a rat who can cook. His talent is what makes us follow him into the kitchen.',
             more: 'Harry Potter is a natural on a broomstick. Every match shows us something he is brilliant at.' },
@@ -1713,7 +1722,7 @@ window.WML = (function() {
             what: 'Give your protagonist openness, wonder and genuine excitement. Their delight lets the reader see the world freshly.',
             example: 'In A Christmas Carol, the changed Scrooge laughs and dances round his room on Christmas morning, as giddy as a schoolboy.',
             more: 'Buddy in Elf greets every snowball and every revolving door with joy, and his joy is catching.' },
-        { id: 'rebel', cat: 'qualities', fid: 'cw-step-16-rebel', label: 'Misfit, Rebel or Eccentric', syms: [{ s: 'Rb', l: 'The Rebel' }],
+        { id: 'rebel', cat: 'qualities', fid: 'cw-step-16-rebel', label: 'Misfit, Rebel, or Eccentric', syms: [{ s: 'Rb', l: 'The Rebel' }],
             what: 'Let your protagonist stand apart from the crowd and refuse to fit in. Readers love someone brave enough to be different.',
             example: 'In An Inspector Calls, Sheila and Eric refuse to go back to pretending, while their parents try to carry on as before.',
             more: 'Pippi Longstocking lives alone with a horse and a monkey and answers to nobody.' },
@@ -6293,6 +6302,7 @@ window.WML = (function() {
         cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget, cwStepEnv, cwStepLens, cwStepLabel, cwStepTier,
         CW_STRUCT_TECHNIQUES, CW_STRUCT_MIN, CW_STRUCT_NOT_USING, cwStructFid, CW_TRIAL1_STRUCTURE, cwTrial1Elements,
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
+        CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
         // Revision map
         REVISION_MAP,

@@ -2847,6 +2847,7 @@ class SWML_Protocol_Router {
                 'cw_step_31' => 'CW-STEP-31-metacognitive-reflection.md',
                 'cw_step_90' => 'CW-STEP-90-adapt-to-the-question.md',   // v7.20.753: weekend lesson 9 (unit-only; 90+ reserved)
                 'cw_step_91' => 'CW-STEP-91-mark-it-again.md',           // v7.20.776: weekend lesson 11 (unit-only)
+                'cw_step_92' => 'CW-STEP-92-make-the-reader-care.md',    // v7.20.777: the weekend bonus lesson (unit-only)
                 'cw_trial_1' => 'CW-TRIAL-01-story-coherence.md',
                 'cw_trial_2' => 'CW-TRIAL-02-character-depth.md',
                 'cw_trial_3' => 'CW-TRIAL-03-archetype-coherence.md',
@@ -4170,6 +4171,7 @@ TEMPLATE;
                 'cw_step_30' => 'Final Draft — SPAG', 'cw_step_31' => 'Metacognitive Reflection',
                 'cw_step_90' => 'Adapt It to the Question',   // v7.20.753: weekend lesson 9
                 'cw_step_91' => 'Mark It Again',              // v7.20.776: weekend lesson 11
+                'cw_step_92' => 'Make the Reader Care',       // v7.20.777: the weekend bonus lesson
                 'cw_trial_1' => 'Trial 1: Story Coherence', 'cw_trial_2' => 'Trial 2: Character Depth',
                 'cw_trial_3' => 'Trial 3: Archetype Coherence', 'cw_trial_4' => 'Trial 4: Emotional Impact',
                 'cw_trial_5' => 'Trial 5: Thematic Clarity', 'cw_trial_6' => 'Trial 6: Technical Proficiency',

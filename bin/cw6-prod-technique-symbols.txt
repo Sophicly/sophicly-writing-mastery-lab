@@ -252,3 +252,5 @@ Yo
 Zg
 Zi
 Zp
+# v7.20.777: verified LIVE on prod 2026-10-09 (sophicly-notes 2.6.272, sophicly-techniques.js {"s":"Ey","n":"Empathy"}) — the weekend bonus lesson's help chip.
+Ey

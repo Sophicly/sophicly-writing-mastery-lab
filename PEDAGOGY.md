@@ -3163,6 +3163,23 @@ moment in a story were also able to manage the time more successfully."* Both ar
   carries straight on into it), and the three suggested dramatic situations are the ones IN that moment. No choice
   (a story begun before this shipped) → lesson 5 runs as before, never a pre-select on nothing.
 
+### §55.4 AMENDED 2026-10-09 — ELEVEN lessons and a BONUS: lesson 11 marks the adapted story again; the bonus is empathy (FIXLIST #813f, #815c; built v7.20.776–.777)
+
+**His words.** #813f (on lesson 10): *"And then assess again and what about empathy? What if we add it as a bonus
+lesson?"* #815c (card 4): *"Mark it again, then empathy as a bonus."*
+
+- **Lesson 11, Mark It Again** (`cw_step_91`): lesson 8's marking (the same elements and levels, /34), on the story the
+  student rewrote in lesson 10, self-marking first and then Sophia, on its own page. **Then and Now** shows each
+  part's lesson-8 mark beside today's. Its result is its own graded activity; lesson 8's trial record is never
+  replaced. The closing target is for the exam (there is no Draft 2 after it).
+- **Bonus, Make the Reader Care** (`cw_step_92`): his Creative Writing Workbook Step 16 (CW-STEP-16-deepen-empathy.md)
+  word for word — fifteen techniques in three groups, **at least 2 from each group, courage compulsory** — walked one at
+  a time (§18), each "how and where in your story" filed to its row; then the student revises their story (lesson 10's
+  rewrite, copied in once) with Sophia coaching empathy and never writing for them. No marking (it is a bonus).
+- Unit order: 1 Profile · 2 Ideas · 3 Logline (+ exam scene, §55.3) · 4 Story Spine · 5 Dramatic Situation · 6 Structural
+  Elements · 7 Draft 1 · 8 Mark Your Draft · 9 Polish · 10 Adapt It to the Question · **11 Mark It Again** · **Bonus: Make the
+  Reader Care**.
+
 ## §56. ⭐⭐ A REDRAFT PLAN STARTS EMPTY — first-attempt notes are never carried into it (Neil, ruled 2026-10-08; FIXLIST #806; REVERSES #571 and SUPERSEDES §51.5)
 
 **THE RULING (his taps, WML 336 A).** To *"should first-attempt notes stop being copied into redraft plan boxes, for
