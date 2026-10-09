@@ -38161,6 +38161,9 @@
                     a.className = 'swml-beat-tech-btn swml-codex-bar-link';
                     a.href = href;
                     a.textContent = 'Go to that lesson to edit it →';
+                    // v7.20.787 (#835, Neil: "replace the generic arrow in the button with a nice svg icon"): Neil's own
+                    // chevron through the ONE seam every chip uses (#177) — the literal stays, only the drawing changes.
+                    try { if (window.WML && typeof window.WML.arrowizeEl === 'function') window.WML.arrowizeEl(a); } catch (_) { /* text arrow stays */ }
                     // Never let the editor take the press (it would move the caret instead of following the link).
                     a.addEventListener('mousedown', (ev) => ev.stopPropagation());
                     a.addEventListener('click', (ev) => ev.stopPropagation());

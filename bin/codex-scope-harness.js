@@ -185,6 +185,9 @@ ok(/const want = _codexWantedField\(\);/.test(JS) && /if \(target && first === w
 const SB = fs.readFileSync(path.join(ROOT, 'frontend/wml-section-block.js'), 'utf8');
 ok(/codexBar\.className = 'swml-codex-bar';/.test(SB) && /if \(codexBar && \(codexBar === mutation\.target \|\| codexBar\.contains\(mutation\.target\)\)\) return true;/.test(SB),
     'wiring #833: the section NodeView builds the bar and FIREWALLS it (§PM NodeView law — fills must never reach the DOMObserver)');
+const bars833 = fnBody(JS, 'function _renderCodexBars(model, answered)');
+ok(/a\.textContent = 'Go to that lesson to edit it →';/.test(bars833) && /window\.WML\.arrowizeEl\(a\)/.test(bars833),
+    'wiring #835: the lesson button draws Neil\'s own arrow through the arrowize seam (#177); the "→" literal stays in textContent');
 ok(/learndash_get_step_permalink\(\(int\) \$lid, \$cid\)/.test(PHP) && /\$scope\['urls'\] = \(object\) \$urls;/.test(PHP), 'wiring #833: the server sends each owning lesson\'s URL in this course');
 ok((JS.match(/_codexScopeApply\((canvasEditor|editor)\)/g) || []).length >= 3, 'wiring: scope applied on first paint, after the resume, and on every update');
 ok(/addEventListener\('sophicly:media-item'/.test(JS), 'wiring: the clip-started event is followed');
