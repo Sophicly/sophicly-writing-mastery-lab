@@ -37944,16 +37944,20 @@
     }
     // sections = [[fieldId, …] per section, in document order]. Returns the stylesheet text. Selectors are quoted
     // attribute selectors (never CSS.escape — WML rule); a section is addressed by the one field id it holds first.
-    function codexScopeCss(sections, model) {
+    // v7.20.785 (#832, Neil 9 Oct: "I finished the whole document and I want to go back to unit one to review it. I
+    // should be able to see everything"): a LATER question the student has ALREADY answered is shown, greyed and
+    // read-only like an earlier one; only UNANSWERED later questions stay hidden. answered = Set of field ids with an answer.
+    function codexScopeCss(sections, model, answered) {
         if (!model) return '';
         const q = s => '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n]+/g, ' ') + '"';
         const at = fid => '[data-field-id=' + q(fid) + ']';
+        const has = fid => !!(answered && answered.has(fid));
         const out = [];
         (sections || []).forEach(fids => {
             if (!fids || !fids.length) return;
             const st = fids.map(f => codexFieldState(model, f));
             const sec = '#swml-tiptap-editor .swml-section-block:has(' + at(fids[0]) + ')';
-            if (st.every(s => s === 'later')) {
+            if (st.every(s => s === 'later') && !fids.some(has)) {
                 out.push(sec + ' > .swml-section-content > *{display:none !important}');
                 out.push(sec + ' > .swml-section-content::before{content:' + q('Opens in ' + model.later.get(fids[0]) + '.')
                     + ';display:block;font-size:12px;font-style:italic;opacity:.75;margin:4px 0}');
@@ -37962,13 +37966,23 @@
             if (st.every(s => s === 'earlier')) {
                 out.push(sec + ' > .swml-section-content::before{content:' + q('From an earlier lesson. You can read your answers here.')
                     + ';display:block;font-size:11px;font-style:italic;opacity:.65;margin:2px 0 6px}');
+            } else if (st.every(s => s === 'later')) {
+                out.push(sec + ' > .swml-section-content::before{content:' + q('Your answers from ' + model.later.get(fids.find(has)) + '. You can change them in that lesson.')
+                    + ';display:block;font-size:11px;font-style:italic;opacity:.65;margin:2px 0 6px}');
             }
             fids.forEach((f, i) => {
-                if (st[i] === 'later') out.push('#swml-tiptap-editor ' + at(f) + '{display:none !important}');
-                else if (st[i] === 'earlier') out.push('#swml-tiptap-editor ' + at(f) + '{opacity:.72}');
+                if (st[i] === 'later' && !has(f)) out.push('#swml-tiptap-editor ' + at(f) + '{display:none !important}');
+                else if (st[i] === 'earlier' || st[i] === 'later') out.push('#swml-tiptap-editor ' + at(f) + '{opacity:.72}');
             });
         });
         return out.join('\n');
+    }
+    // §4d: what a refused keystroke says — a later answer can now be on screen too, so the toast names the right lesson.
+    function codexRefusalText(model, fid) {
+        const s = codexFieldState(model, fid);
+        if (s === 'later') return 'This answer belongs to a later lesson (' + model.later.get(fid) + '). You can change it there.';
+        if (s === 'earlier') return 'This answer belongs to an earlier lesson. You can change it in that lesson.';
+        return '';
     }
     // The first field this lesson owns, in DOCUMENT order (not map order) — where the student lands.
     function codexFirstOwned(sections, model) {
@@ -38022,6 +38036,19 @@
         } catch (_) {}
         return out;
     }
+    // v7.20.785 (#832): the field ids that already hold an answer (typed text, or a chosen option).
+    function _codexAnsweredSet(editor) {
+        const out = new Set();
+        try {
+            editor.state.doc.descendants(n => {
+                const fid = n.attrs && n.attrs.fieldId ? String(n.attrs.fieldId) : '';
+                if (fid && n.type.name === 'inputField' && n.textContent.trim()) out.add(fid);
+                else if (fid && n.type.name === 'selectField' && String(n.attrs.value || '').trim()) out.add(fid);
+                return true;
+            });
+        } catch (_) {}
+        return out;
+    }
     let _codexLastKeyAt = 0, _codexLastUserScrollAt = 0, _codexWiredDoc = null, _codexLanded = null, _codexWarnedOpen = false;
     // Idempotent: called on every Codex paint. Writes ONE <style> in <head> (outside the editor — no NodeView DOM
     // is touched, §PM NodeView law), lands the student once, and wires the clip-follow once per page.
@@ -38031,7 +38058,7 @@
         if (!model || !editor || !editor.state) { if (st) st.textContent = ''; return; }
         const sections = _codexDocSections(editor);
         if (!sections.length) return;
-        const css = codexScopeCss(sections, model);
+        const css = codexScopeCss(sections, model, _codexAnsweredSet(editor));
         if (!st) { st = document.createElement('style'); st.id = 'swml-codex-scope'; document.head.appendChild(st); }
         if (st.textContent !== css) st.textContent = css;
         if (!_codexWarnedOpen) {
@@ -38075,10 +38102,11 @@
             for (let d = $p.depth; d > 0; d--) {
                 const n = $p.node(d);
                 if (n.type.name !== 'inputField') continue;
-                if (!_codexFieldLocked(String((n.attrs && n.attrs.fieldId) || ''))) return;
+                const fid = String((n.attrs && n.attrs.fieldId) || '');
+                if (!_codexFieldLocked(fid)) return;
                 if (Date.now() - _codexToldAt < 2500) return;
                 _codexToldAt = Date.now();
-                showToast('This answer belongs to an earlier lesson. You can change it in that lesson.', 4000, true);
+                showToast(codexRefusalText(_codexModel(), fid), 4000, true);
                 return;
             }
         } catch (_) {}

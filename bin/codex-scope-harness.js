@@ -89,7 +89,7 @@ fs.rmSync(tmp, { recursive: true, force: true });
 const ja = JS.indexOf('// @CODEX-SCOPE-PURE-BEGIN'), jb = JS.indexOf('// @CODEX-SCOPE-PURE-END');
 ok(ja > 0 && jb > ja, 'JS: the scope functions sit between their sentinels');
 // eslint-disable-next-line no-new-func
-const F = new Function(JS.slice(ja, jb) + '\nreturn { codexScopeModel, codexFieldState, codexFieldLockedIn, codexScopeCss, codexFirstOwned, codexClipField, codexFollowAllowed };')();
+const F = new Function(JS.slice(ja, jb) + '\nreturn { codexScopeModel, codexFieldState, codexFieldLockedIn, codexScopeCss, codexFirstOwned, codexClipField, codexFollowAllowed, codexRefusalText };')();
 // The JS side is fed the shape the server sends; built here from the contract directly.
 const scopeFor = (i) => {
     const own = CONTRACT.lessons[i].fields;
@@ -121,6 +121,21 @@ ok(css.includes('#swml-tiptap-editor [data-field-id="' + CONTRACT.lessons[36].fi
 const evil = F.codexScopeCss([['a"b']], F.codexScopeModel({ state: 'scoped', owned: ['own'], earlier: [], later: { 'a"b': 'Unit 9, lesson "Q" \\ end' } }));
 ok(evil.includes('[data-field-id="a\\"b"]') && evil.includes('lesson \\"Q\\" \\\\ end'), 'JS: quotes and backslashes in ids and titles are escaped', evil.slice(0, 160));
 ok(F.codexScopeCss(secs, null) === '', 'JS: no model → empty stylesheet');
+// v7.20.785 (#832): a later question already answered is SHOWN (greyed, read-only); only unanswered later ones stay hidden.
+const latI = CONTRACT.lessons.map((r, i) => r.fields.length >= 2 ? i : -1).filter(i => i > 5).pop();
+const latF = CONTRACT.lessons[latI].fields, latSecRule = '.swml-section-block:has([data-field-id="' + latF[0] + '"]) > .swml-section-content > *{display:none !important}';
+const cssAns = F.codexScopeCss(secs, m5, new Set([latF[0]]));
+ok(!cssAns.includes(latSecRule) && cssAns.includes('#swml-tiptap-editor [data-field-id="' + latF[0] + '"]{opacity:.72}') && !cssAns.includes('#swml-tiptap-editor [data-field-id="' + latF[0] + '"]{display:none'),
+    'JS #832: an ANSWERED later question is shown greyed, its section is not collapsed');
+ok(latF.length >= 2 && cssAns.includes('#swml-tiptap-editor [data-field-id="' + latF[1] + '"]{display:none !important}'), 'JS #832: …while an UNANSWERED question beside it stays hidden');
+ok(cssAns.includes('Your answers from Unit ' + CONTRACT.lessons[latI].unit + ', lesson ' + CONTRACT.lessons[latI].title.replace(/"/g, '\\"') + '. You can change them in that lesson.'), 'JS #832: …and the section says whose answers they are and where to change them');
+const cssNone = F.codexScopeCss(secs, m5, new Set());
+ok(cssNone.includes(latSecRule) && cssNone === F.codexScopeCss(secs, m5), 'JS #832: nothing answered → exactly the v7.20.780 stylesheet (later sections collapsed behind "Opens in")');
+const allAns = new Set([].concat(...CONTRACT.lessons.map(r => r.fields)));
+const cssAll = F.codexScopeCss(secs, F.codexScopeModel(scopeFor(0)), allAns);
+ok(!/display:none/.test(cssAll), 'JS #832: a student who answered everything sees every question from the FIRST lesson (Neil: "I should be able to see everything")');
+ok(F.codexRefusalText(m5, latF[0]).startsWith('This answer belongs to a later lesson (Unit ' + CONTRACT.lessons[latI].unit) && F.codexRefusalText(m5, f5ear).startsWith('This answer belongs to an earlier lesson')
+    && F.codexRefusalText(m5, f5own) === '', 'JS #832: a refused keystroke names the right lesson (later vs earlier); own fields are never refused');
 ok(F.codexFirstOwned(secs, m5) === CONTRACT.lessons[i5].fields[0], 'JS: lands on the first owned field in DOCUMENT order');
 const m0 = F.codexScopeModel(scopeFor(0)), c0 = CONTRACT.lessons[0].clip_tags[0];
 ok(F.codexClipField(m0, { bentoId: CONTRACT.lessons[0].bento, index: c0.index }) === c0.field, 'JS: a clip index → its tagged field');
@@ -138,6 +153,8 @@ const selView = JS.slice(JS.indexOf("name: 'selectField'"), JS.indexOf("name: 's
 ok(/_cxLocked = _codexFieldLocked\(/.test(selView) && /if \(_cxLocked\) return;/.test(selView) && /if \(_cxLocked\) sel\.disabled = true;/.test(selView) && /if \(_cxLocked\) chip\.disabled = true;/.test(selView),
     'wiring: Codex choices are disabled and refused at save');
 ok(/if \(_refused\) _codexRefusalToast\(/.test(JS), 'wiring: typing into a locked box says why (§4d)');
+ok(/const css = codexScopeCss\(sections, model, _codexAnsweredSet\(editor\)\);/.test(JS) && /showToast\(codexRefusalText\(_codexModel\(\), fid\), 4000, true\);/.test(JS),
+    'wiring #832: the stylesheet is fed the answered fields, and the refusal toast uses codexRefusalText');
 ok((JS.match(/_codexScopeApply\((canvasEditor|editor)\)/g) || []).length >= 3, 'wiring: scope applied on first paint, after the resume, and on every update');
 ok(/addEventListener\('sophicly:media-item'/.test(JS), 'wiring: the clip-started event is followed');
 // v7.20.784 (#830): on a phone the pane grows and the SHELL scrolls — landing + clip-follow use the nearest real scroller.
