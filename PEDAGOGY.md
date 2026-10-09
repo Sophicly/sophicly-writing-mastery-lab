@@ -3212,3 +3212,35 @@ assessment. **No linked assessment (most students, Oct 2026: 3 linked on prod) �
 placeholder answers under 8 characters are treated as absent. Gate: `bin/free-assessment-reflection-gate.php` (pre-ship).
 Scope today: the essay/paper marking summary (Language + Literature). CW trial marking does not carry it yet.
 
+**APPROVED AS SHIPPED (Neil, 9 Oct, WML Actions v71 card 3): *"Good, keep it"*** — after seeing the live before/after on
+staging (the same marked P&C essay summarised with and without a free assessment; only Key Strength changed: *"You also
+told me that you usually 'name the technique and stop, without explaining the effect' — but in Body 2, you don't do
+that…"*). His note on the same card became §59.
+
+## §59. ⭐⭐ WHEN FEEDBACK TALKS ABOUT THE MARK SCHEME, IT USES THE EXAMINER'S OWN WORDS — AND ONLY AT THE RIGHT LEVEL (Neil, ruled 2026-10-09; FIXLIST #813c)
+
+**His words** (WML Actions v71, card 3 note): *"When talking about the mark scheme, make sure we are always using the
+examiner's vocabulary appropriately."*
+
+**What it means, measured the same morning.** Both live summaries he was shown (#807 before/after, AQA P&C poetry, a
+**Level 2** Literature essay) praised the essay as **"perceptive"** — *"a perceptive observation (AO2)"*, *"reliable and
+often perceptive"*. "Perceptive" is a band word: it is AQA **Language**'s TOP band (`knowledge-mark-scheme-lang1.md:65` —
+"Level 4 — Perceptive, detailed analysis"), and it is not one of AQA Literature's level words at all (Level 2 there is
+"Supported, relevant comments"). So two faults in one word: the wrong board's vocabulary, and a top-band word on a
+Level 2 piece.
+
+**THE RULE.**
+1. A DISTINCTIVE band word from a mark scheme (perceptive, judicious, convincing, critical, exploratory,
+   conceptualised, sophisticated…) is used ONLY for work at the level it names, and only the board's OWN words for the
+   paper being marked — never another board's or another paper's. (Everyday words that also appear in descriptors —
+   "clear", "relevant" — stay usable as plain praise; the rule targets words that a student or parent would read as a
+   level claim. This boundary is the WML lane's reading of "appropriately"; he can overrule it.)
+2. When feedback says what the mark scheme rewards, it quotes or closely follows the descriptor (the existing "Level
+   Alignment" line already quotes it — that part is right).
+3. Praise that is not a level claim uses plain words that carry no band ("this sentence explains the effect well"), so
+   a student never reads a top-band word on a lower-band piece.
+
+**Status:** recorded 9 Oct; ⬜ the marking/summary instructions and a gate that checks band words against the awarded
+level are the build (FIXLIST #813c). Pairs with §37 (perceptiveness is the last 0.25 of a criterion — the CRITERION may
+name it; a level claim may not borrow it).
+
