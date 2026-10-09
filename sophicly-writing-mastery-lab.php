@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.785
+ * Version: 7.20.786
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.785');
+define('SWML_VERSION', '7.20.786');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -290,7 +290,20 @@ class Sophicly_Writing_Mastery_Lab {
                 }
             }
         }
-        return self::codex_scope_from_map($map, $lesson_id, $order);
+        $scope = self::codex_scope_from_map($map, $lesson_id, $order);
+        // v7.20.786 (#833, Neil: "a deep link to the specific lesson that's clearly visible that the student can click and
+        // go to the lesson and then edit"): every lesson that owns a field shown here gets its URL in this course.
+        if (($scope['state'] ?? '') === 'scoped' && !empty($scope['lessons'])) {
+            $cid  = function_exists('learndash_get_course_id') ? (int) learndash_get_course_id((int) $lesson_id) : 0;
+            $urls = [];
+            foreach (array_keys((array) $scope['lessons']) as $lid) {
+                $u = ($cid && function_exists('learndash_get_step_permalink')) ? learndash_get_step_permalink((int) $lid, $cid) : '';
+                if (!$u) $u = get_permalink((int) $lid);
+                if ($u) $urls[(string) $lid] = (string) $u;
+            }
+            $scope['urls'] = (object) $urls;
+        }
+        return $scope;
     }
 
     // @CODEX-SCOPE-PURE-BEGIN — pure (no WordPress calls); bin/codex-scope-harness.js runs it under php.
@@ -307,13 +320,17 @@ class Sophicly_Writing_Mastery_Lab {
             return $oa - $ob;
         });
         $owned = []; $earlier = []; $later = []; $seen = false;
+        // v7.20.786 (#833): which lesson owns each field shown read-only here, and that lesson's name — the deep link.
+        $owner = []; $lessons = [];
         foreach ($keys as $lid) {
             $row = $map[$lid];
             if (!is_array($row) || empty($row['fields']) || !is_array($row['fields'])) continue;
             if ($lid === $key) { $seen = true; foreach ($row['fields'] as $f) $owned[] = (string) $f; continue; }
             $title = trim((string) ($row['title'] ?? ''));
             $label = 'Unit ' . (int) ($row['unit'] ?? 0) . ($title !== '' ? ', lesson ' . $title : '');
+            $lessons[(string) $lid] = $label;
             foreach ($row['fields'] as $f) {
+                if (!isset($owner[(string) $f])) $owner[(string) $f] = (string) $lid;
                 if ($seen) { if (!isset($later[(string) $f])) $later[(string) $f] = $label; }
                 else $earlier[] = (string) $f;
             }
@@ -321,7 +338,7 @@ class Sophicly_Writing_Mastery_Lab {
         if (!$owned) return ['state' => 'no-fields', 'lesson' => (int) $lesson_id];
         // A field this lesson owns is never locked here, whatever another row claims (LD's gate forbids the overlap).
         $earlier = array_values(array_unique(array_diff($earlier, $owned)));
-        foreach ($owned as $f) unset($later[$f]);
+        foreach ($owned as $f) { unset($later[$f]); unset($owner[$f]); }
         $clips = [];
         foreach ((array) ($map[$key]['clip_tags'] ?? []) as $c) {
             if (is_array($c) && isset($c['index'], $c['field']) && in_array((string) $c['field'], $owned, true)) {
@@ -336,6 +353,8 @@ class Sophicly_Writing_Mastery_Lab {
             'owned'   => $owned,
             'earlier' => $earlier,
             'later'   => (object) $later,
+            'owner'   => (object) $owner,
+            'lessons' => (object) $lessons,
             'clips'   => $clips,
         ];
     }

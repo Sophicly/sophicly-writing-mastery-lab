@@ -15455,6 +15455,26 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-form-techs-label { font-size: 12px; font-weight: 600; opacity: 0.7; margin-right: 2px; }
 .swml-section-block.swml-fb-collapsed > .swml-form-techs { display: none; }
 
+/* v7.20.786 (FIXLIST #833 — Neil: "there needs to be a deep link to the specific lesson that's clearly visible that the
+   student can click and go to the lesson and then edit"): the Mastery Codex bar over a section that shows read-only
+   answers. Built empty by the section NodeView, filled by WML.renderCodexBars. The link IS the technique chip
+   (reuse, don't re-decide), shown at rest in the chip's own hover state so it reads as the way forward. */
+.swml-codex-bar { display: none; }
+.swml-codex-bar.is-on { display: grid; gap: 8px; margin: 4px 0 12px; padding: 10px 12px; border-radius: 10px; background: rgba(83, 51, 237, 0.10); }
+.swml-codex-bar-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-width: 0; }
+.swml-codex-bar-lock { display: inline-flex; flex: none; width: 16px; height: 16px; opacity: 0.75; }
+.swml-codex-bar-lock svg { width: 16px; height: 16px; }
+.swml-codex-bar-text { font-size: 13px; line-height: 1.4; opacity: 0.88; min-width: 0; }
+.swml-beat-tech-btn.swml-codex-bar-link {
+    color: #fff;
+    text-decoration: none;
+    background: radial-gradient(ellipse at 50% 10%, hsla(252deg 70% 60% / 20%), transparent),
+                radial-gradient(hsla(252deg 60% 45% / 100%), hsla(252deg 70% 50% / 100%));
+    box-shadow: inset 0 -1px 2px rgba(255, 255, 255, 0.25),
+                0 1px 0 1px rgba(83, 51, 237, 0.5),
+                0 2px 8px rgba(83, 51, 237, 0.2);
+}
+
 /* v7.20.411 (#227) — the FAMILY-SEARCH chip. Same shell as the technique chips directly above it
    (they sit in the same panel and are the same kind of gesture), but deliberately a shade quieter
    at rest: the named cards are the precise answer for THIS beat, and this is the wider browse. */

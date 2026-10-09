@@ -83,19 +83,29 @@ const numericFirst = Object.keys(JSON.parse(fs.readFileSync(numFile, 'utf8')))[0
 const healed = runPhp(Number(IDS[0]), courseOrder, numFile);
 ok(numericFirst !== IDS[0] && healed.earlier.length === 0 && Object.keys(healed.later).length === 138 - healed.owned.length,
     'PHP: a map re-sorted by post id still splits correctly once the course order is applied', [numericFirst, healed.earlier.length]);
+// v7.20.786 (#833): every read-only field names its owning lesson, and that lesson is labelled — the deep link's data.
+const mid = runPhp(Number(IDS[5]));
+const ownerOk = Object.keys(mid.owner || {}).length === 138 - mid.owned.length && Object.keys(mid.owner).every(f => {
+    const r = CONTRACT.lessons.find(x => String(x.lesson_id) === mid.owner[f]); return r && r.fields.includes(f) && !mid.owned.includes(f);
+}) && mid.owned.every(f => !(f in mid.owner));
+ok(ownerOk, 'PHP #833: owner maps every earlier + later field to the lesson whose row holds it, and never an owned field', Object.keys(mid.owner || {}).length);
+const anyLid = mid.owner[CONTRACT.lessons[0].fields[0]];
+ok(mid.lessons && mid.lessons[anyLid] === 'Unit ' + CONTRACT.lessons[0].unit + ', lesson ' + CONTRACT.lessons[0].title, 'PHP #833: lessons labels each owning lesson "Unit N, lesson <title>"', mid.lessons && mid.lessons[anyLid]);
 fs.rmSync(tmp, { recursive: true, force: true });
 
 // ── (2) JS pure functions, executed from the shipped file ────────────────────────────────────────────────────────
 const ja = JS.indexOf('// @CODEX-SCOPE-PURE-BEGIN'), jb = JS.indexOf('// @CODEX-SCOPE-PURE-END');
 ok(ja > 0 && jb > ja, 'JS: the scope functions sit between their sentinels');
 // eslint-disable-next-line no-new-func
-const F = new Function(JS.slice(ja, jb) + '\nreturn { codexScopeModel, codexFieldState, codexFieldLockedIn, codexScopeCss, codexFirstOwned, codexClipField, codexFollowAllowed, codexRefusalText };')();
+const F = new Function(JS.slice(ja, jb) + '\nreturn { codexScopeModel, codexFieldState, codexFieldLockedIn, codexScopeCss, codexFirstOwned, codexClipField, codexFollowAllowed, codexRefusalText, codexSectionBar, codexLessonHref };')();
 // The JS side is fed the shape the server sends; built here from the contract directly.
 const scopeFor = (i) => {
     const own = CONTRACT.lessons[i].fields;
     const earlier = [].concat(...CONTRACT.lessons.slice(0, i).map(r => r.fields));
     const later = {}; CONTRACT.lessons.slice(i + 1).forEach(r => r.fields.forEach(f => { later[f] = 'Unit ' + r.unit + ', lesson ' + r.title; }));
-    return { state: 'scoped', lesson: CONTRACT.lessons[i].lesson_id, owned: own, earlier, later, bento: CONTRACT.lessons[i].bento || '',
+    const owner = {}, lessons = {}, urls = {};
+    CONTRACT.lessons.forEach((r, j) => { if (j === i || !r.fields.length) return; lessons[String(r.lesson_id)] = 'Unit ' + r.unit + ', lesson ' + r.title; urls[String(r.lesson_id)] = 'https://x.test/lesson/' + r.lesson_id + '/'; r.fields.forEach(f => { owner[f] = String(r.lesson_id); }); });
+    return { state: 'scoped', lesson: CONTRACT.lessons[i].lesson_id, owned: own, earlier, later, owner, lessons, urls, bento: CONTRACT.lessons[i].bento || '',
         clips: (CONTRACT.lessons[i].clip_tags || []).map(c => ({ index: c.index, field: c.field })) };
 };
 ['absent', 'staff', 'review', 'no-row', 'bad-map', 'no-fields'].forEach(st => {
@@ -115,7 +125,8 @@ const css = F.codexScopeCss(secs.concat([split]), m5);
 const laterSec = '.swml-section-block:has([data-field-id="' + CONTRACT.lessons[36].fields[0] + '"]) > .swml-section-content > *{display:none !important}';
 ok(css.includes(laterSec), 'JS: an all-later section hides its content');
 ok(css.includes('Opens in Unit ' + CONTRACT.lessons[36].unit + ', lesson ' + CONTRACT.lessons[36].title.replace(/"/g, '\\"')), 'JS: …and says where it opens');
-ok(css.includes('.swml-section-block:has([data-field-id="' + f5ear + '"]) > .swml-section-content::before{content:"From an earlier lesson.'), 'JS: an all-earlier section says its answers are from an earlier lesson');
+const LOCKED = '{opacity:.5;filter:grayscale(1);cursor:not-allowed;';
+ok(!css.includes('From an earlier lesson') && css.includes('#swml-tiptap-editor [data-field-id="' + f5ear + '"]' + LOCKED), 'JS #833: an earlier answer LOOKS read-only (faded, grey, lock icon, no-entry cursor), and carries no unclickable label');
 ok(!css.includes('[data-field-id="' + f5own + '"]{') && !css.includes(':has([data-field-id="' + f5own + '"])'), 'JS: the lesson\'s own section gets no rule at all');
 ok(css.includes('#swml-tiptap-editor [data-field-id="' + CONTRACT.lessons[36].fields[0] + '"]{display:none !important}'), 'JS: in a split section only the later field is hidden');
 const evil = F.codexScopeCss([['a"b']], F.codexScopeModel({ state: 'scoped', owned: ['own'], earlier: [], later: { 'a"b': 'Unit 9, lesson "Q" \\ end' } }));
@@ -125,17 +136,31 @@ ok(F.codexScopeCss(secs, null) === '', 'JS: no model → empty stylesheet');
 const latI = CONTRACT.lessons.map((r, i) => r.fields.length >= 2 ? i : -1).filter(i => i > 5).pop();
 const latF = CONTRACT.lessons[latI].fields, latSecRule = '.swml-section-block:has([data-field-id="' + latF[0] + '"]) > .swml-section-content > *{display:none !important}';
 const cssAns = F.codexScopeCss(secs, m5, new Set([latF[0]]));
-ok(!cssAns.includes(latSecRule) && cssAns.includes('#swml-tiptap-editor [data-field-id="' + latF[0] + '"]{opacity:.72}') && !cssAns.includes('#swml-tiptap-editor [data-field-id="' + latF[0] + '"]{display:none'),
+ok(!cssAns.includes(latSecRule) && cssAns.includes('#swml-tiptap-editor [data-field-id="' + latF[0] + '"]' + LOCKED) && !cssAns.includes('#swml-tiptap-editor [data-field-id="' + latF[0] + '"]{display:none'),
     'JS #832: an ANSWERED later question is shown greyed, its section is not collapsed');
 ok(latF.length >= 2 && cssAns.includes('#swml-tiptap-editor [data-field-id="' + latF[1] + '"]{display:none !important}'), 'JS #832: …while an UNANSWERED question beside it stays hidden');
-ok(cssAns.includes('Your answers from Unit ' + CONTRACT.lessons[latI].unit + ', lesson ' + CONTRACT.lessons[latI].title.replace(/"/g, '\\"') + '. You can change them in that lesson.'), 'JS #832: …and the section says whose answers they are and where to change them');
+// v7.20.786 (#833): the section bar names the owning lesson and links there, landing on the answer.
+const latRow = CONTRACT.lessons[latI], barLat = F.codexSectionBar(latF, m5, new Set([latF[0]]));
+ok(barLat && barLat.kind === 'later' && barLat.lessons.length === 1 && barLat.lessons[0].label === 'Unit ' + latRow.unit + ', lesson ' + latRow.title
+    && barLat.lessons[0].url === 'https://x.test/lesson/' + latRow.lesson_id + '/' && barLat.lessons[0].field === latF[0], 'JS #833: an answered later section gets a bar naming its lesson, with that lesson\'s link, landing on the answer', barLat);
+const earRow = CONTRACT.lessons[0], barEar = F.codexSectionBar(earRow.fields, m5, new Set());
+ok(barEar && barEar.kind === 'earlier' && barEar.lessons.length === 1 && barEar.lessons[0].url === 'https://x.test/lesson/' + earRow.lesson_id + '/' && barEar.lessons[0].field === earRow.fields[0],
+    'JS #833: an earlier section gets the same bar and link (same read-only state, same missing link)', barEar);
+ok(F.codexSectionBar(CONTRACT.lessons[i5].fields, m5, new Set(CONTRACT.lessons[i5].fields)) === null && F.codexSectionBar(latF, m5, new Set()) === null && F.codexSectionBar(['unit-x.not-in-map'], m5, new Set()) === null,
+    'JS #833: no bar on the lesson\'s own questions, on unanswered later ones, or on unmapped fields');
+const two = F.codexSectionBar([CONTRACT.lessons[0].fields[0], CONTRACT.lessons[1].fields[0], f5own], m5, new Set());
+ok(two && two.lessons.length === 2 && two.lessons[0].lesson === String(CONTRACT.lessons[0].lesson_id) && two.lessons[1].lesson === String(CONTRACT.lessons[1].lesson_id),
+    'JS #833: a section holding answers from two lessons links to both, in document order', two);
+ok(F.codexLessonHref('https://x.test/l/', 'unit-1.a b', false) === 'https://x.test/l/?codex_field=unit-1.a%20b' && F.codexLessonHref('https://x.test/l/?x=1', 'f', true) === 'https://x.test/l/?x=1&codex_field=f&codex_scope=1'
+    && F.codexLessonHref('', 'f', false) === '', 'JS #833: the link lands on the answer (codex_field), keeps a staff preview in the student view, and is empty without a URL');
 const cssNone = F.codexScopeCss(secs, m5, new Set());
-ok(cssNone.includes(latSecRule) && cssNone === F.codexScopeCss(secs, m5), 'JS #832: nothing answered → exactly the v7.20.780 stylesheet (later sections collapsed behind "Opens in")');
+ok(cssNone.includes(latSecRule) && cssNone === F.codexScopeCss(secs, m5), 'JS #832: nothing answered → later sections collapse behind "Opens in", exactly as before');
 const allAns = new Set([].concat(...CONTRACT.lessons.map(r => r.fields)));
 const cssAll = F.codexScopeCss(secs, F.codexScopeModel(scopeFor(0)), allAns);
 ok(!/display:none/.test(cssAll), 'JS #832: a student who answered everything sees every question from the FIRST lesson (Neil: "I should be able to see everything")');
-ok(F.codexRefusalText(m5, latF[0]).startsWith('This answer belongs to a later lesson (Unit ' + CONTRACT.lessons[latI].unit) && F.codexRefusalText(m5, f5ear).startsWith('This answer belongs to an earlier lesson')
-    && F.codexRefusalText(m5, f5own) === '', 'JS #832: a refused keystroke names the right lesson (later vs earlier); own fields are never refused');
+ok(F.codexRefusalText(m5, latF[0]) === 'This answer is from Unit ' + latRow.unit + ', lesson ' + latRow.title + '. To change it, use the “Go to that lesson” button above it.'
+    && F.codexRefusalText(m5, f5ear).startsWith('This answer is from Unit ' + earRow.unit + ', lesson ' + earRow.title)
+    && F.codexRefusalText(m5, f5own) === '', 'JS #833: a refused keystroke names the owning lesson and points at the button above it; own fields are never refused');
 ok(F.codexFirstOwned(secs, m5) === CONTRACT.lessons[i5].fields[0], 'JS: lands on the first owned field in DOCUMENT order');
 const m0 = F.codexScopeModel(scopeFor(0)), c0 = CONTRACT.lessons[0].clip_tags[0];
 ok(F.codexClipField(m0, { bentoId: CONTRACT.lessons[0].bento, index: c0.index }) === c0.field, 'JS: a clip index → its tagged field');
@@ -153,8 +178,14 @@ const selView = JS.slice(JS.indexOf("name: 'selectField'"), JS.indexOf("name: 's
 ok(/_cxLocked = _codexFieldLocked\(/.test(selView) && /if \(_cxLocked\) return;/.test(selView) && /if \(_cxLocked\) sel\.disabled = true;/.test(selView) && /if \(_cxLocked\) chip\.disabled = true;/.test(selView),
     'wiring: Codex choices are disabled and refused at save');
 ok(/if \(_refused\) _codexRefusalToast\(/.test(JS), 'wiring: typing into a locked box says why (§4d)');
-ok(/const css = codexScopeCss\(sections, model, _codexAnsweredSet\(editor\)\);/.test(JS) && /showToast\(codexRefusalText\(_codexModel\(\), fid\), 4000, true\);/.test(JS),
+ok(/const answered = _codexAnsweredSet\(editor\);\s*const css = codexScopeCss\(sections, model, answered\);/.test(JS) && /showToast\(codexRefusalText\(_codexModel\(\), fid\), 4000, true\);/.test(JS),
     'wiring #832: the stylesheet is fed the answered fields, and the refusal toast uses codexRefusalText');
+ok(/_renderCodexBars\(model, answered\);/.test(JS) && /_renderCodexBars\(null, null\); return; \}/.test(JS), 'wiring #833: every scope pass fills the bars, and clears them when the Codex is not scoped');
+ok(/const want = _codexWantedField\(\);/.test(JS) && /if \(target && first === want\) _codexFlash\(first\);/.test(JS), 'wiring #833: arriving by the link lands on that answer and highlights it');
+const SB = fs.readFileSync(path.join(ROOT, 'frontend/wml-section-block.js'), 'utf8');
+ok(/codexBar\.className = 'swml-codex-bar';/.test(SB) && /if \(codexBar && \(codexBar === mutation\.target \|\| codexBar\.contains\(mutation\.target\)\)\) return true;/.test(SB),
+    'wiring #833: the section NodeView builds the bar and FIREWALLS it (§PM NodeView law — fills must never reach the DOMObserver)');
+ok(/learndash_get_step_permalink\(\(int\) \$lid, \$cid\)/.test(PHP) && /\$scope\['urls'\] = \(object\) \$urls;/.test(PHP), 'wiring #833: the server sends each owning lesson\'s URL in this course');
 ok((JS.match(/_codexScopeApply\((canvasEditor|editor)\)/g) || []).length >= 3, 'wiring: scope applied on first paint, after the resume, and on every update');
 ok(/addEventListener\('sophicly:media-item'/.test(JS), 'wiring: the clip-started event is followed');
 // v7.20.784 (#830): on a phone the pane grows and the SHELL scrolls — landing + clip-follow use the nearest real scroller.

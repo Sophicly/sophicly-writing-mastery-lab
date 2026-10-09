@@ -37924,10 +37924,17 @@
         Object.keys(lt).forEach(k => { later.set(String(k), String(lt[k] || '')); });
         const clips = new Map();
         (Array.isArray(scope.clips) ? scope.clips : []).forEach(c => { if (c && c.field != null) clips.set(Number(c.index), String(c.field)); });
+        // v7.20.786 (#833): field → the lesson that owns it, and each lesson's name + URL (the deep link).
+        const owner = new Map(), lessons = new Map();
+        const ow = (scope.owner && typeof scope.owner === 'object') ? scope.owner : {};
+        Object.keys(ow).forEach(k => { owner.set(String(k), String(ow[k])); });
+        const ls = (scope.lessons && typeof scope.lessons === 'object') ? scope.lessons : {};
+        const us = (scope.urls && typeof scope.urls === 'object') ? scope.urls : {};
+        Object.keys(ls).forEach(k => { lessons.set(String(k), { label: String(ls[k] || ''), url: String(us[k] || '') }); });
         return {
             owned: new Set(scope.owned.map(String)),
             earlier: new Set((Array.isArray(scope.earlier) ? scope.earlier : []).map(String)),
-            later, clips, bento: String(scope.bento || ''),
+            later, clips, bento: String(scope.bento || ''), owner, lessons,
         };
     }
     // own · earlier · later · open (a field no lesson owns — fail-open: answerable; the caller warns once).
@@ -37963,26 +37970,51 @@
                     + ';display:block;font-size:12px;font-style:italic;opacity:.75;margin:4px 0}');
                 return;
             }
-            if (st.every(s => s === 'earlier')) {
-                out.push(sec + ' > .swml-section-content::before{content:' + q('From an earlier lesson. You can read your answers here.')
-                    + ';display:block;font-size:11px;font-style:italic;opacity:.65;margin:2px 0 6px}');
-            } else if (st.every(s => s === 'later')) {
-                out.push(sec + ' > .swml-section-content::before{content:' + q('Your answers from ' + model.later.get(fids.find(has)) + '. You can change them in that lesson.')
-                    + ';display:block;font-size:11px;font-style:italic;opacity:.65;margin:2px 0 6px}');
-            }
+            // v7.20.786 (#833, Neil: "you can't really see it being grayed out… your natural instinct is to try and edit
+            // it"): a read-only answer must LOOK read-only — faded, grey, a lock, a no-entry cursor. Which lesson owns it,
+            // and the link there, live in the section's bar (codexSectionBar), not in a label the student cannot click.
             fids.forEach((f, i) => {
                 if (st[i] === 'later' && !has(f)) out.push('#swml-tiptap-editor ' + at(f) + '{display:none !important}');
-                else if (st[i] === 'earlier' || st[i] === 'later') out.push('#swml-tiptap-editor ' + at(f) + '{opacity:.72}');
+                else if (st[i] === 'earlier' || st[i] === 'later') out.push('#swml-tiptap-editor ' + at(f) + '{' + CODEX_LOCKED_LOOK + '}');
             });
         });
         return out.join('\n');
     }
-    // §4d: what a refused keystroke says — a later answer can now be on screen too, so the toast names the right lesson.
+    const CODEX_LOCKED_LOOK = 'opacity:.5;filter:grayscale(1);cursor:not-allowed;'
+        + 'background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23888%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Crect x=%274%27 y=%2711%27 width=%2716%27 height=%2710%27 rx=%272%27/%3E%3Cpath d=%27M8 11V7a4 4 0 0 1 8 0v4%27/%3E%3C/svg%3E");'
+        + 'background-repeat:no-repeat;background-position:right 12px top 12px;background-size:16px 16px';
+    // The bar over a section that shows read-only answers: which lesson(s) own them, each with its deep link (the first
+    // such field, so the lesson lands right on it). null = no bar (own, unanswered-later, or open fields only).
+    function codexSectionBar(fids, model, answered) {
+        if (!model || !fids || !fids.length) return null;
+        const has = fid => !!(answered && answered.has(fid));
+        const seen = new Map();
+        let kind = null;
+        fids.forEach(f => {
+            const s = codexFieldState(model, f);
+            if (!(s === 'earlier' || (s === 'later' && has(f)))) return;
+            kind = kind || s;
+            const lid = model.owner.get(f) || '';
+            if (seen.has(lid)) return;
+            const ls = model.lessons.get(lid) || { label: s === 'later' ? (model.later.get(f) || '') : '', url: '' };
+            seen.set(lid, { lesson: lid, label: ls.label, url: ls.url, field: f });
+        });
+        return seen.size ? { kind, lessons: Array.from(seen.values()) } : null;
+    }
+    // The deep link: the owning lesson, landing on the answer (codex_field); a staff preview keeps the student view.
+    function codexLessonHref(url, fid, preview) {
+        if (!url) return '';
+        const sep = url.indexOf('?') === -1 ? '?' : '&';
+        return url + sep + 'codex_field=' + encodeURIComponent(fid) + (preview ? '&codex_scope=1' : '');
+    }
+    // §4d: what a refused keystroke says — names the lesson and points at the button that goes there.
     function codexRefusalText(model, fid) {
         const s = codexFieldState(model, fid);
-        if (s === 'later') return 'This answer belongs to a later lesson (' + model.later.get(fid) + '). You can change it there.';
-        if (s === 'earlier') return 'This answer belongs to an earlier lesson. You can change it in that lesson.';
-        return '';
+        if (s !== 'earlier' && s !== 'later') return '';
+        const ls = model.lessons.get(model.owner.get(fid) || '');
+        const label = (ls && ls.label) || (s === 'later' ? model.later.get(fid) : '');
+        if (!label) return 'This answer belongs to another lesson. You can change it in that lesson.';
+        return 'This answer is from ' + label + '. To change it, use the “Go to that lesson” button above it.';
     }
     // The first field this lesson owns, in DOCUMENT order (not map order) — where the student lands.
     function codexFirstOwned(sections, model) {
@@ -38055,12 +38087,14 @@
     function _codexScopeApply(editor) {
         const model = _codexModel();
         let st = document.getElementById('swml-codex-scope');
-        if (!model || !editor || !editor.state) { if (st) st.textContent = ''; return; }
+        if (!model || !editor || !editor.state) { if (st) st.textContent = ''; _renderCodexBars(null, null); return; }
         const sections = _codexDocSections(editor);
         if (!sections.length) return;
-        const css = codexScopeCss(sections, model, _codexAnsweredSet(editor));
+        const answered = _codexAnsweredSet(editor);
+        const css = codexScopeCss(sections, model, answered);
         if (!st) { st = document.createElement('style'); st.id = 'swml-codex-scope'; document.head.appendChild(st); }
         if (st.textContent !== css) st.textContent = css;
+        _renderCodexBars(model, answered);
         if (!_codexWarnedOpen) {
             const open = [].concat(...sections).filter(f => codexFieldState(model, f) === 'open');
             if (open.length) { _codexWarnedOpen = true; console.warn('WML Codex scope: ' + open.length + ' field(s) belong to no lesson in the map — left answerable:', open.slice(0, 8).join(', ')); }
@@ -38075,14 +38109,76 @@
                 if (_codexScopeCache.key !== landKey) return;
                 if (!codexFollowAllowed(Date.now(), _codexLastKeyAt, _codexLastUserScrollAt, 5000)) return;
                 const m = _codexModel();
-                const first = m ? codexFirstOwned(_codexDocSections(canvasEditor || editor), m) : null;
+                // v7.20.786 (#833): arriving from a "Go to that lesson" link lands on THAT answer, highlighted.
+                const want = _codexWantedField();
+                const first = m ? ((want && m.owned.has(want)) ? want : codexFirstOwned(_codexDocSections(canvasEditor || editor), m)) : null;
                 const target = first ? _codexFieldEl(first) : null;
                 if (target) _codexScrollTo(target, !m.bento);
+                if (target && first === want) _codexFlash(first);
             };
             setTimeout(land, 1500);
             setTimeout(land, 4000);
         }
     }
+    function _codexWantedField() {
+        try { return new URLSearchParams(window.location.search).get('codex_field') || ''; } catch (_) { return ''; }
+    }
+    // v7.20.786 (#833, Neil: "there needs to be a deep link to the specific lesson that's clearly visible that the student
+    // can click and go to the lesson and then edit"): each Codex section's bar — a firewalled slot its NodeView builds
+    // (wml-section-block.js) — names the lesson that owns its read-only answers and links there. Rebuilt only when its
+    // signature changes, and only inside the bar (§PM NodeView law: never the section's own DOM).
+    const CODEX_LOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+    function _renderCodexBars(model, answered) {
+        const bars = document.querySelectorAll('#swml-tiptap-editor .swml-section-block > .swml-codex-bar');
+        if (!bars.length) return;
+        let preview = false;
+        try { preview = new URLSearchParams(window.location.search).has('codex_scope'); } catch (_) {}
+        bars.forEach(bar => {
+            const fids = Array.from(bar.parentElement.querySelectorAll('[data-field-id]')).map(n => n.getAttribute('data-field-id'));
+            const spec = model ? codexSectionBar(fids, model, answered) : null;
+            const sig = spec ? JSON.stringify(spec) + (preview ? '|p' : '') : '';
+            if (bar.getAttribute('data-sig') === sig) return;
+            bar.setAttribute('data-sig', sig);
+            bar.textContent = '';
+            bar.classList.toggle('is-on', !!spec);
+            if (!spec) return;
+            spec.lessons.forEach(l => {
+                const row = document.createElement('div');
+                row.className = 'swml-codex-bar-row';
+                const lock = document.createElement('span');
+                lock.className = 'swml-codex-bar-lock';
+                lock.setAttribute('aria-hidden', 'true');
+                lock.innerHTML = CODEX_LOCK_SVG;
+                const text = document.createElement('span');
+                text.className = 'swml-codex-bar-text';
+                const label = l.label || 'another lesson';
+                text.textContent = 'Your answers from ' + label + (/[.?!]$/.test(label) ? '' : '.');
+                row.appendChild(lock);
+                row.appendChild(text);
+                const href = codexLessonHref(l.url, l.field, preview);
+                if (href) {
+                    const a = document.createElement('a');
+                    a.className = 'swml-beat-tech-btn swml-codex-bar-link';
+                    a.href = href;
+                    a.textContent = 'Go to that lesson to edit it →';
+                    // Never let the editor take the press (it would move the caret instead of following the link).
+                    a.addEventListener('mousedown', (ev) => ev.stopPropagation());
+                    a.addEventListener('click', (ev) => ev.stopPropagation());
+                    row.appendChild(a);
+                } else {
+                    const tail = document.createElement('span');
+                    tail.className = 'swml-codex-bar-text';
+                    tail.textContent = 'You can change them in that lesson.';
+                    row.appendChild(tail);
+                }
+                bar.appendChild(row);
+            });
+        });
+    }
+    try {
+        window.WML = window.WML || {};
+        window.WML.renderCodexBars = () => { const m = _codexModel(); _renderCodexBars(m, (m && canvasEditor) ? _codexAnsweredSet(canvasEditor) : null); };
+    } catch (_) { /* ignore */ }
     // Scroll the DOCUMENT to a field, inside the canvas's own scroller (the pane on a desktop, the shell on a phone —
     // v7.20.784, #830), which never moves a video. Moving the PAGE itself is allowed only when the lesson has no
     // playlist above the Codex, so a video is never pushed out of view (Neil's safeguard).

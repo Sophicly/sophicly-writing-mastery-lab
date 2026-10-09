@@ -555,8 +555,31 @@
                         dom.appendChild(techRow);
                     }
                 } catch (_) { techRow = null; }
+                // v7.20.786 (FIXLIST #833 — Neil: "a deep link to the specific lesson that's clearly visible that the
+                // student can click and go to the lesson and then edit"): a Mastery Codex section — detected by its
+                // CONTENT (a `unit-N.` field, the content-addressed idiom above) — gets an empty firewalled bar above its
+                // questions. wml-assessment's WML.renderCodexBars fills it (sig-idempotent) when this lesson shows
+                // read-only answers here: which lesson owns them, and a link there. Hidden until filled (CSS .is-on).
+                let codexBar = null;
+                try {
+                    let _isCodexSec = false;
+                    node.descendants((n) => {
+                        if (n.type && (n.type.name === 'inputField' || n.type.name === 'selectField')
+                            && /^unit-\d+\./.test(String((n.attrs && n.attrs.fieldId) || ''))) _isCodexSec = true;
+                        return !_isCodexSec;
+                    });
+                    if (_isCodexSec) {
+                        codexBar = document.createElement('div');
+                        codexBar.className = 'swml-codex-bar';
+                        codexBar.setAttribute('contenteditable', 'false');
+                        dom.insertBefore(codexBar, contentDOM);
+                    }
+                } catch (_) { codexBar = null; }
                 const _fillCtl = () => {
                     try {
+                        if (codexBar && window.WML && typeof window.WML.renderCodexBars === 'function') {
+                            window.WML.renderCodexBars();
+                        }
                         if (window.WML && typeof window.WML.renderControlRows === 'function') {
                             window.WML.renderControlRows();
                         }
@@ -677,6 +700,8 @@
                         if (gapFoot && (gapFoot === mutation.target || gapFoot.contains(mutation.target))) return true;
                         // v7.20.778 (#816b): the form card's technique row is chrome — firewall it like the poem card.
                         if (techRow && (techRow === mutation.target || techRow.contains(mutation.target))) return true;
+                        // v7.20.786 (#833): the Codex lesson-link bar is derived display — firewall its fills.
+                        if (codexBar && (codexBar === mutation.target || codexBar.contains(mutation.target))) return true;
                         return toggle === mutation.target || toggle.contains(mutation.target);
                     },
                     // v7.20.90 (ctlrows-storm amplifier fix): WITHOUT update(), every doc
