@@ -83,9 +83,14 @@ function blind_answer($q) {
     return '';
 }
 
-/** Measure one bank. Returns [metrics, item-level problems]. */
-function measure_bank($path, $kind) {
+/** Measure one bank — or, with $board, only that board's section ("AQA (8700 — Paper 1)" for 'aqa'; v7.20.782,
+ *  #815d: a multi-board bank joins the ratchet one section at a time, as each board's items are rewritten). */
+function measure_bank($path, $kind, $board = null) {
     $sections = SWML_Quiz_Bank::parse_file($path);
+    if ($board !== null && $board !== '') {
+        $want = strtoupper($board) . ' (';
+        $sections = array_filter($sections, function ($k) use ($want) { return strpos((string) $k, $want) === 0; }, ARRAY_FILTER_USE_KEY);
+    }
     $m = ['mcq' => 0, 'key_longest' => 0, 'length_cue' => 0, 'tf' => 0, 'tf_false' => 0,
           'sa' => 0, 'sa_counts' => [], 'blind' => 0.0, 'blind_max' => 0.0, 'absurd' => 0, 'no_why' => 0,
           'feat' => ['key' => ['n' => 0, 'quote' => 0, 'dash' => 0, 'absolute' => 0],
@@ -223,7 +228,15 @@ if (in_array('--selftest', $argv, true)) {
         echo ($hit ? '  ✓ ' : '  ✗ ') . str_pad($mut, 10) . ($expect === null ? 'passes' : "fails $expect") . ($hit ? '' : '  — got: ' . ($v ? implode('; ', $v) : 'PASS')) . "\n";
         if (!$hit) $bad++;
     }
-    echo $bad ? "quiz-cue-gate selftest FAILED ($bad)\n" : "quiz-cue-gate selftest passed (" . count($cases) . " cases)\n";
+    // v7.20.782: section scope — a clean section passes while a dirty section in the SAME file fails, and only its own.
+    $two = str_replace('### Quiz: Fixture', '### **SECTION A: CLEAN (fixture)**', $build(''))
+         . "\n" . str_replace('### Quiz: Fixture', '### **SECTION B: DIRTY (fixture)**', preg_replace('/^# Fixture\n/', '', $build('long')));
+    $f = tempnam(sys_get_temp_dir(), 'qcg') . '.md'; file_put_contents($f, $two);
+    list($mc) = measure_bank($f, 'FQ', 'clean'); list($md) = measure_bank($f, 'FQ', 'dirty'); list($mn) = measure_bank($f, 'FQ', 'absent'); @unlink($f);
+    $okTwo = !verdict($mc, 'FQ') && (bool) verdict($md, 'FQ') && $mn['mcq'] === 0 && $mc['mcq'] === 9 && $md['mcq'] === 9;
+    echo ($okTwo ? '  ✓ ' : '  ✗ ') . "section   a clean section passes, a dirty one in the same file fails, an absent board measures nothing\n";
+    if (!$okTwo) $bad++;
+    echo $bad ? "quiz-cue-gate selftest FAILED ($bad)\n" : "quiz-cue-gate selftest passed (" . (count($cases) + 1) . " cases)\n";
     exit($bad ? 1 : 0);
 }
 
@@ -237,21 +250,31 @@ if (file_exists($ef)) {
 }
 
 $banks = [];
+// v7.20.782 (#815d): "--bank=language1.md#aqa" / ratchet line "MSA/language1.md#aqa" = one board's section only.
+$optBoard = null;
+if ($opt['bank'] && strpos($opt['bank'], '#') !== false) list($opt['bank'], $optBoard) = explode('#', $opt['bank'], 2);
 foreach ($DIRS as $kind => $dir) {
     if (!is_dir($dir)) continue;
     foreach (glob($dir . '/*.md') as $p) {
         if (strpos(basename($p), '.concept-notes.') !== false) continue;
         $rel = $kind . '/' . basename($p);
         if ($opt['bank'] && basename($p) !== $opt['bank'] && $rel !== $opt['bank']) continue;
-        $banks[$rel] = [$p, $kind];
+        if ($optBoard !== null) { $banks[$rel . '#' . $optBoard] = [$p, $kind, $optBoard]; continue; }
+        $banks[$rel] = [$p, $kind, null];
+        foreach (array_keys($enforced) as $e) {
+            if (strpos($e, $rel . '#') === 0) $banks[$e] = [$p, $kind, substr($e, strlen($rel) + 1)];
+        }
     }
 }
 if (!$banks) { fwrite(STDERR, "quiz-cue-gate: no bank matched\n"); exit(1); }
 
 $fails = 0; $enforcedFails = 0; $byKind = [];
-foreach ($banks as $rel => list($p, $kind)) {
-    list($m, $items) = measure_bank($p, $kind);
-    if ($m['mcq'] === 0 && $m['tf'] === 0 && $m['sa'] === 0) continue;
+foreach ($banks as $rel => list($p, $kind, $board)) {
+    list($m, $items) = measure_bank($p, $kind, $board);
+    if ($m['mcq'] === 0 && $m['tf'] === 0 && $m['sa'] === 0) {
+        if ($board !== null) { $fails++; if (isset($enforced[$rel])) $enforcedFails++; echo "✗ $rel — no section labelled \"" . strtoupper($board) . " (…\" in this bank\n"; }
+        continue;
+    }
     $b = &$byKind[$kind];
     foreach (['mcq', 'key_longest', 'tf', 'tf_false', 'blind', 'blind_max'] as $f) $b[$f] = ($b[$f] ?? 0) + $m[$f];
     $b['banks'] = ($b['banks'] ?? 0) + 1;
