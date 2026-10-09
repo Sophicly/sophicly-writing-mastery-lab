@@ -6475,6 +6475,18 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
         flex-direction: column;
         height: auto;
     }
+    /* ⭐⭐ v7.20.784 (#830) — THE SHELL SCROLLS WHEREVER THE CANVAS GOES `height:auto`. The rule above
+       stacks the canvas and lets it grow to its content, but the shell around it (#swml-canvas-overlay:
+       one viewport tall, `overflow:hidden`, sticky when embedded since v7.13.15) never followed — so on
+       every phone the document was CLIPPED. Measured 9 Oct (Chromium 390 px + WebKit iPhone 13, prod and
+       staging): page height = viewport, nothing scrolled, a student saw the Table of Contents and could
+       never reach a question. The shell is the scroller here; it stays sticky, so the header stays put.
+       Gate: bin/reachability-lint.js CHECK C. */
+    #swml-canvas-overlay {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
     .swml-canvas-plan {
         width: 100%;
         border-left: none;

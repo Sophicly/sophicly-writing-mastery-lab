@@ -140,6 +140,15 @@ ok(/_cxLocked = _codexFieldLocked\(/.test(selView) && /if \(_cxLocked\) return;/
 ok(/if \(_refused\) _codexRefusalToast\(/.test(JS), 'wiring: typing into a locked box says why (§4d)');
 ok((JS.match(/_codexScopeApply\((canvasEditor|editor)\)/g) || []).length >= 3, 'wiring: scope applied on first paint, after the resume, and on every update');
 ok(/addEventListener\('sophicly:media-item'/.test(JS), 'wiring: the clip-started event is followed');
+// v7.20.784 (#830): on a phone the pane grows and the SHELL scrolls — landing + clip-follow use the nearest real scroller.
+const scrollTo = fnBody(JS, 'function _codexScrollTo(target, allowPage)');
+ok(/if \(_swmlScrollerOf\(block\)\) \{ _swmlScrollToTop\(block\); return true; \}/.test(scrollTo) && !/pane\.scrollHeight/.test(scrollTo),
+    'wiring: landing scrolls the canvas\'s nearest REAL scroller (pane on a desktop, shell on a phone), not only the pane');
+const follow = JS.slice(JS.indexOf("addEventListener('sophicly:media-item'"), JS.indexOf("addEventListener('sophicly:media-item'") + 900);
+ok(/_codexScrollTo\(target, false\);/.test(follow), 'wiring: clip-follow uses the same scroller and never moves the page');
+const toTop = fnBody(JS, 'function _swmlScrollToTop(target, pad)');
+ok(/const cw = inCanvas \? _swmlScrollerOf\(target\) : null;/.test(toTop) && /if \(inCanvas && !cw\) return;/.test(toTop),
+    'wiring: the one jump helper finds the real scroller and never scrollIntoView()s inside the canvas (that would shift the overflow:hidden boxes)');
 ok(/'codexScope'\] = \$codex_scope/.test(PHP) && /codex_scope_for_lesson\(\(int\) \$post_id\)/.test(PHP), 'wiring: the server sends codexScope for mastery_codex');
 ok(/get_option\('swml_codex_lesson_map', null\);\s*\n\s*if \(\$raw === null \|\| \$raw === false \|\| \$raw === ''\) return null;/.test(PHP), 'wiring: no option → null → the Codex behaves exactly as before (LD\'s on-switch rule)');
 ok(/sophicly_review_target_id\(\)\) return \['state' => 'review'\]/.test(PHP) && /return \['state' => 'staff'\]/.test(PHP) && /isset\(\$_GET\['codex_scope'\]\)/.test(PHP),

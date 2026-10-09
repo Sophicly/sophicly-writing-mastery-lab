@@ -156,7 +156,44 @@ for (const rel of SHEETS) {
     }
 }
 
-console.log(`reachability-lint: ${SHEETS.length} stylesheet(s) · ${checked.scrollers} growing scroller(s) · ${checked.vh} viewport-height decl(s).`);
+// ── CHECK C (v7.20.784, FIXLIST #830) ────────────────────────────────────────────────────────────────────────
+// WHEREVER THE CANVAS GROWS TO ITS CONTENT, ITS SHELL MUST SCROLL. `@media (max-width:768px)` set `.swml-canvas
+// {height:auto}` (stacked, document-flow) from the first commit, while the shell around it (#swml-canvas-overlay:
+// one viewport tall, `overflow:hidden`) never followed — so on EVERY phone the document was clipped and no student
+// could scroll to a question or reach the chat input (measured 9 Oct 2026, Chromium 390 px + WebKit iPhone 13, on
+// prod). Checks A and B both passed throughout: the scroller existed, it simply had nothing to scroll.
+// Rule: in any @media block where `.swml-canvas` gets `height:auto`, the same block gives `#swml-canvas-overlay`
+// `overflow-y: auto|scroll`.
+let checkedC = 0;
+{
+    const css = fs.readFileSync(path.join(ROOT, 'frontend/wml-canvas.css'), 'utf8');
+    const re = /@media[^{]*\{/g;
+    let m;
+    while ((m = re.exec(css))) {
+        let depth = 1, j = m.index + m[0].length;
+        while (j < css.length && depth > 0) { if (css[j] === '{') depth++; else if (css[j] === '}') depth--; j++; }
+        const body = css.slice(m.index + m[0].length, j - 1);
+        const rules = blocks(body);
+        // blocks() keeps a comment that precedes a rule inside its selector string — strip it before matching.
+        const sel = (r, s) => r.selector.replace(/\/\*[\s\S]*?\*\//g, '').split(',').map(x => x.trim()).includes(s);
+        const grows = rules.some(r => sel(r, '.swml-canvas') && decls(r.body).some(([p, v]) => p === 'height' && v === 'auto'));
+        if (!grows) continue;
+        checkedC++;
+        const shellScrolls = rules.some(r => sel(r, '#swml-canvas-overlay')
+            && decls(r.body).some(([p, v]) => (p === 'overflow-y' || p === 'overflow') && /\b(auto|scroll)\b/.test(v)));
+        if (!shellScrolls) {
+            failures.push(
+                `frontend/wml-canvas.css:${css.slice(0, m.index).split('\n').length}  ${m[0].slice(0, -1).trim()}\n` +
+                `      '.swml-canvas' grows to its content here ('height: auto') but '#swml-canvas-overlay' — one\n` +
+                `      viewport tall, 'overflow: hidden' — does not scroll in the same block, so the document is CLIPPED:\n` +
+                `      no student can scroll to a question or reach the chat input (FIXLIST #830).\n` +
+                `      FIX: in the same @media block, '#swml-canvas-overlay { overflow-y: auto; }'.`
+            );
+        }
+    }
+}
+
+console.log(`reachability-lint: ${SHEETS.length} stylesheet(s) · ${checked.scrollers} growing scroller(s) · ${checked.vh} viewport-height decl(s) · ${checkedC} growing-canvas breakpoint(s).`);
 if (failures.length) {
     console.error(`\n❌ reachability-lint FAILED — ${failures.length} control(s) could become unreachable:\n`);
     failures.forEach(f => console.error('  ' + f + '\n'));

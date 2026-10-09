@@ -17946,10 +17946,23 @@
     // progress section, feedback auto-scroll) lands the target's TOP just inside the canvas
     // viewport — same feel as the outline panel + island (scrollContentTo). Replaces the
     // scattered scrollIntoView({block:'center'}) calls that centred the target inconsistently.
+    // v7.20.784 (#830): the nearest ancestor that ACTUALLY scrolls — the canvas pane on a desktop; on a phone
+    // (≤768 px) the pane grows to its content and the shell (#swml-canvas-overlay) is the scroller instead.
+    function _swmlScrollerOf(el) {
+        for (let n = el && el.parentElement; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+            const oy = getComputedStyle(n).overflowY;
+            if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight + 4) return n;
+        }
+        return null;
+    }
     function _swmlScrollToTop(target, pad) {
         if (!target) return;
-        const cw = target.closest('.swml-canvas-content');
+        const inCanvas = target.closest('.swml-canvas-content');
+        const cw = inCanvas ? _swmlScrollerOf(target) : null;
         const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // Inside the canvas with nothing that scrolls (a short document): do nothing — scrollIntoView would also
+        // scroll the overflow:hidden canvas boxes and shift the whole layout.
+        if (inCanvas && !cw) return;
         if (!cw) { try { target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); } catch (_) {} return; }
         const cwRect = cw.getBoundingClientRect();
         const tRect = target.getBoundingClientRect();
@@ -38043,12 +38056,12 @@
             setTimeout(land, 4000);
         }
     }
-    // Scroll the DOCUMENT PANE to a field. On a page-scroll layout (phones) the page itself would move — allowed only
-    // when the lesson has no playlist above the Codex, so a video is never pushed out of view (Neil's safeguard).
+    // Scroll the DOCUMENT to a field, inside the canvas's own scroller (the pane on a desktop, the shell on a phone —
+    // v7.20.784, #830), which never moves a video. Moving the PAGE itself is allowed only when the lesson has no
+    // playlist above the Codex, so a video is never pushed out of view (Neil's safeguard).
     function _codexScrollTo(target, allowPage) {
         const block = target.closest('.swml-section-block') || target;
-        const pane = target.closest('.swml-canvas-content');
-        if (pane && pane.scrollHeight > pane.clientHeight + 4) { _swmlScrollToTop(block); return true; }
+        if (_swmlScrollerOf(block)) { _swmlScrollToTop(block); return true; }
         if (!allowPage) return false;
         try { block.scrollIntoView({ behavior: 'auto', block: 'start' }); } catch (_) {}
         return true;
@@ -38104,9 +38117,8 @@
                 if (!codexFollowAllowed(Date.now(), _codexLastKeyAt, _codexLastUserScrollAt, 5000)) return;
                 const target = _codexFieldEl(fid);
                 if (!target) return;
-                const pane = target.closest('.swml-canvas-content');
-                // Phone / page-scroll layout: scrolling would push the video out of view — highlight only.
-                if (pane && pane.scrollHeight > pane.clientHeight + 4) _swmlScrollToTop(target.closest('.swml-section-block') || target);
+                // The canvas's own scroller only — never the page, which could push the video out of view.
+                _codexScrollTo(target, false);
                 _codexFlash(fid);
             } catch (err) { console.warn('WML Codex clip-follow failed:', err && err.message); }
         });
