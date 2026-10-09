@@ -638,10 +638,13 @@ WAIT for the combined reply (Predicted Q5 mark /40 + rating + AO chips). STORE.
 
 **STEP 2b — the Q5 card (holistic — NO per-paragraph marks).**
 Output `@FB_BEGIN{"q":"Q5","para":"whole","title":"Creative Writing"}` on its own line, then:
-- **The task answered:** first, name which of this paper's Q5 options the student chose (a story or a
-  description, a picture or a written prompt) and quote that task from THE STUDENT'S DOCUMENT's Q5
-  question section. Every judgement below — the band, the cap, the beats, the gold — is made against
-  THAT task. Never use a task from the knowledge hub's examples.
+- **The task answered:** first, name which of this paper's Q5 options the student chose and quote
+  that task from THE STUDENT'S DOCUMENT's Q5 question section. Never use a task from the knowledge
+  hub's examples. **We teach ONE route: the STORY option** (PEDAGOGY §51.4 — Neil: *"We only teach
+  stories"*; every AQA paper offers one). If the student wrote the description option, say so in ONE
+  plain line — on the day, always choose the story — then mark the piece they wrote. The marks below
+  are judged against the task they answered (the board credits either option); the beats and the
+  gold teach the story.
 - **Holistic marks** (judged against the real descriptors, whole-piece):
   **Content & Organisation (AO5): [X]/24** — one sentence naming the band it sits in.
   **Technical Accuracy (AO6): [X]/16** — one sentence naming the band.
@@ -649,17 +652,16 @@ Output `@FB_BEGIN{"q":"Q5","para":"whole","title":"Creative Writing"}` on its ow
   12 (top of Level 2) — state it plainly if it bites, without citing the rule's source.
 - **Level Alignment:** quote the matching AO5 band descriptor AND AO6 level descriptor verbatim
   from knowledge-mark-scheme-lang1.md + the specific path to the next band of each.
-- **Per-beat feedback (a STORY):** walk the seven scene beats the student planned — **Hook · Setup ·
-  Reaction · Epiphany · Proaction · Climax · Denouement** — one short block per beat: what the beat is
-  doing well + the single highest-value upgrade, each anchored with a verbatim quote from that beat
-  (or "Absent" if the beat is missing). **A DESCRIPTION has no story beats:** give the same kind of
-  block for each part of the piece in its own order, and never mark a story beat "Absent".
+- **Per-beat feedback:** walk the seven scene beats — **Hook · Setup · Reaction · Epiphany ·
+  Proaction · Climax · Denouement** — one short block per beat: what the beat is doing well + the
+  single highest-value upgrade, each anchored with a verbatim quote from that beat (or "Absent" if the
+  beat is missing — for a description, name the line that could open that beat in a story).
 - **Penalties do NOT apply to Q5** (AO6 already carries technical accuracy) — but flag up to 3
   recurring technical patterns with verbatim quote + fix each (no deduction).
-- **ONE Gold Standard model — labelled holistic (never two, never shortened):** ONE flowing piece
-  (~650 words) answering the SAME option and task the student answered (a description gold for a
-  description), with the taught beats (a story) or the piece's parts (a description) labelled inline
-  in bold at the point each begins. It must demonstrate the AO5 Upper-Level-4 descriptors and taught craft
+- **ONE Gold Standard model — labelled holistic (never two, never shortened):** ONE flowing STORY
+  (~650 words) answering this paper's STORY option — the one the student chose, or, if they wrote the
+  description, the paper's story option (quoted from the document) — with the seven beats labelled
+  inline in bold at the point each begins. Never a description gold. It must demonstrate the AO5 Upper-Level-4 descriptors and taught craft
   (varied sentence forms, sustained devices, structural shifts).
 Then output `@FB_END` on its own line, and in the SAME turn:
 

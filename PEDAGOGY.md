@@ -2775,8 +2775,15 @@ Recorded here in the same session, as §0 requires. Each line is his tap; a quot
    Build before writing lessons are enforced.
 3. **Mastery in the Foundational Quizzes = 100% at least ONCE.** (card 5, his note: *"I don't think it is correct
    to make students score 100% over 2 rounds of the same quiz; we need them to hit 100% at least once."*)
+   **Status (2026-10-10, WML 343 A): nothing to build.** The card had RECOMMENDED a new rule ("100% twice, on
+   two days"); he rejected it. The engine already ends the loop on the first 100% round
+   (`wml-assessment.js` `_revealAndFinish`: `mastered = correctN === n`), so his ruling keeps the status quo.
 4. **AQA Paper 1 Question 5 — we only teach STORIES.** (card 7, his note: *"We only teach stories"*) No
    description plan, no description branch in marking or polishing.
+   **Built 2026-10-10 (WML 343 A):** the AQA P1 Q5 marking card (`protocols/aqa/language1/modules/
+   protocol-a-assessment.md` STEP 2b) — beats always, a story gold always (on the paper's story option),
+   one plain line telling a description-writer to choose the story; marks still judged on the piece they
+   wrote (the board credits either option). Planning and polishing had no description route already.
 5. ~~**AQA Paper 1 Question 5 — first-attempt notes go in a separate "First attempt" box.** (card 8)~~ **SUPERSEDED 2026-10-08 by §56** (Neil: today's ruling replaces it — no "First attempt" box anywhere; never built).
 6. **AQA Paper 1 Question 1 — switch to the 2026 multiple-choice format.** (card 9)
 7. **Retire the old chatbot lessons — add ours and retire the old ones.** (card 10)
