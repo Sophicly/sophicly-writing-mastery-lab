@@ -190,6 +190,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/codex-scope-harness.js >/tmp/codex-scope.out 2>&1 || { cat /tmp/codex-scope.out; fail=1; }
 fi
 
+# v7.20.790 (#839): a live-modelling lesson (the teacher writing in front of a class) gets none of the diagnostic
+# apparatus — timer pop-up, word target, red pill, deadline, baseline card — and every gate keys on isLiveModelling().
+# #447m missed two of them; mutation-proven 4/4 when written.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|live-modelling-apparatus-harness\.js'; then
+  node bin/live-modelling-apparatus-harness.js >/tmp/lm-apparatus.out 2>&1 || { cat /tmp/lm-apparatus.out; fail=1; }
+fi
+
 # v7.20.650 (FIXLIST #635–#637): the feedback cards' Previous · Best line and the per-paragraph
 # pop-out. The comparison rule and the quote→paragraph matcher are extracted from the shipped file
 # and driven through the measured document shapes; the server half's decode/dedupe/access contract

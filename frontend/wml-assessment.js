@@ -48916,7 +48916,7 @@
 
         // Draggable floating word count widget
         const wcWidget = el('div', { className: 'swml-wc-widget', id: 'swml-wc-widget' });
-        const wcWidgetLabel = el('span', { id: 'swml-wc-widget-label', textContent: state.task === 'planning' ? '0 words' : `0 / ${canvasWordTarget}` });
+        const wcWidgetLabel = el('span', { id: 'swml-wc-widget-label', textContent: (state.task === 'planning' || (WML.isLiveModelling && WML.isLiveModelling())) ? '0 words' : `0 / ${canvasWordTarget}` });
         const wcWidgetClose = el('button', {
             className: 'swml-wc-widget-close',
             textContent: '×',
@@ -53431,7 +53431,7 @@
                 }
                 if (diagWcLabel) diagWcLabel.textContent = getWordCountLabel(wc);
                 if (diagCompleteBtn) diagCompleteBtn.style.display = wc >= canvasWordMinimum ? 'block' : 'none';
-                if (wcWidgetLabel) wcWidgetLabel.textContent = `${wc} / ${canvasWordTarget}`;
+                if (wcWidgetLabel) wcWidgetLabel.textContent = (WML.isLiveModelling && WML.isLiveModelling()) ? `${wc} word${wc !== 1 ? 's' : ''}` : `${wc} / ${canvasWordTarget}`;   // v7.20.790 (#839)
                 applyWcWidgetColour(wc);
 
                 // v7.17.32: Auto-fire @POPULATE_CHECKLIST for any unpopulated MSQ
@@ -59681,7 +59681,7 @@
     function applyWcWidgetColour(wc) {
         var w = document.getElementById('swml-wc-widget');
         if (!w) return;
-        if (state.task === 'planning') { w.style.background = ''; w.style.color = ''; return; }
+        if (state.task === 'planning' || (WML.isLiveModelling && WML.isLiveModelling())) { w.style.background = ''; w.style.color = ''; return; }
         var bg = getWordCountColour(wc);
         var darkText = (bg === '#1CD991' || bg === '#F1C40F' || bg === '#f5a623');
         w.style.background = bg;
@@ -59794,6 +59794,13 @@
             const wc = getPlanningWordCount(editor);
             widget.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
             applyWcWidgetColour(wc); // neutral for planning (no target)
+            return;
+        }
+        // v7.20.790 (#839): live modelling has no word target (#447m) — count the words, no "/ target", no red.
+        if (WML.isLiveModelling && WML.isLiveModelling()) {
+            const wc = getResponseWordCount(editor);
+            widget.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
+            applyWcWidgetColour(wc);
             return;
         }
         const wc = getResponseWordCount(editor);
@@ -70167,6 +70174,9 @@
      */
     function maybeShowDiagnosticTimerPicker() {
         if (state.reviewMode) return;
+        // v7.20.790 (#839): a live-modelling lesson has no session timer (#447m) — the author must not get
+        // "Set your timer… this diagnostic" in front of a class. Viewers are already out (review mode).
+        if (WML.isLiveModelling && WML.isLiveModelling()) return;
         // v7.19.559: timer belongs to the DIAGNOSTIC WRITE (task 'diagnostic', the blank-page
         // exam-style write), NOT the assessment. The old gate ('assessment') made it pop over
         // the assessment canvas — wrong. '' covers the legacy diagnostic-entry task.
