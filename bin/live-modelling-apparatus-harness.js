@@ -49,8 +49,12 @@ ok(/ed !== canvasEditor \|\| !root \|\| !document\.contains\(root\)/.test(tick) 
 ok(/'&since=' \+ encodeURIComponent\(f\.rev\)/.test(tick) && /res\.unchanged \|\| !res\.doc\)\) \{ f\.rev = res\.rev; return; \}/.test(tick), '#842: asks "anything new since rev?" and applies nothing when unchanged');
 ok(/_migrationActive = true;\s*try \{ ed\.commands\.setContent\(res\.doc\.html, false\); \}\s*finally \{ _migrationActive = false; \}/.test(tick), '#842: applies like the first load (structure lock passes under try/finally, no update event)');
 ok(/const top = scroller \? scroller\.scrollTop : window\.scrollY;/.test(tick) && /scroller\.scrollTop = top; else window\.scrollTo\(window\.scrollX, top\);/.test(tick), '#842: the student keeps their place on the page');
-ok(/if \(state\.reviewMode \|\| !\(WML\.isLiveModelling && WML\.isLiveModelling\(\)\)\) return 5000;/.test(JS) && /\}, _serverSaveDelay\(\)\);/.test(JS) && /_lmSaveFirstPendingAt = 0;\s*const body = _pendingCanvasSaveBody;/.test(JS),
-    '#842: the author\'s typing reaches the server at least every 4 s while typing (everyone else keeps the 5 s debounce)');
+ok(/function _localSaveDelay\(\) \{\s*if \(state\.reviewMode \|\| !\(WML\.isLiveModelling && WML\.isLiveModelling\(\)\)\) return 2000;/.test(JS)
+    && /return Math\.max\(0, Math\.min\(1000, 3000 - \(now - _lmLocalFirstPendingAt\)\)\);/.test(JS)
+    && /_lmLocalFirstPendingAt = 0;\s*saveCanvasContent\(\);\s*saveStatus\.textContent = '✓ Saved';/.test(JS) && /\}, _localSaveDelay\(\)\);/.test(JS),
+    '#842: the author\'s keystrokes are saved while they keep typing (1 s after a pause, never more than 3 s after the first unsaved one) — measured 0 saves in 11 s before');
+ok(/return \(state\.reviewMode \|\| !\(WML\.isLiveModelling && WML\.isLiveModelling\(\)\)\) \? 5000 : 0;/.test(JS) && /\}, _serverSaveDelay\(\)\);/.test(JS),
+    '#842: …and reach the server straight after; every other task keeps the 2 s / 5 s debounce');
 
 console.log('\n' + (fail ? '❌ FAIL' : '✅ PASS') + ' — ' + n + ' checks');
 process.exit(fail);

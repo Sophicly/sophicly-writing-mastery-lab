@@ -13783,6 +13783,17 @@
     // wml-pull-overlay.js needs the editor to replace plan-section content).
     if (window.WML) window.WML.getCanvasEditor = () => canvasEditor;
     let canvasSaveTimer = null;
+    // v7.20.792 (#842): the live-modelling AUTHOR's words must reach watching students WHILE they keep typing. Every
+    // save waits for a 2 s pause first (onUpdate below), so continuous typing saved nothing (measured: 0 saves in 11 s,
+    // students saw the first words 21 s late). For the author only: save 1 s after a pause, and never more than 3 s
+    // after the first unsaved keystroke; the server save then follows at once (_serverSaveDelay). Everyone else: 2 s.
+    let _lmLocalFirstPendingAt = 0;
+    function _localSaveDelay() {
+        if (state.reviewMode || !(WML.isLiveModelling && WML.isLiveModelling())) return 2000;
+        const now = Date.now();
+        if (!_lmLocalFirstPendingAt) _lmLocalFirstPendingAt = now;
+        return Math.max(0, Math.min(1000, 3000 - (now - _lmLocalFirstPendingAt)));
+    }
     // v7.20.177 (typing-flicker root #2): coalesces updateOutline + updateCommentCount off
     // the keystroke path. updateOutline is O(N²) over the section list (per-section
     // full-editor attribute scans) plus a deep cloneNode(true) of EVERY section for its
@@ -53201,11 +53212,12 @@
                 } catch (_) {}
                 clearTimeout(canvasSaveTimer);
                 canvasSaveTimer = setTimeout(() => {
+                    _lmLocalFirstPendingAt = 0;
                     saveCanvasContent();
                     saveStatus.textContent = '✓ Saved';
                     saveStatus.classList.add('saving');
                     setTimeout(() => saveStatus.classList.remove('saving'), 1500);
-                }, 2000);
+                }, _localSaveDelay());   // v7.20.792 (#842): 2 s, or the live-modelling author's 1 s / 3 s cap
                 // Update outline (if open) + comment count — coalesced off the keystroke
                 // path (v7.20.177, see _typingUiRefreshTimer declaration). Both run
                 // atomically, same functions, ~300ms after the last edit.
@@ -67389,15 +67401,10 @@
     }
 
     let canvasSaveToServerTimer = null;
-    // v7.20.792 (#842): the live-modelling AUTHOR's typing must reach watching students while they keep typing — the
-    // plain 5 s debounce would hold it until a pause (or the 30 s safety save). Cap: 2 s after the last keystroke, and
-    // never more than 4 s after the first unsaved one. Everyone else keeps the 5 s debounce.
-    let _lmSaveFirstPendingAt = 0;
+    // v7.20.792 (#842): for the live-modelling AUTHOR the local save is already capped (_localSaveDelay), so the server
+    // save follows at once — students see the words within seconds. Everyone else keeps the 5 s debounce.
     function _serverSaveDelay() {
-        if (state.reviewMode || !(WML.isLiveModelling && WML.isLiveModelling())) return 5000;
-        const now = Date.now();
-        if (!_lmSaveFirstPendingAt) _lmSaveFirstPendingAt = now;
-        return Math.max(0, Math.min(2000, 4000 - (now - _lmSaveFirstPendingAt)));
+        return (state.reviewMode || !(WML.isLiveModelling && WML.isLiveModelling())) ? 5000 : 0;
     }
     let _extractDocumentData = null; // Assigned inside canvas builder, used by saveCanvasContent
     // v7.19.468: CW Step-2 chosen-idea sync. SINGLE SOURCE OF TRUTH = the ticked idea
@@ -67857,7 +67864,6 @@
         };
         const _syncKeyAtEnqueue = _saveSyncKey, _syncTsAtEnqueue = _saveSyncTs;   // v7.20.639 (#598)
         canvasSaveToServerTimer = setTimeout(() => {
-            _lmSaveFirstPendingAt = 0;
             const body = _pendingCanvasSaveBody;
             _pendingCanvasSaveBody = null;
             // v7.19.136 instrumentation — server save firing + suffix/attempt at fire time
