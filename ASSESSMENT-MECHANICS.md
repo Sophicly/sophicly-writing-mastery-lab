@@ -584,6 +584,22 @@ The deterministic quiz controller (`_quizCtl` — FQ, MSQ, MSA all share it) has
   entry; every penalty code a protocol can emit gets a map entry or a ruled no-chip.
 - Known cosmetic bleed: chip labels appear in copy-pasted doc exports ("Learn: … →"). Accepted
   for now; revisit if Neil exports for parents (§9.9).
+- **Mastery Codex per-lesson scoping (v7.20.780, FIXLIST #824 — Neil approved 9 Oct via LD):** each Core Skills
+  lesson shows only its own questions. **One source:** wp option `swml_codex_lesson_map` (LD writes it, LD's
+  `build-and-check.py` gates it) → server `codex_scope_for_lesson()` → embed `codexScope` {owned, earlier, later
+  (field → "Unit N, lesson …"), clips, bento}. **The option is the on-switch:** absent → no `codexScope` → the Codex is
+  exactly as before. Staff and reviewers get the whole Codex; staff add `?codex_scope=1` to see the student view.
+  Earlier/later come from the COURSE's own step order, never the map's key order (a JS-built object re-sorts numeric
+  keys by post id — the harness proves the server heals that). **View-state only, like the v947 display lock:** owned
+  fields answerable; earlier fields readable but locked through the ONE predicate `_swmlNodeLocked` (inputs) and a
+  construction-time `disabled` + save guard (choices); later fields hidden, an all-later section collapsing to
+  "Opens in …". The look is ONE `<style id="swml-codex-scope">` in `<head>` keyed on `data-field-id` — no NodeView DOM is
+  written (§3 PM law), nothing is persisted, answers given ahead survive and reappear in their own lesson. Lands on the
+  first owned field after the resume (1.5 s, re-checked at 4 s, never once the student moved); follows the playlist's
+  `sophicly:media-item` event to the clip's field, never within 5 s of a keystroke or the student's own scroll, and on a
+  page-scroll (phone) layout only highlights — the video is never pushed out of view. Fail-open everywhere (no row, bad
+  map, a field no lesson owns → answerable + `console.warn`). Gate: `bin/codex-scope-harness.js` (LD's real 37-lesson
+  contract as fixture; mutation-proven 5/5).
 
 ### §8c. ⭐ THE FLOATING-PANEL LAW — a panel anchored to a trigger is a CHILD of that trigger's
 ### sticky column, positioned absolutely (v7.20.117; the pattern v7.19.454 proved)

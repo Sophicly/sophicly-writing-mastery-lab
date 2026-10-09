@@ -182,6 +182,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/exam-prep-keep-harness.js >/tmp/exam-prep-keep.out 2>&1 || { cat /tmp/exam-prep-keep.out; fail=1; }
 fi
 
+# v7.20.780 (WML 339 A, #824 — Neil approved 9 Oct via LD): Mastery Codex per-lesson scoping. The pure scope functions
+# (PHP under php, JS executed) run against LD's REAL 37-lesson contract; the lock must reach typing, choices, the refusal
+# toast and the paint hooks; no option = today's whole Codex. Mutation-proven 5/5 when written.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|sophicly-writing-mastery-lab\.php|codex-scope-harness\.js|codex-lesson-map-'; then
+  node bin/codex-scope-harness.js >/tmp/codex-scope.out 2>&1 || { cat /tmp/codex-scope.out; fail=1; }
+fi
+
 # v7.20.650 (FIXLIST #635–#637): the feedback cards' Previous · Best line and the per-paragraph
 # pop-out. The comparison rule and the quote→paragraph matcher are extracted from the shipped file
 # and driven through the measured document shapes; the server half's decode/dedupe/access contract

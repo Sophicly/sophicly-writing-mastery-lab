@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.779
+ * Version: 7.20.780
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.779');
+define('SWML_VERSION', '7.20.780');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -255,6 +255,91 @@ class Sophicly_Writing_Mastery_Lab {
         if (!$list) return $measured;
         return array_values(array_intersect($measured, array_map('sanitize_key', $list)));
     }
+
+    /**
+     * v7.20.780 (#824, Neil approved 9 Oct via LD): Mastery Codex per-lesson scoping. ONE source: wp option
+     * swml_codex_lesson_map (written by LD, gated by its build-and-check.py) = { "<LD lesson post id>": { unit, title,
+     * fields: [field ids this lesson OWNS], bento, clip_tags: [{index, field}] } }. The option IS the on-switch: absent
+     * → null → the Codex behaves exactly as before (LD's constraint). Reviewers (?view_as / ?student_id) and staff see
+     * the whole Codex; staff add ?codex_scope=1 to see the student view (root CLAUDE: Neil must be able to test as
+     * himself). Rows are ordered by the course's real step order, so "earlier"/"later" cannot drift from the course.
+     */
+    public static function codex_scope_for_lesson($lesson_id) {
+        $raw = get_option('swml_codex_lesson_map', null);
+        if ($raw === null || $raw === false || $raw === '') return null;
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display preference only, grants nothing.
+        $preview = isset($_GET['codex_scope']);
+        if (!$preview) {
+            if (function_exists('sophicly_review_target_id') && sophicly_review_target_id()) return ['state' => 'review'];
+            $uid = get_current_user_id();
+            $att = (string) get_user_meta($uid, 'sophicly_att_role', true);
+            $sr  = (string) get_user_meta($uid, 'sophicly_role', true);
+            if (current_user_can('manage_options') || $att === 'tutor' || $att === 'specialist' || $sr === 'sss') return ['state' => 'staff'];
+        }
+        $map = is_array($raw) ? $raw : json_decode((string) $raw, true);
+        if (!is_array($map)) {
+            error_log('[WML] codex scope: swml_codex_lesson_map is not valid JSON — whole Codex shown');
+            return ['state' => 'bad-map'];
+        }
+        $order = [];
+        if (function_exists('learndash_get_course_id') && function_exists('learndash_course_get_steps_by_type') && function_exists('learndash_course_get_children_of_step')) {
+            $cid = (int) learndash_get_course_id((int) $lesson_id);
+            if ($cid) {
+                foreach ((array) learndash_course_get_steps_by_type($cid, 'sfwd-lessons') as $u) {
+                    foreach ((array) learndash_course_get_children_of_step($cid, $u, 'sfwd-topic') as $t) $order[(string) (int) $t] = count($order);
+                }
+            }
+        }
+        return self::codex_scope_from_map($map, $lesson_id, $order);
+    }
+
+    // @CODEX-SCOPE-PURE-BEGIN — pure (no WordPress calls); bin/codex-scope-harness.js runs it under php.
+    public static function codex_scope_from_map($map, $lesson_id, $order = []) {
+        if (!is_array($map) || !$map) return ['state' => 'bad-map'];
+        $key = (string) (int) $lesson_id;
+        if (!isset($map[$key]) || !is_array($map[$key])) return ['state' => 'no-row', 'lesson' => (int) $lesson_id];
+        $keys = array_map('strval', array_keys($map));
+        $pos = array_flip($keys);
+        // Course order wins; a row the course does not hold keeps its map position, after the course's rows.
+        usort($keys, function ($a, $b) use ($order, $pos) {
+            $oa = isset($order[$a]) ? $order[$a] : 100000 + $pos[$a];
+            $ob = isset($order[$b]) ? $order[$b] : 100000 + $pos[$b];
+            return $oa - $ob;
+        });
+        $owned = []; $earlier = []; $later = []; $seen = false;
+        foreach ($keys as $lid) {
+            $row = $map[$lid];
+            if (!is_array($row) || empty($row['fields']) || !is_array($row['fields'])) continue;
+            if ($lid === $key) { $seen = true; foreach ($row['fields'] as $f) $owned[] = (string) $f; continue; }
+            $title = trim((string) ($row['title'] ?? ''));
+            $label = 'Unit ' . (int) ($row['unit'] ?? 0) . ($title !== '' ? ', lesson ' . $title : '');
+            foreach ($row['fields'] as $f) {
+                if ($seen) { if (!isset($later[(string) $f])) $later[(string) $f] = $label; }
+                else $earlier[] = (string) $f;
+            }
+        }
+        if (!$owned) return ['state' => 'no-fields', 'lesson' => (int) $lesson_id];
+        // A field this lesson owns is never locked here, whatever another row claims (LD's gate forbids the overlap).
+        $earlier = array_values(array_unique(array_diff($earlier, $owned)));
+        foreach ($owned as $f) unset($later[$f]);
+        $clips = [];
+        foreach ((array) ($map[$key]['clip_tags'] ?? []) as $c) {
+            if (is_array($c) && isset($c['index'], $c['field']) && in_array((string) $c['field'], $owned, true)) {
+                $clips[] = ['index' => (int) $c['index'], 'field' => (string) $c['field']];
+            }
+        }
+        return [
+            'state'   => 'scoped',
+            'lesson'  => (int) $lesson_id,
+            'title'   => (string) ($map[$key]['title'] ?? ''),
+            'bento'   => (string) ($map[$key]['bento'] ?? ''),
+            'owned'   => $owned,
+            'earlier' => $earlier,
+            'later'   => (object) $later,
+            'clips'   => $clips,
+        ];
+    }
+    // @CODEX-SCOPE-PURE-END
 
     /**
      * v7.20.634 (#588) — LearnDash asks whether to record a completion. The RULE lives once, in
@@ -1214,6 +1299,11 @@ class Sophicly_Writing_Mastery_Lab {
             'refused' => $mc_refused,
             'nonce'   => ($mc_uid && $post_id) ? wp_create_nonce('swml_mc_gate_' . $mc_uid . '_' . $post_id) : '',
         ];
+        // v7.20.780 (#824): the Mastery Codex's per-lesson scope. Absent (null) = today's whole Codex.
+        if ($task === 'mastery_codex') {
+            $codex_scope = self::codex_scope_for_lesson((int) $post_id);
+            if ($codex_scope !== null) $embed_config['codexScope'] = $codex_scope;
+        }
 
 
         // Inline CSS: embedded mode layout fixes (v7.13.14)

@@ -37897,12 +37897,228 @@
     function _docDisplayLocked() {
         return DISPLAY_LOCK_TASKS.includes(String(state.task || ''));
     }
+    // v7.20.780 (#824, Neil approved 9 Oct via LD): MASTERY CODEX PER-LESSON SCOPING. Each Core Skills lesson
+    // shows only its own questions: the fields it OWNS are answerable, earlier lessons' answers stay readable but
+    // locked, later lessons' questions are hidden behind "Opens in Unit N, lesson …". VIEW-state only, exactly like
+    // the display lock above — the saved document is never touched (answers given ahead stay, and reappear in their
+    // own lesson). The scope comes from the server (embed codexScope ← wp option swml_codex_lesson_map); no option /
+    // no row / staff / review → null → today's whole Codex (fail-open, §4d).
+    // @CODEX-SCOPE-PURE-BEGIN
+    function codexScopeModel(scope) {
+        if (!scope || scope.state !== 'scoped' || !Array.isArray(scope.owned) || !scope.owned.length) return null;
+        const later = new Map();
+        const lt = (scope.later && typeof scope.later === 'object') ? scope.later : {};
+        Object.keys(lt).forEach(k => { later.set(String(k), String(lt[k] || '')); });
+        const clips = new Map();
+        (Array.isArray(scope.clips) ? scope.clips : []).forEach(c => { if (c && c.field != null) clips.set(Number(c.index), String(c.field)); });
+        return {
+            owned: new Set(scope.owned.map(String)),
+            earlier: new Set((Array.isArray(scope.earlier) ? scope.earlier : []).map(String)),
+            later, clips, bento: String(scope.bento || ''),
+        };
+    }
+    // own · earlier · later · open (a field no lesson owns — fail-open: answerable; the caller warns once).
+    function codexFieldState(model, fid) {
+        if (!model || !fid) return 'open';
+        if (model.owned.has(fid)) return 'own';
+        if (model.later.has(fid)) return 'later';
+        if (model.earlier.has(fid)) return 'earlier';
+        return 'open';
+    }
+    function codexFieldLockedIn(model, fid) {
+        const s = codexFieldState(model, fid);
+        return s === 'earlier' || s === 'later';
+    }
+    // sections = [[fieldId, …] per section, in document order]. Returns the stylesheet text. Selectors are quoted
+    // attribute selectors (never CSS.escape — WML rule); a section is addressed by the one field id it holds first.
+    function codexScopeCss(sections, model) {
+        if (!model) return '';
+        const q = s => '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n]+/g, ' ') + '"';
+        const at = fid => '[data-field-id=' + q(fid) + ']';
+        const out = [];
+        (sections || []).forEach(fids => {
+            if (!fids || !fids.length) return;
+            const st = fids.map(f => codexFieldState(model, f));
+            const sec = '#swml-tiptap-editor .swml-section-block:has(' + at(fids[0]) + ')';
+            if (st.every(s => s === 'later')) {
+                out.push(sec + ' > .swml-section-content > *{display:none !important}');
+                out.push(sec + ' > .swml-section-content::before{content:' + q('Opens in ' + model.later.get(fids[0]) + '.')
+                    + ';display:block;font-size:12px;font-style:italic;opacity:.75;margin:4px 0}');
+                return;
+            }
+            if (st.every(s => s === 'earlier')) {
+                out.push(sec + ' > .swml-section-content::before{content:' + q('From an earlier lesson. You can read your answers here.')
+                    + ';display:block;font-size:11px;font-style:italic;opacity:.65;margin:2px 0 6px}');
+            }
+            fids.forEach((f, i) => {
+                if (st[i] === 'later') out.push('#swml-tiptap-editor ' + at(f) + '{display:none !important}');
+                else if (st[i] === 'earlier') out.push('#swml-tiptap-editor ' + at(f) + '{opacity:.72}');
+            });
+        });
+        return out.join('\n');
+    }
+    // The first field this lesson owns, in DOCUMENT order (not map order) — where the student lands.
+    function codexFirstOwned(sections, model) {
+        if (!model) return null;
+        for (const fids of (sections || [])) for (const f of (fids || [])) if (model.owned.has(f)) return f;
+        return null;
+    }
+    // A clip-started event → the owned field to follow, or null. Another playlist on the page never moves the Codex.
+    function codexClipField(model, detail) {
+        if (!model || !detail) return null;
+        if (model.bento && detail.bentoId && String(detail.bentoId) !== model.bento) return null;
+        const tagged = detail.item && detail.item.codex_field ? String(detail.item.codex_field) : null;
+        const f = tagged || (model.clips.has(Number(detail.index)) ? model.clips.get(Number(detail.index)) : null);
+        return f && model.owned.has(f) ? f : null;
+    }
+    // Neil's two safeguards: never while the student is typing, never straight after they scrolled themselves.
+    function codexFollowAllowed(now, lastKeyAt, lastUserScrollAt, quietMs) {
+        const q = quietMs == null ? 5000 : quietMs;
+        return (now - (lastKeyAt || 0)) >= q && (now - (lastUserScrollAt || 0)) >= q;
+    }
+    // @CODEX-SCOPE-PURE-END
+    let _codexScopeCache = { key: null, model: null };
+    function _codexModel() {
+        try {
+            if (state.task !== 'mastery_codex' || state.reviewMode) return null;
+            const cfg = window.swmlEmbedConfig || {};
+            const sc = cfg.codexScope || null;
+            const key = String(cfg.postId || '') + '|' + (sc ? sc.state + ':' + (sc.lesson || '') : 'none');
+            if (_codexScopeCache.key !== key) {
+                _codexScopeCache = { key, model: codexScopeModel(sc) };
+                if (sc && sc.state === 'no-row') console.warn('WML Codex scope: lesson ' + sc.lesson + ' has no row in swml_codex_lesson_map — showing the whole Codex.');
+                if (sc && (sc.state === 'bad-map' || sc.state === 'no-fields')) console.warn('WML Codex scope: ' + sc.state + ' — showing the whole Codex.');
+            }
+            return _codexScopeCache.model;
+        } catch (_) { return null; }
+    }
+    function _codexFieldLocked(fid) { return codexFieldLockedIn(_codexModel(), fid); }
+    function _codexDocSections(editor) {
+        const out = [];
+        try {
+            editor.state.doc.descendants(node => {
+                if (node.type.name !== 'sectionBlock') return true;
+                const fids = [];
+                node.descendants(n => {
+                    if ((n.type.name === 'inputField' || n.type.name === 'selectField') && n.attrs && n.attrs.fieldId) fids.push(String(n.attrs.fieldId));
+                    return true;
+                });
+                if (fids.length) out.push(fids);
+                return false;
+            });
+        } catch (_) {}
+        return out;
+    }
+    let _codexLastKeyAt = 0, _codexLastUserScrollAt = 0, _codexWiredDoc = null, _codexLanded = null, _codexWarnedOpen = false;
+    // Idempotent: called on every Codex paint. Writes ONE <style> in <head> (outside the editor — no NodeView DOM
+    // is touched, §PM NodeView law), lands the student once, and wires the clip-follow once per page.
+    function _codexScopeApply(editor) {
+        const model = _codexModel();
+        let st = document.getElementById('swml-codex-scope');
+        if (!model || !editor || !editor.state) { if (st) st.textContent = ''; return; }
+        const sections = _codexDocSections(editor);
+        if (!sections.length) return;
+        const css = codexScopeCss(sections, model);
+        if (!st) { st = document.createElement('style'); st.id = 'swml-codex-scope'; document.head.appendChild(st); }
+        if (st.textContent !== css) st.textContent = css;
+        if (!_codexWarnedOpen) {
+            const open = [].concat(...sections).filter(f => codexFieldState(model, f) === 'open');
+            if (open.length) { _codexWarnedOpen = true; console.warn('WML Codex scope: ' + open.length + ' field(s) belong to no lesson in the map — left answerable:', open.slice(0, 8).join(', ')); }
+        }
+        _codexWireOnce();
+        const landKey = _codexScopeCache.key;
+        if (_codexLanded !== landKey && codexFirstOwned(sections, model)) {
+            _codexLanded = landKey;
+            // Land after the saved answers have loaded (a server resume replaces the document ~1s after the first
+            // paint), and check once more later in case a slow load reset the scroll. Never once the student moved.
+            const land = () => {
+                if (_codexScopeCache.key !== landKey) return;
+                if (!codexFollowAllowed(Date.now(), _codexLastKeyAt, _codexLastUserScrollAt, 5000)) return;
+                const m = _codexModel();
+                const first = m ? codexFirstOwned(_codexDocSections(canvasEditor || editor), m) : null;
+                const target = first ? _codexFieldEl(first) : null;
+                if (target) _codexScrollTo(target, !m.bento);
+            };
+            setTimeout(land, 1500);
+            setTimeout(land, 4000);
+        }
+    }
+    // Scroll the DOCUMENT PANE to a field. On a page-scroll layout (phones) the page itself would move — allowed only
+    // when the lesson has no playlist above the Codex, so a video is never pushed out of view (Neil's safeguard).
+    function _codexScrollTo(target, allowPage) {
+        const block = target.closest('.swml-section-block') || target;
+        const pane = target.closest('.swml-canvas-content');
+        if (pane && pane.scrollHeight > pane.clientHeight + 4) { _swmlScrollToTop(block); return true; }
+        if (!allowPage) return false;
+        try { block.scrollIntoView({ behavior: 'auto', block: 'start' }); } catch (_) {}
+        return true;
+    }
+    // §4d: typing into a box another lesson owns does nothing — say why, once per burst, in plain words.
+    let _codexToldAt = 0;
+    function _codexRefusalToast(st, pos) {
+        try {
+            if (!_codexModel()) return;
+            const $p = st.doc.resolve(Math.max(0, Math.min(pos, st.doc.content.size)));
+            for (let d = $p.depth; d > 0; d--) {
+                const n = $p.node(d);
+                if (n.type.name !== 'inputField') continue;
+                if (!_codexFieldLocked(String((n.attrs && n.attrs.fieldId) || ''))) return;
+                if (Date.now() - _codexToldAt < 2500) return;
+                _codexToldAt = Date.now();
+                showToast('This answer belongs to an earlier lesson. You can change it in that lesson.', 4000, true);
+                return;
+            }
+        } catch (_) {}
+    }
+    function _codexFieldEl(fid) {
+        // Loop lookup — never CSS.escape for attribute selectors (WML rule).
+        const nodes = document.querySelectorAll('#swml-tiptap-editor [data-field-id]');
+        for (let i = 0; i < nodes.length; i++) if (nodes[i].getAttribute('data-field-id') === fid) return nodes[i];
+        return null;
+    }
+    function _codexFlash(fid) {
+        let fl = document.getElementById('swml-codex-flash');
+        if (!fl) { fl = document.createElement('style'); fl.id = 'swml-codex-flash'; document.head.appendChild(fl); }
+        const q = '"' + String(fid).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+        fl.textContent = '#swml-tiptap-editor [data-field-id=' + q + ']{box-shadow:0 0 0 2px rgba(83,51,237,.65);transition:box-shadow .3s ease}';
+        clearTimeout(_codexFlash._t);
+        _codexFlash._t = setTimeout(() => { fl.textContent = ''; }, 2600);
+    }
+    function _codexWireOnce() {
+        if (_codexWiredDoc === document) return;
+        _codexWiredDoc = document;
+        document.addEventListener('keydown', (e) => {
+            const ed = document.getElementById('swml-tiptap-editor');
+            if (ed && e.target && ed.contains(e.target)) _codexLastKeyAt = Date.now();
+            if (/^(PageUp|PageDown|Home|End|ArrowUp|ArrowDown|\s)$/.test(e.key || '') && !(ed && ed.contains(e.target))) _codexLastUserScrollAt = Date.now();
+        }, true);
+        const userScroll = () => { _codexLastUserScrollAt = Date.now(); };
+        document.addEventListener('wheel', userScroll, { passive: true, capture: true });
+        document.addEventListener('touchmove', userScroll, { passive: true, capture: true });
+        // The playlist player announces the clip that started (Components, LD's ask 9 Oct): follow it to its question.
+        document.addEventListener('sophicly:media-item', (e) => {
+            try {
+                const model = _codexModel();
+                const fid = codexClipField(model, e && e.detail);
+                if (!fid) return;
+                if (!codexFollowAllowed(Date.now(), _codexLastKeyAt, _codexLastUserScrollAt, 5000)) return;
+                const target = _codexFieldEl(fid);
+                if (!target) return;
+                const pane = target.closest('.swml-canvas-content');
+                // Phone / page-scroll layout: scrolling would push the video out of view — highlight only.
+                if (pane && pane.scrollHeight > pane.clientHeight + 4) _swmlScrollToTop(target.closest('.swml-section-block') || target);
+                _codexFlash(fid);
+            } catch (err) { console.warn('WML Codex clip-follow failed:', err && err.message); }
+        });
+    }
     function _swmlNodeLocked(node) {
         if (!node || !node.type) return false;
         // Headings are ALWAYS scaffold (section titles) — locked structurally so the rule
         // works on existing + new docs and survives the wp_kses round-trip with no attr.
         // (Students fill rows / write free-prose; they don't author headings in these docs.)
         if (node.type.name === 'heading') return true;
+        // v7.20.780 (#824): a Codex field another lesson owns is read-only here (view-state, never persisted).
+        if (node.type.name === 'inputField' && node.attrs && node.attrs.fieldId && _codexFieldLocked(String(node.attrs.fieldId))) return true;
         // v7.19.947: display-lock — in assessment/discuss lessons the student-authored
         // sections are read-only carryovers from the authoring lesson.
         const _secType = String((node.attrs && node.attrs.sectionType) || '');
@@ -45998,8 +46214,8 @@
                 // Initial paint once the editor is mounted (count any resumed answers).
                 // Second delayed pass: on server resume, setContent fires AFTER onCreate,
                 // so the immediate rAF can see an empty doc — repaint once content lands.
-                requestAnimationFrame(() => requestAnimationFrame(() => _paintCodexWc(canvasEditor)));
-                setTimeout(() => _paintCodexWc(canvasEditor), 1400);
+                requestAnimationFrame(() => requestAnimationFrame(() => { _paintCodexWc(canvasEditor); _codexScopeApply(canvasEditor); }));
+                setTimeout(() => { _paintCodexWc(canvasEditor); _codexScopeApply(canvasEditor); }, 1400);
             }
 
             // v7.19.213: Mastery Codex — Share-link-with-tutor button. Same shape as the
@@ -49413,8 +49629,13 @@
 
                     let opts = [];
                     try { opts = JSON.parse(node.attrs.options || '[]'); } catch (_) { opts = []; }
+                    // v7.20.780 (#824): a Codex choice another lesson owns is read-only here. Decided once, at
+                    // construction (part of the created DOM, before PM mounts it — §PM NodeView law), never persisted.
+                    let _cxLocked = false;
+                    try { _cxLocked = _codexFieldLocked(String(node.attrs.fieldId || '')); } catch (_) { _cxLocked = false; }
 
                     const writeValue = (newValue) => {
+                        if (_cxLocked) return;   // v7.20.780: belt and braces — the controls are disabled too
                         if (typeof getPos !== 'function') return;
                         const pos = getPos();
                         if (typeof pos !== 'number') return;
@@ -49453,6 +49674,7 @@
                             chip.classList.add('swml-select-chip');
                             chip.textContent = opt.label;
                             chip.dataset.value = opt.value;
+                            if (_cxLocked) chip.disabled = true;
                             if (selected.has(opt.value)) chip.classList.add('selected');
                             chip.addEventListener('click', (e) => {
                                 e.preventDefault();
@@ -49468,6 +49690,7 @@
                     } else {
                         const sel = document.createElement('select');
                         sel.classList.add('swml-select-input');
+                        if (_cxLocked) sel.disabled = true;
                         const blank = document.createElement('option');
                         blank.value = '';
                         blank.textContent = '— select —';
@@ -52708,8 +52931,10 @@
                 handleTextInput(view, from, to) {
                     // v7.19.649: block locked scaffold AND any doc-root gap (outside every section)
                     // v7.20.138: AND a field-only section's body (outside its field)
-                    return _swmlRangeLocked(view.state, from, to) || !_swmlInSection(view.state, from)
+                    const _refused = _swmlRangeLocked(view.state, from, to) || !_swmlInSection(view.state, from)
                         || _swmlSectionFieldOnly(view.state, from);
+                    if (_refused) _codexRefusalToast(view.state, from);   // v7.20.780 (#824): no-op outside the Codex
+                    return _refused;
                 },
                 handleKeyDown(view, event) {
                     const k = event.key;
@@ -52776,7 +53001,7 @@
                 // Floating widget
                 _paintWcWidgetLabel(editor);
                 // v7.19.285: Mastery Codex soft word-count panel (input-field totals).
-                if (state.task === 'mastery_codex') _paintCodexWc(editor);
+                if (state.task === 'mastery_codex') { _paintCodexWc(editor); _codexScopeApply(editor); }   // v7.20.780 (#824): scope is idempotent
 
                 // v7.15.0: Mark Plan/Response InputFields as filled/empty
                 // v7.20.177 (typing-flicker root #1): the inline rAF sweep that lived here
@@ -53840,7 +54065,7 @@
         // studentChars-guard path).
         const EXAM_PREP_DOC_VER = 3; // legacy default (essay_plan / model_answer / etc)
         const EXAM_PREP_DOC_VER_BY_TASK = {
-            'mastery_codex': 20, // bump on EVERY buildMasteryCodexTemplate change
+            'mastery_codex': 21, // bump on EVERY buildMasteryCodexTemplate change (21: v7.20.780 IUMVCC above Story-Spine)
         };
         const getExamPrepDocVer = (task) => (
             EXAM_PREP_DOC_VER_BY_TASK[task] !== undefined
@@ -65991,6 +66216,21 @@
             + _row('The lasting message is that no one can live as if their choices touch no one else.', 'unit-7.essay-structure.s14.label', _esP, [_cACP, _cMM, _cRT], _cMM)
             + clozeCheckHTML()
         );
+        // v7.20.780 (#824, LD gate WARN): IUMVCC now sits ABOVE Story-Spine — document order = course
+        // order (Core Skills L16 teaches IUMVCC, L18 the Story Spine), so the per-lesson Codex scoping lands
+        // a student on the right section. Field ids unchanged; mergeCodexFields keeps every answer.
+        const _iuP = 'Which IUMVCC section is this?';
+        const _i1 = 'Introduction', _i2 = 'Urgency', _i3 = 'Methodology', _i4 = 'Vision', _i5 = 'Counter-argument', _i6 = 'Conclusion';
+        html += sectionHTML('plan', 'IUMVCC Draft (6 Beats)', true, null,
+            '<p>Below is a persuasive piece arguing that schools should <strong>ban single-use plastic</strong>, in six IUMVCC sections. Label each one, then press <strong>Check answers</strong>.</p>'
+            + _row('Every year our school throws away thousands of plastic bottles — it is time we stopped.', 'unit-7.iumvcc-draft.s1.label', _iuP, [_i1, _i2, _i6], _i1)
+            + _row('Right now that plastic is choking our oceans and poisoning the wildlife we claim to protect; we cannot wait.', 'unit-7.iumvcc-draft.s2.label', _iuP, [_i1, _i2, _i3], _i2)
+            + _row('We can act today: install water fountains, switch to refillable bottles, and reward every plastic-free class.', 'unit-7.iumvcc-draft.s3.label', _iuP, [_i2, _i3, _i4], _i3)
+            + _row('Imagine a school with empty bins, cleaner corridors, and students leading the community.', 'unit-7.iumvcc-draft.s4.label', _iuP, [_i3, _i4, _i5], _i4)
+            + _row('Some say plastic is cheaper and easier — but convenience today means catastrophe tomorrow.', 'unit-7.iumvcc-draft.s5.label', _iuP, [_i4, _i5, _i6], _i5)
+            + _row('The choice is ours: act now, and we hand the next generation a cleaner world.', 'unit-7.iumvcc-draft.s6.label', _iuP, [_i5, _i6, _i1], _i6)
+            + clozeCheckHTML()
+        );
         const _ssP = 'Which Story Spine beat is this?';
         const _b1 = 'Once upon a time', _b2 = 'Every day', _b3 = 'Until one day', _b4 = 'Because of this', _b6 = 'Until finally';
         html += sectionHTML('plan', 'Story-Spine Draft (6 Beats)', true, null,
@@ -66006,18 +66246,6 @@
             + _row('Her fairy godmother appeared and conjured a gown and carriage.', 'unit-7.story-spine-draft.s4.label', _ssP, [_b3, _b4, _b6], _b4)
             + _row('The prince fell in love with her, but she fled at midnight, leaving a glass slipper.', 'unit-7.story-spine-draft.s5.label', _ssP, [_b4, _b6, _b2], _b4)
             + _row('The slipper fit Cinderella, and they were married, and they lived happily ever after.', 'unit-7.story-spine-draft.s6.label', _ssP, [_b4, _b3, _b6], _b6)
-            + clozeCheckHTML()
-        );
-        const _iuP = 'Which IUMVCC section is this?';
-        const _i1 = 'Introduction', _i2 = 'Urgency', _i3 = 'Methodology', _i4 = 'Vision', _i5 = 'Counter-argument', _i6 = 'Conclusion';
-        html += sectionHTML('plan', 'IUMVCC Draft (6 Beats)', true, null,
-            '<p>Below is a persuasive piece arguing that schools should <strong>ban single-use plastic</strong>, in six IUMVCC sections. Label each one, then press <strong>Check answers</strong>.</p>'
-            + _row('Every year our school throws away thousands of plastic bottles — it is time we stopped.', 'unit-7.iumvcc-draft.s1.label', _iuP, [_i1, _i2, _i6], _i1)
-            + _row('Right now that plastic is choking our oceans and poisoning the wildlife we claim to protect; we cannot wait.', 'unit-7.iumvcc-draft.s2.label', _iuP, [_i1, _i2, _i3], _i2)
-            + _row('We can act today: install water fountains, switch to refillable bottles, and reward every plastic-free class.', 'unit-7.iumvcc-draft.s3.label', _iuP, [_i2, _i3, _i4], _i3)
-            + _row('Imagine a school with empty bins, cleaner corridors, and students leading the community.', 'unit-7.iumvcc-draft.s4.label', _iuP, [_i3, _i4, _i5], _i4)
-            + _row('Some say plastic is cheaper and easier — but convenience today means catastrophe tomorrow.', 'unit-7.iumvcc-draft.s5.label', _iuP, [_i4, _i5, _i6], _i5)
-            + _row('The choice is ours: act now, and we hand the next generation a cleaner world.', 'unit-7.iumvcc-draft.s6.label', _iuP, [_i5, _i6, _i1], _i6)
             + clozeCheckHTML()
         );
         html += sectionHTML('plan', 'Exit Ticket (3-2-1) + When-Intention', true, null,

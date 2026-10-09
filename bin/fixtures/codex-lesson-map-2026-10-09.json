@@ -1,0 +1,849 @@
+{
+ "course_id": 45624,
+ "generated": "2026-10-09",
+ "rule": "each Codex lesson shows only its own fields; clip tag = field to scroll to",
+ "lessons": [
+  {
+   "unit": 1,
+   "lesson_id": 55362,
+   "title": "2. Reflection",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-1.launch.grade-last",
+    "unit-1.launch.grade-target",
+    "unit-1.launch.improvement",
+    "unit-1.launch.change-one-thing"
+   ],
+   "bento": "g9cs_u1_l2",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": "Why You Need Grade 9 Core Skills- INTRO Retrieval Questions",
+     "field": "unit-1.launch.grade-last"
+    },
+    {
+     "index": 1,
+     "clip": "Why You Need Grade 9 Core Skills- INTRO Navigate to the Retrieval Questions in the Doc",
+     "field": "unit-1.launch.grade-last"
+    },
+    {
+     "index": 2,
+     "clip": "Why You Need Grade 9 Core Skills- INTRO Answer the Retrieval Questions",
+     "field": "unit-1.launch.grade-last"
+    },
+    {
+     "index": 3,
+     "clip": "Why You Need Grade 9 Core Skills- INTRO Goals of this Unit",
+     "field": null
+    }
+   ]
+  },
+  {
+   "unit": 1,
+   "lesson_id": 55364,
+   "title": "4. WRITING: Meta-Skill Hypothesis & Definition",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-1.hook-hypothesis",
+    "unit-1.meta-skills.in-own-words"
+   ],
+   "bento": "g9cs_u1_l4",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": "WRITING- Meta-Skill Hypothesis & Definition WRITING",
+     "field": "unit-1.hook-hypothesis"
+    },
+    {
+     "index": 1,
+     "clip": "WRITING- Meta-Skill Hypothesis & Definition Using the Microphone",
+     "field": "unit-1.hook-hypothesis"
+    },
+    {
+     "index": 2,
+     "clip": "WRITING- Meta-Skill Hypothesis & Definition Clean Up Your Answers",
+     "field": "unit-1.hook-hypothesis"
+    },
+    {
+     "index": 3,
+     "clip": "WRITING- Meta-Skill Hypothesis & Definition MARK THE LESSON COMPLETE",
+     "field": "unit-1.hook-hypothesis"
+    }
+   ]
+  },
+  {
+   "unit": 1,
+   "lesson_id": 55367,
+   "title": "6. Exit Ticket",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-1.exit-ticket.three",
+    "unit-1.exit-ticket.two",
+    "unit-1.exit-ticket.one"
+   ],
+   "bento": "g9cs_u1_l6",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": "Exit Ticket INTRO",
+     "field": null
+    },
+    {
+     "index": 1,
+     "clip": "Exit Ticket Navigate to Exercise",
+     "field": "unit-1.exit-ticket.three"
+    },
+    {
+     "index": 2,
+     "clip": "Exit Ticket Writing the Exit Ticket",
+     "field": "unit-1.exit-ticket.three"
+    }
+   ]
+  },
+  {
+   "unit": 1,
+   "lesson_id": 55369,
+   "title": "7. 100% Standard",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-1.hundred-percent-hypothesis"
+   ],
+   "bento": "g9cs_u1_l7",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": "100% Standard Intro",
+     "field": null
+    },
+    {
+     "index": 1,
+     "clip": "100% Standard Answer",
+     "field": "unit-1.hundred-percent-hypothesis"
+    },
+    {
+     "index": 2,
+     "clip": "100% Standard Answer Fixing SPAG",
+     "field": "unit-1.hundred-percent-hypothesis"
+    },
+    {
+     "index": 3,
+     "clip": "100% Standard Contextual Toolbar",
+     "field": null
+    }
+   ]
+  },
+  {
+   "unit": 1,
+   "lesson_id": 55371,
+   "title": "9. Mastery Pledge",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-1.pledge.name",
+    "unit-1.pledge.implementation-intention",
+    "unit-1.pledge.committed"
+   ],
+   "bento": "g9cs_u1_l9",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": "Mastery Pledge Intro",
+     "field": null
+    },
+    {
+     "index": 1,
+     "clip": "Mastery Pledge Intentions Research",
+     "field": null
+    },
+    {
+     "index": 2,
+     "clip": "Mastery Pledge SIGN THE PLEDGE",
+     "field": "unit-1.pledge.name"
+    },
+    {
+     "index": 3,
+     "clip": "Mastery Pledge MARK THE LESSON COMPLETE",
+     "field": null
+    },
+    {
+     "index": 4,
+     "clip": "Mastery Pledge MASTERY IS THE HERO'S JOURNEY",
+     "field": null
+    },
+    {
+     "index": 5,
+     "clip": "Mastery Pledge THIS PATH WORKS",
+     "field": null
+    },
+    {
+     "index": 6,
+     "clip": "Mastery Pledge THINKING OUTSIDE THE BOX",
+     "field": null
+    },
+    {
+     "index": 7,
+     "clip": "Mastery Pledge COMING UP IN UNIT 2",
+     "field": null
+    }
+   ]
+  },
+  {
+   "unit": 2,
+   "lesson_id": 46790,
+   "title": "1. Retrieval: Equipping for the Quest",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-2.launch.retrieval-percentage",
+    "unit-2.launch.retrieval-metaskills",
+    "unit-2.launch.retrieval-heroes-journey",
+    "unit-2.hook-hypothesis"
+   ],
+   "bento": "g9cs_u2_l1",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": ". Retrieval- Equipping for the Quest INTRO",
+     "field": null
+    },
+    {
+     "index": 1,
+     "clip": "Retrieval- Equipping for the Quest RETRIEVAL QUESTIONS",
+     "field": "unit-2.launch.retrieval-percentage"
+    },
+    {
+     "index": 2,
+     "clip": "Retrieval- Equipping for the Quest NAVIGATE TO THE QUESTIONS-.mp4",
+     "field": "unit-2.launch.retrieval-percentage"
+    },
+    {
+     "index": 3,
+     "clip": "Retrieval- Equipping for the Quest PREPARE TO ANSWER-.mp4",
+     "field": null
+    },
+    {
+     "index": 4,
+     "clip": "Retrieval- Equipping for the Quest ANSWERING THE QUESTIONS Grade 7-9",
+     "field": "unit-2.launch.retrieval-percentage"
+    },
+    {
+     "index": 5,
+     "clip": "Retrieval- Equipping for the Quest ANSWERING THE QUESTIONS 2-8 Meta Skills",
+     "field": "unit-2.launch.retrieval-metaskills"
+    },
+    {
+     "index": 6,
+     "clip": "Retrieval- Equipping for the Quest ANSWERING THE QUESTIONS Why Frame This Course as Hero's Journey",
+     "field": "unit-2.launch.retrieval-heroes-journey"
+    },
+    {
+     "index": 7,
+     "clip": "Retrieval- Equipping for the Quest ANSWERING THE QUESTIONS Map Who Arrives First",
+     "field": "unit-2.hook-hypothesis"
+    },
+    {
+     "index": 8,
+     "clip": "Retrieval- Equipping for the Quest ANSWERING THE QUESTIONS Mark Lesson Complete",
+     "field": null
+    }
+   ]
+  },
+  {
+   "unit": 2,
+   "lesson_id": 41845,
+   "title": "6. Exit Ticket: Equipping for the Quest",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-2.exit-ticket.three",
+    "unit-2.exit-ticket.two",
+    "unit-2.exit-ticket.one",
+    "unit-2.exit-ticket.implementation-intention"
+   ],
+   "bento": "g9cs_u2_l6",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": "Exit Ticket- Equipping for the Quest INTRO",
+     "field": null
+    },
+    {
+     "index": 1,
+     "clip": "Exit Ticket- Equipping for the Quest NAVIGATE TO THE RIGHT LESSON",
+     "field": "unit-2.exit-ticket.three"
+    },
+    {
+     "index": 2,
+     "clip": "Exit Ticket- Equipping for the Quest QUESTION OVERVIEW",
+     "field": "unit-2.exit-ticket.three"
+    },
+    {
+     "index": 3,
+     "clip": "Exit Ticket- Equipping for the Quest ANSWER THE QUESTIONS",
+     "field": "unit-2.exit-ticket.three"
+    },
+    {
+     "index": 4,
+     "clip": "Exit Ticket- Equipping for the Quest ABDULLAH'S ANSWERS",
+     "field": null
+    },
+    {
+     "index": 5,
+     "clip": "Closing Out Unit 2",
+     "field": null
+    }
+   ]
+  },
+  {
+   "unit": 3,
+   "lesson_id": 46614,
+   "title": "1. Retrieval: Code of the Quest",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-3.launch.retrieval-percentage",
+    "unit-3.launch.retrieval-heroes-journey",
+    "unit-3.launch.retrieval-resources",
+    "unit-3.launch.retrieval-link-schedule",
+    "unit-3.hook-hypothesis"
+   ],
+   "bento": "g9cs_u3_l1",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": "Retrieval- Code of the Quest INTRO",
+     "field": null
+    },
+    {
+     "index": 1,
+     "clip": "Retrieval- Code of the Quest RETRIEVAL QUESTIONS",
+     "field": "unit-3.launch.retrieval-percentage"
+    },
+    {
+     "index": 2,
+     "clip": "Retrieval- Code of the Quest NAVIGATE TO THE QUESTIONS",
+     "field": "unit-3.launch.retrieval-percentage"
+    },
+    {
+     "index": 3,
+     "clip": "Retrieval- Code of the Quest ANSWERING THE QUESTIONS Grade 7-9",
+     "field": "unit-3.launch.retrieval-percentage"
+    },
+    {
+     "index": 4,
+     "clip": "Retrieval- Code of the Quest ANSWERING THE QUESTIONS Why a Hero's Journey",
+     "field": "unit-3.launch.retrieval-heroes-journey"
+    },
+    {
+     "index": 5,
+     "clip": "Retrieval- Code of the Quest ANSWERING THE QUESTIONS Programme Resources",
+     "field": "unit-3.launch.retrieval-resources"
+    },
+    {
+     "index": 6,
+     "clip": "Retrieval- Code of the Quest ANSWERING THE QUESTIONS Links and Schedules",
+     "field": "unit-3.launch.retrieval-link-schedule"
+    },
+    {
+     "index": 7,
+     "clip": "Retrieval- Code of the Quest ANSWERING THE QUESTIONS Hypothesis",
+     "field": "unit-3.hook-hypothesis"
+    },
+    {
+     "index": 8,
+     "clip": "Retrieval- Code of the Quest MARK LESSON COMPLETE",
+     "field": null
+    }
+   ]
+  },
+  {
+   "unit": 3,
+   "lesson_id": 46620,
+   "title": "5. Exit Ticket: Code of the Quest",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-3.exit-ticket.three",
+    "unit-3.exit-ticket.two",
+    "unit-3.exit-ticket.one",
+    "unit-3.exit-ticket.implementation-intention"
+   ],
+   "bento": "g9cs_u3_l5",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": "Exit Ticket- Code of the Quest INTRO",
+     "field": null
+    },
+    {
+     "index": 1,
+     "clip": "Exit Ticket- Code of the Quest NAVIGATE TO THE RIGHT LESSON",
+     "field": "unit-3.exit-ticket.three"
+    },
+    {
+     "index": 2,
+     "clip": "Exit Ticket- Code of the Quest QUESTION OVERVIEW",
+     "field": "unit-3.exit-ticket.three"
+    },
+    {
+     "index": 3,
+     "clip": "Exit Ticket- Code of the Quest ANSWER THE QUESTIONS",
+     "field": "unit-3.exit-ticket.three"
+    },
+    {
+     "index": 4,
+     "clip": "Exit Ticket- Code of the Quest ABDULLAH'S ANSWERS Three Rules",
+     "field": "unit-3.exit-ticket.three"
+    },
+    {
+     "index": 5,
+     "clip": "Exit Ticket- Code of the Quest ABDULLAH'S ANSWERS Two Excuses",
+     "field": "unit-3.exit-ticket.two"
+    },
+    {
+     "index": 6,
+     "clip": "Exit Ticket- Code of the Quest ABDULLAH'S ANSWERS One Session",
+     "field": "unit-3.exit-ticket.one"
+    },
+    {
+     "index": 7,
+     "clip": "Exit Ticket- Code of the Quest ABDULLAH'S ANSWERS Implementation Intention",
+     "field": "unit-3.exit-ticket.implementation-intention"
+    },
+    {
+     "index": 8,
+     "clip": "Closing Out Unit 3",
+     "field": null
+    }
+   ]
+  },
+  {
+   "unit": 4,
+   "lesson_id": 46799,
+   "title": "1. Retrieval: Mindset",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-4.launch.retrieval-rare-territory",
+    "unit-4.launch.retrieval-resources",
+    "unit-4.launch.retrieval-pillars",
+    "unit-4.launch.retrieval-no1-mistake",
+    "unit-4.hook-hypothesis"
+   ],
+   "bento": "g9cs_u4_l1",
+   "clip_tags": [
+    {
+     "index": 0,
+     "clip": "Retrieval- Mindset INTRO",
+     "field": null
+    },
+    {
+     "index": 1,
+     "clip": "Retrieval- Mindset RETRIEVAL QUESTIONS",
+     "field": "unit-4.launch.retrieval-rare-territory"
+    },
+    {
+     "index": 2,
+     "clip": "Retrieval- Mindset NAVIGATE TO THE QUESTIONS",
+     "field": "unit-4.launch.retrieval-rare-territory"
+    },
+    {
+     "index": 3,
+     "clip": "Retrieval- Mindset ANSWERING THE QUESTIONS Rare Territory",
+     "field": "unit-4.launch.retrieval-rare-territory"
+    },
+    {
+     "index": 4,
+     "clip": "Retrieval- Mindset ANSWERING THE QUESTIONS Programme Resources",
+     "field": "unit-4.launch.retrieval-resources"
+    },
+    {
+     "index": 5,
+     "clip": "Retrieval- Mindset ANSWERING THE QUESTIONS Three Pillars",
+     "field": "unit-4.launch.retrieval-pillars"
+    },
+    {
+     "index": 6,
+     "clip": "Retrieval- Mindset ANSWERING THE QUESTIONS Number One Mistake",
+     "field": "unit-4.launch.retrieval-no1-mistake"
+    },
+    {
+     "index": 7,
+     "clip": "Retrieval- Mindset ANSWERING THE QUESTIONS Hypothesis",
+     "field": "unit-4.hook-hypothesis"
+    },
+    {
+     "index": 8,
+     "clip": "Retrieval- Mindset MARK LESSON COMPLETE",
+     "field": null
+    }
+   ]
+  },
+  {
+   "unit": 4,
+   "lesson_id": 45637,
+   "title": "4. Mastery",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-4.khan-video-reflection"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 4,
+   "lesson_id": 55385,
+   "title": "7. One Mastery Habit You Will Adapt",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-4.heros-tale"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 4,
+   "lesson_id": 55387,
+   "title": "8. Exit Ticket: Mindset",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-4.exit-ticket.three",
+    "unit-4.exit-ticket.two",
+    "unit-4.exit-ticket.one",
+    "unit-4.exit-ticket.implementation-intention"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 5,
+   "lesson_id": 46840,
+   "title": "1. Retrieval: Science of Mastery",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-5.recall.trifecta",
+    "unit-5.recall.trust-the-process",
+    "unit-5.recall.pillar-of-success",
+    "unit-5.recall.ericsson-improvement"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 5,
+   "lesson_id": 46854,
+   "title": "2. Hypothesis: The Fallacy of Re-reading",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-5.hook-hypothesis"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 5,
+   "lesson_id": 46232,
+   "title": "3. Secrets of Learning",
+   "has_codex_embed_today": true,
+   "fields": [],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 5,
+   "lesson_id": 46868,
+   "title": "6. Defining Learning Techniques",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-5.activity-a.retrieval",
+    "unit-5.activity-a.spaced",
+    "unit-5.activity-a.feynman"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 5,
+   "lesson_id": 55674,
+   "title": "8. How Many Hours Do You Currently Study English?",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-5.activity-b.current-hours",
+    "unit-5.activity-b.current-position",
+    "unit-5.activity-b.target-position",
+    "unit-5.activity-b.gap-closing-habit"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 5,
+   "lesson_id": 55396,
+   "title": "9. Exit Ticket: Science of Learning",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-5.exit-ticket.three",
+    "unit-5.exit-ticket.two",
+    "unit-5.exit-ticket.one",
+    "unit-5.exit-ticket.implementation-intention"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 6,
+   "lesson_id": 41673,
+   "title": "1. Retrieval: The Language of Excellence",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-6.launch.retrieval-cognitive-secrets",
+    "unit-6.launch.retrieval-ericsson",
+    "unit-6.launch.retrieval-trifecta",
+    "unit-6.launch.retrieval-no1-mistake",
+    "unit-6.hook-hypothesis"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 6,
+   "lesson_id": 55400,
+   "title": "5. 100% Commitment: Implementation Intention",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-6.hundred-percent-commitment.task",
+    "unit-6.hundred-percent-commitment.first-step-when"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 6,
+   "lesson_id": 55402,
+   "title": "6. Exit Ticket: Language of Excellence",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-6.exit-ticket.three",
+    "unit-6.exit-ticket.two",
+    "unit-6.exit-ticket.one",
+    "unit-6.exit-ticket.implementation-intention"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 7,
+   "lesson_id": 46222,
+   "title": "1. Retrieval: The Hero’s Arsenal",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-7.launch.retrieval-ao",
+    "unit-7.launch.retrieval-examiner-skills",
+    "unit-7.launch.retrieval-cognitive-secrets",
+    "unit-7.launch.retrieval-trifecta",
+    "unit-7.hook-hypothesis"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 7,
+   "lesson_id": 46220,
+   "title": "4. Important Definitions: In Your Own Words",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-7.definitions.literature",
+    "unit-7.definitions.story",
+    "unit-7.definitions.protagonist"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 7,
+   "lesson_id": 46226,
+   "title": "7. MAD FATHERS’ CROPS: Apply Three Letters",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-7.madfather-application.1",
+    "unit-7.madfather-application.2",
+    "unit-7.madfather-application.3"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 7,
+   "lesson_id": 46228,
+   "title": "13. Your First TTECEA Paragraph",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-7.ttecea-application.s1.label",
+    "unit-7.ttecea-application.s2.label",
+    "unit-7.ttecea-application.s3.label",
+    "unit-7.ttecea-application.s4.label",
+    "unit-7.ttecea-application.s5.label",
+    "unit-7.ttecea-application.s6.label",
+    "unit-7.ttecea-application.s7.label",
+    "unit-7.ttecea-application.s8.label"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 7,
+   "lesson_id": 55823,
+   "title": "14. Essay Structure Outline",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-7.essay-structure.s1.label",
+    "unit-7.essay-structure.s2.label",
+    "unit-7.essay-structure.s3.label",
+    "unit-7.essay-structure.s4.label",
+    "unit-7.essay-structure.s5.label",
+    "unit-7.essay-structure.s6.label",
+    "unit-7.essay-structure.s7.label",
+    "unit-7.essay-structure.s8.label",
+    "unit-7.essay-structure.s9.label",
+    "unit-7.essay-structure.s10.label",
+    "unit-7.essay-structure.s11.label",
+    "unit-7.essay-structure.s12.label",
+    "unit-7.essay-structure.s13.label",
+    "unit-7.essay-structure.s14.label"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 7,
+   "lesson_id": 55618,
+   "title": "16. ACTIVITY: IUMVCC — Persuasive Structure (Persuasive Writing)",
+   "has_codex_embed_today": false,
+   "fields": [
+    "unit-7.iumvcc-draft.s1.label",
+    "unit-7.iumvcc-draft.s2.label",
+    "unit-7.iumvcc-draft.s3.label",
+    "unit-7.iumvcc-draft.s4.label",
+    "unit-7.iumvcc-draft.s5.label",
+    "unit-7.iumvcc-draft.s6.label"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 7,
+   "lesson_id": 55616,
+   "title": "18. ACTIVITY: Story Spine — Cinderella",
+   "has_codex_embed_today": false,
+   "fields": [
+    "unit-7.story-spine-draft.s1.label",
+    "unit-7.story-spine-draft.s2.label",
+    "unit-7.story-spine-draft.s3.label",
+    "unit-7.story-spine-draft.s4.label",
+    "unit-7.story-spine-draft.s5.label",
+    "unit-7.story-spine-draft.s6.label"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 7,
+   "lesson_id": 55412,
+   "title": "19. Exit Ticket: The Hero’s Arsenal",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-7.exit-ticket.three",
+    "unit-7.exit-ticket.two",
+    "unit-7.exit-ticket.one",
+    "unit-7.exit-ticket.implementation-intention"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 8,
+   "lesson_id": 55415,
+   "title": "1. Retrieval: Crossing the Threshold",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-8.launch.retrieval-u1",
+    "unit-8.launch.retrieval-u2",
+    "unit-8.launch.retrieval-u3",
+    "unit-8.launch.retrieval-u4",
+    "unit-8.launch.retrieval-u5",
+    "unit-8.launch.retrieval-u6",
+    "unit-8.launch.retrieval-u7",
+    "unit-8.launch.retrieval-four-traps"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 8,
+   "lesson_id": 55850,
+   "title": "2. Hypothesis: Pledge",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-8.hook-hypothesis"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 8,
+   "lesson_id": 55417,
+   "title": "5. Four Traps: Reflection",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-8.traps-reflection"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 8,
+   "lesson_id": 55862,
+   "title": "7. The Measurable Promise",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-8.measurable-promise.in-own-words",
+    "unit-8.measurable-promise.first-two-pieces"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 8,
+   "lesson_id": 55419,
+   "title": "8. First Quest Log Entry",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-8.first-quest-log.skill",
+    "unit-8.first-quest-log.measure",
+    "unit-8.first-quest-log.weekly-action"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 8,
+   "lesson_id": 55421,
+   "title": "11. Exit Ticket: Crossing the Threshold",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-8.exit-ticket.three",
+    "unit-8.exit-ticket.two",
+    "unit-8.exit-ticket.one",
+    "unit-8.exit-ticket.first-piece-date",
+    "unit-8.exit-ticket.implementation-intention"
+   ],
+   "bento": null,
+   "clip_tags": []
+  },
+  {
+   "unit": 8,
+   "lesson_id": 55423,
+   "title": "14. Pledge",
+   "has_codex_embed_today": true,
+   "fields": [
+    "unit-8.pledge-reaffirm"
+   ],
+   "bento": null,
+   "clip_tags": []
+  }
+ ]
+}
