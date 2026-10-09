@@ -38103,6 +38103,10 @@
         const landKey = _codexScopeCache.key;
         if (_codexLanded !== landKey && codexFirstOwned(sections, model)) {
             _codexLanded = landKey;
+            // v7.20.788 (#836): a Focus SPA move keeps this script alive, so typing or scrolling in the lesson the student
+            // just LEFT would still count as "busy" and hold the landing back (measured: 1.5 s land skipped, 4 s one landed).
+            // Only what they do in THIS lesson counts — a full page load starts from zero too.
+            _codexLastKeyAt = 0; _codexLastUserScrollAt = 0;
             // Land after the saved answers have loaded (a server resume replaces the document ~1s after the first
             // paint), and check once more later in case a slow load reset the scroll. Never once the student moved.
             const land = () => {

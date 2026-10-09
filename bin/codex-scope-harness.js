@@ -183,6 +183,8 @@ ok(/if \(_refused\) _codexRefusalToast\(/.test(JS), 'wiring: typing into a locke
 ok(/const answered = _codexAnsweredSet\(editor\);\s*const css = codexScopeCss\(sections, model, answered\);/.test(JS) && /showToast\(codexRefusalText\(_codexModel\(\), fid\), 4000, true\);/.test(JS),
     'wiring #832: the stylesheet is fed the answered fields, and the refusal toast uses codexRefusalText');
 ok(/_renderCodexBars\(model, answered\);/.test(JS) && /_renderCodexBars\(null, null\); return; \}/.test(JS), 'wiring #833: every scope pass fills the bars, and clears them when the Codex is not scoped');
+ok(/_codexLanded = landKey;\s*\n(?:\s*\/\/[^\n]*\n)*\s*_codexLastKeyAt = 0; _codexLastUserScrollAt = 0;/.test(JS),
+    'wiring #836: a new lesson\'s landing starts from zero — typing or scrolling in the lesson just left (alive across a Focus SPA move) never holds it back');
 ok(/const want = _codexWantedField\(\);/.test(JS) && /if \(target && first === want\) _codexFlash\(first\);/.test(JS), 'wiring #833: arriving by the link lands on that answer and highlights it');
 const SB = fs.readFileSync(path.join(ROOT, 'frontend/wml-section-block.js'), 'utf8');
 ok(/codexBar\.className = 'swml-codex-bar';/.test(SB) && /if \(codexBar && \(codexBar === mutation\.target \|\| codexBar\.contains\(mutation\.target\)\)\) return true;/.test(SB),
