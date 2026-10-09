@@ -15905,6 +15905,48 @@
         }
     }
 
+    // ⭐ v7.20.775 (#815f, plan §2e.1): a weekend lesson-3 document saved BEFORE the exam-scene choice existed has no
+    // "Your Exam Scene" row, so the choice would have nowhere to go. Called by the lesson-3 walk at filing time (never on
+    // load). The section is cut from the ONE builder — the lesson-3 template in weekend words — never a second copy of its
+    // HTML, and goes in straight after the Chosen Logline section. Additive only: nothing the student wrote is touched.
+    function _cwEnsureSceneFocusRow() {
+        const editor = canvasEditor;
+        const FID = WML.CW_SCENE_FOCUS_FID;
+        try {
+            if (!editor || !editor.state || !editor.commands || !FID) return false;
+            if (state.reviewMode || !(WML.cwInUnit && WML.cwInUnit())) return false;
+            let has = false, isStep3 = false;
+            editor.state.doc.descendants(function (n) {
+                const f = n.attrs && n.attrs.fieldId;
+                if (f === FID) has = true;
+                if (f === 'cw-step-3-chosen') isStep3 = true;
+                return !has;
+            });
+            if (has) return true;
+            if (!isStep3) return false;
+            const tpl = document.createElement('div');
+            tpl.innerHTML = _cwUnitDocText(_cwDocTemplateInner({ step: 3 }));
+            const freshRow = tpl.querySelector('[data-field-id="' + FID + '"]');
+            const freshSec = freshRow ? freshRow.closest('.swml-section-block') : null;
+            const freshDiv = freshSec ? freshSec.previousElementSibling : null;
+            if (!freshSec) { console.warn('[WML cw3] exam-scene row heal ABORTED — the lesson-3 builder produced no row. Doc untouched.'); return false; }
+            const box = document.createElement('div');
+            box.innerHTML = editor.getHTML();
+            const chosen = box.querySelector('[data-field-id="cw-step-3-chosen"]');
+            const sec = chosen ? (chosen.closest('[data-section-type]') || chosen.parentElement) : null;
+            if (!sec) return false;
+            sec.insertAdjacentHTML('afterend', (freshDiv && freshDiv.getAttribute('data-section-type') === 'divider' ? freshDiv.outerHTML : '') + freshSec.outerHTML);
+            _migrationActive = true;
+            try { editor.commands.setContent(box.innerHTML, false); }
+            finally { _migrationActive = false; }
+            console.log('[WML cw3] EXAM-SCENE ROW HEAL: added ' + FID + ' to a lesson-3 document saved before it existed.');
+            return true;
+        } catch (e) {
+            console.warn('[WML cw3] exam-scene row heal failed (doc untouched)', e && e.message);
+            return false;
+        }
+    }
+
     function _healCw9SceneOverviewRow(editor) {
         try {
             if (!editor || !editor.state || !editor.commands) return;
@@ -25680,12 +25722,186 @@
                         // "Logline Test 2after dying in a car accident…" as his chosen logline.
                         if (_writeOutlineRowField(CHOSEN_FID, full, { replace: true }) && typeof saveCanvasContent === 'function') saveCanvasContent();
                     } catch (e) { console.warn('WML CW3: chosen-logline write failed (non-fatal)', e && e.message); }
-                    aiBubble((ticked ? 'Ticked it in your document and filed it' : 'Filed it')
+                    const filedLine = (ticked ? 'Ticked it in your document and filed it' : 'Filed it')
                         + ' into your **Chosen Logline** box \u2014 that is the sentence Step 4 will build from.'
                         + '\n\nFine-tune the wording there whenever you like; it is your sentence \u2014 and you can '
-                        + 'still change which one is ticked in the document yourself at any time.'
-                        + cwEndpointLine());   // v7.20.337: endpoint after the choice
+                        + 'still change which one is ticked in the document yourself at any time.';
+                    // v7.20.775 (#815f): in the weekend story the lesson does not end here — the exam-scene choice comes next,
+                    // and the endpoint line moves to after it. The full course is unchanged.
+                    if (focusOn()) { serveFocusAsk({ lead: filedLine }); resetSend(); return; }
+                    aiBubble(filedLine + cwEndpointLine());   // v7.20.337: endpoint after the choice
                     resetSend();
+            }
+
+            // ═══ v7.20.775 — WHERE IS THE EXAM SCENE? (weekend lesson 3 only; FIXLIST #813d/#815/#815f, plan §2e.1) ═══
+            // Neil: the best stories "focused on one moment in the story rather than a complete story from start to finish"
+            // (#813d), and the student chooses it "Before the Story Spine" (#815f). ONE screen of alternatives — only one
+            // applies, so a single choice (§4c.8), not a serial walk. Each chip shows the student's OWN words from the
+            // component row that part grows from. The answer is a TAP, so this costs no API call; Sophia is the last rung
+            // (§4c.9). Filed by code into the LOCKED row WML.CW_SCENE_FOCUS_FID — the one store lessons 4 and 5 read.
+            // Every stored turn here is either static teaching or a past event; the CHOICE itself is never restated in a
+            // stored turn (§4c.7 fossil law) — the document row carries it, and the chips are DOM-only.
+            function focusOn() { return !!(WML.cwInUnit && WML.cwInUnit()); }
+            function focusPending() { return focusOn() && !!rowText(CHOSEN_FID) && !rowText(WML.CW_SCENE_FOCUS_FID); }
+            const FOCUS = {
+                lead2: 'One last choice before this lesson ends: **which part of your story your exam scene will tell.**',
+                why: 'In the exam you write **one scene**, not your whole story. Here is what the examiners who marked AQA’s GCSE '
+                    + 'English Language exam in June 2023 said about the strongest stories:\n\n'
+                    + '> “These responses managed the timed conditions by focusing upon a moment in time, rather than trying to include journeys and other events that led to the main focus.”\n\n'
+                    + '> “Students who did not aim to complete the whole narrative, but rather took the response as a chapter or a dramatic moment in a story were also able to manage the time more successfully.”\n\n'
+                    + 'In plain words: the best stories chose **one moment** and told it well, instead of racing through everything that led up to it. '
+                    + 'A scene is a mini story, so that one moment still has its own beginning, middle and end.',
+                ask: '**A strong choice:**\n\n'
+                    + '- is **one moment**, not the journey to it\n'
+                    + '- has something **at stake** for your protagonist\n'
+                    + '- is a moment you can **picture clearly**, like a scene in a film\n\n'
+                    + 'For example, *A Christmas Carol* as one exam scene could be **the night Marley’s ghost walks through Scrooge’s door**. '
+                    + 'We still meet Scrooge as he is (alone and mean, eating gruel by a tiny fire), something is at stake (the chains waiting for him), '
+                    + 'and the scene ends with a warning that changes everything.\n\n'
+                    + '**Which part of your story will your exam scene tell?** Tap one. You can change it later.',
+                more: '**More examples:**\n\n'
+                    + '- *Macbeth* as one exam scene: **the night Macbeth kills King Duncan**. That is going after what he wants. '
+                    + 'Everything before it (the witches, his wife’s pressure) is felt inside that one night.\n'
+                    + '- *Romeo and Juliet* as one exam scene: **the tomb, at the end**. That is the ending, when everything is decided. '
+                    + 'One place, one night, and the whole story’s meaning arrives in it.\n\n'
+                    + '**Which part of your story will your exam scene tell?**',
+                done: 'Filed into your **Your Exam Scene** box. The next lesson marks it in your Story Spine, and lesson 5 starts from it. '
+                    + 'To change it, use the button below, or come back to this lesson at any time.',
+                cant: 'I couldn’t answer that just now.',
+            };
+            const FOCUS_CHANGE = 'Change my exam scene';
+            let focusMoreSpent = false;
+            // These turns are the walk's own: the criteria bullets are teaching, not a menu, so a replay must not redraw
+            // them as buttons (the v7.20.740 owner registry). Only the exam-scene turns are claimed; the rest of lesson 3
+            // replays exactly as before.
+            _CW_TURN_OWNERS.cw_step_3 = function (text) {
+                const t = String(text || '');
+                return [FOCUS.why, FOCUS.ask, FOCUS.more].some(function (s) { return t.indexOf(s.slice(0, 60)) === 0; });
+            };
+            function focusShort(t) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > 70 ? t.slice(0, 68).replace(/\s+\S*$/, '') + '…' : t; }
+            function focusOptions() {
+                const opts = [], partByLabel = {};
+                (WML.CW_SCENE_FOCUS_PARTS || []).forEach(function (p) {
+                    const words = rowText(p.fid);
+                    const label = p.label + (words ? ': “' + focusShort(words) + '”' : '');
+                    opts.push(label); partByLabel[label] = p;
+                });
+                return { opts: opts, partByLabel: partByLabel };
+            }
+            function attachFocusChips() {
+                const f = focusOptions();
+                const ok = chipBar(f.opts, onFocusPick(f.partByLabel));
+                if (ok) appendFocusHelp();
+                return ok;
+            }
+            // Help rungs ride a SEPARATE bar under the choice (cheapest first; Sophia last and quieter, §4c.9).
+            function appendFocusHelp() {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc || bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
+                if (!focusMoreSpent) {
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: 'More examples', icon: WML.icon('examples', 15),
+                        onClick: function () { serveFocusMore(); },
+                    }));
+                }
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn', textContent: 'Story Components', icon: WML.icon('components', 15),
+                    onClick: function () { try { var t = document.querySelector('.swml-sc-trigger'); if (t && !t.classList.contains('is-active')) t.click(); } catch (e) {} },
+                }));
+                bar.appendChild(el('button', {
+                    className: 'swml-quick-btn swml-cw-help-last', textContent: 'Still stuck — ask Sophia', icon: WML.phoenixIconHTML(16),
+                    onClick: function () { askSophiaFocus(); },
+                }));
+                bc.appendChild(bar);
+            }
+            // opts.lead = the chosen-logline filing line (first serve); opts.again = "Change my exam scene" (the ask only).
+            function serveFocusAsk(opts) {
+                opts = opts || {};
+                // ACTIVE, unlike the logline picker: a student who TYPES here is answered by the walk (pointed back at the
+                // buttons), never handed to the model as if it were a free chat turn (§4d).
+                choose = { stage: 'focus' }; active = true; persist();
+                if (opts.again) { aiBubble(FOCUS.ask); attachFocusChips(); resetSend(); return; }
+                serveCwChunks([(opts.lead ? opts.lead + '\n\n' : '') + FOCUS.lead2, FOCUS.why, FOCUS.ask],
+                    { emit: aiBubble, onDone: function () { attachFocusChips(); resetSend(); } });
+                resetSend();
+            }
+            // Resume / stray tap: re-attach to the ask on screen; draw it (never store it twice) only if that fails (§4d).
+            function reserveFocusAsk() {
+                if (attachFocusChips()) { resetSend(); return; }
+                _cwReplay(function () { aiBubble(FOCUS.ask); });
+                attachFocusChips();
+                resetSend();
+            }
+            function serveFocusMore() {
+                if (focusMoreSpent) return;
+                focusMoreSpent = true;
+                aiBubble(FOCUS.more);
+                attachFocusChips();
+                resetSend();
+            }
+            function onFocusPick(partByLabel) {
+                return function (pick) {
+                    userTurn(pick);
+                    const part = partByLabel[pick];
+                    if (!part) { reserveFocusAsk(); return; }   // never a dead end (§4d)
+                    fileSceneFocus(part);
+                };
+            }
+            function fileSceneFocus(part) {
+                const text = WML.cwSceneFocusText(part, rowText(part.fid));
+                let wrote = false;
+                try {
+                    _cwEnsureSceneFocusRow();
+                    wrote = _writeOutlineRowField(WML.CW_SCENE_FOCUS_FID, text, { replace: true });
+                    // Already holding exactly this choice (a re-tap) is success too, not a failure.
+                    if (!wrote && rowText(WML.CW_SCENE_FOCUS_FID) === text) wrote = true;
+                    if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+                } catch (e) { console.warn('WML CW3: exam-scene write failed (non-fatal)', e && e.message); }
+                if (!wrote) {
+                    // §4d: refused with a way forward — say so, keep the choice on screen.
+                    console.warn('WML CW3: exam-scene choice NOT filed — no row ' + WML.CW_SCENE_FOCUS_FID + ' in this document.');
+                    _cwReplay(function () { aiBubble('I couldn’t save that choice into your document just now. Tap your choice again, or refresh the page and try once more.'); });
+                    attachFocusChips();
+                    resetSend();
+                    return;
+                }
+                choose = null; active = false; persist();
+                aiBubble(FOCUS.done + cwEndpointLine());
+                attachFocusChange();
+                resetSend();
+            }
+            function attachFocusChange() {
+                return chipBar([FOCUS_CHANGE], function (pick) { userTurn(pick); serveFocusAsk({ again: true }); });
+            }
+            // Rung 3 — an API call, only on an explicit tap. Sophia reads their four parts and helps them DECIDE; the tap
+            // stays theirs.
+            function askSophiaFocus() {
+                if (pending) return;
+                userTurn('Still stuck — which part of my story would make the best exam scene?');
+                const parts = (WML.CW_SCENE_FOCUS_PARTS || []).map(function (p) { return '- ' + p.label + ': ' + (rowText(p.fid) || '(not written)'); }).join('\n');
+                const ctx = '[THE STUDENT IS AT THE END OF WEEKEND LESSON 3. They are choosing which ONE part of their story their exam scene will tell '
+                    + '(about ' + WML.cwWordTarget('exam') + ' words, one scene, not the whole story). In two or three sentences, say which of their four parts '
+                    + 'below looks strongest for ONE vivid scene and why: one moment, something at stake, easy to picture. Then hand the choice back: they '
+                    + 'tap one of the four parts under your message. Never choose for them, never write their scene, never give a mark, plain words a '
+                    + 'twelve-year-old understands, British English, and do NOT emit any marker.]'
+                    + '\n\nTHEIR CHOSEN LOGLINE: ' + (rowText(CHOSEN_FID) || '(not recorded)')
+                    + '\n\nTHEIR FOUR PARTS:\n' + parts;
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                pending = true;
+                armWalkResume('cw3-focus-help', function (reply, meta) {
+                    pending = false;
+                    if (!reply || (meta && meta.timedOut)) {
+                        console.warn('WML CW3: ask-Sophia (exam scene) failed/timed out — degraded honest message served.');
+                        aiBubble(FOCUS.cant + ' Try **More examples**, or look at your **Story Components**, then tap the part you want.');
+                    }
+                    setTimeout(function () { try { reserveFocusAsk(); } catch (err) {} }, 400);
+                    resetSend();
+                }, { timeoutMs: 60000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'Which part of my story would make the best exam scene?';
+                sendCanvasMessage();
             }
 
             function finish() {
@@ -25713,6 +25929,14 @@
                 const clean = (msg || '').trim();
                 if (!clean) { resetSend(); return; }
                 userTurn(clean);
+
+                // v7.20.775: on the exam-scene choice the answer is a TAP. Typed text is not filed and not sent; the walk
+                // points back at the buttons, which it re-attaches under that line (§4d: the screen responds).
+                if (choose && choose.stage === 'focus') {
+                    _cwReplay(function () { aiBubble('Tap the part of your story you want your exam scene to tell. The buttons are just below.'); });
+                    reserveFocusAsk();
+                    return;
+                }
 
                 // v7.20.327: WHERE this answer goes comes from the ask that requested it. No ask
                 // served → nothing is written (the defect that filed "Let’s go" into a Protagonist
@@ -25920,6 +26144,22 @@
                         setTimeout(function () { try { serveLoglinePicker(); } catch (e) {} }, 500);
                         return false;
                     }
+                    // v7.20.775 (#815f): a weekend lesson 3 whose logline is chosen but whose exam scene is not — the
+                    // ask replays from history, its chips are DOM-only, so re-attach them (drawn fresh only if that fails).
+                    // Derived from the DOCUMENT, not the sidecar, so a student who chose before this shipped is asked too.
+                    if (focusPending()) {
+                        choose = { stage: 'focus' }; active = true;
+                        console.log('WML CW3: resumed on the exam-scene choice (weekend lesson 3)');
+                        setTimeout(function () { try { reserveFocusAsk(); } catch (e) {} }, 500);
+                        return true;
+                    }
+                    // …and once it IS chosen, the way to change it comes back with the page (the done line promises it).
+                    if (focusOn() && rowText(CHOSEN_FID) && rowText(WML.CW_SCENE_FOCUS_FID)) {
+                        if (choose && choose.stage === 'focus') { choose = null; persist(); }
+                        active = false;
+                        setTimeout(function () { try { attachFocusChange(); } catch (e) {} }, 500);
+                        return false;
+                    }
                     active = idx < STEPS.length;
                     if (active) {
                         // v7.20.327: re-arm the ask the student is looking at. The sidecar's slot
@@ -25945,6 +26185,7 @@
                 // or a stale tap there produces no response at all (§4d).
                 if (!pending && choose && choose.stage === 'decide' && choose.fid) { serveChoiceDecision(choose.fid); return true; }
                 if (!pending && choose && choose.stage === 'picker') { serveLoglinePicker(); return true; }
+                if (!pending && choose && choose.stage === 'focus') { reserveFocusAsk(); return true; }   // v7.20.775
                 if (!active || pending) return false;
                 // v7.20.333: mid self-assessment, "let's carry on" means the surface they are
                 // actually on — the tick list or the add-a-line ask, not the question again.
@@ -26340,10 +26581,67 @@
                 if (n >= 0 && n < BEATS.length) return 'Beat ' + (n + 1) + ' —';
                 return 'Step 4 — Your Brief Outline';
             }
+            // ⭐ v7.20.775 (#815f, plan §2e.1) — THE EXAM SCENE, MARKED. The beat the student chose at the end of lesson 3,
+            // read through the ONE parser from the lesson-3 row (WML.CW_SCENE_FOCUS_FID — rowText falls back to the
+            // lesson-3 document for any cw-step-3-* row). 0 = no choice (the full course, or a weekend story chosen before
+            // this shipped): nothing is marked and lesson 4 is exactly as before.
+            function examBeat() {
+                return (WML.cwInUnit && WML.cwInUnit()) ? WML.cwSceneFocusBeat(rowText(WML.CW_SCENE_FOCUS_FID)) : 0;
+            }
+            const EXAM_LINE = '⭐ **Your exam scene.** You chose this part of your story for your exam, so make this beat the most '
+                + 'specific one you write: one moment, on one day, that a reader can picture.';
+            // In the CHAT: DOM-only, under the beat's progress chip, re-attached with the ask's buttons — never stored, because
+            // the choice can change after this turn is saved (§4c.7). The ask still ends on its question (§4c.4).
+            function appendExamSceneCallout(bc, beatIdx) {
+                if (!bc || bc.querySelector('.swml-cw-exam-scene')) return;
+                const n = examBeat();
+                if (!n || beatIdx !== n - 1) return;
+                const note = el('div', { className: 'swml-cw-exam-scene' });
+                note.innerHTML = formatAI(EXAM_LINE);
+                const chip = bc.querySelector('.swml-beat');
+                if (chip && chip.parentNode) chip.parentNode.insertBefore(note, chip.nextSibling);
+                else bc.insertBefore(note, bc.firstChild);
+            }
+            // In the DOCUMENT: the chosen beat's row label says so, set through ONE ProseMirror transaction (never a raw DOM
+            // write — the NodeView law) and only when it differs, so a reload with the same choice changes nothing. A changed
+            // choice moves the mark; no choice removes it.
+            const EXAM_SUFFIX = ' · ⭐ your exam scene';
+            function markExamSceneRow() {
+                try {
+                    if (!canvasEditor || !canvasEditor.view || state.reviewMode) return;
+                    const n = examBeat();
+                    let tr = canvasEditor.state.tr, changed = 0;
+                    canvasEditor.state.doc.descendants(function (node, pos) {
+                        if (!node.type || node.type.name !== 'outlineRow') return true;
+                        const m = /^cw-step-4-beat([1-6])$/.exec((node.attrs && node.attrs.fieldId) || '');
+                        if (!m) return false;
+                        let crit;
+                        try { crit = JSON.parse(node.attrs.criteria || '{}'); } catch (e) { return false; }
+                        const base = String(crit.label || '').split(EXAM_SUFFIX).join('');
+                        const want = base + (parseInt(m[1], 10) === n ? EXAM_SUFFIX : '');
+                        if (base && want !== crit.label) {
+                            tr = tr.setNodeMarkup(pos, undefined, Object.assign({}, node.attrs, { criteria: JSON.stringify(Object.assign({}, crit, { label: want })) }));
+                            changed++;
+                        }
+                        return false;
+                    });
+                    if (changed) {
+                        canvasEditor.view.dispatch(tr);
+                        console.log('WML CW4: exam-scene mark ' + (n ? 'on Beat ' + n : 'removed') + ' (' + changed + ' row label' + (changed > 1 ? 's' : '') + ')');
+                    }
+                } catch (e) { console.warn('WML CW4: exam-scene mark failed (non-fatal)', e && e.message); }
+            }
             function appendSpineButtons() {
                 const bubble = chatMessages.lastElementChild;
                 const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
                 if (!bc) return;
+                // v7.20.775: the exam-scene callout rides the write-ask only, after the lesson-3 values are warm (they load
+                // asynchronously on a resume) — the bubble is captured now, so a later bubble can never receive it.
+                if (phase === 'beat') {
+                    const atIdx = idx;
+                    _cwLoadStep3Values(state.cwProjectId).then(function () { appendExamSceneCallout(bc, atIdx); })
+                        .catch(function (e) { console.warn('WML CW4: exam-scene note failed (non-fatal)', e && e.message); });
+                }
                 // v7.20.331: guarded on its OWN kind — different kinds coexist on one bubble.
                 if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.help)) return;
                 const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.help + ' swml-cw-help' });
@@ -26754,7 +27052,7 @@
                 // Step-3 doc artifact — load it BEFORE the first serve so the echo is populated
                 // rather than falling back to "(nothing recorded in Step 3)". Resolves instantly
                 // once cached; never blocks the walk (a failed load just serves the old fallback).
-                _cwLoadStep3Values(state.cwProjectId).then(function () { serveCurrent(); });
+                _cwLoadStep3Values(state.cwProjectId).then(function () { markExamSceneRow(); serveCurrent(); });
             }
 
             function onReply(reply) {
@@ -26780,7 +27078,9 @@
                     }
                     if (!raw) console.warn('WML CW4: sidecar missing — resuming from the document.');
                     // v7.20.291: warm the Step-3 components for the re-served beat's echo.
-                    _cwLoadStep3Values(state.cwProjectId);
+                    // v7.20.775: …and mark the exam-scene beat in the document once they are in.
+                    _cwLoadStep3Values(state.cwProjectId).then(function () { markExamSceneRow(); })
+                        .catch(function (e) { console.warn('WML CW4: lesson-3 values did not load — no exam-scene mark (non-fatal)', e && e.message); });
                     draft = (typeof d.draft === 'string') ? d.draft : '';   // v7.20.283: mid-push answers survive reload
                     mainNeed = (typeof d.need === 'string') ? d.need : '';  // v7.20.285: chip2 resume needs the main pick
                     cohBeat = (typeof d.cohBeat === 'number') ? d.cohBeat : -1;  // v7.20.294
@@ -31559,6 +31859,9 @@
             // v7.20.743: the weekend lesson's dramatic situation (§2a) — cached from the saved scene state.
             let situation = null;
             let poltiPrepped = false;
+            // v7.20.775 (#815f, plan §2e.1): the Story Spine beat the student chose for the exam scene at the end of lesson
+            // 3 (read in prepPolti through WML.cwSceneFocusBeat). 0 = no choice → the situation decides the beat, as before.
+            let focusBeat = 0;
 
             /* ⭐⭐ v7.20.511 (Neil, live on staging): "it's the three purple chips that actually
                confused me. They shouldn't actually be there."
@@ -31819,7 +32122,19 @@
                     const st = await loadState(pid);
                     situation = (st && st.situation && _poltiById(Number(st.situation.id))) ? st.situation : null;
                 } catch (e) { situation = null; }
+                // v7.20.775: the exam-scene beat from lesson 3's document (the ONE parser). Only a beat the student has
+                // actually written can be pre-selected; anything else is "no choice" and today's flow runs (§4d).
+                focusBeat = 0;
+                try {
+                    const lmap = await _cwLoadDocValues(pid, 'logline');
+                    const fb = WML.cwSceneFocusBeat(lmap && lmap[WML.CW_SCENE_FOCUS_FID]);
+                    if (fb && beatsWritten().indexOf(fb) !== -1) focusBeat = fb;
+                } catch (e) { focusBeat = 0; }
                 poltiPrepped = true;   // set even on failure — prepPolti → ensureChip must never loop
+            }
+            // v7.20.775: with an exam-scene choice, every suggested or browsed situation happens IN that beat.
+            function focusPicks(picks) {
+                return focusBeat ? (picks || []).map(function (p) { return Object.assign({}, p, { beat: focusBeat }); }) : (picks || []);
             }
             // Choosing a situation also chooses where the scene starts: the beat is written into the
             // SAME saved selection the picker restores from, so the picker opens on it with no new
@@ -31850,7 +32165,7 @@
                 for (let i = h.length - 1; i >= 0; i--) {
                     const m = h[i];
                     if (m && m.role === 'assistant' && String(m.content || '').indexOf('POLTI') !== -1) {
-                        return _poltiParsePicks(m.content, beatsWritten());
+                        return focusPicks(_poltiParsePicks(m.content, beatsWritten()));
                     }
                 }
                 return [];
@@ -31867,11 +32182,21 @@
                 const bank = CW_POLTI_33.map(function (p) {
                     return p.id + '. ' + p.name + ': ' + p.what + ' Roles: ' + p.roles.join('; ') + '.';
                 }).join('\n');
+                // v7.20.775 (#815f): the student already chose the moment their exam scene tells (lesson 3), so the three
+                // situations are found IN that beat; with no choice the whole spine is read, as before.
+                const fbStage = focusBeat ? w.stages.filter(function (s) { return s.si + 1 === focusBeat; })[0] : null;
+                const findWhat = fbStage
+                    ? 'list that fit THE MOMENT THEY CHOSE FOR THEIR EXAM SCENE most strongly: Beat ' + focusBeat + ' of their spine ("'
+                        + String(fbStage.beats[0].text || '').split('"').join("'") + '"). Their exam scene tells that one moment, so all three '
+                        + 'must be conflicts that happen in it. For each one write a short paragraph: its name in bold, exactly as our list '
+                        + 'spells it, then one or two sentences saying how it plays out in Beat ' + focusBeat + ' and who plays each role, '
+                        + 'using their own characters. Plain words '
+                    : 'list that this spine already contains most strongly. For each one write a short paragraph: its name '
+                        + 'in bold, exactly as our list spells it, then one or two sentences saying where it happens in THEIR '
+                        + 'spine (name the beat by its number) and who plays each role, using their own characters. Plain words ';
                 const ctx = '[DRAMATIC SITUATION FINDER — the weekend story, lesson 5. Below are the student’s Story Spine '
                     + '(the beats they wrote) and OUR list of 33 dramatic situations. Choose the THREE situations from OUR '
-                    + 'list that this spine already contains most strongly. For each one write a short paragraph: its name '
-                    + 'in bold, exactly as our list spells it, then one or two sentences saying where it happens in THEIR '
-                    + 'spine (name the beat by its number) and who plays each role, using their own characters. Plain words '
+                    + findWhat
                     + 'a twelve-year-old understands, British English. Never use a numbered or lettered list, never ask '
                     + 'them to type anything (they tap their choice), and never mention a situation that is not on OUR '
                     + 'list. END YOUR REPLY WITH EXACTLY ONE MARKER ON ITS OWN LINE: '
@@ -31882,7 +32207,7 @@
                     + '\n\nOUR 33 DRAMATIC SITUATIONS:\n' + bank;
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 armWalkResume('cw9-polti-picks', function (reply, meta) {
-                    const picks = (!reply || (meta && meta.timedOut)) ? [] : _poltiParsePicks(reply, beatsWritten());
+                    const picks = (!reply || (meta && meta.timedOut)) ? [] : focusPicks(_poltiParsePicks(reply, beatsWritten()));
                     if (!picks.length) {
                         // FAIL-OPEN (§4d): an unusable or missing marker still leaves a way forward.
                         noteBubble('I couldn’t match your Story Spine to the list just now, so here are all 33 instead.');
@@ -31922,6 +32247,8 @@
             function askBeat(s) {
                 const st = (world && world.stages) || [];
                 if (!st.length) { noteBubble(U().noBeatsOpen); poltiPrepped = false; return ensureChip(); }
+                // v7.20.775: the beat is already chosen (lesson 3's exam scene) — never ask it twice.
+                if (focusBeat) return choose({ id: s.id, beat: focusBeat, roles: [] }, s, 'browsed');
                 noteBubble('Which beat of your Story Spine does **' + s.name + '** happen in? That beat is where your scene will be.');
                 return chipBar(st.map(function (g) {
                     const t = String(g.beats[0].text || '');
@@ -31938,7 +32265,9 @@
                 const sit = { id: s.id, beat: p.beat, roles: (p.roles && p.roles.length) ? p.roles : s.roles.slice(), how: how };
                 saveSituation(pid, sit);
                 // Present-state (the student can change it) → drawn, never stored (§4c.7).
-                noteBubble(situationLine(sit) + '\n\nYour scene starts at **Beat ' + sit.beat + '** of your Story Spine, and I have selected it for you. If the situation carries on into the next beat, add that one too. Then shape the scene into the 7 elements.');
+                noteBubble(situationLine(sit) + '\n\n' + (focusBeat
+                    ? 'Your scene is **Beat ' + sit.beat + '** of your Story Spine, the part you chose for your exam scene in lesson 3, and I have selected it for you. One beat is the normal choice. Add the next beat only if the moment carries straight on into it. Then shape the scene into the 7 elements.'
+                    : 'Your scene starts at **Beat ' + sit.beat + '** of your Story Spine, and I have selected it for you. If the situation carries on into the next beat, add that one too. Then shape the scene into the 7 elements.'));
                 return chipBar([
                     { svg: SCENE_ICON, label: 'Choose my scene', go: open },
                     { label: 'Change my dramatic situation', go: changeSituation },
@@ -32521,7 +32850,7 @@
                 atStart: function () { return introProgress() === -1; },
                 start: start,
                 forceStart: function () { introServed = false; start(); },
-                reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; askActive = false; situation = null; poltiPrepped = false; _walkSlot.clear(WALK); try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
+                reset: function () { introServed = false; opened = false; lastSnapshot = null; pendingConflicts = []; askActive = false; situation = null; poltiPrepped = false; focusBeat = 0; _walkSlot.clear(WALK); try { window.WMLSceneIsland && window.WMLSceneIsland.unmount(); } catch (e) {} },
                 onReply: function () { /* zero-API walk: no markers to detect */ },
                 nudge: function () { return ensureChip(); },
                 tryResume: tryResume,
@@ -32549,7 +32878,7 @@
                         'Every gripping scene runs on **one conflict**: someone wants something, and something stands in their way. Over a hundred years ago, a French writer called Georges Polti noticed that stories keep coming back to the same few conflicts: a chase, a rescue, a rebellion, a betrayal. We use a list of **33 of them**, called **dramatic situations**.\n\nEach situation comes with its own roles. In **The Chase**, someone is on the run and someone is hunting them. Your own characters step into those roles.',
                         'Why choose the situation first? In your exam you write **one scene**, not a whole story: about ' + WML.cwWordTarget('exam') + ' words. A scene built on one clear conflict grips the reader from the first line to the last. A scene that wanders between three conflicts loses them. So your situation decides what the scene is **about**, and that tells you which moment of your Story Spine to write.',
                         CW9_INTRO[1],
-                        'Here’s how it works:\n\n1. **Find your situation.** I read your Story Spine and suggest the three situations already in it. You can also browse all 33.\n2. **Check the moment.** The beat where your situation happens is selected for you. Keep it, or add the beat next to it.\n3. **Shape the scene.** Element by element, decide where each part belongs. One sentence of your spine will not fill seven elements on its own, so you will **add in** the moments in between. That is where your scene comes to life.\n\nFrom the moment shaping starts, you can **drag any beat by its ⠿ handle** to move it. Rough is fine; you can come back and change everything later.',
+                        'Here’s how it works:\n\n1. **Find your situation.** I read your Story Spine and suggest three situations that fit your exam scene. You can also browse all 33.\n2. **Check the moment.** The beat your scene tells is selected for you. Keep it, or add the beat next to it.\n3. **Shape the scene.** Element by element, decide where each part belongs. One sentence of your spine will not fill seven elements on its own, so you will **add in** the moments in between. That is where your scene comes to life.\n\nFrom the moment shaping starts, you can **drag any beat by its ⠿ handle** to move it. Rough is fine; you can come back and change everything later.',
                     ];
                 },
                 nextStep: 'the next lesson',
@@ -57167,6 +57496,16 @@
                 '<h3>Your Chosen Logline</h3>' +
                 outlineRowHTML({ id: 'chosen', label: 'Your Chosen Logline', prompt: 'Your final, refined logline' }, 'cw-step-3-chosen')
             );
+            // ⭐ v7.20.775 (#815f, plan §2e.1): weekend lesson 3 ends by choosing WHERE the exam scene is. Unit only — the full
+            // course's Step 3 page is unchanged. LOCKED: code writes it from the chat choice (the one store lessons 4 and 5 read).
+            if (WML.cwInUnit && WML.cwInUnit()) {
+                html += dividerHTML('YOUR EXAM SCENE');
+                html += sectionHTML('response', 'Your Exam Scene', true, null,
+                    '<h3>Your Exam Scene</h3>' +
+                    '<p><em>The one part of your story your exam scene will tell. You choose it in the chat at the end of this lesson. The next lesson marks it in your Story Spine, and lesson 5 starts from it.</em></p>' +
+                    outlineRowHTML({ id: 'scene-focus', label: 'Your exam scene', prompt: 'The one part of your story your exam scene will tell', locked: true }, WML.CW_SCENE_FOCUS_FID)
+                );
+            }
             return html;
         }
 

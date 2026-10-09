@@ -133,7 +133,9 @@ function world(opts) {
             _cwSpineWorld: SPINE._cwSpineWorld,
             CW_POLTI_33: POLTI.CW_POLTI_33, _poltiById: POLTI._poltiById, _poltiParsePicks: POLTI._poltiParsePicks,
             // the REAL loader's contract: artifact → { fid: text } (the fixture IS that map)
-            _cwLoadDocValues: (pid, key) => Promise.resolve(key === 'brief_outline' && store.brief_outline ? store.brief_outline : {}),
+            // v7.20.775: lesson 5 also reads lesson 3's document ('logline') for the exam-scene beat
+            _cwLoadDocValues: (pid, key) => Promise.resolve(key === 'brief_outline' && store.brief_outline ? store.brief_outline
+                : (key === 'logline' && store.logline ? store.logline : {})),
             _cwWriteOutlineRowLines: function (fid, lines) { if (!CUR.rows.has(fid)) { CUR.lostWrite = fid; return false; } CUR.rows.set(fid, lines.join('\n')); return true; },
             _setOutlineDropdown: function (fid, label) { dropdowns.push({ fid, label }); return true; },
             closeCanvasOverlay: function () {}, escapeHTML: (s) => s, sectionHTML: () => '<section></section>', _migrationActive: false,
@@ -148,6 +150,8 @@ function world(opts) {
     };
     w.deps.WML.icon = () => '';
     w.deps.WML.cwInUnit = () => !!opts.unit;
+    // v7.20.775: lesson 5 reads the exam-scene beat through core's one parser, as the real page does
+    w.deps.WML.CW_SCENE_FOCUS_FID = WMLC.CW_SCENE_FOCUS_FID; w.deps.WML.cwSceneFocusBeat = WMLC.cwSceneFocusBeat;
     w.deps.WML.cwWordTarget = (k) => (opts.unit && opts.board === 'cambridge-igcse') ? '350–450' : ({ d1: '450–600', exam: '650–700' }[k]);
     w.deps.window.WMLSceneIsland = { mount(o) { island.props = o; island.transfer = (p) => o.onTransfer(p); island.close = () => { island.props = null; o.onClose(); }; return { unmount() {} }; }, unmount() {} };
     w.store = store;
@@ -769,14 +773,23 @@ const SEVEN = (hook, setup) => [
             dividerHTML: (t) => '<div data-section-type="divider"><p>' + t + '</p></div>',
             outlineRowHTML: (c, fid) => '<div data-outline-row="true" data-prompt="' + esc(c.prompt || c.label) + '" data-field-id="' + fid + '" data-criteria="' + JSON.stringify(c).replace(/"/g, '&quot;') + '"></div>',
         };
-        const render = (step) => new Function('sectionHTML', 'dividerHTML', 'outlineRowHTML', 'escapeHTML', 'return (' + TPL + ')({ step: ' + step + ' });')(H.sectionHTML, H.dividerHTML, H.outlineRowHTML, esc);   // eslint-disable-line no-new-func
+        // v7.20.775: rendered with a WML in scope, in BOTH contexts — the real page always has one, and lesson 3's weekend
+        // document now carries a unit-only row (the exam scene), so "weekend" and "full course" are different documents.
+        const render = (step, unit) => new Function('sectionHTML', 'dividerHTML', 'outlineRowHTML', 'escapeHTML', 'WML', 'return (' + TPL + ')({ step: ' + step + ' });')(H.sectionHTML, H.dividerHTML, H.outlineRowHTML, esc, Object.assign({}, WMLC, { cwInUnit: () => !!unit }));   // eslint-disable-line no-new-func
         const TRUBY = /“Step 1: write something that may change your life[^”]*”/;   // John Truby's words, quoted verbatim (root §5c-i)
         const leftovers = (html) => (html.replace(/&quot;/g, '"').replace(TRUBY, '').match(/.{0,30}\bSteps? \d+.{0,30}/g) || []);
-        const raws = [1, 2, 3, 4].map(render);
+        const raws = [1, 2, 3, 4].map((st) => render(st, true));
+        const rawsFull = [1, 2, 3, 4].map((st) => render(st, false));
         raws.forEach((raw, i) => {
             ok(leftovers(D1.f(raw)).length === 0, '⭐ lesson ' + (i + 1) + '\'s document names no course step in a weekend lesson (labels and rows included)', leftovers(D1.f(raw)));
-            ok(D0.f(raw) === raw && leftovers(raw).length > 0, 'lesson ' + (i + 1) + ': the full course keeps its own words');
+            ok(D0.f(rawsFull[i]) === rawsFull[i] && leftovers(rawsFull[i]).length > 0, 'lesson ' + (i + 1) + ': the full course keeps its own words');
         });
+        // v7.20.775 (#815f): the exam-scene row — weekend lesson 3 only, LOCKED (code writes it), from the ONE fid constant.
+        const FOC = WMLC.CW_SCENE_FOCUS_FID;
+        const focRow = (html) => (html.match(new RegExp('<div data-outline-row="true"[^>]*data-field-id="' + FOC + '"[^>]*>')) || [])[0] || '';
+        ok(FOC === 'cw-step-3-scene-focus' && !!focRow(raws[2]) && /&quot;locked&quot;:true/.test(focRow(raws[2])) && /data-section-label="Your Exam Scene"/.test(raws[2]),
+            '⭐ weekend lesson 3\'s document has the LOCKED "Your Exam Scene" row (code fills it from the chat choice)', focRow(raws[2]).slice(0, 160));
+        ok(rawsFull.every((r) => r.indexOf(FOC) === -1) && [0, 1, 3].every((i) => raws[i].indexOf(FOC) === -1), 'no other document, and not the full course\'s Step 3, has the row');
         ok(TRUBY.test(D1.f(raws[0])), 'Truby\'s quotation survives untouched');
         // every edit still matches something real — a drifted literal is a silent no-op
         D1.E.forEach((ed) => ok(raws.some((r) => r.indexOf(ed[0]) !== -1) || SRC.indexOf(ed[0]) !== -1, 'unit document edit still matches its source: "' + ed[0].slice(0, 46) + '"'));
@@ -1101,6 +1114,232 @@ const SEVEN = (hook, setup) => [
         await wait(600);
         const l7 = w7.bubbles[w7.bubbles.length - 1] || '';
         ok((beat6(l7) || {}).heading === 'Duality' && !!w7.chips().filter((c) => /Not this time/.test(c.textContent))[0], '⭐ the document says where they are: technique 4, Duality, with its controls', l7.slice(0, 120));
+    }
+
+    // ── P · v7.20.775 (FIXLIST #813d/#815/#815f, plan §2e.1): WHERE IS THE EXAM SCENE. Chosen at the end of lesson 3 (Neil:
+    // "Before the Story Spine"), marked in lesson 4, the starting beat of lesson 5. ONE store (the locked lesson-3 row), ONE
+    // parser — every reader below goes through it, so a drift between writer and readers fails here (root §5d).
+    console.log('\nP · the exam scene: chosen at the end of lesson 3, marked in lesson 4, the starting beat of lesson 5');
+    {
+        const FOC = WMLC.CW_SCENE_FOCUS_FID, PARTS = WMLC.CW_SCENE_FOCUS_PARTS;
+        // P0 · the store's write and read agree
+        ok(FOC === 'cw-step-3-scene-focus' && PARTS.length === 4 && PARTS.map((p) => p.beat).join() === '3,4,5,6'
+            && PARTS.map((p) => p.fid).join() === 'cw-step-3-incident,cw-step-3-goal,cw-step-3-obstacle,cw-step-3-stakes',
+            'the four parts are the four dramatic components, each the seed of its Story Spine beat (3–6)');
+        ok(PARTS.every((p) => WMLC.cwSceneFocusBeat(WMLC.cwSceneFocusText(p, 'their words (Beat 5 of your Story Spine, in the next lesson) “quoted”')) === p.beat)
+            && WMLC.cwSceneFocusBeat('') === 0 && WMLC.cwSceneFocusBeat('Going after what they want') === 0,
+            '⭐ every composed row parses back to its OWN beat (the student\'s words cannot fool it); an empty or hand-made row is "no choice"');
+        ok(!LEAK_RE.test(PARTS.map((p) => WMLC.cwSceneFocusText(p, 'x')).join(' ')), 'the row a lesson-3 student reads names no course step');
+        const SRC_FOC = (SRC.match(/'cw-step-3-scene-focus'/g) || []).length + (CORE.match(/'cw-step-3-scene-focus'/g) || []).length;
+        ok(SRC_FOC === 1 && /const CW_SCENE_FOCUS_FID = 'cw-step-3-scene-focus';/.test(CORE), '⭐ the row id is spelled ONCE (wml-core); every writer and reader uses the constant', SRC_FOC);
+
+        // P1 · lesson 3, driven like a student
+        const CTL3 = sliceController('const _cwLoglineCtl = (function () {');
+        const COMP = { 'cw-step-3-protagonist': 'Mia, 14', 'cw-step-3-flaw': 'Trusts nobody', 'cw-step-3-wound': 'Her brother was taken',
+            'cw-step-3-incident': 'A boy her age is arrested in front of her', 'cw-step-3-goal': 'Get him out of the detention centre',
+            'cw-step-3-obstacle': 'The sentinels who guard it', 'cw-step-3-stakes': 'If she fails, she is next' };
+        const LOG = { 'cw-step-3-logline-1': 'When a boy is arrested, a girl who trusts nobody must break him out.',
+            'cw-step-3-logline-2': 'Mia must free a boy before the sentinels take her too.',
+            'cw-step-3-logline-3': 'A girl who trusts nobody learns to trust to save a stranger.' };
+        const DECIDE = { ch: { stage: 'decide', fid: 'cw-step-3-logline-2' }, rc: true, rl: true, lrk: true };
+        const L3 = (o) => {
+            const fids = Object.keys(COMP).concat(Object.keys(LOG), ['cw-step-3-chosen', 'cw-step-3-chosen-idea']).concat(o.noRow ? [] : [FOC]);
+            const ls = new Map();
+            if (o.side) ls.set('sim_cw3', JSON.stringify(o.side));
+            const w = makeWorld(CTL3, { task: 'cw_step_3', fids, ok, ls, history: [], prefill: Object.assign({}, COMP, LOG, o.prefill || {}),
+                extraDeps: { _cwEnsureSceneFocusRow: () => !o.noRow } });
+            Object.assign(w.deps.WML, { cwInUnit: () => !!o.unit, CW_SCENE_FOCUS_FID: FOC, CW_SCENE_FOCUS_PARTS: PARTS,
+                cwSceneFocusText: WMLC.cwSceneFocusText, cwSceneFocusBeat: WMLC.cwSceneFocusBeat, cwWordTarget: () => '650–700' });
+            if (!w.deps.WML.icon) w.deps.WML.icon = () => '';
+            if (!w.deps.WML.phoenixIconHTML) w.deps.WML.phoenixIconHTML = () => '';
+            return w;
+        };
+        const last = (w) => w.bubbles[w.bubbles.length - 1] || '';
+        {   // the full course: Keep → the lesson ends on the logline, exactly as before
+            const w = L3({ unit: false, side: DECIDE });
+            w.ctl.tryResume(); await settle();
+            const keep = chip(w, /Keep it — this is my logline/);
+            ok(!!keep, 'fixture: resumed on the chosen-logline decision', w.chips().map(chipText));
+            if (keep) w.tap(keep);
+            ok(w.rows.get('cw-step-3-chosen') === LOG['cw-step-3-logline-2'] && /\(sim endpoint\)/.test(last(w)), 'full course: the logline is filed and the lesson ends there');
+            ok(!w.writes.some((x) => x.fid === FOC) && !/exam scene/i.test(w.bubbles.join('\n')), '⭐ the full course never asks about an exam scene');
+        }
+        const w3 = L3({ unit: true, side: DECIDE });
+        w3.ctl.tryResume(); await settle();
+        w3.tap(chip(w3, /Keep it — this is my logline/));
+        ok(w3.rows.get('cw-step-3-chosen') === LOG['cw-step-3-logline-2'], 'weekend: the logline is filed first, as before');
+        ok(/Chosen Logline/.test(last(w3)) && /which part of your story your exam scene will tell/.test(last(w3)) && !/\(sim endpoint\)/.test(last(w3)) && !!chip(w3, /Continue/),
+            '⭐ the lesson does not end there: one bubble (filed, and what comes next), then Continue (§4b)', last(w3).slice(-160));
+        w3.tap(chip(w3, /Continue/));
+        const RPT = fs.readFileSync(path.join(ROOT, 'research/sources/aqa-8700-1-jun23-examiner-report.txt'), 'utf8').replace(/\s+/g, ' ');
+        const quotes = (last(w3).match(/“([^”]+)”/g) || []).map((q) => q.slice(1, -1));
+        ok(quotes.length === 2 && quotes.every((q) => RPT.indexOf(q) !== -1) && /focusing upon a moment in time/.test(quotes[0]) && /a chapter or a dramatic moment in a story/.test(quotes[1]),
+            '⭐ §5c-i: the examiners\' two sentences, each found word for word in the saved AQA June 2023 report', quotes.filter((q) => RPT.indexOf(q) === -1));
+        w3.tap(chip(w3, /Continue/));
+        ok(/\*\*A strong choice:\*\*/.test(last(w3)) && /A Christmas Carol/.test(last(w3)) && /\*\*Which part of your story will your exam scene tell\?\*\* Tap one\. You can change it later\.$/.test(last(w3)),
+            'the ask: criteria first, a worked example, the question LAST (§4c)', last(w3).slice(-120));
+        const opts3 = w3.chips().map(chipText);
+        ok(opts3.length === 4 && PARTS.every((p, i) => opts3[i].indexOf(p.label + ': “') === 0) && opts3[1].indexOf(COMP['cw-step-3-goal']) !== -1,
+            '⭐ ONE screen of four parts (a single choice, §4c.8), each showing the student\'s OWN words', opts3);
+        ok(!!w3.helpChipNamed(/More examples/) && !!w3.helpChipNamed(/Story Components/) && !!w3.helpChipNamed(/Still stuck — ask Sophia/), 'the help ladder: more examples, their components, Sophia last (§4c.9)');
+        ok(w3.sends.length === 0, 'making the choice costs no API call');
+        const wb = w3.writes.length;
+        w3.say('the second one');
+        ok(w3.writes.length === wb && w3.sends.length === 0 && w3.chips().length === 4 && /Tap the part of your story/.test(last(w3)),
+            '⭐ §4d: typed text is not filed and not sent — the walk points at the buttons and puts them back');
+        w3.tap(w3.helpChipNamed(/More examples/));
+        ok(/Macbeth/.test(last(w3)) && w3.chips().length === 4 && !w3.helpChipNamed(/More examples/), 'rung 1: more examples, once, with the four parts still on screen');
+        w3.tap(w3.helpChipNamed(/Still stuck — ask Sophia/));
+        const hid3 = (w3.deps.canvasChatHistory || []).filter((m) => m.hidden && /THEIR FOUR PARTS/.test(m.content)).pop();
+        ok(w3.sends.length === 1 && w3.sends[0].id === 'cw3-focus-help' && !!hid3 && hid3.content.indexOf(COMP['cw-step-3-obstacle']) !== -1 && /Never choose for them/.test(hid3.content),
+            'rung 3, only on its tap: ONE call, carrying their four parts, and Sophia never chooses for them', w3.sends);
+        w3.resolveApi('Your goal looks strongest: one place, one night.');
+        ok(w3.chips().length === 4, 'after Sophia answers, the four parts are back on screen (liveness)');
+        w3.tap(chip(w3, /^Going after what they want/));
+        const row3 = w3.rows.get(FOC);
+        ok(row3 === WMLC.cwSceneFocusText(PARTS[1], COMP['cw-step-3-goal']) && WMLC.cwSceneFocusBeat(row3) === 4, '⭐ the pick is filed into the locked row, in the one form lessons 4 and 5 read (Beat 4)', row3);
+        ok(/Your Exam Scene/.test(last(w3)) && /\(sim endpoint\)/.test(last(w3)) && !!chip(w3, /Change my exam scene/) && !w3.ctl.active, 'the lesson ends here: filed, the endpoint, and a way to change it');
+        ok(!(w3.deps.canvasChatHistory || []).some((m) => m.role === 'assistant' && PARTS.some((p) => m.content.indexOf(p.label) !== -1)),
+            '⭐ §4c.7: no stored turn names the chosen part (the choice can change; the document carries it)');
+        w3.tap(chip(w3, /Change my exam scene/));
+        ok(w3.chips().length === 4 && w3.ctl.active, 'changing it re-asks with the four parts');
+        w3.tap(chip(w3, /^The ending, when everything is decided/));
+        ok(WMLC.cwSceneFocusBeat(w3.rows.get(FOC)) === 6, 'a changed choice replaces the row (Beat 6)', w3.rows.get(FOC));
+        {   // P2 · resume from the DOCUMENT alone (another device, or chosen before this shipped)
+            const w = L3({ unit: true, prefill: { 'cw-step-3-chosen': LOG['cw-step-3-logline-1'] } });
+            ok(w.ctl.tryResume() === true && w.chips().length === 4 && /Which part of your story/.test(last(w)), '⭐ logline chosen, exam scene not → the ask and its four parts come back', w.chips().map(chipText));
+            ok(!(w.deps.canvasChatHistory || []).some((m) => m.role === 'assistant'), '…drawn, never stored a second time');
+            w.tap(chip(w, /^The obstacle at its worst/));
+            ok(WMLC.cwSceneFocusBeat(w.rows.get(FOC)) === 5, 'and the choice files from there (Beat 5)');
+        }
+        {
+            const w = L3({ unit: true, prefill: { 'cw-step-3-chosen': LOG['cw-step-3-logline-1'], [FOC]: WMLC.cwSceneFocusText(PARTS[0], 'x') } });
+            w.deps.addChatMessage('An earlier turn.', 'ai', 'An earlier turn.');
+            w.ctl.tryResume();
+            ok(!!chip(w, /Change my exam scene/) && !w.ctl.active, 'already chosen → after a reload the way to change it is on screen again');
+        }
+        {   // P3 · the row could not be found or added: refused WITH a way forward (§4d)
+            const w = L3({ unit: true, noRow: true, prefill: { 'cw-step-3-chosen': LOG['cw-step-3-logline-1'] } });
+            w.ctl.tryResume();
+            w.tap(chip(w, /^The moment everything changes/));
+            ok(!w.rows.has(FOC) && /couldn’t save that choice/.test(last(w)) && w.chips().length === 4, '⭐ not saved → it says so and keeps the four parts on screen, never a dead end');
+        }
+
+        // P4 · lesson 4 marks it: a drawn note on that beat's ask, and the beat's label in the document
+        const CTL4 = sliceController('const _cwSpineCtl = (function () {');
+        const B4 = { 'cw-step-4-beat1': 'At first, Mia keeps her head down at the checkpoint.', 'cw-step-4-beat2': 'And then, every day she counts the guards.', 'cw-step-4-beat3': 'Until, one morning, a boy is arrested.' };
+        // the real page's bubble is a DOM node: the rig's nodes get the two DOM members the note uses (insertBefore,
+        // firstChild) — everything else is the rig's own node, unchanged.
+        const BASE_EL = makeWorld({ src: '({})' }, { fids: [] }).deps.el;
+        const DOM_EL = function (tag, attrs) {
+            const n = BASE_EL(tag, attrs);
+            n.insertBefore = function (c, ref) { const i = ref ? this.children.indexOf(ref) : -1; if (i < 0) this.children.unshift(c); else this.children.splice(i, 0, c); return c; };
+            Object.defineProperty(n, 'firstChild', { get() { return this.children[0] || null; } });
+            return n;
+        };
+        const L4 = (focusPart, prefill) => {
+            const H = { w: null };
+            const LBL = {}, DISP = [];
+            for (let k = 1; k <= 6; k++) LBL['cw-step-4-beat' + k] = 'Beat ' + k + ': label';
+            const S3 = Object.assign({}, COMP, focusPart ? { [FOC]: WMLC.cwSceneFocusText(focusPart, 'their words') } : {});
+            const fids = [1, 2, 3, 4, 5, 6].map((k) => 'cw-step-4-beat' + k).concat(['cw-step-4-throughline', 'cw-step-4-unmet-needs']);
+            const editor = {   // ProseMirror semantics: returning false skips a node's children, never its siblings
+                state: {
+                    get doc() { return { descendants(fn) { let pos = 0; for (const [f, t] of (H.w ? H.w.rows : new Map())) fn({ type: { name: 'outlineRow' }, attrs: { fieldId: f, criteria: JSON.stringify({ label: LBL[f] || f }) }, textContent: t }, pos++); } }; },
+                    get tr() { const ops = []; const tr = { ops, setNodeMarkup(pos, t, attrs) { ops.push(attrs); return tr; } }; return tr; },
+                },
+                view: { dispatch(tr) { DISP.push(tr.ops.length); tr.ops.forEach((a) => { LBL[a.fieldId] = JSON.parse(a.criteria).label; }); } },
+            };
+            const w = makeWorld(CTL4, { task: 'cw_step_4', fids, ok, ls: new Map(), history: [], prefill: Object.assign({}, B4, prefill || {}),
+                extraDeps: { canvasEditor: editor, _cwStep3Value: (fid) => S3[fid] || '', _cwLoadStep3Values: () => Promise.resolve(S3), el: DOM_EL } });
+            H.w = w;
+            Object.assign(w.deps.WML, { cwInUnit: () => true, CW_SCENE_FOCUS_FID: FOC, cwSceneFocusBeat: WMLC.cwSceneFocusBeat });
+            if (!w.deps.WML.icon) w.deps.WML.icon = () => '';
+            return { w, LBL, DISP };
+        };
+        const note = (w) => { const c = w._lastBubbleEl && w._lastBubbleEl.children[0]; return c ? c.children.filter((x) => /swml-cw-exam-scene/.test(x.className)) : []; };
+        {
+            const T = L4(PARTS[1]);   // exam scene = Beat 4; the walk is AT beat 4 (beats 1–3 written)
+            T.w.ctl.forceStart(); await settle(); await settle();
+            ok(T.LBL['cw-step-4-beat4'] === 'Beat 4: label · ⭐ your exam scene' && ['1', '2', '3', '5', '6'].every((k) => T.LBL['cw-step-4-beat' + k] === 'Beat ' + k + ': label') && T.DISP.length === 1,
+                '⭐ the document: ONLY Beat 4\'s label carries the mark, set in ONE transaction', T.LBL);
+            const g = T.w.chips()[0];
+            if (g) T.w.tap(g);   // the goal chip → the write-ask
+            await settle(); await settle();
+            const n4 = note(T.w);
+            ok(/And because of this/.test(last(T.w)) && n4.length === 1 && /Your exam scene/.test(n4[0].innerHTML) && /most specific/.test(n4[0].innerHTML),
+                '⭐ the chat: the exam-scene note sits on Beat 4\'s write-ask', n4.map((x) => x.innerHTML));
+            ok(!(T.w.deps.canvasChatHistory || []).some((m) => /Your exam scene/.test(m.content)), '§4c.7: the note is drawn, never stored');
+            ok(/\*\*Write your Beat 4\.\*\*$/.test(last(T.w)), 'the ask still ENDS on its question (§4c.4)');
+        }
+        {
+            const T = L4(PARTS[2], {});   // exam scene = Beat 5; the walk is at Beat 4
+            T.w.ctl.forceStart(); await settle(); await settle();
+            const g = T.w.chips()[0]; if (g) T.w.tap(g); await settle(); await settle();
+            ok(note(T.w).length === 0 && T.LBL['cw-step-4-beat5'] === 'Beat 5: label · ⭐ your exam scene', 'another beat\'s ask carries no note; the mark is on Beat 5');
+        }
+        {
+            const T = L4(null);       // no choice (the full course, or chosen before this shipped): nothing marked
+            T.w.ctl.forceStart(); await settle(); await settle();
+            const g = T.w.chips()[0]; if (g) T.w.tap(g); await settle(); await settle();
+            ok(note(T.w).length === 0 && T.DISP.length === 0, 'no exam-scene choice → no note and no document change at all');
+        }
+        {
+            const T = L4(PARTS[3]);   // a CHANGED choice (now Beat 6) moves the mark off Beat 4
+            T.LBL['cw-step-4-beat4'] = 'Beat 4: label · ⭐ your exam scene';
+            T.w.ctl.forceStart(); await settle(); await settle();
+            ok(T.LBL['cw-step-4-beat4'] === 'Beat 4: label' && T.LBL['cw-step-4-beat6'] === 'Beat 6: label · ⭐ your exam scene', '⭐ a changed choice moves the mark (the old one is removed)', T.LBL);
+        }
+
+        // P5 · lesson 5 starts from it
+        {
+            island.props = null;
+            const W = CUR = world({ unit: true, board: 'aqa', store: { brief_outline: FULL, logline: { [FOC]: WMLC.cwSceneFocusText(PARTS[2], COMP['cw-step-3-obstacle']) } } });
+            W.ctl.start(); await until(W, () => W.bubbles.length > 0);
+            W.tap(chip(W, /Let’s go/)); await settle();
+            for (let i = 0; i < 5 && chip(W, /Continue/); i++) { W.tap(chip(W, /Continue/)); await settle(); }
+            await until(W, () => !!chip(W, /Find my dramatic situation/));
+            W.tap(chip(W, /Find my dramatic situation/)); await until(W, () => W.sends.length > 0);
+            const hid5 = ((W.deps.canvasChatHistory || []).filter((m) => m.hidden && /DRAMATIC SITUATION FINDER/.test(m.content)).pop() || {}).content || '';
+            ok(/THE MOMENT THEY CHOSE FOR THEIR EXAM SCENE most strongly: Beat 5/.test(hid5) && hid5.indexOf(BEAT_TEXT['cw-step-4-beat5'].slice(0, 30)) !== -1 && /all three must be conflicts that happen in it/.test(hid5),
+                '⭐ Sophia is asked for three situations IN the chosen moment (Beat 5), with its sentence', hid5.slice(0, 400));
+            W.resolveApi('Three that fit.\n\n@POLTI_PICKS{"picks":[{"id":5,"beat":4,"roles":["On the run: Mia"]},{"id":8,"beat":2,"roles":[]}]}');
+            await until(W, () => !!chip(W, /The Chase/));
+            W.tap(chip(W, /The Chase →/));
+            await until(W, () => /Your dramatic situation: The Chase/.test(W.bubbles.join('\n')));
+            ok(/\*\*Beat 5\*\*/.test(last(W)) && /the part you chose for your exam scene in lesson 3/.test(last(W)) && /One beat is the normal choice/.test(last(W)),
+                '⭐ a suggestion lands on the CHOSEN beat whatever beat the reply named; one beat is the normal choice', last(W));
+            await until(W, () => { try { return JSON.parse(W.store.scene_selection_state || '{}').situation; } catch (e) { return false; } });
+            ok(JSON.stringify(JSON.parse(W.store.scene_selection_state || '{}').stageIds) === '["spine-beat-5"]', '⭐ the picker will open on Beat 5', W.store.scene_selection_state);
+        }
+        {   // browse: no beat question at all
+            island.props = null;
+            const W = CUR = world({ unit: true, board: 'aqa', store: { brief_outline: FULL, logline: { [FOC]: WMLC.cwSceneFocusText(PARTS[0], 'x') } } });
+            W.ctl.start(); await until(W, () => W.bubbles.length > 0);
+            W.tap(chip(W, /Let’s go/)); await settle();
+            for (let i = 0; i < 5 && chip(W, /Continue/); i++) { W.tap(chip(W, /Continue/)); await settle(); }
+            await until(W, () => !!chip(W, /Show me all 33/));
+            W.tap(chip(W, /Show me all 33/)); await settle();
+            W.tap(chip(W, /^The Chase$/)); await settle();
+            W.tap(chip(W, /Use this one/)); await settle();
+            ok(/Your dramatic situation: The Chase/.test(last(W)) && /\*\*Beat 3\*\*/.test(last(W)) && !W.chips().some((c) => /^Beat \d:/.test(chipText(c))),
+                '⭐ browsing never asks for the beat again — it is the one chosen in lesson 3 (Beat 3)', W.chips().map(chipText));
+            ok(W.sends.length === 0, 'and still costs no API call');
+        }
+        {   // a choice whose beat is not written yet → today's flow, never a pre-select on nothing (§4d)
+            island.props = null;
+            const PART = Object.assign({}, BEAT_TEXT); delete PART['cw-step-4-beat6'];
+            const W = CUR = world({ unit: true, board: 'aqa', store: { brief_outline: Object.assign({ 'cw-step-4-unmet-needs': 'Love & Belonging' }, PART), logline: { [FOC]: WMLC.cwSceneFocusText(PARTS[3], 'x') } } });
+            W.ctl.start(); await until(W, () => W.bubbles.length > 0);
+            W.tap(chip(W, /Let’s go/)); await settle();
+            for (let i = 0; i < 5 && chip(W, /Continue/); i++) { W.tap(chip(W, /Continue/)); await settle(); }
+            await until(W, () => !!chip(W, /Show me all 33/));
+            W.tap(chip(W, /Show me all 33/)); await settle();
+            W.tap(chip(W, /^The Chase$/)); await settle();
+            W.tap(chip(W, /Use this one/)); await settle();
+            ok(W.chips().some((c) => /^Beat \d:/.test(chipText(c))), 'chosen Beat 6 is not written → the student places the situation on a beat, as before');
+        }
+        island.props = null;
     }
     console.log('   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     if (fail) { console.error('❌ weekend-story-harness FAILED'); process.exit(1); }

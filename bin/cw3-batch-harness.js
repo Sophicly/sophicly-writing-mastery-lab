@@ -55,12 +55,21 @@ if (!CTL) { console.error('  ❌ could not slice _cwLoglineCtl'); process.exit(1
 {
     // ONE call SITE, reached twice at runtime (fireReview serves both groups) — so the budget is
     // two calls per completed walk. A second site would mean a per-ask verdict crept back in.
-    const sends = (CTL.match(/sendCanvasMessage\(\)/g) || []).length;
+    // v7.20.775: the weekend exam-scene choice carries the help ladder's LAST rung (§4c.9) — "Still stuck — ask
+    // Sophia", an API call ONLY on an explicit tap of that button, never a verdict on an answer. It is the one
+    // permitted extra site, named, and checked below to be reachable from that button alone.
+    const RUNG3 = /function askSophiaFocus\(\) \{[\s\S]*?\n            \}\n/.exec(CTL);
+    const CORE = RUNG3 ? CTL.replace(RUNG3[0], '') : CTL;
+    const sends = (CORE.match(/sendCanvasMessage\(\)/g) || []).length;
     ok(sends === 1, `exactly ONE sendCanvasMessage() site, shared by both reviews (found ${sends})`);
     ok(/fireReview\('components'\)/.test(CTL) && /fireReview\('loglines'\)/.test(CTL),
         'and it is reached for BOTH groups — components and loglines — i.e. two calls per walk');
-    const arms = (CTL.match(/armWalkResume\(/g) || []).length;
+    const arms = (CORE.match(/armWalkResume\(/g) || []).length;
     ok(arms === 1, `one armWalkResume call site, shared by both reviews (found ${arms})`);
+    ok(!RUNG3 || ((RUNG3[0].match(/sendCanvasMessage\(\)/g) || []).length === 1
+        && (CTL.match(/askSophiaFocus\(\)/g) || []).length === 2
+        && /textContent: 'Still stuck — ask Sophia'[^\n]*\n\s*onClick: function \(\) \{ askSophiaFocus\(\); \}/.test(CTL)),
+        'the exam-scene rung-3 call is the only other site, and only its "Still stuck — ask Sophia" button reaches it');
     ok(/armWalkResume\('cw3-review-' \+ kind/.test(CTL), 'the resume hook is keyed per review group');
     ok(!/armWalkResume\('cw3-' \+ step\.fid/.test(CTL),
         'the OLD per-component verdict hook is gone — that was the ten-call design');

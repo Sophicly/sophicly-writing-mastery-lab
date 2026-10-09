@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.774';
+var WML_BUILD = '7.20.775';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1605,6 +1605,33 @@ window.WML = (function() {
     const CW_STRUCT_MIN = 4;                                     // CW-STEP-27: "at least 4 techniques (including irony)"
     const CW_STRUCT_NOT_USING = 'Not using this one.';           // the row text for a technique the student turned down
     function cwStructFid(id) { return 'cw-step-25-' + id; }
+
+    // ⭐ v7.20.775 — WHERE THE EXAM SCENE IS (Neil, 9 Oct, FIXLIST #813d/#815/#815f; WEEKEND-STORY-PLAN §2e.1). At the end of
+    // weekend lesson 3, BEFORE the Story Spine (his ruling), the student chooses which ONE part of their story the exam
+    // scene will tell. The four parts are the dramatic ones the lesson-3 components already name, each the seed of one
+    // Story Spine beat (lesson 4 echoes the same rows into those beats). ONE store: a LOCKED row in the lesson-3 document,
+    // written by code from cwSceneFocusText and read back by cwSceneFocusBeat — lesson 4 (the beat it marks) and lesson 5
+    // (the beat it pre-selects) both read it through that one parser, so writer and readers cannot drift (root §5d).
+    const CW_SCENE_FOCUS_FID = 'cw-step-3-scene-focus';
+    const CW_SCENE_FOCUS_PARTS = [
+        { beat: 3, fid: 'cw-step-3-incident', label: 'The moment everything changes' },
+        { beat: 4, fid: 'cw-step-3-goal',     label: 'Going after what they want' },
+        { beat: 5, fid: 'cw-step-3-obstacle', label: 'The obstacle at its worst' },
+        { beat: 6, fid: 'cw-step-3-stakes',   label: 'The ending, when everything is decided' },
+    ];
+    // The row's text. "Beat N" is the machine-read part, so it is fixed and comes last, in a sentence a student can read
+    // in lesson 3 before they have met the beats (root §5c-ii).
+    function cwSceneFocusText(part, words) {
+        if (!part) return '';
+        const w = String(words || '').replace(/\s+/g, ' ').trim();
+        return part.label + (w ? ': “' + w + '”' : '') + ' (Beat ' + part.beat + ' of your Story Spine, in the next lesson)';
+    }
+    // 3–6, or 0 when the row is empty or unreadable (every reader treats 0 as "no choice yet" and keeps today's flow).
+    function cwSceneFocusBeat(text) {
+        // Anchored on the fixed ending the composer always writes, so the student's own words can never be read as it.
+        const m = /\(Beat ([3-6]) of your Story Spine, in the next lesson\)$/.exec(String(text || '').trim());
+        return m ? parseInt(m[1], 10) : 0;
+    }
     // The trial's extra row in a weekend lesson. Out of 4 like each scene part (the total becomes 34; the grade is a
     // percentage, so nothing else moves). Judged against the student's OWN lesson-6 plan, which the marking reads.
     const CW_TRIAL1_STRUCTURE = {
@@ -6178,6 +6205,7 @@ window.WML = (function() {
         CW_STEPS, CW_ARTIFACT_MAP, CW_DRAFT_PREDECESSOR, CW_SEED_FROM, CW_SIDEBAR_STEPS,
         cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget, cwStepEnv, cwStepLens, cwStepLabel, cwStepTier,
         CW_STRUCT_TECHNIQUES, CW_STRUCT_MIN, CW_STRUCT_NOT_USING, cwStructFid, CW_TRIAL1_STRUCTURE, cwTrial1Elements,
+        CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
         // Revision map
         REVISION_MAP,

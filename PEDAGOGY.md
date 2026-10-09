@@ -3136,6 +3136,33 @@ create a new weekend course project just like they can for the full creative wri
   own documents; nothing done in it can change a full-course story, and the reverse.
 - EST total ≈ 4.5–6.5 h; still unmeasured.
 
+### §55.3 AMENDED 2026-10-09 — ONE MOMENT: the student chooses where the exam scene is, at the end of lesson 3, BEFORE the Story Spine (FIXLIST #813d, #815, #815f; built v7.20.775)
+
+**His words.** #813d: *"The examiner's report said that the best stories were ones where the student focused on one
+moment in the story rather than a complete story from start to finish. We need to achieve this between L4 and L5."*
+#815: *"a scene is actually a mini story so still has the same structure as a story… somehow between the log line and…
+the story spine they need to think about where in their story they want to actually focus on"* (+ "show the examiner's
+words", "make one beat the normal choice"). #815f, asked WHEN: *"Before the Story Spine"* (the lane recommended "after";
+his ruling stands, root §0).
+
+**The source, verified word for word** (AQA 8700/1 June 2023 examiner report, story question, "Strongest responses";
+`research/sources/aqa-8700-1-jun23-examiner-report.txt` lines 384–388): *"These responses managed the timed conditions by
+focusing upon a moment in time, rather than trying to include journeys and other events that led to the main focus."*
+and *"Students who did not aim to complete the whole narrative, but rather took the response as a chapter or a dramatic
+moment in a story were also able to manage the time more successfully."* Both are shown to the student.
+
+**The mechanics (weekend unit only; the full course is unchanged):**
+- **Lesson 3** ends with ONE choice among four parts (a single choice, §4c.8): the moment everything changes · going
+  after what they want · the obstacle at its worst · the ending, when everything is decided — each shown in the
+  student's OWN words from the lesson-3 component it grows from (incident · goal · obstacle · stakes), each the seed of
+  Story Spine beat 3 · 4 · 5 · 6. A tap; criteria + the examiners' words + a worked example first; Sophia only as the
+  last help rung. Filed by code into a LOCKED "Your Exam Scene" row; changeable at any time.
+- **Lesson 4** marks that beat: a note on its write-ask ("make this beat the most specific one you write") and the
+  beat's label in the document.
+- **Lesson 5** starts from it: the beat is pre-selected (one beat is the normal choice; the next beat only when the moment
+  carries straight on into it), and the three suggested dramatic situations are the ones IN that moment. No choice
+  (a story begun before this shipped) → lesson 5 runs as before, never a pre-select on nothing.
+
 ## §56. ⭐⭐ A REDRAFT PLAN STARTS EMPTY — first-attempt notes are never carried into it (Neil, ruled 2026-10-08; FIXLIST #806; REVERSES #571 and SUPERSEDES §51.5)
 
 **THE RULING (his taps, WML 336 A).** To *"should first-attempt notes stop being copied into redraft plan boxes, for
