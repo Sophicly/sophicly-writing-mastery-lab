@@ -1,0 +1,56 @@
+{
+  "topic_number": 202605,
+  "board": "edexcel-igcse",
+  "text": "edexcel_igcse_lang_a",
+  "store": "swml_topics_edexcel-igcse_edexcel_igcse_lang_a",
+  "label": "Edexcel IGCSE Language A Paper 1 — May 2026 · Question 4 on From 127 Hours: Between a Rock and a Hard Place (Aron Ralston) · a student's answer that scored 8 out of 12",
+  "source_order": [
+    "Student's Answer",
+    "Text Two (Anthology)"
+  ],
+  "sources": {
+    "student": {
+      "heading": "Student's Answer",
+      "paragraph_starts": [
+        "Ralston portrays himself as experienced ",
+        "Ralston conveys the brutality of the inc",
+        "Yet Ralston still perseveres, attempting"
+      ]
+    },
+    "B": {
+      "line_count": 53,
+      "line_checks": {
+        "5": "feel of a short tunnel. Instead ",
+        "10": "Controlling this counterpressure",
+        "15": "fast in the channel between the ",
+        "20": "lock my left knee, which pushes ",
+        "25": "upcanyon. Sliding my belly over ",
+        "30": "When I look up, the backlit choc",
+        "35": "against the south wall; my eyes ",
+        "40": "implausibly small gap between th",
+        "45": "Anxiety has my brain tweaking; s",
+        "50": "against the large boulder, heavi"
+      }
+    }
+  },
+  "source_headings": {
+    "student": "Student's Answer",
+    "B": "Text Two (Anthology)"
+  },
+  "questions": {
+    "Q4": 12
+  },
+  "total_marks": 12,
+  "q1_format": "open",
+  "provenance": {
+    "exam_date": "Thursday 21 May 2026",
+    "paper_code": "4EA1/01",
+    "question": "Q4 verbatim from the candidate's question paper (pages 5-7 of the scanned script).",
+    "student_answer": "Transcribed from a real candidate's marked script (examiner: Q4 = 8/12). Anonymised: no name in this repo. Script + full transcript: sophicly-etchwp-package v2.6/Live Modelling/Edexcel-IGCSE Lang P1 Q4 127 Hours/ (outside the repo).",
+    "text_two": "The anthology extract as held in protocols/shared/templates/topics/edexcel-igcse-language-p1.md lines 848-905 (53 numbered lines, ending 'Nothing.' as the candidate's answer says). The May 2026 Source Booklet is not on disk, so the booklet's own line numbering is not verified."
+  },
+  "needs_human": [],
+  "notes": [
+    "Q4 only, for WML #839 (Neil, 9 Oct 2026): the student's answer is the FIRST passage so the Extract button opens it; '+ Text Two (Anthology)' in the pad adds the extract beside it."
+  ]
+}

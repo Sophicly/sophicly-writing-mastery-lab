@@ -507,7 +507,10 @@ class SWML_Topic_Parser {
         // Parse source/text blocks
         $source_patterns = [
             '/^##\s*(Source\s*[AB]?)\s*\n(.*?)(?=\n^##\s*(?:Source|Text|Q\d|21st|19th)|\n---|\z)/smi',
-            '/^##\s*(Text\s*(?:One|Two|1|2|A|B|C)(?:\s*\([^)]+\))?)\s*\n(.*?)(?=\n^##\s*(?:Text|Source|Q\d|###)|\n---|\z)/smi',
+            // v7.20.790 (#839): "## Student's Answer" is a passage too — a real candidate's answer shown read-only in a
+            // live-modelling paper, popped out by the Extract button like any text. Narrow on purpose: the exam-question
+            // banks carry "## Student Recommendation", which must stay out of this pattern and its lookahead.
+            '/^##\s*((?:Text\s*(?:One|Two|1|2|A|B|C)|Student(?:\'s|’s)?\s+Answer)(?:\s*\([^)]+\))?)\s*\n(.*?)(?=\n^##\s*(?:Text|Student(?:\'s|’s)?\s+Answer\b|Source|Q\d|###)|\n---|\z)/smi',
             '/^##\s*(21st\s*Century\s*Text)\s*\n(.*?)(?=\n^##\s*(?:19th|Q\d|###)|\n---|\z)/smi',
             '/^##\s*(19th\s*Century\s*Text)\s*\n(.*?)(?=\n^##\s*(?:21st|Q\d|###)|\n---|\z)/smi',
             '/^##\s*(Non-Fiction\s*Text)\s*\n(.*?)(?=\n^##\s*(?:Task|Q\d|Media)|\n---|\z)/smi',

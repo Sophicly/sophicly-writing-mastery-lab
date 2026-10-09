@@ -56,8 +56,24 @@ function swml_lm_paper_checks($md_path, &$report) {
     $ok(is_array($meta) && !empty($meta['questions']) && !empty($meta['sources']), "metadata decodes with questions + sources");
     if (!is_array($meta)) return $fails;
     $ok(count($meta['sources']) === count($side['sources']), "sources: " . count($meta['sources']) . " (sidecar " . count($side['sources']) . ")");
+    $order = array_map(function ($s) { return $s['label']; }, $meta['sources']);
+    if (!empty($side['source_order'])) $ok($order === $side['source_order'], "sources in order (" . implode(' · ', $order) . ") — the Extract button opens the FIRST");
     foreach ($side['sources'] as $L => $sc) {
         $src = null;
+        // v7.20.790 (#839): a passage that is not on the paper (a real student's answer) is found by its exact heading,
+        // and is checked as paragraphs — it has no printed line numbers to land on.
+        if (!empty($sc['heading'])) {
+            foreach ($meta['sources'] as $s) { if ($s['label'] === $sc['heading']) $src = $s; }
+            if (!$src) { $ok(false, "passage '{$sc['heading']}' present in metadata"); continue; }
+            $paras = array_values(array_filter(array_map('trim', explode("\n", $src['text'])), function ($l) { return $l !== '' && !preg_match('/^\*\*[A-Za-z]+:\*\*/', $l); }));
+            $ok(count($paras) === count($sc['paragraph_starts']), "'{$sc['heading']}': " . count($paras) . " paragraphs (expect " . count($sc['paragraph_starts']) . ")");
+            $bad = [];
+            foreach ($sc['paragraph_starts'] as $i => $needle) { if (!isset($paras[$i]) || strpos($paras[$i], $needle) !== 0) $bad[] = $i + 1; }
+            $ok(!$bad, "'{$sc['heading']}': every paragraph starts with the transcribed words" . ($bad ? " — WRONG at paragraph " . implode(',', $bad) : ''));
+            $ok(!empty($src['title']), "'{$sc['heading']}': carries a title line ('" . ($src['title'] ?? '') . "')");
+            $ok(strpos($src['text'], '[NEEDS HUMAN') === false, "'{$sc['heading']}': no [NEEDS HUMAN] left in the text");
+            continue;
+        }
         // the board's own word for a source: AQA 'Source A', Cambridge 'Text A', Edexcel IGCSE 'Text One'
         $alt = ['A' => 'One|1', 'B' => 'Two|2', 'C' => 'Three|3'][$L] ?? $L;
         foreach ($meta['sources'] as $s) { if (preg_match('/(?:Source|Text)\s*(?:' . $L . '|' . $alt . ')\b/i', $s['label'])) $src = $s; }
