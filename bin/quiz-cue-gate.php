@@ -244,7 +244,8 @@ $enforced = [];
 $ef = __DIR__ . '/quiz-cue-gate.enforced.txt';
 if (file_exists($ef)) {
     foreach (preg_split('/\R/', (string) file_get_contents($ef)) as $ln) {
-        $ln = trim(preg_replace('/#.*$/', '', $ln));
+        // A comment starts at the line start or after whitespace — "MSA/language1.md#aqa" is a section, not a comment.
+        $ln = trim(preg_replace('/(^|\s)#.*$/', '', $ln));
         if ($ln !== '') $enforced[$ln] = true;
     }
 }

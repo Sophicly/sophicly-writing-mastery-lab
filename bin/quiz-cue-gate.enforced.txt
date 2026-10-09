@@ -1,3 +1,4 @@
 # quiz-cue-gate RATCHET — one bank per line, as the gate names it (FQ/<file>.md, MSQ/<file>.md, MSA/<file>.md).
 # A bank joins this list the day it is rewritten to pass `php bin/quiz-cue-gate.php --bank=<file>`.
 # From then on pre-ship fails any edit that brings a cue back. Never remove a line to get a build through.
+MSA/language1.md#aqa

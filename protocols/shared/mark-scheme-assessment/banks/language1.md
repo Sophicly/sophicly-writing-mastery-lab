@@ -2,8 +2,8 @@
 
 Deterministic, code-scored MARK-SCHEME-LITERACY assessment bank (parsed by `SWML_Quiz_Bank::pick_session_msa`).
 Examiner-level — harder + more precise than the Mark Scheme Quiz drill. Every question makes the
-student JUDGE real writing against the EXACT AQA Level-descriptor wording (8700/1, June 2024 mark
-scheme) and forces them to USE the mark scheme's own vocabulary rather than a simplified paraphrase.
+student JUDGE real writing against the EXACT AQA Level-descriptor wording (8700/1 2026 SAMPLE mark
+scheme, first exam June 2026 — `research/sources/aqa-8700-1-sms-2026.txt`) and forces them to USE the mark scheme's own vocabulary rather than a simplified paraphrase.
 Keys + feedback live server-side and are stripped before questions reach the client. The AI is never
 the scorekeeper.
 
@@ -11,7 +11,10 @@ AOs tagged per question for stratified random selection (the picker spreads the 
 AO4, AO5, AO6 — AO3 is N/A on Paper 1). Question types: MCQ · Select All · Fill · Ranking.
 AQA Paper 1 marks the READING answers across FOUR Levels (not six):
   L4 Perceptive, detailed · L3 Clear, relevant · L2 Some, attempts · L1 Simple, limited.
-Several ranking questions use AQA's OWN indicative-standard answers (June 2024 MS) as the rungs.
+Several ranking questions use AQA's OWN indicative-standard answers as the rungs: the 2026 sample scheme (item 27) and
+the June 2024 scheme (items 4, 10, 17, 25 — `research/sources/aqa-8700-1-jun24-ms.txt`). Every quotation in a Feedback or
+Why line is verbatim (gate: `bin/msa-quote-gate.js`); items 1 and 16 still teach the June 2024 Question 1 list and move
+with FIXLIST #731 item 5 (in 2026, Question 1 is multiple choice).
 
 ### **SECTION A: AQA (8700 — Paper 1)**
 
@@ -38,8 +41,8 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Correct:** B
    * **AO:** AO2
    * **Feedback:** ✓ Correct. AQA Paper 1 uses four Levels: L1 Simple, limited · L2 Some, attempts · L3 Clear, relevant · L4 Perceptive, detailed. Knowing the actual rung-words is what lets you place a response — the exact skill this assessment builds.
-   * **Why A:** "Sophisticated/Detailed" are not the Paper 1 Level headers — that ladder is invented.
-   * **Why C:** "Comprehensive/Thorough" are not the AQA Paper 1 Language headers.
+   * **Why A:** "Detailed/thorough" and "Sophisticated/critical" are not Paper 1 Level headers — that ladder is invented.
+   * **Why C:** "Thorough/secure" and "Comprehensive/critical" are not the AQA Paper 1 Language headers.
    * **Why D:** "Thoughtful/developed" and "Critical/conceptualised" are AQA Literature words, not the Paper 1 Language Levels — a tempting cross-paper mix-up.
 
 4. **Type: Ranking [Tests AO2]**
@@ -48,49 +51,49 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Correct:** B, D, A, C
    * **AO:** AO2
    * **Feedback:** ✓ Correct. These are AQA's own indicative-standard answers (June 2024). The bare simple comment on effect is Level 1. The attempt at some understanding is Level 2. The clear explanation of the effects with relevant detail and accurate terminology is Level 3. The perceptive, detailed analysis of the effects is Level 4. The ladder is comment → attempt → clear explanation → perceptive analysis.
-   * **WhyWrong:** Weakest→strongest is B (simple comment) then D (some/attempts) then A (clear explanation) then C (perceptive analysis). Each rung is exactly one AQA Level higher; the L3→L4 jump is explanation becoming analysis of the writer's effects.
+   * **WhyWrong:** Weakest→strongest: the "tells us they were hot" comment (simple), then "suggests the heat is so strong" (some), then the simile-and-verb explanation (clear), then the "transforming into fire" analysis (perceptive). Each rung is exactly one AQA Level higher; the L3→L4 jump is explanation becoming analysis of the writer's effects.
 
 5. **Type: MCQ [Tests AO2]**
    * **Question:** Two AO2 answers both name a simile and say what it suggests. Answer Y additionally analyses several layered effects of the choice, selecting judicious detail and using sophisticated terminology. Which AQA move takes Y from Level 3 to Level 4?
-   * **Options:** A) It quotes more lines from the source to widen the range of its supporting evidence, B) It moves from clear explanation of the effect to perceptive, detailed analysis of the effects with judicious detail, C) It develops the same point across longer and more sustained paragraphs, D) It deploys more technical terminology to demonstrate the breadth of its range
+   * **Options:** A) It quotes more lines from the source, widening the range of its supporting evidence, B) It analyses the layered effects perceptively, with judicious textual detail, C) It develops the same point across longer and more sustained paragraphs, D) It deploys more technical terminology to demonstrate the breadth of its range
    * **Correct:** B
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA L3 "Clear, relevant explanation… explains clearly the effects" → L4 "Perceptive, detailed analysis… analyses the effects… selects a range of judicious textual detail… sophisticated and accurate subject terminology." The lift is explanation becoming analysis plus judicious selection — not quantity.
+   * **Feedback:** ✓ Correct. AQA L3 "Clear, relevant explanation… explains clearly the effects" → L4 "Perceptive, detailed analysis… analyses the effects… selects a range of judicious textual detail… Makes sophisticated and accurate use of subject terminology." The lift is explanation becoming analysis plus judicious selection — not quantity.
    * **Why A:** AQA rewards judicious selection, not the number of quotations.
    * **Why C:** Paragraph length is not a Level descriptor.
    * **Why D:** Piling on terminology is feature-spotting; L4 wants terminology used judiciously to serve the analysis.
 
 6. **Type: Select All [Tests AO2]**
    * **Question:** Question 3 assesses STRUCTURE. Select ALL that AQA counts as a structural feature (and none that it does not).
-   * **Options:** A) What the writer focuses your attention on at the beginning and how that focus shifts as the source develops, B) A whole-text feature such as a perspective shift or a flashback to an earlier moment, C) A simile the writer uses to describe the effects of the heat on the landscape, D) A paragraph-level change of topic or a shift in time that contributes to the whole
+   * **Options:** A) What the writer focuses your attention on at the beginning and how that focus shifts as the source develops, B) A whole-text feature such as a perspective shift or a flashback to an earlier moment, C) A simile the writer uses to describe the effects of the heat on the landscape, D) A pivotal point, where the direction of the text or its tension suddenly turns
    * **Correct:** A, B, D
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA: structural features are "at a whole-text level eg beginnings/endings/perspective shifts; at a paragraph level eg topic change/aspects of cohesion; and at a sentence level when judged to contribute to whole structure." The beginning-focus, the whole-text perspective shift and the paragraph-level topic change are all structure. A simile is a LANGUAGE feature — it belongs to Question 2, not Question 3.
-   * **Why C:** A simile is a language device assessed in Question 2; writing about language in the structure question caps the response at Level 1–2.
+   * **Feedback:** ✓ Correct. AQA (2026): Question 3 "assesses structure: i.e. structural features such as a pivotal point, juxtaposition, flash back, shifts in focus, mood or tone, contrast, narrative pace and/or other structural features." The opening focus and how it shifts, a perspective shift or flashback, and a pivotal point are all structure. A simile is a LANGUAGE feature — it belongs to Question 2, not Question 3.
+   * **Why C:** A simile is a language feature, assessed in Question 2; Question 3 credits structural features only.
 
 7. **Type: MCQ [Tests AO2]**
-   * **Question:** For Question 3 (structure), a student writes only about the writer's word choices and similes, never about how the text is organised. Per the AQA note, what happens to the mark?
-   * **Options:** A) It is marked normally, because close language analysis counts as structure too, B) It is placed in Level 1 or Level 2 according to the quality of what is written, C) It is awarded zero marks because the wrong skill has been assessed, D) It is referred to a senior examiner before any mark can be given
+   * **Question:** For Question 2 (language in the given lines), a student writes only about language from OUTSIDE those lines. Per the AQA note, what happens to the mark?
+   * **Options:** A) It is marked normally, because good language analysis earns marks wherever it comes from, B) It is placed in Level 1 or Level 2 according to the quality of what is written, C) It is awarded zero marks because the wrong lines have been analysed, D) It is referred to a senior examiner before any mark can be given
    * **Correct:** B
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA's note: if a student writes only about language (the wrong focus) the response is "placed in either Level 1 or Level 2, according to the quality of what is written." It is capped low — not zeroed — because quality still earns the lower Levels.
-   * **Why A:** Language and structure are different skills; Question 3 credits structure only.
-   * **Why C:** AQA caps such a response at L1–L2; it does not zero a response that has quality.
+   * **Feedback:** ✓ Correct. AQA's Question 2 note (2026): "If a student writes only about language outside of the given lines, the response should be placed in either Level 1 or Level 2, according to the quality of what is written." It is capped low — not zeroed — because quality still earns the lower Levels.
+   * **Why A:** The question names the lines; analysis from outside them cannot reach Level 3 or 4.
+   * **Why C:** AQA caps such a response at Level 1 or 2; it does not zero writing that has quality.
    * **Why D:** The mark scheme already legislates for this case — no referral is needed.
 
 8. **Type: Fill [Tests AO4]**
-   * **Question:** Complete the AQA Level 4 AO4 (evaluation) descriptor: "Develops a convincing and [BLANK] response to the focus of the statement."
+   * **Question:** Complete the AQA Level 4 AO4 (evaluation) descriptor for Question 4: "Develops a convincing and [BLANK] understanding of ideas."
    * **Answer:** critical
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. AQA L4 AO4 = "Develops a convincing and critical response to the focus of the statement… evaluates critically and in detail the effect(s) on the reader." "Critical" is the word that separates the top band: testing the statement, not just agreeing with it.
-   * **WhyWrong:** The AQA word is "critical" — a convincing AND critical response that weighs the statement, rather than one that simply supports it.
+   * **Feedback:** ✓ Correct. AQA Level 4 for Question 4 (2026): "Develops a convincing and critical understanding of ideas" and "Evaluates critically and in detail the impact of the writer's ideas and methods on the reader." "Critical" is the word that separates the top band: testing the statement, not just agreeing with it.
+   * **WhyWrong:** The AQA word is "critical" — a convincing AND critical understanding that weighs the statement, rather than one that simply supports it.
 
 9. **Type: MCQ [Tests AO4]**
    * **Question:** For Question 4, a student agrees with the statement and supports it with several apt quotations. Why might this still NOT reach Level 4?
-   * **Options:** A) It does not use enough quotations — Level 4 evaluation is rewarded for the sheer breadth of textual support, B) Agreeing-and-supporting is a clear, relevant response (Level 3); Level 4 needs a convincing and CRITICAL evaluation that weighs the statement and the effects on the reader, C) It has not named or explained enough of the writer's techniques to show detailed understanding of method, D) Evaluation can only reach Level 4 if the student disagrees with the statement and argues the opposite case
+   * **Options:** A) It does not use enough quotations, as Level 4 evaluation is rewarded for the sheer breadth of textual support, B) Agreeing and supporting is clear evaluation (Level 3); Level 4 weighs the statement critically, C) It has not named or explained enough of the writer's techniques to show detailed understanding of method, D) Evaluation can only reach Level 4 if the student disagrees with the statement and argues the opposite case
    * **Correct:** B
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. Selecting quotes to agree is AQA L3 "clear and relevant… evaluates clearly the effect(s)." L4 is "convincing and critical… evaluates critically and in detail the effect(s) on the reader" — testing the statement as an argument, weighing both sides, judging the writer's methods.
+   * **Feedback:** ✓ Correct. Selecting quotes to agree is Level 3: "Evaluates clearly the impact of the writer's ideas and methods on the reader." Level 4 "Develops a convincing and critical understanding of ideas" and "Evaluates critically and in detail" that impact — testing the statement as an argument, weighing both sides, judging the writer's methods.
    * **Why A:** AQA rewards judicious references, not quantity.
    * **Why C:** Naming techniques is AO2 behaviour; AO4 rewards a critical, weighed evaluation.
    * **Why D:** You may agree, disagree or partly agree — what lifts the Level is a critical, weighed judgement, not the side you take.
@@ -101,14 +104,14 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Correct:** C, A, B, D
    * **AO:** AO4
    * **Feedback:** ✓ Correct. AQA's own indicative answers (June 2024). The simple, limited evaluation is Level 1. The response with some attempts at evaluation and some understanding of method is Level 2. The clear, relevant evaluation of the effects is Level 3. The perceptive, detailed, critical evaluation that weighs both readings is Level 4. The ladder is simple → some → clear → critical.
-   * **WhyWrong:** Weakest→strongest is C (simple) then A (some) then B (clear) then D (perceptive/critical). Each rung is one AQA Level higher; L4 weighs the statement critically rather than simply agreeing with it.
+   * **WhyWrong:** Weakest→strongest: "Dick's anger is mean" (simple), then "I agree it is unfair" (some), then "Dick's anger is unfair" (clear), then "Dick's intensity could be seen as unfair" (perceptive, critical). Each rung is one AQA Level higher; L4 weighs the statement critically rather than simply agreeing with it.
 
 11. **Type: MCQ [Tests AO4]**
    * **Question:** What does "critical evaluation" require for Question 4 that simply explaining the writer's effects does not?
-   * **Options:** A) Testing the statement as an argument — weighing evidence for and against it and reaching a judgement on the reader's response, B) Finding as many apt quotations as possible to support and confirm the statement's claim, C) Explaining each of the writer's techniques and their effects in close, sustained detail, D) Summarising what happens in the second half of the source to show clear understanding of it
+   * **Options:** A) Testing the statement as an argument, weighing evidence and reaching a judgement, B) Finding as many apt quotations as possible to support and confirm the statement's claim, C) Explaining each of the writer's techniques and their effects in close, sustained detail, D) Summarising what happens in the second half of the source to show clear understanding of it
    * **Correct:** A
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. AQA L4 AO4 "evaluates critically and in detail the effect(s) on the reader" and "develops a convincing and critical response to the focus of the statement." Evaluation weighs the statement and judges; explaining effects alone is AO2 work carried into Question 4.
+   * **Feedback:** ✓ Correct. AQA Level 4 for Question 4: "Evaluates critically and in detail the impact of the writer's ideas and methods on the reader" and "Develops a convincing and critical understanding of ideas." Evaluation weighs the statement and judges; explaining effects alone is AO2 work carried into Question 4.
    * **Why B:** Quantity of quotation is not evaluation; AQA rewards judicious references.
    * **Why C:** Explaining techniques is AO2; AO4 wants a critical, weighed judgement.
    * **Why D:** Summarising the events of the source earns nothing for evaluation.
@@ -128,7 +131,7 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Options:** A) Tone, style and register are assuredly matched to purpose and audience, B) Extensive and ambitious vocabulary with sustained crafting of linguistic devices, C) Sentence demarcation is consistently secure with a wide range of accurate punctuation, D) Varied and inventive use of structural features with fluently linked paragraphs
    * **Correct:** A, B, D
    * **AO:** AO5
-   * **Feedback:** ✓ Correct. AO5 (Content and Organisation) L4 = "convincing and compelling… tone, style and register assuredly matched… extensive and ambitious vocabulary with sustained crafting… varied and inventive use of structural features… fluently linked paragraphs." Secure demarcation and punctuation are AO6 (Technical Accuracy), marked on a separate ladder.
+   * **Feedback:** ✓ Correct. AO5 (Content and Organisation) L4 = "convincing and compelling… Tone, style and register are assuredly matched to purpose and audience… extensive and ambitious vocabulary with sustained crafting… varied and inventive use of structural features… fluently linked paragraphs." Secure demarcation and punctuation are AO6 (Technical Accuracy), marked on a separate ladder.
    * **Why C:** Sentence demarcation and punctuation are AO6 Technical Accuracy, not AO5 Content and Organisation — the two halves of Question 5 are scored separately.
 
 14. **Type: MCQ [Tests AO6]**
@@ -146,7 +149,7 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Options:** A) Level 4 — a full range of sentence forms used with a consistently high level of accuracy, B) Level 3 — a variety of sentence forms with demarcation mostly secure and mostly accurate, C) Level 2 — an attempt at a variety of sentence forms with some control of accuracy, D) Level 1 — a simple range of sentence forms with occasional demarcation
    * **Correct:** B
    * **AO:** AO6
-   * **Feedback:** ✓ Correct. AQA AO6 L3 (9–12) = "variety of sentence forms… mostly secure and mostly accurate." L4 (13–16) raises "variety" to a "full range… used for effect" and "mostly" to "consistently secure and consistently accurate… high level of accuracy." "Mostly" vs "consistently" is the L3/L4 hinge.
+   * **Feedback:** ✓ Correct. AQA AO6 Level 3 (9–12): "Uses a variety of sentence forms for effect" and "Sentence demarcation is mostly secure and mostly accurate." Level 4 (13–16) raises these to "Uses a full range of appropriate sentence forms for effect" and "consistently secure and consistently accurate", with a "High level of accuracy in spelling". "Mostly" vs "consistently" is the Level 3/Level 4 hinge.
    * **Why A:** L4 needs a FULL range and CONSISTENT accuracy, not "mostly".
    * **Why C:** L2 only "attempts" a variety; this response achieves one.
    * **Why D:** L1 is a "simple range"; a variety used for effect is above it.
@@ -169,7 +172,7 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **WhyWrong:** Weakest to strongest: the plot-description comment, then the "worse than normal" some-understanding comment, then the "creates tension" clear explanation, then the exposition-and-climax perceptive analysis. Each rung is one AQA Level higher.
 18. **Type: MCQ [Tests AO2]**
    * **Question:** A Question 3 (structure) answer says: "The writer starts with the heat and then moves to Mary inside the house, which is a structural shift." What is the ceiling for this comment?
-   * **Options:** A) Level 4 — it analyses the effect of the structural shift in perceptive detail, B) Level 2 — it identifies a shift but only comments on it, without explaining its effect on the reader, C) Level 3 — it clearly explains the effect of the shift, D) Level 1 — it makes no reference to structure at all
+   * **Options:** A) Level 4 — it analyses the effect of the structural shift in perceptive detail, B) Level 2 — it names a shift and comments, but explains no effect, C) Level 3 — it clearly explains the effect of the shift, D) Level 1 — it makes no reference to structure at all
    * **Correct:** B
    * **AO:** AO2
    * **Feedback:** ✓ Correct. Naming a shift and labelling it "a structural shift" identifies the feature with a comment but no explained effect — Level 2, "some understanding." To climb, the answer must explain (Level 3) then analyse (Level 4) what the shift DOES to the reader.
@@ -181,15 +184,15 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Options:** A) Analysing the effects the writer's choices create, rather than just naming a technique, B) Selecting judicious textual detail that earns its place in the argument, C) Listing as many techniques as possible to show range, D) Using subject terminology accurately and only where it serves the analysis
    * **Correct:** A, B, D
    * **AO:** AO2
-   * **Feedback:** Level 4 AO2 is "perceptive, detailed analysis… judicious textual detail… sophisticated and accurate terminology." Analysing effects, judicious detail and accurate terminology all belong there. Listing many techniques is feature-spotting, which the mark scheme does not reward.
+   * **Feedback:** Level 4 AO2 is "Perceptive, detailed analysis… judicious textual detail… Makes sophisticated and accurate use of subject terminology." Analysing effects, judicious detail and accurate terminology all belong there. Listing many techniques is feature-spotting, which the mark scheme does not reward.
    * **Why C:** Naming many techniques is feature-spotting; AQA rewards judicious selection and explored effect, not quantity.
 20. **Type: MCQ [Tests AO4]**
-   * **Question:** A Question 4 answer "makes a clear and relevant response to the statement, shows clear understanding of the writer's methods, and evaluates the effects clearly." Which Level?
+   * **Question:** A Question 4 answer "Makes a clear and relevant understanding of ideas", "Shows clear understanding of writer's methods" and "Evaluates clearly the impact of the writer's ideas and methods on the reader". Which Level?
    * **Options:** A) Level 4 — perceptive, detailed, critical evaluation, B) Level 3 — clear, relevant evaluation, C) Level 2 — some attempts at evaluation, D) Level 1 — simple, limited evaluation
    * **Correct:** B
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. "Clear and relevant response… clear understanding of methods… evaluates clearly the effects" is the exact Level 3 wording. Level 4 would be convincing and CRITICAL, weighing the statement and evaluating the effects in detail.
-   * **Why A:** Level 4 is convincing and critical, weighing the statement; a clear, relevant response sits a band below.
+   * **Feedback:** ✓ Correct. These are the exact Level 3 words (2026). Level 4 would be "convincing and critical", evaluating "critically and in detail" — weighing the statement, not just explaining it.
+   * **Why A:** Level 4 is "convincing and critical", weighing the statement; a clear, relevant evaluation sits a band below.
    * **Why C:** "Some attempts at evaluation" makes only some response to the statement; a clear, relevant evaluation is above that.
    * **Why D:** A simple, limited response shows limited understanding of method; this answer is clearer than that.
 21. **Type: Fill [Tests AO4]**
@@ -200,10 +203,10 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **WhyWrong:** "Critical" describes the RESPONSE at Level 4, but the Level key words are "perceptive, detailed."
 22. **Type: MCQ [Tests AO4]**
    * **Question:** What is the key difference between a Level 3 and a Level 4 Question 4 response?
-   * **Options:** A) Level 4 weighs the statement critically and evaluates the effects in detail, where Level 3 makes a clear, relevant response and evaluates the effects clearly, B) Level 4 uses more quotations than Level 3, C) Level 4 is simply longer and more developed than Level 3, D) Level 4 compares the source with a second text, which Level 3 does not
+   * **Options:** A) Level 4 weighs the statement critically; Level 3 evaluates clearly, B) Level 4 supports its view with more quotations than Level 3 does, C) Level 4 is simply longer and more fully developed than Level 3, D) Level 4 compares the source with a second text, which Level 3 does not
    * **Correct:** A
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. Level 3 is "clear and relevant… evaluates clearly the effects." Level 4 is "convincing and critical… evaluates critically and in detail." The lift is a weighed, critical judgement — not length or quotation count.
+   * **Feedback:** ✓ Correct. Level 3: "Evaluates clearly the impact of the writer's ideas and methods on the reader." Level 4: "Develops a convincing and critical understanding of ideas" and "Evaluates critically and in detail." The lift is a weighed, critical judgement — not length or quotation count.
    * **Why B:** Quantity of quotation is not a Level distinction; judicious reference is what counts.
    * **Why C:** Length is not a descriptor; a concise response can be Level 4.
    * **Why D:** Cross-text comparison is AO3 on Paper 2; it has no place in this single-source evaluation.
@@ -215,11 +218,11 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Feedback:** AO5 (Content and Organisation) Level 4 is convincing and compelling communication, assuredly matched register, and varied, inventive structure. Consistent spelling and punctuation is AO6 Technical Accuracy, scored on a separate ladder.
    * **Why C:** Spelling and punctuation accuracy is AO6, not AO5 — the two halves of Question 5 are marked separately.
 24. **Type: MCQ [Tests AO6]**
-   * **Question:** A student's writing has "mostly secure" sentence demarcation, "a range of punctuation used mostly with success", and "a variety of sentence forms." Which AO6 Level?
-   * **Options:** A) Level 4 — consistently secure demarcation and a wide range of punctuation with a high level of accuracy, B) Level 3 — mostly secure and mostly accurate, with a variety of sentence forms, C) Level 2 — some control of a range of punctuation, D) Level 1 — occasional sentence demarcation
+   * **Question:** A student's writing has "mostly secure" sentence demarcation; "Range of punctuation is used, mostly with success"; and "a variety of sentence forms." Which AO6 Level?
+   * **Options:** A) Level 4 — consistently secure demarcation and a wide range of punctuation with a high level of accuracy, B) Level 3 — mostly secure and mostly accurate, with a variety of sentence forms, C) Level 2 — some control of a range of punctuation, attempting variety, D) Level 1 — occasional sentence demarcation and simple sentence forms
    * **Correct:** B
    * **AO:** AO6
-   * **Feedback:** ✓ Correct. "Mostly secure… mostly with success… variety of sentence forms" is the Level 3 wording. Level 4 raises "mostly" to "consistently" and "a range" to "a wide range… with a high level of accuracy."
+   * **Feedback:** ✓ Correct. "Mostly secure… mostly with success… variety of sentence forms" is the Level 3 wording. Level 4 raises "mostly" to "consistently" and "Range of punctuation is used, mostly with success" to "Wide range of punctuation is used with a high level of accuracy."
    * **Why A:** Level 4 needs CONSISTENT security and a wide, highly accurate range, not "mostly."
    * **Why C:** Level 2 only has "some control"; this response is mostly secure, a band higher.
    * **Why D:** Level 1 is "occasional" demarcation; "mostly secure" is well above that.
@@ -232,6 +235,138 @@ Several ranking questions use AQA's OWN indicative-standard answers (June 2024 M
    * **Why B:** A shift of focus across the text is a structural feature for Question 3.
    * **Why C:** Where the writer chooses to begin is a structural, sequencing choice for Question 3.
    * **Why D:** A flashback is a structural device that reorders time, assessed in Question 3.
+
+26. **Type: MCQ [Tests AO1]**
+   * **Question:** In 2026, Question 1 is four multiple-choice questions on lines 1 to 9 of the source. Which part of AO1 does AQA say it assesses?
+   * **Options:** A) Bullet point 1 — identify and interpret explicit and implicit information and ideas, B) Bullet point 2 — select and synthesise evidence from different texts, C) Both bullet points equally, with two of the four marks for each one, D) AO2 instead, because choosing an answer means judging the writer's language
+   * **Correct:** A
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. The 2026 sample mark scheme says: "This assesses bullet point 1: identify and interpret explicit and implicit information and ideas". The second AO1 bullet, "Select and synthesise evidence from different texts", needs two texts, so it belongs to Paper 2.
+   * **Why B:** "Select and synthesise evidence from different texts" needs more than one text; Paper 1 has one source.
+   * **Why C:** AQA names one bullet only for Question 1 — bullet point 1.
+   * **Why D:** Choosing which statement is correct is retrieval and inference (AO1); AO2 begins in Question 2.
+
+27. **Type: Ranking [Tests AO2]**
+   * **Question:** These four extracts are from AQA's own indicative answers to the 2026 sample Question 3 (how the writer structures the hyena extract to create tension). Rank them WEAKEST to STRONGEST by AQA Level (letters in order, weakest first).
+   * **Options:** A) By saying ‘It was the hyena that worried me’, the writer immediately introduces the main element of tension in the source. The pivotal point occurs when the hyena suddenly comes out and begins running in circles, bringing Pi’s fears to life, B) The writer focuses on the hyena at the start of the source. The hyena is mentioned in the first sentence when it says ‘it was the hyena that worried me’. This makes us wonder why he is so worried and creates tension, C) The first sentence immediately introduces the narrator’s concern, ‘it was the hyena that worried me’ and this foreshadows the pivotal point of the extract: Pi passively watching the hyena’s wild, noisy behaviour, D) By introducing in the first sentence that ‘it was the hyena that worried me’, it foreshadows the scary behaviour of the hyena. The key moment, when the hyena comes out and starts running in circles, builds tension
+   * **Correct:** B, D, A, C
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. The answer that "makes us wonder why he is so worried" is Level 1: it "Offers simple comment on the effect of structure". The one that says the opening "foreshadows the scary behaviour" is Level 2: it "Attempts to comment on the effect of structural features". The one naming "the main element of tension" and the pivotal point is Level 3: it "Explains clearly the effects of the writer’s choices of structural features". The one reading the opening as foreshadowing "the pivotal point of the extract" is Level 4: it "Analyses the effects of the writer’s choices of structural features".
+   * **WhyWrong:** Weakest to strongest: a simple comment ("makes us wonder"), then an attempt that names foreshadowing, then a clear explanation naming the pivotal point, then perceptive analysis linking the opening to "the pivotal point of the extract".
+
+28. **Type: MCQ [Tests AO4]**
+   * **Question:** A Question 4 answer never writes "I agree" or "I disagree", but it weighs the hyena as threatening and then as comic all the way through. Per the AQA note, how is it marked?
+   * **Options:** A) It is credited according to the quality of what is written, as evaluation may be implicit, B) It is capped at Level 2, because it never states a position on the statement, C) It is treated as an AO2 language answer, because it never says whether it agrees, D) It cannot go above Level 1, because an explicit agreement is required
+   * **Correct:** A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. AQA's Question 4 note (2026): "the evaluative ‘I do/I don’t agree’ may be implicit. In both these cases credit should be given according to the quality of what is written." A response that weighs the statement all the way through is evaluating, whether or not it says "I agree".
+   * **Why B:** No cap applies: AQA says the evaluation "may be implicit".
+   * **Why C:** Weighing the statement is evaluation (AO4), even without the words "I agree".
+   * **Why D:** AQA gives credit "according to the quality of what is written", not for the words "I agree".
+
+29. **Type: Fill [Tests AO4]**
+   * **Question:** Complete the AQA Level 3 descriptor for Question 4: "Evaluates clearly the [BLANK] of the writer's ideas and methods on the reader."
+   * **Answer:** impact
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. Level 3 (2026): "Evaluates clearly the impact of the writer’s ideas and methods on the reader". Level 4: "Evaluates critically and in detail the impact of the writer’s ideas and methods on the reader". Question 4 is about the impact on the READER.
+   * **WhyWrong:** The AQA word is "impact": what the writer's ideas and methods do to the reader.
+
+30. **Type: MCQ [Tests AO5]**
+   * **Question:** A Question 5 description is vivid and well crafted, but it describes a city street, not the zoo or wildlife park the task asked for. Per the AQA note, what is the most it can score for AO5?
+   * **Options:** A) 12 marks: the top of Level 2, as it does not address the task's focus, B) 24 marks, because AO5 rewards the quality of the writing whatever its subject, C) 0 marks, because writing that is off the task's focus cannot be credited, D) 18 marks: the top of Level 3, because the crafting is clear but off focus
+   * **Correct:** A
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. AQA's NB for AO5 (2026): "If a candidate does not directly address the focus of the task, their communication cannot be clear or convincing and therefore the mark for AO5 is capped at the top of Level 2 - 12 marks". The AO6 marks are still awarded on their own grid.
+   * **Why B:** The NB caps AO5 "at the top of Level 2 - 12 marks" when the focus is missed.
+   * **Why C:** It is capped, not zeroed: the quality of the writing still earns up to 12 marks.
+   * **Why D:** The cap is the top of Level 2, because the communication "cannot be clear or convincing".
+
+31. **Type: MCQ [Tests AO5]**
+   * **Question:** In AO5, lower Level 4 (19–21) says tone, style and register are "convincingly matched to purpose and audience". Which word does upper Level 4 (22–24) use instead?
+   * **Options:** A) assuredly, B) consistently, C) clearly, D) compellingly
+   * **Correct:** A
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Upper Level 4: "Tone, style and register are assuredly matched to purpose and audience". Lower Level 4: "Tone, style and register are convincingly matched to purpose and audience". Upper Level 3 has them "clearly and consistently matched".
+   * **Why B:** "Consistently" is the upper Level 3 word, paired with "clearly".
+   * **Why C:** "Clearly" is also the upper Level 3 word.
+   * **Why D:** "Compelling" describes the communication at Level 4, not the matching of tone, style and register.
+
+32. **Type: MCQ [Tests AO5]**
+   * **Question:** A Question 5 response's communication is "generally clear and relevant to focus/task". Which AO5 band does that wording place it in?
+   * **Options:** A) Lower Level 3 (13–15), B) Upper Level 3 (16–18), C) Lower Level 4 (19–21), D) Upper Level 2 (10–12)
+   * **Correct:** A
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Lower Level 3: "Communication is generally clear and relevant to focus/task". Upper Level 3 raises "generally" to "consistently": "Communication is consistently clear and consistently relevant to focus/task".
+   * **Why B:** Upper Level 3 needs communication that is "consistently clear".
+   * **Why C:** Lower Level 4 is "convincing and directly relevant to focus and task".
+   * **Why D:** Upper Level 2 "Communicates with some sustained success"; generally clear communication is a band higher.
+
+33. **Type: Fill [Tests AO5]**
+   * **Question:** Complete the AO5 upper Level 4 Organisation bullet: "Fluently linked paragraphs with [BLANK] integrated discourse markers."
+   * **Answer:** seamlessly
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Upper Level 4: "Fluently linked paragraphs with seamlessly integrated discourse markers". Lower Level 4: "Consistently coherent use of paragraphs with integrated discourse markers". At the top, the joins between paragraphs do not show.
+   * **WhyWrong:** The AQA word is "seamlessly": the links between paragraphs are so smooth that they do not show.
+
+34. **Type: Select All [Tests AO5]**
+   * **Question:** AQA splits AO5 into Content and Organisation. Select ALL the upper Level 4 bullets that AQA lists under ORGANISATION (and none that it lists under Content).
+   * **Options:** A) Varied and inventive use of structural features, B) Tone, style and register are assuredly matched to purpose and audience, C) Fluently linked paragraphs with seamlessly integrated discourse markers, D) Extensive and ambitious vocabulary with sustained crafting of linguistic devices
+   * **Correct:** A, C
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Upper Level 4 Organisation: "Varied and inventive use of structural features" and "Fluently linked paragraphs with seamlessly integrated discourse markers". Tone, style and register, and vocabulary, are Content bullets.
+   * **Why B:** Matching "Tone, style and register" to purpose and audience is a Content bullet.
+   * **Why D:** Vocabulary and "sustained crafting of linguistic devices" are Content bullets.
+
+35. **Type: Ranking [Tests AO5]**
+   * **Question:** These AO5 Organisation bullets all describe PARAGRAPHS. Rank them from the lowest band to the highest (letters in order, lowest first).
+   * **Options:** A) Some use of paragraphs and some use of discourse markers, B) Fluently linked paragraphs with seamlessly integrated discourse markers, C) No paragraphs, D) Coherent paragraphs with integrated discourse markers
+   * **Correct:** C, A, D, B
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Lower Level 1: "No paragraphs". Upper Level 2: "Some use of paragraphs and some use of discourse markers". Upper Level 3: "Coherent paragraphs with integrated discourse markers". Upper Level 4: "Fluently linked paragraphs with seamlessly integrated discourse markers".
+   * **WhyWrong:** Lowest to highest: "No paragraphs", then "Some use of paragraphs", then "Coherent paragraphs", then "Fluently linked paragraphs".
+
+36. **Type: Fill [Tests AO6]**
+   * **Question:** Complete the AO6 Level 4 bullet: "Uses Standard English consistently and appropriately with [BLANK] control of complex grammatical structures."
+   * **Answer:** secure
+   * **AO:** AO6
+   * **Feedback:** ✓ Correct. Level 4: "Uses Standard English consistently and appropriately with secure control of complex grammatical structures". Level 3: "Mostly uses Standard English appropriately with mostly controlled grammatical structures".
+   * **WhyWrong:** The AQA word is "secure": full control of complex grammar, where Level 3 has "mostly controlled grammatical structures".
+
+37. **Type: Ranking [Tests AO6]**
+   * **Question:** Rank these AO6 spelling bullets from Level 1 to Level 4 (letters in order, lowest first).
+   * **Options:** A) High level of accuracy in spelling, including ambitious vocabulary, B) Generally accurate spelling, including complex and irregular words, C) Accurate basic spelling, D) Some accurate spelling of more complex words
+   * **Correct:** C, D, B, A
+   * **AO:** AO6
+   * **Feedback:** ✓ Correct. Level 1: "Accurate basic spelling". Level 2: "Some accurate spelling of more complex words". Level 3: "Generally accurate spelling, including complex and irregular words". Level 4: "High level of accuracy in spelling, including ambitious vocabulary".
+   * **WhyWrong:** The ladder climbs from "basic" words, to "more complex words", to "complex and irregular words", to "ambitious vocabulary".
+
+38. **Type: Ranking [Tests AO6]**
+   * **Question:** Rank these AO6 sentence-demarcation bullets from Level 1 to Level 4 (letters in order, lowest first).
+   * **Options:** A) Sentence demarcation is consistently secure and consistently accurate, B) Sentence demarcation is mostly secure and mostly accurate, C) Sentence demarcation is mostly secure and sometimes accurate, D) Occasional use of sentence demarcation
+   * **Correct:** D, C, B, A
+   * **AO:** AO6
+   * **Feedback:** ✓ Correct. Level 1: "Occasional use of sentence demarcation". Level 2: "mostly secure and sometimes accurate". Level 3: "mostly secure and mostly accurate". Level 4: "consistently secure and consistently accurate".
+   * **WhyWrong:** Levels 2 and 3 both say "mostly secure"; the difference is "sometimes accurate" against "mostly accurate".
+
+39. **Type: MCQ [Tests AO6]**
+   * **Question:** A student's punctuation shows "Some control of a range of punctuation". Which AO6 Level does that wording describe?
+   * **Options:** A) Level 2 (5–8 marks), B) Level 3 (9–12 marks), C) Level 1 (1–4 marks), D) Level 4 (13–16 marks)
+   * **Correct:** A
+   * **AO:** AO6
+   * **Feedback:** ✓ Correct. Level 2: "Some control of a range of punctuation". Level 1: "Some evidence of conscious punctuation". Level 3: "Range of punctuation is used, mostly with success". Level 4: "Wide range of punctuation is used with a high level of accuracy".
+   * **Why B:** Level 3 uses the range "mostly with success", which is more than some control.
+   * **Why C:** Level 1 shows only "Some evidence of conscious punctuation".
+   * **Why D:** Level 4 is a "Wide range of punctuation" used "with a high level of accuracy".
+
+40. **Type: MCQ [Tests AO6]**
+   * **Question:** What does AQA say earns AO6 Level 0 (no marks) on Question 5?
+   * **Options:** A) Spelling and punctuation so poor that they prevent understanding or meaning, B) Writing with no paragraphs at all, so the order of ideas is hard to follow, C) A response that ignores the task's focus and describes something else, D) Writing that uses only simple vocabulary and simple sentence forms
+   * **Correct:** A
+   * **AO:** AO6
+   * **Feedback:** ✓ Correct. AO6 Level 0: "Students’ spelling, punctuation etc. is sufficiently poor to prevent understanding or meaning." Missing paragraphs and an off-focus response are AO5 matters; simple vocabulary and sentences still earn Level 1.
+   * **Why B:** "No paragraphs" is an AO5 Organisation bullet (lower Level 1), not AO6 Level 0.
+   * **Why C:** Missing the task's focus caps AO5 "at the top of Level 2 - 12 marks"; it is not an AO6 rule.
+   * **Why D:** "Simple use of vocabulary" and a "Simple range of sentence forms" earn AO6 Level 1, not Level 0.
 
 ### **SECTION B: EDEXCEL (1EN0 — Paper 1: Fiction and Imaginative Writing)**
 

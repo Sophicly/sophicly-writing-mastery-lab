@@ -269,6 +269,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACMDR 2
   tail -1 /tmp/quiz-cue-enforce.out
 fi
 
+# v7.20.782 (WML 339 A, #815d/#822): a mark-scheme bank teaches the scheme's own words, so every quotation in a piloted
+# section's notes must be verbatim in the 2026 scheme (June 2024 only where an item uses its indicative answers), the
+# section must hold its planned count + AO mix, and no note may name an option by its letter (options shuffle).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACMDR 2>/dev/null \
+     | grep -qE 'protocols/shared/mark-scheme-assessment/|msa-quote-gate|research/sources/aqa-8700-1|knowledge-mark-scheme-lang1'; then
+  node bin/msa-quote-gate.js --selftest >/tmp/msa-quote-selftest.out 2>&1 || { cat /tmp/msa-quote-selftest.out; fail=1; }
+  node bin/msa-quote-gate.js >/tmp/msa-quote.out 2>&1 || { cat /tmp/msa-quote.out; fail=1; }
+  tail -1 /tmp/msa-quote.out
+fi
+
 # v7.20.687 (FIXLIST #714): the mixed-paper anthology map (Edexcel IGCSE Spec A Paper 2 = 5 poems +
 # 5 prose) lives in wml-core.js AND class-rest-api.php. A difference = the client builds one doc
 # family while the server resolves another (write-key ≠ read-key, root §5d). Whole-repo, always.
