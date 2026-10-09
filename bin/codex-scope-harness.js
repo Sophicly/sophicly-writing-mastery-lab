@@ -151,6 +151,8 @@ ok(F.codexSectionBar(CONTRACT.lessons[i5].fields, m5, new Set(CONTRACT.lessons[i
 const two = F.codexSectionBar([CONTRACT.lessons[0].fields[0], CONTRACT.lessons[1].fields[0], f5own], m5, new Set());
 ok(two && two.lessons.length === 2 && two.lessons[0].lesson === String(CONTRACT.lessons[0].lesson_id) && two.lessons[1].lesson === String(CONTRACT.lessons[1].lesson_id),
     'JS #833: a section holding answers from two lessons links to both, in document order', two);
+ok(two && two.lessons[0].kind === 'earlier' && (F.codexSectionBar([CONTRACT.lessons[36].fields[0]], m5, new Set([CONTRACT.lessons[36].fields[0]])) || { lessons: [{}] }).lessons[0].kind === 'later',
+    'JS #836: each linked lesson carries its own kind (earlier/later) — the SPA transition direction', two);
 ok(F.codexLessonHref('https://x.test/l/', 'unit-1.a b', false) === 'https://x.test/l/?codex_field=unit-1.a%20b' && F.codexLessonHref('https://x.test/l/?x=1', 'f', true) === 'https://x.test/l/?x=1&codex_field=f&codex_scope=1'
     && F.codexLessonHref('', 'f', false) === '', 'JS #833: the link lands on the answer (codex_field), keeps a staff preview in the student view, and is empty without a URL');
 const cssNone = F.codexScopeCss(secs, m5, new Set());
@@ -188,6 +190,14 @@ ok(/codexBar\.className = 'swml-codex-bar';/.test(SB) && /if \(codexBar && \(cod
 const bars833 = fnBody(JS, 'function _renderCodexBars(model, answered)');
 ok(/a\.textContent = 'Go to that lesson to edit it →';/.test(bars833) && /window\.WML\.arrowizeEl\(a\)/.test(bars833),
     'wiring #835: the lesson button draws Neil\'s own arrow through the arrowize seam (#177); the "→" literal stays in textContent');
+// v7.20.788 (#836): a plain click moves through the Focus SPA (header + sidebar stay, focusSpaNavigated flushes the
+// typing) — never a full reload; a modified click / no SPA / another origin keeps the ordinary link.
+const spaClick = bars833.slice(bars833.indexOf("a.addEventListener('click'"), bars833.indexOf('row.appendChild(a);'));
+ok(/ev\.stopPropagation\(\);/.test(spaClick) && /ev\.button !== 0 \|\| ev\.metaKey \|\| ev\.ctrlKey \|\| ev\.shiftKey \|\| ev\.altKey\) return;/.test(spaClick)
+    && /typeof spa\.navigateTo !== 'function'\) return;/.test(spaClick) && /new URL\(a\.href\)\.origin === window\.location\.origin/.test(spaClick)
+    && /ev\.preventDefault\(\);[\s\S]*spa\.state\.direction = l\.kind === 'earlier' \? 'prev' : 'next';[\s\S]*spa\.navigateTo\(a\.href\);/.test(spaClick)
+    && /a\.addEventListener\('mousedown', \(ev\) => ev\.stopPropagation\(\)\);/.test(bars833),
+    'wiring #836: the lesson button navigates through the Focus SPA (sidebar transition, direction from its kind), keeps new-tab clicks ordinary, and the editor never takes the press');
 ok(/learndash_get_step_permalink\(\(int\) \$lid, \$cid\)/.test(PHP) && /\$scope\['urls'\] = \(object\) \$urls;/.test(PHP), 'wiring #833: the server sends each owning lesson\'s URL in this course');
 ok((JS.match(/_codexScopeApply\((canvasEditor|editor)\)/g) || []).length >= 3, 'wiring: scope applied on first paint, after the resume, and on every update');
 ok(/addEventListener\('sophicly:media-item'/.test(JS), 'wiring: the clip-started event is followed');

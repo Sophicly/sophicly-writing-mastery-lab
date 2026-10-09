@@ -37997,7 +37997,7 @@
             const lid = model.owner.get(f) || '';
             if (seen.has(lid)) return;
             const ls = model.lessons.get(lid) || { label: s === 'later' ? (model.later.get(f) || '') : '', url: '' };
-            seen.set(lid, { lesson: lid, label: ls.label, url: ls.url, field: f });
+            seen.set(lid, { lesson: lid, label: ls.label, url: ls.url, field: f, kind: s });
         });
         return seen.size ? { kind, lessons: Array.from(seen.values()) } : null;
     }
@@ -38166,7 +38166,23 @@
                     try { if (window.WML && typeof window.WML.arrowizeEl === 'function') window.WML.arrowizeEl(a); } catch (_) { /* text arrow stays */ }
                     // Never let the editor take the press (it would move the caret instead of following the link).
                     a.addEventListener('mousedown', (ev) => ev.stopPropagation());
-                    a.addEventListener('click', (ev) => ev.stopPropagation());
+                    // v7.20.788 (#836): the button moves like a sidebar click — the Focus SPA's own transition, header and
+                    // sidebar staying put — not a whole-page reload. The SPA dispatches focusSpaNavigated, so the outgoing
+                    // lesson's typing is flushed exactly as a sidebar click flushes it. A new-tab click, another origin, or a
+                    // page without the SPA keeps the ordinary link.
+                    a.addEventListener('click', (ev) => {
+                        ev.stopPropagation();
+                        if (ev.defaultPrevented || ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+                        const spa = window.SophiclyFocusSPA;
+                        if (!spa || typeof spa.navigateTo !== 'function') return;
+                        let sameOrigin = false;
+                        try { sameOrigin = new URL(a.href).origin === window.location.origin; } catch (_) {}
+                        if (!sameOrigin) return;
+                        ev.preventDefault();
+                        // The sidebar works direction out from its own URL list, which never holds ?codex_field= — say it.
+                        try { if (spa.state) spa.state.direction = l.kind === 'earlier' ? 'prev' : 'next'; } catch (_) {}
+                        spa.navigateTo(a.href);
+                    });
                     row.appendChild(a);
                 } else {
                     const tail = document.createElement('span');
