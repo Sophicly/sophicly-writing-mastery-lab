@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.797';
+var WML_BUILD = '7.20.798';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -5590,6 +5590,10 @@ window.WML = (function() {
         // v7.20.715 (PEDAGOGY §53.20) — "Linking Sentences & Paragraphs": the toolkit's nine links. The flow
         // element, T2 and the coherence-row chip all point here (`cohesion` is the connectives list).
         'sentence-transitions',
+        // v7.20.798 (#849, Neil: "do we have a deep link for every single one?") — the tutor's Common Issues quick comments.
+        // Each section READ before it got a row: Fix My Writing (Redo, Polish) · Examiners' Requirements (Reassess) ·
+        // What · How · Why · So What · What Next (More detail) · What & How: Black-Hole Words (Be specific).
+        'fix-diagnose', 'examiners', 'whathowwhy', 'fix-what-how',
     ];
     // ═══════════════════════════════════════════════════════════════════════════════════════
     // ⭐⭐ v7.20.615 (Neil, 2026-09-15) — THE ELEMENT → REFERENCE MAP.

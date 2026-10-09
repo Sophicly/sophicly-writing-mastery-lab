@@ -51417,8 +51417,14 @@
             // but VISUAL-ONLY (controls disabled, nothing persists).
             const isReadonly = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
             const isPreview = !!state.reviewMode && !isReadonly && !!previewAsStudent;
-            const isTutor = !!state.reviewMode && !isReadonly && !isPreview;
-            const isStudent = isPreview || (!state.reviewMode && !isReadonly);
+            // v7.20.798 (#850): in a LIVE-MODELLING lesson a comment is the tutor's teaching note on his OWN document,
+            // not feedback on a student's work. Measured on staging: the author (not in review mode) was treated as a
+            // STUDENT — his own note auto-"Acknowledged" and offered "Mark actioned", and viewers saw a red "Open".
+            // So the author gets the tutor's controls, and no one gets the feedback-response status there.
+            const isLiveDoc = !!(WML.isLiveModelling && WML.isLiveModelling());
+            const isLiveAuthor = isLiveDoc && !state.reviewMode;
+            const isTutor = (!!state.reviewMode && !isReadonly && !isPreview) || isLiveAuthor;
+            const isStudent = !isLiveAuthor && (isPreview || (!state.reviewMode && !isReadonly));
             const replyAuthor = isStudent ? 'Student' : 'Tutor';
             if (!c.studentStatus) c.studentStatus = 'open';
             // v7.19.563: auto-acknowledge on open — opening the thread proves the student
@@ -51442,11 +51448,12 @@
             // Header — TipTap style: Title | resolve | ⋯ menu | ✕ close
             const header = el('div', { className: 'swml-comment-header' });
             const headerLeft = el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } });
-            headerLeft.appendChild(el('span', { className: 'swml-comment-title', textContent: 'Thread' }));
+            // v7.20.798 (#850, Neil: "the comment popover will probably need a bit of work"): "Comment", not "Thread";
+            // the status is a quiet label with its coloured dot (the colour lives on the dot only).
+            headerLeft.appendChild(el('span', { className: 'swml-comment-title', textContent: 'Comment' }));
             const statusChip = el('span', { className: 'swml-comment-status-chip' });
-            statusChip.style.color = STATUS_INFO.color;
             statusChip.innerHTML = '<span class="swml-comment-status-dot" style="background:' + STATUS_INFO.color + '"></span>' + STATUS_INFO.label;
-            headerLeft.appendChild(statusChip);
+            if (!isLiveDoc) headerLeft.appendChild(statusChip);
             header.appendChild(headerLeft);
             const headerRight = el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } });
 
@@ -51630,15 +51637,14 @@
                 if (c.studentStatus === 'actioned') {
                     respondRow.appendChild(el('span', { className: 'swml-comment-respond-ack', textContent: '✓ Actioned — awaiting tutor' }));
                 } else {
-                    const actionBtn = el('button', {
-                        className: 'swml-comment-respond-btn swml-comment-respond-action',
-                        textContent: 'Mark actioned',
-                        title: 'Tell your tutor what you changed',
-                        onClick: () => {
+                    // v7.20.798 (#850): the student's one deliberate action wears the house button.
+                    const actionBtn = _swmlIncrediblesBtn('Mark actioned', { className: 'swml-comment-respond-action' });
+                    actionBtn.title = 'Tell your tutor what you changed';
+                    actionBtn.addEventListener('click', () => {
                             actionBtn.style.display = 'none';
                             const noteWrap = el('div', { className: 'swml-comment-action-note' });
                             const ta = el('textarea', { className: 'swml-comment-edit-input', placeholder: 'What did you change? (required)' });
-                            const submit = el('button', { className: 'swml-comment-respond-btn swml-comment-respond-action', textContent: 'Submit' });
+                            const submit = _swmlIncrediblesBtn('Submit', { className: 'swml-comment-respond-action' });
                             const doSubmit = () => {
                                 const v = ta.value.trim();
                                 if (!v) { ta.focus(); return; }
@@ -51655,7 +51661,6 @@
                             noteWrap.appendChild(submit);
                             respondRow.appendChild(noteWrap);
                             ta.focus();
-                        }
                     });
                     respondRow.appendChild(actionBtn);
                 }
@@ -51675,7 +51680,8 @@
             const replyWrap = el('div', { className: 'swml-comment-reply' });
             const replyInput = el('input', {
                 type: 'text',
-                placeholder: 'Reply to thread...',
+                placeholder: 'Reply…',
+                'aria-label': 'Reply',
                 onKeydown: (e) => {
                     if (e.key === 'Enter' && replyInput.value.trim()) {
                         e.preventDefault();
@@ -51689,6 +51695,7 @@
             });
             const replyBtn = el('button', {
                 textContent: '→',
+                'aria-label': 'Send reply',
                 onClick: () => {
                     if (!replyInput.value.trim()) return;
                     c.thread.push({ author: replyAuthor, avatar: config.userAvatar || '', message: replyInput.value.trim(), timestamp: Date.now() });
@@ -51774,19 +51781,21 @@
         // Sophia's @RESOURCE_LINK). Toolkit labels come from ELEMENT_TOOLKIT_MAP (one source; each arg there is
         // proven by bin/toolkit-link-gate.js); table names are verified against table-of-techniques.md by
         // bin/live-modelling-apparatus-harness.js. No link where no section teaches that fault — never a near-miss.
-        const _qcTk = (arg) => { const r = ((WML.ELEMENT_TOOLKIT_MAP || {}).analytical || []).find(x => x.arg === arg); return r ? { dest: 'toolkit', arg: arg, label: r.label } : null; };
+        // v7.20.798 (#849): a section that is not an ELEMENT_TOOLKIT_MAP row passes its label — the section's own title in
+        // the built Toolkit (bin/comment-modal-harness.js checks it word for word against the notes bundle).
+        const _qcTk = (arg, label) => { const r = ((WML.ELEMENT_TOOLKIT_MAP || {}).analytical || []).find(x => x.arg === arg); const l = r ? r.label : label; return l ? { dest: 'toolkit', arg: arg, label: l } : null; };
         const _qcTech = (name) => ({ dest: 'table', arg: name, label: name });
         const QUICK_COMMENTS = [
             // ── Tier 1: shown by default ──
             { category: 'Common Issues', tier: 'default', icon: SVG_QC_ISSUE, items: [
-                { label: 'Redo', text: 'This section needs to be rewritten — it doesn\'t meet the required standard.' },
-                { label: 'SPaG', text: 'Spelling, punctuation, and grammar errors here — please proofread carefully.' },
-                { label: 'Plan your essay', text: 'Plan your essay before writing — a clear plan leads to a stronger structure.' },
-                { label: 'Outline', text: 'Create a proper outline for this section before drafting.' },
-                { label: 'Polish', text: 'This needs polishing — refine the expression and tighten the language.' },
-                { label: 'Reassess', text: 'Reassess this section — the analysis doesn\'t align with the mark scheme criteria.' },
-                { label: 'More detail', text: 'More detail needed — develop this point further.' },
-                { label: 'Be specific', text: 'Be more specific — avoid vague or general statements.' },
+                { label: 'Redo', text: 'This section needs to be rewritten — it doesn\'t meet the required standard.', link: _qcTk('fix-diagnose', 'Fix My Writing') },
+                { label: 'SPaG', text: 'Spelling, punctuation, and grammar errors here — please proofread carefully.', link: _qcTk('final-read', 'The Final Read') },
+                { label: 'Plan your essay', text: 'Plan your essay before writing — a clear plan leads to a stronger structure.', link: _qcTk('essay') },
+                { label: 'Outline', text: 'Create a proper outline for this section before drafting.', link: _qcTk('ttecea', 'TTECEA + C') },
+                { label: 'Polish', text: 'This needs polishing — refine the expression and tighten the language.', link: _qcTk('fix-diagnose', 'Fix My Writing') },   // no polishing page exists — the list of exact fixes is the nearest true home (said to Neil, #849)
+                { label: 'Reassess', text: 'Reassess this section — the analysis doesn\'t align with the mark scheme criteria.', link: _qcTk('examiners', 'Examiners\' Requirements') },
+                { label: 'More detail', text: 'More detail needed — develop this point further.', link: _qcTk('whathowwhy', 'What · How · Why · So What · What Next') },
+                { label: 'Be specific', text: 'Be more specific — avoid vague or general statements.', link: _qcTk('fix-what-how', 'What & How: Black-Hole Words') },
                 // v7.20.797 (#847, Neil: "too descriptive for a topic sentence · not conceptual enough · not perceptive enough").
                 // 'Too descriptive' moved up from the TTECEA tier (same words). The other two follow the sections they link to:
                 // Conceptual Thinking ("A surface reading reports what happens") and the Interpretation Ladder (rung 3 "is perceptive").
@@ -51971,7 +51980,8 @@
                 const id = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
                 // v7.15.30: Use actual user name and role (tutor vs student)
                 const commentAuthor = config.userName || 'Tutor';
-                const commentRole = state.reviewMode ? 'tutor' : 'student';
+                // v7.20.798 (#850): the live-modelling author is the tutor on his own teaching document.
+                const commentRole = (state.reviewMode || (WML.isLiveModelling && WML.isLiveModelling())) ? 'tutor' : 'student';
                 const first = { author: commentAuthor, role: commentRole, avatar: config.userAvatar || '', message: msg, timestamp: Date.now() };
                 if (pickedLink) first.link = { dest: pickedLink.dest, arg: pickedLink.arg, label: pickedLink.label };   // v7.20.797 (#847)
                 comments[id] = {

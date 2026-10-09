@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* eslint-env node */
-// comment-modal-harness.js — v7.20.797 (#847). Neil, 9 Oct: the tutor comment modal sat "slightly down to the
+// comment-modal-harness.js — v7.20.797 (#847) + v7.20.798 (#849 every Common Issues chip links · #850 the popover). Neil, 9 Oct: the tutor comment modal sat "slightly down to the
 // bottom right" (absolute inside .swml-canvas, whose box includes the right panel), its chips were not minimal,
 // it needed a brand pass, three quick comments were missing, and a quick comment should deep-link to the
 // relevant Mastery Toolkit section or Table of Techniques card. This fails the build if any of that regresses —
@@ -47,13 +47,33 @@ for (const lab of ['Too descriptive', 'Not conceptual enough', 'Not perceptive e
 //    table names via table-of-techniques.md (the same parse as get_technique_names) ──
 const qStart = JS.indexOf('        const QUICK_COMMENTS = [');
 const qBlock = JS.slice(qStart, JS.indexOf('\n        ];\n', qStart));
-const tkArgs = [...qBlock.matchAll(/_qcTk\('([^']+)'\)/g)].map(m => m[1]);
+// v7.20.798 (#849): _qcTk(arg) takes its label from ELEMENT_TOOLKIT_MAP; _qcTk(arg, 'Label') passes the section's own title.
+const tkCalls = [...qBlock.matchAll(/_qcTk\('([^']+)'(?:, '((?:[^'\\]|\\.)*)')?\)/g)].map(m => ({ arg: m[1], label: m[2] ? m[2].replace(/\\'/g, "'") : null }));
+const tkArgs = tkCalls.map(c => c.arg);
 const techs = [...qBlock.matchAll(/_qcTech\('([^']+)'\)/g)].map(m => m[1]);
 const mapStart = CORE.indexOf('    const ELEMENT_TOOLKIT_MAP = {');
 const analytical = CORE.slice(CORE.indexOf('analytical: [', mapStart), CORE.indexOf('\n        ],', CORE.indexOf('analytical: [', mapStart)));
 const mapArgs = new Set([...analytical.matchAll(/arg: '([^']+)'/g)].map(m => m[1]));
-const badTk = tkArgs.filter(a => !mapArgs.has(a));
-ok(tkArgs.length >= 14 && badTk.length === 0, 'every Toolkit link (' + tkArgs.length + ') is a row of ELEMENT_TOOLKIT_MAP.analytical' + (badTk.length ? ' — MISSING: ' + badTk.join(', ') : ''));
+const allowSrc = CORE.slice(CORE.indexOf('    const RESOURCE_TOOLKIT_IDS = ['), CORE.indexOf('];', CORE.indexOf('    const RESOURCE_TOOLKIT_IDS = [')));
+const ALLOW = new Set([...allowSrc.matchAll(/'([a-z0-9-]+)'/g)].map(m => m[1]));
+const notAllowed = tkArgs.filter(a => !ALLOW.has(a));
+ok(tkArgs.length >= 22 && notAllowed.length === 0, 'every Toolkit link (' + tkArgs.length + ') is in RESOURCE_TOOLKIT_IDS — the list bin/toolkit-link-gate.js proves against the built bundle' + (notAllowed.length ? ' — NOT ALLOWED: ' + notAllowed.join(', ') : ''));
+const unlabelled = tkCalls.filter(c => !mapArgs.has(c.arg) && !c.label);
+ok(unlabelled.length === 0, 'a link outside ELEMENT_TOOLKIT_MAP passes its own label' + (unlabelled.length ? ' — MISSING: ' + unlabelled.map(c => c.arg).join(', ') : ''));
+// The label a student reads on the chip must be the title they land on. The notes bundle is a sibling repo; a
+// missing bundle is a FAILURE (as in toolkit-link-gate) — a label that cannot be checked is the one that drifts.
+const BUNDLE = path.resolve(ROOT, '..', '..', '..', 'sophicly-plugins', 'sophicly-notes', 'assets', 'js', 'sophicly-toolkit.js');
+if (!fs.existsSync(BUNDLE)) ok(false, 'the notes Toolkit bundle was not found at ' + BUNDLE + ' — labels UNVERIFIED');
+else {
+    const titles = new Map([...fs.readFileSync(BUNDLE, 'utf8').matchAll(/id:"([a-z0-9-]+)",t:"([^"]*)"/g)].map(m => [m[1], m[2]]));
+    const wrong = tkCalls.filter(c => c.label && titles.get(c.arg) !== c.label);
+    ok(wrong.length === 0, 'every own-label matches the section title in the built Toolkit' + (wrong.length ? ' — WRONG: ' + wrong.map(c => c.arg + ' "' + c.label + '" vs "' + titles.get(c.arg) + '"').join('; ') : ''));
+}
+// #849, Neil: "do we have a deep link for every single one of those?" — every Common Issues chip links.
+const common = qBlock.slice(qBlock.indexOf("category: 'Common Issues'"), qBlock.indexOf("category: 'Praise'"));
+const commonItems = [...common.matchAll(/\{ label: '((?:[^'\\]|\\.)*)'[^\n]*/g)];
+const commonNoLink = commonItems.filter(m => !/link: _qc(Tk|Tech)\(/.test(m[0])).map(m => m[1]);
+ok(commonItems.length >= 13 && commonNoLink.length === 0, 'every Common Issues chip (' + commonItems.length + ') has a deep link' + (commonNoLink.length ? ' — NO LINK: ' + commonNoLink.join(', ') : ''));
 const names = new Set([...TOT.matchAll(/^###\s+(.+?)\s+`[^`]{1,4}`\s*$/gm)].map(m => m[1]));
 const badTech = techs.filter(t => !names.has(t));
 ok(techs.length >= 14 && badTech.length === 0, 'every Table link (' + techs.length + ') names a real technique in table-of-techniques.md' + (badTech.length ? ' — MISSING: ' + badTech.join(', ') : ''));
@@ -84,6 +104,25 @@ try {
     ok(/data-learn-dest="table" data-learn-arg="Metaphor"/.test(b), 'behaviour: a Table link becomes the house learn chip');
     ok(c === '', 'behaviour: an unknown section draws nothing (never a dead chip)');
 } catch (e) { ok(false, 'behaviour check could not run: ' + e.message); }
+
+// ── #850 (v7.20.798): the comment POPOVER — same family, and right for a live-modelling lesson ──
+const famDark = CSS.slice(CSS.indexOf('.swml-phase-coach,\n.swml-weight-card,'), CSS.indexOf('--swml-coach-surface: #1c1d1f;'));
+const famLight = CSS.slice(CSS.indexOf('.swml-canvas-light .swml-phase-coach,'), CSS.indexOf('--swml-coach-surface: #ffffff;'));
+ok(/\.swml-comment-popover/.test(famDark) && /\.swml-canvas-light \.swml-comment-popover/.test(famLight) && /\[data-swml-theme="light"\] \.swml-comment-popover/.test(famLight),
+    'the popover joins the coaching-card family tokens, dark and light (the canvas class AND the body attribute, for the extract pad)');
+const popCss = CSS.slice(CSS.indexOf('.swml-comment-popover {\n    position: absolute;'), CSS.indexOf('}', CSS.indexOf('.swml-comment-popover {\n    position: absolute;')));
+ok(/background: var\(--swml-coach-surface\);/.test(popCss) && /box-shadow: var\(--swml-coach-shadow\);/.test(popCss) && !/border:/.test(popCss),
+    'the popover surface + shadow come from the family; no hairline border');
+const blockStart = CSS.indexOf('/* ── Comment popover — v7.20.798 (#850)');
+const popBlock = CSS.slice(blockStart, CSS.indexOf('/* ── Comment modal — v7.20.797 (#847)'));
+ok(blockStart > 0 && !/inset 0|radial-gradient|oklch\(|--btn-inner/.test(popBlock), 'no 3D buttons left in the popover (no inset bevels, no radial gradients)');
+const pop = JS.slice(JS.indexOf('        function showCommentPopover(commentId, anchorEl, popoverContainer) {'), JS.indexOf('        function findCommentRange(commentId) {'));
+ok(/const isLiveAuthor = isLiveDoc && !state\.reviewMode;/.test(pop) && /const isTutor = \(!!state\.reviewMode && !isReadonly && !isPreview\) \|\| isLiveAuthor;/.test(pop)
+    && /const isStudent = !isLiveAuthor && /.test(pop), 'live modelling: the AUTHOR gets the tutor\'s controls, never the student ladder (no self-"Acknowledged", no "Mark actioned")');
+ok(/if \(!isLiveDoc\) headerLeft\.appendChild\(statusChip\);/.test(pop) && !/statusChip\.style\.color/.test(pop), 'live modelling shows no Open/Acknowledged status; elsewhere the colour lives on the dot only');
+ok(/textContent: 'Comment' \}/.test(pop) && !/textContent: 'Thread' \}/.test(pop), 'the popover is titled "Comment", not "Thread"');
+ok(/_swmlIncrediblesBtn\('Mark actioned'/.test(pop) && /_swmlIncrediblesBtn\('Submit'/.test(pop), 'the student\'s one deliberate action wears the house button');
+ok(/const commentRole = \(state\.reviewMode \|\| \(WML\.isLiveModelling && WML\.isLiveModelling\(\)\)\) \? 'tutor' : 'student';/.test(fn), 'a live-modelling author\'s comment is saved as the TUTOR\'s');
 
 console.log('\n' + (fail ? '❌ FAIL' : '✅ PASS') + ' — ' + n + ' checks');
 process.exit(fail);
