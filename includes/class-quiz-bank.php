@@ -808,6 +808,10 @@ class SWML_Quiz_Bank {
         if (count($letters) < 2) return $q;
         $cite = $q['feedback'] . ' ' . implode(' ', (array) ($q['why'] ?? [])) . ' ' . ($q['why_generic'] ?? '');
         if (preg_match('/\([A-E]\)|(?<![A-Za-z])[A-E]\s*[\)=,]/', $cite)) return $q;  // letter-cite → leave order
+        // v7.20.783 (WML 339 A, measured): notes also cite options as "B (simple comment) then D …" and "B is Level 1" —
+        // forms the line above misses, so those items shuffled and their notes named the wrong option for most students
+        // (28 of 5,522 shuffled items across every bank). Same fail-safe: a citation keeps the authored order.
+        if (preg_match('/(?<![A-Za-z\x{2019}\'])[A-E](?=\s+(?:\(|is\b|then\b))/u', $cite)) return $q;
 
         $perm = range(0, count($letters) - 1);
         shuffle($perm);

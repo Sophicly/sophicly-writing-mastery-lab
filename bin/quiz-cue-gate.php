@@ -240,6 +240,33 @@ if (in_array('--selftest', $argv, true)) {
     exit($bad ? 1 : 0);
 }
 
+// v7.20.783 (WML 339 A): a note that names an option by its LETTER is only true if the options keep their authored order.
+// Drives the REAL SWML_Quiz_Bank::shuffle_options over every bank: any item whose notes cite a letter but which would
+// still be shuffled fails the build (universal, not ratcheted — the guard makes it zero by construction).
+function letter_cite_shuffled($banksDirs) {
+    $m = new ReflectionMethod('SWML_Quiz_Bank', 'shuffle_options');
+    if (PHP_VERSION_ID < 80100) $m->setAccessible(true);
+    $bad = [];
+    foreach ($banksDirs as $kind => $dir) foreach (glob($dir . '/*.md') as $p) {
+        if (strpos(basename($p), '.concept-notes.') !== false) continue;
+        foreach (SWML_Quiz_Bank::parse_file($p) as $qs) foreach ($qs as $q) {
+            if (!in_array($q['type'], ['mcq', 'select_all', 'ranking'], true) || count((array) $q['options']) < 2) continue;
+            $cite = $q['feedback'] . ' ' . implode(' ', (array) ($q['why'] ?? [])) . ' ' . ($q['why_generic'] ?? '');
+            if (!preg_match('/\([A-E]\)|(?<![A-Za-z\x{2019}\'])[A-E](?=\s*[\)=,]|\s+(?:\(|is\b|then\b))/u', $cite)) continue;
+            $moved = false;
+            for ($i = 0; $i < 8 && !$moved; $i++) { $r = $m->invoke(null, $q); if (array_values($r['options']) !== array_values($q['options'])) $moved = true; }
+            if ($moved) $bad[] = $kind . '/' . basename($p) . ' #' . $q['q_num'];
+        }
+    }
+    return $bad;
+}
+if (in_array('--letter-cites', $argv, true) || $opt['enforce']) {
+    $lc = letter_cite_shuffled($DIRS);
+    if ($lc) { echo '✗ ' . count($lc) . " item(s) whose notes name an option by letter are still shuffled when served: " . implode(', ', array_slice($lc, 0, 12)) . "\n"; if ($opt['enforce']) { echo "quiz-cue-gate: letter-cite check FAILED\n"; exit(1); } }
+    else echo "✓ no shuffled item's notes name an option by its letter\n";
+    if (!$opt['enforce']) exit($lc ? 1 : 0);
+}
+
 $enforced = [];
 $ef = __DIR__ . '/quiz-cue-gate.enforced.txt';
 if (file_exists($ef)) {
