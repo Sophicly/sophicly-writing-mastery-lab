@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.795';
+var WML_BUILD = '7.20.796';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1216,6 +1216,15 @@ window.WML = (function() {
         const d = getCwStepDef(task);
         // v7.20.740: a step run as its unit variant is not the unaided test (the guided Draft 1).
         return !!(d && d.tools === 'minimal' && !(cwInUnit() && d.unitEnv));
+    }
+    // v7.20.796 (#846): "is the Notes tab hidden on this lesson?" ONE predicate for every WML hide
+    // site (initAssessmentState, the main canvas builder, the overlay canvas) — three copies had
+    // drifted (two lacked cwToolsMinimal). Hidden only on the test lessons. A live-modelling lesson
+    // runs as `diagnostic` but is not a test (Neil, 9 Oct: "make the notes tab available as well. In
+    // the live modeling course"). The notes plugin reads the same signal from the embed config.
+    function notesHiddenFor(task) {
+        if (isLiveModelling()) return false;
+        return ['diagnostic', 'mark_scheme'].includes(task) || cwToolsMinimal(task);
     }
     // v7.20.740: a step's ENVIRONMENT and polishing LENS, unit variant applied. ONE resolver, so the
     // exercise config, the workbook test and the router's lens can never disagree about a step.
@@ -6312,7 +6321,7 @@ window.WML = (function() {
         // CN family registry (v7.20.15)
         CN_FAMILIES, LIT_CN_SPINE, NONFICTION_CN_SPINE, PROSE_CN_SPINE, cnFamily, cnFieldRe,
         CN_STAGE_SPLITS, cnStageSplitFor, cnStageCountFor,
-        getSteps, getElements, getExerciseConfig, getCwStepDef, cwToolsMinimal, resolveStorageSuffix, resolveCanvasSuffix, canvasDocScope,
+        getSteps, getElements, getExerciseConfig, getCwStepDef, cwToolsMinimal, notesHiddenFor, resolveStorageSuffix, resolveCanvasSuffix, canvasDocScope,
         // Exercise manifest
         EXERCISE_MANIFEST,
         // Creative Writing

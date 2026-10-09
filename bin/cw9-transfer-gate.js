@@ -180,8 +180,11 @@ ok('Step 12 keeps its tools', !WML.cwToolsMinimal('cw_step_12'));
 ok('Step 14 keeps its tools', !WML.cwToolsMinimal('cw_step_14'));
 ok('Step 8 (the walk before) keeps its tools', !WML.cwToolsMinimal('cw_step_8'));
 ok('Trial 1 (the assessment after) keeps its tools', !WML.cwToolsMinimal('cw_trial_1'));
+// v7.20.796 (#846): the scratchpad now decides through WML.notesHiddenFor (one predicate for all
+// three notes hide sites), which itself reads cwToolsMinimal — same single source, one hop further.
 ok('the notes scratchpad reads the SAME predicate as the rail (one source, cannot drift)',
-    /cwToolsMinimal\(state\.task\)\)\) \{\s*\n\s*if \(snFab\)/.test(SRC));
+    /if \(WML\.notesHiddenFor\(state\.task\)\) \{\s*\n\s*if \(snFab\)/.test(SRC)
+    && /function notesHiddenFor\(task\) \{[^}]*\|\| cwToolsMinimal\(task\);/.test(CORE));
 ok('all five reference panels route through the rail gate, not a bare appendChild',
     // v7.20.740: `_railAddFull` is the same gate plus "not in a weekend-story lesson" (no Step 6/7 there)
     (SRC.match(/_railAdd(?:Full)?\((?:wp|sc|ss|mv|rv)Trigger\);/g) || []).length === 5,

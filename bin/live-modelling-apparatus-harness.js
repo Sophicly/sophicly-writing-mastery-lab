@@ -57,5 +57,16 @@ ok(/function _localSaveDelay\(\) \{\s*if \(state\.reviewMode \|\| !\(WML\.isLive
 ok(/return \(state\.reviewMode \|\| !\(WML\.isLiveModelling && WML\.isLiveModelling\(\)\)\) \? 5000 : 0;/.test(JS) && /\}, _serverSaveDelay\(\)\);/.test(JS),
     '#842: …and reach the server straight after; every other task keeps the 2 s / 5 s debounce');
 
+// ── #846 (v7.20.796): the Notes tab shows on live-modelling lessons (Neil: "make the notes tab available as well") ──
+ok(/function notesHiddenFor\(task\) \{\s*if \(isLiveModelling\(\)\) return false;\s*return \['diagnostic', 'mark_scheme'\]\.includes\(task\) \|\| cwToolsMinimal\(task\);\s*\}/.test(CORE)
+    && /cwToolsMinimal, notesHiddenFor,/.test(CORE), '#846: ONE notes predicate in wml-core — live modelling first, then the test lessons + unaided CW steps');
+const snHides = JS.split('\n').filter((l) => /\.sn-tab, \.sn-tab-trigger, #snTabTrigger/.test(l) && /display = 'none'/.test(l)).length;
+const viaPred = (JS.match(/if \(WML\.notesHiddenFor\(state\.task\)\) \{/g) || []).length;
+ok(snHides === 3 && viaPred === 3, '#846: every WML site that hides the notes tab (' + snHides + ') decides through WML.notesHiddenFor (' + viaPred + ')');
+ok(!/\['diagnostic', 'mark_scheme'\]\.includes\(state\.task\)/.test(JS), '#846: no private copy of the notes deny-list left in wml-assessment.js');
+const MAIN = fs.readFileSync(path.join(ROOT, 'sophicly-writing-mastery-lab.php'), 'utf8');
+const emb = MAIN.slice(MAIN.indexOf('$embed_config = ['), MAIN.indexOf('];', MAIN.indexOf('$embed_config = [')));
+ok(/'liveModelling' => !empty\(\$author_id\),/.test(emb), '#846: the per-lesson DOM config (data-swml-embed) carries liveModelling — the notes plugin reads that, not swmlConfig');
+
 console.log('\n' + (fail ? '❌ FAIL' : '✅ PASS') + ' — ' + n + ' checks');
 process.exit(fail);

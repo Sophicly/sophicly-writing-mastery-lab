@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.795
+ * Version: 7.20.796
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.795');
+define('SWML_VERSION', '7.20.796');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -1297,6 +1297,9 @@ class Sophicly_Writing_Mastery_Lab {
             // student's exam board is still known, and the unit's word targets are keyed on it.
             'cwUnit'      => in_array($atts['unit'], ['weekend'], true) ? $atts['unit'] : '',
             'cwExamBoard' => in_array($atts['unit'], ['weekend'], true) ? $board : '',
+            // v7.20.796 (#846): per-lesson live-modelling flag in the DOM config, so the notes plugin
+            // (which reads data-swml-embed, not swmlConfig) can show its tab on these lessons.
+            'liveModelling' => !empty($author_id),
         ];
         // v7.20.753: weekend lesson 9 ("Adapt It to the Question") — the student's own board's story questions.
         if ($task === 'cw_step_90' && $embed_config['cwUnit'] !== '') {

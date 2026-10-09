@@ -49052,7 +49052,8 @@
         // Steps 9 and 10 are the unaided write-out and the test, so the scratchpad comes off there
         // for the same reason it comes off a diagnostic. Capability, not a step literal — and it
         // reads through the SAME predicate the rail uses, so the two cannot drift apart.
-        if (['diagnostic', 'mark_scheme'].includes(state.task) || (WML.cwToolsMinimal && WML.cwToolsMinimal(state.task))) {
+        // v7.20.796 (#846): through the ONE predicate (WML.notesHiddenFor) — live modelling shows notes.
+        if (WML.notesHiddenFor(state.task)) {
             if (snFab) snFab.style.display = 'none';
             if (snPanel) snPanel.style.display = 'none';
             document.querySelectorAll('.sn-tab, .sn-tab-trigger, #snTabTrigger, [class*="sticky-note-tab"], [class*="notes-tab"]').forEach(t => t.style.display = 'none');
@@ -74915,7 +74916,8 @@ ${html}
 
         // Hide notepad — v7.19.719: only on the test lessons {diagnostic, mark_scheme}. This is the
         // Discuss-Feedback canvas (task=feedback_discussion) which should SHOW notes → guard no-ops here.
-        if (['diagnostic', 'mark_scheme'].includes(state.task)) {
+        // v7.20.796 (#846): through the ONE predicate (WML.notesHiddenFor).
+        if (WML.notesHiddenFor(state.task)) {
             const fab = document.querySelector('.sn-fab');
             const pnl = document.querySelector('.sn-panel');
             if (fab) fab.style.display = 'none';
@@ -75442,7 +75444,8 @@ ${html}
         // Hide notepad — v7.19.719: only on the test lessons {diagnostic, mark_scheme}. This is the
         // MAIN canvas builder (runs for EVERY canvas lesson); it used to hide notes unconditionally,
         // so non-test lessons (outline/polish/planning/…) lost the tab. Gate on TASK.
-        if (['diagnostic', 'mark_scheme'].includes(state.task)) {
+        // v7.20.796 (#846): through the ONE predicate (WML.notesHiddenFor).
+        if (WML.notesHiddenFor(state.task)) {
             const fab = document.querySelector('.sn-fab');
             const pnl = document.querySelector('.sn-panel');
             if (fab) fab.style.display = 'none';
