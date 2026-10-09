@@ -16025,6 +16025,41 @@
         }
     }
 
+    // v7.20.801 (#818): the full course's Step 18 gains the 15th empathy technique from Neil's workbook
+    // (CW-STEP-16-deepen-empathy.md), "A Glamorous or Interesting Profession/Skill" — the weekend bonus has
+    // carried it since .777 under the same field id. ONE builder for the template row and the heal. A Step 18
+    // document saved before .801 has its rows baked in, so the heal ADDS the row after Wisdom, Wit,
+    // Cleverness: additive, idempotent, never touches an existing row.
+    function _cw18ProfessionRowHTML() {
+        return outlineRowHTML({ id: 'profession', label: 'A Glamorous or Interesting Profession/Skill', prompt: 'Does your protagonist have a job or a skill that makes them fascinating to watch?' }, 'cw-step-16-profession');
+    }
+    function _healCw18ProfessionRow(editor) {
+        try {
+            if (!editor || !editor.state || !editor.commands) return;
+            if (state.reviewMode) return;                       // tutors see the stored doc as-is
+            const html = editor.getHTML();
+            if (!html || html.indexOf('cw-step-16-wit') === -1) return;          // not a Step 18 doc
+            if (html.indexOf('cw-step-16-profession') !== -1) return;           // already current
+            const box = document.createElement('div');
+            box.innerHTML = html;
+            const witRow = box.querySelector('[data-field-id="cw-step-16-wit"]');
+            if (!witRow) return;
+            const fresh = _cw18ProfessionRowHTML();
+            if (!fresh || fresh.indexOf('cw-step-16-profession') === -1) {
+                console.warn('[WML cw18] profession row heal ABORTED — the builder produced no row. Doc untouched.');
+                return;
+            }
+            witRow.insertAdjacentHTML('afterend', fresh);
+            _migrationActive = true;
+            try { editor.commands.setContent(box.innerHTML, false); }
+            finally { _migrationActive = false; }
+            console.log('[WML cw18] PROFESSION ROW HEAL: added cw-step-16-profession to a Step 18 document saved before it existed.');
+            if (typeof saveCanvasContent === 'function') saveCanvasContent();
+        } catch (e) {
+            console.warn('[WML cw18] profession row heal failed (doc untouched)', e && e.message);
+        }
+    }
+
     function _healCw9SceneOverviewRow(editor) {
         try {
             if (!editor || !editor.state || !editor.commands) return;
@@ -53456,6 +53491,9 @@
                 // covers the async server setContent replacing the first-pass doc.
                 setTimeout(() => { try { _healCw9SceneOverviewRow(editor); } catch (_) {} }, 1800);
                 setTimeout(() => { try { _healCw9SceneOverviewRow(editor); } catch (_) {} }, 3800);
+                // v7.20.801 (#818): Step 18 gains the workbook's profession row — same staggered/idempotent shape.
+                setTimeout(() => { try { _healCw18ProfessionRow(editor); } catch (_) {} }, 1800);
+                setTimeout(() => { try { _healCw18ProfessionRow(editor); } catch (_) {} }, 3800);
                 // v7.20.593 (#447k): ejected Q1 statement text back into its tick row — same
                 // staggered/idempotent shape; self-gates (no-op unless an EMPTY checklist item is
                 // followed by a paragraph). Second pass covers the async server setContent.
@@ -59332,6 +59370,7 @@
                 '<h3>Give Your Protagonist Desirable Qualities</h3>' +
                 outlineRowHTML({ id: 'courage', label: 'Courage (Compulsory)', prompt: 'How does your protagonist show bravery in the face of fear?' }, 'cw-step-16-courage') +
                 outlineRowHTML({ id: 'wit', label: 'Wisdom, Wit, Cleverness', prompt: 'Does your protagonist show intelligence that earns admiration?' }, 'cw-step-16-wit') +
+                _cw18ProfessionRowHTML() +
                 outlineRowHTML({ id: 'innocence', label: 'Childlike Innocence', prompt: 'Does your protagonist show openness, wonder, or genuine enthusiasm?' }, 'cw-step-16-innocence') +
                 outlineRowHTML({ id: 'rebel', label: 'Misfit, Rebel, Eccentric', prompt: 'Does your protagonist flout authority, refuse to conform, or think differently?' }, 'cw-step-16-rebel')
             );

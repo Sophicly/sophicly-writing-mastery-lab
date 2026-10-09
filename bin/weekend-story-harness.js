@@ -1467,9 +1467,17 @@ const SEVEN = (hook, setup) => [
         ok(JSON.stringify(ET.filter((t) => t.must).map((t) => t.id)) === '["courage"]' && /\*\*Courage \(COMPULSORY\)\*\*/.test(WB), 'courage is compulsory, as his workbook says');
         const ti18 = SRC.indexOf("'<h2>Step 18: Deepen Empathy for Your Protagonist</h2>'");
         const FULL18 = SRC.slice(ti18, SRC.indexOf('return html;', ti18));
-        const full18 = (FULL18.match(/'cw-step-16-[a-z-]+'/g) || []).map((x) => x.slice(1, -1));
-        ok(ET.filter((t) => t.id !== 'profession').every((t) => full18.indexOf(t.fid) !== -1) && full18.indexOf('cw-step-16-profession') === -1,
-            '⭐ §5d: each row id is the full course\'s Step 18 row id (so the work maps); "profession" is the one his workbook has and the full course omitted (#818)');
+        // v7.20.801 (#818): the full course's profession row comes from _cw18ProfessionRowHTML(), so read its id from there.
+        const PROF_FN = SRC.slice(SRC.indexOf('function _cw18ProfessionRowHTML() {'), SRC.indexOf('function _healCw18ProfessionRow(editor) {'));
+        const full18 = (FULL18.replace('_cw18ProfessionRowHTML()', (PROF_FN.match(/'cw-step-16-[a-z-]+'/) || [''])[0])
+            .match(/'cw-step-16-[a-z-]+'/g) || []).map((x) => x.slice(1, -1));
+        ok(JSON.stringify(full18) === JSON.stringify(ET.map((t) => t.fid)),
+            '⭐ §5d + #818: the full course\'s Step 18 carries all fifteen of his workbook\'s rows, same ids, same order as the weekend bonus', full18);
+        const nHeal = (SRC.match(/_healCw18ProfessionRow\(editor\); \} catch/g) || []).length;
+        const HEAL = SRC.slice(SRC.indexOf('function _healCw18ProfessionRow(editor) {'), SRC.indexOf('function _healCw9SceneOverviewRow(editor) {'));
+        ok(nHeal === 2 && /indexOf\('cw-step-16-profession'\) !== -1\) return/.test(HEAL) && /data-field-id="cw-step-16-wit"/.test(HEAL)
+            && /insertAdjacentHTML\('afterend'/.test(HEAL) && /_migrationActive = true;\s*try \{[^}]*\}\s*finally \{ _migrationActive = false; \}/.test(HEAL),
+            '#818: a Step 18 document saved with fourteen rows gets the profession row added after Wit (idempotent, additive, both staggered passes)');
         const words = (s) => String(s || '').trim().split(/\s+/).length;
         ok(ET.every((t) => t.what && t.example && t.more && words(t.what) <= 50 && words(t.example) <= 60 && words(t.more) <= 60), 'each card is short: one rule, one example, one more');
         ok(!/["“”]/.test(ET.map((t) => t.example + ' ' + t.more).join(' ')), '§5c-i: the examples DESCRIBE, they never quote');
