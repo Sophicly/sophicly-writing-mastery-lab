@@ -36,5 +36,21 @@ ok(/if \(!_isLiveModel\) rightPanel\.appendChild\(timeWrap\);/.test(JS), '#447m:
 ok(/if \(state\.task !== 'mastery_codex' && !_isLiveModel\) \{/.test(JS), '#447m: no word target in the rail');
 ok(LM.test(JS.slice(JS.indexOf('_wnEssayDoc && !(WML.isLiveModelling'), JS.indexOf('_wnEssayDoc && !(WML.isLiveModelling') + 120)), '#447m: no "Your baseline" card for the author');
 
+// ── #842 (v7.20.792): the read-only view FOLLOWS the author (Neil: "update by themselves") ──
+const PHP = fs.readFileSync(path.join(ROOT, 'includes/class-rest-api.php'), 'utf8');
+const tlc = PHP.slice(PHP.indexOf('public function tutor_load_canvas($request)'), PHP.indexOf('public function tutor_load_canvas_chat($request)'));
+ok(/\$rev = md5\(/.test(tlc) && /hash_equals\(\$rev, \$since\)/.test(tlc) && /'unchanged' => true, 'rev' => \$rev/.test(tlc) && /'doc' => \$doc, 'attempt' => \$attempt, 'rev' => \$rev\]/.test(tlc),
+    '#842: the review read carries a revision, and an unchanged document answers in a few bytes');
+const tsl = fnBody('async function tryServerLoad()');
+ok(/url = _reviewCanvasUrl\(\);/.test(tsl) && /_lmFollowStart\(res\);/.test(tsl), '#842: the first load and the follow use ONE review-URL builder, and the review load starts the follow');
+const tick = fnBody('async function _lmFollowTick(f)');
+ok(/document\.visibilityState === 'hidden' \|\| _lmSelectingIn\(root\)\) return;/.test(tick), '#842: never while the tab is hidden or the student is selecting words for their notes');
+ok(/ed !== canvasEditor \|\| !root \|\| !document\.contains\(root\)/.test(tick) && /clearInterval\(f\.timer\)/.test(tick), '#842: stops by itself once its editor is gone (SPA move, re-render)');
+ok(/'&since=' \+ encodeURIComponent\(f\.rev\)/.test(tick) && /res\.unchanged \|\| !res\.doc\)\) \{ f\.rev = res\.rev; return; \}/.test(tick), '#842: asks "anything new since rev?" and applies nothing when unchanged');
+ok(/_migrationActive = true;\s*try \{ ed\.commands\.setContent\(res\.doc\.html, false\); \}\s*finally \{ _migrationActive = false; \}/.test(tick), '#842: applies like the first load (structure lock passes under try/finally, no update event)');
+ok(/const top = scroller \? scroller\.scrollTop : window\.scrollY;/.test(tick) && /scroller\.scrollTop = top; else window\.scrollTo\(window\.scrollX, top\);/.test(tick), '#842: the student keeps their place on the page');
+ok(/if \(state\.reviewMode \|\| !\(WML\.isLiveModelling && WML\.isLiveModelling\(\)\)\) return 5000;/.test(JS) && /\}, _serverSaveDelay\(\)\);/.test(JS) && /_lmSaveFirstPendingAt = 0;\s*const body = _pendingCanvasSaveBody;/.test(JS),
+    '#842: the author\'s typing reaches the server at least every 4 s while typing (everyone else keeps the 5 s debounce)');
+
 console.log('\n' + (fail ? '❌ FAIL' : '✅ PASS') + ' — ' + n + ' checks');
 process.exit(fail);

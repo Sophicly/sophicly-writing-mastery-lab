@@ -67389,6 +67389,16 @@
     }
 
     let canvasSaveToServerTimer = null;
+    // v7.20.792 (#842): the live-modelling AUTHOR's typing must reach watching students while they keep typing — the
+    // plain 5 s debounce would hold it until a pause (or the 30 s safety save). Cap: 2 s after the last keystroke, and
+    // never more than 4 s after the first unsaved one. Everyone else keeps the 5 s debounce.
+    let _lmSaveFirstPendingAt = 0;
+    function _serverSaveDelay() {
+        if (state.reviewMode || !(WML.isLiveModelling && WML.isLiveModelling())) return 5000;
+        const now = Date.now();
+        if (!_lmSaveFirstPendingAt) _lmSaveFirstPendingAt = now;
+        return Math.max(0, Math.min(2000, 4000 - (now - _lmSaveFirstPendingAt)));
+    }
     let _extractDocumentData = null; // Assigned inside canvas builder, used by saveCanvasContent
     // v7.19.468: CW Step-2 chosen-idea sync. SINGLE SOURCE OF TRUTH = the ticked idea
     // checkbox in the Step-2 doc. The old click-time saveArtifact was unreliable on
@@ -67847,6 +67857,7 @@
         };
         const _syncKeyAtEnqueue = _saveSyncKey, _syncTsAtEnqueue = _saveSyncTs;   // v7.20.639 (#598)
         canvasSaveToServerTimer = setTimeout(() => {
+            _lmSaveFirstPendingAt = 0;
             const body = _pendingCanvasSaveBody;
             _pendingCanvasSaveBody = null;
             // v7.19.136 instrumentation — server save firing + suffix/attempt at fire time
@@ -67875,7 +67886,7 @@
                 console.warn('WML: Server save failed, localStorage retained', e.message);
                 try { console.warn('[WML save-debug v7.19.136] server save fetch threw', e && e.message); } catch (_) {}
             });
-        }, 5000);
+        }, _serverSaveDelay());   // v7.20.792 (#842): 5 s, or the live-modelling author's 2 s / 4 s cap
 
         // v7.17.40: mirror CW typing into the per-project artifact. `_loadCWProjectIntoEditor`
         // reads from artifact on next mount — pre-v7.17.40 artifact stayed empty/stale until
@@ -68203,6 +68214,59 @@
         console.log('WML CW polish: About ' + (st === 'foreign' ? 'replaced (lineage copy)' : 'given its priority') + (pri ? '' : ' — no priority yet'));
         return _cwComposePolishAbout(html, pri);
     }
+    // The read-only review URL for the document being viewed — ONE builder, used by the first load and by the
+    // live-modelling follow below, so the two can never ask for different documents (root §5d).
+    function _reviewCanvasUrl() {
+        const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
+        const _docScope = WML.canvasDocScope();
+        const att = _canvasAttempt();
+        return `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${_cwReviewProjectQS()}`;
+    }
+    // v7.20.792 (#842, Neil: "Should students' screens update by themselves while you type? → Yes"): a student
+    // watching a live-modelling lesson sees the author's writing arrive without refreshing. The read-only view re-reads
+    // the author's document every few seconds and applies it ONLY when it changed (the server's `rev`), never while
+    // the student is selecting words to add to their notes, never while the tab is hidden, and keeps their place on
+    // the page. It stops by itself when the editor it was started for is gone (SPA move, re-render).
+    const LM_FOLLOW_MS = 4000;
+    let _lmFollow = null;
+    function _lmSelectingIn(root) {
+        try { const sel = window.getSelection(); return !!(sel && !sel.isCollapsed && root && root.contains(sel.anchorNode)); } catch (_) { return false; }
+    }
+    function _lmFollowStart(res) {
+        if (!(state.reviewMode && state.reviewRole === 'live_modelling') || !canvasEditor) return;
+        if (_lmFollow && _lmFollow.editor === canvasEditor) { if (res && res.rev) _lmFollow.rev = res.rev; return; }
+        if (_lmFollow) clearInterval(_lmFollow.timer);
+        const f = { rev: (res && res.rev) || null, editor: canvasEditor, busy: false, warned: false, timer: null };
+        f.timer = setInterval(() => { _lmFollowTick(f); }, LM_FOLLOW_MS);
+        _lmFollow = f;
+    }
+    async function _lmFollowTick(f) {
+        if (f !== _lmFollow || f.busy) return;
+        const ed = f.editor;
+        const root = ed && ed.options && ed.options.element;
+        if (!ed || ed.isDestroyed || ed !== canvasEditor || !root || !document.contains(root)
+            || !(state.reviewMode && state.reviewRole === 'live_modelling')) {
+            clearInterval(f.timer); if (_lmFollow === f) _lmFollow = null; return;
+        }
+        if (document.visibilityState === 'hidden' || _lmSelectingIn(root)) return;
+        f.busy = true;
+        try {
+            const res = await fetch(_reviewCanvasUrl() + (f.rev ? '&since=' + encodeURIComponent(f.rev) : ''), { headers }).then(r => r.json());
+            if (f !== _lmFollow || ed !== canvasEditor || ed.isDestroyed) return;
+            if (res && res.rev && (res.unchanged || !res.doc)) { f.rev = res.rev; return; }
+            if (!res || !res.success || !res.doc || typeof res.doc.html !== 'string') return;
+            if (_lmSelectingIn(root)) return;   // a selection began during the fetch — next tick (rev not advanced)
+            const scroller = _swmlScrollerOf(root);
+            const top = scroller ? scroller.scrollTop : window.scrollY;
+            _migrationActive = true;
+            try { ed.commands.setContent(res.doc.html, false); }
+            finally { _migrationActive = false; }
+            if (scroller) scroller.scrollTop = top; else window.scrollTo(window.scrollX, top);
+            f.rev = res.rev || null;
+        } catch (e) {
+            if (!f.warned) { f.warned = true; console.warn('WML live modelling: could not refresh the document — will keep trying.', e && e.message); }
+        } finally { f.busy = false; }
+    }
     async function tryServerLoad() {
         // v7.17.39: CW canvas doc is now project-scoped server-side (see v7.17.39
         // `/canvas/load` + `cw_project_id` scoping). The pre-v7.17.39 early-exit
@@ -68242,7 +68306,7 @@
                 ? `&quiz=foundational&quiz_text=${encodeURIComponent(state.text)}&quiz_topic=${state.topicNumber || 0}`
                 : '';
             if (state.reviewMode && state.reviewStudentId) {
-                url = `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${_cwReviewProjectQS()}`;
+                url = _reviewCanvasUrl();
             } else {
                 url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}${_quizIdent}`;
             }
@@ -68354,6 +68418,7 @@
                         if (_currentUpdateCommentGutter) requestAnimationFrame(_currentUpdateCommentGutter);
                     }
                     console.log('WML Review: Loaded student canvas from server');
+                    _lmFollowStart(res);   // v7.20.792 (#842): live modelling — keep following the author
                     // v7.20.634 (#586): the per-question sidebar is now built in tutor view too, and the
                     // first paint hid the panel while this doc was still on its way — paint it now that
                     // the student's marks are in the editor (twice: the nodeViews mount across frames).

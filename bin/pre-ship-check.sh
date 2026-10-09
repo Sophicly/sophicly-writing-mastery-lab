@@ -194,7 +194,7 @@ fi
 # apparatus — timer pop-up, word target, red pill, deadline, baseline card — and every gate keys on isLiveModelling().
 # #447m missed two of them; mutation-proven 4/4 when written.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
-     | grep -qE 'wml-assessment\.js|wml-core\.js|live-modelling-apparatus-harness\.js'; then
+     | grep -qE 'wml-assessment\.js|wml-core\.js|class-rest-api\.php|live-modelling-apparatus-harness\.js'; then
   node bin/live-modelling-apparatus-harness.js >/tmp/lm-apparatus.out 2>&1 || { cat /tmp/lm-apparatus.out; fail=1; }
 fi
 

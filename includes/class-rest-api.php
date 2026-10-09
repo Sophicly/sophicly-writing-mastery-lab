@@ -3373,6 +3373,13 @@ class SWML_REST_API {
             return rest_ensure_response(['success' => true, 'doc' => null, 'attempt' => $attempt]);
         }
         $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
+        // v7.20.792 (#842): a live-modelling viewer re-reads this every few seconds to follow the author. A revision of the
+        // STORED document lets an unchanged one answer in a few bytes instead of re-sending (and re-healing) the whole page.
+        $rev = md5(is_string($raw) ? $raw : (string) wp_json_encode($raw));
+        $since = sanitize_text_field($request->get_param('since') ?? '');
+        if ($since !== '' && hash_equals($rev, $since)) {
+            return rest_ensure_response(['success' => true, 'unchanged' => true, 'rev' => $rev, 'attempt' => $attempt]);
+        }
         // v7.19.352: same stale CW-outline strip as load_canvas — tutor sees the
         // cleaned doc too.
         if (strpos($text, 'lang_paper') !== false && is_array($doc) && !empty($doc['html'])) {
@@ -3399,7 +3406,7 @@ class SWML_REST_API {
                 $doc['html'] = self::strip_responses_for_planning($doc['html']);
             }
         }
-        return rest_ensure_response(['success' => true, 'doc' => $doc, 'attempt' => $attempt]);
+        return rest_ensure_response(['success' => true, 'doc' => $doc, 'attempt' => $attempt, 'rev' => $rev]);
     }
 
     /**
