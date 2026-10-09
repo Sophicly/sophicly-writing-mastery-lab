@@ -484,6 +484,18 @@ function makeWorld(ctl, opts) {
         }
     }
 
+    // v7.20.776 — the REAL weekend-lesson-11 (Mark It Again) helpers, lifted from source, not stubbed: Trial 1's walk calls
+    // them, and they key off `state.task`, so a cw_trial_1 sim gets no edits and a cw_step_91 sim gets lesson 11's words —
+    // exactly as on the page. A stub would let a broken edit table pass every trial sim.
+    {
+        const a = SRC.indexOf('const CW_AGAIN_TASK = ');
+        const b = SRC.indexOf('function _cwTurnOwned(task, text) {', a);
+        if (a < 0 || b < 0) throw new Error('lesson-11 helpers (CW_AGAIN_TASK … _cwAgainNowOf) not found — the trial sims would run without them');
+        // eslint-disable-next-line no-new-func
+        Object.assign(deps, new Function('state', SRC.slice(a, b)
+            + '\nreturn { CW_AGAIN_TASK, CW_AGAIN_TEXT_EDITS, _cwIsAgain, _cwAgainText, _cwAgainThenNowLine, _cwAgainWasOf, _cwAgainNowOf };')(deps.state));
+    }
+
     attachLiveChipsDeps(deps);   // v7.20.339 — must precede the SA lift (it calls _armLiveChips)
     attachSlotDeps(deps);        // v7.20.340 — _walkSlot · _cwLastAssistantIs · cwProgressBar · _cwNodeText
     attachSelfAssessDeps(deps);

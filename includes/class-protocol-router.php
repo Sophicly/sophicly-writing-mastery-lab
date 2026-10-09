@@ -2494,7 +2494,7 @@ class SWML_Protocol_Router {
             ? "- **Length:** the exam piece is about {$exam} words; Draft 1 aims for {$d1} words. Use these figures, not any other word count above.\n"
             : '';
         return "[AI_INTERNAL — WEEKEND STORY UNIT. This overrides anything above that conflicts with it.]\n"
-            . "This student is taking the Weekend Story: ten short lessons that get one exam story planned, written, marked, polished and adapted to a real exam question over a weekend. It has NO plot work. The plot lessons of the full course (choosing a plot structure, the plot outline, values, plot updates) are not part of it, and the student has never seen them.\n"
+            . "This student is taking the Weekend Story: eleven short lessons that get one exam story planned, written, marked, polished, adapted to a real exam question and marked again over a weekend, plus an optional bonus lesson on making the reader care. It has NO plot work. The plot lessons of the full course (choosing a plot structure, the plot outline, values, plot updates) are not part of it, and the student has never seen them.\n"
             . "- **Their story plan is the six-beat Story Spine** they wrote (At first… And then… Until… And because of this… And because of this… Until finally…) and its dramatic throughline. Wherever the instructions above mention a plot outline, plot stages (I–VI), an archetypal plot structure or an authorial intent, use the Story Spine and its throughline instead. Never ask them to choose a plot structure or a stage, and never say anything is missing because they have no plot outline.\n"
             . "- **Never name a lesson by a course step number** (\"Step 6\", \"Step 10\") and never send them to one. Name things by what they are: \"your Story Spine\", \"your scene\", \"the next lesson\".\n"
             // v7.20.743 (PEDAGOGY §55.1): lesson 5 is built around a dramatic situation from OUR adapted list.
@@ -2846,6 +2846,7 @@ class SWML_Protocol_Router {
                 'cw_step_30' => 'CW-STEP-30-final-draft-spag.md',
                 'cw_step_31' => 'CW-STEP-31-metacognitive-reflection.md',
                 'cw_step_90' => 'CW-STEP-90-adapt-to-the-question.md',   // v7.20.753: weekend lesson 9 (unit-only; 90+ reserved)
+                'cw_step_91' => 'CW-STEP-91-mark-it-again.md',           // v7.20.776: weekend lesson 11 (unit-only)
                 'cw_trial_1' => 'CW-TRIAL-01-story-coherence.md',
                 'cw_trial_2' => 'CW-TRIAL-02-character-depth.md',
                 'cw_trial_3' => 'CW-TRIAL-03-archetype-coherence.md',
@@ -4168,6 +4169,7 @@ TEMPLATE;
                 'cw_step_28' => 'Update Plot: Structural', 'cw_step_29' => 'Draft 7: Structural',
                 'cw_step_30' => 'Final Draft — SPAG', 'cw_step_31' => 'Metacognitive Reflection',
                 'cw_step_90' => 'Adapt It to the Question',   // v7.20.753: weekend lesson 9
+                'cw_step_91' => 'Mark It Again',              // v7.20.776: weekend lesson 11
                 'cw_trial_1' => 'Trial 1: Story Coherence', 'cw_trial_2' => 'Trial 2: Character Depth',
                 'cw_trial_3' => 'Trial 3: Archetype Coherence', 'cw_trial_4' => 'Trial 4: Emotional Impact',
                 'cw_trial_5' => 'Trial 5: Thematic Clarity', 'cw_trial_6' => 'Trial 6: Technical Proficiency',

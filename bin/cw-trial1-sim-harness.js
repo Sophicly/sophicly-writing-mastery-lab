@@ -719,6 +719,68 @@ async function main() {
             '13 · …live, with a fresh ladder card');
     }
 
+    // ── 14 · v7.20.776: WEEKEND LESSON 11, "MARK IT AGAIN" — the same walk on its own page (plan §2e.2) ──────────────
+    // The REAL controller with task cw_step_91: the same marking, lesson 11's words, Then and Now after the marking, its
+    // own graded activity (never a second Trial 1 record), and weekend-only.
+    console.log('14 · weekend lesson 11 (Mark It Again) runs the same walk, in its own words, on its own page');
+    {
+        const AG = ELEMENTS.map((e) => 'cw-again-' + e.id).concat(['cw-again-total']);
+        const ag = (unit, prefill) => {
+            const w = world({ task: 'cw_step_91', fids: FIDS.concat(AG), prefill: prefill || {} });
+            w.deps.WML.cwInUnit = () => !!unit;
+            return w;
+        };
+        {   // outside the weekend unit: it says so and stops — drawn, never stored
+            const w = ag(false);
+            w.ctl.forceStart();
+            await settle();
+            ok(/belongs to the Weekend Story/.test(lastBubble(w)) && !w.ctl.active && !(w.deps.canvasChatHistory || []).some((t) => t.role === 'assistant'),
+                '14 · opened outside the Weekend Story: it says so and stops (drawn, never stored)', lastBubble(w));
+        }
+        const was = {};
+        ELEMENTS.forEach((e) => { was['cw-again-' + e.id] = 'Lesson 8: 2/' + (e.outOf || 4); });
+        was['cw-again-total'] = 'Lesson 8: 15/' + OUT_OF;
+        const w = ag(true, was);
+        w.ctl.forceStart();
+        await settle();
+        ok(/same marking as lesson 8/.test(lastBubble(w)) && /rewrote in lesson 10/.test(lastBubble(w)), '14 · the orientation says what is new: the same marking, on the rewritten story', lastBubble(w));
+        await toFirstAsk(w);
+        ok(/Hook/.test(lastBubble(w)) && !!ladder && ladder.title === 'Hook', '14 · …then the same first ask and the same ladder');
+        await scoreAll(w, 2);
+        const ctx = hiddenCtx(w);
+        ok(/MARK IT AGAIN \(weekend lesson 11\)/.test(ctx) && /rewrote in lesson 10/.test(ctx) && !/Draft 1|Draft 2|TRIAL 1 —/.test(ctx),
+            '⭐ 14 · Sophia is told what she is marking: the rewritten story, never "Draft 1"', (ctx.match(/.{0,40}(Draft [12]|TRIAL 1 —).{0,40}/) || [])[0]);
+        reply(w, 'My level calls.\n\n' + markerBlock({}));
+        await settle();
+        const hook = w.rows.get('cw-again-hook'), tot = w.rows.get('cw-again-total');
+        ok(hook === 'Lesson 8: 2/4 → today: 4/4 (up 2)' && tot === 'Lesson 8: 15/' + OUT_OF + ' → today: ' + OUT_OF + '/' + OUT_OF + ' (up ' + (OUT_OF - 15) + ')',
+            '⭐ 14 · THEN AND NOW: each part shows lesson 8\'s mark beside today\'s, and the whole story too', [hook, tot]);
+        ok(/In lesson 8 it was 15 out of 30\./.test(allText(w)), '14 · the marking turn says where the story stood in lesson 8');
+        ok(w.deps.state.cwTrialScore && w.deps.state.cwTrialScore.task === 'cw_step_91', '⭐ 14 · the mark is published under lesson 11\'s OWN task (its own graded activity)', w.deps.state.cwTrialScore);
+        for (let i = 0; i < 10 && !/your one target for the exam/i.test(lastBubble(w)); i++) {
+            await settle();
+            const c = chipNamed(w, /Continue/) || w.chips().filter((x) => !/Change my answers|Give me my marks|Try again/.test(String(x.textContent)))[0];
+            if (!c) break;
+            w.tap(c);
+        }
+        ok(/your one target for the exam/i.test(lastBubble(w)) && /your exam story must do/.test(lastBubble(w)), '14 · the closing ask is the exam target (there is no Draft 2 after lesson 11)', lastBubble(w));
+        await w.say('Start inside the moment, not before it.');
+        await settle();
+        ok(w.rows.get('cw-trial-1-target') === 'Start inside the moment, not before it.' && /one thing to take into the exam/.test(allText(w)), '14 · the target is filed, in lesson 11\'s words');
+        ok(w.saved.length === 0, '⭐ 14 · NO trial record is saved — a second Trial 1 entry would replace lesson 8\'s (readers take the last)', w.saved.length);
+        ok(!/Draft [12]|first draft|This trial/.test(allText(w)), '⭐ 14 · nothing lesson 11 says names a draft or "this trial"', (allText(w).match(/.{0,40}(Draft [12]|first draft|This trial).{0,40}/) || [])[0]);
+    }
+    {   // lesson 8 is untouched by all of this
+        const w = world();
+        w.ctl.forceStart();
+        await toFirstAsk(w);
+        await scoreAll(w, 2);
+        ok(/TRIAL 1 — STORY COHERENCE/.test(hiddenCtx(w)) && !/MARK IT AGAIN/.test(hiddenCtx(w)), '14 · lesson 8 (Trial 1) still tells Sophia it is Trial 1');
+        reply(w, 'Done.\n\n' + markerBlock({}));
+        await settle();
+        ok(w.deps.state.cwTrialScore && w.deps.state.cwTrialScore.task === 'cw_trial_1' && w.saved.length === 1, '14 · …still publishes as cw_trial_1 and still saves its trial record');
+    }
+
     console.log('\n' + (fail ? '❌ cw-trial1-sim FAILED' : '✅ cw-trial1-sim passed')
         + '  (' + asserts.pass + ' assertions, ' + asserts.fail + ' failed)');
     process.exit(fail);

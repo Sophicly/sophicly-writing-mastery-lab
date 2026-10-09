@@ -5563,7 +5563,7 @@
     ];
     // v7.20.755 — the weekend story numbers its OWN lessons (PEDAGOGY §55; LD's shells 59223–59236 carry the numbers).
     // v7.20.761 (PEDAGOGY §55.2): lesson 6 is Structural Elements (Step 27); Draft 1 → 7, Trial 1 → 8, Polish → 9, Adapt → 10.
-    const CW_UNIT_LESSON_OF_STEP = { 1: 1, 2: 2, 3: 3, 4: 4, 9: 5, 27: 6, 10: 7, 14: 9, 90: 10 };
+    const CW_UNIT_LESSON_OF_STEP = { 1: 1, 2: 2, 3: 3, 4: 4, 9: 5, 27: 6, 10: 7, 14: 9, 90: 10, 91: 11 };   // v7.20.776: 91 = Mark It Again
     // A course step the unit HAS is named by its lesson, so a served sentence can never send a weekend student to "Step 3"
     // (measured on staging .754: lessons 2–4 said "carries straight into Step 3", "the goal you named in Step 3"). This
     // covers the whole POPULATION, not a list of phrases someone happened to notice. "Lesson" where a sentence or line
@@ -5629,6 +5629,73 @@
     function _cwPrereqRecheckLabel(prereqStep) {
         if (!(WML.cwInUnit && WML.cwInUnit()) || !CW_UNIT_LESSON_OF_STEP[prereqStep]) return '';
         return 'I’ve finished ' + _cwStepPlace(prereqStep) + ' — check again';
+    }
+
+    // ⭐ v7.20.776 — WEEKEND LESSON 11, "MARK IT AGAIN" (Neil, 9 Oct, FIXLIST #813f/#815c: "Mark it again"; plan §2e.2).
+    // It runs Trial 1's own walk and marking (_cwTrial1Ctl) on the story the student rewrote in lesson 10, so Trial 1's
+    // words about "Draft 1" and "Draft 2" are edited where they are SERVED on this page — never in their literals, which
+    // lesson 8 keeps. Student-facing AND model-facing (the marking and help contexts say what is being marked). A drifted
+    // literal is a silent no-op, so bin/weekend-story-harness.js checks every [from] still exists in the source.
+    const CW_AGAIN_TASK = 'cw_step_91';
+    const CW_AGAIN_TEXT_EDITS = [
+        ['[THE STUDENT IS ASSESSING THEIR OWN DRAFT for Trial 1 (story coherence) and is stuck on ',
+            '[THE STUDENT IS MARKING THEIR STORY AGAIN in weekend lesson 11 (the lesson-8 marking, on the story they rewrote in lesson 10 to answer a real exam question) and is stuck on '],
+        ['\nWHAT THEY ARE JUDGING: their Draft 1, which is on the page beside the chat.',
+            '\nWHAT THEY ARE JUDGING: the story they rewrote in lesson 10, which is on the page beside the chat.'],
+        ['This sentence becomes your target for Draft 2, so make it something you could ',
+            'This sentence becomes your target for the exam, so make it something you could '],
+        ['[TRIAL 1 — STORY COHERENCE. The student has just marked their own Draft 1 the way an ',
+            '[MARK IT AGAIN (weekend lesson 11) — STORY COHERENCE, the same marking as lesson 8, now on the story the student rewrote in lesson 10 to answer a real exam question. The student has just marked that rewritten story the way an '],
+        ['2. Name the ONE element that would improve the story most in Draft 2, and say what to do to it.\n',
+            '2. Name the ONE element that would improve the story most for the exam, and say what to do to it.\n'],
+        ['@TRIAL_PRIORITY[element_id] one line — what to do to that element in Draft 2\n',
+            '@TRIAL_PRIORITY[element_id] one line — what to do to that element for the exam\n'],
+        ['Now let me read your draft and make my own level calls on each part. One moment.',
+            'Now let me read your rewritten story and make my own level calls on each part. One moment.'],
+        ['above it are the part that changes Draft 2.*', 'above it are the part to take into the exam.*'],
+        ['\n\nThe habit to carry into Draft 2: **', '\n\nThe habit to carry into the exam: **'],
+        ['Fair — the gap does not always sit in one part. The habit to carry into Draft 2 is still the same: **',
+            'Fair — the gap does not always sit in one part. The habit to carry into the exam is still the same: **'],
+        ['**: you are there on this dimension — hold it in Draft 2.', '**: you are there on this dimension — hold it in the exam.'],
+        [', and this trial shows exactly where it lives.', ', and this marking shows exactly where it lives.'],
+        ['\n\nDraft 2 is where this counts — and it opens with your own target at the top of the page.',
+            '\n\nThe exam is where this counts — take your target in with you.'],
+        ['**Last thing, and it matters most: your one target for Draft 2, in your own words.**\n\n',
+            '**Last thing, and it matters most: your one target for the exam, in your own words.**\n\n'],
+        ['Look at what we both found. In one sentence, say the single thing Draft 2 must do that ',
+            'Look at what we both found. In one sentence, say the single thing your exam story must do that '],
+        ['Draft 1 does not. It goes in your document, and it will be waiting for you at the top of ',
+            'this story does not do yet. It goes in your document'],
+        ['the page when you open Draft 2.', ', ready for the exam.'],
+        ['That is your opening move for Draft 2 — it is in your document, and it will be at the ',
+            'That is the one thing to take into the exam — it is in your document. '],
+        ['top of the page when Draft 2 opens. Mark the lesson complete when you are ready.', 'Mark the lesson complete when you are ready.'],
+        ['This trial is finished — **', 'This lesson is finished — **'],
+        [', with your target for Draft 2 filed', ', with your target for the exam filed'],
+        ['**This trial is finished.**', '**This lesson is finished.**'],
+    ];
+    function _cwIsAgain() { return !!(state && state.task === CW_AGAIN_TASK); }
+    function _cwAgainText(t) {
+        if (!_cwIsAgain()) return t;
+        let out = String(t);
+        CW_AGAIN_TEXT_EDITS.forEach(function (ed) { out = out.split(ed[0]).join(ed[1]); });
+        return out;
+    }
+    // THEN AND NOW — one row per part of the scene in the lesson-11 document: Sophia's lesson-8 mark, then today's. ONE
+    // composer and its two readers, so the load-time fill and the walk (after today's marking) write the same shape.
+    function _cwAgainThenNowLine(was, outOf, now) {
+        const w = (was == null) ? 'Lesson 8: not marked' : 'Lesson 8: ' + was + '/' + outOf;
+        if (now == null) return w;
+        const d = (was == null) ? '' : (now > was ? ' (up ' + (now - was) + ')' : (now < was ? ' (down ' + (was - now) + ')' : ' (the same)'));
+        return w + ' → today: ' + now + '/' + outOf + d;
+    }
+    function _cwAgainWasOf(text) {
+        const m = /^Lesson 8: (\d+)\/\d+/.exec(String(text || '').trim());
+        return m ? parseInt(m[1], 10) : null;
+    }
+    function _cwAgainNowOf(text) {
+        const m = /→ today: (\d+)\/\d+/.exec(String(text || ''));
+        return m ? parseInt(m[1], 10) : null;
     }
     function _cwTurnOwned(task, text) {
         const f = _CW_TURN_OWNERS[task];
@@ -19968,6 +20035,10 @@
                             // trial never needs and leave the seven asks unserved.
                             clearWalkResume();
                             setTimeout(() => { _cwTrial1Ctl.reset(); _cwTrial1Ctl.forceStart(); }, 200);
+                        } else if (state.task === 'cw_step_91') {
+                            // v7.20.776: weekend lesson 11 (Mark It Again) runs Trial 1's walk — it owns chat-clear the same way.
+                            clearWalkResume();
+                            setTimeout(() => { _cwTrial1Ctl.reset(); _cwTrial1Ctl.forceStart(); }, 200);
                         } else if (state.task === 'cw_step_11') {
                             // v7.20.563 (#428): Step 11's walk owns chat-clear too.
                             clearWalkResume();
@@ -20897,7 +20968,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -20911,7 +20982,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -21124,7 +21195,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl,
+                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -21234,6 +21305,11 @@
             // v7.20.551 (slice 4): Trial 1's self-assessment owns the turn while it is running.
             // Task-keyed, unlike the ladder above — this walk is Trial 1's, not a shared host.
             if (state.task === 'cw_trial_1' && _cwTrial1Ctl.active && _inboundIsAnswer) {
+                await _cwTrial1Ctl.handleTurn(msg);
+                return;
+            }
+            // v7.20.776: weekend lesson 11 (Mark It Again) — the same walk, on its own page.
+            if (state.task === 'cw_step_91' && _cwTrial1Ctl.active && _inboundIsAnswer) {
                 await _cwTrial1Ctl.handleTurn(msg);
                 return;
             }
@@ -35162,6 +35238,7 @@
 
             function aiBubble(plain) {
                 plain = _cwUnitText(plain);   // v7.20.755: a weekend lesson never sends its student to a course step (§55)
+                plain = _cwAgainText(plain);  // v7.20.776: on lesson 11 (Mark It Again), lesson 8's draft words become this lesson's
                 emitted++;
                 addChatMessage(formatAI(plain), 'ai', plain);
                 if (_cwIsReplay()) return;   // a resume re-serve is DRAWN, never saved (§4c.7)
@@ -35286,7 +35363,7 @@
                     + '\nBACKGROUND ONLY — what they PLANNED for this part back in Step 9, so your example can use '
                     + 'their own story. Do not assess the plan and do not quote it back as if it were their draft: '
                     + (planned || '(they did not write a plan for this one)');
-                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: _cwAgainText(ctx), hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true;
                 armWalkResume('trial1-help-' + e.id, function (reply, meta) {
                     pending = false; active = true; persist();
@@ -35333,6 +35410,19 @@
             function orientationChunks() {
                 const total = els().reduce(function (a, e) { return a + outOf(e); }, 0);
                 const hasStruct = els().some(function (e) { return e.id === 'structure'; });
+                // v7.20.776: lesson 11 repeats lesson 8's marking — the examiner method is already taught, so its own short
+                // orientation says what is new: a different story, and the Then and Now section.
+                if (_cwIsAgain()) return ([
+                    'This is the **same marking as lesson 8**, on a different story: the one you rewrote in lesson 10 to answer a '
+                        + 'real exam question. Your rewritten story is on the page beside this chat.',
+                    'You mark it first, part by part, exactly as you did in lesson 8: climb the levels on the **Your Marking** pad, '
+                        + 'then prove each mark in one sentence. ' + (hasStruct ? 'Then your structural techniques, then ' : 'Then ')
+                        + 'technical accuracy, which takes the whole marking to **' + total + '**. Then I read your story and make my '
+                        + 'own level calls.',
+                    'Your lesson-8 marks are in the **Then and Now** section of your document. When I have marked this story, each '
+                        + 'part shows both, so you can see exactly what changed. Be honest rather than kind: an honest mark tells you '
+                        + 'what to take into the exam.',
+                ]).map(_cwUnitText);
                 return ([
                     'Time to see how your first draft holds together as a **story**. Not the spelling, not the '
                         + 'word choices — those come later. Just this: does it work as a piece of storytelling?',
@@ -35676,7 +35766,7 @@
                         : '')
                     + '\n\nWHAT EACH ELEMENT IS FOR, AND ITS TWO LEVELS:\n'
                     + els().map(function (e) { return '- ' + e.label + ' (out of ' + outOf(e) + '): ' + e.prompt + ' Level 1: ' + l1Body(e) + ' Level 2: ' + e.strong; }).join('\n');
-                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: _cwAgainText(ctx), hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true;
                 armWalkResume('trial1-marking', function (reply, meta) {
                     pending = false;
@@ -35831,6 +35921,7 @@
                 writeRow('cw-trial-1-gap', gaps.length
                     ? gaps.map(function (g) { return g.replace(/\*\*/g, '').replace(/^- /, ''); }).join(' | ')
                     : 'You and Sophia agreed on every part.', { replace: true });
+                const thenNow = _cwIsAgain() ? writeThenNow(m) : '';   // v7.20.776: lesson 11 — lesson 8's mark beside today's
                 // ⭐ REVEAL ORDER (PEDAGOGY §33.9, Butler/EEF): the disagreements and the words
                 // lead; the grade is a quiet closing line, never the headline — and the turn does
                 // not end here: it ends on the student's own target (serveTargetAsk below).
@@ -35843,7 +35934,7 @@
                         : 'We agreed on every part, which means you are already reading your own writing '
                             + 'the way an examiner does. That is the harder half of this.')
                         + '\n\n*For the record, the arithmetic on my level calls: ' + m.got + ' out of ' + m.max
-                        + ' — Grade ' + m.grade + ' for story coherence. It is in your document; the sentences '
+                        + ' — Grade ' + m.grade + ' for story coherence.' + (thenNow ? ' ' + thenNow : '') + ' It is in your document; the sentences '
                         + 'above it are the part that changes Draft 2.*');
                 });
                 // WML's own store keeps the result; the dashboard's grade ring cannot read it yet
@@ -35989,10 +36080,15 @@
                         // progress report"): the SAME piggyback carries strength_1 / target_1 / target_2 —
                         // the columns the dashboard's Feedback section, Portfolio and Report already read.
                         strength_1: st.strengthLine || '', target_1: st.priorityLine || '', target_2: st.target || '' };
+                    // v7.20.776: lesson 11 is its OWN graded activity — the piggyback is gated to the page's task.
+                    if (_cwIsAgain()) state.cwTrialScore.task = CW_AGAIN_TASK;
                     if (typeof saveCanvasContent === 'function') saveCanvasContent();
                 } catch (err) {}
             }
             function saveTrialResult(opts) {
+                // v7.20.776: lesson 11 records through the canvas-save piggyback above, as its own activity. A trial save
+                // here would append a SECOND Trial 1 entry, and every reader takes the LAST one — lesson 8's would vanish.
+                if (_cwIsAgain()) return;
                 try {
                     if (!(state.cwProjectId && WML.cwProject && WML.cwProject.saveTrial)) return;
                     const m = st.mark || {};
@@ -36096,6 +36192,32 @@
             // ── position, derived from the DOCUMENT first ──────────────────────────────────
             // The rows survive a reload; a counter does not. On resume the walk lands on the exact
             // element the student was on (§4c.8b), not the top of the list.
+            // v7.20.776 — THEN AND NOW (lesson 11). Each row already holds lesson 8's half (filled when the page loads, from
+            // the lesson-8 document); today's half is Sophia's level call from THIS marking. One composer for both
+            // (_cwAgainThenNowLine), so the page and the walk can never write two shapes. Returns the whole-story line for
+            // the chat, or '' when lesson 8 was never marked.
+            function docRow(f) {
+                let out = '';
+                try {
+                    if (canvasEditor) canvasEditor.state.doc.descendants(function (node) {
+                        if (out) return false;
+                        if ((node.type.name === 'outlineRow' || node.type.name === 'inputField') && node.attrs && node.attrs.fieldId === f) {
+                            out = (typeof _cwNodeText === 'function' ? _cwNodeText(node) : (node.textContent || '')).trim();
+                        }
+                        return true;
+                    });
+                } catch (err) {}
+                return out;
+            }
+            function writeThenNow(m) {
+                els().forEach(function (e) {
+                    const f = 'cw-again-' + e.id;
+                    writeRow(f, _cwAgainThenNowLine(_cwAgainWasOf(docRow(f)), outOf(e), (st.sophia || {})[e.id]), { replace: true });
+                });
+                const was = _cwAgainWasOf(docRow('cw-again-total'));
+                writeRow('cw-again-total', _cwAgainThenNowLine(was, m.max, m.got), { replace: true });
+                return was == null ? '' : 'In lesson 8 it was ' + was + ' out of ' + m.max + '.';
+            }
             function deriveFromDoc() {
                 const list = els();
                 const marks = {}, notes = {};
@@ -36169,6 +36291,13 @@
                     console.warn('WML trial1: no scene elements — refusing to open.');
                     return false;
                 }
+                // v7.20.776: lesson 11 marks the story rewritten in lesson 10 — it exists only inside the Weekend Story.
+                // Drawn, never stored (§4c.7): true only while the lesson is opened outside it.
+                if (_cwIsAgain() && !(WML.cwInUnit && WML.cwInUnit())) {
+                    st = { i: 0, phase: 'blocked' }; active = false; done = true;
+                    _cwReplay(function () { aiBubble('This lesson belongs to the Weekend Story. Open it from the Weekend Story unit in your course.'); });
+                    return true;
+                }
                 st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'goal' };
                 active = true; pending = false; done = false;
                 persist();
@@ -36200,6 +36329,7 @@
 
             function tryResume() {
                 try {
+                    if (_cwIsAgain() && !(WML.cwInUnit && WML.cwInUnit())) return false;   // v7.20.776: weekend only
                     const raw = localStorage.getItem(lsKey());
                     const d = raw ? JSON.parse(raw) : null;
                     if (!d || !d.st) return false;
@@ -36946,6 +37076,7 @@
                 // this map anyway — the .490 incident's second finding was that an UNLISTED task
                 // makes the start-miss guard inert for exactly the step that has no controller.
                 : t === 'cw_trial_1' ? _cwTrial1Ctl
+                : t === 'cw_step_91' ? _cwTrial1Ctl   // v7.20.776: weekend lesson 11
                 : t === 'cw_step_11' ? _cwCharProfileCtl
                 : t === 'cw_step_12' ? _cwGoalsPlotCtl
                 : t === 'cw_step_90' ? _cwAdaptCtl
@@ -44151,6 +44282,7 @@
                     // mid-trial must re-serve the element the student was on — not the top of the
                     // seven (§4c.8b).
                     if (state.task === 'cw_trial_1' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();
+                    if (state.task === 'cw_step_91' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();   // v7.20.776 (weekend lesson 11)
                     if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
                     if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
                     if (state.task === 'cw_step_90' && tp.cwAdaptCtl) tp.cwAdaptCtl.tryResume();               // v7.20.753 (weekend lesson 9)
@@ -44350,6 +44482,12 @@
                     // wait for and no start marker that could go missing.
                     if (state.task === 'cw_trial_1' && !state.reviewMode && tp.cwTrial1Ctl) {
                         console.log('WML v7.20.551: CW Trial 1 — deterministic self-assessment start (isCwSi entry)');
+                        tp.cwTrial1Ctl.forceStart();
+                        return;
+                    }
+                    // v7.20.776: weekend lesson 11 (Mark It Again) — Trial 1's walk, started in code the same way.
+                    if (state.task === 'cw_step_91' && !state.reviewMode && tp.cwTrial1Ctl) {
+                        console.log('WML v7.20.776: weekend lesson 11 (Mark It Again) — deterministic start (isCwSi entry)');
                         tp.cwTrial1Ctl.forceStart();
                         return;
                     }
@@ -52570,6 +52708,62 @@
                 console.warn('WML CW adapt: seeding the rewrite box failed (document untouched) —', e && e.message);
             }
         };
+        // ⭐ v7.20.776 — WEEKEND LESSON 11 (Mark It Again), at EVERY mount: lesson 10's rewritten story is copied into the
+        // read-only "Your Draft" section (the trial's own refresh rule, #402: never a cached copy), and THEN AND NOW gets
+        // lesson 8's half from the lesson-8 page. Today's half is the walk's (written after today's marking) and is kept.
+        // Reads only: neither sibling page is ever created or seeded from here.
+        const tryFillCwAgain = async () => {
+            if (!isCwTask || !canvasEditor || !cwStepDef || cwStepDef.step !== 91 || state.reviewMode) return;
+            if (!(WML.cwInUnit && WML.cwInUnit())) return;
+            try {
+                let adaptHTML = '', trialHTML = '';
+                try { adaptHTML = await _cwStepDocHTML('cw_step_90'); } catch (e) { console.warn('WML CW again: lesson 10 page could not be read —', e && e.message); }
+                try { trialHTML = await _cwStepDocHTML('cw_trial_1'); } catch (e) { console.warn('WML CW again: lesson 8 page could not be read —', e && e.message); }
+                let prose = '', question = '';
+                if (adaptHTML) {
+                    const ab = document.createElement('div');
+                    ab.innerHTML = adaptHTML;
+                    const rw = ab.querySelector('[data-section-label="Your Rewrite"]');
+                    if (rw && (rw.textContent || '').trim()) {
+                        prose = Array.from(rw.children).filter((n) => (n.textContent || '').trim()).map((n) => n.outerHTML).join('');
+                    }
+                    question = String(_cwParseFieldMap(adaptHTML)['cw-adapt-chosen'] || '').replace(/\s+/g, ' ').trim();
+                }
+                if (!prose) console.warn('WML CW again: no rewritten story in lesson 10 — the page says so and points back to it.');
+                const inner = _cwMarkAgainDraftInner(prose, question);
+                const t1 = trialHTML ? _cwParseFieldMap(trialHTML) : {};
+                const box = document.createElement('div');
+                box.innerHTML = canvasEditor.getHTML();
+                let changed = false;
+                const sec = box.querySelector('[data-section-label="' + CW_TRIAL_DRAFT_LABEL + '"]');
+                if (sec && sec.innerHTML !== inner) { sec.innerHTML = inner; changed = true; }
+                const setRow = (f, wasMark, outOf) => {
+                    const r = box.querySelector('[data-field-id="' + f + '"]');
+                    if (!r) return;
+                    const want = _cwAgainThenNowLine(wasMark, outOf, _cwAgainNowOf(r.textContent));
+                    if ((r.textContent || '').trim() === want) return;
+                    r.textContent = want;
+                    changed = true;
+                };
+                const els = (WML.cwTrial1Elements ? WML.cwTrial1Elements() : []) || [];
+                els.forEach((e) => {
+                    const hm = /^([0-4])\s*\/\s*([24])\b/.exec(String(t1['cw-trial-1-fb-' + e.id] || ''));
+                    setRow('cw-again-' + e.id, hm ? parseInt(hm[1], 10) : null, e.outOf || 4);
+                });
+                const tm = /\((\d+)\/(\d+)\s*\u00b7/.exec(String(t1['cw-trial-1-mark'] || ''));
+                setRow('cw-again-total', tm ? parseInt(tm[1], 10) : null, tm ? parseInt(tm[2], 10) : els.reduce((a, e) => a + (e.outOf || 4), 0));
+                if (!changed) return;
+                const _was = _migrationActive;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(box.innerHTML, false); }
+                finally { _migrationActive = _was; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW again: rewritten story and lesson-8 marks refreshed' + (prose ? '' : ' (no rewrite yet — the page says so)') + '.');
+            } catch (e) {
+                console.warn('WML CW again: refresh failed (document untouched) —', e && e.message);
+            }
+        };
         // ⭐ v7.20.554 (#424 / PEDAGOGY §33.9) — PIN THE TRIAL'S TARGET TO THE TOP OF THE NEXT
         // DRAFT. The trial's closing ask banks the student's own one-sentence target; this reads
         // it back (LAST saved entry for that trial — a redo supersedes) and pins it above the
@@ -54232,7 +54426,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwStructPlan()).then(() => tryFillCwAdaptRewrite()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwStructPlan()).then(() => tryFillCwAdaptRewrite()).then(() => tryFillCwAgain()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -58318,6 +58512,20 @@
             return html;
         }
 
+        // ── v7.20.776: weekend lesson 11, Mark It Again — Trial 1's marking on the story rewritten in lesson 10 ──
+        // Its own page: the SAME judgement and verdict rows (the walk is Trial 1's), the rewritten story where Trial 1 shows
+        // the draft (same section label, so the draft pad and the walk find it), and THEN AND NOW beside the verdict.
+        if (step === 91) {
+            html += sectionHTML('question', 'About This Lesson', false, null, _cwMarkAgainAboutHTML());
+            html += dividerHTML('YOUR REWRITTEN STORY');
+            html += sectionHTML('response', CW_TRIAL_DRAFT_LABEL, false, null, _cwMarkAgainDraftInner('', ''));
+            html += _cwTrial1JudgementBlock({ again: true });
+            html += _cwTrial1SophiaBlock({ again: true });
+            html += _cwMarkAgainThenNowBlock();
+            html += _cwMarkAgainTargetBlock();
+            return html;
+        }
+
         // ── Trial steps ──
         if (stepDef.trial) {
             const _trialSrc = (window.WML && WML.cwTrialSource) ? WML.cwTrialSource('cw_trial_' + stepDef.trial) : null;
@@ -60366,13 +60574,13 @@
                 '<h3>Your marking, the way an examiner marks</h3>'
                 + '<p><em>One line per part of your scene, out of 4: Level 1 (the part is there and attempts its job) is 1–2 marks, Level 2 (it does what a strong one does) is 3–4. '
                 + ((window.WML && WML.cwInUnit && WML.cwInUnit()) ? 'Then the structural techniques you planned in lesson 6, also out of 4. ' : '')
-                + 'Then technical accuracy, out of 2. Your own sentence proves the mark — or names what is missing for Draft 2.</em></p>'
+                + 'Then technical accuracy, out of 2. Your own sentence proves the mark — or names what is missing for ' + ((opts && opts.again) ? 'the exam' : 'Draft 2') + '.</em></p>'
                 + outlineRowHTML({ id: 'goal', label: 'Grade goal', prompt: 'The grade you are aiming for in creative writing.' }, 'cw-trial-1-goal')
                 + _els.map(function (e) {
                     return outlineRowHTML({ id: e.id, label: e.label, prompt: 'Your mark out of ' + (e.outOf || 4) + ', and your sentence of evidence.' }, 'cw-trial-1-' + e.id);
                 }).join(''));
     }
-    function _cwTrial1SophiaBlock() {
+    function _cwTrial1SophiaBlock(opts) {
         // v7.20.761: THIS lesson's rows — the weekend trial adds the planned structural techniques (PEDAGOGY §55.2).
         const _els = (window.WML && (WML.cwTrial1Elements ? WML.cwTrial1Elements() : (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS))) || [];
         return dividerHTML('SOPHIA’S ASSESSMENT')
@@ -60385,7 +60593,7 @@
             + sectionHTML('response', 'Overall Feedback', false, null,
                 '<h3>The whole piece, in two lines</h3>'
                 + outlineRowHTML({ id: 'strength', label: 'Key Strength', prompt: 'The part of your scene that is working hardest for you.', locked: true }, 'cw-trial-1-strength')
-                + outlineRowHTML({ id: 'priority', label: 'Priority for Draft 2', prompt: 'The one part that would improve the story most, and what to do to it.', locked: true }, 'cw-trial-1-priority'))
+                + outlineRowHTML({ id: 'priority', label: (opts && opts.again) ? 'Priority for the Exam' : 'Priority for Draft 2', prompt: 'The one part that would improve the story most, and what to do to it.', locked: true }, 'cw-trial-1-priority'))
             + sectionHTML('response', 'Story Coherence Mark', false, null,
                 '<h3>Sophia’s mark, and where you two disagreed</h3>'
                 + '<p><em>' + ((window.WML && WML.cwInUnit && WML.cwInUnit())
@@ -60405,6 +60613,43 @@
             '<h3>The one thing Draft 2 must do</h3>'
             + '<p><em>Written at the end of the trial, in your own words. It will be waiting at the top of the page when you open Draft 2.</em></p>'
             + outlineRowHTML({ id: 'target', label: 'My Target', prompt: 'One sentence — the single thing Draft 2 must do that Draft 1 does not.' }, 'cw-trial-1-target'));
+    }
+
+    // ── v7.20.776: weekend lesson 11, Mark It Again (plan §2e.2) — the page's own words ──
+    function _cwMarkAgainAboutHTML() {
+        return '<h2>Mark It Again</h2>'
+            + '<p>The <strong>same marking as lesson 8</strong>, on a different story: the one you rewrote in lesson 10 to answer a real exam question. You mark it first, part by part, the way an examiner marks. Then Sophia reads it and makes her own level calls.</p>'
+            + '<p><strong>Then and Now</strong>, below her verdict, puts each part’s lesson-8 mark beside today’s, so you can see exactly what changed.</p>';
+    }
+    // The story under assessment: lesson 10's "Your Rewrite", copied here read-only (refreshed at every mount, like the trial's
+    // draft). The question it was rewritten for rides with it, because that is what the rewrite was FOR.
+    function _cwMarkAgainDraftInner(proseHTML, question) {
+        if (!proseHTML) {
+            return '<h3>Your rewritten story has not arrived here yet</h3>'
+                + '<p>This page shows the story you rewrote in <strong>lesson 10 (Adapt It to the Question)</strong>, so you can read it while you mark it. Nothing has come through from that lesson: either it has not been written yet, or it did not save.</p>'
+                + '<p>Go back to <strong>lesson 10</strong>, check your rewrite is in the box there, then come back to this page and reload it.</p>';
+        }
+        return '<h3>Your rewritten story</h3>'
+            + (question ? '<p><strong>The question:</strong> ' + escapeHTML(question) + '</p>' : '')
+            + '<p><em>This is the story you rewrote in lesson 10, copied here so you can read it as you mark it. You cannot edit it on this page. To change it, go back to lesson 10.</em></p>'
+            + proseHTML;
+    }
+    function _cwMarkAgainThenNowBlock() {
+        const _els = (window.WML && WML.cwTrial1Elements ? WML.cwTrial1Elements() : []) || [];
+        return sectionHTML('response', 'Then and Now', false, null,
+            '<h3>Lesson 8, and today</h3>'
+            + '<p><em>Sophia’s mark for each part when you marked your draft in lesson 8, and her mark today on your rewritten story. Filled in for you.</em></p>'
+            + _els.map(function (e) {
+                return outlineRowHTML({ id: 'again-' + e.id, label: e.label, prompt: 'Lesson 8, then today.', locked: true }, 'cw-again-' + e.id);
+            }).join('')
+            + outlineRowHTML({ id: 'again-total', label: 'The whole story', prompt: 'Lesson 8, then today.', locked: true }, 'cw-again-total'));
+    }
+    // Same row id as Trial 1's target (the walk files it), this lesson's words: there is no Draft 2 after lesson 11.
+    function _cwMarkAgainTargetBlock() {
+        return sectionHTML('plan', 'Your Target for the Exam', true, null,
+            '<h3>The one thing your exam story must do</h3>'
+            + '<p><em>Written at the end of this lesson, in your own words.</em></p>'
+            + outlineRowHTML({ id: 'target', label: 'My Target', prompt: 'One sentence: the single thing your exam story must do.' }, 'cw-trial-1-target'));
     }
 
     const CW_TRIAL_DRAFT_LABEL = 'Your Draft';
@@ -66542,7 +66787,8 @@
             })() : {}),
             // v7.20.561 (#435): a CW trial's mark rides the same piggyback, gated to THIS task
             // and THIS project so a score can never leak onto a sibling lesson's row.
-            ...((snap.task && snap.task.startsWith('cw_trial_') && state.cwTrialScore
+            // v7.20.776: weekend lesson 11 (Mark It Again) is a graded activity of its own, on its own page.
+            ...((snap.task && (snap.task.startsWith('cw_trial_') || snap.task === 'cw_step_91') && state.cwTrialScore
                     && state.cwTrialScore.task === snap.task && state.cwTrialScore.projectId === (state.cwProjectId || '')) ? {
                 score_raw:        state.cwTrialScore.score,
                 score_max:        state.cwTrialScore.total,
@@ -66880,13 +67126,19 @@
     // the priority Trial 1 wrote (`cw-trial-1-priority`). Same endpoint, same project scope, and the
     // ONE suffix builder the trial saved under (§5d — never a hand-built key). No seedFromSiblings:
     // a read must never create or seed anything.
+    // v7.20.776: the ONE read of a sibling CW lesson's saved page (same endpoint, same project scope, the ONE suffix builder
+    // the sibling saved under — §5d, never a hand-built key). Read-only: no seedFromSiblings, so a read never creates or
+    // seeds anything. '' when the page does not exist yet.
+    async function _cwStepDocHTML(task) {
+        const suffix = WML.resolveCanvasSuffix(task, state.phase) || '';
+        const scope = WML.canvasDocScope();
+        const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(scope.text)}${scope.topic ? '&topicNumber=' + scope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=1${cwScopeQuery()}`;
+        const r = await fetch(url, { headers }).then(function (x) { return x.json(); });
+        return String((r && r.doc && r.doc.html) || '');
+    }
     async function _cwTrial1Priority() {
         try {
-            const suffix = WML.resolveCanvasSuffix('cw_trial_1', state.phase) || '';
-            const scope = WML.canvasDocScope();
-            const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(scope.text)}${scope.topic ? '&topicNumber=' + scope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=1${cwScopeQuery()}`;
-            const r = await fetch(url, { headers }).then(function (x) { return x.json(); });
-            const html = r && r.doc && r.doc.html;
+            const html = await _cwStepDocHTML('cw_trial_1');
             if (!html) return '';
             return String(_cwParseFieldMap(html)['cw-trial-1-priority'] || '').replace(/\s+/g, ' ').trim();
         } catch (e) {

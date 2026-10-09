@@ -161,8 +161,9 @@ console.log('\nThe trial document carries the essay-doc architecture, and everyt
 ok('ONE producer builds the judgement block, called by the TEMPLATE and the HEAL — healed docs cannot drift from born docs',
     (SRC.match(/_cwTrial1JudgementBlock\(/g) || []).length >= 3 && /function _cwTrial1JudgementBlock\(/.test(SRC),
     (SRC.match(/_cwTrial1JudgementBlock\(/g) || []).length);
-ok('…and one for Sophia\'s block', (SRC.match(/_cwTrial1SophiaBlock\(\)/g) || []).length >= 3 && /function _cwTrial1SophiaBlock\(\)/.test(SRC),
-    (SRC.match(/_cwTrial1SophiaBlock\(\)/g) || []).length);
+// v7.20.776: the producer takes an `opts` (weekend lesson 11 relabels one row); the template, the heal and lesson 11 call it.
+ok('…and one for Sophia\'s block', (SRC.match(/_cwTrial1SophiaBlock\(/g) || []).length >= 4 && /function _cwTrial1SophiaBlock\(opts\)/.test(SRC),
+    (SRC.match(/_cwTrial1SophiaBlock\(/g) || []).length);
 ok('the seven verdict rows are BUILT FROM the element list, never hand-typed beside it',
     /_els\.map\(function \(e\) \{[\s\S]{0,200}'cw-trial-1-' \+ e\.id/.test(SRC));
 ok('her PER-ELEMENT verdict rows exist — the per-question-feedback analogue (#419)',
@@ -171,7 +172,7 @@ ok('…locked, and derived from the same element list',
     /locked: true \}, 'cw-trial-1-fb-' \+ e\.id\)/.test(SRC));
 ok('Overall Feedback carries Key Strength + Priority for Draft 2, both locked',
     /label: 'Key Strength'[^)]*locked: true[^)]*\}, 'cw-trial-1-strength'\)/.test(SRC)
-    && /label: 'Priority for Draft 2'[^)]*locked: true[^)]*\}, 'cw-trial-1-priority'\)/.test(SRC));
+    && /label: \(opts && opts\.again\) \? 'Priority for the Exam' : 'Priority for Draft 2', prompt: '[^']*', locked: true \}, 'cw-trial-1-priority'\)/.test(SRC));   // v7.20.776
 ok('the mark row exists', /'cw-trial-1-mark'/.test(SRC));
 ok('the gap row exists', /'cw-trial-1-gap'/.test(SRC));
 ok('⭐ both are LOCKED — a mark a student can retype is not a mark',
@@ -264,7 +265,7 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
         && /@TRIAL_EXAMPLE\[hook\]/.test(PROTO));
     ok('⭐ the mark reaches STUDENT-DATA via the canvas-save score piggyback, gated to this task + project (#435)',
         /function publishTrialScore\(\)/.test(CTL) && /state\.cwTrialScore = \{ task: 'cw_trial_1', projectId/.test(CTL)
-        && /snap\.task\.startsWith\('cw_trial_'\) && state\.cwTrialScore/.test(SRC)
+        && /snap\.task\.startsWith\('cw_trial_'\)(?: \|\| snap\.task === 'cw_step_91'\))? && state\.cwTrialScore/.test(SRC)   // v7.20.776: + weekend lesson 11
         && /state\.cwTrialScore\.projectId === \(state\.cwProjectId \|\| ''\)/.test(SRC));
     ok('⭐ #437 the P1 shape: grade goal upfront (7/8/9, banked) · calibration question (±tolerance, gap parts as chips) · How am I going? / Where to next? · THEN the target',
         /function serveGoalAsk/.test(CTL) && /GRADE_GOALS = \[7, 8, 9\]/.test(CTL) && /writeRow\('cw-trial-1-goal'/.test(CTL)

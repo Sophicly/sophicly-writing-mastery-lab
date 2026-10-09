@@ -446,7 +446,11 @@ const SEVEN = (hook, setup) => [
         const inner = PO._cwPolishAboutInner('Hook — x');
         ok(!LEAK_RE.test(inner.replace(/lesson \d/g, '')) && /lesson 7, Write Draft 1/.test(inner), 'the page names lessons by the unit\'s own numbers, never a course step; true when the box is empty');
         ok(/state\.task === 'cw_step_14'\s*\n?\s*&& WML\.cwInUnit && WML\.cwInUnit\(\) && !state\.reviewMode/.test(SRC), 'the compose runs only in a weekend lesson 8, never in tutor review');
-        ok(/WML\.resolveCanvasSuffix\('cw_trial_1', state\.phase\)/.test(SRC) && !/_cwTrial1Priority[\s\S]{0,900}seedFromSiblings/.test(SRC.slice(SRC.indexOf('async function _cwTrial1Priority'), SRC.indexOf('async function _cwTrial1Priority') + 1200)), '§5d: the trial is read under the ONE suffix builder it saved with, and the read never seeds');
+        // v7.20.776: the read moved into ONE sibling-page reader (_cwStepDocHTML), which lesson 11 also uses.
+        const SDH = SRC.slice(SRC.indexOf('async function _cwStepDocHTML(task) {'), SRC.indexOf('async function _cwTrial1Priority'));
+        ok(/WML\.resolveCanvasSuffix\(task, state\.phase\)/.test(SDH) && !/seedFromSiblings/.test(SDH)
+            && /const html = await _cwStepDocHTML\('cw_trial_1'\);/.test(SRC.slice(SRC.indexOf('async function _cwTrial1Priority'), SRC.indexOf('async function _cwTrial1Priority') + 600)),
+            '§5d: the trial is read under the ONE suffix builder it saved with, and the read never seeds');
     }
     // ── H · the dramatic-situation bank against Neil's source (v7.20.743, PEDAGOGY §55.1) ──
     console.log(' H · the 33 dramatic situations match our source, in plain, safe words');
@@ -790,6 +794,35 @@ const SEVEN = (hook, setup) => [
         ok(FOC === 'cw-step-3-scene-focus' && !!focRow(raws[2]) && /&quot;locked&quot;:true/.test(focRow(raws[2])) && /data-section-label="Your Exam Scene"/.test(raws[2]),
             '⭐ weekend lesson 3\'s document has the LOCKED "Your Exam Scene" row (code fills it from the chat choice)', focRow(raws[2]).slice(0, 160));
         ok(rawsFull.every((r) => r.indexOf(FOC) === -1) && [0, 1, 3].every((i) => raws[i].indexOf(FOC) === -1), 'no other document, and not the full course\'s Step 3, has the row');
+        // v7.20.776 (#815c, plan §2e.2): weekend lesson 11, Mark It Again — its own page, Trial 1's rows, lesson 11's words.
+        {
+            const AG = new Function('sectionHTML', 'dividerHTML', 'outlineRowHTML', 'escapeHTML', 'WML', 'CW_TRIAL_DRAFT_LABEL', '_cwMarkAgainAboutHTML', '_cwMarkAgainDraftInner',   // eslint-disable-line no-new-func
+                '_cwTrial1JudgementBlock', '_cwTrial1SophiaBlock', '_cwMarkAgainThenNowBlock', '_cwMarkAgainTargetBlock', 'CW_ADAPT_STEP', 'return (' + TPL + ')({ step: 91 });');
+            const fnOf = (name) => { const i = SRC.indexOf('function ' + name + '('); return new Function('sectionHTML', 'dividerHTML', 'outlineRowHTML', 'escapeHTML', 'window', 'WML', 'return ' + SRC.slice(i, braceSliceFrom(SRC, i, '{', '}').end) + ';'); };   // eslint-disable-line no-new-func
+            const W = { WML: Object.assign({}, WMLC, { cwInUnit: () => true }) };
+            const mk = (name) => fnOf(name)(H.sectionHTML, H.dividerHTML, H.outlineRowHTML, esc, W, W.WML);
+            const page = AG(H.sectionHTML, H.dividerHTML, H.outlineRowHTML, esc, W.WML, 'Your Draft', mk('_cwMarkAgainAboutHTML'), mk('_cwMarkAgainDraftInner'),
+                mk('_cwTrial1JudgementBlock'), mk('_cwTrial1SophiaBlock'), mk('_cwMarkAgainThenNowBlock'), mk('_cwMarkAgainTargetBlock'), 90);
+            const els = WMLC.cwTrial1Elements();
+            ok(/data-section-label="Your Draft"/.test(page) && /Your rewritten story has not arrived here yet/.test(page),
+                '⭐ lesson 11: the rewritten story sits where Trial 1 shows the draft (same label, so the draft pad and the walk find it)');
+            ok(els.every((e) => page.indexOf('data-field-id="cw-trial-1-' + e.id + '"') !== -1 && page.indexOf('data-field-id="cw-trial-1-fb-' + e.id + '"') !== -1),
+                'lesson 11: Trial 1\'s own judgement and verdict rows, one per element (the walk writes them)');
+            ok(els.every((e) => page.indexOf('data-field-id="cw-again-' + e.id + '"') !== -1) && page.indexOf('data-field-id="cw-again-total"') !== -1 && /data-section-label="Then and Now"/.test(page),
+                '⭐ lesson 11: THEN AND NOW — one row per element and one for the whole story');
+            const seen = page.replace(/<[^>]+>/g, ' ');   // what a student reads (row ids and criteria live in the tags)
+            ok(/Priority for the Exam/.test(page) && /data-section-label="Your Target for the Exam"/.test(page) && !/Draft 2|Draft 1|Step \d|\btrial\b/i.test(seen),
+                '⭐ lesson 11: its own words — no Draft 1/2, no course step, no "trial"', (seen.match(/.{0,40}(Draft [12]|Step \d|\btrial\b).{0,40}/i) || [])[0]);
+            const t1 = mk('_cwTrial1SophiaBlock')();
+            ok(/Priority for Draft 2/.test(t1) && !/Priority for the Exam/.test(t1), 'lesson 8\'s page keeps "Priority for Draft 2"');
+            // every lesson-11 edit still matches its source — a drifted literal is a silent no-op
+            const ae = SRC.indexOf('const CW_AGAIN_TEXT_EDITS = [');
+            const AE = eval(braceSliceFrom(SRC, ae, '[', ']').text);   // eslint-disable-line no-eval
+            const T1C = SRC.slice(SRC.indexOf('const _cwTrial1Ctl = (function () {'), SRC.indexOf('const _cwTrial1Ctl = (function () {') + 100000);
+            ok(AE.length >= 20 && AE.every((ed) => T1C.indexOf(JSON.stringify(ed[0]).slice(1, -1).replace(/\\"/g, '"')) !== -1 || T1C.indexOf(ed[0]) !== -1),
+                '⭐ every lesson-11 edit still matches a phrase in the Trial 1 walk (a drifted one would leave "Draft 2" on screen)',
+                AE.filter((ed) => T1C.indexOf(JSON.stringify(ed[0]).slice(1, -1).replace(/\\"/g, '"')) === -1 && T1C.indexOf(ed[0]) === -1).map((ed) => ed[0].slice(0, 50)));
+        }
         ok(TRUBY.test(D1.f(raws[0])), 'Truby\'s quotation survives untouched');
         // every edit still matches something real — a drifted literal is a silent no-op
         D1.E.forEach((ed) => ok(raws.some((r) => r.indexOf(ed[0]) !== -1) || SRC.indexOf(ed[0]) !== -1, 'unit document edit still matches its source: "' + ed[0].slice(0, 46) + '"'));
