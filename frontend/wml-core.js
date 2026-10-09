@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.772';
+var WML_BUILD = '7.20.773';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1568,7 +1568,8 @@ window.WML = (function() {
             what: 'Good dialogue carries meaning under the words (subtext), lets each character sound like themselves, and has conflict: the speakers want different things.',
             example: 'When Fred invites Scrooge to Christmas dinner, they are really arguing about whether kindness is worth anything. Neither says that out loud, and each sounds exactly like himself.',
             more: 'In An Inspector Calls, Sheila keeps asking the questions her parents do not want asked. Her lines show she is changing before she says so.' },
-        { id: 'duality', label: 'Duality', syms: [{ s: 'Dj', l: 'Duality' }],
+        // v7.20.773 (FIXLIST #815b): his workbook marks Duality RECOMMENDED (CW-STEP-25-structural-elements.md:32).
+        { id: 'duality', label: 'Duality', recommended: true, syms: [{ s: 'Dj', l: 'Duality' }],
             what: 'Duality puts two opposites side by side (light and dark, hope and despair, strength and weakness) so that each makes the other stronger.',
             example: 'Jekyll and Hyde puts a respectable doctor and a violent stranger in one body. The story becomes an argument about the good and the evil inside every person.',
             more: 'The Cratchits’ crowded, warm table against Scrooge’s cold, empty rooms: each picture makes the other one stronger.' },

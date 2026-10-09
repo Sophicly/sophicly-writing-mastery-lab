@@ -33928,7 +33928,8 @@
                 + 'the reader. *For example: “At the climax, the reader knows the grave is his before he does.”*';
             function decideText(t, lead) {
                 return (lead ? lead + '\n\n' : '') + heading(t) + t.what + '\n\n' + t.example + '\n\n'
-                    + (t.must ? '**You must use this one.** ' + WHERE_ASK : '**Will you use it in your scene?**');
+                    + (t.must ? '**You must use this one.** ' + WHERE_ASK
+                        : (t.recommended ? '**This one is recommended.** ' : '') + '**Will you use it in your scene?**');
             }
             function reAttach(t) {
                 if (st.phase === 'where') { _walkSlot.arm(WALK, fidOf(t), { cycle: 'rewrite' }); }
@@ -57775,7 +57776,7 @@
             html += sectionHTML('plan', 'Structural Elements', true, null,
                 '<h3>Your Structural Plan</h3>' +
                 T.map(function (t, k) {
-                    return outlineRowHTML({ id: t.id, label: (k + 1) + '. ' + t.label + (t.must ? ' (you must use this one)' : ''), prompt: t.what }, WML.cwStructFid(t.id));
+                    return outlineRowHTML({ id: t.id, label: (k + 1) + '. ' + t.label + (t.must ? ' (you must use this one)' : (t.recommended ? ' (recommended)' : '')), prompt: t.what }, WML.cwStructFid(t.id));
                 }).join('')
             );
             return html;

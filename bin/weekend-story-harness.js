@@ -958,6 +958,10 @@ const SEVEN = (hook, setup) => [
             '⭐ §5d: lesson 6 files into the SAME row ids the full course\'s page creates (cw-step-25-*), so no saved Step 27 document is orphaned');
         ok(JSON.stringify(TE.filter((t) => t.must).map((t) => t.id)) === JSON.stringify(['irony', 'denouement', 'senses']) && WMLC.CW_STRUCT_MIN === 4,
             'Step 27\'s rules: irony, a denouement technique and the five senses are compulsory; at least 4 in total');
+        // v7.20.773 (FIXLIST #815b): his workbook marks Duality RECOMMENDED (CW-STEP-25-structural-elements.md:32), and so
+        // does the full course's page ("4. Duality (Recommended)"). Exactly one technique carries the flag.
+        ok(JSON.stringify(TE.filter((t) => t.recommended).map((t) => t.id)) === JSON.stringify(['duality']) && TE.every((t) => !(t.must && t.recommended)),
+            'Duality is the one RECOMMENDED technique, as in his workbook and the full course');
         const ALLOW = new Set(fs.readFileSync(path.join(__dirname, 'cw6-prod-technique-symbols.txt'), 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && l[0] !== '#'));
         const syms = [].concat(...TE.map((t) => (t.syms || []).map((x) => x.s)));
         ok(syms.length >= 11 && syms.every((x) => ALLOW.has(x)), 'every Table of Techniques chip opens a card the LIVE table carries', syms.filter((x) => !ALLOW.has(x)));
@@ -983,6 +987,7 @@ const SEVEN = (hook, setup) => [
         const U27 = render27(true), F27 = render27(false);
         ok((U27.match(/data-field-id="cw-step-25-/g) || []).length === 11 && !/\bStep \d|Hero|Stage|plot/i.test(U27) && /Three you must use/.test(U27),
             '⭐ the weekend page: eleven rows (same ids), no step number, no Hero\'s Journey stage, the three compulsory techniques named', (U27.match(/.{0,40}(\bStep \d|Hero|Stage|plot).{0,40}/i) || [])[0]);
+        ok((U27.match(/\(recommended\)/g) || []).length === 1 && /data-label="4\. Duality \(recommended\)"/.test(U27), 'the weekend page labels Duality "(recommended)", and only Duality');
         ok(/Step 27: Other Key Structural Elements/.test(F27) && (F27.match(/data-field-id="cw-step-25-/g) || []).length === 11, 'the full course\'s page is unchanged');
         // O3 · the trial marks the plan (weekend only)
         st.cwUnit = 'weekend';
@@ -1058,6 +1063,8 @@ const SEVEN = (hook, setup) => [
         for (let k = 2; k < TE.length; k++) {
             const t = TE[k];
             if (t.must) { w6.say('My ' + t.id + ' plan.'); ok(w6.rows.get(fids6[k]) === 'My ' + t.id + ' plan.', t.label + ' (compulsory) filed'); continue; }
+            ok(/\*\*This one is recommended\.\*\* \*\*Will you use it in your scene\?\*\*/.test(last6()) === !!t.recommended,
+                t.label + (t.recommended ? ': the ask says it is recommended (still a free choice)' : ': no "recommended" line'), last6().slice(-120));
             const no = chip6(/Not this time/);
             ok(!!no, t.label + ': the No is one tap', w6.chips().map((c) => c.textContent));
             if (no) w6.tap(no);
