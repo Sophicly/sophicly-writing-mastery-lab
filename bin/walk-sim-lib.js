@@ -516,6 +516,8 @@ function makeWorld(ctl, opts) {
         const content = deps.el('div', { className: 'swml-bubble-content' });
         world._lastBubbleEl = {
             children: [content],
+            // v7.20.779: the real bubble is `.swml-bubble.ai`; a walk may check it is not re-attaching under the student's own message.
+            classList: { contains: function (c) { return c === 'ai'; } },
             querySelector: function (s) { return s.indexOf('bubble-content') !== -1 ? content : findIn(this, s); },
         };
     };

@@ -173,6 +173,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/mc-gate-harness.js || fail=1
 fi
 
+# v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
+# its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
+# work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document
+# and on that document with one box filled; the caller must keep on it; saves must also flush on pagehide (iPad).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|exam-prep-keep-harness\.js|cn-power-conflict-blank-v3\.html'; then
+  node bin/exam-prep-keep-harness.js >/tmp/exam-prep-keep.out 2>&1 || { cat /tmp/exam-prep-keep.out; fail=1; }
+fi
+
 # v7.20.650 (FIXLIST #635–#637): the feedback cards' Previous · Best line and the per-paragraph
 # pop-out. The comparison rule and the quote→paragraph matcher are extracted from the shipped file
 # and driven through the measured document shapes; the server half's decode/dedupe/access contract

@@ -175,6 +175,8 @@ Effects on the reader are one (or a combination) of FOUR things, taught as a CAU
 
 ---
 
+**§6.9 — A notes document is NEVER replaced while any box holds the student's text (v7.20.779, proven on staging).** The exam-prep template upgrade used to replace a CN document with the blank template in any browser that lacked its local version stamp — a second device, a new browser, cleared storage — and save the blank over the server copy, because it looked for student work in response sections only. It now counts every box (`_docStudentFieldCount`); a document with work is kept and stamped. Gate: `bin/exam-prep-keep-harness.js` (the real blank P&C document, 357 boxes, is the fixture). See ASSESSMENT-MECHANICS §9 class 27.
+
 ## §7 — VOICE & LANGUAGE (student-facing, CN-specific)
 
 Universal bans live in memory/BRAND (never "shows", no arrows, academic register, Sophia never "AI"). CN adds:

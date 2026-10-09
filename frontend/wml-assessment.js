@@ -17071,6 +17071,29 @@
     // v7.20.778 (FIXLIST #816b — Neil: "the conceptual notes should refer back to those… ask how does that apply to this
     // particular poem… how does it convey meaning"). The student's own Poetic Forms organiser notes for ONE form, read from
     // the live document (the organiser is the first half of the same Poetry Conceptual Notes document). [] when none.
+    /* @EXAM-PREP-KEEP-PURE-START — extracted and unit-tested by bin/exam-prep-keep-harness.js.
+       PURE: no DOM, no globals beyond the argument.
+       v7.20.779 (WML 338 A — PROVEN on staging, test student 1938): tryExamPrepTemplate decides a document is "outdated"
+       from a version stamp that lives ONLY in this browser, so on a new device, a new browser or after cleared storage every
+       exam-prep document reads as outdated. Its only test for student work counted RESPONSE sections — and a Conceptual
+       Notes (or essay-plan) document keeps its work in input fields. Same server document, two fresh browsers: with the
+       stamp the notes stayed; without it the page replaced the document with the blank template and posted the blank as its
+       save. This counts every box a student can fill. Locked boxes are the system's, not the student's. */
+    function _docStudentFieldCount(html) {
+        const h = String(html || '');
+        let n = 0;
+        const box = /<div\b([^>]*\bdata-(?:input-field|outline-row)="true"[^>]*)>([\s\S]*?)<\/div>/g;
+        let m;
+        while ((m = box.exec(h))) {
+            if (/\bdata-locked="true"/.test(m[1])) continue;
+            const text = m[2].replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&#160;/g, ' ').replace(/&[a-z]+;|&#\d+;/gi, 'x').trim();
+            if (text) n++;
+        }
+        const sel = /<div\b([^>]*\bdata-select-field="true"[^>]*)>/g;
+        while ((m = sel.exec(h))) { if (/\bdata-value="[^"]+"/.test(m[1])) n++; }
+        return n;
+    }
+    /* @EXAM-PREP-KEEP-PURE-END */
     function _cnFormNotesFor(formSlug) {
         const out = [];
         try {
@@ -25879,7 +25902,7 @@
                     + '- *Romeo and Juliet* as one exam scene: **the tomb, at the end**. That is the ending, when everything is decided. '
                     + 'One place, one night, and the whole story’s meaning arrives in it.\n\n'
                     + '**Which part of your story will your exam scene tell?**',
-                done: 'Filed into your **Your Exam Scene** box. The next lesson marks it in your Story Spine, and lesson 5 starts from it. '
+                done: 'Filed into the **Your Exam Scene** box. The next lesson marks it in your Story Spine, and lesson 5 starts from it. '
                     + 'To change it, use the button below, or come back to this lesson at any time.',
                 cant: 'I couldn’t answer that just now.',
             };
@@ -25936,15 +25959,45 @@
                 // ACTIVE, unlike the logline picker: a student who TYPES here is answered by the walk (pointed back at the
                 // buttons), never handed to the model as if it were a free chat turn (§4d).
                 choose = { stage: 'focus' }; active = true; persist();
-                if (opts.again) { aiBubble(FOCUS.ask); attachFocusChips(); resetSend(); return; }
+                if (opts.again) { aiBubble(FOCUS.ask); focusAskEl = chatMessages.lastElementChild; attachFocusChips(); resetSend(); return; }
                 serveCwChunks([(opts.lead ? opts.lead + '\n\n' : '') + FOCUS.lead2, FOCUS.why, FOCUS.ask],
-                    { emit: aiBubble, onDone: function () { attachFocusChips(); resetSend(); } });
+                    { emit: aiBubble, onDone: function () { focusAskEl = chatMessages.lastElementChild; attachFocusChips(); resetSend(); } });
                 resetSend();
             }
             // Resume / stray tap: re-attach to the ask on screen; draw it (never store it twice) only if that fails (§4d).
+            // v7.20.779 (measured on staging, WML 338 A): re-attach ONLY when the ask is what is on screen. A student who finished
+            // lesson 3 before the exam-scene choice existed has no ask in their transcript, so re-attaching put the four parts
+            // under the old "That's this step done" message, with no question and no reason above them. Whatever part of the
+            // opening they have not had is served now, paced and stored exactly as the first time (static teaching).
+            let focusAskEl = null;   // the bubble holding the ask (or its examples) drawn on this page-load
+            // Stored turns are in the weekend's words (_cwUnitText), so the source is compared the same way, never raw.
+            function focusTurnServed(s) {
+                const want = _cwUnitText(s);
+                return canvasChatHistory.some(function (m) { return m && !m.hidden && m.role === 'assistant' && String(m.content || '').indexOf(want) !== -1; });
+            }
+            function focusAskOnScreen() {
+                const last = chatMessages.lastElementChild;
+                if (!last) return false;
+                if (focusAskEl) return last === focusAskEl;
+                // After a reload the screen IS the stored transcript: is its last visible turn the ask (or its examples)?
+                for (let i = canvasChatHistory.length - 1; i >= 0; i--) {
+                    const m = canvasChatHistory[i];
+                    if (!m || m.hidden) continue;
+                    return m.role === 'assistant' && (m.content === _cwUnitText(FOCUS.ask) || m.content === _cwUnitText(FOCUS.more));
+                }
+                return false;
+            }
             function reserveFocusAsk() {
-                if (attachFocusChips()) { resetSend(); return; }
+                if (focusAskOnScreen() && attachFocusChips()) { resetSend(); return; }
+                if (!focusTurnServed(FOCUS.why.slice(0, 60))) {
+                    choose = { stage: 'focus' }; active = true; persist();
+                    const chunks = (focusTurnServed(FOCUS.lead2) ? [] : [FOCUS.lead2]).concat([FOCUS.why, FOCUS.ask]);
+                    serveCwChunks(chunks, { emit: aiBubble, onDone: function () { focusAskEl = chatMessages.lastElementChild; attachFocusChips(); resetSend(); } });
+                    resetSend();
+                    return;
+                }
                 _cwReplay(function () { aiBubble(FOCUS.ask); });
+                focusAskEl = chatMessages.lastElementChild;
                 attachFocusChips();
                 resetSend();
             }
@@ -25952,6 +26005,7 @@
                 if (focusMoreSpent) return;
                 focusMoreSpent = true;
                 aiBubble(FOCUS.more);
+                focusAskEl = chatMessages.lastElementChild;
                 attachFocusChips();
                 resetSend();
             }
@@ -26048,7 +26102,8 @@
                 // points back at the buttons, which it re-attaches under that line (§4d: the screen responds).
                 if (choose && choose.stage === 'focus') {
                     _cwReplay(function () { aiBubble('Tap the part of your story you want your exam scene to tell. The buttons are just below.'); });
-                    reserveFocusAsk();
+                    // v7.20.779: the pointer IS the instruction to tap, so the parts belong directly under it.
+                    if (attachFocusChips()) { focusAskEl = chatMessages.lastElementChild; resetSend(); } else reserveFocusAsk();
                     return;
                 }
 
@@ -26648,13 +26703,34 @@
                 // v7.20.285: resumed mid "any others?" — re-attach the multi-select bar.
                 if (phase === 'chip2') { chipBarMulti(NEEDS.filter(function (n) { return n !== mainNeed; }), onSecondaryNeedsDone); return; }
                 const b = BEATS[idx];
-                if (b && b.chips && phase === 'chip') { chipBar(b.chips, onBeatChipPick(b)); return; }
+                // v7.20.779 (measured on staging, WML 338 A): the type buttons go ONLY under the type question itself. Reopened
+                // on another device they were stapled under the beat's WRITE ask instead; anywhere else, ask it again (drawn —
+                // reattachChips runs inside _cwReplay, so nothing is stored twice).
+                if (b && b.chips && phase === 'chip') {
+                    if (lastBubbleIsAi() && lastAiTurnText().indexOf(_cwUnitText(b.chipQ)) !== -1) chipBar(b.chips, onBeatChipPick(b));
+                    else serveChip();
+                    return;
+                }
                 // v7.20.281: on a beat/irony phase the ask replays but its helper buttons don't.
                 // v7.20.343: ...and neither do a closed push's option chips, which are DOM-only.
+                // v7.20.779: never under the student's own message.
                 if (phase === 'beat' || phase === 'irony') setTimeout(function () {
+                    if (!lastBubbleIsAi()) return;
                     try { appendSpineButtons(); } catch (e) {}
                     try { if (pushOpts && pushOpts.length) chipBar(pushOpts, onPushOption); } catch (e) {}
                 }, 400);
+            }
+            function lastBubbleIsAi() { const l = chatMessages.lastElementChild; return !!(l && l.classList && l.classList.contains('ai')); }
+            // The last thing this walk SAID, from the stored transcript (after a reload the screen is exactly that). Stored turns
+            // are already in the weekend's words (aiBubble runs _cwUnitText), so compare them with _cwUnitText(source) — never
+            // the raw source, which says "Step 3" where the stored turn says "lesson 3" (the harness reload case caught it).
+            function lastAiTurnText() {
+                for (let i = canvasChatHistory.length - 1; i >= 0; i--) {
+                    const m = canvasChatHistory[i];
+                    if (!m || m.hidden) continue;
+                    return m.role === 'assistant' ? String(m.content || '') : '';
+                }
+                return '';
             }
 
             // v7.20.281: helper buttons on each beat ask — [📖 Guidance] opens the guide at the
@@ -27203,6 +27279,9 @@
                     pushOpts = Array.isArray(d.popts) ? d.popts : [];            // v7.20.343
                     idx = firstEmptyBeat();
                     phase = d.phase || 'chip';
+                    // v7.20.779 (measured on staging, WML 338 A): with NO sidecar (another device, cleared storage) the phase
+                    // defaulted to 'chip' even when the beat's WRITE ask was already on screen. The transcript says which came last.
+                    if (!raw && BEATS[idx]) { const _wa = _cwUnitText(BEATS[idx].ask); if (lastAiTurnText().slice(-_wa.length) === _wa) phase = 'beat'; }
                     throughline = d.throughline || '';
                     // v7.20.294: a reload during the coherence revision. Every beat is filled, so the
                     // block below would otherwise read this as "parked on the throughline" and serve
@@ -27297,7 +27376,9 @@
                         if (_rs) _walkSlot.arm('cw4', _rs.fid, { cycle: _rs.cycle || 'accumulate' });
                     }
                     console.log('WML CW4: resumed at beat ' + (idx + 1) + '/' + BEATS.length + ' (' + phase + ')');
-                    if (phase === 'chip') setTimeout(reattachChips, 400);
+                    // v7.20.779: beat/irony too — v7.20.281 taught the body to re-attach their help (and, since .775, the
+                    // exam-scene note) but this call was never widened, so a mid-beat reload brought back neither.
+                    if (phase === 'chip' || phase === 'beat' || phase === 'irony') setTimeout(reattachChips, 400);
                     return true;
                 } catch (e) { return false; }
             }
@@ -34846,9 +34927,11 @@
                 st.phase = 'need';
                 persist();
                 const left = techs().filter(function (t) { return t.cat === c.id && !isUsing(t); });
-                aiBubble((lead ? lead + '\n\n' : '') + T.need + minPerCat() + ' from “' + c.label + '”.** You have ' + usingIn(c.id)
-                    + '. Choose one more from that group:');
-                chipBarOrRetry(left.map(function (t) { return t.label; }), onAddPick, '**Choose one more from “' + c.label + '”:**');
+                // v7.20.779 (staging proof, WML 338 A): "You have 0. Choose one more" — with none chosen it is "one", not "one more".
+                const have = usingIn(c.id), oneMore = have ? 'one more' : 'one';
+                aiBubble((lead ? lead + '\n\n' : '') + T.need + minPerCat() + ' from “' + c.label + '”.** You have ' + have
+                    + '. Choose ' + oneMore + ' from that group:');
+                chipBarOrRetry(left.map(function (t) { return t.label; }), onAddPick, '**Choose ' + oneMore + ' from “' + c.label + '”:**');
                 resetSend();
             }
             function onAddPick(label) {
@@ -53881,10 +53964,11 @@
             });
             if (isCodex && !hasCodexMarkers) {
                 console.log('WML v7.19.206: mastery_codex task-switch detected, force-injecting Codex template (canvas has no unit-* field markers).');
-            } else if (studentChars > 50) {
-                // Real student work — stamp version, don't replace
+            } else if (studentChars > 50 || _docStudentFieldCount(currentHTML) > 0) {
+                // Real student work — stamp version, don't replace.
+                // v7.20.779: in ANY box, not only response sections (see _docStudentFieldCount — notes documents were wiped).
                 try { localStorage.setItem(docVerKey, String(currentVer)); } catch(e) {}
-                console.log('WML: Keeping student content (' + studentChars + ' chars), version stamped');
+                console.log('WML: Keeping student content (' + studentChars + ' response chars, ' + _docStudentFieldCount(currentHTML) + ' filled boxes), version stamped');
                 return;
             }
             // Inject fresh template
@@ -67500,6 +67584,11 @@
     if (typeof window !== 'undefined' && !window._swmlBeforeUnloadFlushRegistered) {
         window._swmlBeforeUnloadFlushRegistered = true;
         window.addEventListener('beforeunload', _flushPendingSaves);
+        // v7.20.779 (WML 338 A): Safari on iPad does not reliably fire beforeunload — pagehide and visibilitychange are the
+        // events WebKit fires when a tab closes or the student switches app (platform guidance, not measured here). Without
+        // them, an edit inside the 5-second save delay could reach only this device's local copy. A second flush is a no-op.
+        window.addEventListener('pagehide', _flushPendingSaves);
+        document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') _flushPendingSaves(); });
         // v7.19.678: SPA navigation does NOT fire beforeunload. Flush on focusSpaNavigated
         // too, so a step→step nav persists the outgoing step's last edits before the
         // incoming lesson's editor mounts and clobbers the shared pending trackers.

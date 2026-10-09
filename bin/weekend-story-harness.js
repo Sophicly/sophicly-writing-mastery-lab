@@ -1179,7 +1179,7 @@ const SEVEN = (hook, setup) => [
             const fids = Object.keys(COMP).concat(Object.keys(LOG), ['cw-step-3-chosen', 'cw-step-3-chosen-idea']).concat(o.noRow ? [] : [FOC]);
             const ls = new Map();
             if (o.side) ls.set('sim_cw3', JSON.stringify(o.side));
-            const w = makeWorld(CTL3, { task: 'cw_step_3', fids, ok, ls, history: [], prefill: Object.assign({}, COMP, LOG, o.prefill || {}),
+            const w = makeWorld(CTL3, { task: 'cw_step_3', fids, ok, ls, history: o.history || [], prefill: Object.assign({}, COMP, LOG, o.prefill || {}),
                 extraDeps: { _cwEnsureSceneFocusRow: () => !o.noRow } });
             Object.assign(w.deps.WML, { cwInUnit: () => !!o.unit, CW_SCENE_FOCUS_FID: FOC, CW_SCENE_FOCUS_PARTS: PARTS,
                 cwSceneFocusText: WMLC.cwSceneFocusText, cwSceneFocusBeat: WMLC.cwSceneFocusBeat, cwWordTarget: () => '650–700' });
@@ -1232,18 +1232,46 @@ const SEVEN = (hook, setup) => [
         const row3 = w3.rows.get(FOC);
         ok(row3 === WMLC.cwSceneFocusText(PARTS[1], COMP['cw-step-3-goal']) && WMLC.cwSceneFocusBeat(row3) === 4, '⭐ the pick is filed into the locked row, in the one form lessons 4 and 5 read (Beat 4)', row3);
         ok(/Your Exam Scene/.test(last(w3)) && /\(sim endpoint\)/.test(last(w3)) && !!chip(w3, /Change my exam scene/) && !w3.ctl.active, 'the lesson ends here: filed, the endpoint, and a way to change it');
+        ok(/^Filed into the \*\*Your Exam Scene\*\* box\./.test(last(w3)) && !/your \*\*Your/i.test(last(w3)), 'v7.20.779 (staging proof): "Filed into the Your Exam Scene box", never "your Your"', last(w3).slice(0, 60));
         ok(!(w3.deps.canvasChatHistory || []).some((m) => m.role === 'assistant' && PARTS.some((p) => m.content.indexOf(p.label) !== -1)),
             '⭐ §4c.7: no stored turn names the chosen part (the choice can change; the document carries it)');
         w3.tap(chip(w3, /Change my exam scene/));
         ok(w3.chips().length === 4 && w3.ctl.active, 'changing it re-asks with the four parts');
         w3.tap(chip(w3, /^The ending, when everything is decided/));
         ok(WMLC.cwSceneFocusBeat(w3.rows.get(FOC)) === 6, 'a changed choice replaces the row (Beat 6)', w3.rows.get(FOC));
-        {   // P2 · resume from the DOCUMENT alone (another device, or chosen before this shipped)
-            const w = L3({ unit: true, prefill: { 'cw-step-3-chosen': LOG['cw-step-3-logline-1'] } });
-            ok(w.ctl.tryResume() === true && w.chips().length === 4 && /Which part of your story/.test(last(w)), '⭐ logline chosen, exam scene not → the ask and its four parts come back', w.chips().map(chipText));
-            ok(!(w.deps.canvasChatHistory || []).some((m) => m.role === 'assistant'), '…drawn, never stored a second time');
-            w.tap(chip(w, /^The obstacle at its worst/));
-            ok(WMLC.cwSceneFocusBeat(w.rows.get(FOC)) === 5, 'and the choice files from there (Beat 5)');
+        {   // P2 · resume from the DOCUMENT alone — a student who finished lesson 3 BEFORE the exam-scene choice existed.
+            // v7.20.779 (measured on staging, WML 338 A): the four parts were stapled under the old "That's this step done"
+            // message, with no question and no reason above them. The opening is now served (paced, stored ONCE), parts on the ASK.
+            const FILED = 'Ticked it in your document and filed it into your **Chosen Logline** box.\n\n---\n\n**That’s this step done.** (sim endpoint)';
+            const w = L3({ unit: true, history: [{ role: 'assistant', content: FILED }], prefill: { 'cw-step-3-chosen': LOG['cw-step-3-logline-1'] } });
+            w.deps.addChatMessage(FILED, 'ai', FILED);   // the reloaded screen: its last bubble is the old ending
+            const oldEnd = w._lastBubbleEl;
+            ok(w.ctl.tryResume() === true, 'logline chosen, exam scene not → the walk resumes on the exam-scene choice');
+            await wait(700);
+            const stapled = oldEnd.children[0].children.some((c) => /swml-quick-actions/.test(c.className) && !/-help/.test(c.className) && c.children.some((b) => /^The moment everything changes/.test(b.textContent)));
+            ok(!stapled, '⭐ the four parts are NOT stapled under the old "That\'s this step done" message (the staging defect)');
+            ok(/which part of your story your exam scene will tell/.test(last(w)) && !!chip(w, /Continue/), '…the opening is served instead, paced (§4b)', last(w).slice(0, 100));
+            w.tap(chip(w, /Continue/)); w.tap(chip(w, /Continue/));
+            ok(/Which part of your story will your exam scene tell\?/.test(last(w)) && w.chips().length === 4, '…and the four parts ride the ASK', w.chips().map(chipText));
+            const stored = () => w.deps.canvasChatHistory.filter((m) => m.role === 'assistant').length;
+            ok(stored() === 4, 'each opening turn is stored ONCE (the old ending + 3)', stored());
+            {   // a reload now: the ask is the last stored turn → the parts come straight back to it, nothing stored again
+                const w2 = L3({ unit: true, history: w.deps.canvasChatHistory.slice(), prefill: { 'cw-step-3-chosen': LOG['cw-step-3-logline-1'] } });
+                const lt = w2.deps.canvasChatHistory.filter((m) => !m.hidden).pop();
+                w2.deps.addChatMessage(lt.content, 'ai', lt.content);
+                const before = w2.deps.canvasChatHistory.length;
+                w2.ctl.tryResume(); await wait(700);
+                ok(w2.chips().length === 4 && w2.deps.canvasChatHistory.length === before && w2.bubbles.length === 1, '⭐ reload on the ask → the parts re-attach to IT; nothing drawn or stored again');
+                w2.tap(chip(w2, /^The obstacle at its worst/));
+                ok(WMLC.cwSceneFocusBeat(w2.rows.get(FOC)) === 5, 'and the choice files from there (Beat 5)');
+            }
+            {   // a reload part-way through the opening (the reason was not reached): only the rest is served — never twice
+                const part = [{ role: 'assistant', content: FILED }, w.deps.canvasChatHistory.filter((m) => m.role === 'assistant')[1]];
+                const w3b = L3({ unit: true, history: part.slice(), prefill: { 'cw-step-3-chosen': LOG['cw-step-3-logline-1'] } });
+                w3b.deps.addChatMessage(part[1].content, 'ai', part[1].content);
+                w3b.ctl.tryResume(); await wait(700);
+                ok(/In the exam you write \*\*one scene\*\*/.test(last(w3b)) && !/One last choice/.test(last(w3b)), 'mid-opening reload: it carries on from the reason, the first part is not repeated', last(w3b).slice(0, 80));
+            }
         }
         {
             const w = L3({ unit: true, prefill: { 'cw-step-3-chosen': LOG['cw-step-3-logline-1'], [FOC]: WMLC.cwSceneFocusText(PARTS[0], 'x') } });
@@ -1253,7 +1281,8 @@ const SEVEN = (hook, setup) => [
         }
         {   // P3 · the row could not be found or added: refused WITH a way forward (§4d)
             const w = L3({ unit: true, noRow: true, prefill: { 'cw-step-3-chosen': LOG['cw-step-3-logline-1'] } });
-            w.ctl.tryResume();
+            w.ctl.tryResume(); await wait(700);
+            for (let g = 0; g < 3 && chip(w, /Continue/); g++) w.tap(chip(w, /Continue/));
             w.tap(chip(w, /^The moment everything changes/));
             ok(!w.rows.has(FOC) && /couldn’t save that choice/.test(last(w)) && w.chips().length === 4, '⭐ not saved → it says so and keeps the four parts on screen, never a dead end');
         }
@@ -1270,7 +1299,7 @@ const SEVEN = (hook, setup) => [
             Object.defineProperty(n, 'firstChild', { get() { return this.children[0] || null; } });
             return n;
         };
-        const L4 = (focusPart, prefill) => {
+        const L4 = (focusPart, prefill, o4) => {
             const H = { w: null };
             const LBL = {}, DISP = [];
             for (let k = 1; k <= 6; k++) LBL['cw-step-4-beat' + k] = 'Beat ' + k + ': label';
@@ -1283,7 +1312,7 @@ const SEVEN = (hook, setup) => [
                 },
                 view: { dispatch(tr) { DISP.push(tr.ops.length); tr.ops.forEach((a) => { LBL[a.fieldId] = JSON.parse(a.criteria).label; }); } },
             };
-            const w = makeWorld(CTL4, { task: 'cw_step_4', fids, ok, ls: new Map(), history: [], prefill: Object.assign({}, B4, prefill || {}),
+            const w = makeWorld(CTL4, { task: 'cw_step_4', fids, ok, ls: (o4 && o4.ls) || new Map(), history: (o4 && o4.history) || [], prefill: Object.assign({}, B4, prefill || {}),
                 extraDeps: { canvasEditor: editor, _cwStep3Value: (fid) => S3[fid] || '', _cwLoadStep3Values: () => Promise.resolve(S3), el: DOM_EL } });
             H.w = w;
             Object.assign(w.deps.WML, { cwInUnit: () => true, CW_SCENE_FOCUS_FID: FOC, cwSceneFocusBeat: WMLC.cwSceneFocusBeat });
@@ -1322,6 +1351,54 @@ const SEVEN = (hook, setup) => [
             T.LBL['cw-step-4-beat4'] = 'Beat 4: label · ⭐ your exam scene';
             T.w.ctl.forceStart(); await settle(); await settle();
             ok(T.LBL['cw-step-4-beat4'] === 'Beat 4: label' && T.LBL['cw-step-4-beat6'] === 'Beat 6: label · ⭐ your exam scene', '⭐ a changed choice moves the mark (the old one is removed)', T.LBL);
+        }
+        // P4r · v7.20.779 (measured on staging, WML 338 A): RELOADS in lesson 4. Before: a mid-beat reload re-attached nothing
+        // (v7.20.281 wrote the beat-phase branch; the resume never called it), and on another device the beat's TYPE buttons
+        // were stapled under its WRITE ask. Each case below reloads from the stored transcript of a real walk.
+        {
+            const T = L4(PARTS[1]);
+            T.w.ctl.forceStart(); await settle(); await settle();          // beat 4's type question is on screen
+            const histChip = T.w.deps.canvasChatHistory.slice(), chipsChip = T.w.chips().map(chipText);
+            T.w.tap(T.w.chips()[0]); await settle(); await settle();          // → beat 4's write ask
+            const histBeat = T.w.deps.canvasChatHistory.slice(), lsBeat = new Map(T.w.ls);
+            const lastAi = (h) => h.filter((m) => !m.hidden && m.role === 'assistant').pop().content;
+            const reload = (hist, ls) => { const R = L4(PARTS[1], {}, { history: hist.slice(), ls }); const t = lastAi(hist); R.w.deps.addChatMessage(t, 'ai', t); return R; };
+            {
+                const R = reload(histBeat, new Map(lsBeat));                  // same device: the walk's own record is there
+                R.w.ctl.tryResume(); await wait(1200);
+                ok(note(R.w).length === 1 && !!R.w.helpChipNamed(/Guidance/) && R.w.chips().length === 0, '⭐ same device, reloaded on the write ask: its help buttons AND the exam-scene note come back');
+            }
+            {
+                const R = reload(histBeat, new Map());                        // another device: only the transcript
+                R.w.ctl.tryResume(); await wait(1200);
+                ok(R.w.chips().length === 0 && note(R.w).length === 1 && !!R.w.helpChipNamed(/Guidance/),
+                    '⭐ another device: the type buttons are NOT stapled under the write ask (the staging defect); help + note instead', R.w.chips().map(chipText));
+                R.w.say('Because of this, she steals the guard’s keys.');
+                if (R.w.sends.length) R.w.resolveApi('Good. @BEAT_OK');
+                await settle();
+                ok(R.w.writes.some((x) => x.fid === 'cw-step-4-beat4'), '…and the next answer files into Beat 4 (the slot was re-armed)', R.w.writes.map((x) => x.fid));
+            }
+            {
+                const R = reload(histChip, new Map());                        // reloaded ON the type question
+                R.w.ctl.tryResume(); await wait(1200);
+                ok(R.w.chips().map(chipText).join('|') === chipsChip.join('|') && R.w.bubbles.length === 1, 'reloaded on the type question: its buttons re-attach to it, nothing redrawn', { n: R.w.bubbles.length, chips: R.w.chips().map(chipText) });
+            }
+            {
+                const other = histChip.concat([{ role: 'assistant', content: 'Some other reply.' }]);
+                const R = reload(other, new Map());                            // something else came last
+                const n = R.w.deps.canvasChatHistory.length;
+                R.w.ctl.tryResume(); await wait(1200);
+                ok(R.w.chips().map(chipText).join('|') === chipsChip.join('|') && last(R.w) === lastAi(histChip) && R.w.deps.canvasChatHistory.length === n,
+                    'anything else last → the type question is asked again under it (drawn, never stored twice)');
+            }
+            {
+                const R = L4(PARTS[1], {}, { history: histChip.concat([{ role: 'user', content: 'hello?' }]), ls: new Map() });
+                const userBubble = { children: [R.w.deps.el('div', { className: 'swml-bubble-content' })], classList: { contains: (c) => c === 'user' }, querySelector() { return this.children[0]; } };
+                R.w._lastBubbleEl = userBubble;
+                R.w.ctl.tryResume(); await wait(1200);
+                ok(!userBubble.children[0].children.length && R.w._lastBubbleEl !== userBubble && R.w.chips().length === chipsChip.length,
+                    '⭐ the student\'s own message came last → nothing is attached under it; the question is asked again below');
+            }
         }
 
         // P5 · lesson 5 starts from it
@@ -1430,6 +1507,17 @@ const SEVEN = (hook, setup) => [
             const w = mk92(false);
             w.ctl.start();
             ok(/belongs to the Weekend Story/.test(w.bubbles.join('\n')) && !w.ctl.active, 'opened outside the Weekend Story: it says so and stops');
+        }
+        {   // v7.20.779 (staging proof): "You have 0. Choose one more from that group" — with none chosen it is "Choose one"
+            const w0 = mk92(true);
+            const last0 = () => w0.bubbles[w0.bubbles.length - 1] || '';
+            const chip0 = (re) => w0.chips().filter((c) => re.test(c.textContent))[0];
+            w0.ctl.start(); await settle(); await wait(30);
+            for (let g = 0; g < 5 && chip0(/Continue/); g++) w0.tap(chip0(/Continue/));
+            for (let k = 0; k < ET.length; k++) { if (ET[k].must) { w0.say('She stays when everyone runs.'); continue; } const no = chip0(/Not this time/); if (no) w0.tap(no); }
+            ok(/You have 0\. Choose one from that group:$/.test(last0()) && !/one more/.test(last0()), 'none chosen in the group → "Choose one from that group", not "one more"', last0().slice(-80));
+            w0.tap(w0.chips()[0]); w0.say('Her plan for it.');
+            ok(/You have 1\. Choose one more from that group:$/.test(last0()), '…then, with one, "Choose one more"', last0().slice(-80));
         }
         const w = mk92(true);
         const last = () => w.bubbles[w.bubbles.length - 1] || '';

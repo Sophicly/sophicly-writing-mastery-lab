@@ -1002,6 +1002,19 @@ file and fix the SET, not the instances the bug appeared on:
 `grep -n "ignoreMutation" frontend/wml-section-block.js` — every one must carry the wrapper-attr
 line unless there is a written reason it must not.
 
+**27. A browser-only fact deciding a destructive server write** (v7.20.779 — PROVEN on staging, WML 338 A).
+Trigger: a decision that ERASES or REPLACES a document keyed on something that lives only in this browser (a
+localStorage version stamp), with a "has the student written anything?" test that does not cover every box. Symptom:
+`tryExamPrepTemplate` treated every exam-prep document as outdated in any browser without its stamp (a new device, a
+new browser, cleared storage) and counted student work in RESPONSE sections only — a Conceptual Notes document keeps
+its work in input fields, so it was replaced by the blank template and the blank was posted as the save, over the server
+copy. Same server document, two fresh browsers: with the stamp the notes stayed; without it they were gone.
+Nets: `_docStudentFieldCount` (every input box, outline row and chosen select; locked boxes excluded) keeps any document
+holding work, stamped and never replaced; `bin/exam-prep-keep-harness.js` (pre-ship) runs it on the REAL blank v3 notes
+document and on that document with one box filled, and was mutation-proven. Residual: any OTHER path that replaces a
+document from a browser-only flag — grep `localStorage.getItem(` beside `setContent(` at review; the safe direction is
+always to keep.
+
 **26. Known-open engine backlog** (tracked, unbuilt — not regressions): refuse-refile guard past
 the cap (gap register #1), verbatim-quote validator for penalties (#3), completion-island items
 (#6–8), dropdown NATIVIZATION design arc, emoji sweep phase 2, K1 toolkit destination (contract
