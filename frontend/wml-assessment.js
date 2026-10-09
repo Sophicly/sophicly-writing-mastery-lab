@@ -17428,7 +17428,12 @@
                 field.classList.toggle('swml-input-filled', (field.textContent || '').trim().length > 0);
             });
             editorEl.querySelectorAll('.swml-outline-row').forEach(row => { if (row._checkRowComplete) row._checkRowComplete(); });
-            editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"], .swml-section-block[data-section-type="plan"], .swml-section-block[data-section-type="response"], .swml-section-block[data-section-type="improvement"]').forEach(sec => checkSectionComplete(sec));
+            // v7.20.772 (#731 item 1 — Neil, 5 Oct: "Yes, they count"): 'notes' joins. The section nodeView ticks a notes
+            // section at first render, but the saved content lands after that and this pass is what re-ticks — without
+            // notes here, a filled Predictions / Keywords box read "Still to do" after every reload (measured, staging:
+            // 1938's two filled Predictions boxes both data-section-complete="false"), so enforcing writing lessons would
+            // have stopped a student who had done the work. checkSectionComplete already reads notes (v7.20.96).
+            editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"], .swml-section-block[data-section-type="plan"], .swml-section-block[data-section-type="response"], .swml-section-block[data-section-type="improvement"], .swml-section-block[data-section-type="notes"]').forEach(sec => checkSectionComplete(sec));
             // v7.19.759: recompute the three student-filled assessment sections too — they
             // are feedback/action-type (skipped above), so without this their saved tick
             // went stale on reload (empty Analytics showed a green tick). Single source.

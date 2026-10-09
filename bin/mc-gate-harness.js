@@ -244,5 +244,18 @@ ok(/chip\.textContent = _progressChipLabel\(name\);/.test(js) && /_jumpToProgres
         'both phase-record walks step OVER a gap in the attempt rows (the 3 Oct calibration 404)');
 }
 
+// v7.20.772 (#731 item 1, MEASURED 9 Oct on staging): after a reload, 1938's two FILLED Predictions boxes read
+// data-section-complete="false" — the reload re-tick pass skipped 'notes', so the gate would have stopped a student
+// who had done the work. The pass that re-ticks sections after the saved content lands must include notes.
+{
+    const fn = js.match(/function _recomputeAllCompletion\(\)\s*\{([\s\S]*?)\n    \}/);
+    const sel = fn && (fn[1].match(/editorEl\.querySelectorAll\('([^']*)'\)\.forEach\(sec => checkSectionComplete\(sec\)\)/) || [])[1];
+    ok(!!sel, '_recomputeAllCompletion re-ticks sections through checkSectionComplete');
+    ['outline', 'plan', 'response', 'improvement', 'notes'].forEach(t => ok(!!sel && sel.indexOf('[data-section-type="' + t + '"]') !== -1,
+        'the reload re-tick pass covers ' + t + ' sections'));
+    ok(/type !== 'plan' && type !== 'response' && type !== 'outline' && type !== 'improvement' && type !== 'notes'\) return;/.test(js),
+        'checkSectionComplete reads notes sections (field filled = done)');
+}
+
 console.log('\n' + (failN ? '✗ ' + failN + ' failed, ' + pass + ' passed' : '✓ all ' + pass + ' checks passed'));
 process.exit(failN ? 1 : 0);
