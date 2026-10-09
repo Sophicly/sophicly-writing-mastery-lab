@@ -46,7 +46,8 @@ ok(/url = _reviewCanvasUrl\(\);/.test(tsl) && /_lmFollowStart\(res\);/.test(tsl)
 const tick = fnBody('async function _lmFollowTick(f)');
 ok(/document\.visibilityState === 'hidden' \|\| _lmSelectingIn\(root\)\) return;/.test(tick), '#842: never while the tab is hidden or the student is selecting words for their notes');
 ok(/ed !== canvasEditor \|\| !root \|\| !document\.contains\(root\)/.test(tick) && /clearInterval\(f\.timer\)/.test(tick), '#842: stops by itself once its editor is gone (SPA move, re-render)');
-ok(/'&since=' \+ encodeURIComponent\(f\.rev\)/.test(tick) && /res\.unchanged \|\| !res\.doc\)\) \{ f\.rev = res\.rev; return; \}/.test(tick), '#842: asks "anything new since rev?" and applies nothing when unchanged');
+ok(/'&since=' \+ encodeURIComponent\(f\.rev\)/.test(tick) && /res\.unchanged \|\| !res\.doc\)\) \{ f\.rev = res\.rev; f\.idle\+\+; return; \}/.test(tick), '#842: asks "anything new since rev?" and applies nothing when unchanged');
+ok(/if \(f\.idle >= 15 && f\.n % 4\) return;/.test(tick) && /f\.idle = 0;/.test(tick), '#842: a page left open backs off to every 16 s after a minute with no change, and speeds up again on the next change');
 ok(/_migrationActive = true;\s*try \{ ed\.commands\.setContent\(res\.doc\.html, false\); \}\s*finally \{ _migrationActive = false; \}/.test(tick), '#842: applies like the first load (structure lock passes under try/finally, no update event)');
 ok(/const top = scroller \? scroller\.scrollTop : window\.scrollY;/.test(tick) && /scroller\.scrollTop = top; else window\.scrollTo\(window\.scrollX, top\);/.test(tick), '#842: the student keeps their place on the page');
 ok(/function _localSaveDelay\(\) \{\s*if \(state\.reviewMode \|\| !\(WML\.isLiveModelling && WML\.isLiveModelling\(\)\)\) return 2000;/.test(JS)

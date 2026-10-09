@@ -68242,7 +68242,7 @@
         if (!(state.reviewMode && state.reviewRole === 'live_modelling') || !canvasEditor) return;
         if (_lmFollow && _lmFollow.editor === canvasEditor) { if (res && res.rev) _lmFollow.rev = res.rev; return; }
         if (_lmFollow) clearInterval(_lmFollow.timer);
-        const f = { rev: (res && res.rev) || null, editor: canvasEditor, busy: false, warned: false, timer: null };
+        const f = { rev: (res && res.rev) || null, editor: canvasEditor, busy: false, warned: false, timer: null, idle: 0, n: 0 };
         f.timer = setInterval(() => { _lmFollowTick(f); }, LM_FOLLOW_MS);
         _lmFollow = f;
     }
@@ -68255,11 +68255,15 @@
             clearInterval(f.timer); if (_lmFollow === f) _lmFollow = null; return;
         }
         if (document.visibilityState === 'hidden' || _lmSelectingIn(root)) return;
+        // A page left open after the class must not keep asking every 4 s: after a minute with no change, every 16 s
+        // until something changes again.
+        f.n++;
+        if (f.idle >= 15 && f.n % 4) return;
         f.busy = true;
         try {
             const res = await fetch(_reviewCanvasUrl() + (f.rev ? '&since=' + encodeURIComponent(f.rev) : ''), { headers }).then(r => r.json());
             if (f !== _lmFollow || ed !== canvasEditor || ed.isDestroyed) return;
-            if (res && res.rev && (res.unchanged || !res.doc)) { f.rev = res.rev; return; }
+            if (res && res.rev && (res.unchanged || !res.doc)) { f.rev = res.rev; f.idle++; return; }
             if (!res || !res.success || !res.doc || typeof res.doc.html !== 'string') return;
             if (_lmSelectingIn(root)) return;   // a selection began during the fetch — next tick (rev not advanced)
             const scroller = _swmlScrollerOf(root);
@@ -68269,6 +68273,7 @@
             finally { _migrationActive = false; }
             if (scroller) scroller.scrollTop = top; else window.scrollTo(window.scrollX, top);
             f.rev = res.rev || null;
+            f.idle = 0;
         } catch (e) {
             if (!f.warned) { f.warned = true; console.warn('WML live modelling: could not refresh the document — will keep trying.', e && e.message); }
         } finally { f.busy = false; }
