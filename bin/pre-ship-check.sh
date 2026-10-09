@@ -290,6 +290,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   tail -1 /tmp/free-assess-refl.out
 fi
 
+# v7.20.778 (#816b): the Poetic Forms notes are explained, accurate, linked to the Table of Techniques (row built once,
+# firewalled), and the poem's Form element starts from the student's own form notes.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'poetic_forms|wml-section-block\.js|wml-core\.js|wml-assessment\.js|pn-conceptual-notes\.md|wml-canvas\.css|form-notes-gate\.js|cw6-prod-technique-symbols'; then
+  node bin/form-notes-gate.js >/tmp/form-notes.out 2>&1 || { cat /tmp/form-notes.out; fail=1; }
+  tail -1 /tmp/form-notes.out
+fi
+
 # v7.20.774 (#813c, PEDAGOGY §59): the marking summary uses the examiner's words only at the level awarded — shipped
 # block, the §37 perceptive-quarter carve-out, both summary mandates wired on the summary turn.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \

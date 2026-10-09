@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.777';
+var WML_BUILD = '7.20.778';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1728,6 +1728,24 @@ window.WML = (function() {
             more: 'Pippi Longstocking lives alone with a horse and a monkey and answers to nobody.' },
     ];
     const CW_EMPATHY_NOT_USING = CW_STRUCT_NOT_USING;   // the same row text for a technique the student turned down
+
+    // ⭐ v7.20.778 (Neil, 9 Oct, FIXLIST #816b: "a deep link into the table of techniques, or an explanation, or both"). Each
+    // Poetic Forms card in the Poetry Conceptual Notes organiser carries the Table of Techniques cards for the terms its notes
+    // use (the notes now explain each term in plain words as well). Keyed by the organiser's form slug (its `pf_{slug}_*`
+    // field ids). Symbols are the LIVE table's only — checked against production (sophicly-notes 2.6.272, 9 Oct): a symbol the
+    // deployed table lacks opens an empty panel. Quatrain, octave, sestet and diction have no card yet; their notes gloss them.
+    const POETIC_FORM_TECH_CARDS = {
+        ballad: [{ s: 'Ba', l: 'Ballad' }, { s: 'Ib', l: 'Iamb' }, { s: 'Tm', l: 'Tetrameter' }, { s: 'Ri', l: 'Trimeter' }, { s: 'Dc', l: 'Dactyl' }, { s: 'Rs', l: 'Rhyme Scheme' }, { s: 'Rf', l: 'Refrain' }],
+        epic: [{ s: 'Ep', l: 'Epic' }, { s: 'Ir', l: 'In Medias Res' }, { s: 'Bv', l: 'Blank Verse' }, { s: 'Ip', l: 'Iambic Pentameter' }],
+        lyric: [{ s: 'Ly', l: 'Lyric' }, { s: 'Im', l: 'Imagery' }],
+        elegy: [{ s: 'Eg', l: 'Elegy' }, { s: 'Ip', l: 'Iambic Pentameter' }, { s: 'Rc', l: 'Rhyming Couplet' }],
+        ode: [{ s: 'Od', l: 'Ode' }, { s: 'Ae', l: 'Apostrophe' }, { s: 'Im', l: 'Imagery' }, { s: 'Rs', l: 'Rhyme Scheme' }],
+        sonnet: [{ s: 'So', l: 'Sonnet' }, { s: 'Ip', l: 'Iambic Pentameter' }, { s: 'Vo', l: 'Volta' }, { s: 'Rc', l: 'Rhyming Couplet' }, { s: 'Rs', l: 'Rhyme Scheme' }],
+        dramatic_monologue: [{ s: 'Dm', l: 'Dramatic Monologue' }],
+        free_verse: [{ s: 'Fv', l: 'Free Verse' }, { s: 'En', l: 'Enjambment' }, { s: 'Mt', l: 'Metre' }],
+        narrative: [{ s: 'Na', l: 'Narrative' }, { s: 'Ct', l: 'Catharsis' }],
+        interior_monologue: [{ s: 'Io', l: 'Interior Monologue' }],
+    };
     // The trial's extra row in a weekend lesson. Out of 4 like each scene part (the total becomes 34; the grade is a
     // percentage, so nothing else moves). Judged against the student's OWN lesson-6 plan, which the marking reads.
     const CW_TRIAL1_STRUCTURE = {
@@ -6302,7 +6320,7 @@ window.WML = (function() {
         cwUnit, cwInUnit, CW_WORD_TARGETS, cwWordTarget, cwStepEnv, cwStepLens, cwStepLabel, cwStepTier,
         CW_STRUCT_TECHNIQUES, CW_STRUCT_MIN, CW_STRUCT_NOT_USING, cwStructFid, CW_TRIAL1_STRUCTURE, cwTrial1Elements,
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
-        CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING,
+        CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
         // Revision map
         REVISION_MAP,

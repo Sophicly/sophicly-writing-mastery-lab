@@ -407,6 +407,18 @@
                     });
                 } catch (_) { _isPoemGroup = false; }
             }
+            // v7.20.778 (FIXLIST #816b): a Poetic Forms card in the organiser — detected by its CONTENT (a `pf_{form}_*`
+            // field, the same content-addressed idiom as _isPoemGroup above), never by its label.
+            let _formSlug = '';
+            if (_isOrganiserDoc && type === 'plan') {
+                try {
+                    node.descendants((n) => {
+                        const m = /^pf_([a-z_]+?)_(?:definition|features|effects|meaning|notes)$/.exec(String((n.attrs && n.attrs.fieldId) || ''));
+                        if (n.type && n.type.name === 'inputField' && m) _formSlug = m[1];
+                        return !_formSlug;
+                    });
+                } catch (_) { _formSlug = ''; }
+            }
             const _collapsible = type === 'feedback' || type === 'scores'
                 || type === 'outline' /* v7.20.89 (Neil A3): outline sections collapse like assessment docs */
                 || type === 'mark_scheme_response' || type === 'notice' /* v7.20.89 (Neil B7): MSA doc parity */
@@ -508,6 +520,41 @@
                     gapFoot.style.display = 'none';
                     dom.appendChild(gapFoot);
                 }
+                // v7.20.778 (FIXLIST #816b — Neil, on the Ballad card: "a deep link into the table of techniques, or an
+                // explanation, or both"): a Poetic Forms card carries the Table of Techniques cards for the terms its notes
+                // use. Built ONCE here, at construction (before PM mounts it — nothing writes to it later), firewalled below
+                // like the poem card; hidden while the card is collapsed (CSS). No row when the form has no cards.
+                let techRow = null;
+                try {
+                    const _cards = (_formSlug && window.WML && window.WML.POETIC_FORM_TECH_CARDS && window.WML.POETIC_FORM_TECH_CARDS[_formSlug]) || [];
+                    if (_cards.length) {
+                        techRow = document.createElement('div');
+                        techRow.className = 'swml-form-techs';
+                        techRow.setAttribute('contenteditable', 'false');
+                        const _lab = document.createElement('span');
+                        _lab.className = 'swml-form-techs-label';
+                        _lab.textContent = 'Technique cards:';
+                        techRow.appendChild(_lab);
+                        _cards.forEach((t) => {
+                            const b = document.createElement('button');
+                            b.type = 'button';
+                            b.className = 'swml-beat-tech-btn swml-form-tech-btn';
+                            b.textContent = t.l;
+                            b.setAttribute('data-tech-sym', t.s);
+                            b.addEventListener('mousedown', (ev) => { ev.preventDefault(); ev.stopPropagation(); });   // never steal the caret
+                            b.addEventListener('click', (ev) => {
+                                ev.preventDefault();
+                                ev.stopPropagation();
+                                try {
+                                    if (window.SophiclyTable && window.SophiclyTable.open) window.SophiclyTable.open(t.s);
+                                    else if (window.console) console.warn('WML form cards: the Table of Techniques is not loaded — card "' + t.s + '" cannot open.');
+                                } catch (err) { if (window.console) console.warn('WML form cards: technique card failed to open —', err && err.message); }
+                            });
+                            techRow.appendChild(b);
+                        });
+                        dom.appendChild(techRow);
+                    }
+                } catch (_) { techRow = null; }
                 const _fillCtl = () => {
                     try {
                         if (window.WML && typeof window.WML.renderControlRows === 'function') {
@@ -628,6 +675,8 @@
                         if (poemCard && (poemCard === mutation.target || poemCard.contains(mutation.target))) return true;
                         // v7.20.684 (#692): the paragraph-check footer is derived display — firewall it.
                         if (gapFoot && (gapFoot === mutation.target || gapFoot.contains(mutation.target))) return true;
+                        // v7.20.778 (#816b): the form card's technique row is chrome — firewall it like the poem card.
+                        if (techRow && (techRow === mutation.target || techRow.contains(mutation.target))) return true;
                         return toggle === mutation.target || toggle.contains(mutation.target);
                     },
                     // v7.20.90 (ctlrows-storm amplifier fix): WITHOUT update(), every doc

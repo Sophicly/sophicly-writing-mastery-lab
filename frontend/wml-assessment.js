@@ -17047,6 +17047,15 @@
                 'How I know: ' + reason,
             ];
             if (slug === 'speaker') lines.push('@POEM_SELECTED' + JSON.stringify({ id: pid }));
+            // v7.20.778 (FIXLIST #816b): the student's OWN organiser notes for the form they picked ride with the stance,
+            // so Sophia starts from what they already noted and asks how it works in THIS poem.
+            if (slug === 'form') {
+                const fn = _cnFormNotesFor(chosen.id);
+                if (fn.length) {
+                    lines.push('My notes on the ' + String(chosen.label || chosen.id).toLowerCase() + ' (from my Poetic Forms organiser):');
+                    fn.forEach(function (l) { lines.push('- ' + l); });
+                }
+            }
             lines.push('@ELEMENT_STANCE' + JSON.stringify({ poem: pid, el: slug, stance: chosen.id }));
             canvasSilentSend = true;
             ctx.chatTextarea.value = lines.join('\n');
@@ -17059,6 +17068,27 @@
     // off a poetry-CN walk. Fail-soft by design: if the model disobeys the protocol and asks
     // its own opener question, the card still renders beneath it (worst case = a duplicate
     // question, never a dead-end).
+    // v7.20.778 (FIXLIST #816b — Neil: "the conceptual notes should refer back to those… ask how does that apply to this
+    // particular poem… how does it convey meaning"). The student's own Poetic Forms organiser notes for ONE form, read from
+    // the live document (the organiser is the first half of the same Poetry Conceptual Notes document). [] when none.
+    function _cnFormNotesFor(formSlug) {
+        const out = [];
+        try {
+            if (!canvasEditor || !formSlug) return out;
+            const label = { definition: 'What it is', features: 'Its features', effects: 'Its effects', meaning: 'Form and meaning', notes: 'My own notes' };
+            const got = {};
+            canvasEditor.state.doc.descendants(function (n) {
+                const m = /^pf_([a-z_]+?)_(definition|features|effects|meaning|notes)$/.exec(String((n.attrs && n.attrs.fieldId) || ''));
+                if (n.type && n.type.name === 'inputField' && m && m[1] === formSlug) {
+                    const t = String(typeof _cwNodeText === 'function' ? _cwNodeText(n) : (n.textContent || '')).replace(/\s+/g, ' ').trim();
+                    if (t) got[m[2]] = t;
+                }
+                return true;
+            });
+            Object.keys(label).forEach(function (k) { if (got[k]) out.push(label[k] + ': ' + got[k]); });
+        } catch (e) { /* the stance still sends — the notes are an enrichment, never a gate */ }
+        return out;
+    }
     function _maybePoetryCnOpener(ctx, hist, opts) {
         try {
             if (!ctx || !ctx.chatMessages || !ctx.chatTextarea) return;

@@ -15436,6 +15436,13 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 }
 .swml-beat-tech-btn:active { transform: translateY(1px); }
 
+/* v7.20.778 (FIXLIST #816b — Neil: "a deep link into the table of techniques, or an explanation, or both"): a Poetic Forms
+   card's Table of Techniques row, built once by the section NodeView after the card's content. The chips ARE
+   .swml-beat-tech-btn (reuse, don't re-decide). Hidden while the card is collapsed, like the rest of its content. */
+.swml-form-techs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0 4px; }
+.swml-form-techs-label { font-size: 12px; font-weight: 600; opacity: 0.7; margin-right: 2px; }
+.swml-section-block.swml-fb-collapsed > .swml-form-techs { display: none; }
+
 /* v7.20.411 (#227) — the FAMILY-SEARCH chip. Same shell as the technique chips directly above it
    (they sit in the same panel and are the same kind of gesture), but deliberately a shade quieter
    at rest: the named cards are the precise answer for THIS beat, and this is the wider browse. */

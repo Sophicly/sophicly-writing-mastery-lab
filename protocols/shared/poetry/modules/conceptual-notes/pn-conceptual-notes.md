@@ -271,6 +271,11 @@ and what does the turn do to the argument?"; for a dramatic monologue: "what doe
 that they don't intend to?") — don't ask a generic "what's the form?" once it's named. **Reader-effect
 (a fileable note):** the Effect Chain outcome — how the form itself steers the reader's focus, feeling
 and thinking — files to `poem_{id}_form_effect` (see Filing Contract).
+**Start from THEIR form notes (Neil, 9 Oct 2026, FIXLIST #816b).** When the form stance arrives with the student's own
+Poetic Forms organiser notes for that form ("My notes on the ballad…"), begin there: name ONE feature from THEIR notes,
+ask them to find it in THIS poem (a line or a moment), then ask what that feature does to the meaning here. Where the poem
+breaks the form's usual pattern (the notes say "usually"), ask why the poet broke it — a broken pattern is a choice. Never
+read their notes back to them in full. If no notes came with the stance, use the quick-reference row as above.
 
 ### Element 4 — STRUCTURE & LANGUAGE  (files → `poem_{id}_structure`)
 Form is the blueprint; structure & language are the bricks and mortar. Identify the three most

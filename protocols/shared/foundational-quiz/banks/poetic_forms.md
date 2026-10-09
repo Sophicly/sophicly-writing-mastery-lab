@@ -144,7 +144,7 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
    * **Question:** Traditional ballad metre alternates which two line lengths, typically within rhyming quatrains?
    * **Options:** A) Iambic tetrameter and iambic trimeter, B) Iambic pentameter throughout, C) A single unrhymed long line repeated, D) Irregular free verse lines
    * **Correct:** A
-   * **Feedback:** ✓ Correct. Ballad metre alternates four-beat (tetrameter) and three-beat (trimeter) lines within rhyming quatrains, giving its familiar sing-song rhythm.
+   * **Feedback:** ✓ Correct. Ballad metre alternates four-beat (tetrameter) and three-beat (trimeter) lines within rhyming quatrains, giving its familiar sing-song rhythm. That is the traditional pattern; poets often change it (“The Charge of the Light Brigade” gallops in two-beat dactylic lines).
    * **Why B:** Iambic pentameter throughout describes a five-beat line used elsewhere, not the ballad's alternating pattern.
    * **Why C:** A single unrhymed long line repeated does not match the ballad's rhymed, alternating quatrains.
    * **Why D:** Irregular free verse lines lack the ballad's fixed, alternating metrical pattern.
@@ -155,9 +155,9 @@ The token is kept OUT of the `[Tests …]` stratification key — the current pa
    * **Question:** Which structural features are typical of epic poetry in the English tradition?
    * **Options:** A) Blank verse and an opening that begins in the middle of the action, B) Strict fourteen-line stanzas with a single rhyming couplet, C) Short, songlike quatrains built for oral memorability, D) Compound words that mimic a child's speech
    * **Correct:** A
-   * **Feedback:** ✓ Correct. English epic tradition favours unrhymed iambic pentameter, or blank verse, together with an in medias res opening that plunges the reader into ongoing action.
+   * **Feedback:** ✓ Correct. Blank verse (unrhymed iambic pentameter) is the measure of Milton’s “Paradise Lost”, the best-known English epic (other English epics, such as Spenser’s, rhyme), and epics typically open in medias res, plunging the reader into the middle of the action.
    * **Why B:** Fourteen-line stanzas with a closing couplet describes the sonnet's structure, not the epic's.
-   * **Why C:** Short, songlike quatrains built for oral memorability describes the ballad, not the epic's grand, unrhymed scale.
+   * **Why C:** Short, songlike quatrains built for oral memorability describes the ballad, not the epic's grand scale.
    * **Why D:** Compound words mimicking a child's speech is a specific stylistic device, not a defining epic feature.
 
 15. **Type: MCQ [Tests Form Features]**
