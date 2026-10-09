@@ -290,6 +290,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   tail -1 /tmp/free-assess-refl.out
 fi
 
+# v7.20.774 (#813c, PEDAGOGY §59): the marking summary uses the examiner's words only at the level awarded — shipped
+# block, the §37 perceptive-quarter carve-out, both summary mandates wired on the summary turn.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'class-protocol-router\.php|examiner-vocabulary-gate\.php'; then
+  php bin/examiner-vocabulary-gate.php >/tmp/examiner-vocab.out 2>&1 || { cat /tmp/examiner-vocab.out; fail=1; }
+  tail -1 /tmp/examiner-vocab.out
+fi
+
 # v7.20.769 (#812/#812b): a save the student approved reaches the document even when the model forgets the marker —
 # the approval tap files [PANEL] boxes, the save-claim net repairs, and RULE 7 follows how the session files.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \

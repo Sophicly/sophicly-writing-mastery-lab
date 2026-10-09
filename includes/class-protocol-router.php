@@ -7980,10 +7980,28 @@ TEMPLATE;
         $block .= "1. Emit the FULL Final Summary exactly as the protocol's Final Summary step specifies — the chat result lines above AND the complete Overall Feedback `@SECTION_BEGIN{\"section\":\"Overall Feedback\"}` … `@SECTION_END` fill (Total & Grade with the mark, Technical Accuracy, level pattern, metacognitive journey + headline-goal closure, itemised Penalty & Ceiling Ledger, Key Strength, Priority Targets, word-count advice and extra/missing-paragraph note where applicable).\n";
         $block .= "2. End the message with `@SUMMARY_COMPLETE` on its own line (system marker — the platform strips it from display).\n";
         $block .= "3. Ask NOTHING in this turn: the system asks the action-plan and transfer questions itself, one per turn. Do NOT emit `[ASSESSMENT_COMPLETE]`, do NOT declare the assessment wrapped, do NOT offer to rebuild a paragraph — those come later, code-driven.\n";
+        $block .= self::examiner_vocabulary_block();
         $block .= self::free_assessment_reflection_block($user_id);
         $block .= "This block is internal bookkeeping — never quote it or mention it to the student.\n";
         $block .= "</assessment_state>\n";
         return $block;
+    }
+
+    /**
+     * ⭐ v7.20.774 (FIXLIST #813c — Neil, 2026-10-09: "When talking about the mark scheme, make sure we are always using the
+     * examiner's vocabulary appropriately"). PEDAGOGY §59. Measured first (prod, read-only): of the 5 saved summary turns,
+     * a Grade 3 AQA Macbeth essay was praised for "genuine perceptive insight"; on staging (#807) a Level 2 AQA Literature
+     * essay was called "reliable and often perceptive" — AQA Language's TOP-band word, on the wrong board, at the wrong
+     * level. Per-paragraph marking turns were measured too and are NOT the fault: there "perceptive" is the protocol's own
+     * criterion name, a target, or a gold model — so this rides the SUMMARY turn only, where the level claims are made.
+     * ⚠️ §37 keeps "perceptive" legitimate for ONE criterion's final 0.25; the rule below allows exactly that, by name.
+     */
+    private static function examiner_vocabulary_block() {
+        return "EXAMINER VOCABULARY in this summary (PEDAGOGY §59): "
+            . "(1) When you describe the whole response or the level it reached (the level pattern, Level Alignment, Key Strength), use the words of the level you actually AWARDED, from THIS paper's own mark scheme in your instructions. Never a higher level's words, never another board's or another paper's. "
+            . "(2) A distinctive level word (perceptive, convincing, judicious, critical, exploratory, conceptualised, sophisticated, assured, compelling, thoughtful) describes the student's work ONLY where the work earned it: for the whole response, only at the level whose descriptor uses that word; for one criterion, only where that criterion earned its final perceptive 0.25, and then name the criterion and the paragraph (\"your close analysis in Body 2 earned the perceptive quarter\"). "
+            . "(3) Everywhere else, praise in plain words that make no level claim (\"this sentence explains the effect well\"). "
+            . "Still fine: a criterion's own name from the marking table, what the NEXT level needs (\"a perceptive reading would…\"), and quoting the student's own words.\n";
     }
 
     /**
@@ -8058,6 +8076,7 @@ TEMPLATE;
         $block .= "2. The complete Overall Feedback `@SECTION_BEGIN{\"section\":\"Overall Feedback\"}` … `@SECTION_END` fill exactly as the protocol's Final Summary step specifies (Total & Grade with the mark, Technical Accuracy, per-section level pattern, metacognitive journey + headline-goal closure, itemised Penalty & Ceiling Ledger, Key Strength, Priority Targets, word-count-ceiling explanation and extra-paragraph note where applicable).\n";
         $block .= "3. End the message with `@SUMMARY_COMPLETE` on its own line (system marker — the platform strips it from display).\n";
         $block .= "4. Ask NOTHING in this turn: the system asks the action-plan and transfer questions itself, one per turn. Do NOT emit `[ASSESSMENT_COMPLETE]`, do NOT declare the assessment wrapped, do NOT offer to rebuild a paragraph — those come later, code-driven.\n";
+        $block .= self::examiner_vocabulary_block();
         $block .= self::free_assessment_reflection_block($user_id);
         $block .= "This block is internal bookkeeping — never quote it or mention it to the student.\n";
         $block .= "</assessment_state>\n";

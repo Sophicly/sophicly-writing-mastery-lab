@@ -3240,7 +3240,13 @@ Level 2 piece.
 3. Praise that is not a level claim uses plain words that carry no band ("this sentence explains the effect well"), so
    a student never reads a top-band word on a lower-band piece.
 
-**Status:** recorded 9 Oct; ⬜ the marking/summary instructions and a gate that checks band words against the awarded
-level are the build (FIXLIST #813c). Pairs with §37 (perceptiveness is the last 0.25 of a criterion — the CRITERION may
-name it; a level claim may not borrow it).
+**Status:** recorded 9 Oct; ✅ BUILT v7.20.774 (FIXLIST #813c). Measured first on prod (read-only, 9 Oct): 5 saved
+summary turns; a Grade 3 AQA Macbeth essay was praised for "genuine perceptive insight". 37 per-paragraph marking turns
+were measured too and are NOT the fault: there "perceptive" is the protocol's own criterion name, a next-level target or
+a gold model. So the rule rides the SUMMARY turn only: `examiner_vocabulary_block()` (class-protocol-router.php) is
+appended by both summary mandates (language + literature). Gate: `bin/examiner-vocabulary-gate.php` (pre-ship) — it
+proves the instruction is delivered, not that the model obeys; obedience is re-measured on saved summaries with
+`~/.sophicly/probe/wml-338/bandwords.php`. Pairs with §37 (perceptiveness is the last 0.25 of a criterion — the
+CRITERION may name it; a level claim may not borrow it), and the block allows exactly that: one criterion, named with
+its paragraph.
 
