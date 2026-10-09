@@ -155,6 +155,61 @@ LD shell: topic 59238 `[writing_mastery_lab task="cw_step_27" unit="weekend"]` i
 - **Gates:** weekend harness §O (data · page · trial rows · wiring · the walk driven like a student · resume from the doc),
   5 mutations red; cw-keymatch knows the four chip menus; lesson-number literals updated (REST gate, lesson 9 About, seed gate).
 
+## 2e · NEXT BATCH (Neil's test pass, 9 Oct — FIXLIST #813–#815f; root §16 plan, written before code)
+
+Built only AFTER the tested 7.20.772 batch reaches prod (no shipped file moves before his typed go).
+
+### 2e.1 · Choose where to focus — END OF LESSON 3, before the Story Spine (Neil, v73: *"Before the Story Spine"*)
+His notes: the best stories *"focused on one moment in the story rather than a complete story from start to finish"*;
+*"a scene is actually a mini story so still has the same structure"*; students *"think about where in their story they
+want to actually focus on"*; show the examiners' words; one part as the normal choice.
+- **Source quote (verified, `research/sources/aqa-8700-1-jun23-examiner-report.txt`):** "These responses managed the timed
+  conditions by focusing upon a moment in time, rather than trying to include journeys and other events that led to the
+  main focus." (AQA 8700/1 June 2023, Question 5, Strongest responses.)
+- **The ask (unit only, code-served, §4c):** after the chosen logline, ONE screen of alternatives (§4c.8 — only one
+  applies): *"Which part of your story will your exam scene tell?"* — the four DRAMATIC parts the logline already names,
+  each showing the student's own words: the moment everything changes (`cw-step-3-incident` → spine beat 3) · going
+  after what they want (`cw-step-3-goal` → beat 4) · the obstacle hits hardest (`cw-step-3-obstacle` → beat 5) · the
+  ending, when everything is decided (`cw-step-3-stakes` → beat 6). Criteria + the examiners' line first; a worked example
+  on A Christmas Carol (the known story threaded through the unit); help ladder. Filed to a new row
+  `cw-step-3-scene-focus` (value = the beat number + label) and its artifact `scene_focus`.
+- **Lesson 4:** the chosen beat is marked "Your exam scene" in the spine walk and document (that beat's ask adds one line:
+  make it the most specific beat, because it is the one you write).
+- **Lesson 5:** starts FROM the chosen part — the beat is pre-selected from `scene_focus` (one beat is the normal choice;
+  the next beat may be added only when the moment carries on into it), Polti's situations are suggested for THAT moment,
+  then the seven elements (unchanged). Fallback when `scene_focus` is empty (students who did lesson 3 before this
+  ships): today's Polti-first pre-select, so nobody is stranded (§4d).
+- **Key trace (§5d):** writer = lesson 3 walk → `cw-step-3-scene-focus` + artifact `scene_focus`; readers = lesson 4 walk
+  marker, lesson 5 pre-select. Gate: weekend harness new section — the ask drives like a student, the value reaches
+  lessons 4 and 5, the full course's Step 3 is unchanged.
+
+### 2e.2 · Lesson 11 — Mark It Again (Neil, v72: *"Mark it again, then empathy as a bonus"*)
+- Unit-only step **91** (`cw_step_91`, the 90+ rule above). Input = lesson 10's adapted rewrite (the rewrite box seeded
+  by `tryFillCwAdaptRewrite`); marking = Trial 1's own (`cwTrial1Elements()` incl. the structural row, /34) — the
+  same marking on a new text, never a copy of the rubric. The page shows each element's Trial 1 mark beside the new one
+  so the student sees what changed. Self-mark first, then Sophia (Trial 1's order). Guard: opened outside the weekend unit
+  → says so and stops (as lesson 10).
+
+### 2e.3 · Bonus lesson — Make the Reader Care (empathy; optional, after lesson 11)
+- Source = his workbook `CW-STEP-16-deepen-empathy.md` verbatim: 15 techniques in 3 categories (victim · humanistic
+  virtues · desirable qualities), **at least 2 per category, courage compulsory**. Unit-only step **92**.
+- Walk = lesson 6's shape (`_cwStructCtl` pattern): one technique at a time, a "no" costs one tap, "where and how" filed
+  to its row, count check per category, change-one at the end. Then a revise box seeded with the latest story (lesson 10's
+  rewrite) and the contextual chat lensed on empathy (the polishing lens is data, §2b). No marking (it is a bonus).
+- Data: `CW_EMPATHY_TECHNIQUES` in wml-core (ids aligned with the full course's Step 18 rows so a student's work maps).
+
+### 2e.4 · Smaller items in the same batch
+- **Lesson 6:** Duality shows "Recommended" — his workbook marks it RECOMMENDED (`CW-STEP-25-structural-elements.md:32`),
+  lesson 6 did not (root §13: match the workbook).
+- **§59 band words (#813c):** level words only at their level, the board's own words — summary/feedback instructions +
+  a gate (measured: "perceptive" on a Level 2 AQA Literature essay).
+- **Banks to 40 (#815d):** 198 board sections, 3,763 questions → 4,157 new; texts students take now first; item rules
+  as the current banks (one defensible answer, every distractor explained). Content work — drafted outside the plugin,
+  applied after the prod go.
+- **LD lane:** two new topics in each weekend unit (staging first): "11. Mark It Again" `[writing_mastery_lab
+  task="cw_step_91" unit="weekend"]` and "Bonus: Make the Reader Care" `[writing_mastery_lab task="cw_step_92"
+  unit="weekend"]` — handoff written when the steps exist on staging.
+
 ## 3 · The four layers (root §15 — every link, up front)
 
 | layer | what it needs | owner |
