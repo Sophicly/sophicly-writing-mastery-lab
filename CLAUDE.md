@@ -5,7 +5,7 @@
 **See also:** `PRODUCT.md` (this dir) for users + voice. `../../../sophicly-plugins/BRAND.md` for design.
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** 7.20.770 (main + staging) · ⚠️ **PROD runs hotfix 7.20.752** = v7.20.736 + the structure lock only (branch `hotfix/7.20.752-structure-lock`, 8 Oct) — main skipped .752 so the two can never share a number; **next bump is 7.20.771**
+**Current version:** 7.20.771 (main + staging) · ⚠️ **PROD runs hotfix 7.20.752** = v7.20.736 + the structure lock only (branch `hotfix/7.20.752-structure-lock`, 8 Oct) — main skipped .752 so the two can never share a number; **next bump is 7.20.772**
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, polishing.
 **AI Provider:** `claude-sonnet-5` via MeowApps AI Engine (measured on prod from `mwai_chatbots`, 2026-09-06 — the header said Sonnet 4.6 for months; verify with `wp eval`, never from this line). GPT-5 fallback.
 

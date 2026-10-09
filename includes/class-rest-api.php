@@ -3933,6 +3933,37 @@ class SWML_REST_API {
         return $total;
     }
 
+    /**
+     * v7.20.770 (#811, dashboard #533d): the words a doc with NO response section holds in its boxes —
+     * the server twin of the client rule in _responseWordCountFromDoc. Conceptual Notes, Mark Scheme and
+     * FQ docs keep the student's writing in `.swml-input-field` / `[data-outline-row]` boxes; their STORED
+     * wordCount was counted by the client's legacy path, which included the template (prod 9 Oct: `_cn`
+     * 17,490 stored vs 3,813 in boxes). Reading the boxes corrects every existing doc without rewriting it.
+     * Feedback sections are Sophia's marking, never counted; a line break or block end separates words.
+     * Returns null when the doc HAS a response section or has no boxes — the stored figure stays right there.
+     */
+    public static function box_words_without_response($html) {
+        if (!is_string($html) || $html === '' || strpos($html, 'data-section-type="response"') !== false) return null;
+        $html = preg_replace('/(<br\s*\/?>|<\/p>|<\/div>|<\/li>|<\/h[1-6]>)/i', ' $1', $html);
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="UTF-8">' . $html, LIBXML_NOERROR | LIBXML_NOWARNING);
+        libxml_clear_errors();
+        $xp = new DOMXPath($dom);
+        $box   = "contains(concat(' ', normalize-space(@class), ' '), ' swml-input-field ') or @data-outline-row";
+        $nodes = $xp->query("//*[$box][not(ancestor::*[@data-section-type='feedback'])][not(ancestor::*[$box])]");
+        if (!$nodes || !$nodes->length) return null;
+        $placeholders = ['write your essay here.', 'write your response here.'];
+        $total = 0;
+        foreach ($nodes as $node) {
+            if ($node->getAttribute('data-locked') === 'true') continue;
+            $text = trim(preg_replace('/\s+/u', ' ', $node->textContent));
+            if ($text === '' || in_array(strtolower($text), $placeholders, true)) continue;
+            $total += count(preg_split('/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY));
+        }
+        return $total;
+    }
+
     /** Reverse the student-data course map: course_id → ['text'=>slug,'board'=>board] or null. */
     private function resolve_course_to_text_board($course_id) {
         if (!function_exists('sophicly_get_course_map')) return null;
@@ -4115,6 +4146,14 @@ class SWML_REST_API {
             if (preg_match('/^(.*)__a(\d+)(.*)$/', $key, $m)) { $logical = $m[1] . $m[3]; $attempt = (int) $m[2]; }
             $doc = self::decode_canvas_json($r['meta_value']);
             $w   = (is_array($doc) && isset($doc['wordCount'])) ? (int) $doc['wordCount'] : 0;
+            // v7.20.770 (#811): a doc with no response section is counted from its boxes, so a stored figure
+            // that includes the template (every `_cn`/`_ms`/`_fq` saved before .770) never reaches a total.
+            // CW counts its own boxes already; exam-question / crib docs are not the student's writing (0).
+            $kind_w = $this->classify_canvas_doc($logical, 'swml_canvas_' . $resolved['board'] . '_' . $resolved['text'])['kind'];
+            if (is_array($doc) && !in_array($kind_w, ['creative_writing', 'exam_question', 'exam_crib'], true)) {
+                $bw = self::box_words_without_response((string) ($doc['html'] ?? ''));
+                if ($bw !== null) $w = $bw;
+            }
             if (!isset($groups[$logical]) || $attempt >= $groups[$logical]['attempt']) {
                 $groups[$logical] = ['attempt' => $attempt, 'words' => $w, 'key' => $logical];
             }

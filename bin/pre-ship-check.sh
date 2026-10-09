@@ -274,6 +274,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   tail -1 /tmp/plan-notes-strip.out
 fi
 
+# v7.20.771 (#811): /words-written counts a Notes / Mark Scheme / FQ doc's BOX words, never its template —
+# the shipped helper on real-shaped docs, the endpoint wiring, two mutants that must fail.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'class-rest-api\.php|words-written-box-gate\.php'; then
+  php bin/words-written-box-gate.php >/tmp/words-written-box.out 2>&1 || { cat /tmp/words-written-box.out; fail=1; }
+  tail -1 /tmp/words-written-box.out
+fi
+
 # v7.20.766 (#807): the marking summary answers the student's FREE assessment in their own words — shipped block,
 # stub DB, response-shift guard, both mandates wired.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
