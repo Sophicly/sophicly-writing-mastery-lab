@@ -546,6 +546,14 @@ The deterministic quiz controller (`_quizCtl` — FQ, MSQ, MSA all share it) has
 2. **RESUME re-renders the current question; it does NOT just restore state.** `rehydrate()` restoring `idx/qs/round` is necessary but NOT sufficient. On resume the chat is replayed from SAVED TEXT, so the current question comes back with (a) NO progress chip — the chip is ephemeral DOM, never persisted → "progress bar disappears"; and (b) the GENERIC auto-detected answer buttons, which send the full option label to `sendCanvasMessage` → the AI path, not the controller's own buttons (bare value → `handleTurn`, scored) → the answer never scores → "falls back to a generic AI quiz". FIX (in `rehydrate` mid-round tail): drop the trailing replayed question bubble + its `canvasChatHistory` entry (else it duplicates every resume) and call `renderQ()` so the controller re-owns the turn — chip + deterministic scoring buttons (which call `handleTurn` DIRECTLY, bypassing the send-gate) both return.
    - **General rule: a deterministic controller's interactive UI (chips, scoring buttons, widgets) is NOT in the saved transcript — the controller must RE-EMIT it on resume, never inherit it from the replay.** The replayed transcript's generic quick-action detector is the trap: its buttons route to the AI.
 
+3. **A note may name an option by its LETTER only if the options keep their order (v7.20.783).** Served options are
+   SHUFFLED (`SWML_Quiz_Bank::shuffle_options`, v7.19.785) unless the item's notes cite a letter. The guard knew "(C)",
+   "C)", "B =", "A, B" but not "B (simple comment) then D" or "B is Level 1", so 30 items shuffled and their notes named
+   the wrong option for most students. The guard now covers those forms too (fail-safe: a citation keeps the authored
+   order), and `php bin/quiz-cue-gate.php --enforce` drives the REAL `shuffle_options` over every bank: any item that
+   cites a letter but would still shuffle fails the build. Better still, write notes that name the answer by its WORDS
+   (the AQA Paper 1 section of `MSA/language1.md` does — `bin/msa-quote-gate.js` refuses letter citations there).
+
 ## §8. THE DISPLAY LAYER — presentation never touches the data
 
 - **svgifyEmojis (v916):** emojis render as inline SVGs at DISPLAY time only. Raw history keeps
