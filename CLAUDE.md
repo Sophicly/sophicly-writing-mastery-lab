@@ -5,7 +5,7 @@
 **See also:** `PRODUCT.md` (this dir) for users + voice. `../../../sophicly-plugins/BRAND.md` for design.
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** 7.20.779 (main) · PROD 7.20.772 (since 9 Oct, md5-verified — the .752 hotfix branch is retired) · **next bump is 7.20.780**
+**Current version:** 7.20.781 (branch `feat/codex-scope-824`, on staging; main = 7.20.779) · PROD 7.20.772 (7.20.779 awaits Neil's typed go) · **next bump is 7.20.782**
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, polishing.
 **AI Provider:** `claude-sonnet-5` via MeowApps AI Engine (measured on prod from `mwai_chatbots`, 2026-09-06 — the header said Sonnet 4.6 for months; verify with `wp eval`, never from this line). GPT-5 fallback.
 
@@ -552,6 +552,13 @@ is ALWAYS the same shape; do NOT invent a new per-dir lookup:
    reads as success.
 6. **id/scoring namespaces follow the source** — a per-text quiz stamps `msq:{text}:{board}:{q_num}`
    (not `{subject}:…`) so the stateless resume-scorer rebuilds from the right pool.
+7. **A board-encoded live slug reaches its bare-named files (v7.20.781, FIXLIST #826).** `blood_brothers_aqa` (the
+   AQA course's live slug — student documents are keyed on it, so it stays canonical) reaches `blood_brothers.md`
+   banks, notes and `aqa-blood-brothers.md` topics through ONE helper, `SWML_Quiz_Bank::strip_board_suffix()`, used
+   by `slug_family()` (appended LAST — an exact file still wins) and `text_to_template_slug()`. Before it, that course
+   reached 0 of 20 quiz questions, 0 of 5 notes, no mark-scheme bank and no topics, and the reach gate could not see
+   it because ANOTHER live slug reached the same banks. Gate: `bin/quiz-bank-reach-harness.js` executes the real PHP.
+   ⚠️ Fit before reuse (root §23): check the bare file was built for this board before relying on the strip.
 
 ## DUAL CHAT PIPELINE
 

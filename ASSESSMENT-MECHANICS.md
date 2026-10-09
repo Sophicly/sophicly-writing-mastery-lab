@@ -507,6 +507,9 @@ code-owned source.
 
 - Text slugs: `$SLUG_ALIASES` + `normalize_text_slug()` at the REST boundary — the ONLY place
   slugs reconcile. Canonical = live user_meta form; NEVER flip a canonical (re-keys student data).
+  v7.20.781: a board-ENCODED live slug (`blood_brothers_aqa`) additionally reaches its bare-named files via
+  `SWML_Quiz_Bank::strip_board_suffix()` in `slug_family()` + `text_to_template_slug()` — lookup only, the canonical
+  slug (and every meta key) is unchanged (WML CLAUDE.md TEXT-SLUG rule 7).
 - Task→family, subject↔canvas-slug: `resolve_session_fields` server-side; key behaviour off the
   family. Q-identity: match by NUMBER via `_paraKey` ("Q2"/"Question 2"/"2"/"Feedback: Q2 (—/8)"
   all → "2"; Intro/Conclusion keyed by name, idempotently).

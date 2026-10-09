@@ -493,6 +493,13 @@ class SWML_Topic_Questions {
             'edexcel_time_place_poetry'    => 'time-place',
         ];
         if (isset($map[$text])) return $map[$text];
+        // v7.20.781 (FIXLIST #826, measured on prod 9 Oct): a board-encoded course slug (`blood_brothers_aqa`) looked for
+        // `aqa-blood-brothers-aqa.md`, which does not exist, so the AQA Blood Brothers topics loaded NOTHING. Resolve it
+        // to the bare text's template (`aqa-blood-brothers.md`) through the ONE strip the bank ladder uses.
+        if (class_exists('SWML_Quiz_Bank')) {
+            $bare = SWML_Quiz_Bank::strip_board_suffix($text);
+            if ($bare !== $text) return isset($map[$bare]) ? $map[$bare] : str_replace('_', '-', $bare);
+        }
         return str_replace('_', '-', $text);
     }
 

@@ -47,11 +47,13 @@ const aliasBlock = (rest.match(/\$SLUG_ALIASES = \[([\s\S]*?)\];/) || [])[1] || 
 const ALIASES = {};
 for (const m of aliasBlock.matchAll(/'([a-z0-9_]+)'\s*=>\s*'([a-z0-9_]+)'/g)) ALIASES[m[1]] = m[2];
 
-// Mirror of SWML_Quiz_Bank::slug_family.
+// Mirror of SWML_Quiz_Bank::slug_family (v7.20.781: + the board-suffix strip, cross-checked against the PHP below).
+const stripBoard = (t) => { const m = /^([a-z0-9_]{3,}?)_(edexcel_igcse|cambridge_igcse|aqa|eduqas|edexcel|ocr|ccea|wjec|sqa|cie|cambridge)$/.exec(t); return m ? m[1] : t; };
 function family(t) {
     const canon = ALIASES[t] || t;
     const f = new Set([t, canon]);
     for (const [a, target] of Object.entries(ALIASES)) if (target === canon) f.add(a);
+    for (const x of [...f]) { const bare = stripBoard(x); if (bare !== x) { f.add(bare); f.add(ALIASES[bare] || bare); } }
     return [...f];
 }
 
@@ -70,6 +72,53 @@ const KNOWN = {
     conflict_poetry_ocr: 'OCR Conflict: the bank is conflict.md (reached by the WML picker id "conflict"), but the course bridge sends conflict_poetry_ocr. "conflict" is shared by the OCR, Edexcel and CCEA pickers, so it cannot be aliased to one board. No OCR students on prod (2026-09-26). Handoff: wml content lane.',
 };
 const hasOwn = (dir, s) => family(s).some(f => fs.existsSync(path.join(ROOT, dir, f + '.md')) || fs.existsSync(path.join(ROOT, dir, f + '_poetry.md')));
+
+// 0. v7.20.781 (FIXLIST #826): a board-encoded live slug (blood_brothers_aqa) reaches its bare-named banks and topics
+//    template. Measured on prod before the fix: 0 of 20 FQ questions, 0 of 5 notes, no MSQ/MSA, no topics — and the
+//    reachability check below could not see it, because ANOTHER live slug (blood_brothers) reached the same banks.
+{
+    const qb = read('includes/class-quiz-bank.php');
+    const fnSrc = (qb.match(/public static function strip_board_suffix\(\$slug\) \{[\s\S]*?\n    \}/) || [])[0] || '';
+    if (!fnSrc) fail('strip_board_suffix() not found in class-quiz-bank.php');
+    else {
+        const { execFileSync } = require('child_process');
+        const php = '<?php class Q { ' + fnSrc + ' } foreach (json_decode($argv[1], true) as $s) echo $s, "=", Q::strip_board_suffix($s), "\n";';
+        const tmp = require('os').tmpdir() + '/qbr-strip-' + process.pid + '.php';
+        fs.writeFileSync(tmp, php);
+        const probe = LIVE.concat(['blood_brothers_aqa', 'x_edexcel_igcse', 'aqa_lang_paper_1', 'edexcel_igcse_lang_a', 'ab_aqa']);
+        const got = Object.fromEntries(execFileSync('php', [tmp, JSON.stringify(probe)], { encoding: 'utf8' }).trim().split('\n').map(l => l.split('=')));
+        fs.unlinkSync(tmp);
+        const drift = probe.filter(x => got[x] !== stripBoard(x));
+        if (drift.length) fail('the JS mirror of strip_board_suffix disagrees with the PHP on: ' + drift.join(', '));
+        else ok('strip_board_suffix: PHP and this mirror agree on ' + probe.length + ' slugs (blood_brothers_aqa → ' + got.blood_brothers_aqa + ')');
+    }
+    const encoded = LIVE.filter(x => stripBoard(x) !== x);
+    for (const sl of encoded) {
+        const bare = stripBoard(sl);
+        for (const [kind, dir] of Object.entries({ MSQ: 'protocols/shared/mark-scheme-quiz', MSA: 'protocols/shared/mark-scheme-assessment/banks', FQ: 'protocols/shared/foundational-quiz/banks' })) {
+            if (fs.existsSync(path.join(ROOT, dir, bare + '.md')) && !family(sl).includes(bare)) fail(`${kind}: live slug ${sl} cannot reach ${bare}.md`);
+        }
+    }
+    if (!/strip_board_suffix\(\$text\)/.test(read('includes/class-topic-questions.php'))) fail('text_to_template_slug does not strip a board-encoded slug — blood_brothers_aqa loads no topics');
+    const cnStart = qb.indexOf('public static function concept_notes_for');
+    const cnBody = cnStart < 0 ? '' : qb.slice(cnStart, qb.indexOf('\n    }\n', cnStart));
+    if (!/foreach \(self::slug_family\(\$text\) as \$f\)/.test(cnBody)) fail('concept_notes_for does not walk the slug family — blood_brothers_aqa reads 0 notes');
+    // The REAL slug_family, executed (sanitize_file_name stubbed; no alias table needed for this case) — a mirror alone
+    // cannot catch the PHP losing the strip.
+    const sfStart = qb.indexOf('public static function slug_family');
+    const sfBody = sfStart < 0 ? '' : qb.slice(sfStart, qb.indexOf('\n    }\n', sfStart) + 6);
+    if (sfBody && fnSrc) {
+        const { execFileSync } = require('child_process');
+        const tmp2 = require('os').tmpdir() + '/qbr-family-' + process.pid + '.php';
+        fs.writeFileSync(tmp2, '<?php function sanitize_file_name($s) { return $s; } class SWML_Quiz_Bank { ' + sfBody + ' ' + fnSrc + ' } echo implode(",", SWML_Quiz_Bank::slug_family("blood_brothers_aqa"));');
+        const fam = execFileSync('php', [tmp2], { encoding: 'utf8' }).trim().split(',');
+        fs.unlinkSync(tmp2);
+        if (!fam.includes('blood_brothers') || fam[0] !== 'blood_brothers_aqa') fail('PHP slug_family("blood_brothers_aqa") = [' + fam.join(', ') + '] — must start with the slug itself and include blood_brothers');
+        else ok('PHP slug_family("blood_brothers_aqa") = [' + fam.join(', ') + '] (executed)');
+    } else fail('slug_family() not found in class-quiz-bank.php');
+    if (!fs.existsSync(path.join(ROOT, 'protocols/shared/templates/topics/aqa-blood-brothers.md'))) fail('the AQA Blood Brothers topics template is missing');
+    ok('board-encoded live slugs (' + (encoded.join(', ') || 'none') + ') reach their bare-named banks, notes and topics template');
+}
 
 // 1. Reachability.
 const reachedBy = (bank) => LIVE.filter(s => family(s).some(f => f === bank || f + '_poetry' === bank));

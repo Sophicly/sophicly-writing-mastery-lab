@@ -107,7 +107,29 @@ class SWML_Quiz_Bank {
         foreach ($aliases as $alias => $target) {
             if ($target === $canon) $family[] = $alias;
         }
+        // v7.20.781 (FIXLIST #826, measured on prod 9 Oct): a slug that ENCODES its board — the AQA Blood Brothers
+        // course's live slug `blood_brothers_aqa` (a real student's documents are keyed on it) — also reaches the
+        // bare-named files (`blood_brothers.md`). Before this the course reached 0 of its 20 foundational questions,
+        // 0 of 5 concept notes and neither mark-scheme bank. Appended LAST, so a file named exactly still wins; the
+        // canonical slug is untouched, so no meta key moves. The convention resolve_crib_template() has used since
+        // v7.19.135. Fit checked per file (§23): the MSQ bank is AQA's own, the MSA bank is board-aware, the FQ bank
+        // and notes name no board.
+        foreach ($family as $f) {
+            $bare = self::strip_board_suffix($f);
+            if ($bare !== $f) { $family[] = $bare; $family[] = $aliases[$bare] ?? $bare; }
+        }
         return array_values(array_unique(array_filter(array_map('sanitize_file_name', $family))));
+    }
+
+    /**
+     * v7.20.781: `blood_brothers_aqa` → `blood_brothers`. Only a TRAILING exam-board token, and only when something
+     * of at least three characters is left; anything else comes back unchanged. Shared by the bank ladder above and
+     * the topics template resolver (SWML_Topic_Questions::text_to_template_slug) so the two can never disagree.
+     */
+    public static function strip_board_suffix($slug) {
+        $slug = (string) $slug;
+        if (preg_match('/^([a-z0-9_]{3,}?)_(edexcel_igcse|cambridge_igcse|aqa|eduqas|edexcel|ocr|ccea|wjec|sqa|cie|cambridge)$/', $slug, $m)) return $m[1];
+        return $slug;
     }
 
     /**
@@ -125,7 +147,12 @@ class SWML_Quiz_Bank {
         static $cache = [];
         $text = sanitize_file_name((string) $text);
         if (isset($cache[$text])) return $cache[$text];
+        // v7.20.781 (#826): walk the same slug family as the banks — `blood_brothers_aqa` read 0 of the 5 notes
+        // its own quiz bank (reached via the family) files into the document.
         $path = self::fq_dir() . $text . '.concept-notes.md';
+        foreach (self::slug_family($text) as $f) {
+            if (file_exists(self::fq_dir() . $f . '.concept-notes.md')) { $path = self::fq_dir() . $f . '.concept-notes.md'; break; }
+        }
         $out = [];
         if (file_exists($path)) {
             $slot_map = [
