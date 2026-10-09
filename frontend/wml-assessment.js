@@ -58930,6 +58930,32 @@
             });
             return total;   // CW: the doc model is authoritative even with no response section
         }
+        // v7.20.770 (#811, dashboard #533d): a doc with NO response section keeps the student's
+        // writing in BOXES — Conceptual Notes (`cn-*`/`pf-*`), Mark Scheme (`ms-*`), FQ, the Mastery
+        // Codex. Returning null sent those docs to the legacy DOM path below, which counts every
+        // editable section's TEMPLATE text (prod 9 Oct: `_cn` stored 17,490 vs 3,813 words in boxes;
+        // `_ms` 10,251 vs 1,188; a blank `_ms` saved 248 for seven students). Count the box contents —
+        // the CW rule above and getCodexWordCount's rule — skipping feedback sections (Sophia's
+        // marking, not the student's words). A doc with no boxes at all keeps the legacy path.
+        if (!sawResponse) {
+            let boxWords = 0, sawBox = false;
+            editor.state.doc.forEach(node => {
+                if (!node.type || node.type.name !== 'sectionBlock') return;
+                if (node.attrs && node.attrs.sectionType === 'feedback') return;
+                node.descendants(n => {
+                    if (n.type && (n.type.name === 'outlineRow' || n.type.name === 'inputField')) {
+                        sawBox = true;
+                        if (n.attrs && (n.attrs.locked === true || n.attrs.locked === 'true')) return false;
+                        const t = _wcText(n).trim();
+                        if (!t || _WC_PLACEHOLDERS.indexOf(t.toLowerCase()) !== -1) return false;
+                        boxWords += t.split(/\s+/).filter(w => w.length > 0).length;
+                        return false;
+                    }
+                    return true;
+                });
+            });
+            if (sawBox) return boxWords;
+        }
         return sawResponse ? total : null;
     }
     function getResponseWordCount(editor) {
