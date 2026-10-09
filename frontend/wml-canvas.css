@@ -1187,310 +1187,103 @@ body.swml-fullscreen-active { overflow: hidden !important; }
     color: #fff;
 }
 
-/* ── Comment Modal (styled replacement for browser prompt) ── */
-.swml-comment-modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 300;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: swmlFadeIn 0.15s ease;
-}
-@keyframes swmlFadeIn { from { opacity: 0; } to { opacity: 1; } }
-.swml-comment-modal {
-    /* v7.20.394: was rgba(40, 41, 43, 0.97) — i.e. #28292b, the sheet tier RETIRED AT .386. It sat
-       on a dead colour through four palette moves because it is spelled rgba, so every hex sweep
-       missed it. Found by bin/palette-lint.js on its first run. A modal floats over the document,
-       so it takes the RAISED tier, like every other floating surface. */
-    background: rgba(51, 52, 55, 0.97);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
-    padding: 20px 24px;
-    width: 440px;
-    max-width: 92%;
-    max-height: 80vh;
-    max-height: 80dvh;   /* v7.20.474 (#343): iOS vh excludes the collapsing bars — dvh is the VISIBLE viewport; the vh line above stays as the fallback */
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    backdrop-filter: blur(12px);
-    animation: swmlPopIn 0.2s ease;
-}
-.swml-comment-modal-quote {
-    font-size: 12px;
-    font-style: italic;
-    color: rgba(255,255,255,0.4);
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 8px;
-    border-left: 3px solid rgba(255,193,7,0.4);
-    margin-bottom: 12px;
+/* ── Comment modal — v7.20.797 (#847) ─────────────────────────────────────────────
+   Neil, 9 Oct: "the position… it's centered in the middle of the canvas area… so it actually looks
+   like it's slightly down to the bottom right… the buttons need to be more minimal", and "the
+   comments modal also needs a brand pass". It now wears the HOUSE modal (.swml-review-modal: the
+   family surface #1c1d1f / white, the house button, the quiet "Not now" button as Cancel) and is
+   BODY-mounted + fixed, so it centres on the screen. The old skin (its own dark sheet, gold submit,
+   3D chips in four accent colours) is gone. These rules add only what a comment needs.
+   Chips: no fill colour per category, no border (BRAND: no thin outlines on default buttons), a
+   family-grey wash; the PICKED one takes the accent so the tutor can see which they chose. */
+@keyframes swmlFadeIn { from { opacity: 0; } to { opacity: 1; } }   /* still used by the rule at "animation: swmlFadeIn 0.2s" */
+.swml-review-modal.swml-cm { max-width: 480px; }
+.swml-cm-head { margin-bottom: 18px; }
+.swml-cm-quote {
+    margin-top: 8px;
+    padding-left: 12px;
+    border-left: 2px solid var(--swml-coach-accent);
+    font-size: 13px;
     line-height: 1.5;
+    font-style: italic;
+    color: var(--swml-coach-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
-/* Quick comment presets */
-.swml-quick-comments {
-    margin-bottom: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.swml-quick-cat-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.4);
+.swml-cm-group + .swml-cm-group,
+.swml-cm-more .swml-cm-group { margin-top: 14px; }
+.swml-cm-group-label,
+.swml-cm-label {
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 5px;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--swml-coach-muted);
+    margin-bottom: 8px;
 }
-.swml-quick-cat-label svg { opacity: 0.6; }
-.swml-quick-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-.swml-quick-chip {
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 10px;
-    font-family: inherit;
-    font-weight: 600;
-    padding: 4px 10px;
-    white-space: nowrap;
-    --btn-inner: hsla(0deg 0% 22% / 50%);
-    --btn-outer: hsla(0deg 0% 16% / 40%);
-    color: #ff6b6b;
-    background: radial-gradient(var(--btn-inner), var(--btn-outer));
-    box-shadow:
-        inset 0 1px 1px -1px rgba(255,255,255,0.1),
-        0 1px 0 1px rgba(0,0,0,0.3);
-    transition: transform 150ms, box-shadow 150ms, background 150ms, color 150ms;
-}
-.swml-quick-chip:hover {
-    color: #fff;
-    background: rgba(255,107,107,0.25);
-    box-shadow:
-        inset 0 -1px 2px rgba(255,255,255,0.1),
-        0 1px 0 1px rgba(255,107,107,0.4),
-        0 2px 6px rgba(255,107,107,0.15);
-    transform: translateY(-1px);
-}
-.swml-quick-chip:active { transform: translateY(1px); }
-/* TTECEA chips — purple accent */
-.swml-quick-chip-ttecea {
-    color: #a78bfa;
-}
-.swml-quick-chip-ttecea:hover {
-    color: #fff;
-    background: rgba(83,51,237,0.25);
-    box-shadow:
-        inset 0 -1px 2px rgba(255,255,255,0.1),
-        0 1px 0 1px rgba(83,51,237,0.4),
-        0 2px 6px rgba(83,51,237,0.15);
-}
-/* Praise chips — green/teal accent */
-.swml-quick-chip-praise {
-    color: #51dacf;
-}
-.swml-quick-chip-praise:hover {
-    color: #fff;
-    background: rgba(81,218,207,0.2);
-    box-shadow:
-        inset 0 -1px 2px rgba(255,255,255,0.1),
-        0 1px 0 1px rgba(81,218,207,0.4),
-        0 2px 6px rgba(81,218,207,0.15);
-}
-/* Light mode quick chips */
-.swml-canvas-light .swml-quick-cat-label { color: rgba(0,0,0,0.4); }
-.swml-canvas-light .swml-quick-chip {
-    --btn-inner: hsla(0deg 0% 96% / 100%);
-    --btn-outer: hsla(0deg 0% 92% / 100%);
-    color: #dc2626;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.6), 0 1px 0 0 rgba(0,0,0,0.08);
-}
-.swml-canvas-light .swml-quick-chip:hover { background: rgba(220,38,38,0.08); }
-.swml-canvas-light .swml-quick-chip-ttecea { color: #5333ed; }
-.swml-canvas-light .swml-quick-chip-ttecea:hover { background: rgba(83,51,237,0.08); }
-.swml-canvas-light .swml-quick-chip-praise { color: #0d9488; }
-.swml-canvas-light .swml-quick-chip-praise:hover { background: rgba(81,218,207,0.1); }
-
-/* Creative Writing quick comment chips (v7.14.53) */
-.swml-quick-chip-cw { color: #42a1ec; }
-.swml-quick-chip-cw:hover { background: rgba(66,161,236,0.12); }
-.swml-canvas-light .swml-quick-chip-cw { color: #4d76fd; }
-.swml-canvas-light .swml-quick-chip-cw:hover { background: rgba(77,118,253,0.08); }
-
-/* "More..." toggle button (v7.14.53) */
-.swml-quick-more-btn {
-    display: block;
-    width: 100%;
-    padding: 6px 0;
-    margin-top: 4px;
-    border: none;
-    border-radius: 6px;
-    background: rgba(255,255,255,0.04);
-    color: rgba(255,255,255,0.45);
-    font-family: inherit;
+.swml-cm-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.swml-cm-chip {
+    font: inherit;
     font-size: 12px;
     font-weight: 600;
+    line-height: 1.3;
+    color: var(--swml-coach-text);
+    background: rgba(127, 127, 140, 0.12);
+    border: 0;
+    border-radius: 999px;
+    padding: 5px 11px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.swml-cm-chip:hover { background: rgba(127, 127, 140, 0.22); color: var(--swml-coach-title); }
+.swml-cm-chip[aria-pressed="true"] { background: var(--swml-coach-accent); color: #0f2b2a; }
+.swml-cm-more-btn,
+.swml-cm-link-remove {
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--swml-coach-text);
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
 }
-.swml-quick-more-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
-.swml-canvas-light .swml-quick-more-btn { background: rgba(0,0,0,0.03); color: rgba(0,0,0,0.4); }
-.swml-canvas-light .swml-quick-more-btn:hover { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.6); }
-
-/* Collapsible category headers (v7.14.53) */
-.swml-quick-cat-collapsible { position: relative; padding-right: 18px; }
-.swml-quick-cat-collapsible::after {
-    content: '';
-    position: absolute;
-    right: 2px;
-    top: 50%;
-    width: 5px;
-    height: 5px;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: translateY(-50%) rotate(45deg);
-    transition: transform 0.2s ease;
-    opacity: 0.5;
-}
-.swml-quick-cat-collapsible.collapsed::after { transform: translateY(-50%) rotate(-45deg); }
-
-/* Smooth expand/collapse animation for More section + category chips (v7.14.57) */
-.swml-quick-expanded {
-    max-height: 600px;
-    overflow: hidden;
-    transition: max-height 0.35s ease, opacity 0.3s ease;
-    opacity: 1;
-}
-.swml-quick-expanded.collapsed {
-    max-height: 0;
-    opacity: 0;
-}
-.swml-quick-chips-collapsible {
-    max-height: 200px;
-    overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.25s ease;
-    opacity: 1;
-    padding-top: 6px;
-    padding-bottom: 4px;
-}
-.swml-quick-chips-collapsible.collapsed {
-    max-height: 0;
-    opacity: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-.swml-comment-modal-label {
+.swml-cm-more-btn { margin-top: 12px; padding: 6px 10px; margin-left: -10px; }
+.swml-cm-link-remove { padding: 2px 6px; text-decoration: underline; text-underline-offset: 2px; }
+.swml-cm-more-btn:hover,
+.swml-cm-link-remove:hover { background: rgba(127, 127, 140, 0.14); color: var(--swml-coach-title); }
+.swml-cm-label { display: block; margin-top: 18px; }
+.swml-cm-textarea {
     display: block;
-    font-size: 11px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
-}
-.swml-comment-modal-textarea {
+    box-sizing: border-box;
     width: 100%;
-    background: rgba(255,255,255,0.06);
-    border: none;
+    min-height: 84px;
+    resize: vertical;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--swml-coach-title);
+    background: rgba(127, 127, 140, 0.12);
+    border: 0;
     border-radius: 10px;
     padding: 10px 12px;
-    font-size: 13px;
-    color: #e0e0ee;
-    font-family: inherit;
-    resize: vertical;
     outline: none;
-    line-height: 1.5;
 }
-.swml-comment-modal-textarea:focus {
-    box-shadow: 0 0 0 2px rgba(255,193,7,0.2);
+.swml-cm-textarea::placeholder { color: var(--swml-coach-muted); }
+.swml-cm-link { margin-top: 8px; font-size: 12px; line-height: 1.5; color: var(--swml-coach-text); }
+.swml-cm-link strong { color: var(--swml-coach-accent); font-weight: 700; }
+.swml-cm-chip:focus-visible,
+.swml-cm-more-btn:focus-visible,
+.swml-cm-link-remove:focus-visible,
+.swml-cm-textarea:focus-visible { outline: 2px solid var(--swml-coach-accent); outline-offset: 2px; }
+.swml-comment-msg-link { margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) {
+    .swml-cm-chip, .swml-cm-more-btn, .swml-cm-link-remove { transition: none; }
 }
-.swml-comment-modal-textarea::placeholder {
-    color: rgba(255,255,255,0.25);
-}
-.swml-comment-modal-btns {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 14px;
-}
-.swml-comment-modal-cancel {
-    background: radial-gradient(hsla(252deg 20% 22% / 60%), hsla(252deg 20% 16% / 50%));
-    border: none;
-    color: rgba(255,255,255,0.6);
-    padding: 8px 18px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 12px;
-    font-family: inherit;
-    transition: all 0.2s;
-    box-shadow: inset 0 2px 1px -1px rgba(255,255,255,0.1), inset 0 2px 3px rgba(0,0,0,0.08), 0 1px 0 1px rgba(0,0,0,0.3);
-}
-.swml-comment-modal-cancel:hover {
-    color: #fff;
-    transform: translateY(-1px);
-    background: radial-gradient(ellipse at 50% 10%, hsla(252deg 70% 60% / 15%), transparent), radial-gradient(hsla(252deg 40% 30% / 100%), hsla(252deg 50% 22% / 100%));
-    box-shadow: inset 0 -1px 2px rgba(255,255,255,0.15), 0 2px 6px rgba(0,0,0,0.3);
-}
-.swml-comment-modal-cancel:active { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
-.swml-comment-modal-submit {
-    background: radial-gradient(hsla(45deg 80% 35% / 80%), hsla(45deg 70% 25% / 90%));
-    border: none;
-    color: #ffc107;
-    padding: 8px 18px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    font-family: inherit;
-    transition: all 0.2s;
-    box-shadow: inset 0 2px 1px -1px rgba(255,255,255,0.15), inset 0 2px 3px rgba(0,0,0,0.08), 0 1px 0 1px rgba(0,0,0,0.3);
-}
-.swml-comment-modal-submit:hover {
-    color: #fff3c4;
-    transform: translateY(-1px);
-    background: radial-gradient(ellipse at 50% 10%, hsla(45deg 90% 55% / 25%), transparent), radial-gradient(hsla(45deg 80% 40% / 100%), hsla(45deg 70% 30% / 100%));
-    box-shadow: inset 0 -1px 2px rgba(255,255,255,0.2), 0 2px 6px rgba(0,0,0,0.3);
-}
-.swml-comment-modal-submit:active { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
-
-/* Light mode comment modal */
-.swml-canvas-light .swml-comment-modal {
-    background: rgba(255,255,255,0.97);
-    border-color: rgba(0,0,0,0.1);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
-}
-.swml-canvas-light .swml-comment-modal-quote {
-    color: rgba(0,0,0,0.5);
-    background: rgba(0,0,0,0.03);
-    border-left-color: rgba(200,150,0,0.4);
-}
-.swml-canvas-light .swml-comment-modal-label { color: rgba(0,0,0,0.4); }
-.swml-canvas-light .swml-comment-modal-textarea {
-    background: #e8e8ed;
-    color: #2a2a3e;
-}
-.swml-canvas-light .swml-comment-modal-textarea:focus { box-shadow: 0 0 0 2px rgba(200,150,0,0.2); }
-.swml-canvas-light .swml-comment-modal-textarea::placeholder { color: rgba(0,0,0,0.35); }
-.swml-canvas-light .swml-comment-modal-cancel {
-    background: #e8e8ed;
-    color: rgba(0,0,0,0.55);
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.08), -2px -2px 5px rgba(255,255,255,0.9);
-}
-.swml-canvas-light .swml-comment-modal-cancel:hover { color: rgba(0,0,0,0.8); box-shadow: 1px 1px 3px rgba(0,0,0,0.12), -1px -1px 3px rgba(255,255,255,1); transform: translateY(-1px); }
-.swml-canvas-light .swml-comment-modal-submit {
-    background: linear-gradient(135deg, #f0e6c8 0%, #e8d8a8 100%);
-    color: #8b7300;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.08), -2px -2px 5px rgba(255,255,255,0.9);
-}
-.swml-canvas-light .swml-comment-modal-submit:hover { color: #5a4800; background: linear-gradient(135deg, #f5ecd0 0%, #eee0b0 100%); box-shadow: 1px 1px 3px rgba(0,0,0,0.12), -1px -1px 3px rgba(255,255,255,1); transform: translateY(-1px); }
 
 /* ⭐⭐ v7.20.429 (Neil, #264) — THE THEME-SWAP BLINK.
    Paired with `WML.beginThemeSwap()` (wml-core.js), which adds this class for exactly two frames
@@ -13676,7 +13469,8 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
     outline: 2px solid var(--swml-coach-accent);
     outline-offset: 2px;
 }
-[data-swml-theme="light"] .swml-mc-gate .swml-btn-main {
+[data-swml-theme="light"] .swml-mc-gate .swml-btn-main,
+[data-swml-theme="light"] .swml-cm .swml-btn-main {   /* v7.20.797 (#847): the comment modal is body-mounted too */
     --swml-bm-face: #1C1D1F;
     --swml-bm-ink: #ffffff;
     --swml-bm-flood: #51dacf;

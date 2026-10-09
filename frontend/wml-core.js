@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.796';
+var WML_BUILD = '7.20.797';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -5783,6 +5783,14 @@ window.WML = (function() {
                 + '">Learn: ' + attr(label) + ' →</button>')
         ).join('');
     }
+    // v7.20.797 (#847): a STORED link {dest, arg, label} (a tutor's quick comment) → the house learn chip.
+    // Goes through the SAME two steps as Sophia's @RESOURCE_LINK, so an unknown section, an unresolvable
+    // technique, or a page without the Toolkit/Table draws '' (and warns) — never a dead chip.
+    function learnChipHtml(link) {
+        if (!link || !link.arg) return '';
+        const marker = '@RESOURCE_LINK' + JSON.stringify({ dest: link.dest === 'table' ? 'table' : 'toolkit', arg: String(link.arg), label: String(link.label || '') });
+        return String(renderLearnChipTokens(tagResourceLinks(marker)) || '').trim();
+    }
     // Rendered-block detection shape shared by the two DOM-phase consumers below —
     // textContent form (no markdown asterisks / leading bullet chars).
     const _LEARN_BLOCK_RE = /^([A-Z]{1,3}\d(?:-[A-Z]+)?)(?:.{0,80}?\((?:−|-|–)\s*[\d.]+\)|[^×]{0,60}×\d+)/;
@@ -6392,6 +6400,7 @@ window.WML = (function() {
         writingQuestionIds, isWritingQuestion,
         // v7.20.615: the element → reference map, and the ONE producer of the link line.
         ELEMENT_TOOLKIT_MAP, elementToolkitLines, RESOURCE_TOOLKIT_IDS,
+        learnChipHtml,   // v7.20.797 (#847): a quick comment's stored link → the house learn chip
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
         caps, cap, isMarkingFlow, steppedHistory, hasAssessmentSections, isLiveModelling,
         // v7.20.129: the ONE outline-row completion rule — all three consumers call it

@@ -51560,6 +51560,12 @@
                     bubble.appendChild(authorRow);
                     const textEl = el('div', { className: 'swml-comment-msg-text', textContent: msg.message });
                     bubble.appendChild(textEl);
+                    // v7.20.797 (#847): a quick comment's deep link — ONE producer (WML.learnChipHtml), so an unknown
+                    // section or a closed Toolkit/Table draws nothing rather than a dead chip.
+                    if (msg.link) {
+                        const lh = WML.learnChipHtml ? WML.learnChipHtml(msg.link) : '';
+                        if (lh) { const lw = el('div', { className: 'swml-comment-msg-link' }); lw.innerHTML = lh; bubble.appendChild(lw); }
+                    }
                     // v7.19.556: inline edit on every message (original + replies)
                     const editBtn = el('button', {
                         className: 'swml-comment-msg-edit',
@@ -51762,6 +51768,14 @@
         const SVG_QC_STAR = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
         const SVG_QC_CROP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/></svg>';
 
+        // v7.20.797 (#847, Neil: "when we give the quick action buttons… a deep link into either table of
+        // techniques or the mastery toolkit… the relevant… section"). A quick comment may carry ONE link,
+        // stored on the comment and drawn as the house learn chip (WML.learnChipHtml — the same validation as
+        // Sophia's @RESOURCE_LINK). Toolkit labels come from ELEMENT_TOOLKIT_MAP (one source; each arg there is
+        // proven by bin/toolkit-link-gate.js); table names are verified against table-of-techniques.md by
+        // bin/live-modelling-apparatus-harness.js. No link where no section teaches that fault — never a near-miss.
+        const _qcTk = (arg) => { const r = ((WML.ELEMENT_TOOLKIT_MAP || {}).analytical || []).find(x => x.arg === arg); return r ? { dest: 'toolkit', arg: arg, label: r.label } : null; };
+        const _qcTech = (name) => ({ dest: 'table', arg: name, label: name });
         const QUICK_COMMENTS = [
             // ── Tier 1: shown by default ──
             { category: 'Common Issues', tier: 'default', icon: SVG_QC_ISSUE, items: [
@@ -51773,8 +51787,14 @@
                 { label: 'Reassess', text: 'Reassess this section — the analysis doesn\'t align with the mark scheme criteria.' },
                 { label: 'More detail', text: 'More detail needed — develop this point further.' },
                 { label: 'Be specific', text: 'Be more specific — avoid vague or general statements.' },
-                { label: 'Five paragraphs', text: 'Remember the five paragraph essay structure — introduction, three body paragraphs, conclusion.' },
-                { label: 'Discourse markers', text: 'Use discourse markers and transitional phrases to connect your ideas and improve flow.' },
+                // v7.20.797 (#847, Neil: "too descriptive for a topic sentence · not conceptual enough · not perceptive enough").
+                // 'Too descriptive' moved up from the TTECEA tier (same words). The other two follow the sections they link to:
+                // Conceptual Thinking ("A surface reading reports what happens") and the Interpretation Ladder (rung 3 "is perceptive").
+                { label: 'Too descriptive', text: 'Topic sentence is too descriptive — make it conceptual. Link to theme, not plot.', link: _qcTk('fix-topic-sentence') },
+                { label: 'Not conceptual enough', text: 'Not conceptual enough — this reports what happens. Name the idea the writer is exploring through it.', link: _qcTk('conceptual') },
+                { label: 'Not perceptive enough', text: 'Not perceptive enough — this explains the surface meaning. Turn it into a claim about the writer\'s idea or purpose, and support it with the words.', link: _qcTk('interpretation-ladder') },
+                { label: 'Five paragraphs', text: 'Remember the five paragraph essay structure — introduction, three body paragraphs, conclusion.', link: _qcTk('essay') },
+                { label: 'Discourse markers', text: 'Use discourse markers and transitional phrases to connect your ideas and improve flow.', link: _qcTk('sentence-transitions') },
             ]},
             { category: 'Praise', tier: 'default', icon: SVG_QC_PRAISE, items: [
                 { label: 'Good detail', text: 'Good detail here — well-developed point.' },
@@ -51788,37 +51808,36 @@
             ]},
             // ── Tier 2: revealed by "More..." button ──
             { category: 'TTECEA Breakdown', tier: 'expanded', icon: SVG_QC_DOC, items: [
-                { label: 'Needs topic sentence', text: 'Conceptual topic sentence needed — link your point to the wider theme.' },
-                { label: 'Too descriptive', text: 'Topic sentence is too descriptive — make it conceptual. Link to theme, not plot.' },
-                { label: 'Needs technique', text: 'Technique needed — identify the writer\'s method here (language, structure, symbolism).' },
-                { label: 'Needs evidence', text: 'Evidence needed — embed a quote to support this point.' },
-                { label: 'Needs inference', text: 'Inference needed — explain what this suggests about the character/theme.' },
-                { label: 'Needs close analysis', text: 'Close analysis needed — zoom into specific words/phrases and explore connotations.' },
-                { label: 'Needs effect 1', text: 'Effect on reader needed — how does this make the reader think or feel?' },
-                { label: 'Needs effect 2', text: 'Second effect needed — explore an alternative interpretation or deeper impact.' },
-                { label: 'Needs author\'s purpose', text: 'Author\'s purpose needed — why has the writer made this choice? Link to context.' },
-                { label: 'Needs context', text: 'Context needed — connect this point to the historical, social, or literary context.' },
+                { label: 'Needs topic sentence', text: 'Conceptual topic sentence needed — link your point to the wider theme.', link: _qcTk('fix-topic-sentence') },
+                { label: 'Needs technique', text: 'Technique needed — identify the writer\'s method here (language, structure, symbolism).', link: _qcTk('fix-technical-terms') },
+                { label: 'Needs evidence', text: 'Evidence needed — embed a quote to support this point.', link: _qcTk('fix-evidence') },
+                { label: 'Needs inference', text: 'Inference needed — explain what this suggests about the character/theme.', link: _qcTk('wb-verbs') },
+                { label: 'Needs close analysis', text: 'Close analysis needed — zoom into specific words/phrases and explore connotations.', link: _qcTk('fix-close-analysis') },
+                { label: 'Needs effect 1', text: 'Effect on reader needed — how does this make the reader think or feel?', link: _qcTk('fix-effects') },
+                { label: 'Needs effect 2', text: 'Second effect needed — explore an alternative interpretation or deeper impact.', link: _qcTk('fix-effects') },
+                { label: 'Needs author\'s purpose', text: 'Author\'s purpose needed — why has the writer made this choice? Link to context.', link: _qcTk('fix-authors-purpose') },
+                { label: 'Needs context', text: 'Context needed — connect this point to the historical, social, or literary context.', link: _qcTk('fix-context') },
             ]},
             { category: 'Creative Writing', tier: 'expanded', icon: SVG_QC_STAR, items: [
                 { label: 'Dynamic verbs & nouns', text: 'Use dynamic verbs and concrete nouns for vivid imagery.' },
-                { label: 'Replace with metaphor', text: 'Consider replacing this with a metaphor for stronger impact.' },
-                { label: 'Replace with simile', text: 'Consider using a simile here to create a vivid comparison.' },
+                { label: 'Replace with metaphor', text: 'Consider replacing this with a metaphor for stronger impact.', link: _qcTech('Metaphor') },
+                { label: 'Replace with simile', text: 'Consider using a simile here to create a vivid comparison.', link: _qcTech('Simile') },
             ]},
             { category: "Mad Father's Crops", tier: 'expanded', icon: SVG_QC_CROP, items: [
-                { label: 'Try metaphor', text: 'Try using a metaphor here.' },
-                { label: 'Try alliteration', text: 'Try using alliteration here for emphasis.' },
-                { label: 'Try direct address', text: 'Try direct address to engage the reader.' },
-                { label: 'Try foreshadowing', text: 'Try foreshadowing to build tension.' },
-                { label: 'Try assonance', text: 'Try assonance to create a musical quality.' },
-                { label: 'Try hyperbole', text: 'Try hyperbole to exaggerate for effect.' },
-                { label: 'Try emotive language', text: 'Try emotive language to evoke feeling.' },
-                { label: 'Try rhetorical question', text: 'Try a rhetorical question to provoke thought.' },
-                { label: 'Try simile', text: 'Try a simile to create a vivid comparison.' },
-                { label: 'Try contrast', text: 'Try contrast to highlight differences.' },
-                { label: 'Try repetition', text: 'Try repetition for emphasis and rhythm.' },
-                { label: 'Try onomatopoeia', text: 'Try onomatopoeia to bring sound into your writing.' },
-                { label: 'Try personification', text: 'Try personification to bring an object or idea to life.' },
-                { label: 'Try sibilance', text: 'Try sibilance (repeated "s" sounds) for a sinister or soothing effect.' },
+                { label: 'Try metaphor', text: 'Try using a metaphor here.', link: _qcTech('Metaphor') },
+                { label: 'Try alliteration', text: 'Try using alliteration here for emphasis.', link: _qcTech('Alliteration') },
+                { label: 'Try direct address', text: 'Try direct address to engage the reader.', link: _qcTech('Direct Address') },
+                { label: 'Try foreshadowing', text: 'Try foreshadowing to build tension.', link: _qcTech('Foreshadowing') },
+                { label: 'Try assonance', text: 'Try assonance to create a musical quality.', link: _qcTech('Assonance') },
+                { label: 'Try hyperbole', text: 'Try hyperbole to exaggerate for effect.', link: _qcTech('Hyperbole') },
+                { label: 'Try emotive language', text: 'Try emotive language to evoke feeling.', link: _qcTech('Emotive Language') },
+                { label: 'Try rhetorical question', text: 'Try a rhetorical question to provoke thought.', link: _qcTech('Rhetorical Question') },
+                { label: 'Try simile', text: 'Try a simile to create a vivid comparison.', link: _qcTech('Simile') },
+                { label: 'Try contrast', text: 'Try contrast to highlight differences.', link: _qcTech('Contrast') },
+                { label: 'Try repetition', text: 'Try repetition for emphasis and rhythm.', link: _qcTech('Repetition') },
+                { label: 'Try onomatopoeia', text: 'Try onomatopoeia to bring sound into your writing.', link: _qcTech('Onomatopoeia') },
+                { label: 'Try personification', text: 'Try personification to bring an object or idea to life.', link: _qcTech('Personification') },
+                { label: 'Try sibilance', text: 'Try sibilance (repeated "s" sounds) for a sinister or soothing effect.', link: _qcTech('Sibilance') },
                 { label: 'Try literary device', text: 'Try a literary device here to strengthen the effect — choose whatever technique fits best.' },
             ]},
         ];
@@ -51831,117 +51850,153 @@
             if (from === to) return; // v7.14.48: silent return instead of alert
             const selectedText = canvasEditor.state.doc.textBetween(from, to);
 
-            const overlay = el('div', { className: 'swml-comment-modal-overlay', onClick: (e) => { if (e.target === overlay) overlay.remove(); } });
-            const modal = el('div', { className: 'swml-comment-modal' });
+            // ⭐ v7.20.797 (#847, Neil: "the position… it's centered in the middle of the canvas area… so it
+            // actually looks like it's slightly down to the bottom right… the buttons need to be more minimal"
+            // + "the comments modal also needs a brand pass"). It now wears the HOUSE modal (.swml-review-modal —
+            // the tutor-view intro and the Mark Complete gate): family surface, quiet Cancel, the house button.
+            // BODY-mounted and fixed, so it centres on the SCREEN. It used to be absolute inside .swml-canvas,
+            // whose box includes the right panel — measured on his screenshot: modal centre (1457, 879) against a
+            // window centre of (1226, 756). Scroll-isolated + focus-trapped (root CLAUDE.md §OVERLAY), the same
+            // shape as _mcGateShow.
+            const prior = document.querySelector('.swml-cm-overlay');
+            if (prior && typeof prior.__swmlClose === 'function') prior.__swmlClose();
+            const overlay = el('div', { className: 'swml-review-modal-overlay swml-cm-overlay' });
+            const modal = el('div', { className: 'swml-review-modal swml-cm', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'swml-cm-title' });
 
-            const quote = selectedText.length > 80 ? selectedText.substring(0, 80) + '...' : selectedText;
-            modal.appendChild(el('div', { className: 'swml-comment-modal-quote', textContent: `"${quote}"` }));
+            const head = el('div', { className: 'swml-cm-head' });
+            head.appendChild(el('div', { className: 'swml-review-modal-title', id: 'swml-cm-title', textContent: 'Add a comment' }));
+            const quote = selectedText.length > 140 ? selectedText.substring(0, 140).trimEnd() + '…' : selectedText;
+            head.appendChild(el('div', { className: 'swml-cm-quote', textContent: '“' + quote + '”' }));
+            modal.appendChild(head);
 
-            // Quick comment presets
-            const quickWrap = el('div', { className: 'swml-quick-comments' });
-            const textarea = el('textarea', {
-                className: 'swml-comment-modal-textarea',
-                placeholder: 'Add your comment or pick a quick comment below...',
-                rows: 3,
+            const textarea = el('textarea', { className: 'swml-cm-textarea', placeholder: 'Write a comment, or pick one above…', rows: 3, 'aria-label': 'Comment' });
+            // The picked quick comment's link (if it has one). Kept while the tutor edits the words; cleared when
+            // the box is emptied, another chip is picked, or "Remove link" is pressed. Shown before it is sent.
+            let pickedLink = null, pickedChip = null;
+            const linkLine = el('div', { className: 'swml-cm-link' });
+            const paintLink = () => {
+                linkLine.textContent = '';
+                linkLine.hidden = !pickedLink;
+                if (!pickedLink) return;
+                linkLine.appendChild(document.createTextNode('Adds a link to '));
+                linkLine.appendChild(el('strong', { textContent: pickedLink.label }));
+                linkLine.appendChild(document.createTextNode(' in the ' + (pickedLink.dest === 'table' ? 'Table of Techniques' : 'Mastery Toolkit') + '. '));
+                linkLine.appendChild(el('button', { className: 'swml-cm-link-remove', type: 'button', textContent: 'Remove link', onClick: () => { pickedLink = null; paintLink(); textarea.focus(); } }));
+            };
+            const pick = (item, chip) => {
+                textarea.value = item.text;
+                if (pickedChip) pickedChip.setAttribute('aria-pressed', 'false');
+                pickedChip = chip;
+                chip.setAttribute('aria-pressed', 'true');
+                pickedLink = item.link || null;
+                paintLink();
+                textarea.focus();
+            };
+            textarea.addEventListener('input', () => {
+                if (textarea.value.trim()) return;
+                if (pickedChip) pickedChip.setAttribute('aria-pressed', 'false');
+                pickedChip = null; pickedLink = null; paintLink();
             });
 
-            // Render tier 1 (default) categories
-            const expandedWrap = el('div', { className: 'swml-quick-expanded collapsed' });
+            const quickWrap = el('div', { className: 'swml-cm-quick' });
+            const moreWrap = el('div', { className: 'swml-cm-more', id: 'swml-cm-more' });
+            moreWrap.hidden = true;
             QUICK_COMMENTS.forEach(cat => {
-                const catEl = el('div', { className: 'swml-quick-cat' });
-                const catLabel = el('div', { className: 'swml-quick-cat-label', innerHTML: cat.icon + ' ' + cat.category });
-                const chipsWrap = el('div', { className: 'swml-quick-chips' });
-                // Collapsible: click header to toggle (expanded tier starts collapsed)
-                if (cat.tier === 'expanded') {
-                    chipsWrap.classList.add('swml-quick-chips-collapsible', 'collapsed');
-                    catLabel.style.cursor = 'pointer';
-                    catLabel.classList.add('swml-quick-cat-collapsible', 'collapsed');
-                    catLabel.addEventListener('click', () => {
-                        const isCollapsed = chipsWrap.classList.contains('collapsed');
-                        chipsWrap.classList.toggle('collapsed', !isCollapsed);
-                        catLabel.classList.toggle('collapsed', !isCollapsed);
-                    });
-                }
-                catEl.appendChild(catLabel);
-                const chipClass = cat.category === 'Praise' ? ' swml-quick-chip-praise'
-                    : cat.category.startsWith('TTECEA') ? ' swml-quick-chip-ttecea'
-                    : cat.category === 'Creative Writing' || cat.category === "Mad Father's Crops" ? ' swml-quick-chip-cw'
-                    : '';
+                const group = el('div', { className: 'swml-cm-group' });
+                group.appendChild(el('div', { className: 'swml-cm-group-label', textContent: cat.category }));
+                const chips = el('div', { className: 'swml-cm-chips' });
                 cat.items.forEach(item => {
-                    chipsWrap.appendChild(el('button', {
-                        className: 'swml-quick-chip' + chipClass,
-                        textContent: item.label,
-                        title: item.text,
-                        onClick: () => {
-                            textarea.value = item.text;
-                            textarea.focus();
-                        }
-                    }));
+                    const chip = el('button', { className: 'swml-cm-chip', type: 'button', title: item.text, 'aria-pressed': 'false', textContent: item.label });
+                    chip.addEventListener('click', () => pick(item, chip));
+                    chips.appendChild(chip);
                 });
-                catEl.appendChild(chipsWrap);
-                if (cat.tier === 'expanded') {
-                    expandedWrap.appendChild(catEl);
-                } else {
-                    quickWrap.appendChild(catEl);
-                }
+                group.appendChild(chips);
+                (cat.tier === 'expanded' ? moreWrap : quickWrap).appendChild(group);
             });
-            // "More..." toggle button
-            const moreBtn = el('button', {
-                className: 'swml-quick-more-btn',
-                textContent: 'More...',
-                onClick: () => {
-                    const isCollapsed = expandedWrap.classList.contains('collapsed');
-                    expandedWrap.classList.toggle('collapsed', !isCollapsed);
-                    moreBtn.textContent = isCollapsed ? 'Less' : 'More...';
-                }
+            const moreBtn = el('button', { className: 'swml-cm-more-btn', type: 'button', 'aria-expanded': 'false', 'aria-controls': 'swml-cm-more', textContent: 'More comments' });
+            moreBtn.addEventListener('click', () => {
+                const open = moreWrap.hidden;
+                moreWrap.hidden = !open;
+                moreBtn.setAttribute('aria-expanded', String(open));
+                moreBtn.textContent = open ? 'Fewer comments' : 'More comments';
             });
             quickWrap.appendChild(moreBtn);
-            quickWrap.appendChild(expandedWrap);
+            quickWrap.appendChild(moreWrap);
             modal.appendChild(quickWrap);
 
-            modal.appendChild(el('label', { className: 'swml-comment-modal-label', textContent: 'Comment' }));
+            modal.appendChild(el('div', { className: 'swml-cm-label', textContent: 'Comment' }));
             modal.appendChild(textarea);
+            linkLine.hidden = true;
+            modal.appendChild(linkLine);
 
-            const btnRow = el('div', { className: 'swml-comment-modal-btns' });
-            btnRow.appendChild(el('button', {
-                className: 'swml-comment-modal-cancel',
-                textContent: 'Cancel',
-                onClick: () => overlay.remove()
-            }));
-            btnRow.appendChild(el('button', {
-                className: 'swml-comment-modal-submit',
-                textContent: 'Add Comment',
-                onClick: () => {
-                    const msg = textarea.value.trim();
-                    if (!msg) { textarea.focus(); return; }
-                    const id = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-                    // v7.15.30: Use actual user name and role (tutor vs student)
-                    const commentAuthor = config.userName || 'Tutor';
-                    const commentRole = state.reviewMode ? 'tutor' : 'student';
-                    comments[id] = {
-                        id,
-                        text: selectedText,
-                        author: commentAuthor,
-                        role: commentRole,
-                        avatar: config.userAvatar || '',
-                        thread: [{ author: commentAuthor, role: commentRole, avatar: config.userAvatar || '', message: msg, timestamp: Date.now() }],
-                        resolved: false,
-                        createdAt: Date.now(),
-                    };
-                    saveComments();
-                    canvasEditor.chain().focus()
-                        .setTextSelection({ from, to })
-                        .setMark('comment', { commentId: id })
-                        .run();
-                    overlay.remove();
-                    // Refresh comment count + gutter
-                    setTimeout(() => { updateCommentCount(); updateCommentGutter(); }, 100);
-                }
-            }));
-            modal.appendChild(btnRow);
+            const actions = el('div', { className: 'swml-review-modal-actions swml-mc-gate-actions' });
+            const cancel = el('button', { className: 'swml-mc-gate-quiet', type: 'button', textContent: 'Cancel' });
+            const submit = _swmlIncrediblesBtn('Add comment', { className: 'swml-review-modal-btn' });
+            actions.appendChild(cancel);
+            actions.appendChild(submit);
+            modal.appendChild(actions);
             overlay.appendChild(modal);
-            canvas.appendChild(overlay);
-            setTimeout(() => textarea.focus(), 50);
+
+            const prevFocus = document.activeElement;
+            const prevOverflow = document.body.style.overflow;
+            let closed = false;
+            function onKeydown(e) {
+                if (e.key === 'Escape') { e.preventDefault(); close(true); return; }
+                if (e.key !== 'Tab') return;
+                const f = Array.prototype.filter.call(modal.querySelectorAll('button, textarea'), b => !b.disabled && b.offsetParent !== null);
+                if (!f.length) { e.preventDefault(); return; }
+                const i = f.indexOf(document.activeElement);
+                e.preventDefault();
+                const next = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === -1 || i === f.length - 1 ? 0 : i + 1);
+                f[next].focus();
+            }
+            function close(restoreFocus) {
+                if (closed) return;
+                closed = true;
+                document.removeEventListener('keydown', onKeydown, true);
+                overlay.remove();
+                document.body.style.overflow = prevOverflow;
+                if (restoreFocus) { try { if (prevFocus && prevFocus.focus && document.contains(prevFocus)) prevFocus.focus({ preventScroll: true }); } catch (_) {} }
+            }
+            overlay.__swmlClose = () => close(false);
+            overlay.addEventListener('click', e => { if (e.target === overlay) close(true); });
+            overlay.addEventListener('wheel', e => { if (e.target === overlay) e.preventDefault(); }, { passive: false });
+            overlay.addEventListener('touchmove', e => { if (e.target === overlay) e.preventDefault(); }, { passive: false });
+            // Keep the editor from re-taking focus while the modal is in use (v7.12.68's popover rule).
+            overlay.addEventListener('mousedown', e => e.stopPropagation());
+            cancel.addEventListener('click', () => close(true));
+            submit.addEventListener('click', () => {
+                const msg = textarea.value.trim();
+                if (!msg) { textarea.focus(); return; }
+                const id = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+                // v7.15.30: Use actual user name and role (tutor vs student)
+                const commentAuthor = config.userName || 'Tutor';
+                const commentRole = state.reviewMode ? 'tutor' : 'student';
+                const first = { author: commentAuthor, role: commentRole, avatar: config.userAvatar || '', message: msg, timestamp: Date.now() };
+                if (pickedLink) first.link = { dest: pickedLink.dest, arg: pickedLink.arg, label: pickedLink.label };   // v7.20.797 (#847)
+                comments[id] = {
+                    id,
+                    text: selectedText,
+                    author: commentAuthor,
+                    role: commentRole,
+                    avatar: config.userAvatar || '',
+                    thread: [first],
+                    resolved: false,
+                    createdAt: Date.now(),
+                };
+                saveComments();
+                close(false);
+                canvasEditor.chain().focus()
+                    .setTextSelection({ from, to })
+                    .setMark('comment', { commentId: id })
+                    .run();
+                // Refresh comment count + gutter
+                setTimeout(() => { updateCommentCount(); updateCommentGutter(); }, 100);
+            });
+            document.body.style.overflow = 'hidden';
+            document.body.appendChild(overlay);
+            document.addEventListener('keydown', onKeydown, true);
+            setTimeout(() => { try { textarea.focus({ preventScroll: true }); } catch (_) {} }, 50);
         }
 
         // v7.14.48: Expose addComment to module scope so the once-registered

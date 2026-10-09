@@ -198,6 +198,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/live-modelling-apparatus-harness.js >/tmp/lm-apparatus.out 2>&1 || { cat /tmp/lm-apparatus.out; fail=1; }
 fi
 
+# v7.20.797 (FIXLIST #847): the tutor comment modal — house modal, body-mounted (centred on the screen), minimal
+# chips, the three quick comments Neil named, and every quick-comment deep link resolving to a real Toolkit
+# section / Table technique (a dead link draws nothing). Mutation-proven 6/6 when written.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|wml-canvas\.css|table-of-techniques\.md|comment-modal-harness\.js'; then
+  node bin/comment-modal-harness.js >/tmp/comment-modal.out 2>&1 || { cat /tmp/comment-modal.out; fail=1; }
+fi
+
 # v7.20.650 (FIXLIST #635–#637): the feedback cards' Previous · Best line and the per-paragraph
 # pop-out. The comparison rule and the quote→paragraph matcher are extracted from the shipped file
 # and driven through the measured document shapes; the server half's decode/dedupe/access contract
