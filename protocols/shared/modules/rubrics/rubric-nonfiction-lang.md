@@ -52,7 +52,7 @@ Sophicly's transactional persuasive shape. Six beats; memorise the name, word ta
 **Pointer phrases:**
 - *I — open by building one image, not by listing facts. What single picture pulls the reader in?*
 - *U — why does this matter NOW? Lead with a metaphor, not a statistic.*
-- *M — three sub-points, each: point, metaphor, development, evidence. Bridge them with verbal connectors, never "Firstly / Secondly / Finally".*
+- *M — three sub-points, each: point, metaphor, development, evidence. Bridge them with verbal connectors, never the bare "Firstly / Secondly / Finally" list. An ordering word that does work inside a sentence is fine ("Reliability is the second key issue").*
 - *V — three escalating sentences. Paint the better future; make the reader want it.*
 - *Counter — concede the STRONGEST objection honestly, then refute it with one decisive pivot.*
 - *Conclusion — echo your opening image, or land a final picture, then a specific call to action.*
@@ -63,10 +63,10 @@ Sophicly's transactional persuasive shape. Six beats; memorise the name, word ta
 
 The opening must earn its place; a clever hook forced onto the wrong topic loses more than it gains.
 
-1. **Counterintuitive fact + metaphor** — a number that overturns assumption, paired with a metaphor that makes the data tangible. A bare statistic is not enough; layer the figurative image on top.
+1. **Counterintuitive fact + metaphor** — a number that overturns assumption, paired with a metaphor that makes the data tangible. A bare statistic is not enough; layer the figurative image on top. **Only a REAL figure the student actually knows**, never an invented one, and **only used effectively**: the next sentence says what the number means for the reader. AQA's examiners warn that statistics "very rarely enhance the student's own point of view" when they are simply dropped in.
 2. **Personal anecdote** — a two-sentence concrete memory.
 3. **Sensory snapshot** — a single image written like a paragraph from a novel.
-4. **Imagine scenario** — *Picture this:* + a future or hypothetical moment.
+4. **Imagine scenario** — *Imagine…* + a future or hypothetical moment the reader can see. Never the stock opener *Picture this:* — AQA's examiners report seeing it in "a huge proportion" of scripts.
 5. **Rhetorical question** — a question only the reader can answer.
 6. **Bold statement with imagery** — a provocative claim framed as a vivid image, not an abstract piece of logic.
 7. **Contrast / paradox** — two clauses that crash against each other.
@@ -80,13 +80,13 @@ Every hook must carry an **image** — the opening is the first place the examin
 
 ## TECHNIQUES — MADFATHER'S CROPS (the floor, not the ceiling)
 
-Top-band writing uses **two or three devices working together** at every persuasive moment. Single-device sentences score low. MADFATHER'S CROPS is an aide-memoire of techniques never to forget — not the limit.
+Aim for **two or three devices working together** at every persuasive moment, as long as each one makes the writing more compelling. Examiners reward the effect, not the count: never add a device for its own sake, because a device used mindlessly weakens the moment it was meant to strengthen. MADFATHER'S CROPS is an aide-memoire of techniques never to forget — not the limit.
 
 **M** Metaphor · **A** Alliteration · **D** Direct address · **F** Facts + foreshadowing · **A** Assonance · **T** Triadic structure · **H** Hyperbole · **E** Emotive language · **R** Rhetorical questions · **C** Contrast · **R** Repetition · **O** Onomatopoeia · **P** Personification · **S** Simile + sibilance.
 
 Top answers also reach beyond it — anaphora for mounting pressure, asyndeton for decisive action, bathos for ironic deflation, chiasmus for paradox, polysyndeton for oppressive accumulation. **Match the technique to the meaning.**
 
-**Pointer phrase:** *This moment has one device. Top-band persuasion layers two or three. What second technique would deepen the same idea?*
+**Pointer phrase:** *This moment has one device. Would a second one make it more compelling, or would it only be decoration? Add it only if it deepens the same idea.*
 
 ---
 
@@ -109,7 +109,7 @@ Every beat targets an effect. Name the effect you are pursuing at every beat.
 - **Abstract concept nouns** (*the importance of, the situation with, the necessity to*) — replace with a concrete image.
 - **More than ten *to be* verbs** (*is / are / was / were*) across the piece — use active verbs.
 - **More than five or six imperatives** across the whole piece.
-- **Discourse-marker scaffolding** (*Firstly … Secondly … Finally*) — bridge with verbal connectors.
+- **The bare list** (*Firstly … Secondly … Finally*) bolted onto paragraph openings — bridge with verbal connectors. An ordering word inside a sentence is fine (*"The second problem is cost"*).
 - **Triadic structures without parallel grammar.**
 - **Vague intensifiers** (*really, very, just, basically*).
 - **American register** (*move* as a noun, *gotten, trash*) — British English only.

@@ -276,7 +276,7 @@ While both writers powerfully convey the challenges of pursuing medical careers,
 
 ---
 
-Picture this: a school where every student doesn't just learn from textbooks, but learns from life—where teenagers aren't passive consumers of education but active contributors to society. Today, I'm here to argue that mandatory community service should become a cornerstone of our school experience, transforming us from students into citizens. Some will resist, claiming their schedules are already overstretched, but I'm convinced that service isn't an addition to education—it's the completion of it.
+Imagine a school where every student doesn't just learn from textbooks, but learns from life—where teenagers aren't passive consumers of education but active contributors to society. Today, I'm here to argue that mandatory community service should become a cornerstone of our school experience, transforming us from students into citizens. Some will resist, claiming their schedules are already overstretched, but I'm convinced that service isn't an addition to education—it's the completion of it.
 
 Why now? Because right now, our community is fracturing. Food banks report unprecedented demand, yet volunteers are aging out faster than young people step up. Youth centres close their doors because nobody has time to run programs. Elderly neighbors spend weeks without conversation because everyone's too busy scrolling through screens. Meanwhile, we sit in classrooms learning about empathy, citizenship, and social responsibility—abstract concepts that never transform into action. How can we claim to be educated when we've never applied our education to the problems festering on our doorstep? The urgency isn't just about helping others; it's about saving ourselves from becoming a generation that understands everything theoretically but contributes nothing practically. Every day we delay implementing community service is another day we graduate students with impressive transcripts but empty characters.
 
@@ -292,7 +292,7 @@ So here's my challenge to you: stop treating education as preparation for life a
 
 **Analysis of Gold Standard Features:**
 
-* **Compelling hook:** Vivid opening ("Picture this...")  
+* **Compelling hook:** Vivid opening ("Imagine a school where...") — never the stock opener "Picture this:"  
 * **Clear structure:** IUMVCC sections flow logically  
 * **Sophisticated vocabulary:** "fracturing," "festering," "democratizes"  
 * **Varied sentences:** Mix of short impact ("Fair point—") and long complex structures  

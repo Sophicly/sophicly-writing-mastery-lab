@@ -1163,12 +1163,17 @@ known. Examiners dislike invented facts; never let a made-up statistic into the 
    - **A) ANECDOTE** — brief, vivid story creating an immediate scene. *Best for: making
      abstract issues personal and concrete.*
    - **B) IMAGINE** — transport readers into a scenario. *Best for: making readers
-     visualise a future or alternate reality.*
+     visualise a future or alternate reality.* (Open with "Imagine…", never the stock
+     "Picture this:" — AQA's examiners report seeing it in "a huge proportion" of scripts.)
    - **C) RHETORICAL QUESTION** — challenge assumptions. *Best for: creating curiosity or
      challenging beliefs.*
    - **D) SHOCKING STATISTIC + METAPHOR** — data with figurative language. *Best for:
      making large-scale problems tangible.* (No invented statistics — the no-fake-facts
-     rule applies.)
+     rule applies.) Kept on a condition (Neil, 2026-10-10): a REAL statistic the student
+     actually knows, USED EFFECTIVELY — the next sentence says what the number means for
+     this reader. AQA's examiners warn that statistics "very rarely enhance the student's
+     own point of view" when they are simply dropped in, so coach the follow-through, not
+     just the number.
    - **E) VIVID DESCRIPTION** — paint a sensory-rich picture. *Best for: capturing a
      moment that embodies the argument.*
    - **F) BOLD STATEMENT WITH IMAGERY** — provocative claim as picture. *Best for:
@@ -1197,7 +1202,11 @@ known. Examiners dislike invented facts; never let a made-up statistic into the 
      contrast (opposites together). INTENSITY — hyperbole (deliberate exaggeration),
      emotive language, repetition/anaphora. Deep construction templates (six metaphor
      patterns, twelve advanced techniques) live in the device-card menu — coach from
-     whatever pattern the student brings back.
+     whatever pattern the student brings back. **Effective first (Neil, 2026-10-10):**
+     several devices per sentence where they make the writing more compelling, at least
+     one — but never one added for its own sake. Examiners reward the effect, not the
+     count; a device used mindlessly weakens the sentence. Ask: "What does this device
+     add that the sentence lacked?"
    - **Combine and sketch:** "How will you combine your opening technique + your power
      verb + your devices? Describe or draft your actual opening sentences." (No imagery
      in the draft → redirect once.)
@@ -1228,8 +1237,9 @@ known. Examiners dislike invented facts; never let a made-up statistic into the 
    fuels) → development (extend the metaphor + concrete evidence + the emotion it should
    raise) → 2–3 layered devices for that point. After all points: ORGANISATION choice
    (strongest first / build intensity / logical sequence) → TRANSITIONS that continue the
-   imagery, never "Firstly, Secondly" ("While [Point 1] plants the seed, [Point 2]
-   provides the water") — organic flow is a valid answer → STRATEGIC OMISSION: one thing
+   imagery, never the bare "Firstly, Secondly" list ("While [Point 1] plants the seed,
+   [Point 2] provides the water"); an ordering word that does work inside a sentence is
+   fine ("Reliability is the second key issue") — organic flow is a valid answer → STRATEGIC OMISSION: one thing
    readers can infer themselves — silence that does work (skippable).
 4. **V — Vision (100–150 words).** The success image ("what does success look like?") →
    the emotion this future creates (hope, excitement, peace, pride, joy, relief) → a
@@ -1369,7 +1379,8 @@ One structured close, in this order:
    six):** (1) THINK IN PICTURES + POWER WITH VERBS — for every point: what does this LOOK
    like, what verb makes it MOVE; abstract nouns become concrete; avoid is/are/was/were.
    (2) LAYER TECHNIQUES LIKE PROFESSIONALS — never one device per section; combine and
-   vary (MADFATHER'S CROPS). (3) SHOW, DON'T JUST COMMAND — imperatives capped at 1–2 per
+   vary (MADFATHER'S CROPS), and keep only the devices that make the writing more
+   compelling — never one for its own sake. (3) SHOW, DON'T JUST COMMAND — imperatives capped at 1–2 per
    section, 5–6 across the whole piece; show what happens if we act or don't. (4) MAKE
    EVERY WORD COUNT — vivid verbs, no concept nouns, sensory adjectives, rhythm through
    sentence variety. (5) BUILD NATURAL FLOW — each sentence picks up the last; verbal

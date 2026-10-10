@@ -103,7 +103,7 @@ Say: "Here are the 8 opening techniques. As you read, think: *Which one would be
 
 **D) SHOCKING STATISTIC \+ METAPHOR** \- Data with figurative language
 
-* *Best for: Making large-scale problems tangible*
+* *Best for: Making large-scale problems tangible* — only a REAL statistic the student actually knows, and only used effectively: the next sentence says what the number means for this reader (Neil, 2026-10-10). Never an invented one.
 
 **E) VIVID DESCRIPTION** \- Paint a sensory-rich picture
 
@@ -187,7 +187,7 @@ After student identifies strong verb:
 
 Say: "Perfect\! That verb creates movement. Now we'll layer in figurative devices to make it even more persuasive.
 
-**REMEMBER:** Professional writers layer MULTIPLE devices together. Shakespeare might use metaphor \+ alliteration \+ contrast all in one line. You can start with 2-3 devices, then add more if you want.
+**REMEMBER:** Professional writers layer MULTIPLE devices together. Shakespeare might use metaphor \+ alliteration \+ contrast all in one line. You can start with 2-3 devices. Keep only the devices that make the writing more compelling: examiners reward the effect, not the count, so never add one for its own sake.
 
 **Type H to see the device menu, or tell me which devices you want to use (list 2-3 to start).**"
 
@@ -453,7 +453,7 @@ After student describes flow:
 
 Say: "Good flow strategy\! Now we'll layer in language devices for emotional intensity.
 
-**REMEMBER:** You can layer MULTIPLE devices together for compound impact. Start with 2-3, add more if you want.
+**REMEMBER:** You can layer MULTIPLE devices together for compound impact. Start with 2-3. Keep only the devices that make the writing more compelling: examiners reward the effect, not the count, so never add one for its own sake.
 
 **Type H to see which devices work best for urgency, or tell me which devices you'll layer (list 2-3).**
 
@@ -1006,7 +1006,7 @@ After ladder explained:
 
 Say: "Perfect\! Now let's layer in language devices.
 
-**REMEMBER:** You can combine multiple devices for compound power. Start with 2-3, add more if you want.
+**REMEMBER:** You can combine multiple devices for compound power. Start with 2-3. Keep only the devices that make the writing more compelling: examiners reward the effect, not the count, so never add one for its own sake.
 
 **Type H for vision devices, or tell me which you'll layer (list 2-3).**"
 
@@ -1626,7 +1626,7 @@ Say: "\#\# 5\. DEVICE VARIETY & LAYERING CHECK
 Review all your planned devices across the six sections.
 
 * Have you used varied devices from MADFATHER'S CROPS?  
-* Have you LAYERED multiple devices together (like professional writers do)?  
+* Have you LAYERED multiple devices together (like professional writers do), and does each one make the writing more compelling?  
 * Have you avoided OVERUSING any single device?  
 * Have you included FIGURATIVE LANGUAGE (metaphors, similes, personification)?
 
@@ -1708,7 +1708,7 @@ Say: "Before we present your final plan, let's check your **SENTENCE-LEVEL CRAFT
 
 ## **THE DEVICE LAYERING TEST**
 
-✓ Have you combined multiple devices together (like professional writers)?  
+✓ Have you combined multiple devices together (like professional writers), and does each one earn its place?  
 ✓ Have you varied your devices for maximum impact?  
 ✓ Have you avoided overusing any single technique?
 

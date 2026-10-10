@@ -3338,7 +3338,7 @@ CRITERION may name it; a level claim may not borrow it), and the block allows ex
 its paragraph.
 
 
-## §60. ⭐⭐ ONE TTECEA PARAGRAPH ≈ 170 WORDS — the unit every reading-question word ADVICE is calculated from (Neil, ruled 2026-10-10; FIXLIST #871)
+## §60. ⭐⭐ ONE TTECEA PARAGRAPH IS THE UNIT every reading-question word ADVICE is calculated from — ≈170 words for Edexcel IGCSE, ≈120 for AQA (Neil, ruled 2026-10-10; FIXLIST #871, #890)
 
 Neil, verbatim, answering the IGCSE advice-number card: *"1 TTECEA paragraph should be about 170 words; try calculate it"*.
 
@@ -3361,6 +3361,12 @@ per-question targets in a v7.19.423 code comment attributed to him (12 Jun). **M
 - **No AQA Lang P1 or Edexcel IGCSE Language sample answers exist** on disk (both searches completed, nothing found).
 So our own exam-shaped TTECEA paragraphs run about 115–125 words: below the code's 150 and well below 170. The AQA rows stay
 as they are until he chooses; the measured numbers are on the Actions page for him.
+**RULED for AQA (Neil, 2026-10-10, Actions round k, verbatim: *"Use about 120, like our sample answers"*; FIXLIST #890).**
+Applied v7.20.828 (`MULTIQ_RESPONSE_TARGETS`, advice shown on each question card and summed in the word counter): **AQA
+Paper 1** Q2 = Q3 = 2 × 120 = **240** · Q4 = 50 + 3 × 120 + 50 = **460** (the short introduction and conclusion of his
+12 Jun Paper 2 Q4 ruling). **AQA Paper 2** Q3 = 3 × 120 = **360** · Q4 = 50 + 3 × 120 + 50 = **460**. Unchanged, because
+they are not TTECEA: P1 Q1, P2 Q1, P2 Q2 (paired inferences, 200) and both Q5s (650). Edexcel IGCSE keeps 170 — his
+ruling there stands; the two boards now differ on purpose.
 
 ## §61. ⭐⭐ AQA'S 2026 LANGUAGE WORDING IS THE AUTHORITY FOR THE NOVEMBER 2026 RESITS — applied, not a new ruling (v7.20.826, FIXLIST #887; Library's handoff of 2026-10-10)
 
@@ -3383,6 +3389,21 @@ AQA's question wording changed for exams "from summer 2026 onwards"; the specifi
    Q4: City of the Beasts — a sense of unease · The Hunger Games — a sense of mystery · Life of Pi — build tension ·
    Mr Fisher — suspense · Jamaica Inn — a sense of foreboding.
 **Already in place before #887:** the Q5 AO5 12-mark cap when the focus is missed (both papers' Protocol A).
-**Still Neil's to rule** (AQA's reports disagree with our teaching, not our marking): the Q5 650-word ceiling, the
-"SHOCKING STATISTIC" hook, "Picture this / Imagine" openers, the "Firstly… Secondly…" ban, and device stacking (§ ruled
-2026-07-15 — AQA's June 2025 report warns against systematic device use; recorded once here, not re-argued).
+**RULED by Neil, 2026-10-10 (Actions round k, cards 5–8, verbatim; FIXLIST #890) — AQA's reports disagreed with our
+TEACHING, not our marking; these are his answers, applied v7.20.828 across every board's transactional-writing materials
+(planning protocols, the shared coaching rubric, the five exam cribs, the mark-scheme knowledge models):**
+- **The statistic opening — KEPT, on a condition.** *"Keep it on the condition that it is a real statistic and the student
+  practises using to effectively."* A real figure the student actually knows, followed by what it means for the reader —
+  AQA's June 2025 report: statistics "very rarely enhance the student's own point of view" when simply dropped in.
+- **"Picture this:" — STOPPED as an opening; "Imagine" kept.** *"Keep Imagine, stop teaching Picture this as an opening."*
+  (AQA's June 2023 and June 2024 reports: seen in "a huge proportion" of scripts; AQA's own Level 4 sample uses "Imagine a
+  world where…".) A concrete "picture the corner it will leave behind…" is not the stock opener and stays.
+- **"Firstly… Secondly… Finally" — the bare list banned; ordering words inside a sentence allowed.** *"Ban the bare list,
+  allow ordering words inside a sentence."* ("Reliability is the second key issue" — AQA's own Level 4 sample.)
+- **Several devices per sentence — his 15 July rule KEPT, with effectiveness as the rule above it.** *"The fundamental
+  rule is that it needs to be effective; the examiners won't mind about the number of devices if it makes for compelling
+  reading; however, we need to teach the students to avoid mindlessly using them."* So: aim for two or three working
+  together, keep only the ones that make the moment more compelling, never one for its own sake. The cribs' old claim
+  "Single-device sentences score low on AO5" was removed — no mark scheme says it.
+**Still his rule, not re-asked:** the Q5 650-word ceiling (AQA's ~350-word Level 3 sample would cap at 25/40, inside AQA's
+Level 3 range of 22–30).

@@ -106,8 +106,8 @@ ok(!!TABLE && same(TABLE['edexcel-igcse|lang_a_paper_1'], { Q1: 20, Q2: 80, Q3: 
     '#867b/#871: IGCSE Paper 1 advice per question at 170 words a TTECEA paragraph — Q1 20 · Q2 80 · Q3 100 · Q4 510 · Q5 610 · Q6 650');
 ok(!!TABLE && same(TABLE['edexcel-igcse|lang_a_paper_2'], { Q1: 650, Q2: 450 }),
     '#867b: IGCSE Paper 2 advice — Q1 essay 650 · Section B (box Q2) 450');
-ok(!!TABLE && same(TABLE['aqa|lang_paper_2'], { Q1: 0, Q2: 200, Q3: 450, Q4: 550, Q5: 650 }) && same(TABLE['aqa|lang_paper_1'], { Q1: 20, Q2: 300, Q3: 300, Q4: 500, Q5: 650 }),
-    '#867b: the AQA rows are untouched');
+ok(!!TABLE && same(TABLE['aqa|lang_paper_2'], { Q1: 0, Q2: 200, Q3: 360, Q4: 460, Q5: 650 }) && same(TABLE['aqa|lang_paper_1'], { Q1: 20, Q2: 240, Q3: 240, Q4: 460, Q5: 650 }),
+    '#890: the AQA rows at ~120 words a TTECEA paragraph (Neil, Actions round k) — P1 Q2/Q3 240 · Q4 460; P2 Q3 360 · Q4 460');
 const KEYFN = [fnSrc('function _isLangPaper1()'), fnSrc('function _isLangPaper2()'), fnSrc('function _multiqTargetKey()')].join('\n');
 let keyOf = null;
 try { keyOf = new Function('state', KEYFN + '\nreturn _multiqTargetKey();'); } catch (e) { ok(false, '#867b: _multiqTargetKey compiles — ' + e.message); }

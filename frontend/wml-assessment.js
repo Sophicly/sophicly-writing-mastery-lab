@@ -60428,10 +60428,14 @@
     // Q1 20 (list 4 points) / Q2 300 (8m) / Q3 300 (8m) / Q4 500 (20m essay) / Q5 650 (Section B).
     // Generalising to other boards = adding their per-paper entry here (their Q-mark maps differ).
     const MULTIQ_RESPONSE_TARGETS = {
-        'aqa|lang_paper_1': { Q1: 20, Q2: 300, Q3: 300, Q4: 500, Q5: 650 },
+        // v7.20.828 (#890, PEDAGOGY §60 — Neil, Actions round k: "Use about 120, like our sample answers"): an AQA TTECEA
+        // paragraph is ~120 words, as our own AQA sample answers write (measured 102–138). P1 Q2/Q3 = 2 × 120 = 240;
+        // P1 Q4 = 50 + 3 × 120 + 50 = 460 (the short intro/conclusion of his 12 Jun P2 Q4 ruling). Q5 is not TTECEA.
+        'aqa|lang_paper_1': { Q1: 20, Q2: 240, Q3: 240, Q4: 460, Q5: 650 },
         // v7.19.854 (Neil D3): P2 Q1 is a tick-box checklist — nothing is written, no
         // word target. Q2 200 / Q3 450 / Q4 550 / Q5 650 confirmed.
-        'aqa|lang_paper_2': { Q1: 0, Q2: 200, Q3: 450, Q4: 550, Q5: 650 },
+        // v7.20.828 (#890): Q3 = 3 × 120 = 360; Q4 = 50 + 3 × 120 + 50 = 460. Q2 (paired inferences, not TTECEA) stays 200.
+        'aqa|lang_paper_2': { Q1: 0, Q2: 200, Q3: 360, Q4: 460, Q5: 650 },
         // v7.20.813 (#867b, Neil 10 Oct: "Show an advice number") — Edexcel IGCSE Spec A. ADVICE only: Pearson sets no
         // limit. Before 7.20.807 these docs showed "N / 650" counted over the whole paper. Sources: P1 Q6 (45 marks)
         // and P2 Section B (30) = LANG_WORD_TARGETS[45] / [30]; P1 Q1–Q3 are point-marked (2, 4, 5 points) at about

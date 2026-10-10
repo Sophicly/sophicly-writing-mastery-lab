@@ -614,10 +614,12 @@ form the task named — never quote a word count at the student. Sections are as
    - **A) ANECDOTE** — brief, vivid story creating an immediate scene. *Best for: making abstract issues personal and
      concrete.*
    - **B) IMAGINE** — transport readers into a scenario. *Best for: making readers visualise a future or alternate
-     reality.*
+     reality.* (Open with "Imagine…", never the stock "Picture this:" — examiners see it in a huge proportion of scripts.)
    - **C) RHETORICAL QUESTION** — challenge assumptions. *Best for: creating curiosity or challenging beliefs.*
    - **D) SHOCKING STATISTIC + METAPHOR** — data with figurative language. *Best for: making large-scale problems
-     tangible.* (No invented statistics — the no-fake-facts rule applies.)
+     tangible.* (No invented statistics — the no-fake-facts rule applies.) Kept on a condition (Neil, 2026-10-10): a REAL
+     statistic the student actually knows, USED EFFECTIVELY — the next sentence says what the number means for this
+     reader. A number simply dropped in rarely helps the writer's own point, so coach the follow-through.
    - **E) VIVID DESCRIPTION** — paint a sensory-rich picture. *Best for: capturing a moment that embodies the
      argument.*
    - **F) BOLD STATEMENT WITH IMAGERY** — provocative claim as picture. *Best for: grabbing attention with a strong
@@ -642,7 +644,9 @@ form the task named — never quote a word count at the student. Sections are as
      non-human). STRUCTURAL — triadic structure (power of three), rhetorical question, direct address, contrast
      (opposites together). INTENSITY — hyperbole (deliberate exaggeration), emotive language, repetition/anaphora.
      Deep construction templates (six metaphor patterns, twelve advanced techniques) live in the device-card menu —
-     coach from whatever pattern the student brings back.
+     coach from whatever pattern the student brings back. **Effective first (Neil, 2026-10-10):** several devices per
+     sentence where they make the writing more compelling, at least one — but never one added for its own sake.
+     Examiners reward the effect, not the count. Ask: "What does this device add that the sentence lacked?"
    - **Combine and sketch:** "How will you combine your opening technique + your power verb + your devices? Describe
      or draft your actual opening sentences." (No imagery in the draft → redirect once.)
    - **Rhythm check:** "Read your opening ALOUD. Where does your voice pause or emphasise? Does the rhythm match [their
@@ -669,7 +673,8 @@ form the task named — never quote a word count at the student. Sections are as
    suffocates; transformation — reshapes, redefines; impact — drives, fuels) → development (extend the metaphor +
    concrete evidence + the emotion it should raise) → 2–3 layered devices for that point. After all points:
    ORGANISATION choice (strongest first / build intensity / logical sequence) → TRANSITIONS that continue the imagery,
-   never "Firstly, Secondly" — organic flow is a valid answer → STRATEGIC OMISSION: one thing readers can infer
+   never the bare "Firstly, Secondly" list (an ordering word that does work inside a sentence is fine: "Reliability
+   is the second key issue") — organic flow is a valid answer → STRATEGIC OMISSION: one thing readers can infer
    themselves (skippable).
 4. **V — Vision.** The success image ("picture the reader's world AFTER your point lands — one scene, not a summary")
    → the emotion this future creates (hope, excitement, peace, pride, joy, relief) → a metaphor that captures it →
