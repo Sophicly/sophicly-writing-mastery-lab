@@ -60247,12 +60247,13 @@
         // v7.19.854 (Neil D3): P2 Q1 is a tick-box checklist — nothing is written, no
         // word target. Q2 200 / Q3 450 / Q4 550 / Q5 650 confirmed.
         'aqa|lang_paper_2': { Q1: 0, Q2: 200, Q3: 450, Q4: 550, Q5: 650 },
-        // v7.20.814 (#867b, Neil 10 Oct: "Show an advice number") — Edexcel IGCSE Spec A. ADVICE only: Pearson sets no
+        // v7.20.813 (#867b, Neil 10 Oct: "Show an advice number") — Edexcel IGCSE Spec A. ADVICE only: Pearson sets no
         // limit. Before 7.20.807 these docs showed "N / 650" counted over the whole paper. Sources: P1 Q6 (45 marks)
-        // and P2 Section B (30) = LANG_WORD_TARGETS[45] / [30]; P2 Q1 (30-mark essay) = the essay ladder's 650;
-        // P1 Q5 (22, intro + 3 + conclusion) 550 and Q4 (12, three paragraphs) 450 = AQA P2 Q4 / Q3; P1 Q1–Q3 are
-        // point-marked (2, 4, 5 points) at about 20 words a point.
-        'edexcel-igcse|lang_a_paper_1': { Q1: 20, Q2: 80, Q3: 100, Q4: 450, Q5: 550, Q6: 650 },
+        // and P2 Section B (30) = LANG_WORD_TARGETS[45] / [30]; P1 Q1–Q3 are point-marked (2, 4, 5 points) at about
+        // 20 words a point. v7.20.816 (#871, PEDAGOGY §60 — Neil: "1 TTECEA paragraph should be about 170 words; try
+        // calculate it"): P1 Q4 = 3 × 170 = 510; P1 Q5 = 50 + 3 × 170 + 50 = 610 (short intro/conclusion, as AQA P2
+        // Q4); P2 Q1 = 70 + 3 × 170 + 70 = 650, which is already the essay ladder's 30 marks → 650.
+        'edexcel-igcse|lang_a_paper_1': { Q1: 20, Q2: 80, Q3: 100, Q4: 510, Q5: 610, Q6: 650 },
         'edexcel-igcse|lang_a_paper_2': { Q1: 650, Q2: 450 },
     };
     function _multiqTargetKey() {

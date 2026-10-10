@@ -3322,3 +3322,17 @@ proves the instruction is delivered, not that the model obeys; obedience is re-m
 CRITERION may name it; a level claim may not borrow it), and the block allows exactly that: one criterion, named with
 its paragraph.
 
+
+## §60. ⭐⭐ ONE TTECEA PARAGRAPH ≈ 170 WORDS — the unit every reading-question word ADVICE is calculated from (Neil, ruled 2026-10-10; FIXLIST #871)
+
+Neil, verbatim, answering the IGCSE advice-number card: *"1 TTECEA paragraph should be about 170 words; try calculate it"*.
+
+**Applied (v7.20.816), Edexcel IGCSE Spec A advice (`MULTIQ_RESPONSE_TARGETS`, advice only — no limit, no stop, no penalty, §51.10):**
+P1 Q4 (three TTECEA paragraphs) = 3 × 170 = **510** · P1 Q5 (short intro + three comparative paragraphs + short
+conclusion) = 50 + 510 + 50 = **610** (the short intro/conclusion = the 50 each of Neil's AQA P2 Q4 ruling, 12 Jun)
+· P2 Q1 (full essay) = 70 + 510 + 70 = **650**, which is already his essay ladder's 30 marks → 650 (v7.19.946).
+Not TTECEA, so unchanged: P1 Q1–Q3 (point-marked, ~20 words a point) and the two writing tasks (P1 Q6 650, P2 Section B 450).
+
+⚠️ **OPEN — not silently extended:** the AQA rows still use ~150 a paragraph (P1 Q2/Q3 300 = 2 × 150; P2 Q3 450 =
+3 × 150; P2 Q4 550 = 50 + 3 × 150 + 50 — Neil, 12 Jun). Whether 170 replaces 150 there too is his call; asked on the
+WML Actions page, not assumed (root §7: surface a conflict, never average it).
