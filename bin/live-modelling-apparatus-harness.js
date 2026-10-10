@@ -21,10 +21,11 @@ ok(/function isLiveModelling\(\)/.test(CORE) && /lm === true \|\| lm === 1 \|\| 
 const picker = fnBody('function maybeShowDiagnosticTimerPicker()');
 ok(picker.indexOf('if (state.reviewMode) return;') > 0 && /if \(WML\.isLiveModelling && WML\.isLiveModelling\(\)\) return;/.test(picker.slice(0, 600)),
     '#839: no "Set your timer" pop-up for the live-modelling author (viewers are out by review mode)');
-// v7.20.807 (#861): the word-target gates key on _noWordTarget() — live modelling FIRST, then Edexcel IGCSE Language.
+// v7.20.807 (#861): the word-target gates key on _noWordTarget(). v7.20.814 (#867b): live modelling ONLY — Edexcel
+// IGCSE Language shows per-question ADVICE again (Neil, 10 Oct: "Show an advice number"; doc-template-mode-harness §3).
 const NWT = fnBody('function _noWordTarget()');
-ok(/^function _noWordTarget\(\) \{\s*(\/\/[^\n]*\n\s*)*if \(WML\.isLiveModelling && WML\.isLiveModelling\(\)\) return true;/.test(NWT) && /state\.board[^\n]*=== 'edexcel-igcse' && _isAnyLanguagePaper\(\)/.test(NWT),
-    '#861: _noWordTarget() = live modelling first, then Edexcel IGCSE Language (no word limit — Neil, card 12)');
+ok(/^function _noWordTarget\(\) \{\s*(\/\/[^\n]*\n\s*)*return !!\(WML\.isLiveModelling && WML\.isLiveModelling\(\)\);\s*\}$/.test(NWT),
+    '#839/#867b: _noWordTarget() = live modelling, and nothing else');
 const NW = String.raw`(?:WML\.isLiveModelling && WML\.isLiveModelling\(\)|_noWordTarget\(\))`;
 ok(new RegExp(String.raw`const wcWidgetLabel = el\('span', \{ id: 'swml-wc-widget-label', textContent: \(state\.task === 'planning' \|\| \(?` + NW + String.raw`\)?\) \? '0 words'`).test(JS),
     '#839: the floating pill STARTS as "0 words" on a live-modelling lesson (no "0 / target")');
@@ -38,9 +39,10 @@ ok(new RegExp(String.raw`wcWidgetLabel\.textContent = \(?` + NW + String.raw`\)?
 // #447m's own gates (v7.20.594) — kept here so the whole set is in one place
 ok(/countdownStart = \(isCwTask \|\| isExamPrep \|\| noDeadlinePhase \|\| \(WML\.isLiveModelling && WML\.isLiveModelling\(\)\)\) \? null/.test(JS), '#447m: no deadline countdown');
 ok(/if \(!_isLiveModel\) rightPanel\.appendChild\(timeWrap\);/.test(JS), '#447m: no Session timer in the rail');
-ok(/if \(state\.task !== 'mastery_codex' && !_noWordTarget\(\)\) \{/.test(JS), '#447m/#861: no word target in the rail (live modelling + IGCSE Language)');
-ok(/_noWordTarget\(\) \? `<em>Word Count:<\/em> \$\{wc\}`/.test(JS) && /<em>Word Count:<\/em> \$\{_noWordTarget\(\) \? '—'/.test(JS), '#861: the Score Summary shows a count with no "/ target" on a paper that sets none (live + template)');
-ok((JS.match(/Section B \(writing\): \$\{_noWordTarget\(\) \? 'the board sets no word limit\.' : 'aim for ~650 words\.'\}/g) || []).length === 2, '#861: both guide tips say the board sets no word limit instead of "~650"');
+ok(/if \(state\.task !== 'mastery_codex' && !_noWordTarget\(\)\) \{/.test(JS), '#447m: no word target in the rail on a live-modelling lesson');
+ok(/_noWordTarget\(\) \? `<em>Word Count:<\/em> \$\{wc\}`/.test(JS) && /<em>Word Count:<\/em> \$\{_noWordTarget\(\) \? '—'/.test(JS), '#447m: the Score Summary shows a count with no "/ target" on a live-modelling lesson (live + template)');
+ok((JS.match(/Section B \(writing\): \$\{_sectionBAdvice\(\)\}/g) || []).length === 2 && /^function _sectionBAdvice\(\) \{\s*if \(_noWordTarget\(\)\) return 'the board sets no word limit\.';/.test(fnBody('function _sectionBAdvice()')),
+    '#861/#867b: both guide tips ask _sectionBAdvice(), which gives a live-modelling lesson no number');
 ok(LM.test(JS.slice(JS.indexOf('_wnEssayDoc && !(WML.isLiveModelling'), JS.indexOf('_wnEssayDoc && !(WML.isLiveModelling') + 120)), '#447m: no "Your baseline" card for the author');
 
 // ── #842 (v7.20.792): the read-only view FOLLOWS the author (Neil: "update by themselves") ──

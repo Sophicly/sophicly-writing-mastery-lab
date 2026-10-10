@@ -867,13 +867,24 @@
         const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         return /^language[cu][1-9]$/.test(s);
     }
-    // v7.20.807 (#861, PEDAGOGY §51.10): a paper that sets NO word target — the student sees a
-    // word COUNT, never "N / target". Live modelling (#447m) and Edexcel IGCSE Language (Neil,
-    // 5 Oct card 12: no word limit — Pearson sets none; the default 650 was a number from AQA).
-    // Every word-target DISPLAY keys on this, never on the board or the task.
+    // v7.20.807 (#861, PEDAGOGY §51.10): a lesson that shows NO word target — the student sees a
+    // word COUNT, never "N / target". Every word-target DISPLAY keys on this, never on the board or the task.
+    // v7.20.814 (#867b): live modelling only (#447m). Edexcel IGCSE Language shows ADVICE again — Neil, 10 Oct:
+    // "Show an advice number" — per question, from MULTIQ_RESPONSE_TARGETS; the board still sets no limit, so
+    // Sophia's marking keeps no ceiling, halt or penalty (router $wc_target = 0, protocols number-free).
     function _noWordTarget() {
-        if (WML.isLiveModelling && WML.isLiveModelling()) return true;
-        return String(state.board || '') === 'edexcel-igcse' && _isAnyLanguagePaper();
+        return !!(WML.isLiveModelling && WML.isLiveModelling());
+    }
+    // v7.20.814 (#867b): the Section B half of the language guide tip. AQA keeps "aim for ~650 words"; Edexcel
+    // IGCSE says the board sets no limit, then gives OUR advice for its writing question (P1 Q6, P2 Section B = Q2).
+    function _sectionBAdvice() {
+        if (_noWordTarget()) return 'the board sets no word limit.';
+        const key = _multiqTargetKey();
+        if (key && key.indexOf('edexcel-igcse|') === 0) {
+            const n = MULTIQ_RESPONSE_TARGETS[key][key === 'edexcel-igcse|lang_a_paper_2' ? 'Q2' : 'Q6'];
+            return `the board sets no word limit; we suggest about ${n} words.`;
+        }
+        return 'aim for ~650 words.';
     }
     // v7.20.811 (FIXLIST #864 — Neil, live-modelling the IGCSE Q4 plan: selected lines + ☑ "didn't create a
     // checklist… I wanted to turn those lines into checklists so we can tick them off as we're working through
@@ -46322,7 +46333,7 @@
                     const readingPart = longQ
                         ? 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks (except 20+ mark questions, where a proper essay structure is best).'
                         : 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks.';
-                    return `${readingPart} Section B (writing): ${_noWordTarget() ? 'the board sets no word limit.' : 'aim for ~650 words.'}`;   // v7.20.807 (#861)
+                    return `${readingPart} Section B (writing): ${_sectionBAdvice()}`;   // v7.20.807 (#861); v7.20.814 (#867b) IGCSE advice
                 }
                 if (canvasDualTargets) {
                     const { partA, partB } = canvasDualTargets;
@@ -46555,7 +46566,7 @@
             // v7.19.208: Skip the essay word-target panel for mastery_codex.
             // v7.19.285: ...but give the Codex its own SOFT word-count panel (total
             // words written across the journal, aspirational 650/week target, no gate).
-            if (state.task !== 'mastery_codex' && !_noWordTarget()) {   // v7.20.594 (#447m): no word target on a live-modelling lesson; v7.20.807 (#861): nor on Edexcel IGCSE Language
+            if (state.task !== 'mastery_codex' && !_noWordTarget()) {   // v7.20.594 (#447m): no word target on a live-modelling lesson (v7.20.814: IGCSE shows advice again, #867b)
                 const progressWrap = el('div', { className: 'swml-canvas-plan-section', id: 'swml-canvas-wc-progress' });
                 progressWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#4D76FD">' + SVG_GUIDE_GRAPH + '</span> Word Count Target' }));
                 const progressBar = el('div', { className: 'swml-canvas-progress-bar' });
@@ -49135,7 +49146,7 @@
 
         // Draggable floating word count widget
         const wcWidget = el('div', { className: 'swml-wc-widget', id: 'swml-wc-widget' });
-        const wcWidgetLabel = el('span', { id: 'swml-wc-widget-label', textContent: (state.task === 'planning' || _noWordTarget()) ? '0 words' : `0 / ${canvasWordTarget}` });   // v7.20.807 (#861): _noWordTarget = live modelling + IGCSE Language
+        const wcWidgetLabel = el('span', { id: 'swml-wc-widget-label', textContent: (state.task === 'planning' || _noWordTarget()) ? '0 words' : `0 / ${canvasWordTarget}` });   // v7.20.807 (#861); v7.20.814 (#867b): _noWordTarget = live modelling only
         const wcWidgetClose = el('button', {
             className: 'swml-wc-widget-close',
             textContent: '×',
@@ -53803,7 +53814,7 @@
                 }
                 if (diagWcLabel) diagWcLabel.textContent = getWordCountLabel(wc);
                 if (diagCompleteBtn) diagCompleteBtn.style.display = wc >= canvasWordMinimum ? 'block' : 'none';
-                if (wcWidgetLabel) wcWidgetLabel.textContent = _noWordTarget() ? `${wc} word${wc !== 1 ? 's' : ''}` : `${wc} / ${canvasWordTarget}`;   // v7.20.790 (#839); v7.20.807 (#861) IGCSE Language too
+                if (wcWidgetLabel) wcWidgetLabel.textContent = _noWordTarget() ? `${wc} word${wc !== 1 ? 's' : ''}` : `${wc} / ${canvasWordTarget}`;   // v7.20.790 (#839): live modelling
                 applyWcWidgetColour(wc);
 
                 // v7.17.32: Auto-fire @POPULATE_CHECKLIST for any unpopulated MSQ
@@ -60092,8 +60103,22 @@
         // v7.19.854 (Neil D3): P2 Q1 is a tick-box checklist — nothing is written, no
         // word target. Q2 200 / Q3 450 / Q4 550 / Q5 650 confirmed.
         'aqa|lang_paper_2': { Q1: 0, Q2: 200, Q3: 450, Q4: 550, Q5: 650 },
+        // v7.20.814 (#867b, Neil 10 Oct: "Show an advice number") — Edexcel IGCSE Spec A. ADVICE only: Pearson sets no
+        // limit. Before 7.20.807 these docs showed "N / 650" counted over the whole paper. Sources: P1 Q6 (45 marks)
+        // and P2 Section B (30) = LANG_WORD_TARGETS[45] / [30]; P2 Q1 (30-mark essay) = the essay ladder's 650;
+        // P1 Q5 (22, intro + 3 + conclusion) 550 and Q4 (12, three paragraphs) 450 = AQA P2 Q4 / Q3; P1 Q1–Q3 are
+        // point-marked (2, 4, 5 points) at about 20 words a point.
+        'edexcel-igcse|lang_a_paper_1': { Q1: 20, Q2: 80, Q3: 100, Q4: 450, Q5: 550, Q6: 650 },
+        'edexcel-igcse|lang_a_paper_2': { Q1: 650, Q2: 450 },
     };
     function _multiqTargetKey() {
+        // v7.20.814 (#867b): Spec A only — its texts carry "lang_a"; a Spec B text never borrows these questions.
+        if (state.board === 'edexcel-igcse') {
+            if (!/lang_a/.test(String(state.text || ''))) return null;
+            if (_isLangPaper2()) return 'edexcel-igcse|lang_a_paper_2';
+            if (_isLangPaper1()) return 'edexcel-igcse|lang_a_paper_1';
+            return null;
+        }
         if (state.board !== 'aqa') return null;
         const txt = String(state.text || '');
         if (txt.indexOf('lang_paper_2') !== -1) return 'aqa|lang_paper_2';
@@ -60170,7 +60195,7 @@
             return;
         }
         // v7.20.790 (#839): live modelling has no word target (#447m) — count the words, no "/ target", no red.
-        // v7.20.807 (#861): nor does Edexcel IGCSE Language — the one predicate covers both.
+        // v7.20.814 (#867b): live modelling only — IGCSE Language counts to its per-question advice (MULTIQ_RESPONSE_TARGETS).
         if (_noWordTarget()) {
             const wc = getResponseWordCount(editor);
             widget.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
@@ -71223,7 +71248,7 @@
                 const readingPart = hasLongReadingQ
                     ? 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks (except 20+ mark questions, where a proper essay structure is best).'
                     : 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks.';
-                guideTip.innerHTML = `${iconHTML} ${readingPart} Section B (writing): ${_noWordTarget() ? 'the board sets no word limit.' : 'aim for ~650 words.'}`;   // v7.20.807 (#861)
+                guideTip.innerHTML = `${iconHTML} ${readingPart} Section B (writing): ${_sectionBAdvice()}`;   // v7.20.807 (#861); v7.20.814 (#867b) IGCSE advice
             } else if (canvasDualTargets) {
                 const { partA, partB } = canvasDualTargets;
                 guideTip.innerHTML = `${iconHTML} This is a two-part question. Part A: aim for ${partA.target} words (${partA.marks} marks). Part B: aim for ${partB.target} words (${partB.marks} marks).`;   // v7.20.807 (#862b): no word-gated Mark Complete exists (the footer control is LearnDash's)

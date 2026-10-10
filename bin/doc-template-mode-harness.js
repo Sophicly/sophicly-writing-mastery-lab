@@ -96,5 +96,49 @@ const ROUTER = read('includes/class-protocol-router.php');
 ok(/\(\$context\['board'\] \?\? ''\) === 'edexcel-igcse' && preg_match\('\/\^lang\/i'[^\n]*\n\s*\$wc_target = 0;/.test(ROUTER),
     '#861: the router never hands Sophia a "Minimum Word Count" on Edexcel IGCSE Language');
 
+// ── (3) #867b — Neil, 10 Oct: "Show an advice number". ADVICE on screen, per question (the AQA shape), while the
+//     protocols above stay number-free and the router keeps $wc_target = 0 (no ceiling, halt or penalty). ──
+const TABLE_SRC = (JS.match(/const MULTIQ_RESPONSE_TARGETS = (\{[\s\S]*?\n {4}\});/) || [])[1] || '';
+let TABLE = null;
+try { TABLE = new Function('return ' + TABLE_SRC)(); } catch (e) { ok(false, '#867b: MULTIQ_RESPONSE_TARGETS evaluates — ' + e.message); }
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+ok(!!TABLE && same(TABLE['edexcel-igcse|lang_a_paper_1'], { Q1: 20, Q2: 80, Q3: 100, Q4: 450, Q5: 550, Q6: 650 }),
+    '#867b: IGCSE Paper 1 advice per question — Q1 20 · Q2 80 · Q3 100 · Q4 450 · Q5 550 · Q6 650');
+ok(!!TABLE && same(TABLE['edexcel-igcse|lang_a_paper_2'], { Q1: 650, Q2: 450 }),
+    '#867b: IGCSE Paper 2 advice — Q1 essay 650 · Section B (box Q2) 450');
+ok(!!TABLE && same(TABLE['aqa|lang_paper_2'], { Q1: 0, Q2: 200, Q3: 450, Q4: 550, Q5: 650 }) && same(TABLE['aqa|lang_paper_1'], { Q1: 20, Q2: 300, Q3: 300, Q4: 500, Q5: 650 }),
+    '#867b: the AQA rows are untouched');
+const KEYFN = [fnSrc('function _isLangPaper1()'), fnSrc('function _isLangPaper2()'), fnSrc('function _multiqTargetKey()')].join('\n');
+let keyOf = null;
+try { keyOf = new Function('state', KEYFN + '\nreturn _multiqTargetKey();'); } catch (e) { ok(false, '#867b: _multiqTargetKey compiles — ' + e.message); }
+const KEYCASES = [
+    [{ board: 'edexcel-igcse', subject: 'language_p1', text: 'edexcel_igcse_lang_a' }, 'edexcel-igcse|lang_a_paper_1', 'the real staging P1 diagnostic (53101: subject language_p1)'],
+    [{ board: 'edexcel-igcse', subject: 'language2', text: 'edexcel_igcse_lang_a_paper_2' }, 'edexcel-igcse|lang_a_paper_2', 'the P2 deep link (subject language2)'],
+    [{ board: 'edexcel-igcse', subject: 'language1', text: 'edexcel_igcse_lang_b' }, null, 'a Spec B text never borrows Spec A\'s questions'],
+    [{ board: 'edexcel-igcse', subject: 'heritage', text: 'macbeth' }, null, 'an IGCSE Literature essay keeps its marks-table target'],
+    [{ board: 'aqa', subject: 'language2', text: 'aqa_lang_paper_2' }, 'aqa|lang_paper_2', 'AQA Paper 2 unchanged'],
+    [{ board: 'edexcel', subject: 'language1', text: 'edexcel_lang_paper_1' }, null, 'Edexcel GCSE unchanged (no row)'],
+];
+for (const [st, want, why] of KEYCASES) {
+    let got;
+    try { got = keyOf ? keyOf(st) : 'NO FN'; } catch (e) { got = 'THREW ' + e.message; }
+    ok(got === want, `#867b: ${why} → ${want}${got === want ? '' : ` (got ${got})`}`);
+}
+let advice = null;
+try { advice = new Function('state', 'WML', 'MULTIQ_RESPONSE_TARGETS', KEYFN + '\n' + fnSrc('function _noWordTarget()') + '\n' + fnSrc('function _sectionBAdvice()') + '\nreturn _sectionBAdvice();'); }
+catch (e) { ok(false, '#867b: _sectionBAdvice compiles — ' + e.message); }
+const ADVCASES = [
+    [{ board: 'edexcel-igcse', subject: 'language_p1', text: 'edexcel_igcse_lang_a' }, false, 'the board sets no word limit; we suggest about 650 words.', 'IGCSE P1 tip: no board limit, then our 650 for Q6'],
+    [{ board: 'edexcel-igcse', subject: 'language2', text: 'edexcel_igcse_lang_a_paper_2' }, false, 'the board sets no word limit; we suggest about 450 words.', 'IGCSE P2 tip: no board limit, then our 450 for Section B'],
+    [{ board: 'aqa', subject: 'language1', text: 'aqa_lang_paper_1' }, false, 'aim for ~650 words.', 'AQA tip unchanged'],
+    [{ board: 'edexcel-igcse', subject: 'language_p1', text: 'edexcel_igcse_lang_a' }, true, 'the board sets no word limit.', 'a live-modelling lesson still shows no number (#447m)'],
+];
+for (const [st, live, want, why] of ADVCASES) {
+    let got;
+    try { got = advice ? advice(st, { isLiveModelling: () => live }, TABLE) : 'NO FN'; } catch (e) { got = 'THREW ' + e.message; }
+    ok(got === want, `#867b: ${why}${got === want ? '' : ` (got "${got}")`}`);
+}
+ok(!/edexcel-igcse/.test(fnSrc('function _noWordTarget()')), '#867b: _noWordTarget() is live modelling only — IGCSE Language shows its advice');
+
 console.log((fail ? '❌ FAIL' : '✅ PASS') + ` — doc-template-mode-harness: ${n} checks`);
 process.exit(fail);
