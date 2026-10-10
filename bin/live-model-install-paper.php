@@ -113,17 +113,19 @@ $q2 = "Look in detail at this extract, from lines 6 to 14 of the source:\n\n"
     . "> Rosabel looked out of the windows; the street was blurred and misty, but light striking on the panes turned their dullness to opal and silver, and the jewellers' shops seen through this were fairy palaces. Her feet were horribly wet, and she knew the bottom of her skirt and petticoat would be coated with black, greasy mud. There was a sickening smell of warm humanity – it seemed to be oozing out of everybody in the bus – and everybody had the same expression, sitting so still, staring in front of them. Rosabel stirred suddenly and unfastened the two top buttons of her coat… she felt almost stifled. Through her half-closed eyes, the whole row of people on the opposite seat seemed to resolve into one meaningless, staring face.\n\n"
     . "How does the writer use language here to describe Rosabel's bus journey home?\n\nYou could include the writer's choice of:\n- words and phrases\n- language features and techniques\n- sentence forms.";
 
-$q3 = "You now need to think about the whole of the source.\n\nThis text is from the beginning of a short story.\n\n"
-    . "How has the writer structured the text to interest you as a reader?\n\nYou could write about:\n"
-    . "- what the writer focuses your attention on at the beginning of the source\n"
-    . "- how and why the writer changes this focus as the source develops\n"
-    . "- any other structural features that interest you.";
+// v7.20.827 (FIXLIST #887): Q3 and Q4 in AQA's 2026 wording too — Q3 names ONE effect present in the extract (the
+// sympathy the opening builds for a tired, poor shop girl), Q4 states its claim directly (no imaginary student).
+$q3 = "You now need to think about the structure of the source as a whole.\n\nThis text is from the beginning of a short story.\n\n"
+    . "How has the writer structured the text to create sympathy for Rosabel?\n\nYou could write about:\n"
+    . "- how sympathy for Rosabel has increased or decreased by the end of the source\n"
+    . "- how the writer uses structure to create an effect\n"
+    . "- the writer's use of any other structural features, such as changes in mood, tone or perspective.";
 
-$q4 = "Focus this part of your answer on the second part of the source, from line 19 to the end.\n\n"
-    . "A student said, 'This part of the story, set in the hat shop, shows that the red-haired girl has many advantages in life, and I think Rosabel is right to be angry.'\n\n"
-    . "To what extent do you agree?\n\nIn your response, you could:\n"
-    . "- consider your own impressions of the red-haired girl\n"
-    . "- evaluate how the writer conveys Rosabel's reactions to the red-haired girl\n"
+$q4 = "For this question focus on the second part of the source, from line 19 to the end.\n\n"
+    . "In this part of the story, set in the hat shop, the writer shows that the red-haired girl has many advantages in life, and that Rosabel is right to be angry.\n\n"
+    . "To what extent do you agree and/or disagree with this statement?\n\nIn your response, you could:\n"
+    . "- consider your impressions of the red-haired girl\n"
+    . "- comment on the methods the writer uses to convey Rosabel's reactions to the red-haired girl\n"
     . "- support your response with references to the text.";
 
 $q5 = "Your local newspaper is running a creative writing competition and they intend to publish the winning entries.\n\n"

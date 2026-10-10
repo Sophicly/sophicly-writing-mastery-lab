@@ -61951,6 +61951,15 @@
                     parts.push(`=== ${qId} RESPONSE — multiple choice: ${_mcDone.size} of ${_mcQs.size} questions answered. The choices and the platform's score are in the [STUDENT ANSWERS — ${qId}] block ===`);
                     return;
                 }
+                // v7.20.826 (#858): AQA Paper 2's Q1 is answered by TICKS on true/false statements — the same case as the
+                // choices above. It said "NOT ATTEMPTED" beside a ticks block and (from .826) the platform's score.
+                const _stOpts = section.querySelectorAll('[data-item-id^="' + qId + '-stmt-"]');
+                if (_stOpts.length) {
+                    let _stTicked = 0;
+                    _stOpts.forEach((o) => { if (o.getAttribute('data-checked') === 'true') _stTicked++; });
+                    parts.push(`=== ${qId} RESPONSE — true statements: ${_stTicked} of ${_stOpts.length} ticked. Which ones, and the platform's score, are in the [STUDENT CHECKLIST TICKS — ${qId}] block ===`);
+                    return;
+                }
                 if (!paras.length) {
                     // v7.20.583 (#459): if the answer is sitting in the PLAN box, the marker is
                     // told so — otherwise it insists "I go by what's logged" while the student

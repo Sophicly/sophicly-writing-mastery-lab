@@ -141,6 +141,15 @@ ok(/Q3 Total: 6\/12/.test(runPass2('Q3 focus: not addressed\nQ3 Total: 6/12', { 
 ok(/Q1 Total: 3\/4/.test(runPass2('Q1 Total: 4/4', { platform: (q) => (q === 'Q1' ? { score: 3, max: 4 } : null) })),
     "Paper 2: Sophia's 4/4 becomes the platform's 3/4 (the extra tick)");
 
+{
+    // #858: the marking payload no longer calls a ticked Paper 2 Q1 "NOT ATTEMPTED" — it counts the ticks and points at
+    // the block that holds them and the platform's score. Checked in the builder, before its empty-answer exit.
+    const iSt = SRC.indexOf('const _stOpts = section.querySelectorAll(\'[data-item-id^="\' + qId + \'-stmt-"]\');');
+    const iEmpty = SRC.indexOf('parts.push(`=== ${qId} RESPONSE — NOT ATTEMPTED (empty)${_planNote} ===`);');
+    ok(iSt > 0 && iEmpty > iSt && /true statements: \$\{_stTicked\} of \$\{_stOpts\.length\} ticked\. Which ones, and the platform's score, are in the \[STUDENT CHECKLIST TICKS — \$\{qId\}\] block/.test(SRC.slice(iSt, iSt + 700)),
+        'the marking payload counts Paper 2\'s ticks before it can ever say "NOT ATTEMPTED" (#858)');
+}
+
 // ── D · the protocols agree ────────────────────────────────────────────────────────────────────────────────────
 console.log('\nD · the protocols');
 const MSQ = read('protocols/aqa/language2/modules/protocol-q1-msq.md');
