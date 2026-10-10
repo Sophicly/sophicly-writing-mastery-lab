@@ -897,31 +897,75 @@
     // ops for ☑ on [from, to]: every selected line that holds anything besides its tick gets a tick at its start —
     // or, when every such line already starts with one, the ticks come off (the button toggles, like ☑ on a
     // paragraph). Back-to-front order, so applying one op never moves the position of the next.
-    function lineCheckOps(blocks, from, to) {
+    // v7.20.814 (#867a): a line may open with an INDENT (lineIndent, kids carry its `level`) and then a tick — that
+    // pair is the line's PREFIX. boxLines reads it once for both buttons: `indentPos`/`indent` for the indent,
+    // `tickAt` = where the tick goes (just after any indent), `hasMark` = a tick sits there.
+    const MAX_LINE_INDENT = 4;
+    function boxLines(blocks) {
         const lines = [];
         (blocks || []).forEach((b) => {
             let pos = b.start, cur = null;
-            const open = (p) => { cur = { start: p, end: p, hasMark: false, content: false }; lines.push(cur); };
+            const open = (p) => { cur = { start: p, end: p, indent: 0, indentPos: -1, tickAt: p, hasMark: false, content: false }; lines.push(cur); };
             open(pos);
             (b.kids || []).forEach((k) => {
                 if (k.name === 'hardBreak') { cur.end = pos; pos += k.size; open(pos); return; }
-                if (k.name === 'checkMark' && pos === cur.start) cur.hasMark = true;
+                if (k.name === 'lineIndent' && pos === cur.start) { cur.indent = k.level || 1; cur.indentPos = pos; cur.tickAt = pos + k.size; }
+                else if (k.name === 'checkMark' && pos === cur.tickAt) cur.hasMark = true;
                 else cur.content = true;
                 pos += k.size; cur.end = pos;
             });
         });
+        return lines;
+    }
+    function lineCheckOps(blocks, from, to) {
+        const lines = boxLines(blocks);
         const caret = from === to;
         const hit = lines.filter((l) => l.content && (caret ? (l.start <= from && from <= l.end) : (l.start < to && l.end > from)));
         if (!hit.length) return [];
         const remove = hit.every((l) => l.hasMark);
         return hit.filter((l) => (remove ? l.hasMark : !l.hasMark))
-            .map((l) => ({ op: remove ? 'delete' : 'insert', pos: l.start }))
+            .map((l) => ({ op: remove ? 'delete' : 'insert', pos: l.tickAt }))
             .sort((a, b) => b.pos - a.pos);
+    }
+    // v7.20.814 (#867a — Neil, 10 Oct: "I would like to be able to indent a list and with the checkboxes"). Tab / ⇥
+    // (dir +1) and Shift+Tab / ⇤ (dir −1) on box lines. A CARET moves its own line even when that line is empty (Tab on
+    // a fresh line, before typing); a RANGE skips blank lines, as ☑ does. Levels run 0–MAX_LINE_INDENT; level 0 is no
+    // lineIndent at all. Returns { lines, ops }: `lines` = how many box lines the selection is on, so the caller can
+    // keep Tab in the document even when the line is already at the edge (no ops), instead of losing focus.
+    function lineIndentOps(blocks, from, to, dir) {
+        const caret = from === to;
+        const hit = boxLines(blocks).filter((l) => (caret ? (l.start <= from && from <= l.end) : (l.content && l.start < to && l.end > from)));
+        const ops = [];
+        hit.forEach((l) => {
+            const next = Math.max(0, Math.min(MAX_LINE_INDENT, l.indent + dir));
+            if (next === l.indent) return;
+            if (l.indent === 0) ops.push({ op: 'insert', pos: l.start, level: next });
+            else if (next === 0) ops.push({ op: 'delete', pos: l.indentPos });
+            else ops.push({ op: 'set', pos: l.indentPos, level: next });
+        });
+        return { lines: hit.length, ops: ops.sort((a, b) => b.pos - a.pos) };
     }
     // @LINE-CHECK-PURE-END
     // The editor half: collect the boxes the selection touches and apply lineCheckOps in ONE transaction (one
     // Cmd+Z undoes it). Paragraphs, headings and ChecklistItems are left to the block path — returns false so
     // the caller falls through to it. Never touches a read-only section, a display-locked lesson or a viewer.
+    // The boxes the selection touches, as lineCheckOps / lineIndentOps read them (v7.20.814: shared by ☑ and indent).
+    function _boxBlocksIn(state, from, to) {
+        const blocks = [];
+        state.doc.nodesBetween(from, to, (node, pos) => {
+            if (node.type.name === 'sectionBlock' && node.attrs.editable === false) return false;
+            if (!node.isTextblock) return true;
+            if (node.type.name === 'paragraph' || node.type.name === 'heading' || node.type.name === 'checklistItem') return false;
+            blocks.push({ start: pos + 1, kids: _boxKids(node) });
+            return false;
+        });
+        return blocks;
+    }
+    function _boxKids(node) {
+        const kids = [];
+        node.forEach((c) => kids.push({ name: c.type.name, size: c.nodeSize, level: c.attrs && c.attrs.level }));
+        return kids;
+    }
     function _toggleLineChecks(editor) {
         try {
             if (!editor || !editor.isEditable || _docDisplayLocked()) return false;
@@ -929,16 +973,7 @@
             const mark = state.schema.nodes.checkMark;
             if (!mark || !view) return false;
             const { from, to } = state.selection;
-            const blocks = [];
-            state.doc.nodesBetween(from, to, (node, pos) => {
-                if (node.type.name === 'sectionBlock' && node.attrs.editable === false) return false;
-                if (!node.isTextblock) return true;
-                if (node.type.name === 'paragraph' || node.type.name === 'heading' || node.type.name === 'checklistItem') return false;
-                const kids = [];
-                node.forEach((c) => kids.push({ name: c.type.name, size: c.nodeSize }));
-                blocks.push({ start: pos + 1, kids });
-                return false;
-            });
+            const blocks = _boxBlocksIn(state, from, to);
             const ops = lineCheckOps(blocks, from, to);
             if (!ops.length) return false;
             const tr = state.tr;
@@ -954,6 +989,61 @@
             console.warn('[WML] ☑ on box lines failed', e);
             return false;
         }
+    }
+    // v7.20.814 (#867a): indent (dir +1) / outdent (dir −1) the box lines under the caret or selection, in ONE
+    // transaction. `how` = 'key' (Tab: a key event, already the student's own edit to the structure lock) or
+    // 'toolbar' (⇥ ⇤: pressed outside the editor, so it is marked uiEvent — else Cmd+Z skips it, as ☑ did at .811).
+    // Returns false only when the selection is in no box line (Tab then keeps its usual job); a line already at
+    // the edge returns true with no change, so Tab never throws the student out of the document mid-list.
+    function _indentBoxLines(editor, dir, how) {
+        try {
+            if (!editor || !editor.isEditable || _docDisplayLocked()) return false;
+            const { state, view } = editor;
+            const ind = state.schema.nodes.lineIndent;
+            if (!ind || !view) return false;
+            const { from, to } = state.selection;
+            const res = lineIndentOps(_boxBlocksIn(state, from, to), from, to, dir);
+            if (!res.lines) return false;
+            if (!res.ops.length) return true;
+            const tr = state.tr;
+            res.ops.forEach((o) => {
+                if (o.op === 'insert') tr.insert(o.pos, ind.create({ level: o.level }));
+                else if (o.op === 'delete') tr.delete(o.pos, o.pos + 1);
+                else tr.setNodeMarkup(o.pos, undefined, { level: o.level });
+            });
+            if (how === 'toolbar') tr.setMeta('uiEvent', 'indent');
+            view.dispatch(tr);
+            if (how === 'toolbar') view.focus();
+            return true;
+        } catch (e) {
+            console.warn('[WML] indent on box lines failed', e);
+            return false;
+        }
+    }
+    // v7.20.814 (#867a): Enter inside a box. On an indented or ticked line the new line keeps the indent and gets a
+    // fresh, unticked tick; on a line holding ONLY its indent/tick, Enter removes them (the list ends) — the rule the
+    // block checklist already follows (ChecklistItem's Enter). A caret inside the prefix, a range, or a plain line:
+    // the plain line break, exactly as before.
+    function _boxLineEnter(editor, boxDepth) {
+        const { state } = editor;
+        const { $from } = state.selection;
+        const line = boxLines([{ start: $from.start(boxDepth), kids: _boxKids($from.node(boxDepth)) }])
+            .find((l) => l.start <= $from.pos && $from.pos <= l.end);
+        const tr = state.tr;
+        if (line && (line.indent || line.hasMark) && state.selection.empty) {
+            if (!line.content) { tr.delete(line.start, line.end); editor.view.dispatch(tr); return; }
+            if ($from.pos >= line.tickAt + (line.hasMark ? 1 : 0)) {
+                tr.replaceSelectionWith(editor.schema.nodes.hardBreak.create(), false);
+                const carry = [];
+                if (line.indent) carry.push(editor.schema.nodes.lineIndent.create({ level: line.indent }));
+                if (line.hasMark) carry.push(editor.schema.nodes.checkMark.create({ checked: false }));
+                tr.insert(tr.selection.from, carry);
+                editor.view.dispatch(tr.scrollIntoView());
+                return;
+            }
+        }
+        tr.replaceSelectionWith(editor.schema.nodes.hardBreak.create(), false).scrollIntoView();
+        editor.view.dispatch(tr);
     }
     // v7.19.854: AQA-style Paper 2 (nonfiction, inference/comparison/transactional).
     // Registered port surface (PORT SOP §E2) — paper-true wording branches key on this.
@@ -38911,6 +39001,9 @@
             { id: 'blockquote', html: '❝', label: 'Quote' },
             { id: 'hr', html: '—', label: 'Rule' },
             { id: 'checklist', html: '☑', label: 'Checklist' },
+            // v7.20.814 (#867a): indent / outdent lines inside a box — the Tab keys' twins, for iPads with no Tab key
+            { id: 'indent', html: '⇥', label: 'Indent' },
+            { id: 'outdent', html: '⇤', label: 'Outdent' },
             // v7.20.461 (#337) — text size RETURNS to the toolbar. It is formatting, and formatting
             // lives here; the rail is for document-scoped and rare things. See the rail note.
             { id: 'textSmaller', html: '<span style="font-size:11px">A</span>↓', label: 'Smaller text' },
@@ -39011,6 +39104,8 @@
                     return false;
                 }).run();
             },
+            indent: () => { _indentBoxLines(canvasEditor, 1, 'toolbar'); },    // v7.20.814 (#867a)
+            outdent: () => { _indentBoxLines(canvasEditor, -1, 'toolbar'); },
             undo: () => canvasEditor?.chain().focus().undo().run(),
             redo: () => canvasEditor?.chain().focus().redo().run(),
             comment: () => addComment(),
@@ -49871,11 +49966,9 @@
                         const { $from } = editor.state.selection;
                         for (let d = $from.depth; d >= 0; d--) {
                             if ($from.node(d).type.name === 'inputField') {
-                                // Insert a hardBreak node directly via transaction (avoids schema split)
-                                const { tr } = editor.state;
-                                const hardBreak = editor.schema.nodes.hardBreak.create();
-                                tr.replaceSelectionWith(hardBreak, false).scrollIntoView();
-                                editor.view.dispatch(tr);
+                                // A hardBreak via transaction (avoids schema split). v7.20.814 (#867a): an indented or
+                                // ticked line carries its indent + a fresh tick to the new line (_boxLineEnter).
+                                _boxLineEnter(editor, d);
                                 return true;
                             }
                         }
@@ -50713,6 +50806,59 @@
                         ignoreMutation: () => true,
                         stopEvent: (e) => e.type === 'mousedown' || e.type === 'click',
                     };
+                };
+            },
+        });
+
+        // ── LineIndent — an INLINE indent at the start of a line inside a box (v7.20.814, FIXLIST #867a) ──
+        // Neil, 10 Oct: "I would like to be able to indent a list and with the checkboxes". A box holds inline content,
+        // so a line cannot be a nested block; this atom opens the line (before its tick) and carries only `level`
+        // (1–MAX_LINE_INDENT). No text: word counts and the plan text never see it. `data-indent` is already on the
+        // server's keep-list (class-rest-api.php), and the class sizes it in the live editor and the stored-document
+        // pad alike. Known limit: a long indented line that wraps continues from the box's left edge.
+        const LineIndent = Node.create({
+            name: 'lineIndent',
+            inline: true,
+            group: 'inline',
+            atom: true,
+            selectable: false,
+            draggable: false,
+            addAttributes() {
+                return {
+                    level: {
+                        default: 1,
+                        parseHTML: el => Math.max(1, Math.min(MAX_LINE_INDENT, parseInt(el.getAttribute('data-indent'), 10) || 1)),
+                        renderHTML: attrs => ({ 'data-indent': String(attrs.level) }),
+                    },
+                };
+            },
+            parseHTML() { return [{ tag: 'span[data-type="line-indent"]' }]; },
+            renderHTML({ HTMLAttributes }) {
+                return ['span', Object.assign({}, HTMLAttributes, { 'data-type': 'line-indent', class: 'swml-line-indent' })];
+            },
+            addNodeView() {
+                return ({ node }) => {
+                    const dom = document.createElement('span');
+                    dom.className = 'swml-line-indent';
+                    dom.setAttribute('data-type', 'line-indent');
+                    dom.setAttribute('data-indent', String(node.attrs.level));
+                    dom.contentEditable = 'false';
+                    return {
+                        dom,
+                        update(n) {
+                            if (n.type.name !== 'lineIndent') return false;
+                            const v = String(n.attrs.level);
+                            if (dom.getAttribute('data-indent') !== v) dom.setAttribute('data-indent', v);
+                            return true;
+                        },
+                        ignoreMutation: () => true,
+                    };
+                };
+            },
+            addKeyboardShortcuts() {
+                return {
+                    Tab: ({ editor }) => _indentBoxLines(editor, 1, 'key'),
+                    'Shift-Tab': ({ editor }) => _indentBoxLines(editor, -1, 'key'),
                 };
             },
         });
@@ -51567,10 +51713,7 @@
                         const { $from } = editor.state.selection;
                         for (let d = $from.depth; d >= 0; d--) {
                             if ($from.node(d).type.name === 'outlineRow') {
-                                const { tr } = editor.state;
-                                const hardBreak = editor.schema.nodes.hardBreak.create();
-                                tr.replaceSelectionWith(hardBreak, false).scrollIntoView();
-                                editor.view.dispatch(tr);
+                                _boxLineEnter(editor, d);   // v7.20.814 (#867a): same line break; a list line carries its indent + tick
                                 return true;
                             }
                         }
@@ -53215,6 +53358,7 @@
                 LearnChip, // v7.19.949: in-context Fix→Learn chip inline node (penalty lines)
                 ParaPop, // v7.20.650 (#637): pop-out-this-paragraph chip inline node (Your paragraph lines)
                 CheckMark, // v7.20.811 (#864): inline tick box at the start of a line inside a box (☑ on box lines)
+                LineIndent, // v7.20.814 (#867a): inline indent at the start of a line inside a box (Tab / ⇥ ⇤)
                 // v7.14.76: PaginationPlus DISABLED — continuous scroll mode.
                 // Eliminates scroll-jump bugs, criteria splitting across page breaks,
                 // and NodeView recreation issues. Pages added no pedagogical value

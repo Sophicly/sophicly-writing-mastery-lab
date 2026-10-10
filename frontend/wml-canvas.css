@@ -9639,6 +9639,14 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
     .swml-check-mark[data-checked="true"] .swml-checklist-box { box-shadow: inset 0 0 0 10px #1CD991; }
     .swml-check-mark[data-checked="true"] .swml-check-tick { stroke-dashoffset: 0px; }
 }
+/* v7.20.814 (#867a): the INLINE indent at the start of a line inside a box (LineIndent). One step = the tick box
+   (18px) + its gap (8px), so an indented line's tick sits under its parent's text. Class-sized, so the live editor
+   and the stored-document pad (saved HTML keeps class + data-indent) draw it the same. */
+.swml-line-indent { display: inline-block; height: 1px; vertical-align: baseline; }
+.swml-line-indent[data-indent="1"] { width: 26px; }
+.swml-line-indent[data-indent="2"] { width: 52px; }
+.swml-line-indent[data-indent="3"] { width: 78px; }
+.swml-line-indent[data-indent="4"] { width: 104px; }
 /* Stored HTML carries no NodeView chrome (the prior-attempt pad renders saved docs statically) — draw the box
    from the persisted data-checked, exactly as the block checklist's pad rule does. */
 .swml-prior-pad [data-type="check-mark"] {

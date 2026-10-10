@@ -104,11 +104,13 @@ ok(act.indexOf('_toggleLineChecks(canvasEditor)') > 0 && act.indexOf('_toggleLin
     'C5 ☑ tries the box path FIRST, then the unchanged paragraph path');
 const tog = SRC.slice(SRC.indexOf('function _toggleLineChecks(editor)'), SRC.indexOf('function _toggleLineChecks(editor)') + 2600);
 ok(/!editor\.isEditable \|\| _docDisplayLocked\(\)/.test(tog), 'C6 ☑ never edits for a viewer or in a display-locked lesson');
-ok(/node\.type\.name === 'sectionBlock' && node\.attrs\.editable === false/.test(tog), 'C7 ☑ never edits a read-only section');
-ok(/'paragraph' \|\| node\.type\.name === 'heading' \|\| node\.type\.name === 'checklistItem'/.test(tog), 'C8 paragraphs, headings and block checklist items stay with the block path');
+// v7.20.814: the box collector is shared with indenting (_boxBlocksIn) — ☑ must still go through it.
+const coll = SRC.slice(SRC.indexOf('function _boxBlocksIn('), SRC.indexOf('function _boxKids('));
+ok(/const blocks = _boxBlocksIn\(state, from, to\);/.test(tog) && /node\.type\.name === 'sectionBlock' && node\.attrs\.editable === false/.test(coll), 'C7 ☑ never edits a read-only section');
+ok(/'paragraph' \|\| node\.type\.name === 'heading' \|\| node\.type\.name === 'checklistItem'/.test(coll), 'C8 paragraphs, headings and block checklist items stay with the block path');
 ok(/const tr = state\.tr;[\s\S]{0,800}view\.dispatch\(tr\)/.test(tog), 'C9 every line changes in ONE transaction (one Cmd+Z undoes it)');
 ok(/tr\.setMeta\('uiEvent', 'checklist'\);\s*view\.dispatch\(tr\);/.test(tog), 'C9c the ☑ change is marked as the student\'s own (uiEvent) — else the structure lock keeps it out of undo (measured)');
-const nv = SRC.slice(SRC.indexOf('const CheckMark = Node.create'), SRC.indexOf('// ── OutlineRow Node'));
+const nv = SRC.slice(SRC.indexOf('const CheckMark = Node.create'), SRC.indexOf('// ── LineIndent — an INLINE indent'));
 ok(nv.length > 500 && nv.length < 6000, 'C9b the CheckMark NodeView source is found (beside ChecklistItem)');
 ok(/dom\.closest\('\[data-swml-display-lock\]'\) \|\| !editor\.isEditable/.test(nv), 'C10 a tick is refused where ChecklistItem\'s is (display lock) and for anyone who cannot edit');
 ok(/tr\.setNodeMarkup\(pos, undefined, \{ \.\.\.cur\.attrs, checked: !cur\.attrs\.checked \}\)/.test(nv), 'C11 a tick is a PM transaction (NodeView law)');
@@ -116,6 +118,85 @@ ok(/saveCanvasContent\(\)/.test(nv), 'C12 a tick saves explicitly (setNodeMarkup
 ok(/ignoreMutation: \(\) => true/.test(nv) && /update\(n\)/.test(nv), 'C13 the NodeView updates in place (the tick animates; no foreign-edit redraw)');
 ok(/\.swml-check-mark\[data-checked="true"\] \.swml-checklist-box/.test(CSS) && /\.swml-prior-pad \[data-type="check-mark"\]/.test(CSS),
     'C14 the shared tick look applies to the inline box, live and in the stored-document pad');
+
+// ── D · v7.20.814 (#867a) — indenting box lines. Neil, 10 Oct: "I would like to be able to indent a list and with the
+//     checkboxes". His box is a real nested list (prod read-only: "AO2" over 13 ticked points, "Effects" over
+//     Fear / Desperation / …). A line's PREFIX is [lineIndent?][checkMark?]. ──
+const lineIndentOps = new Function(PURE + '\nreturn lineIndentOps;')();
+const boxLines = new Function(PURE + '\nreturn boxLines;')();
+// spec: [{ t, indent, mark }] — indent = level (0 = none), mark = has a tick
+function ibox(spec, start) {
+    const kids = []; const starts = []; let pos = start;
+    spec.forEach((s, i) => {
+        starts.push(pos);
+        if (s.indent) { kids.push({ name: 'lineIndent', size: 1, level: s.indent }); pos += 1; }
+        if (s.mark) { kids.push({ name: 'checkMark', size: 1 }); pos += 1; }
+        if (s.t) { kids.push({ name: 'text', size: s.t.length }); pos += s.t.length; }
+        if (i < spec.length - 1) { kids.push({ name: 'hardBreak', size: 1 }); pos += 1; }
+    });
+    return { block: { start, kids }, starts, end: pos };
+}
+const N = ibox([{ t: 'AO2', mark: true }, { t: 'Perceptive', mark: true }, { t: 'Detailed analysis', indent: 2, mark: true },
+    { t: '' }, { t: 'Effects' }, { t: 'Fear', indent: 4 }], 200);
+let r = lineIndentOps([N.block], N.starts[1] + 3, N.starts[1] + 3, 1);
+ok(r.lines === 1 && r.ops.length === 1 && r.ops[0].op === 'insert' && r.ops[0].pos === N.starts[1] && r.ops[0].level === 1,
+    'D1 Tab on a ticked line with no indent puts a level-1 indent at the line START (before its tick)');
+r = lineIndentOps([N.block], N.starts[2] + 4, N.starts[2] + 4, 1);
+ok(r.ops.length === 1 && r.ops[0].op === 'set' && r.ops[0].pos === N.starts[2] && r.ops[0].level === 3, 'D2 Tab on a level-2 line raises it to 3 in place');
+r = lineIndentOps([N.block], N.starts[2] + 4, N.starts[2] + 4, -1);
+ok(r.ops.length === 1 && r.ops[0].op === 'set' && r.ops[0].level === 1, 'D3 Shift+Tab lowers it a level');
+const one = ibox([{ t: 'Fear', indent: 1 }], 400);
+r = lineIndentOps([one.block], 402, 402, -1);
+ok(r.ops.length === 1 && r.ops[0].op === 'delete' && r.ops[0].pos === 400, 'D4 Shift+Tab at level 1 removes the indent (level 0 = no indent at all)');
+r = lineIndentOps([N.block], N.starts[4] + 2, N.starts[4] + 2, -1);
+ok(r.lines === 1 && r.ops.length === 0, 'D5 Shift+Tab on an un-indented line changes nothing but still counts the line (Tab stays in the document)');
+r = lineIndentOps([N.block], N.starts[5] + 2, N.starts[5] + 2, 1);
+ok(r.lines === 1 && r.ops.length === 0, 'D6 Tab at the deepest level (4) changes nothing and stays in the document');
+r = lineIndentOps([N.block], N.starts[3], N.starts[3], 1);
+ok(r.ops.length === 1 && r.ops[0].op === 'insert' && r.ops[0].pos === N.starts[3], 'D7 Tab on an EMPTY line indents it (a fresh line, before typing)');
+r = lineIndentOps([N.block], N.starts[2], N.starts[4] + 3, 1);
+ok(r.ops.length === 2 && !r.ops.some((o) => o.pos === N.starts[3]) && r.ops[0].pos > r.ops[1].pos, 'D8 a range indents every line it covers, skips the blank one, back to front');
+r = lineIndentOps([], 5, 5, 1);
+ok(r.lines === 0 && r.ops.length === 0, 'D9 outside every box: no lines — the caller lets Tab do its usual job');
+let c = lineCheckOps([N.block], N.starts[5] + 2, N.starts[5] + 2);
+ok(c.length === 1 && c[0].op === 'insert' && c[0].pos === N.starts[5] + 1, 'D10 ☑ on an indented line puts the tick AFTER the indent');
+c = lineCheckOps([N.block], N.starts[2] + 4, N.starts[2] + 4);
+ok(c.length === 1 && c[0].op === 'delete' && c[0].pos === N.starts[2] + 1, 'D11 ☑ again on an indented ticked line removes the tick behind the indent, never the indent');
+const L = boxLines([ibox([{ t: 'x', indent: 2, mark: true }, { t: '', indent: 1, mark: true }], 600).block]);
+ok(L[0].indent === 2 && L[0].tickAt === 601 && L[0].hasMark && L[0].content && L[1].indent === 1 && L[1].hasMark && !L[1].content,
+    'D12 the prefix reader: indent level, tick position, and a line holding ONLY its prefix (Enter ends the list there)');
+
+// ── E · planted defects for D ──
+const mutI = (from_, to_) => { const s = PURE.replace(from_, to_); return s === PURE ? null : new Function(s + '\nreturn [lineIndentOps, lineCheckOps];')(); };
+let mi = mutI("map((l) => ({ op: remove ? 'delete' : 'insert', pos: l.tickAt }))", "map((l) => ({ op: remove ? 'delete' : 'insert', pos: l.start }))");
+ok(mi && mi[1]([N.block], N.starts[5] + 2, N.starts[5] + 2)[0].pos === N.starts[5], 'E1 planted: a tick at the line start would land BEFORE the indent — D10 catches it');
+mi = mutI('Math.min(MAX_LINE_INDENT, l.indent + dir)', 'l.indent + dir');
+ok(mi && mi[0]([N.block], N.starts[5] + 2, N.starts[5] + 2, 1).ops.length === 1, 'E2 planted: no ceiling would indent past level 4 — D6 catches it');
+mi = mutI('(caret ? (l.start <= from && from <= l.end) : (l.content && ', '(caret ? (l.content && l.start <= from && from <= l.end) : (l.content && ');
+ok(mi && mi[0]([N.block], N.starts[3], N.starts[3], 1).ops.length === 0, 'E3 planted: skipping empty lines for a CARET would break Tab on a fresh line — D7 catches it');
+
+// ── F · wiring for D ──
+const li = SRC.slice(SRC.indexOf('const LineIndent = Node.create'), SRC.indexOf('// ── OutlineRow Node'));
+ok(/const LineIndent = Node\.create\(\{\s*name: 'lineIndent',\s*inline: true,\s*group: 'inline',\s*atom: true,/.test(SRC), 'F1 LineIndent is an inline atom (allowed in a box\'s inline content)');
+ok(/\n\s*LineIndent, \/\/ v7\.20\.814/.test(SRC), 'F2 LineIndent is registered in the editor\'s extensions');
+ok(/tag: 'span\[data-type="line-indent"\]'/.test(li) && /'data-type': 'line-indent', class: 'swml-line-indent'/.test(li) && /'data-indent': String\(attrs\.level\)/.test(li),
+    'F3 it round-trips through the saved HTML as <span data-type="line-indent" data-indent="N" class="swml-line-indent">');
+ok(/'data-indent'/.test(REST) && /\$tiptap_tags = \[[^\]]*'span'/.test(REST), 'F4 the server keeps data-indent on a span (already on the wp_kses keep-list)');
+ok(/Tab: \(\{ editor \}\) => _indentBoxLines\(editor, 1, 'key'\)/.test(li) && /'Shift-Tab': \(\{ editor \}\) => _indentBoxLines\(editor, -1, 'key'\)/.test(li), 'F5 Tab / Shift+Tab indent and outdent');
+ok(/\{ id: 'indent', html: '⇥', label: 'Indent' \}/.test(SRC) && /\{ id: 'outdent', html: '⇤', label: 'Outdent' \}/.test(SRC)
+    && /indent: \(\) => \{ _indentBoxLines\(canvasEditor, 1, 'toolbar'\); \}/.test(SRC) && /outdent: \(\) => \{ _indentBoxLines\(canvasEditor, -1, 'toolbar'\); \}/.test(SRC),
+    'F6 ⇥ / ⇤ on the toolbar (iPads have no Tab key)');
+const ib = SRC.slice(SRC.indexOf('function _indentBoxLines(editor, dir, how)'), SRC.indexOf('function _boxLineEnter(editor, boxDepth)'));
+ok(/if \(how === 'toolbar'\) tr\.setMeta\('uiEvent', 'indent'\);\s*view\.dispatch\(tr\);/.test(ib), 'F7 a toolbar indent is marked the student\'s own (uiEvent), so one Cmd+Z undoes it');
+ok(/!editor\.isEditable \|\| _docDisplayLocked\(\)/.test(ib) && /_boxBlocksIn\(state, from, to\)/.test(ib)
+    && /node\.type\.name === 'sectionBlock' && node\.attrs\.editable === false/.test(SRC.slice(SRC.indexOf('function _boxBlocksIn('), SRC.indexOf('function _boxKids('))),
+    'F8 indenting refuses viewers, display-locked lessons and read-only sections (the ☑ collector)');
+ok(/if \(!res\.lines\) return false;\s*if \(!res\.ops\.length\) return true;/.test(ib), 'F9 outside a box Tab keeps its job; at the edge it stays in the document');
+const ent = SRC.slice(SRC.indexOf('function _boxLineEnter(editor, boxDepth)'), SRC.indexOf('function _boxLineEnter(editor, boxDepth)') + 2000);
+ok(/if \(!line\.content\) \{ tr\.delete\(line\.start, line\.end\);/.test(ent) && /lineIndent\.create\(\{ level: line\.indent \}\)/.test(ent) && /checkMark\.create\(\{ checked: false \}\)/.test(ent),
+    'F10 Enter carries the indent + a fresh UNticked tick; on a prefix-only line it ends the list (the ChecklistItem rule)');
+ok((SRC.match(/_boxLineEnter\(editor, d\);/g) || []).length === 2, 'F11 both box types (plan box + outline row) use it on Enter');
+ok(/\.swml-line-indent\[data-indent="1"\] \{ width: 26px; \}/.test(CSS) && /\.swml-line-indent\[data-indent="4"\] \{ width: 104px; \}/.test(CSS), 'F12 one step = tick 18px + gap 8px = 26px, four levels');
 
 console.log(`${fail ? '✗ FAIL' : '✓ PASS'} — line-check-harness: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
