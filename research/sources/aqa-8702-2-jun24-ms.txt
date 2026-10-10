@@ -1,0 +1,1473 @@
+GCSE
+ENGLISH LITERATURE
+8702/2R
+Paper 2 Modern texts and poetry
+Mark scheme
+June 2024
+Version: 1.0 Final
+*246g8702/2R/MS*
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+2
+Mark schemes are prepared by the Lead Assessment Writer and considered, together with the relevant
+questions, by a panel of subject teachers. This mark scheme includes any amendments made at the
+standardisation events which all associates participate in and is the scheme which was used by them in
+this examination. The standardisation process ensures that the mark scheme covers the students’
+responses to questions and that every associate understands and applies it in the same correct way.
+As preparation for standardisation each associate analyses a number of students’ scripts. Alternative
+answers not already covered by the mark scheme are discussed and legislated for. If, after the
+standardisation process, associates encounter unusual answers which have not been raised they are
+required to refer these to the Lead Examiner.
+It must be stressed that a mark scheme is a working document, in many cases further developed and
+expanded on the basis of students’ reactions to a particular paper. Assumptions about future mark
+schemes on the basis of one year’s document should be avoided; whilst the guiding principles of
+assessment remain constant, details will change, depending on the content of a particular examination
+paper.
+No student should be disadvantaged on the basis of their gender identity and/or how they refer to the
+gender identity of others in their exam responses.
+A consistent use of ‘they/them’ as a singular and pronouns beyond ‘she/her’ or ‘he/him’ will be credited in
+exam responses in line with existing mark scheme criteria.
+Further copies of this mark scheme are available from aqa.org.uk
+Copyright information
+AQA retains the copyright on all its publications. However, registered schools/colleges for AQA are permitted to copy material from this booklet for their own
+internal use, with the following important exception: AQA cannot give permission to schools/colleges to photocopy any material that is acknowledged to a third
+party even for internal use within the centre.
+Copyright © 2024 AQA and its licensors. All rights reserved.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+3
+Statement of importance
+GCSE English Literature is the study of how writers communicate their ideas about the world, and how
+readers might respond to these ideas. It aims to develop a critical understanding of the ways in which
+literary texts are a reflection of, and exploration of, the human condition, the study of which develops
+empathic understanding of human nature. High-quality English literature is writing which displays
+recognisable literary qualities and, although shaped by particular contexts, transcends them and speaks
+about the universality of the human condition. GCSE English Literature aims to enable students to
+appreciate these qualities, developing and presenting informed, critical responses to the ideas in literary
+texts and the ways writers present these ideas. It aims to enable students to make links between a
+variety of written texts and between the text and the context within which it was shaped.
+Principles of mark scheme construction
+Each mark scheme is driven by the task and by the statement of importance about GCSE English
+Literature. It aims to do two things:
+• to describe typical features of response in order to decide on a mark
+• to identify typical features of proficiency in order to aid discrimination between levels of performance.
+Each long form answer mark scheme is constructed using six levels. This is to reflect the ability level of
+the whole cohort. There are four or five marks within each level to allow for levels of proficiency and to
+allow for discrimination between levels of cognitive ability across the whole cohort.
+Each mark scheme places assessment objectives AO1 and AO2 as the key skills. This is driven by the
+statement of importance of the subject, in that the study of great literary texts is the study of the
+interrelationship between the reader and the writer of the text and that the communication and reception
+of these ideas is an inherent feature of English literature. It is also driven by the acknowledgement that
+GCSE English Literature assesses cognitive levels of ability; the level of response to ideas will have
+parity with the level of response to the methods of communicating those ideas.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+4
+How to apply the mark scheme
+The mark scheme is constructed using six levels of attainment that span the whole range of ability at
+GCSE. The descriptors of attainment reference the assessment objectives for that particular question.
+Examiners are required to use the mark scheme to consider the whole response and decide upon the
+most appropriate level. The mark scheme provides two descriptors: a description of typical features of a
+response in each level, and a description of the kinds of skills candidates in that level will be proficient in.
+This is in order to support examiners in making their judgement of the extent to which the qualities and
+skills being demonstrated merit a particular level of attainment. As each response being marked is a
+response to a particular task, examiners are assessing the extent to which the candidate has responded
+to the task, and also the level of skill that the candidate has demonstrated.
+Each level has four or five marks available and four or five skills descriptors. Fair application of the mark
+scheme to all candidates is driven by the descriptors in the mark scheme, and therefore examiners are
+required to make a judgement about the extent to which a candidate achieves every descriptor in that
+particular level in order to warrant a mark at the top of that level. If a candidate achieves everything in a
+level, they should be awarded the mark at the top of that level.
+Since answers will rarely match a descriptor in all respects, examiners must allow good performance in
+some aspects to compensate for shortcomings in other respects. Consequently, the level is determined
+by the ‘best fit’ rather than requiring every element of the descriptor to be matched. Examiners should
+aim to use the full range of levels and marks, taking into account the standard that can reasonably be
+expected of candidates after one or two years of study on the GCSE course and in the time available in
+the examination.
+If a candidate does not address a particular defining feature of a task, examiners are required to make a
+judgement about the extent to which other skills can place the response in a particular level, and where
+the response should be placed.
+Step 1 Determine a level
+Start at the lowest level of the mark scheme and use it as a ladder to see whether the answer meets the
+descriptor for that level. The descriptor for the level indicates the different qualities that might be seen in
+the student’s answer for that level. If it meets the lowest level then go to the next one and decide if it
+meets this level, and so on, until you have a match between the level descriptor and the answer. With
+practice and familiarity you will find that for better answers you will be able to quickly skip through the
+lower levels of the mark scheme.
+When assigning a level you should look at the overall quality of the answer and not look to pick holes in
+small and specific parts of the answer where the student has not performed quite as well as the rest. If
+the answer covers different aspects of different levels of the mark scheme you should use a best fit
+approach for defining the level and then use the variability of the response to help decide the mark within
+the level; ie if the response is predominantly Level 3 with a small amount of Level 4 material it would be
+placed in Level 3 but be awarded a mark near the top of the level because of the Level 4 content.
+Step 2 Determine a mark
+Once you have assigned a level you need to decide on the mark. The descriptors on how to allocate
+marks can help with this. The exemplar materials used during standardisation will also help. There will
+be an answer in the standardising materials which will correspond with each level of the mark scheme.
+This answer will have been awarded a mark by the Lead Examiner. You can compare the student’s
+answer with the example to determine if it is of the same standard, better or worse than the example.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+5
+You can then use this to allocate a mark for the answer based on the Lead Examiner’s mark on the
+example.
+You may well need to read back through the answer as you apply the mark scheme to clarify points and
+assure yourself that the level and the mark are appropriate.
+Indicative content in the mark scheme is provided as a guide for examiners. It is not intended to be
+exhaustive and you must credit other valid points. Students do not have to cover all of the points
+mentioned in the indicative content to reach the highest level of the mark scheme.
+An answer which contains nothing of relevance to the question must be awarded no marks.
+Rubric infringements
+GCSE English Literature is a skills-based subject and, as such, best-fit is the most appropriate means by
+which the candidature can be fairly and equitably rewarded for their achievements at the end of their
+course of study. However, a mark scheme also has the function of assessing the extent to which each
+response meets the requirements of the relevant elements of the particular specification.
+Therefore, where a response is judged not to have addressed a defining feature of a particular task,
+such as:
+Paper 1 Section A response to extract and whole text
+Paper 1 Section B response to extract and whole text
+Paper 2 Section B response to named poem and one other from the named cluster
+then this would be classed as a rubric infringement and could, as referenced in the mark scheme, be
+‘capped’ at the top of Level 2. Cases of rubric infringement will always be referred to a senior associate
+who will review the response in order to make a judgement about the totality of the response and
+therefore the validity of cap application.
+Supporting documentation
+Standardising scripts would provide exemplification of attainment in order to guide examiners towards
+the process of discerning between levels of attainment and to aid judgement about the positioning of
+each response in terms of a final mark.
+Exemplification documents, including indicative content, definitions of key descriptors in the mark
+scheme and exemplification of these descriptors, provide more detailed guidance to examiners on how
+to judge the relative qualities and skills being demonstrated by each candidate.
+Defining context (AO3)
+AO3 is the understanding of the relationship between the ideas in the text and the contexts of the text.
+The range of contexts and relationships that is most relevant as part of AO3 will depend on the text, the
+author and the task. In teaching and assessing AO3, teachers and students can consider context in a
+flexible way, depending on the text itself and whichever contexts are the most relevant for that particular
+text. These contexts may relate to the relationship between the text and the context in which it was
+written. However, the contexts may also relate to the context within which the text is set: location, social
+structures and features, cultural contexts, and periods in time. Context, where relevant, may also apply
+to literary contexts such as genres, and also the contexts in which texts are engaged with by different
+audiences, taking the reader outside the text in order to inform understanding of the meanings being
+conveyed. Acknowledgement of the universality of a literary text is an integral part of relating to it
+contextually.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+6
+Context is assessed throughout the paper. The strand in the mark scheme related to AO3 references
+‘ideas/perspectives/contextual factors’. However, if a question requires a student to think about the text
+in its context, this is also reflected inherently through the response to task.
+Assessment objectives (AOs)
+AO1 Read, understand and respond to texts.
+Students should be able to:
+• maintain a critical style and develop an informed personal response
+• use textual references, including quotations, to support and illustrate
+interpretations.
+AO2 Analyse the language, form and structure used by a writer to create meanings
+and effects, using relevant subject terminology where appropriate.
+AO3 Show understanding of the relationships between texts and the contexts in
+which they were written.
+AO4 Use a range of vocabulary and sentence structures for clarity, purpose and
+effect, with accurate spelling and punctuation.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+7
+Assessment of AO4
+AO4 will be assessed on Section A only. The performance descriptors are provided below.
+Performance descriptor Marks awarded
+High performance:
+In the context of the level of demand of the question, learners spell
+and punctuate with consistent accuracy, and consistently use
+vocabulary and sentence structures to achieve effective control of
+meaning.
+4 marks
+Intermediate performance:
+In the context of the level of demand of the question, learners spell
+and punctuate with considerable accuracy, and use a considerable
+range of vocabulary and sentence structures to achieve general
+control of meaning.
+2–3 marks
+Threshold performance:
+In the context of the level of demand of the question, learners spell and
+punctuate with reasonable accuracy, and use a reasonable range of
+vocabulary and sentence structures; any errors do not hinder meaning
+in the response.
+1 mark
+Where a candidate writes nothing or fails to meet threshold performance they should receive 0 marks.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+8
+Section A: Modern texts – Questions 01–24 (30 marks – AO1=12, AO2=12, AO3=6)
+Mark AO Typical features How to arrive at a mark
+Level 6
+Convincing,
+critical
+analysis and
+exploration
+26–30 marks
+AO1 • Critical, exploratory, conceptualised response
+to task and whole text.
+• Judicious use of precise references to support
+interpretation(s).
+At the top of the level, a candidate’s response is likely to be a
+critical, exploratory, well-structured argument. It takes a
+conceptualised approach to the full task supported by a range
+of judicious references. There will be a fine-grained and
+insightful analysis of methods supported by judicious use of
+subject terminology. Convincing exploration of one or more
+ideas/perspectives/contextual factors/interpretations.
+At the bottom of the level, a candidate will have Level 5 and
+be starting to demonstrate elements of exploratory thought
+and/or analysis of writer’s methods and/or contexts.
+AO2 • Analysis of writer’s methods with subject
+terminology used judiciously.
+• Exploration of effects of writer’s methods to
+create meanings.
+AO3 • Exploration of ideas/perspectives/contextual
+factors shown by specific, detailed links
+between context/text/task.
+Level 5
+Thoughtful,
+developed
+consideration
+21–25 marks
+AO1 • Thoughtful, developed response to task and
+whole text.
+• Apt references integrated into interpretation(s).
+At the top of the level, a candidate’s response is likely to be
+thoughtful, detailed and developed. It takes a considered
+approach to the full task with references integrated into
+interpretation; there will be a detailed examination of the effects
+of methods supported by apt use of subject terminology.
+Examination of ideas/perspectives/contextual factors, possibly
+including alternative interpretations/deeper meanings.
+At the bottom of the level, a candidate will have Level 4 and
+be starting to demonstrate elements of thoughtful consideration
+and/or examination of writer’s methods and/or contexts.
+AO2 • Examination of writer’s methods with subject
+terminology used effectively to support
+consideration of methods.
+• Examination of effects of writer’s methods to
+create meanings.
+AO3 • Thoughtful consideration of
+ideas/perspectives/contextual factors shown by
+examination of detailed links between
+context/text/task.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+9
+Level 4
+Clear
+understanding
+16–20 marks
+AO1 • Clear, explained response to task and whole
+text.
+• Effective use of references to support
+explanation.
+At the top of the level, a candidate’s response is likely to be
+clear, sustained and consistent. It takes a focused response to
+the full task which demonstrates clear understanding. It uses a
+range of references effectively to illustrate and justify
+explanation; there will be clear explanation of the effects of a
+range of writer’s methods supported by appropriate use of
+subject terminology. Clear understanding of
+ideas/perspectives/contextual factors.
+At the bottom of the level, a candidate will have Level 3 and
+be starting to demonstrate elements of understanding and/or
+explanation of writer’s methods and/or contexts.
+AO2 • Clear explanation of writer’s methods with
+appropriate use of relevant subject terminology.
+• Understanding of effects of writer’s methods to
+create meanings.
+AO3 • Clear understanding of ideas/perspectives/
+contextual factors shown by specific links
+between context/text/task.
+Level 3
+Explained,
+structured
+comments
+11–15 marks
+AO1 • Some explained response to task and whole
+text.
+• References used to support a range of relevant
+comments.
+At the top of the level, a candidate’s response is likely to be
+explanatory in parts. It focuses on the full task with a range of
+points exemplified by relevant references from the text; there
+will be identification of effects of a range of writer’s methods
+supported by some relevant terminology. Explanation of some
+relevant contextual factors.
+At the bottom of the level, a candidate will have Level 2 and
+be starting to explain and/or make relevant comments on
+writer’s methods and/or contexts.
+AO2 • Explained/relevant comments on writer’s
+methods with some relevant use of subject
+terminology.
+• Identification of effects of writer’s methods to
+create meanings.
+AO3 • Some understanding of implicit ideas/
+perspectives/contextual factors shown by links
+between context/text/task.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+10
+Level 2
+Supported,
+relevant
+comments
+6–10 marks
+AO1 • Supported response to task and text.
+• Comments on references.
+At the top of the level, a candidate’s response is likely to be
+relevant and supported by some explanation. It will include
+some focus on the task with relevant comments and some
+supporting references from the text. There will be identification
+of deliberate choices made by writer with some reference to
+subject terminology. Awareness of some contextual factors.
+At the bottom of the level, a candidate’s response will have
+Level 1 and be starting to focus on the task and/or starting to
+show awareness of the writer making deliberate choices and/or
+awareness of contexts.
+AO2 • Identification of writers’ methods.
+• Some reference to subject terminology.
+AO3 • Some awareness of implicit ideas/contextual
+factors.
+Level 1
+Simple,
+explicit
+comments
+1–5 marks
+AO1 • Simple comments relevant to task and text.
+• Reference to relevant details.
+At the top of the level, a candidate’s response is likely to be
+narrative and/or descriptive in approach. It may include
+awareness of the task and provide appropriate reference to text;
+there will be simple identification of method with possible
+reference to subject terminology. Simple comments/responses
+to context, usually explicit.
+At the bottom of the level, a candidate’s response will show
+some familiarity with the text.
+AO2 • Awareness of writer making choices.
+• Possible reference to subject terminology.
+AO3 • Simple comment on explicit ideas/contextual
+factors.
+0 marks Nothing worthy of credit/nothing written.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+11
+Section A
+JB Priestley: An Inspector Calls
+Question 01
+How does Priestley use the character of Mrs Birling to explore ideas about social class?
+Write about:
+• what Mrs Birling says and does
+• how Priestley presents Mrs Birling.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details about Mrs Birling’s attitudes and behaviour before and after the Inspector’s visit
+• revelations about Mrs Birling’s treatment of Eva and her response to them
+• Mrs Birling’s behaviour when the Inspector has left
+• Mrs Birling’s responses to what other characters say and do
+AO2
+• the presentation of Mrs Birling through her words and manner of speech
+• the developing contrast of Mrs Birling with other characters such as Sheila and Eric
+• the dramatic revelation of Mrs Birling’s direct involvement in Eva’s life
+• the stage directions regarding Mrs Birling
+AO3
+• ideas about selfishness and snobbery
+• ideas about differences in social class
+• the Inspector’s ideas about how society could be differently organised
+• ideas about the impact of stereotypes of female behaviour.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+12
+JB Priestley: An Inspector Calls
+Question 02
+How does Priestley use the Inspector to suggest the need for social change in An Inspector Calls?
+Write about:
+• what the Inspector says and does
+• how Priestley presents the Inspector.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of the attitudes of the Birling family and Gerald to Eva
+• details of Mrs Birling, Sheila, Gerald and Eric and their behaviour towards Eva
+• details of the Inspector’s questioning of the family and Gerald
+• details of the revelations about Eva brought to light by the Inspector
+AO2
+• the presentation of the Inspector and his forensic questioning
+• the contrast between the Inspector’s directness and the characters’ evasiveness
+• the structural contrast before and after arrival of the Inspector
+• the stage directions regarding the Inspector
+AO3
+• ideas about boss-worker relationships in a capitalist society
+• ideas about social class and its impacts on ordinary lives
+• the Inspector’s ideas about how society could be differently organised
+• ideas about the importance of caring for one another.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+13
+Willy Russell: Blood Brothers
+Question 03
+How does Russell present Mickey’s relationships with his mother and with Linda in Blood Brothers?
+Write about:
+• Mickey’s relationships with his mother and with Linda
+• how Russell presents Mickey’s relationships with his mother and with Linda.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of Mickey’s relationship with his mother in the play
+• details of Mickey’s relationship with Linda in the play
+• details about his mother and Linda’s feelings and behaviour towards Mickey
+• comments on the changes in Mickey and his relationships with the two women
+AO2
+• the presentation of Mickey and the two women throughout the play
+• the way Mickey speaks – use of dialect and humour
+• the ways other characters react to Mickey
+• the structure of the play to suggest lack of progress in Mickey and his relationships
+• the dramatic ending
+AO3
+• how Mickey’s background contributes to the way his relationships develop
+• ideas about gender relationships
+• ideas about social class
+• ideas about education and those of low socio-economic status in the 70s/80s.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+14
+Willy Russell: Blood Brothers
+Question 04
+How does Russell present the effects of poverty in Blood Brothers?
+Write about:
+• the effects of poverty that are shown in the play
+• how Russell presents the effects of poverty.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details about the Johnstone family’s struggles with money
+• comments on what other characters (eg the milkman) say and feel about the Johnstones
+• details of other characters’ experiences of poverty/wealth
+• comments on how poverty affects people’s lives in the play
+AO2
+• the presentation of the Narrator as commentator on the action throughout
+• the use of telling detail to reveal the Johnstones’ poverty (and the Lyons’ wealth)
+• the ways other characters react to the Johnstones’ lack of material possessions/money
+• the structure of the play to suggest the inescapability of poverty for most people
+AO3
+• ideas about how material deprivation leads to other kinds of poverty
+• ideas about social class and the way different classes are treated by authority figures
+• ideas about education and those of low socio-economic status in the 70s/80s
+• ideas about the interaction of poverty and crime.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+15
+Alan Bennett: The History Boys
+Question 05
+How far does Bennett present Hector as a likeable character in The History Boys?
+Write about:
+• what Hector says and does
+• how far Bennett presents Hector as a likeable character.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• examples of what Hector says and does
+• examples of the boys’ reactions to him throughout the play
+• examples of Hector’s attitudes and behaviour towards his pupils
+• comments on what Hector says about the school and the system in which he works
+AO2
+• the use of Hector’s dialogue to reveal his attitudes
+• his range of reference and his modes of expression
+• the portrayal of his relationships with the boys to reveal his attitudes
+• the structure of the play to suggest what will happen to Hector
+AO3
+• ideas about the education system shown in the play
+• ideas about good and bad teachers
+• ideas about different methods of teaching and their impact
+• ideas about society’s attitudes to teachers
+• ideas about the purposes of education.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+16
+Alan Bennett: The History Boys
+Question 06
+‘Hector represents education for its own sake: Irwin represents education as a way of getting on in
+life.’
+How far do you agree with this view of The History Boys?
+Write about:
+• what Hector and Irwin say about education
+• how Bennett presents Hector’s and Irwin’s views of education.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• examples of what Hector and Irwin say and do
+• examples of ideas about the purposes of education as discussed in the play
+• Hector’s and Irwin’s attitudes and behaviour towards their pupils
+• examples of what Hector and Irwin say about the school and the system in which they work
+AO2
+• the use of Hector and Irwin’s dialogue to reveal their attitudes
+• the use of other characters to comment on the different ideas expressed
+• the portrayal of Hector’s and Irwin’s relationships with the boys to reveal their attitudes
+• the structure of the play used to suggest what will happen to Hector and Irwin
+AO3
+• the education system shown in the play and its implications for teachers and pupils
+• different methods of teaching and their impact
+• ideas about society’s attitudes to teachers
+• ideas about the purposes of education.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+17
+Dennis Kelly: DNA
+Question 07
+How does Kelly explore the dangers of peer pressure in DNA?
+Write about:
+• some of the dangers of peer pressure in the play
+• how Kelly presents the dangers of peer pressure.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• comments on what John Tate says and does in the early part of the play
+• details of how Phil behaves to and with the other characters, particularly Leah
+• comments on the characters’ different responses to the situation with Adam
+• details of how the other characters respond to Phil’s plan to avoid blame
+AO2
+• the presentation of John Tate’s behaviour
+• the presentation of Phil’s relationship with Leah and the rest of the group
+• the way Kelly structures the play to show shifts in dominance and control
+• the presentation of Leah as a foil for Phil
+AO3
+• ideas about ‘groupthink’
+• ideas about psychological control and coercion
+• ideas about the manipulation of groups
+• ideas about the willingness to obey orders.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+18
+Dennis Kelly: DNA
+Question 08
+How does Kelly present ideas about power and control in DNA?
+Write about:
+• examples of power and control in the play
+• how Kelly presents ideas about power and control.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of what John Tate says and does in the early part of the play
+• comments on how Phil behaves to and with the other characters, particularly Leah
+• details of Phil’s attitude to the situation with Adam
+• comments on how the other characters respond to this
+AO2
+• the presentation of John Tate’s behaviour
+• the presentation of Phil’s relationship with the other characters, particularly Leah
+• the way Kelly structures the play to show Phil’s later dominance
+• the presentation of Cathy in the latter part of the play
+AO3
+• ideas about gang leadership
+• ideas about psychological control and coercion
+• ideas about the manipulation of groups
+• ideas about the willingness to obey orders.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+19
+Simon Stephens: The Curious Incident of the Dog in the Night-Time
+Question 09
+How does Stephens present Christopher’s reactions to shocks and surprises in The Curious Incident
+of the Dog in the Night-Time?
+Write about:
+• shocks and surprises that Christopher faces
+• how Stephens presents Christopher’s reactions to shocks and surprises.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of what Christopher says and does
+• details of Christopher’s encounters with surprising incidents and strangers
+• comments on Christopher’s attempts to resolve problems on his own
+• comments on how these responses are affected by his condition
+AO2
+• the dramatic irony of the gap between Christopher’s perceptions and the audience’s
+• stage directions to highlight Christopher’s reactions to shocks and surprises
+• the presentation of Christopher’s interactions with other characters
+• the presentation of Christopher’s developing confidence in dealing with the world
+AO3
+• ideas about Christopher’s difficulty in dealing with a chaotic world
+• ideas about not fitting in or not understanding people’s expectations
+• ideas about societal expectations of teenagers
+• ideas about Christopher’s condition and how it affects his development.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+20
+Simon Stephens: The Curious Incident of the Dog in the Night-Time
+Question 10
+How far does Stephens present Judy as a good mother in The Curious Incident of the Dog in
+the Night-Time?
+Write about:
+• how Judy behaves as a mother
+• how far Stephens presents Judy as a good mother.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of Judy’s actions and behaviour and possible reasons for these
+• details of and comments on Judy and Christopher’s relationship
+• comments on the initial and later explanations of her absence
+• examples of Judy’s attempts to be a good mother in the face of Christopher’s condition
+• comments on how Judy reacts to and deals with Christopher’s arrival at her house
+AO2
+• the use of dramatic irony to highlight Christopher’s condition and how Judy reacts to this
+• the presentation of the revelations in Judy’s letters to Christopher
+• the presentation of Judy’s attempts to get Christopher to eat, prepare for the exam, etc
+• the presentation of Judy and Roger’s relationship in the light of Christopher’s arrival
+AO3
+• ideas about parental difficulty in coping with Christopher’s condition
+• ideas about the ideal of the ‘good mother’
+• ideas about society’s expectations of ‘normal’ behaviour and how the characters variously respond
+to this
+• ideas about how Christopher’s behaviour challenges conventional ideas about child-rearing.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+21
+Shelagh Delaney: A Taste of Honey
+Question 11
+‘Delaney presents relationships between men and women as difficult.’
+How far do you agree with this view of A Taste of Honey?
+Write about:
+• relationships between men and women in the play
+• how far Delaney presents these relationships as difficult.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• comments on Peter and Helen’s relationship
+• comments on Jo’s relationship with Peter
+• comments on Jo’s relationships with the Boy and Geof
+• examples of these relationships as difficult
+AO2
+• presentation of different types of male and female characters
+• presentation of the effects of Peter’s behaviour on Jo and Helen
+• presentation of the Boy and Geof’s behaviour to Jo
+• use of characters’ idiolects and the effect of this
+• Delaney’s use of comedy and pathos to develop narrative, character and theme
+AO3
+• ideas about male and female attitudes then and now
+• contemporary relevance to modern debates about patriarchy
+• ideas about social class
+• ideas about women’s role in society as reflected through male attitudes and vice versa.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+22
+Shelagh Delaney: A Taste of Honey
+Question 12
+Delaney said about Helen, ‘She is just a woman who enjoys life and goes about it in her own way’.
+How far do you agree with this view of Helen?
+Write about:
+• what Helen says and does
+• how Delaney presents Helen.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• examples of what Helen says and does in the play
+• comments on Helen’s behaviour and attitudes
+• comments on Helen’s relationship with Peter
+• examples of Helen’s behaviour and attitudes towards Jo
+AO2
+• presentation of Helen as a woman of a certain age in this society
+• presentation of the effects of Peter’s behaviour on Helen
+• use of Helen’s idiolect and the effect of this
+• Delaney’s use of comedy and pathos to develop narrative, character and theme
+AO3
+• ideas about ‘acceptable’ female roles and attitudes then and now
+• contemporary relevance to modern debates about feminism
+• ideas about social class
+• ideas about women’s role in society.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+23
+William Golding: Lord of the Flies
+Question 13
+How does Golding present ideas about leadership in Lord of the Flies?
+Write about:
+• examples of leadership in the novel
+• how Golding presents ideas about leadership.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• examples of what Ralph says and does as leader
+• examples of what Jack says and does as leader
+• examples of what Piggy and Simon say and do in the context of leadership
+• comments on the various leaders in the novel
+AO2
+• the presentation of the boys who act as leaders in some way
+• the presentation of the different aspects of the boys’ characters
+• the presentation of how Piggy, for example, speaks, compared to others
+• the symbolism of what the boys might represent in terms of human nature
+AO3
+• ideas about different kinds of leadership in society
+• ideas about World War Two and its after-effects
+• ideas about the human desire for leadership
+• ideas about looking after the weakest in society.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+24
+William Golding: Lord of the Flies
+Question 14
+How does Golding use the Littluns to explore ideas about trust and fear in Lord of the Flies?
+Write about:
+• what the Littluns say and do
+• how Golding presents the Littluns.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details about what the Littluns say and do
+• details about the Littluns’ fears
+• comments on how and why the Littluns go from cheerful and excited to fearful
+• examples of the Littluns relationships with the other boys, particularly Piggy
+AO2
+• the presentation of the Littluns throughout
+• the presentation of the changes the Littluns undergo
+• the symbolism of the Littluns as representatives of the weak and exploited
+• the presentation of the vulnerability of the Littluns and their loss of innocence
+AO3
+• ideas about the exploitation of human weakness
+• ideas about kindness and support for the weak
+• ideas about different kinds of leadership
+• ideas about the corruption of childhood innocence.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+25
+AQA Anthology: Telling Tales
+Question 15
+How do writers present characters dealing with change in ‘Chemistry’ and in one other story from
+Telling Tales?
+Write about:
+• what the characters dealing with change say and do in the two stories
+• how the writers present characters dealing with change.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are reminded that while a comparatively structured response is permitted,
+comparative skills are not being assessed and should not be rewarded. Students are required
+to write about two stories from Telling Tales. In reference to questions 15 and 16 therefore
+where ‘whole text’ is referred to in the mark scheme it means two full stories.
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details about the boy’s relationship with his grandfather
+• details about the mother’s relationship with Ralph
+• comments on the above
+• the ending of the story
+• relevant details from the second story, eg Hortense in ‘Invisible Mass of the Back Row’/Elizabeth in
+‘Odour of Chrysanthemums’
+AO2
+• the use of adult narrative voice addressing earlier events
+• the use of structure to build tension
+• the use of the symbolism of the cord, chemistry, water
+• relevant treatment of dealing with change in another story
+AO3
+• ideas about grief
+• ideas about inter-generational relationships
+• ideas about family tensions after a death
+• relevant contextual ideas about dealing with grief in another story.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+26
+AQA Anthology: Telling Tales
+Question 16
+How do writers present ideas about identity in ‘My Polish Teacher’s Tie’ and in one other story from
+Telling Tales?
+Write about:
+• the ideas about identity in the two stories
+• how the writers present ideas about identity.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are reminded that while a comparatively structured response is permitted,
+comparative skills are not being assessed and should not be rewarded. Students are required
+to write about two stories from Telling Tales. In reference to questions 15 and 16 therefore
+where ‘whole text’ is referred to in the mark scheme it means two full stories.
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details about Carla’s sense of exclusion
+• details about her feelings as an immigrant
+• details about her relationships with teachers and other staff
+• her revelation at the ending of the story
+• comments on Stefan
+• relevant details from the second story, eg Hortense in ‘Invisible Mass of the Back Row’/the
+Grandfather in ‘Chemistry’
+AO2
+• use of italics to suggest Carla and Stefan’s voices
+• use of structure to build tension
+• use of physical description to suggest character
+• relevant treatment of ideas about identity in another story
+AO3
+• ideas about individual self-realisation
+• ideas about social isolation
+• ideas about snobbery
+• relevant contextual ideas about identity in another story.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+27
+George Orwell: Animal Farm
+Question 17
+How does Orwell use Squealer to explore ideas about power and control in Animal Farm?
+Write about:
+• what Squealer says and does
+• how Orwell uses Squealer to explore ideas about power and control.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of what Squealer says and does
+• details about Squealer’s ‘manipulation of language’
+• comments on Squealer’s loyalty to Napoleon
+• details of Squealer changing the Commandments
+• Squealer’s lack of a conscience
+AO2
+• the presentation of Squealer as propagandist for Napoleon
+• the presentation of how power shifts to Napoleon
+• Squealer and Napoleon as allegorical figures
+• the book as satire
+AO3
+• links between the events of the novella and the Russian Revolution
+• ideas about Orwell’s political views and how they inform the novella
+• ideas about propaganda
+• broader ideas about any kind of dictatorial rule and lack of individual freedom.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+28
+George Orwell: Animal Farm
+Question 18
+How does Orwell use the ending of Animal Farm to explore ideas about revolution?
+Write about:
+• what happens in the ending of Animal Farm
+• how Orwell uses the ending of Animal Farm to explore ideas about revolution.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of what happens towards the end of the novella
+• details about the pigs’ behaviour
+• comments on the meetings between pigs and humans
+• comments on the other animals’ reactions to the revolution
+AO2
+• the presentation of the ways Animal Farm changes throughout
+• the presentation of Napoleon and the humans
+• the characters as allegorical figures
+• the book as satire of revolutions
+AO3
+• links between the events of the novella and the Russian Revolution
+• ideas about the betrayal of idealism
+• ideas about Orwell’s political views and how they inform the novella
+• broader ideas about any kind of dictatorial rule.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+29
+Kazuo Ishiguro: Never Let Me Go
+Question 19
+How does Ishiguro present Ruth and Tommy’s romantic relationship in Never Let Me Go?
+Write about:
+• what Ruth and Tommy say and do
+• how Ishiguro presents Ruth and Tommy’s romantic relationship.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of what Ruth and Tommy say and do
+• details of their relationship with Kathy
+• comments on the relationship between Ruth and Tommy
+• what effects life at Hailsham has on the young people
+AO2
+• the presentation of the dialogue between Ruth and Tommy
+• the presentation of the students’ lives through what they say and do throughout
+• the effects of the seemingly easy-going narrative style and structure
+• generic expectations of romantic relationships in teenage and dystopian fiction
+AO3
+• ideas about personal freedom and its limitations
+• treatment of the text in terms of genre – science fiction, mystery, teenage
+• ideas about cloning and worrying scientific advances
+• ideas about friendship and loyalty.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+30
+Kazuo Ishiguro: Never Let Me Go
+Question 20
+‘Never Let Me Go is a novel about characters trying their best to be happy in terrible circumstances.’
+How far do you agree with this view?
+Write about:
+• what characters in the novel say and do
+• how Ishiguro presents the characters.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of what daily life at Hailsham is like
+• details of the relationships between the students
+• details about the guardians and the revelation about the students’ future role
+• what effects life at Hailsham and beyond has on the young people
+AO2
+• details of the dialogue between the students, and the staff
+• the presentation of the students’ lives through what they say and do throughout
+• effects of the seemingly easy-going narrative style and structure
+• details about Hailsham as a place
+• the generic expectations set up by the novel’s form(s)
+AO3
+• ideas about individual freedom and happiness
+• treatment of the text in terms of genre – science fiction, mystery, teenage
+• ideas about cloning and worrying scientific advances
+• ideas about friendship and loyalty.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+31
+Meera Syal: Anita and Me
+Question 21
+How does Syal present the changes in Meena’s relationship with Anita in Anita and Me?
+Write about:
+• the relationship between Meena and Anita and how it changes
+• how Syal presents these changes.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details about what Meena and Anita say and do
+• details of Meena’s changing relationship with Anita
+• comments on Meena’s initial admiration for Anita and later disillusionment
+• comments on Meena’s responses to some of the things Anita says and does
+AO2
+• the use of Meena as a reliable narrator
+• the presentation of Anita as very different from Meena
+• tonal variety to suggest different attitudes
+• the use of dialect
+AO3
+• ideas about teenage friendship
+• ideas about the attitudes of families from different social and cultural backgrounds
+• ideas about independence and rebellion
+• ideas about family values.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+32
+Meera Syal: Anita and Me
+Question 22
+How does Syal present ideas about racism in Anita and Me?
+Write about:
+• what characters say and do
+• how Syal presents ideas about racism in the novel.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details of racist speech and behaviour in the novel
+• details of Meena’s responses to incidences of racist speech and/or behaviour
+• comments on the difference between Sam Lowbridge’s attitudes to Meena and other British Asian
+characters
+• comments on Uncle Alan’s and Mr Topsy’s ideas and behaviour
+AO2
+• the use of Meena as a reliable narrator
+• the presentation of shocking incidents such as the assault on the bank manager
+• the use of dialect
+• the presentation of the way some White people make scapegoats of ethnic minority groups
+AO3
+• ideas about racism as a reaction to social exclusion and poverty
+• ideas about the need for solidarity between communities with low socio-economic status
+• ideas about the legacy of empire
+• ideas about family values and common bonds across social and racial groups.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+33
+Stephen Kelman: Pigeon English
+Question 23
+How does Kelman present Harrison as a likeable character in Pigeon English?
+Write about:
+• what Harrison says and does
+• how Kelman presents Harrison as likeable.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details about what Harrison says and does
+• details about Harrison’s school experiences and his reaction to the murder
+• details of Harrison’s relationships with other teenagers
+• comments on how Harrison responds to his experiences in the novel
+AO2
+• the use of multi-cultural slang to develop character
+• the irony of Harrison’s naïve optimism contrasted with his circumstances
+• the presentation of the other young characters’ words and actions
+• the magical realist usage of the pigeon as a commentary
+AO3
+• Harrison’s perspective as a young male immigrant
+• ideas about friendship
+• ideas about class and racial divides
+• ideas about childhood innocence.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+34
+Stephen Kelman: Pigeon English
+Question 24
+How does Kelman present Harrison’s relationship with one or more of the female characters
+in Pigeon English?
+Write about:
+• Harrison’s relationship with one or more of the female characters
+• how Kelman presents Harrison’s relationship with one or more of the female characters.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• details about what Harrison says about the female characters
+• details of Harrison’s attitudes to: Lydia, or Miquita, or Chanelle, or Poppy
+• details of Harrison’s relationships with his female family members
+• comments about how Harrison responds to these different female characters
+AO2
+• the use of multi-cultural slang to develop character
+• the irony of Harrison’s naïve optimism contrasted with his circumstances
+• the presentation of the other young characters’ words and actions
+• the presentation of Harrison’s innate attitudes towards women and the attitudes he sees around him
+AO3
+• Harrison’s perspective as a young male immigrant
+• ideas about family loyalty and friendship with females
+• ideas about attitudes to women of all ages
+• ideas about the cynicism and violence of inner-city life.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+35
+Section B: Poetry – Questions 25–26 (30 marks – AO1=12, AO2=12, AO3=6)
+Mark AO Typical features of response How to arrive at a mark
+Level 6
+Convincing,
+critical
+analysis and
+exploration
+26–30 marks
+AO1 • Critical, exploratory comparison.
+• Judicious use of precise references to support
+interpretation(s).
+At the top of the level, a candidate’s response is likely to be a
+critical, exploratory, well-structured comparison. It takes a
+conceptualised approach to the full task supported by a range of
+judicious references. There will be a fine-grained and insightful
+analysis of methods supported by judicious use of subject
+terminology. Convincing exploration of one or more
+ideas/perspectives/contextual factors/interpretations.
+At the bottom of the level, a candidate will have Level 5 and
+be starting to demonstrate elements of exploratory comparison
+and/or analysis of writer’s methods and/or contexts.
+AO2 • Analysis of writer’s methods with subject
+terminology used judiciously.
+• Exploration of effects of writer’s methods to
+create meanings.
+AO3 • Exploration of ideas/perspectives/contextual
+factors shown by specific, detailed links
+between context/text/task.
+Level 5
+Thoughtful,
+developed
+consideration
+21–25 marks
+AO1 • Thoughtful, developed comparison.
+• Apt references integrated into interpretation(s).
+At the top of the level, a candidate’s response is likely to be
+thoughtful, detailed and developed. It takes a considered
+approach to the comparison with references integrated into
+interpretation; there will be a detailed examination of the effects
+of methods supported by apt use of subject terminology.
+Examination of ideas/perspectives/contextual factors, possibly
+including alternative interpretations/deeper meanings.
+At the bottom of the level, a candidate will have Level 4 and
+be starting to demonstrate elements of thoughtful comparison
+and/or examination of writer’s methods and/or thoughtful
+consideration of contexts.
+AO2 • Examination of writer’s methods with subject
+terminology used effectively to support
+consideration of methods.
+• Examination of effects of writer’s methods to
+create meanings.
+AO3 • Thoughtful consideration of
+ideas/perspectives/contextual factors shown by
+examination of detailed links between
+context/text/task.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+36
+Level 4
+Clear
+understanding
+16–20 marks
+AO1 • Clear comparison.
+• Effective use of references to support
+explanation.
+At the top of the level, a candidate’s response is likely to be
+clear, sustained and consistent. It is a focused comparison
+which demonstrates clear understanding. It uses a range of
+references effectively to illustrate and justify explanation; there
+will be clear explanation of the effects of a range of writer’s
+methods supported by appropriate use of subject terminology.
+Clear understanding of ideas/perspectives/contextual factors.
+At the bottom of the level, a candidate will have Level 3 and
+be starting to demonstrate elements of clear comparison and/or
+clear explanation of writer’s methods and/or clear
+understanding of contexts.
+AO2 • Clear explanation of writer’s methods with
+appropriate use of relevant subject terminology.
+• Understanding of effects of writer’s methods to
+create meanings.
+AO3 • Clear understanding of ideas/perspectives/
+contextual factors shown by specific links
+between context/text/task.
+Level 3
+Explained,
+structured
+comments
+11–15 marks
+AO1 • Some explained comparison.
+• References used to support a range of relevant
+comments.
+At the top of the level, a candidate’s response is likely to be
+explanatory in parts. It includes a structured focus on
+comparison with a range of points exemplified by relevant
+references from the text; there will be identification of effects of
+a range of writer’s methods supported by some relevant
+terminology. Explanation of some relevant contextual factors.
+At the bottom of the level, a candidate will have Level 2 and
+be starting to make some structured comparison and/or make
+relevant comments on writer’s methods and/or contexts.
+AO2 • Explained/relevant comments on writer’s
+methods with some relevant use of subject
+terminology.
+• Identification of effects of writer’s methods to
+create meanings.
+AO3 • Some understanding of implicit ideas/
+perspectives/contextual factors shown by links
+between context/text/task.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+37
+Level 2
+Supported,
+relevant
+comments
+6–10 marks
+AO1 • Supported comparison.
+• Comments on references.
+At the top of the level, a candidate’s response is likely to be
+relevant and supported by some explanation. It will include
+some focus on comparison with relevant comments and some
+supporting references from the text. There will be identification
+of deliberate choices made by writer with some reference to
+subject terminology. Awareness of some contextual factors.
+At the bottom of the level, a candidate’s response will have
+Level 1 and be starting to focus on comparison and/or starting
+to show awareness of the writer making deliberate choices
+and/or awareness of contexts.
+AO2 • Identification of writer’s methods.
+• Some reference to subject terminology.
+AO3 • Some awareness of implicit ideas/contextual
+factors.
+Level 1
+Simple,
+explicit
+comments
+1–5 marks
+AO1 • Simple comments relevant to comparison.
+• Reference to relevant detail(s).
+At the top of the level, a candidate’s response is likely to be
+narrative and/or descriptive in approach. It may include
+awareness of similarity or difference and provide appropriate
+reference to text; there will be simple identification of method
+with possible reference to subject terminology. Simple
+comments/responses to context, usually explicit.
+At the bottom of the level, a candidate’s response will show
+some familiarity with the text.
+AO2 • Awareness of writer making choices.
+• Possible reference to subject terminology.
+AO3 • Simple comment on explicit ideas/contextual
+factors.
+0 marks Nothing worthy of credit/nothing written.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+38
+Section B: Poetry
+Love and relationships
+Question 25
+Compare how poets present powerful feelings about love in ‘Neutral Tones’ and in one other poem
+from ‘Love and relationships’.
+[30 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• valid treatment of negative types of powerful feelings, eg in ‘Winter Swans’ or ‘Love’s Philosophy’
+• comparison of negative effects of powerful feelings, eg ‘Porphyria’s Lover’ or ‘The Farmer’s Bride’
+• possible comparison between bleak and more positive views of love in ‘Winter Swans’ or
+‘Singh Song!’ or ‘Sonnet 29 – I think of thee!’
+• any valid treatment of different types of powerful feelings, eg joy in ‘Sonnet 29 – I think of thee!’ or
+hope for the future in ‘Winter Swans’
+• comparison of how powerful feelings affect people and relationships, such as ‘Singh Song!’ or
+‘Porphyria’s Lover’ or ‘The Farmer’s Bride’
+AO2
+• any valid comparison of use of natural imagery to present ideas/feelings, such as nature in ‘Winter
+Swans’ or ‘The Farmer’s Bride’
+• any treatment of perspective to present ideas, such as direct address in ‘Neutral Tones’ compared
+with ‘Winter Swans’ or ‘Love’s Philosophy’, or first person in ‘Singh Song!’ or ‘The Farmer’s Bride’
+• use of language to present character and feelings, eg dialect in ‘Singh Song!’ or exclamatory
+language in ‘Sonnet 29 – I think of thee!’
+• possible views of imagery of life/death to present powerful feelings, eg. ‘Winter Swans’ or ‘Sonnet
+29 – I think of thee!’, or ‘The Farmer’s Bride’
+AO3
+• any valid comparisons between the ways ideas/feelings/attitudes about the effects of strong
+connections are presented and what influences these ideas/feelings/attitudes
+• possible treatment of ideas about control, or repression, or freedom
+• any valid treatment of different types of strong feelings and their effects on relationships and/or on
+the self
+• possible exploration of ideas about the influence of different types of powerful feelings on
+relationships
+• ideas about how feelings for others affect self/identity/character.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+39
+Power and conflict
+Question 26
+Compare how poets present the ways people are affected by conflict in ‘Kamikaze’ and in one other
+poem from ‘Power and conflict’.
+[30 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• any comparison of the impact of conflict on the individual, eg ‘Remains’ or ‘War Photographer’
+• possible comparison with the immediate impact of conflict, eg ‘Exposure’ or ‘Bayonet Charge’
+• any valid comparison of the effects of conflict on attitudes/sense of identity, eg ‘Tissue’ or
+‘The Emigrée’
+• any valid comparison of the effects of conflict on those not immediately involved, such as ‘Poppies’
+or ‘War Photographer’
+• comparisons between different types of conflict, such as internal conflict, or war, or sense of identity
+AO2
+• use of imagery to present different types of effects of conflict, eg metaphor use in ‘Poppies’, or use
+of nature imagery in ‘Storm on the Island’
+• comparison of use of person to create a sense of immediacy/distance, eg first person in ‘Remains’,
+third person in ‘The Charge of the Light Brigade’
+• comparison of presentation of different types of conflict, such as internal conflict, emotional conflict,
+or war
+• any valid comparative treatment of language to create different tones, eg contrast between
+reflective distance and more immediate in ‘Exposure’ or ‘Remains’
+AO3
+• possible treatment of different types of conflict, eg moral/internal conflict
+• ideas about the impact/effects of conflict on groups of people/societies
+• any valid ideas about the effects of conflict on individuals/individual experience
+• ideas about how conflict impacts upon attitudes/self/sense of identity
+• valid exploration of the causes of conflict.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+40
+Section C: Unseen poetry – Question 27 (24 marks – AO1=12, AO2=12)
+Mark AO Typical features How to arrive at a mark
+Level 6
+Convincing,
+critical
+analysis and
+exploration
+21–24 marks
+AO1 • Critical, exploratory conceptualised response to
+task and text.
+• Judicious use of precise references to support
+interpretation(s).
+At the top of the level, a candidate’s response is likely to be a
+critical, exploratory, well-structured argument. It takes a
+conceptualised approach to the task supported by a range of
+judicious references. There will be a fine-grained and insightful
+analysis of methods supported by judicious use of subject
+terminology.
+At the bottom of the level, a candidate will have Level 5 and
+be starting to demonstrate elements of exploratory thought
+and/or analysis of writers’ methods.
+AO2 • Analysis of writer’s methods with subject
+terminology used judiciously.
+• Exploration of effects of writer’s methods to
+create meanings.
+Level 5
+Thoughtful,
+developed
+consideration
+17–20 marks
+AO1 • Thoughtful, developed response to task and
+text.
+• Apt references integrated into interpretation(s).
+At the top of the level, a candidate’s response is likely to
+include be thoughtful, detailed and developed. It takes a
+considered approach to the task with references integrated into
+interpretation; there will be a detailed examination of the effects
+of methods supported by apt use of subject terminology.
+At the bottom of the level, a candidate will have Level 4 and
+be starting to demonstrate elements of thoughtful consideration
+and/or examination of writers’ methods.
+AO2 • Examination of writer’s methods with subject
+terminology used effectively to support
+consideration of methods.
+• Examination of effects of writer’s methods to
+create meanings.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+41
+Level 4
+Clear
+understanding
+13–16 marks
+AO1 • Clear, explained response to task and text.
+• Effective use of references to support
+explanation.
+At the top of the level, a candidate’s response is likely to be
+clear, sustained and consistent. It takes a focused response to
+the task which demonstrates clear understanding. It uses a
+range of references effectively to illustrate and justify
+explanation; there will be clear explanation of the effects of a
+range of writer’s methods supported by appropriate use of
+subject terminology.
+At the bottom of the level, a candidate will have Level 3 and
+be starting to demonstrate elements of understanding and/or
+explanation of writer’s methods.
+AO2 • Clear explanation of writer’s methods with
+appropriate use of relevant subject terminology.
+• Understanding of effects of writer’s method to
+create meanings.
+Level 3
+Explained,
+structured
+comments
+9–12 marks
+AO1 • Some explained response to task and text.
+• References used to support a range of relevant
+comments.
+At the top of the level, a candidate’s response is likely to be
+explanatory in parts. It focuses on the task with a range of
+points exemplified by relevant references from the text; there
+will be identification of effects of a range of writer’s methods
+supported by relevant use of subject terminology.
+At the bottom of the level, a candidate will have Level 2 and
+be starting to explain and/or make relevant comments on
+writer’s methods.
+AO2 • Explained/relevant comments on writer’s
+methods with some relevant use of subject
+terminology.
+• Identification of effects of writer’s methods to
+create meanings.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+42
+Level 2
+Supported,
+relevant
+comments
+5–8 marks
+AO1 • Supported response to task and text.
+• Comments on references.
+At the top of the level, a candidate’s response is likely to be
+relevant and supported by some explanation. It will include
+some focus on the task with relevant comments and some
+supporting references from text. There will be identification of
+deliberate choices made by the writer with some reference to
+subject terminology.
+At the bottom of the level, a candidate will have Level 1 and
+be starting to focus on the task and/or show awareness of the
+writer making deliberate choices.
+AO2 • Identification of writers’ methods.
+• Some reference to subject terminology.
+Level 1
+Simple,
+explicit
+comments
+1–4 marks
+AO1 • Simple comments relevant to task and text.
+• Reference to relevant details.
+At the top of the level, a candidate’s response is likely to be
+narrative and/or descriptive in approach. It may include
+awareness of the task and provide appropriate reference to text;
+there will be simple identification of method with possible
+reference to subject terminology.
+At the bottom of the level, a candidate’s response will show
+some familiarity with the text.
+AO2 • Awareness of writer making choices.
+• Possible reference to subject terminology.
+0 marks Nothing worthy of credit/nothing written.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+43
+Section C: Unseen Poetry
+Question 27.1
+In ‘The washing never gets done’, how does the poet present ideas about daily life and connecting
+with the natural world?
+[24 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• any ideas about the focus on task completion of daily life
+• possible treatment of negative views of a task focus, such as the frustration of daily life
+• possible contrast of ideas about the constancy of the natural world
+• valid treatment of the mundanity of human tasks in comparison with the natural world
+• ideas about the beauty of nature
+AO2
+• valid treatment of the use/effect of repeated structures such as repetition of ‘never’
+• possible comments related to effects of particular punctuation choices, such as use of full stop after
+fourth line, or use of ellipsis
+• use/effect of last line
+• valid treatment of effects of particular images, such as extended image of house maintenance, or
+simile of a ball to present ideas about daily life
+• possible contrast between use of elements of daily life as tasks and use of images to present ideas
+of the continuance of the natural world.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/2R – JUNE 2024
+44
+Question 27.2
+In both ‘A Day in Autumn’ and ‘The washing never gets done’, the poets present ideas about daily life
+and connecting with the natural world.
+What are the similarities and/or differences between the methods the poets use to present these
+ideas?
+[8 marks]
+Mark AO Typical features of response
+Level 4
+7–8
+marks
+AO2
+• Critical, insightful comparison of poems.
+• Analytical comparison of the effects of writers’ methods to create
+meanings.
+Level 3
+5–6
+marks
+AO2
+• Thoughtful comparison of poems.
+• Clear comparison of the effects of writers’ methods to create meanings.
+Level 2
+3–4
+marks
+AO2
+• Clear comparison of poems.
+• Comments on the similarities/differences between the effects of
+methods used to create meanings.
+Level 1
+1–2
+marks
+AO2
+• Simple comment on one or both poems and/or simple connection
+between poems.
+• Identification of method(s).
+0 marks Nothing worthy of credit/nothing written.
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO2
+• valid connection between the use of household tasks in both poems
+• relevant connections/comparisons between the presentation of nature as potential source of
+comfort/beauty
+• possible examination of particular word choices to present ideas about beauty of nature (‘gold’
+‘bright’ ‘song’ ‘meadow’)
+• comparisons between use of birds in both poems as images of the natural world.
+PMT

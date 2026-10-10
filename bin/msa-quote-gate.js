@@ -53,6 +53,18 @@ const PILOTS = [{
     // Items 4, 8 and 12 rank AQA's own June 2024 indicative answers (the doctor and nurse sources).
     JUN24_ITEMS: [4, 8, 12],
     ALLOW: {},
+}, {
+    // v7.20.817 (WML 345 A, FIXLIST #869): #815d step 3 — Macbeth AQA (9 attempts by 3 real students). AQA Literature has
+    // no 2026 re-specification: the June 2024 8702/1 scheme is the newest on the drive and the authority. AO mix follows
+    // the marks (AO1 12 · AO2 12 · AO3 6 + AO4 4 of 34): AO1 14 · AO2 14 · AO3 7 · AO4 5.
+    bank: 'protocols/shared/mark-scheme-assessment/banks/macbeth.md',
+    section: 'AQA (',
+    count: 40,
+    ao: { AO1: 14, AO2: 14, AO3: 7, AO4: 5 },
+    sources: ['research/sources/aqa-8702-1-jun24-ms.txt', 'protocols/aqa/literature/modules/knowledge-mark-scheme.md'],
+    jun24: [],
+    JUN24_ITEMS: [],
+    ALLOW: {},
 }];
 
 // The section's items: "N. **Type: X [Tests AOn]**" blocks inside the section that starts "### **SECTION …: <label>".
@@ -92,7 +104,10 @@ function check(pilot, md, srcText) {
         // letter ("B is Level 1", "C (simple) then A") names the wrong option for most students. Identify by content.
         for (const line of it.text.split('\n')) {
             if (!/^\s*\*\s+\*\*(Feedback|Why [A-Z]|WhyWrong):\*\*/.test(line)) continue;
-            const body = line.replace(/^\s*\*\s+\*\*(Feedback|Why [A-Z]|WhyWrong):\*\*/, '');
+            // v7.20.817: "Section A is", "Source B," name a part of the paper or a source, never an option — the same names
+            // SWML_Quiz_Bank::cites_option_letter() (v7.20.815, the server's predicate) removes before it looks.
+            const body = line.replace(/^\s*\*\s+\*\*(Feedback|Why [A-Z]|WhyWrong):\*\*/, '')
+                .replace(/\b(?:Sources?|Sections?|Spec|Specification|Paper|Component|Part|Text|Level|Question)\s+[A-E]\b/g, '');
             const m = body.match(/(?<![A-Za-z\u2019'])([A-D])(?=\s+(?:\(|is\b|then\b)|,\s*[A-D]\b)/);
             if (m) errs.push(`#${it.n} names option ${m[1]} by its letter — options shuffle when served, so name the answer by its words`);
         }

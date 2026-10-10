@@ -3,3 +3,4 @@
 # From then on pre-ship fails any edit that brings a cue back. Never remove a line to get a build through.
 MSA/language1.md#aqa
 MSA/language2.md#aqa
+MSA/macbeth.md#aqa

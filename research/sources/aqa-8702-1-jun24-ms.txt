@@ -1,0 +1,746 @@
+GCSE
+ENGLISH LITERATURE
+8702/1
+Paper 1 Shakespeare and the 19th-century novel
+Mark scheme
+June 2024
+Version: 1.0 Final
+*246g8702/1/MS*
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+2
+Mark schemes are prepared by the Lead Assessment Writer and considered, together with the relevant
+questions, by a panel of subject teachers. This mark scheme includes any amendments made at the
+standardisation events which all associates participate in and is the scheme which was used by them in
+this examination. The standardisation process ensures that the mark scheme covers the students’
+responses to questions and that every associate understands and applies it in the same correct way.
+As preparation for standardisation each associate analyses a number of students’ scripts. Alternative
+answers not already covered by the mark scheme are discussed and legislated for. If, after the
+standardisation process, associates encounter unusual answers which have not been raised they are
+required to refer these to the Lead Examiner.
+It must be stressed that a mark scheme is a working document, in many cases further developed and
+expanded on the basis of students’ reactions to a particular paper. Assumptions about future mark
+schemes on the basis of one year’s document should be avoided; whilst the guiding principles of
+assessment remain constant, details will change, depending on the content of a particular examination
+paper.
+No student should be disadvantaged on the basis of their gender identity and/or how they refer to the
+gender identity of others in their exam responses.
+A consistent use of ‘they/them’ as a singular and pronouns beyond ‘she/her’ or ‘he/him’ will be credited in
+exam responses in line with existing mark scheme criteria.
+Further copies of this mark scheme are available from aqa.org.uk
+Copyright information
+AQA retains the copyright on all its publications. However, registered schools/colleges for AQA are permitted to copy material from this booklet for their own
+internal use, with the following important exception: AQA cannot give permission to schools/colleges to photocopy any material that is acknowledged to a third
+party even for internal use within the centre.
+Copyright © 2024 AQA and its licensors. All rights reserved.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+3
+Statement of importance
+GCSE English Literature is the study of how writers communicate their ideas about the world, and how
+readers might respond to these ideas. It aims to develop a critical understanding of the ways in which
+literary texts are a reflection of, and exploration of, the human condition, the study of which develops
+empathic understanding of human nature. High-quality English literature is writing which displays
+recognisable literary qualities and, although shaped by particular contexts, transcends them and speaks
+about the universality of the human condition. GCSE English Literature aims to enable students to
+appreciate these qualities, developing and presenting informed, critical responses to the ideas in literary
+texts and the ways writers present these ideas. It aims to enable students to make links between a
+variety of written texts and between the text and the context within which it was shaped.
+Principles of mark scheme construction
+Each mark scheme is driven by the task and by the statement of importance about GCSE English
+Literature. It aims to do two things:
+• to describe typical features of response in order to decide on a mark
+• to identify typical features of proficiency in order to aid discrimination between levels of performance.
+Each long form answer mark scheme is constructed using six levels. This is to reflect the ability level of
+the whole cohort. There are four or five marks within each level to allow for levels of proficiency and to
+allow for discrimination between levels of cognitive ability across the whole cohort.
+Each mark scheme places assessment objectives AO1 and AO2 as the key skills. This is driven by the
+statement of importance of the subject, in that the study of great literary texts is the study of the
+interrelationship between the reader and the writer of the text and that the communication and reception
+of these ideas is an inherent feature of English literature. It is also driven by the acknowledgement that
+GCSE English Literature assesses cognitive levels of ability; the level of response to ideas will have
+parity with the level of response to the methods of communicating those ideas.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+4
+How to apply the mark scheme
+The mark scheme is constructed using six levels of attainment that span the whole range of ability at
+GCSE. The descriptors of attainment reference the assessment objectives for that particular question.
+Examiners are required to use the mark scheme to consider the whole response and decide upon the
+most appropriate level. The mark scheme provides two descriptors: a description of typical features of a
+response in each level, and a description of the kinds of skills candidates in that level will be proficient in.
+This is in order to support examiners in making their judgement of the extent to which the qualities and
+skills being demonstrated merit a particular level of attainment. As each response being marked is a
+response to a particular task, examiners are assessing the extent to which the candidate has responded
+to the task, and also the level of skill that the candidate has demonstrated.
+Each level has four or five marks available and four or five skills descriptors. Fair application of the mark
+scheme to all candidates is driven by the descriptors in the mark scheme, and therefore examiners are
+required to make a judgement about the extent to which a candidate achieves every descriptor in that
+particular level in order to warrant a mark at the top of that level. If a candidate achieves everything in a
+level, they should be awarded the mark at the top of that level.
+Since answers will rarely match a descriptor in all respects, examiners must allow good performance in
+some aspects to compensate for shortcomings in other respects. Consequently, the level is determined
+by the ‘best fit’ rather than requiring every element of the descriptor to be matched. Examiners should
+aim to use the full range of levels and marks, taking into account the standard that can reasonably be
+expected of candidates after one or two years of study on the GCSE course and in the time available in
+the examination.
+If a candidate does not address a particular defining feature of a task, examiners are required to make a
+judgement about the extent to which other skills can place the response in a particular level, and where
+the response should be placed.
+Step 1 Determine a level
+Start at the lowest level of the mark scheme and use it as a ladder to see whether the answer meets the
+descriptor for that level. The descriptor for the level indicates the different qualities that might be seen in
+the student’s answer for that level. If it meets the lowest level then go to the next one and decide if it
+meets this level, and so on, until you have a match between the level descriptor and the answer. With
+practice and familiarity you will find that for better answers you will be able to quickly skip through the
+lower levels of the mark scheme.
+When assigning a level you should look at the overall quality of the answer and not look to pick holes in
+small and specific parts of the answer where the student has not performed quite as well as the rest. If
+the answer covers different aspects of different levels of the mark scheme you should use a best fit
+approach for defining the level and then use the variability of the response to help decide the mark within
+the level; ie if the response is predominantly Level 3 with a small amount of Level 4 material it would be
+placed in Level 3 but be awarded a mark near the top of the level because of the Level 4 content.
+Step 2 Determine a mark
+Once you have assigned a level you need to decide on the mark. The descriptors on how to allocate
+marks can help with this. The exemplar materials used during standardisation will also help. There will
+be an answer in the standardising materials which will correspond with each level of the mark scheme.
+This answer will have been awarded a mark by the Lead Examiner. You can compare the student’s
+answer with the example to determine if it is of the same standard, better or worse than the example.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+5
+You can then use this to allocate a mark for the answer based on the Lead Examiner’s mark on the
+example.
+You may well need to read back through the answer as you apply the mark scheme to clarify points and
+assure yourself that the level and the mark are appropriate.
+Indicative content in the mark scheme is provided as a guide for examiners. It is not intended to be
+exhaustive and you must credit other valid points. Students do not have to cover all of the points
+mentioned in the indicative content to reach the highest level of the mark scheme.
+An answer which contains nothing of relevance to the question must be awarded no marks.
+Rubric infringements
+GCSE English Literature is a skills-based subject and, as such, best-fit is the most appropriate means by
+which the candidature can be fairly and equitably rewarded for their achievements at the end of their
+course of study. However, a mark scheme also has the function of assessing the extent to which each
+response meets the requirements of the relevant elements of the particular specification.
+Therefore, where a response is judged not to have addressed a defining feature of a particular task,
+such as:
+Paper 1 Section A response to extract and whole text
+Paper 1 Section B response to extract and whole text
+Paper 2 Section B response to named poem and one other from the named cluster
+then this would be classed as a rubric infringement and could, as referenced in the mark scheme, be
+‘capped’ at the top of Level 2. Cases of rubric infringement will always be referred to a senior associate
+who will review the response in order to make a judgement about the totality of the response and
+therefore the validity of cap application.
+Supporting documentation
+Standardising scripts would provide exemplification of attainment in order to guide examiners towards
+the process of discerning between levels of attainment and to aid judgement about the positioning of
+each response in terms of a final mark.
+Exemplification documents, including indicative content, definitions of key descriptors in the mark
+scheme and exemplification of these descriptors, provide more detailed guidance to examiners on how
+to judge the relative qualities and skills being demonstrated by each candidate.
+Defining context (AO3)
+AO3 is the understanding of the relationship between the ideas in the text and the contexts of the text.
+The range of contexts and relationships that is most relevant as part of AO3 will depend on the text, the
+author and the task. In teaching and assessing AO3, teachers and students can consider context in a
+flexible way, depending on the text itself and whichever contexts are the most relevant for that particular
+text. These contexts may relate to the relationship between the text and the context in which it was
+written. However, the contexts may also relate to the context within which the text is set: location, social
+structures and features, cultural contexts, and periods in time. Context, where relevant, may also apply
+to literary contexts such as genres, and also the contexts in which texts are engaged with by different
+audiences, taking the reader outside the text in order to inform understanding of the meanings being
+conveyed. Acknowledgement of the universality of a literary text is an integral part of relating to it
+contextually.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+6
+Context is assessed throughout the paper. The strand in the mark scheme related to AO3 references
+‘ideas/perspectives/contextual factors’. However, if a question requires a student to think about the text
+in its context, this is also reflected inherently through the response to task.
+Assessment objectives (AOs)
+AO1 Read, understand and respond to texts.
+Students should be able to:
+• maintain a critical style and develop an informed personal response
+• use textual references, including quotations, to support and illustrate
+interpretations.
+AO2 Analyse the language, form and structure used by a writer to create meanings
+and effects, using relevant subject terminology where appropriate.
+AO3 Show understanding of the relationships between texts and the contexts in
+which they were written.
+AO4 Use a range of vocabulary and sentence structures for clarity, purpose and
+effect, with accurate spelling and punctuation.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+7
+Assessment of AO4
+AO4 will be assessed on Section A only. The performance descriptors are provided below.
+Performance descriptor Marks awarded
+High performance:
+In the context of the level of demand of the question, learners spell
+and punctuate with consistent accuracy, and consistently use
+vocabulary and sentence structures to achieve effective control of
+meaning.
+4 marks
+Intermediate performance:
+In the context of the level of demand of the question, learners spell
+and punctuate with considerable accuracy, and use a considerable
+range of vocabulary and sentence structures to achieve general
+control of meaning.
+2–3 marks
+Threshold performance:
+In the context of the level of demand of the question, learners spell and
+punctuate with reasonable accuracy, and use a reasonable range of
+vocabulary and sentence structures; any errors do not hinder meaning
+in the response.
+1 mark
+Where a candidate writes nothing or fails to meet threshold performance they should receive 0 marks.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+8
+Sections A and B: Questions 1–13 (30 marks – AO1=12, AO2=12, AO3=6)
+Mark AO Typical features How to arrive at a mark
+Level 6
+Convincing,
+critical
+analysis and
+exploration
+26–30 marks
+AO1 • Critical, exploratory, conceptualised response
+to task and whole text.
+• Judicious use of precise references to support
+interpretation(s).
+At the top of the level, a candidate’s response is likely to be a
+critical, exploratory, well-structured argument. It takes a
+conceptualised approach to the full task supported by a range
+of judicious references. There will be a fine-grained and
+insightful analysis of methods supported by judicious use of
+subject terminology. Convincing exploration of one or more
+ideas/perspectives/contextual factors/interpretations.
+At the bottom of the level, a candidate will have Level 5 and
+be starting to demonstrate elements of exploratory thought
+and/or analysis of the writer’s methods and/or contexts.
+AO2 • Analysis of the writer’s methods with subject
+terminology used judiciously.
+• Exploration of effects of writer’s methods to
+create meanings.
+AO3 • Exploration of ideas/perspectives/contextual
+factors shown by specific, detailed links
+between context/text/task.
+Level 5
+Thoughtful,
+developed
+consideration
+21–25 marks
+AO1 • Thoughtful, developed response to task and
+whole text.
+• Apt references integrated into interpretation(s).
+At the top of the level, a candidate’s response is likely to be
+thoughtful, detailed and developed. It takes a considered
+approach to the full task with references integrated into
+interpretation; there will be a detailed examination of the effects
+of methods supported by apt use of subject terminology.
+Examination of ideas/perspectives/contextual factors, possibly
+including alternative interpretations/deeper meanings.
+At the bottom of the level, a candidate will have Level 4 and
+be starting to demonstrate elements of thoughtful consideration
+and/or examination of the writer’s methods and/or contexts.
+AO2 • Examination of the writer’s methods with
+subject terminology used effectively to support
+consideration of methods.
+• Examination of effects of writer’s methods to
+create meanings.
+AO3 • Thoughtful consideration of
+ideas/perspectives/contextual factors shown by
+examination of detailed links between
+context/text/task.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+9
+Level 4
+Clear
+understanding
+16–20 marks
+AO1 • Clear, explained response to task and whole
+text.
+• Effective use of references to support
+explanation.
+At the top of the level, a candidate’s response is likely to be
+clear, sustained and consistent. It takes a focused response to
+the full task which demonstrates clear understanding. It uses a
+range of references effectively to illustrate and justify
+explanation; there will be clear explanation of the effects of a
+range of writer’s methods supported by appropriate use of
+subject terminology. Clear understanding of
+ideas/perspectives/contextual factors.
+At the bottom of the level, a candidate will have Level 3 and
+be starting to demonstrate elements of understanding and/or
+explanation of the writer’s methods and/or contexts.
+AO2 • Clear explanation of the writer’s methods with
+appropriate use of relevant subject terminology.
+• Understanding of effects of writer’s methods to
+create meanings.
+AO3 • Clear understanding of ideas/perspectives/
+contextual factors shown by specific links
+between context/text/task.
+Level 3
+Explained,
+structured
+comments
+11–15 marks
+AO1 • Some explained response to task and whole
+text.
+• References used to support a range of relevant
+comments.
+At the top of the level, a candidate’s response is likely to be
+explanatory in parts. It focuses on the full task with a range of
+points exemplified by relevant references from the text; there
+will be identification of effects of a range of writer’s methods
+supported by some relevant terminology. Explanation of some
+relevant contextual factors.
+At the bottom of the level, a candidate will have Level 2 and
+be starting to explain and/or make relevant comments on the
+writer’s methods and/or contexts.
+AO2 • Explained/relevant comments on the writer’s
+methods with some relevant use of subject
+terminology.
+• Identification of effects of writer’s methods to
+create meanings.
+AO3 • Some understanding of implicit ideas/
+perspectives/contextual factors shown by links
+between context/text/task.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+10
+Level 2
+Supported,
+relevant
+comments
+6–10 marks
+AO1 • Supported response to task and text.
+• Comments on references.
+At the top of the level, a candidate’s response is likely to be
+relevant and supported by some explanation. It will include
+some focus on the task with relevant comments and some
+supporting references from the text. There will be identification
+of deliberate choices made by the writer with some reference to
+subject terminology. Awareness of some contextual factors.
+At the bottom of the level, a candidate’s response will have
+Level 1 and be starting to focus on the task and/or starting to
+show awareness of the writer making deliberate choices and/or
+awareness of contexts.
+AO2 • Identification of the writer’s methods.
+• Some reference to subject terminology.
+AO3 • Some awareness of implicit ideas/contextual
+factors.
+Level 1
+Simple,
+explicit
+comments
+1–5 marks
+AO1 • Simple comments relevant to task and text.
+• Reference to relevant details.
+At the top of the level, a candidate’s response is likely to be
+narrative and/or descriptive in approach. It may include
+awareness of the task and provide appropriate reference to text;
+there will be simple identification of method with possible
+reference to subject terminology. Simple comments/responses
+to context, usually explicit.
+At the bottom of the level, a candidate’s response will show
+some familiarity with the text.
+AO2 • Awareness of the writer making choices.
+• Possible reference to subject terminology.
+AO3 • Simple comment on explicit ideas/contextual
+factors.
+0 marks Nothing worthy of credit/nothing written.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+11
+Macbeth
+Question 1
+Starting with this conversation, explore how far Shakespeare presents Lady Macbeth as a strong
+female character.
+Write about:
+• how far Shakespeare presents Lady Macbeth as a strong female character in this conversation
+• how far Shakespeare presents Lady Macbeth as a strong female character in the play as a whole.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• comments on Lady Macbeth’s strength as she persuades Macbeth to kill Duncan
+• ideas about her determination to murder Duncan – even before Macbeth returns
+• comments on her resolve/strength in the banquet scene
+• comments on Lady Macbeth’s lack of strength in the sleepwalking scene
+• comments on her support for Macbeth after Duncan’s murder
+AO2
+• Lady Macbeth’s repeated questions to Macbeth and challenges to his masculinity
+• her use of extreme images to persuade Macbeth, eg ‘Come to my woman’s breasts…’
+• use of images of dissembling as she persuades Macbeth
+• Lady Macbeth’s gradual decline in strength/power over Macbeth
+• effects of references to previous incidents in the sleepwalking scene
+AO3
+• ideas about gender expectations
+• ideas about relationships/marriage/motherhood
+• references to Lady Macbeth’s calling on ‘spirits’
+• comments on Lady Macbeth’s mental health/suicide.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+12
+Romeo and Juliet
+Question 2
+Starting with this speech, explore how Shakespeare presents the difficulties faced by Juliet in
+Romeo and Juliet.
+Write about:
+• how Shakespeare presents the difficulties faced by Juliet in this speech
+• how Shakespeare presents the difficulties faced by Juliet in the play as a whole.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• the difficulties related to Juliet’s frustration / impatience at this moment
+• Juliet’s feelings for Romeo and about beinga younggirlin love
+• Juliet’s relationship the nurse, possiblycompared with the relationship with her parents
+• other difficulties faced byJuliet in the play: the feud / her relationship with her parents /
+Tybalt’s death
+AO2
+• language used byJuliet to express her impatience / frustration at this moment in the play
+• effects ofdramatic irony, or language used to foreshadow later events, or linked to
+presentation offate in Prologue
+• use ofsoliloquyto present private thoughts and feelings
+• imagerysuch as light / time / speed / birds, possiblylinked to similar imageryelsewhere
+• language ofcontrast used to highlight theme ofconflict / opposition
+AO3
+• ideas about Juliet’s powerlessness / lackofindependence / reliance on others, possibly
+related to her as the daughter ofa Capulet in this society
+• ideas about difficulties caused byyouth / generationaldifferences / gender / family
+relationships / expectations placed on Juliet as a Capulet daughter
+• ideas about effects ofconflict
+• ideas about romantic relationships / Juliet as a youngwoman involved in one.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+13
+The Tempest
+Question 3
+Starting with this conversation, explore how Shakespeare presents the relationship between Prospero
+and Ariel in The Tempest.
+Write about:
+• how Shakespeare presents their relationship in this conversation
+• how Shakespeare presents the relationship between Prospero and Ariel in the play as a whole.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• comments on the relationship in this extract – suggestion of some mutual respect
+• details of how the relationship came about and repercussions of that
+• details of the affection in their relationship
+• Ariel has powers Prospero doesn’t, eg powers over natural world
+• details of Ariel’s unflinching loyalty to Prospero
+AO2
+• mutual respect shown through modes of address, eg ‘delicate Ariel’, ‘potent master’
+• Prospero’s gentle language to Ariel, eg ‘my bird’, ‘my brave spirit’
+• also – ‘malignant thing’, ‘slave’
+• nature of their conversations, eg Prospero asks Ariel’s opinion – ‘Dost thou think so, spirit?’
+• implications of possessive language, eg ‘my Ariel’, ‘my bird’
+AO3
+• ideas about master/slave relationship
+• ideas about respect
+• ideas about power/control/magical powers.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+14
+The Merchant of Venice
+Question 4
+Starting with this speech, explore how far Shakespeare presents Shylock as an isolated character in
+The Merchant of Venice.
+Write about:
+• how far Shakespeare presents Shylock as an isolated character in this speech
+• how far Shakespeare presents Shylock as an isolated character in the play as a whole.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• comments on details of Shylock’s treatment relevant to isolation
+• details of Shylock’s isolation from his daughter
+• details of Shylock’s presentation as a ‘villain’ causing his own isolation
+• details of Shylock’s suffering in his isolation and losing everything
+• comments on his relationship with Tubal/reference to Leah
+AO2
+• use of powerful language/questioning when Shylock talks about his treatment
+• presentation of Shylock as an isolated tragic figure or a stereotype
+• Shylock’s changing emotions/reactions in the court scene leading to his ultimate isolation
+• unpleasant references by others, eg ‘the dog Jew’
+• Shylock’s reported outburst about Jessica, eg ‘My ducats and my daughter…’
+AO3
+• ideas about religion affecting isolation
+• ideas about justice/mercy/revenge
+• ideas about prejudice.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+15
+Much Ado About Nothing
+Question 5
+Starting with this extract, explore how Shakespeare presents characters tricking and deceiving each
+other in Much Ado About Nothing.
+Write about:
+• how Shakespeare presents characters tricking and deceiving each other in this extract
+• how Shakespeare presents characters tricking and deceiving each other in the play as a whole.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• comments on tricking/deceiving in the extract
+• comments on good/bad motivation for deception
+• details of Don John/Borachio and their plot to trick/deceive
+• details of Don Pedro’s deceptions
+• tricking/deceiving by Hero and Ursula to help the relationship of Beatrice and Benedick
+AO2
+• examples of exaggeration in the conversation to fuel their joy in deceiving
+• examples of humour derived from tricking and deceiving, eg the irony of Don Pedro – a prince –
+engaging in foolish deceptions
+• tricking and deceiving drive much of the plot
+• how Don John’s deceiving is presented, eg ‘Only to despise them I will endeavour anything’ – his
+whole purpose is to deceive
+• language of tricking/deceiving used by Ursula – extended metaphor of angling
+AO3
+• ideas about gender/men’s attitudes to women and vice versa
+• ideas about ‘good’ and ‘evil’ tricking/deceiving
+• ideas about romantic relationships.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+16
+Julius Caesar
+Question 6
+Starting with this speech, explore how Shakespeare presents Cassius as a manipulative character in
+Julius Caesar.
+Write about:
+• how Shakespeare presents Cassius as a manipulative character in this speech
+• how Shakespeare presents Cassius as a manipulative character in the play as a whole.
+[30 marks]
+AO4 [4 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• comments on Cassius as manipulative as he addresses Brutus, Caesar’s friend
+• comments on Cassius’ use of flattery to manipulate Brutus
+• comments on Cassius denigrating Caesar’s character/fitness for kingship to persuade/manipulate
+• details of the fake letters organised by Cassius
+AO2
+• use of language by Cassius to describe Caesar as arrogant, eg ‘like a Colossus’
+• use of language to describe Caesar as weak/not fit for kingship, eg ‘as a sick girl’
+• Cassius’ use of rhetorical devices to challenge Brutus
+• use of the dramatic device of the fake letters/flattery
+• Cassius’ use of language to Casca, suggesting he is ‘dull’ and ‘pale’
+AO3
+• ideas about loyalty to Rome
+• ideas about political manoeuvring
+• ideas about personal vs public motives.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+17
+Robert Louis Stevenson: The Strange Case of Dr. Jekyll and Mr. Hyde
+Question 7
+Starting with this extract, explore how Stevenson creates an atmosphere of fear and danger in
+The Strange Case of Dr Jekyll and Mr Hyde.
+Write about:
+• how Stevenson creates an atmosphere of fear and danger in this extract
+• how Stevenson creates an atmosphere of fear and danger in the novel as a whole.
+[30 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• violent and destructive actions of Hyde creating fear and danger
+• portrayal of city and aspects of setting to reflect Hyde’s character
+• effect of Hyde on other characters
+• any aspects of the atmosphere of secrecy and the unknown throughout the novel
+• Jekyll’s fear and horror at what he has created
+AO2
+• setting at nighttime and imagery of darkness
+• imagery of sleeplessness/disturbed sleep/nightmares
+• metaphor of labyrinthine city reflected hidden and unknown
+• imagery of ‘facelessness’ of Hyde
+• structure of novel, and Utterson’s thoughts echoing events of Chapter 1
+AO3
+• ideas about fear and danger related to good and evil
+• ideas about fear and danger reflecting hidden and concealed aspects of character
+• ideas about fear of the unknown and scientific discovery and exploration
+• ideas about aspects of gothic literature creating fear and danger.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+18
+Charles Dickens: A Christmas Carol
+Question 8
+Starting with this extract, explore how Dickens presents the lessons Scrooge learns about life in
+A Christmas Carol.
+Write about:
+• how Dickens presents Scrooge in this extract
+• how Dickens presents the lessons Scrooge learns about life in the novel as a whole.
+[30 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• Scrooge’s reflections on looking at his own corpse
+• the role of the Ghost of Christmas Yet to Come to instil fear in Scrooge
+• the role and effect of the other ghosts
+• any of the sights Scrooge has been shown and the effect they have had upon him
+• what Scrooge learns at the end of the novel
+AO2
+• contrast between the glee of the woman and Scrooge’s emotions
+• imagery of light and dark
+• language used to present Scrooge’s horror and fear, eg ‘shuddering’, ‘recoiled in terror’
+• language used to present the corpse
+• contrast with noble qualities of life and mankind
+AO3
+• Scrooge’s redemption
+• ideas about society and responsibility for others
+• ideas about morality and treatment of others
+• ideas about Victorian society and attitudes towards poverty and suffering
+• ideas about selfishness and altruism.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+19
+Charles Dickens: Great Expectations
+Question 9
+‘In Great Expectations, Pip learns to value people more than social class.’
+Starting with this extract, explore how far you agree with this view.
+Write about:
+• how Dickens presents Pip in this extract
+• how far Dickens presents Pip learning to value people more than social class in the novel as a
+whole.
+[30 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• Pip’s hopes and aspirations
+• Pip’s values
+• Pip’s view of the forge and home
+• Pip’s judgment of character
+• Pip’s relationships with other characters in the novel
+AO2
+• Pip as narrator and his perspective
+• irony of Biddy’s comments
+• repetition of ‘If I could have’, use of conditional – would, might, should
+• contrast between Biddy and Estella
+• imagery of grass/sailing ships
+AO3
+• ideas about social class and being a gentleman
+• ideas about true friendship, loyalty and honesty
+• ideas about appearance and reality
+• ideas about reputation vs self-esteem and self-worth.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+20
+Charlotte Brontë: Jane Eyre
+Question 10
+Starting with this extract, explore how far Brontë presents Jane Eyre as a young woman searching for
+somewhere to belong.
+Write about:
+• how Brontë presents Jane in this extract
+• how far Brontë presents Jane as a young woman searching for somewhere to belong in the novel
+as a whole.
+[30 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• Jane as an orphan, unwanted and rejected
+• Jane seeking to belong in the world independently, finding employment
+• Jane seeking love and acceptance on her terms
+• Jane wanting a family, finding it with the Rivers
+AO2
+• contrast between Jane’s views and St John’s views
+• power of Jane’s language – verbs like ‘craving’
+• imagery of ‘gorged with gold’
+• short sentence fragments to highlight Jane’s views: ‘You, penniless! Famous equality and
+fraternisation! Close union! Intimate attachment!’
+• settings reflecting Jane’s feelings and experiences
+AO3
+• ideas about the value and importance of family
+• ideas about the importance of financial security
+• ideas about romantic love
+• ideas about home
+• ideas about gender and the position of women in society.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+21
+Mary Shelley: Frankenstein
+Question 11
+Starting with this extract, explore how Shelley presents the effects of Frankenstein’s scientific
+ambitions on himself and others.
+Write about:
+• how Shelley presents Frankenstein in this extract
+• how Shelley presents the effects of Frankenstein’s scientific ambitions on himself and others in the
+novel as a whole.
+[30 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• Frankenstein’s personal obsession
+• Frankenstein’s excitement
+• Frankenstein’s subsequent horror and loathing
+• impact on Frankenstein’s family and friends
+• impact on the creature he creates
+AO2
+• use of Frankenstein as narrator, first person
+• imagery of irresistible forces, eg ‘like a hurricane’
+• imagery of light and dark
+• shocking and disturbing imagery
+• contrast between positive aspirations and horrific reality
+AO3
+• ideas about science and pursuit of new ideas, transgressing boundaries
+• ideas about personal responsibility, responsibility to others
+• ideas about religion, role of God
+• ideas about honesty, openness and societal responsibilities.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+22
+Jane Austen: Pride and Prejudice
+Question 12
+Starting with this extract, explore how Austen presents ideas about marriage in Pride and Prejudice.
+Write about:
+• how Austen presents ideas about marriage in this extract
+• how Austen presents ideas about marriage in the novel as a whole.
+[30 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• position of the Bennet family and different views on marriage
+• position of Bingley and Darcy, and expectations of marriage for them
+• position of Charlotte Lucas and the effect on her
+• choices characters make and reasons for them
+AO2
+• structure of extract/novel – opening statement
+• Austen’s irony undercutting opening statement
+• language of finance and possessions
+• contrast between Mr and Mrs Bennet
+• introduction and characterisation of Bingley in terms of financial assets/position
+AO3
+• ideas about class and financial standing
+• ideas about marriage and position of women in society
+• ideas about love
+• ideas about ideals vs reality
+• ideas about pragmatic choices.
+PMTMARK SCHEME – GCSE ENGLISH LITERATURE – 8702/1 – JUNE 2024
+23
+Arthur Conan Doyle: The Sign of Four
+Question 13
+Starting with this extract, explore how Conan Doyle presents Holmes and Watson as characters with
+very different strengths and qualities.
+Write about:
+• how Conan Doyle presents Holmes and Watson in this extract
+• how Conan Doyle presents Holmes and Watson as characters with different strengths and qualities
+in the novel as a whole.
+[30 marks]
+Indicative content
+Examiners are encouraged to reward any valid interpretations. Answers might, however,
+include some of the following:
+AO1
+• Holmes’ character and view of Watson
+• Watson’s character and view of Holmes
+• the nature of the relationship between them
+• similarities and differences between Holmes and Watson
+• complementary and conflicting characteristics
+AO2
+• role of Watson as narrator creating a portrait of Holmes
+• contrasting reactions to Mary Morstan
+• imagery of ‘automaton’ and ‘calculating machine’
+• use and effect of direct speech, eg Holmes interrupting Watson
+• portrayal of Holmes as an expert – handwriting, book recommendation
+AO3
+• ideas about detectives and the detective genre
+• ideas about sidekicks and the genre
+• ideas about genius
+• ideas about friendship, mutual support, platonic love, male friendship.
+PMT
