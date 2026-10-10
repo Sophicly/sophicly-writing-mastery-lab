@@ -12765,6 +12765,17 @@
                 const arr = _fbAudit.totals[qKey];
                 const bad = _fbAudit.failed[qKey];
                 delete _fbAudit.totals[qKey]; delete _fbAudit.failed[qKey]; delete _fbAudit.paraIdx[qKey];
+                // ⭐ v7.20.804 (#857): a multiple-choice Q1 (the 2026 AQA Paper 1) is scored by CODE from the ticks. Its
+                // Total line IS the platform's score whatever was written — the prompt says so, and this makes it true even
+                // when the model does not (code-owned arithmetic, like Q5's word-count ceiling below).
+                const _pc = _platformChoiceScore(qKey);
+                if (_pc) {
+                    const _want = prefix + _pc.score + '/' + _pc.max;
+                    if (whole.replace(/\s+/g, '') !== _want.replace(/\s+/g, '')) {
+                        console.warn('WML MarkAudit: corrected', qKey, 'Total', val + den, '→', _pc.score + '/' + _pc.max, '(the platform scored the choices)');
+                    }
+                    return _want;
+                }
                 if (qn === '5') {
                     // v7.19.841: Q5 is single-card (no sum-verify), but its Total line must
                     // respect the code-owned WC ceiling — Run 4 filed 30/40 past a 27 cap.
@@ -14967,6 +14978,14 @@
         });
         return { score: score, max: entry.questions.length, lines: lines,
             answered: entry.questions.filter((q) => q.options.some((o) => o.checked)).length };
+    }
+    // The platform's score for one question's choices in the LIVE document, or null when it has none (a list-four
+    // Q1, any other question). Read by the arithmetic audit so the filed Q1 Total IS this score, whatever was written.
+    function _platformChoiceScore(qId) {
+        try {
+            const e = _readChoiceAnswers(canvasEditor).find((x) => String(x.qId).toUpperCase() === String(qId).toUpperCase());
+            return (e && e.questions.length) ? _scoreChoiceAnswers(e) : null;
+        } catch (_) { return null; }
     }
     function _formatChoiceSummary(editor) {
         return _readChoiceAnswers(editor).map((entry) => {
