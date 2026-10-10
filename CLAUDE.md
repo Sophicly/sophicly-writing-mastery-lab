@@ -5,7 +5,7 @@
 **See also:** `PRODUCT.md` (this dir) for users + voice. `../../../sophicly-plugins/BRAND.md` for design.
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** 7.20.815 on main + staging; PROD 7.20.812 (WML 345 A: .813 Edexcel IGCSE Language shows word ADVICE per question — P1 20/80/100/450/550/650, P2 650/450, advice only, #867b · .814 indent lines inside a box, with or without ticks — Tab / Shift+Tab, toolbar ⇥ ⇤, Enter carries the indent + tick, #867a · .815 AQA Paper 2 Mark Scheme Assessment = 40 items, and one shared `cites_option_letter()` stops "Source A," pinning an item's order, #815d/#866) · prod waits for Neil's typed go · **next bump is 7.20.816**
+**Current version:** 7.20.818 on main + staging; PROD 7.20.812 (WML 345 A: .813 Edexcel IGCSE Language word ADVICE per question, #867b · .814 indent lines inside a box with or without ticks — Tab / Shift+Tab, toolbar ⇥ ⇤, Enter carries, #867a · .815 AQA Paper 2 Mark Scheme Assessment = 40 + shared `cites_option_letter()`, #866 · .816 IGCSE advice at 170 words a TTECEA paragraph, PEDAGOGY §60, #871 · .817 Macbeth AQA MSA = 40, level labels corrected, #869 · .818 topic questions: one store per text, alias-filed stores readable — 25 texts were finding nothing, #872) · prod waits for Neil's typed go; then MESSAGE the LearnDash chat (P&P Topics 3–10 wait for 818) · **next bump is 7.20.819**
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, polishing.
 **AI Provider:** `claude-sonnet-5` via MeowApps AI Engine (measured on prod from `mwai_chatbots`, 2026-09-06 — the header said Sonnet 4.6 for months; verify with `wp eval`, never from this line). GPT-5 fallback.
 
