@@ -782,6 +782,7 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
      | grep -qE 'wml-assessment\.js|wml-core\.js|cw-trial1-(gate|sim-harness)\.js|CW-TRIAL-01-story-coherence\.md'; then
   node bin/cw-trial1-gate.js || fail=1
   node bin/cw-trial1-sim-harness.js || fail=1
+  node bin/cw-trial2-sim-harness.js || fail=1   # v7.20.824 (#884-①): Trial 2 = the trial factory built for N=2
 fi
 
 # v7.20.413: CW STEP-7 DOCUMENT GATE. The document half of Step 7 — the fifteen rows, their

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.823';
+var WML_BUILD = '7.20.824';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1438,7 +1438,12 @@ window.WML = (function() {
         { step: 3, label: 'Prose Quality' },
         { step: 4, label: 'Feedback' },
     ];
-    CW_SIDEBAR_STEPS['trial_2'] = CW_SIDEBAR_STEPS['trial_generic'];
+    // v7.20.824 (#884-①): Trial 2 runs Trial 1's walk on its own six checks.
+    CW_SIDEBAR_STEPS['trial_2'] = [
+        { step: 1, label: 'Read Your Draft' },
+        { step: 2, label: 'Judge the Six Checks' },
+        { step: 3, label: 'Sophia’s Verdict' },
+    ];
     CW_SIDEBAR_STEPS['trial_3'] = CW_SIDEBAR_STEPS['trial_generic'];
     CW_SIDEBAR_STEPS['trial_4'] = CW_SIDEBAR_STEPS['trial_generic'];
     CW_SIDEBAR_STEPS['trial_5'] = CW_SIDEBAR_STEPS['trial_generic'];
@@ -1770,6 +1775,94 @@ window.WML = (function() {
     // The trial's rows for THIS lesson: the weekend trial adds the structure row before accuracy; the full course is unchanged.
     function cwTrial1Elements() {
         return cwInUnit() ? CW_SCENE_ELEMENTS.concat([CW_TRIAL1_STRUCTURE, CW_TRIAL1_ACCURACY]) : CW_TRIAL1_ELEMENTS;
+    }
+
+    // ⭐⭐ v7.20.824 (FIXLIST #884-①, CW trials slice 5) — TRIAL 2: CHARACTER DEPTH. A trial checks what its own draft
+    // taught (PEDAGOGY §33.1, plan §3 layer 2), and Draft 2 (Step 14) teaches ONE lens, `character_arc`
+    // (protocols/shared/modules/rubrics/rubric-cw-narrative.md, "Lens character_arc"): "the reader should feel the
+    // protagonist's internal struggle driving the external action". So the six checks are that lens, nothing invented:
+    // the goal, the flaw and the stakes shown at the start; the need surfacing at the turn; a dilemma that costs
+    // something; proof of change by the last line. `prompt` is the lens's own student-facing question (its three tests and
+    // pointer phrases; bin/cw-trial1-gate.js diffs each against the rubric so the two cannot drift). `l1` is the same check
+    // at the grade the lens contrasts it with — said, not yet shown. `planDoc` + `planFid` name the row the student filled
+    // when they planned it: Step 11's character profile (row ids keep their pre-renumber `cw-step-10-` names, §5d) and
+    // Step 3's flaw. Examples are DESCRIBED moments, never quotations (§5c-i), set texts first. Technical accuracy (/2) is
+    // the same row as Trial 1's (§33.14). 6 × 4 + 2 = /26.
+    const CW_TRIAL2_ELEMENTS = [
+        {
+            // id 'want', not 'goal': the grade-goal row is already fid('goal') = 'cw-trial-2-goal' (one key, one row — §5d).
+            id: 'want', label: 'Goal', ao: 'AO5', planDoc: 'character_profile', planFid: 'cw-step-10-ext-goal-begin',
+            prompt: 'Can the reader see what your protagonist wants, without being told?',
+            l1: 'The draft makes clear what the protagonist wants, though it says it outright rather than letting the reader work it out.',
+            strong: 'A strong draft shows the goal through an action, a thought or a detail of the setting, so the reader works out what the protagonist is after without a sentence that announces it.',
+            example: 'When the witches greet Macbeth as a future king, he does not laugh them off: he begs them to stay and tell him more. Nobody says that he wants the crown. His question says it for him.',
+            more: [
+                'Scrooge keeps the coal-box in his own room, so his freezing clerk cannot add a single coal to his tiny fire. Dickens never needs to say that Scrooge wants to keep his money.',
+                'In Finding Nemo, Marlin is afraid of the open sea, yet he swims out into it after the boat that took his son. What he wants is in every move he makes.',
+            ],
+        },
+        {
+            id: 'flaw', label: 'Flaw', ao: 'AO5', planDoc: 'logline', planFid: 'cw-step-3-flaw',
+            prompt: 'Is their flaw making this go wrong, or would any character react this way?',
+            l1: 'The flaw you chose appears in the draft, though it is not yet what makes things go wrong.',
+            strong: 'A strong draft lets the flaw you chose cause the trouble: things go wrong because of who this protagonist is, so a different character in the same place would have acted differently.',
+            example: 'Romeo’s flaw is acting before he thinks. Minutes after trying to make peace, he kills Tybalt in a rage, and that is what gets him banished. A calmer young man would have waited.',
+            more: [
+                'Macbeth’s flaw is his ambition, and it is ambition, not bad luck, that makes him kill again to keep the crown. A man without it would have stopped after the first murder.',
+                'In Frozen, Elsa’s fear makes her hide her powers, and the hiding is what lets winter loose on the whole kingdom.',
+            ],
+        },
+        {
+            id: 'stakes', label: 'Stakes', ao: 'AO5', planDoc: 'character_profile', planFid: 'cw-step-10-stakes-begin',
+            prompt: 'Can the reader feel what your protagonist is most afraid of losing, shown and not stated?',
+            l1: 'The draft tells the reader what could be lost, though the reader is told it rather than made to feel it.',
+            strong: 'A strong draft makes the reader feel what could be lost before anything is lost: the fear is in what the protagonist does, notices or protects, not in a sentence that names it.',
+            example: 'The Ghost shows Scrooge an empty stool in the Cratchits’ corner and a crutch with no owner. Nobody says that Tiny Tim may die. The empty stool says it.',
+            more: [
+                'Before they reach the ranch, George tells Lennie where to hide if he gets into trouble. The warning shows the reader what could be lost, Lennie and the dream with him, long before anything goes wrong.',
+                'In The Hunger Games, Katniss takes her sister’s place in the Games, so every danger she meets in the arena is also a danger to the family waiting for her at home.',
+            ],
+        },
+        {
+            id: 'need', label: 'Need', ao: 'AO5', planDoc: 'character_profile', planFid: 'cw-step-10-need-begin',
+            prompt: 'The character keeps chasing what they want, and something here hints it isn’t enough.',
+            l1: 'There is a hint of what the protagonist really needs, though it is stated outright or only just visible.',
+            strong: 'A strong draft lets the need surface as subtext: the protagonist keeps chasing what they want, and a moment, an image or another character hints that it will not be enough.',
+            example: 'After the murder, Macbeth believes he heard a voice telling him he will sleep no more. He keeps chasing power, and the lost sleep hints that power will never give him peace.',
+            more: [
+                'Scrooge is shown the boy he once was, left alone at school at Christmas, and he weeps. He is still the man who wants his money, but the tears hint at what he really lacks.',
+                'In Toy Story, Woody fights to stay Andy’s favourite, while Buzz keeps hinting, without meaning to, that being loved and being the favourite are not the same thing.',
+            ],
+        },
+        {
+            id: 'dilemma', label: 'Dilemma', ao: 'AO5', planDoc: 'character_profile', planFid: 'cw-step-10-dilemma',
+            prompt: 'The Climax is a choice that costs something. What does this choice cost your protagonist?',
+            l1: 'There is a choice at the climax, though it costs the protagonist little.',
+            strong: 'A strong climax forces a choice between the goal and the need, and the choice costs the protagonist something real, so the reader feels the price of it.',
+            example: 'George must choose between letting the men catch Lennie and ending Lennie’s life himself, gently. He chooses mercy, and it costs him the dream and the friend he shared it with.',
+            more: [
+                'Juliet must choose between marrying Paris, as her father demands, and taking the Friar’s dangerous potion to stay true to Romeo. She takes the potion, and it costs her everything.',
+                'In The Lion King, Simba must choose between staying safe far from home and going back to face what he believes he did. He goes back, and it means facing the truth about his father’s death.',
+            ],
+        },
+        {
+            id: 'change', label: 'Proof of Change', ao: 'AO5', planDoc: 'character_profile', planFid: 'cw-step-10-realisation',
+            prompt: 'By the last line, what shows me they are different — an action or an image, not a summary?',
+            l1: 'The ending says the protagonist has changed, though it tells the reader rather than showing it.',
+            strong: 'A strong ending proves the change with an action or an image: by the last line the protagonist does or notices something they could not have done or noticed at the start.',
+            example: 'A Christmas Carol ends with Scrooge raising Bob Cratchit’s wages and becoming a second father to Tiny Tim. Dickens shows the change in what Scrooge does, not in a sentence saying that he has changed.',
+            more: [
+                'At the end of An Inspector Calls, Sheila will not go back to pretending, while her parents try to carry on as before. The difference between them is the proof that she has changed.',
+                'At the end of Toy Story, Woody and Buzz catch up with the removal van together, working as a team. The picture shows that they have gone from rivals to friends.',
+            ],
+        },
+    ];
+    const CW_TRIAL2_ELEMENTS_ALL = CW_TRIAL2_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
+    // The element list for trial N — ONE accessor for the walk, the page template and the gates.
+    function cwTrialElements(n) {
+        if (n === 1) return cwTrial1Elements();
+        if (n === 2) return CW_TRIAL2_ELEMENTS_ALL;
+        return [];
     }
 
     // ⭐ v7.20.550 (CW trials slice 3) — WHICH DRAFT DOES A TRIAL ASSESS?
@@ -6346,6 +6439,7 @@ window.WML = (function() {
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
+        CW_TRIAL2_ELEMENTS, cwTrialElements,
         // Revision map
         REVISION_MAP,
         // Utilities

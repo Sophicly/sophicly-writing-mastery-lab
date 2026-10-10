@@ -30,7 +30,9 @@
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
-const { SRC, braceSliceFrom, makeWorld, settle, sliceController } = require('./walk-sim-lib');
+const { SRC: SRC_RAW, srcForTrial, braceSliceFrom, makeWorld, settle, sliceController } = require('./walk-sim-lib');
+// v7.20.824 (#884-①): static checks read the trial factory as Trial 1 renders it (the weekend trial IS Trial 1).
+const SRC = srcForTrial(1, SRC_RAW);
 const ROOT = path.resolve(__dirname, '..');
 let fail = 0;
 const asserts = { pass: 0, fail: 0 };
@@ -337,7 +339,7 @@ const SEVEN = (hook, setup) => [
         const LOG = SRC.slice(SRC.indexOf('const _cwLoglineCtl = (function'), SRC.indexOf('const _cwSpineCtl = (function'));
         ok(/function askOf\(st\) \{ return _cwUnitText\(st\.ask\); \}/.test(LOG) && !/[^\w](STEPS\[i\]|st|step)\.ask\b/.test(LOG.replace(/return _cwUnitText\(st\.ask\)/, '')),
             'every place the logline walk SERVES an ask goes through askOf → _cwUnitText');
-        const T1 = SRC.slice(SRC.indexOf('const _cwTrial1Ctl = (function'), SRC.indexOf('const _cwTrial1Ctl = (function') + 60000);
+        const T1 = SRC.slice(SRC.indexOf('function _cwTrialCtlFactory(N) {'), SRC.indexOf('function _cwTrialCtlFactory(N) {') + 60000);
         ok(/\]\)\.map\(_cwUnitText\);/.test(T1) && (T1.match(/aiBubble\(_cwUnitText\(/g) || []).length === 2, 'lesson 7: Trial 1\'s intro and both failure bubbles are served through _cwUnitText');
         ok((SRC.match(/textContent: 'My Plot'[\s\S]{0,260}?\.swml-mv-trigger/g) || []).length === 0, 'no "My Plot" button opens My VALUES any more (full-course bug)');
         ok(/textContent: _unitPlan \? 'My Story Spine' : 'My Plot'/.test(T1) && /_unitPlan \? '\.swml-ss-trigger' : '\.swml-mp-trigger'/.test(T1), 'lesson 7: in a unit the plan chip opens the Story Spine');
@@ -818,7 +820,7 @@ const SEVEN = (hook, setup) => [
             // every lesson-11 edit still matches its source — a drifted literal is a silent no-op
             const ae = SRC.indexOf('const CW_AGAIN_TEXT_EDITS = [');
             const AE = eval(braceSliceFrom(SRC, ae, '[', ']').text);   // eslint-disable-line no-eval
-            const T1C = SRC.slice(SRC.indexOf('const _cwTrial1Ctl = (function () {'), SRC.indexOf('const _cwTrial1Ctl = (function () {') + 100000);
+            const T1C = SRC.slice(SRC.indexOf('function _cwTrialCtlFactory(N) {'), SRC.indexOf('function _cwTrialCtlFactory(N) {') + 100000);
             ok(AE.length >= 20 && AE.every((ed) => T1C.indexOf(JSON.stringify(ed[0]).slice(1, -1).replace(/\\"/g, '"')) !== -1 || T1C.indexOf(ed[0]) !== -1),
                 '⭐ every lesson-11 edit still matches a phrase in the Trial 1 walk (a drifted one would leave "Draft 2" on screen)',
                 AE.filter((ed) => T1C.indexOf(JSON.stringify(ed[0]).slice(1, -1).replace(/\\"/g, '"')) === -1 && T1C.indexOf(ed[0]) === -1).map((ed) => ed[0].slice(0, 50)));
@@ -846,7 +848,10 @@ const SEVEN = (hook, setup) => [
             'a step the unit has is named by its lesson (capital at a sentence start); a quotation and a step the unit lacks are left alone; the full course is untouched');
         const WALKS = ['const _cwProfileCtl', 'const _cwIdeasCtl', 'const _cwLoglineCtl', 'const _cwSpineCtl', 'const _cwTrial1Ctl'];
         WALKS.forEach((decl) => {
-            const a0 = SRC.indexOf(decl), body = a0 > 0 ? braceSliceFrom(SRC, a0, '(', ')').text : '';
+            // v7.20.824 (#884-①): Trial 1's walk is now the trial factory's body (specialised to Trial 1 in SRC).
+            const isT1 = decl === 'const _cwTrial1Ctl';
+            const a0 = SRC.indexOf(isT1 ? 'function _cwTrialCtlFactory(N) {' : decl);
+            const body = a0 > 0 ? braceSliceFrom(SRC, a0, isT1 ? '{' : '(', isT1 ? '}' : ')').text : '';
             ok(/function aiBubble\(plain(, opts)?\) \{\s*plain = _cwUnitText\(plain\);/.test(body), decl.slice(6) + ': every bubble it serves goes through the unit words');
             const lits = [];
             body.split('\n').forEach((line) => { if (/^\s*\/\//.test(line) || /console\.(log|warn|error)/.test(line)) return; (line.match(/(["'`])(?:\\.|(?!\1).)*\1/g) || []).forEach((q) => lits.push(q)); });
@@ -935,12 +940,17 @@ const SEVEN = (hook, setup) => [
         const RA = fs.readFileSync(path.join(ROOT, 'includes/class-rest-api.php'), 'utf8');
         const gi3 = RA.indexOf('private static function cw_new_story_block($user_id, $course_context = \'standalone\') {');
         ok(gi3 > 0 && /self::cw_new_story_block\(\$user_id, sanitize_key\(\$params\['course_context'\] \?\? 'standalone'\)\)/.test(RA), 'the create endpoint gates on the kind being created');
+        // v7.20.824 (#885): the gate names Draft 1's step ONCE; it must be the CW_STEPS entry carrying `draft: 1`.
+        const DRAFT1_885 = (RA.match(/const CW_DRAFT_1_STEP = (\d+);/) || [])[1];
+        const CORE_885 = fs.readFileSync(path.join(ROOT, 'frontend/wml-core.js'), 'utf8');
+        const coreDraft1_885 = (CORE_885.match(/\{ step: (\d+),[^\n]*\bdraft: 1\b/) || [])[1];
+        ok(!!DRAFT1_885 && DRAFT1_885 === coreDraft1_885, '⭐ #885: the new-story gate checks Draft 1 by its real step (' + DRAFT1_885 + ' = CW_STEPS draft:1 ' + coreDraft1_885 + ')');
         if (gi3 > 0) {
             const FN = RA.slice(gi3, braceSliceFrom(RA, gi3, '{', '}').end).replace('private static function', 'public static function');
             const tmp = path.join(require('os').tmpdir(), 'wml-gate-' + process.pid + '.php');
             fs.writeFileSync(tmp, "<?php\nfunction absint($v){return abs((int)$v);}\nclass SWML_Session_Manager { public static $I = []; public static $P = [];\n"
                 + " public static function list_projects($u){return self::$I;} public static function get_project($u,$id){return self::$P[$id] ?? null;} }\n"
-                + "class X {\n" + FN + "\n}\n$o = [];\n"
+                + "class X {\n const CW_DRAFT_1_STEP = " + (DRAFT1_885 || '0') + ";\n" + FN + "\n}\n$o = [];\n"
                 // a student with an UNFINISHED summer story and nothing else
                 + "SWML_Session_Manager::$I = ['cwp_s' => ['id'=>'cwp_s','name'=>'Summer','updated'=>'2026-08-01 10:00:00','course_context'=>'standalone']];\n"
                 + "SWML_Session_Manager::$P = ['cwp_s' => ['step_completion'=>[], 'trials'=>[]]];\n"
@@ -950,7 +960,7 @@ const SEVEN = (hook, setup) => [
                 + "SWML_Session_Manager::$P['cwp_w'] = ['step_completion'=>[], 'trials'=>[]];\n"
                 + "$o['weekendSecond'] = X::cw_new_story_block(1, 'weekend');\n"
                 // the weekend story carried through lessons 5 and 7
-                + "SWML_Session_Manager::$P['cwp_w'] = ['step_completion'=>[9=>true], 'trials'=>[['trial'=>1]]];\n"
+                + "SWML_Session_Manager::$P['cwp_w'] = ['step_completion'=>[10=>true], 'trials'=>[['trial'=>1]]];\n"
                 + "$o['weekendAfterFinish'] = X::cw_new_story_block(1, 'weekend'); $o['fullStillGated'] = X::cw_new_story_block(1, 'standalone');\n"
                 + "echo json_encode($o);\n");
             let G = {};
@@ -959,7 +969,8 @@ const SEVEN = (hook, setup) => [
             finally { try { fs.unlinkSync(tmp); } catch (e) { /* gone */ } }
             ok(G.weekendFirst === null, '⭐ an unfinished summer story never blocks a first weekend story', G.weekendFirst);
             ok(G.fullSecond && G.fullSecond.story_name === 'Summer', 'the full course\'s own rule still holds (finish the summer story first)', G.fullSecond);
-            ok(G.weekendSecond && G.weekendSecond.story_name === 'Weekend' && (G.weekendSecond.needs || []).join('|') === 'lesson 5 (Your Dramatic Situation)|lesson 8 (Mark Your Draft)',
+            ok(G.fullSecond && (G.fullSecond.needs || []).join('|') === 'Step 10 (Draft 1)|Trial 1', '⭐ #885: the full course names Draft 1 by its real step — never "Step 9 (Draft 1)"', G.fullSecond);
+            ok(G.weekendSecond && G.weekendSecond.story_name === 'Weekend' && (G.weekendSecond.needs || []).join('|') === 'lesson 7 (Write Draft 1)|lesson 8 (Mark Your Draft)',
                 'a second weekend story waits for the current one, named in lessons — never "Step 9"', G.weekendSecond);
             ok(G.weekendAfterFinish === null && G.fullStillGated && G.fullStillGated.story_name === 'Summer', 'finishing the weekend story frees the weekend kind only', [G.weekendAfterFinish, G.fullStillGated]);
         }
@@ -1043,8 +1054,8 @@ const SEVEN = (hook, setup) => [
         const sum = (L) => L.reduce((a, e) => a + (e.outOf || 4), 0);
         ok(tu.length === 9 && tu[7].id === 'structure' && tu[8].id === 'accuracy' && sum(tu) === 34 && tf.length === 8 && sum(tf) === 30,
             '⭐ the weekend trial has nine rows (structure before accuracy), out of 34; the full course keeps eight, out of 30', [tu.map((e) => e.id), sum(tu), sum(tf)]);
-        const T1o = SRC.slice(SRC.indexOf('const _cwTrial1Ctl = (function'), SRC.indexOf('const _cwTrial1Ctl = (function') + 140000);
-        ok(/function els\(\) \{ return \(WML && \(WML\.cwTrial1Elements \? WML\.cwTrial1Elements\(\)/.test(T1o) && /THEIR STRUCTURAL PLAN \(weekend lesson 6\)/.test(T1o) && /function loadPlans\(\)/.test(T1o)
+        const T1o = SRC.slice(SRC.indexOf('function _cwTrialCtlFactory(N) {'), SRC.indexOf('function _cwTrialCtlFactory(N) {') + 140000);
+        ok(/function els\(\) \{[\s\S]{0,160}return \(WML && \(WML\.cwTrial1Elements \? WML\.cwTrial1Elements\(\)/.test(T1o) && /THEIR STRUCTURAL PLAN \(weekend lesson 6\)/.test(T1o) && /function loadPlans\(\)/.test(T1o)
             && (T1o.match(/loadPlans\(\)\.then/g) || []).length === 2, 'the trial reads THIS lesson\'s rows, loads the lesson-6 plan on start AND resume, and gives Sophia that plan to judge against');
         ok((SRC.match(/WML\.cwTrial1Elements \? WML\.cwTrial1Elements\(\)/g) || []).length >= 3, 'the trial\'s page blocks build the same rows the walk marks');
         ok(/THE TRIAL \(Mark Your Draft\) has one extra element|The trial \(Mark Your Draft\) has one extra element/.test(fs.readFileSync(path.join(ROOT, 'includes/class-protocol-router.php'), 'utf8')) || /NINE verdict lines here/.test(fs.readFileSync(path.join(ROOT, 'includes/class-protocol-router.php'), 'utf8')),

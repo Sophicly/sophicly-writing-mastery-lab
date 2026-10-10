@@ -7296,7 +7296,7 @@ class SWML_REST_API {
      * Neil's ruling (2026-07-26): "no problem with them having more than one project, but I just
      * wanna make sure they focus on one. Once they get used to that, then they can start a new
      * one." So a student earns the right to a new story by carrying their CURRENT one to
-     * Step 9 (Draft 1) and Trial 1 — far enough to have actually drafted something, not just
+     * Draft 1 (Step 10 since v7.20.451) and Trial 1 — far enough to have actually drafted something, not just
      * planned it. Switching between stories they already have stays completely free; only
      * CREATING is gated.
      *
@@ -7309,6 +7309,11 @@ class SWML_REST_API {
      * reason step_completion is per-project. Trials likewise come from this project's own
      * `trials` array, derived exactly as load_cw_project derives trial_completion.
      */
+    // v7.20.824 (FIXLIST #885): the step that IS Draft 1. §14 was ruled when Draft 1 was Step 9; the v7.20.451 Step 8
+    // insert made it Step 10, and this gate went on checking 9 (Scene Selection) and telling students "Step 9 (Draft 1)".
+    // Named once, and bin/weekend-story-harness.js asserts it equals the CW_STEPS entry carrying `draft: 1` (wml-core.js),
+    // so the next renumber fails a gate instead of silently moving the rule (root §5d).
+    const CW_DRAFT_1_STEP = 10;
     private static function cw_new_story_block($user_id, $course_context = 'standalone') {
         $index = SWML_Session_Manager::list_projects($user_id);
         // v7.20.758 (#802): the weekend story is its OWN kind of project (course_context 'weekend'). The gate reads only
@@ -7333,7 +7338,7 @@ class SWML_REST_API {
         $project = SWML_Session_Manager::get_project($user_id, $current_id);
         if (!is_array($project)) { return null; }   // unreadable → never block on our own failure
 
-        $step_9 = !empty($project['step_completion'][9]);
+        $draft_1 = !empty($project['step_completion'][self::CW_DRAFT_1_STEP]);
 
         $trial_1 = false;
         foreach ((array) ($project['trials'] ?? []) as $t) {
@@ -7341,11 +7346,11 @@ class SWML_REST_API {
             if (absint($t['trial'] ?? $t['trial_number'] ?? 0) === 1) { $trial_1 = true; break; }
         }
 
-        if ($step_9 && $trial_1) { return null; }
+        if ($draft_1 && $trial_1) { return null; }
 
         $needs = [];
-        // A weekend student names the lessons of the weekend story (Step 9 is its lesson 5, Trial 1 its lesson 8 since v7.20.761).
-        if (!$step_9)  { $needs[] = $weekend ? 'lesson 5 (Your Dramatic Situation)' : 'Step 9 (Draft 1)'; }
+        // A weekend student names the lessons of the weekend story (Draft 1 is its lesson 7, Trial 1 its lesson 8 since v7.20.761).
+        if (!$draft_1) { $needs[] = $weekend ? 'lesson 7 (Write Draft 1)' : 'Step ' . self::CW_DRAFT_1_STEP . ' (Draft 1)'; }
         if (!$trial_1) { $needs[] = $weekend ? 'lesson 8 (Mark Your Draft)' : 'Trial 1'; }
 
         // Name, never the id — a student must never be shown a machine key (root CLAUDE.md §14).

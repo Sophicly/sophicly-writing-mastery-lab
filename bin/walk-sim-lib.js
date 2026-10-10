@@ -713,8 +713,41 @@ function makeWorld(ctl, opts) {
     return world;
 }
 
+// v7.20.824 (FIXLIST #884-①): the CW trial walk is ONE factory built per trial number (_cwTrialCtlFactory(N)). Static
+// gates written against Trial 1's literal sentences and row ids read the factory SPECIALISED to a trial: every per-trial
+// expression replaced by the value it takes for that trial. A check against Trial 1's text therefore still means exactly
+// what it meant, and the weekend substitution tables are still checked against the sentences Trial 1 really renders.
+// Keep the value table in step with the factory's own constants (THIS_DRAFT / NEXT_DRAFT / DIM / nextStepLabel()).
+function specialiseTrialCtl(src, N) {
+    const vals = [
+        ['NEXT_DRAFT', 'Draft ' + (N + 1)], ['THIS_DRAFT', 'Draft ' + N],
+        ['DIM', N === 1 ? 'story coherence' : 'character depth'],
+        ['nextStepLabel()', N === 1 ? 'Step 11' : 'Step 15'], ['N', String(N)],
+    ];
+    let out = String(src)
+        .replace(/fid\('([a-z0-9-]+)'\)/g, "'cw-trial-" + N + "-$1'")
+        .replace(/fid\('([a-z0-9-]+)' \+ /g, "'cw-trial-" + N + "-$1' + ")
+        .replace(/\btask: TASK\b/g, "task: 'cw_trial_" + N + "'");
+    vals.forEach(function (kv) {
+        const k = kv[0].replace(/[()]/g, '\\$&');
+        out = out.replace(new RegExp("'\\s*\\+\\s*" + k + "\\s*\\+\\s*'", 'g'), kv[1]);
+    });
+    // Last, so 'trial' + N + '-marking' has already become 'trial1-marking' above: only a bare 'trial' + N remains.
+    return out.replace(/'(trial|_trial|swml_trial)' \+ N\b/g, "'$1" + N + "'");
+}
+
+// The whole source with the trial factory's body specialised to trial N — what a static check of "Trial N's walk" reads.
+function srcForTrial(N, src) {
+    src = src || SRC;
+    const i = src.indexOf('function _cwTrialCtlFactory(N) {');
+    if (i < 0) return src;
+    const start = src.indexOf('{', i);
+    const b = braceSliceFrom(src, i, '{', '}');
+    return src.slice(0, start) + specialiseTrialCtl(b.text, N) + src.slice(b.end);
+}
+
 module.exports = {
-    attachLiveChipsDeps, attachSlotDeps, attachWmlDeps,
+    attachLiveChipsDeps, attachSlotDeps, attachWmlDeps, specialiseTrialCtl, srcForTrial,
     SRC, ROOT, braceSliceFrom, sliceController, makeWorld, settle, HELP_LABEL_RE, HELP_BAR_RE,
     attachSelfAssessDeps, TICK_LIST_RE, NEUTRAL_RE, SA_ADD_RE,
 };

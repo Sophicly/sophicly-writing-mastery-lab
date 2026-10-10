@@ -921,6 +921,13 @@ event — "a CW step was completed on THIS story" — so they are one piece of w
 gate must read the *project's* `step_completion`, never LearnDash's global state: LD would report
 Step 9 complete from story one and wave story three straight through.
 
+**THE LANGUAGE PAPER 1 STORY PROJECT — the same rule (Neil, ruled 2026-10-10, Actions card: "Keep the rule: they carry on
+their story"; FIXLIST #883/#886).** When the story lessons run between the Paper 1 practice papers, a student who already has
+an unfinished story carries it on; a new story still needs Draft 1 + Trial 1 on the active one. Measured that day: of 58 real
+students in AQA Lang P1 (42205), 45 had no story (their first is free) and 13 had one, none past the gate.
+⚠️ **Step numbers moved under this ruling (#885):** it was written when Draft 1 was Step 9. Since the v7.20.451 Step 8 insert,
+Step 9 is Scene Selection and **Draft 1 is Step 10**. The RULING is Draft 1 + Trial 1, whatever their numbers.
+
 ---
 
 ## §15. A STUDENT STUDIES ONE COURSE AT A TIME, AND SWITCHES ONLY AT A CHECKPOINT (Neil, ruled 2026-07-27)
@@ -3336,3 +3343,13 @@ Not TTECEA, so unchanged: P1 Q1–Q3 (point-marked, ~20 words a point) and the t
 ⚠️ **OPEN — not silently extended:** the AQA rows still use ~150 a paragraph (P1 Q2/Q3 300 = 2 × 150; P2 Q3 450 =
 3 × 150; P2 Q4 550 = 50 + 3 × 150 + 50 — Neil, 12 Jun). Whether 170 replaces 150 there too is his call; asked on the
 WML Actions page, not assumed (root §7: surface a conflict, never average it).
+**10 Oct, night — his answer was a question, and it was the right one** (FIXLIST #886): *"what AQA word table? Have you
+tried looking at a paragraph we have written to see how many words it is?"* There is no table he made: the AQA numbers are
+per-question targets in a v7.19.423 code comment attributed to him (12 Jun). **Measured instead** (our own writing):
+- **AQA Lang P2 sample answers** (`Model Answers/AQA Lang P2 Sample Answers — Death Zone + London Snow`): Q3's three body
+  paragraphs 102 · 110 · 135 words (mean 116); Q4's four 124 · 118 · 115 · 138 (mean 124). Whole answers: Q3 379, Q4 551.
+- **AQA Literature model answers** (60 essays, `Model Answers/AQA/*/topic-*.md`): body paragraphs mean 298 (102–646) —
+  untimed library essays, not exam answers, so they do not decide a timed Language question.
+- **No AQA Lang P1 or Edexcel IGCSE Language sample answers exist** on disk (both searches completed, nothing found).
+So our own exam-shaped TTECEA paragraphs run about 115–125 words: below the code's 150 and well below 170. The AQA rows stay
+as they are until he chooses; the measured numbers are on the Actions page for him.

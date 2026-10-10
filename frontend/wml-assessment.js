@@ -20418,6 +20418,10 @@
                             // trial never needs and leave the seven asks unserved.
                             clearWalkResume();
                             setTimeout(() => { _cwTrial1Ctl.reset(); _cwTrial1Ctl.forceStart(); }, 200);
+                        } else if (state.task === 'cw_trial_2') {
+                            // v7.20.824 (#884-①): Trial 2 runs the same walk — it owns chat-clear the same way.
+                            clearWalkResume();
+                            setTimeout(() => { _cwTrial2Ctl.reset(); _cwTrial2Ctl.forceStart(); }, 200);
                         } else if (state.task === 'cw_step_91') {
                             // v7.20.776: weekend lesson 11 (Mark It Again) runs Trial 1's walk — it owns chat-clear the same way.
                             clearWalkResume();
@@ -21355,7 +21359,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -21369,7 +21373,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -21582,7 +21586,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -21693,6 +21697,11 @@
             // Task-keyed, unlike the ladder above — this walk is Trial 1's, not a shared host.
             if (state.task === 'cw_trial_1' && _cwTrial1Ctl.active && _inboundIsAnswer) {
                 await _cwTrial1Ctl.handleTurn(msg);
+                return;
+            }
+            // v7.20.824 (#884-①): Trial 2 — the same walk, its own instance.
+            if (state.task === 'cw_trial_2' && _cwTrial2Ctl.active && _inboundIsAnswer) {
+                await _cwTrial2Ctl.handleTurn(msg);
                 return;
             }
             // v7.20.776: weekend lesson 11 (Mark It Again) — the same walk, on its own page.
@@ -36054,12 +36063,35 @@
         // them is CODE (never the model's, §33 ruling 4): met=2 · partly=1 · not yet=0, out of 14,
         // through the ONE canonical ladder `_ladderGrade` — no second grade table is created here.
         // ══════════════════════════════════════════════════════════════════════════════════════
-        const _cwTrial1Ctl = (function () {
+        // ⭐⭐ v7.20.824 (FIXLIST #884-①, CW trials slice 5): ONE examiner-walk trial controller, built per trial number.
+        // Trial 1 (story coherence) and Trial 2 (character depth) run the SAME walk — goal, the examiner climb element by
+        // element, technical accuracy, one Sophia call, code arithmetic, calibration, how-am-I-going, the target — and
+        // differ only in data: the elements (WML.cwTrialElements(N)), where each element's plan lives (`planDoc`), and the
+        // words that name the dimension and the drafts. For N = 1 every string is byte-identical to the shipped Trial 1
+        // (bin/cw-trial1-sim-harness.js proves it, and _cwUnitText / _cwAgainText still match Trial 1's exact sentences).
+        function _cwTrialCtlFactory(N) {
+            const T1 = N === 1;
+            const TASK = 'cw_trial_' + N;
+            const DIM = T1 ? 'story coherence' : 'character depth';
+            const DIM_KEY = T1 ? 'story_coherence' : 'character_depth';
+            // Trial N judges Draft N (Trial 6 follows Draft 6, PEDAGOGY §33.7), so its target is for Draft N + 1.
+            const THIS_DRAFT = 'Draft ' + N;
+            const NEXT_DRAFT = 'Draft ' + (N + 1);
+            // The step after this trial, DERIVED from CW_STEPS (Trial 2 → Step 15) — never a literal a renumber could strand
+            // (#885's class). Trial 1 keeps its own shipped sentence verbatim: the weekend unit's text table rewrites exactly it.
+            function nextStepLabel() {
+                try {
+                    const steps = (WML && WML.CW_STEPS) || [];
+                    const i = steps.findIndex(function (x) { return x && x.trial === N; });
+                    for (let k = i + 1; i >= 0 && k < steps.length; k++) if (steps[k] && steps[k].step) return 'Step ' + steps[k].step;
+                } catch (e) {}
+                return 'the next step';
+            }
             let active = false, pending = false, done = false;
             let emitted = 0;
             let st = null;
 
-            const WALK = 'trial1';
+            const WALK = 'trial' + N;
             // ⭐ v7.20.554 (#424, PEDAGOGY §33.10) — THE EXAMINER WALK. Each element is marked 0–4
             // through TWO levels of two marks (the smallest level width a real GCSE scheme uses),
             // and the student climbs bottom-up exactly as an examiner does: prove ALL of Level 1,
@@ -36089,8 +36121,12 @@
             // accuracy dimension (out of 2). Every "how many marks" question below is answered from
             // the element (`outOf`), never from a constant — so /30 is a sum, not a number.
             // v7.20.761: THIS lesson's rows — a weekend trial adds the planned structural techniques (PEDAGOGY §55.2).
-            function els() { return (WML && (WML.cwTrial1Elements ? WML.cwTrial1Elements() : (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS))) || []; }
-            function fid(id) { return 'cw-trial-1-' + id; }
+            function els() {
+                if (!T1) return (WML && WML.cwTrialElements && WML.cwTrialElements(N)) || [];
+                return (WML && (WML.cwTrial1Elements ? WML.cwTrial1Elements() : (WML.CW_TRIAL1_ELEMENTS || WML.CW_SCENE_ELEMENTS))) || [];
+            }
+            function totalMarks() { return els().reduce(function (a, e) { return a + outOf(e); }, 0); }
+            function fid(id) { return 'cw-trial-' + N + '-' + id; }
             function outOf(e) { return (e && e.outOf) || 4; }
             function perLevel(e) { return outOf(e) / 2; }       // marks each level is worth: 2 (of 4) or 1 (of 2)
             function levelDefs(e) {
@@ -36114,9 +36150,9 @@
 
             const lsKey = () => {
                 try {
-                    const base = (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'trial1');
-                    return base + '_trial1';
-                } catch (e) { return 'swml_trial1'; }
+                    const base = (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'trial' + N);
+                    return base + '_trial' + N;
+                } catch (e) { return 'swml_trial' + N; }
             };
             function persist() {
                 try { localStorage.setItem(lsKey(), JSON.stringify({ st: st, active: active, done: done })); } catch (e) {}
@@ -36150,7 +36186,7 @@
                     if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
                     return wrote;
                 } catch (e) {
-                    console.warn('WML trial1: write failed (non-fatal) for ' + f + ' —', e && e.message);
+                    console.warn('WML trial' + N + ': write failed (non-fatal) for ' + f + ' —', e && e.message);
                     return false;
                 }
             }
@@ -36235,8 +36271,8 @@
                 if (pending) return;
                 userTurn('Still stuck — what would a strong ' + e.label.toLowerCase() + ' look like in MY story?');
                 const planned = planLine(e.id);
-                const ctx = '[THE STUDENT IS ASSESSING THEIR OWN DRAFT for Trial 1 (story coherence) and is stuck on '
-                    + (e.ao === 'AO6' ? 'the TECHNICAL ACCURACY of their draft (spelling, punctuation, grammar)' : 'ONE element of the seven-part scene structure')
+                const ctx = '[THE STUDENT IS ASSESSING THEIR OWN DRAFT for Trial ' + N + ' (' + DIM + ') and is stuck on '
+                    + (e.ao === 'AO6' ? 'the TECHNICAL ACCURACY of their draft (spelling, punctuation, grammar)' : (T1 ? 'ONE element of the seven-part scene structure' : 'ONE of the six character-depth checks (how their protagonist\u2019s inner struggle shows in the scene)'))
                     + '. Explain what a strong ' + e.label + ' would look '
                     + 'like IN THEIR OWN STORY, in two or three sentences, using what they planned. Then hand it '
                     + 'straight back — ask them to look at their own draft and decide. Do NOT judge their draft for '
@@ -36247,18 +36283,18 @@
                     // example can use their own characters. It is NOT the thing under assessment,
                     // and saying so here stops the model discussing the plan back to the student
                     // (which is how "the trial is marking my Step 9" looked from their side).
-                    + '\nWHAT THEY ARE JUDGING: their Draft 1, which is on the page beside the chat.'
-                    + '\nBACKGROUND ONLY — what they PLANNED for this part back in Step 9, so your example can use '
+                    + '\nWHAT THEY ARE JUDGING: their ' + THIS_DRAFT + ', which is on the page beside the chat.'
+                    + '\nBACKGROUND ONLY — what they PLANNED for this part ' + (T1 ? 'back in Step 9' : 'in their character profile or, for the flaw, their logline') + ', so your example can use '
                     + 'their own story. Do not assess the plan and do not quote it back as if it were their draft: '
                     + (planned || '(they did not write a plan for this one)');
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: _cwAgainText(ctx), hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true;
-                armWalkResume('trial1-help-' + e.id, function (reply, meta) {
+                armWalkResume('trial' + N + '-help-' + e.id, function (reply, meta) {
                     pending = false; active = true; persist();
                     // Degraded mode (§4d + the .405 contract): a tap that does nothing is how a
                     // 14-year-old decides the page is broken. Say it plainly, re-offer the free rungs.
                     if (!reply || (meta && meta.timedOut)) {
-                        console.warn('WML trial1: ask-Sophia failed/timed out for ' + e.id + ' — degraded honest message served.');
+                        console.warn('WML trial' + N + ': ask-Sophia failed/timed out for ' + e.id + ' — degraded honest message served.');
                         aiBubble(_cwUnitText('I can’t think this through with you right now — I couldn’t reach my own thinking. '
                             + 'Try **More examples**, or open **My Plot** to see what you planned. Your question is '
                             + 'saved here so your tutor can see where you got stuck.'));
@@ -36285,18 +36321,47 @@
                 if (id === 'structure') return structPlanLines().join(' · ');
                 const e = els().filter(function (x) { return x.id === id; })[0];
                 if (!e || !e.planFid) return '';
-                try { return _cwDocValue('scene_selection', e.planFid) || ''; } catch (err) { return ''; }
+                try { return _cwDocValue(e.planDoc || 'scene_selection', e.planFid) || ''; } catch (err) { return ''; }
             }
 
             // The plans the marking reads: lesson 5's scene plan, and in a weekend lesson the lesson-6 structural plan.
             function loadPlans() {
+                if (!T1) {   // Trial 2+: each element names its plan's document (Step 11 profile, Step 3 logline)
+                    const docs = [];
+                    els().forEach(function (e) { if (e.planDoc && docs.indexOf(e.planDoc) < 0) docs.push(e.planDoc); });
+                    return Promise.all(docs.map(function (d) { return _cwLoadDocValues(state.cwProjectId, d, true); }));
+                }
                 const jobs = [_cwLoadDocValues(state.cwProjectId, 'scene_selection', true)];
                 if (WML.cwInUnit && WML.cwInUnit()) jobs.push(_cwLoadDocValues(state.cwProjectId, 'structural_elements', true));
                 return Promise.all(jobs);
             }
             // ── serving ───────────────────────────────────────────────────────────────────
+            // Trial 2+ (v7.20.824): the same examiner method, taught again — for a slow student any trial may be the only one
+            // they finish (§33.15) — with this trial's question in plain words first and the exam's codes attached (§33.11).
+            function orientationChunksN(total) {
+                const checks = els().filter(function (e) { return e.ao !== 'AO6'; });
+                return ([
+                    'Time to see how your ' + THIS_DRAFT.replace('Draft', 'draft') + ' carries your **protagonist**. This trial asks one '
+                        + 'question: **can the reader feel your protagonist\u2019s inner struggle driving what happens?** That is '
+                        + 'exactly what ' + THIS_DRAFT + ' worked on.',
+                    'Everything in this trial is what exam mark schemes call **Content and Organisation**, usually **AO5** '
+                        + '(Edexcel IGCSE numbers it AO4). One short judgement at the end is **Technical Accuracy**, usually '
+                        + '**AO6**, exactly as in Trial 1.',
+                    'You mark it **the way a real examiner marks**: read **Level 1** first, and climb only while the writing is '
+                        + 'still better than the description. Where the description **fits**, stop, and decide whether the writing '
+                        + 'sits at the **top** or the **bottom** of that level.',
+                    'Your draft is on the page beside this chat, and we will walk **' + checks.length + ' checks**: '
+                        + checks.map(function (e) { return e.label.toLowerCase(); }).join(', ')
+                        + '. Each is out of **4**: Level 1 is 1–2 marks, Level 2 is 3–4. You make the level call, then prove it '
+                        + 'in one sentence.\n\nThen technical accuracy, out of **2**, which takes the whole trial to **' + total + '**.',
+                    'Be honest rather than kind. An honest low mark tells you exactly what to fix in ' + NEXT_DRAFT + '; a hopeful '
+                        + 'high one tells you nothing.\n\nWhen you have marked every check, I will read your draft and make my own '
+                        + 'level calls, and the places where we disagree are the most useful thing in this lesson.',
+                ]).map(_cwUnitText);
+            }
             function orientationChunks() {
                 const total = els().reduce(function (a, e) { return a + outOf(e); }, 0);
+                if (!T1) return orientationChunksN(total);
                 const hasStruct = els().some(function (e) { return e.id === 'structure'; });
                 // v7.20.776: lesson 11 repeats lesson 8's marking — the examiner method is already taught, so its own short
                 // orientation says what is new: a different story, and the Then and Now section.
@@ -36467,7 +36532,7 @@
                         + (mark === top - 1 && top === 4 ? ' Then say what is missing for the top of Level 2.' : '')
                     : '**' + mark + ' out of ' + top + '.** **In one sentence — what is missing?**\n\nSay what your '
                         + e.label.toLowerCase() + ' does at the moment and what it would need to do to climb a '
-                        + 'level. This sentence becomes your target for Draft 2, so make it something you could '
+                        + 'level. This sentence becomes your target for ' + NEXT_DRAFT + ', so make it something you could '
                         + 'actually act on.';
                 // A note is one self-contained sentence, so a second attempt REPLACES the first
                 // rather than stacking onto it (§4c.6 `rewrite`).
@@ -36611,8 +36676,11 @@
                 setTrialLadderModel(null);
                 aiBubble('That is all of them. Here is your marking:\n\n' + selfSummary()
                     + '\n\nNow let me read your draft and make my own level calls on each part. One moment.');
-                const ctx = '[TRIAL 1 — STORY COHERENCE. The student has just marked their own Draft 1 the way an '
-                    + 'examiner does: for each of the seven scene elements they climbed a two-level ladder '
+                const ctx = (T1
+                    ? '[TRIAL 1 — STORY COHERENCE. The student has just marked their own Draft 1 the way an '
+                        + 'examiner does: for each of the seven scene elements they climbed a two-level ladder '
+                    : '[TRIAL ' + N + ' — ' + DIM.toUpperCase() + '. The student has just marked their own ' + THIS_DRAFT + ' the way an '
+                        + 'examiner does: for each of the ' + els().filter(function (e) { return e.ao !== 'AO6'; }).length + ' character-depth checks they climbed a two-level ladder ')
                     + '(Level 1 = the element is there and attempts its job, worth 1–2 marks; Level 2 = it does '
                     + 'what a strong one does, worth 3–4; nothing creditable = 0), and then judged TECHNICAL '
                     + 'ACCURACY out of 2 (Level 1 = some mistakes are common, 1 mark; Level 2 = accurate spelling, '
@@ -36621,7 +36689,7 @@
                     + '1. Make YOUR OWN level call on each of the ' + els().length + ' elements, in order, one short paragraph '
                     + 'each: point at the actual place in their draft (quote a few of their own words) and say, in '
                     + 'words, which level it reaches and whether it sits at the top or the bottom of it.\n'
-                    + '2. Name the ONE element that would improve the story most in Draft 2, and say what to do to it.\n'
+                    + '2. Name the ONE element that would improve the story most in ' + NEXT_DRAFT + ', and say what to do to it.\n'
                     + '3. End your reply with exactly ' + (els().length * 2 + 2) + ' marker lines in this format and nothing else on those '
                     + 'lines. Each verdict line carries your verdict AND, after the bracket, one sentence on that '
                     + 'element for the student\u2019s document — quote two or three of their own words in it. '
@@ -36638,25 +36706,29 @@
                             + '@TRIAL_EXAMPLE[' + e.id + ']' + (k === 0 ? ' two or three sentences of their moment, rewritten at Level 2' : ' …') + '\n';
                     }).join('')
                     + '@TRIAL_STRENGTH[element_id] one line — the element working hardest for this story, and why\n'
-                    + '@TRIAL_PRIORITY[element_id] one line — what to do to that element in Draft 2\n'
+                    + '@TRIAL_PRIORITY[element_id] one line — what to do to that element in ' + NEXT_DRAFT + '\n'
                     + 'The level calls mean: none = nothing creditable · l1_low = bottom of Level 1 · l1_top = all '
                     + 'of Level 1 and no more · l2_low = into Level 2 · l2_top = top of Level 2. For accuracy: '
                     + 'none = errors stop the reader · l1 = some mistakes are common · l2 = accurate.\n'
-                    + 'All ' + els().length + ' verdict lines are required. Do NOT give a mark, a score, a number out of 4, 2, 28 or 30, '
+                    + 'All ' + els().length + ' verdict lines are required. Do NOT give a mark, a score, a number out of 4, 2, ' + (T1 ? '28 or 30' : (totalMarks() - 2) + ' or ' + totalMarks()) + ', '
                     + 'a percentage or a grade anywhere in your prose — the marks are worked out from your level '
-                    + 'calls by the system, not by you. Do NOT rewrite their draft. Judge only story coherence: '
-                    + 'not spelling, not punctuation.]'
+                    + 'calls by the system, not by you. Do NOT rewrite their draft. Judge only ' + DIM + ': '
+                    + (T1 ? 'not spelling, not punctuation.]' : 'the checks above, not the scene structure Trial 1 judged; spelling and punctuation only in the technical accuracy verdict.]')
                     + '\n\nWHAT THE STUDENT DECIDED ABOUT THEIR OWN DRAFT (their marks out of 4, with their evidence):\n' + selfSummary()
                     // v7.20.761: the structural-techniques row is judged against THEIR plan — each technique they chose, where, and how.
                     + (els().some(function (e) { return e.id === 'structure'; })
                         ? '\n\nTHEIR STRUCTURAL PLAN (weekend lesson 6) — judge the Structural Techniques element ONLY against these: is each one '
                             + 'in the draft, at the place they planned, and doing its job?\n' + (structPlanLines().map(function (l) { return '- ' + l; }).join('\n') || '(no plan filed)')
                         : '')
+                    // v7.20.824: Trial 2+ hands her what they PLANNED (Step 11 profile, Step 3 flaw) — background for her comments
+                    // in their own words; the DRAFT is what she judges.
+                    + (!T1 ? '\n\nTHEIR CHARACTER PLAN — background only, so your comments can use their own words. Judge the DRAFT, never this plan:\n'
+                        + els().filter(function (e) { return e.planFid; }).map(function (e) { return '- ' + e.label + ': ' + (planLine(e.id) || '(not filled in)'); }).join('\n') : '')
                     + '\n\nWHAT EACH ELEMENT IS FOR, AND ITS TWO LEVELS:\n'
                     + els().map(function (e) { return '- ' + e.label + ' (out of ' + outOf(e) + '): ' + e.prompt + ' Level 1: ' + l1Body(e) + ' Level 2: ' + e.strong; }).join('\n');
                 WML.recordTurn(canvasChatHistory, { role: 'user', content: _cwAgainText(ctx), hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
                 active = false; pending = true;
-                armWalkResume('trial1-marking', function (reply, meta) {
+                armWalkResume('trial' + N + '-marking', function (reply, meta) {
                     pending = false;
                     onMarkingReply(reply, meta);
                 }, { timeoutMs: 90000 });
@@ -36739,12 +36811,12 @@
 
             function onMarkingReply(reply, meta) {
                 if (!reply || (meta && meta.timedOut)) {
-                    console.warn('WML trial1: marking call failed/timed out — honest message + retry chip served.');
+                    console.warn('WML trial' + N + ': marking call failed/timed out — honest message + retry chip served.');
                     active = true; persist();
                     _cwReplay(function () {
                         aiBubble(_cwUnitText('I could not read your draft just now — that is my end, not yours. **Your '
                             + 'judgements are saved** in your document, so nothing is lost. Try again when you are '
-                            + 'ready, or carry on to Step 11 and come back to this.'));
+                            + (T1 ? 'ready, or carry on to Step 11 and come back to this.' : 'ready, or carry on to ' + nextStepLabel() + ' and come back to this.')));
                     });
                     chipBarOrRetry(['Try again →'], function () { pickTurn('Try again →'); serveMarking(); },
                         '**Your judgements are saved.**');
@@ -36756,7 +36828,7 @@
                 const complete = els().every(function (e) { return !!mine[e.id]; });
                 if (!complete) {
                     // FAIL LOUD, to the student, and never file half a mark.
-                    console.warn('WML trial1: only ' + Object.keys(mine).length + '/' + els().length
+                    console.warn('WML trial' + N + ': only ' + Object.keys(mine).length + '/' + els().length
                         + ' verdict markers parsed — no mark filed.');
                     active = true; persist();
                     chipBarOrRetry(['Give me my marks →'], function () { pickTurn('Give me my marks →'); serveMarking(); },
@@ -36770,7 +36842,7 @@
                 st.sophiaExamples = parsed.examples || {};
                 {
                     const missing = els().filter(function (e) { return !st.sophiaExamples[e.id]; }).map(function (e) { return e.id; });
-                    if (missing.length) console.warn('WML trial1: no @TRIAL_EXAMPLE for ' + missing.join(', ') + ' — rows filed without a rewrite example (#434).');
+                    if (missing.length) console.warn('WML trial' + N + ': no @TRIAL_EXAMPLE for ' + missing.join(', ') + ' — rows filed without a rewrite example (#434).');
                 }
                 const m = markFrom(mine);
                 st.mark = m;
@@ -36785,7 +36857,7 @@
                 els().forEach(function (e) {
                     const c = parsed.comments[e.id] || '';
                     const x = st.sophiaExamples[e.id] || '';
-                    writeRow('cw-trial-1-fb-' + e.id, markPhrase(e, st.sophia[e.id]) + (c ? ' \u2014 ' + c : '')
+                    writeRow(fid('fb-' + e.id), markPhrase(e, st.sophia[e.id]) + (c ? ' \u2014 ' + c : '')
                         + (x ? ' For example: \u201c' + x + '\u201d' : ''), { replace: true });
                 });
                 // Strength/priority: from her markers when they parsed; DERIVED from her own
@@ -36799,14 +36871,14 @@
                 st.priorityLine = parsed.priority
                     ? label(parsed.priority.id) + (parsed.priority.text ? ' \u2014 ' + parsed.priority.text : '')
                     : label(byMark[byMark.length - 1].id) + ' \u2014 her full note is in the chat.';
-                if (!parsed.strength) console.warn('WML trial1: no @TRIAL_STRENGTH marker — derived from her level calls.');
-                if (!parsed.priority) console.warn('WML trial1: no @TRIAL_PRIORITY marker — derived from her level calls.');
-                writeRow('cw-trial-1-strength', st.strengthLine, { replace: true });
-                writeRow('cw-trial-1-priority', st.priorityLine, { replace: true });
+                if (!parsed.strength) console.warn('WML trial' + N + ': no @TRIAL_STRENGTH marker — derived from her level calls.');
+                if (!parsed.priority) console.warn('WML trial' + N + ': no @TRIAL_PRIORITY marker — derived from her level calls.');
+                writeRow(fid('strength'), st.strengthLine, { replace: true });
+                writeRow(fid('priority'), st.priorityLine, { replace: true });
                 publishTrialScore();   // v7.20.565 (#439): re-publish now the strength/priority lines exist
-                writeRow('cw-trial-1-mark', 'Grade ' + m.grade + ' (' + m.got + '/' + m.max + ' \u00b7 ' + m.pct + '%) for story coherence', { replace: true });
+                writeRow(fid('mark'), 'Grade ' + m.grade + ' (' + m.got + '/' + m.max + ' \u00b7 ' + m.pct + '%) for ' + DIM, { replace: true });
                 const gaps = agreementLine(st.sophia);
-                writeRow('cw-trial-1-gap', gaps.length
+                writeRow(fid('gap'), gaps.length
                     ? gaps.map(function (g) { return g.replace(/\*\*/g, '').replace(/^- /, ''); }).join(' | ')
                     : 'You and Sophia agreed on every part.', { replace: true });
                 const thenNow = _cwIsAgain() ? writeThenNow(m) : '';   // v7.20.776: lesson 11 — lesson 8's mark beside today's
@@ -36822,8 +36894,8 @@
                         : 'We agreed on every part, which means you are already reading your own writing '
                             + 'the way an examiner does. That is the harder half of this.')
                         + '\n\n*For the record, the arithmetic on my level calls: ' + m.got + ' out of ' + m.max
-                        + ' — Grade ' + m.grade + ' for story coherence.' + (thenNow ? ' ' + thenNow : '') + ' It is in your document; the sentences '
-                        + 'above it are the part that changes Draft 2.*');
+                        + ' — Grade ' + m.grade + ' for ' + DIM + '.' + (thenNow ? ' ' + thenNow : '') + ' It is in your document; the sentences '
+                        + 'above it are the part that changes ' + NEXT_DRAFT + '.*');
                 });
                 // WML's own store keeps the result; the dashboard's grade ring cannot read it yet
                 // (there is no consumer of `sophicly_cw_trial_saved` — handed to the dashboard lane
@@ -36863,7 +36935,7 @@
                 st.phase = 'items';
                 persist();
                 pickTurn('Grade ' + g);
-                writeRow('cw-trial-1-goal', 'Grade ' + g, { replace: true });
+                writeRow(fid('goal'), 'Grade ' + g, { replace: true });
                 serveItem();
             }
             // Self − Sophia, over the whole /30. Positive = the student marked higher than she did.
@@ -36882,14 +36954,14 @@
                 const d = calibDelta();
                 const self = st.selfTotal || 0, hers = (st.mark && st.mark.got) || 0;
                 if (Math.abs(d) <= CALIB_TOLERANCE || !gapElements().length) {
-                    const text = '**Calibration check.** You marked yourself **' + self + ' out of 30**; I marked **' + hers
+                    const text = '**Calibration check.** You marked yourself **' + self + ' out of ' + totalMarks() + '**; I marked **' + hers
                         + '** — within ' + CALIB_TOLERANCE + ' marks of each other. That is a well-calibrated examiner\u2019s eye, '
                         + 'and it is a skill in itself: you can already see your own writing the way a marker will.';
                     serveCwChunks([text], { emit: aiBubble, onDone: function () { serveSummary(); }, deferFirst: !!(opts && opts.defer) });
                     return;
                 }
                 const dir = d > 0 ? 'higher' : 'lower';
-                const text = '**Calibration check.** You marked yourself **' + self + ' out of 30**; I marked **' + hers + '** — '
+                const text = '**Calibration check.** You marked yourself **' + self + ' out of ' + totalMarks() + '**; I marked **' + hers + '** — '
                     + '**' + Math.abs(d) + ' marks ' + dir + '** than me. Examiners call that ' + (d > 0 ? 'over' : 'under') + '-marking, and '
                     + 'the useful question is not who is right but **which part drove the gap**. Looking at the parts where we '
                     + 'differed most, which one do you think it was?';
@@ -36917,9 +36989,9 @@
                     text = '**' + hit.e.label + '** — you said *' + hit.a + '/' + outOf(hit.e) + '*, I said *' + hit.b + '/' + outOf(hit.e) + '*.'
                         + (c ? '\n\n' + c : '')
                         + (x ? '\n\n*At Level 2 it could read:* \u201c' + x + '\u201d' : '')
-                        + '\n\nThe habit to carry into Draft 2: **' + habit + '.**';
+                        + '\n\nThe habit to carry into ' + NEXT_DRAFT + ': **' + habit + '.**';
                 } else {
-                    text = 'Fair — the gap does not always sit in one part. The habit to carry into Draft 2 is still the same: **' + habit + '.**';
+                    text = 'Fair — the gap does not always sit in one part. The habit to carry into ' + NEXT_DRAFT + ' is still the same: **' + habit + '.**';
                 }
                 persist();
                 serveCwChunks([text], { emit: aiBubble, onDone: function () { serveSummary(); } });
@@ -36936,11 +37008,11 @@
                     const v = (st.sophia || {})[e.id] || 0;
                     if (e.ao === 'AO6') { ao6 += v; ao6max += outOf(e); } else { ao5 += v; ao5max += outOf(e); }
                 });
-                let going = '**How am I going?**\n\n**Grade ' + m.grade + '** for story coherence — ' + m.got + ' out of ' + m.max
+                let going = '**How am I going?**\n\n**Grade ' + m.grade + '** for ' + DIM + ' — ' + m.got + ' out of ' + m.max
                     + ' (content and organisation ' + ao5 + '/' + ao5max + ', technical accuracy ' + ao6 + '/' + ao6max + ').';
                 if (goal) {
                     going += m.grade >= goal
-                        ? ' Against your goal of **Grade ' + goal + '**: you are there on this dimension — hold it in Draft 2.'
+                        ? ' Against your goal of **Grade ' + goal + '**: you are there on this dimension — hold it in ' + NEXT_DRAFT + '.'
                         : ' Against your goal of **Grade ' + goal + '**: the gap is ' + (goal - m.grade) + ' grade' + (goal - m.grade === 1 ? '' : 's') + ', and this trial shows exactly where it lives.';
                 }
                 if (st.strengthLine) going += '\n\n**Working hardest for you:** ' + st.strengthLine;
@@ -36948,7 +37020,7 @@
                     ? 'within ' + CALIB_TOLERANCE + ' marks of mine — well calibrated.'
                     : Math.abs(d) + ' marks ' + (d > 0 ? 'above' : 'below') + ' mine' + (st.calibPick ? ' — you put that down to ' + st.calibPick.toLowerCase() : '') + '.');
                 let next = '**Where to next?**\n\n' + (st.priorityLine ? st.priorityLine : 'Take the part we disagreed on most and rewrite it first.')
-                    + '\n\nDraft 2 is where this counts — and it opens with your own target at the top of the page.';
+                    + '\n\n' + NEXT_DRAFT + ' is where this counts — and it opens with your own target at the top of the page.';
                 serveCwChunks([going, next], { emit: aiBubble, onDone: function () { serveTargetAsk(); }, deferFirst: !!(opts && opts.defer) });
             }
 
@@ -36963,7 +37035,7 @@
                 try {
                     const m = st && st.mark;
                     if (!m || m.max == null) { state.cwTrialScore = null; return; }
-                    state.cwTrialScore = { task: 'cw_trial_1', projectId: state.cwProjectId || '', score: m.got, total: m.max, percentage: m.pct, grade: m.grade,
+                    state.cwTrialScore = { task: TASK, projectId: state.cwProjectId || '', score: m.got, total: m.max, percentage: m.pct, grade: m.grade,
                         // v7.20.565 (#439, Neil: "at least some of the main feedback needs to surface in the
                         // progress report"): the SAME piggyback carries strength_1 / target_1 / target_2 —
                         // the columns the dashboard's Feedback section, Portfolio and Report already read.
@@ -36981,7 +37053,7 @@
                     if (!(state.cwProjectId && WML.cwProject && WML.cwProject.saveTrial)) return;
                     const m = st.mark || {};
                     const payload = {
-                        trial: 1, dimension: 'story_coherence', ao_family: 'AO5+AO6',   // v7.20.559 (#431): /30 = AO5 /28 + AO6 /2
+                        trial: N, dimension: DIM_KEY, ao_family: 'AO5+AO6',   // v7.20.559 (#431): /30 = AO5 /28 + AO6 /2
                         self: st.marks || {}, sophia: st.sophia || {}, notes: st.notes || {},
                         self_total: st.selfTotal || 0,
                         marks: m.got, out_of: m.max, percent: m.pct, grade: m.grade,
@@ -36995,9 +37067,9 @@
                     // The delta rides ONE entry per run (the server appends each save to a
                     // calibration trend — a second copy would double-count the same run).
                     if (opts && opts.withDelta) payload.calibration_delta = (st.selfTotal || 0) - (m.got || 0);
-                    WML.cwProject.saveTrial(state.cwProjectId, payload, 1)
-                        .catch(function (e) { console.warn('WML trial1: saveTrial failed —', e && e.message); });
-                } catch (e) { console.warn('WML trial1: saveTrial threw —', e && e.message); }
+                    WML.cwProject.saveTrial(state.cwProjectId, payload, N)
+                        .catch(function (e) { console.warn('WML trial' + N + ': saveTrial failed —', e && e.message); });
+                } catch (e) { console.warn('WML trial' + N + ': saveTrial threw —', e && e.message); }
             }
 
             // ⭐ THE CLOSING ASK (PEDAGOGY §33.9, EEF rec 3 / Wiliam: feedback must be USED): the
@@ -37008,11 +37080,11 @@
                 st.phase = 'target';
                 persist();
                 closeLadderPad();
-                _walkSlot.arm(WALK, 'cw-trial-1-target', { cycle: 'rewrite' });
-                const text = '**Last thing, and it matters most: your one target for Draft 2, in your own words.**\n\n'
-                    + 'Look at what we both found. In one sentence, say the single thing Draft 2 must do that '
-                    + 'Draft 1 does not. It goes in your document, and it will be waiting for you at the top of '
-                    + 'the page when you open Draft 2.';
+                _walkSlot.arm(WALK, fid('target'), { cycle: 'rewrite' });
+                const text = '**Last thing, and it matters most: your one target for ' + NEXT_DRAFT + ', in your own words.**\n\n'
+                    + 'Look at what we both found. In one sentence, say the single thing ' + NEXT_DRAFT + ' must do that '
+                    + THIS_DRAFT + ' does not. It goes in your document, and it will be waiting for you at the top of '
+                    + 'the page when you open ' + NEXT_DRAFT + '.';
                 const attach = function () { resetSend(); };
                 if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
                 aiBubble(text);
@@ -37020,14 +37092,14 @@
             }
             function onTarget(clean) {
                 st.target = clean;
-                writeRow('cw-trial-1-target', clean, { replace: true });
+                writeRow(fid('target'), clean, { replace: true });
                 st.phase = 'done';
                 done = true; active = false;
                 persist();
                 publishTrialScore();   // v7.20.565 (#439): target_2 = the student's own target, now written
                 saveTrialResult({ withDelta: false });
-                aiBubble('That is your opening move for Draft 2 — it is in your document, and it will be at the '
-                    + 'top of the page when Draft 2 opens. Mark the lesson complete when you are ready.');
+                aiBubble('That is your opening move for ' + NEXT_DRAFT + ' — it is in your document, and it will be at the '
+                    + 'top of the page when ' + NEXT_DRAFT + ' opens. Mark the lesson complete when you are ready.');
                 chipBarOrRetry(['Change my answers \u2192'], onChangeAnswers, '**Your target is filed.**');
                 resetSend();
             }
@@ -37162,8 +37234,8 @@
                 _cwReplay(function () {
                     aiBubble(m
                         ? 'This trial is finished — **' + m.got + ' out of ' + m.max + ', Grade ' + m.grade
-                            + '** for story coherence, all in your document'
-                            + (st.target ? ', with your target for Draft 2 filed' : '')
+                            + '** for ' + DIM + ', all in your document'
+                            + (st.target ? ', with your target for ' + NEXT_DRAFT + ' filed' : '')
                             + '. You can go through every part again whenever you want.'
                         : 'Your marking is in your document. You can go through every part again whenever you want.');
                 });
@@ -37176,7 +37248,7 @@
             // ── lifecycle ─────────────────────────────────────────────────────────────────
             function forceStart() {
                 if (!els().length) {
-                    console.warn('WML trial1: no scene elements — refusing to open.');
+                    console.warn('WML trial' + N + ': no scene elements — refusing to open.');
                     return false;
                 }
                 // v7.20.776: lesson 11 marks the story rewritten in lesson 10 — it exists only inside the Weekend Story.
@@ -37245,7 +37317,7 @@
                     const mark = emitted;
                     const standDown = function (what) {
                         if (emitted === mark) return false;
-                        console.log('WML trial1: another route already served — skipping the deferred ' + what + '.');
+                        console.log('WML trial' + N + ': another route already served — skipping the deferred ' + what + '.');
                         return true;
                     };
                     if (done || st.phase === 'done') {
@@ -37254,7 +37326,7 @@
                         return false;
                     }
                     active = true; pending = false;
-                    console.log('WML trial1: resumed on element ' + (st.i + 1) + ' of ' + els().length
+                    console.log('WML trial' + N + ': resumed on element ' + (st.i + 1) + ' of ' + els().length
                         + (st.awaitNote ? ' (awaiting the sentence for "' + st.awaitNote + '")' : ''));
                     // v7.20.553 (#422): WAIT for the Step-9 plan values before re-serving — the
                     // .552 re-serve raced the load and served the ask without the "What you
@@ -37286,7 +37358,9 @@
                 get active() { return active; },
                 get pending() { return pending; },
             };
-        })();
+        }
+        const _cwTrial1Ctl = _cwTrialCtlFactory(1);
+        const _cwTrial2Ctl = _cwTrialCtlFactory(2);   // v7.20.824 (#884-①): character depth
 
         // ══════════════════════════════════════════════════════════════════════════════════════
         // STEP 12 — UPDATE PLOT: GOALS (FIXLIST #440, v7.20.567). Neil's ruling, 2026-08-25:
@@ -37922,7 +37996,7 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwAdaptCtl, _cwStructCtl, _cwEmpathyCtl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwTrial2Ctl, _cwAdaptCtl, _cwStructCtl, _cwEmpathyCtl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
@@ -37943,6 +38017,7 @@
             _cw9SceneCtl.onReply(reply);
             _cw13SceneCtl.onReply(reply);
             _cwTrial1Ctl.onReply(reply);
+            _cwTrial2Ctl.onReply(reply);
             _cwCharProfileCtl.onReply(reply);
             _cwGoalsPlotCtl.onReply(reply);
             _cwAdaptCtl.onReply(reply);
@@ -37967,6 +38042,7 @@
                 // this map anyway — the .490 incident's second finding was that an UNLISTED task
                 // makes the start-miss guard inert for exactly the step that has no controller.
                 : t === 'cw_trial_1' ? _cwTrial1Ctl
+                : t === 'cw_trial_2' ? _cwTrial2Ctl   // v7.20.824 (#884-①)
                 : t === 'cw_step_91' ? _cwTrial1Ctl   // v7.20.776: weekend lesson 11
                 : t === 'cw_step_11' ? _cwCharProfileCtl
                 : t === 'cw_step_12' ? _cwGoalsPlotCtl
@@ -38018,6 +38094,7 @@
             cw9SceneCtl: _cw9SceneCtl,         // v7.20.494 (#204) — fresh-entry intercept calls start() on this
             cw13SceneCtl: _cw13SceneCtl,       // v7.20.568 (#440) — the same walk for Draft 2's scene
             cwTrial1Ctl: _cwTrial1Ctl,         // v7.20.551 — fresh entry calls forceStart(), boot resume tryResume()
+            cwTrial2Ctl: _cwTrial2Ctl,         // v7.20.824 (#884-①) — the same two entry points
             cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
             cwAdaptCtl: _cwAdaptCtl,
             cwEmpathyCtl: _cwEmpathyCtl,         // v7.20.777 — the weekend bonus lesson; same two entry points             // v7.20.753 — weekend lesson 9; same two entry points
@@ -45545,6 +45622,7 @@
                     // mid-trial must re-serve the element the student was on — not the top of the
                     // seven (§4c.8b).
                     if (state.task === 'cw_trial_1' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();
+                    if (state.task === 'cw_trial_2' && tp.cwTrial2Ctl) tp.cwTrial2Ctl.tryResume();   // v7.20.824 (#884-①)
                     if (state.task === 'cw_step_91' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();   // v7.20.776 (weekend lesson 11)
                     if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
                     if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
@@ -45747,6 +45825,12 @@
                     if (state.task === 'cw_trial_1' && !state.reviewMode && tp.cwTrial1Ctl) {
                         console.log('WML v7.20.551: CW Trial 1 — deterministic self-assessment start (isCwSi entry)');
                         tp.cwTrial1Ctl.forceStart();
+                        return;
+                    }
+                    // v7.20.824 (#884-①): Trial 2 — the same walk on its own six checks, started in code the same way.
+                    if (state.task === 'cw_trial_2' && !state.reviewMode && tp.cwTrial2Ctl) {
+                        console.log('WML v7.20.824: CW Trial 2 — deterministic self-assessment start (isCwSi entry)');
+                        tp.cwTrial2Ctl.forceStart();
                         return;
                     }
                     // v7.20.776: weekend lesson 11 (Mark It Again) — Trial 1's walk, started in code the same way.
@@ -60102,6 +60186,16 @@
                 html += _cwTrial1TargetBlock();
                 return html;
             }
+            // v7.20.824 (#884-①): a later trial with an examiner walk (its elements exist) gets Trial 1's architecture.
+            if (_cwTrialNEls(stepDef.trial).length) {
+                html += sectionHTML('question', 'Assessment Focus', false, null, _cwTrialNAboutHTML(stepDef.trial, _trialSrc));
+                html += dividerHTML('YOUR DRAFT');
+                html += sectionHTML('response', CW_TRIAL_DRAFT_LABEL, false, null, _cwTrialDraftInner(_trialSrc, ''));
+                html += _cwTrialNJudgementBlock(stepDef.trial);
+                html += _cwTrialNSophiaBlock(stepDef.trial);
+                html += _cwTrialNTargetBlock(stepDef.trial);
+                return html;
+            }
             const trialFocus = { 2: 'character depth', 3: 'archetype coherence', 4: 'emotional impact', 5: 'thematic clarity', 6: 'technical proficiency' };
             const focus = trialFocus[stepDef.trial] || '';
             html += sectionHTML('question', 'Assessment Focus', false, null,
@@ -62210,6 +62304,68 @@
             '<h3>The one thing Draft 2 must do</h3>'
             + '<p><em>Written at the end of the trial, in your own words. It will be waiting at the top of the page when you open Draft 2.</em></p>'
             + outlineRowHTML({ id: 'target', label: 'My Target', prompt: 'One sentence — the single thing Draft 2 must do that Draft 1 does not.' }, 'cw-trial-1-target'));
+    }
+
+    // ⭐ v7.20.824 (FIXLIST #884-①, CW trials slice 5) — THE PAGE FOR A LATER EXAMINER-WALK TRIAL. Trial 1's architecture
+    // (About · the draft · Your Judgement · Sophia's Verdict · Overall Feedback · the mark · the target), built from THIS
+    // trial's own elements (WML.cwTrialElements(n)). Row ids are 'cw-trial-' + n + '-…' — the same template as the walk's
+    // fid(), so the key the page builds is the key the walk writes (root §5d). Trial 1 keeps its own producers and heal.
+    const CW_TRIAL_PAGE_TEXT = {
+        2: {
+            title: 'Trial 2: Character Depth', dim: 'Character Depth',
+            question: 'can the reader feel your protagonist’s inner struggle driving what happens?',
+            checks: 'the goal, the flaw and the stakes at the start, the need surfacing, the dilemma, and the proof of change at the end',
+        },
+    };
+    function _cwTrialNEls(n) { return (window.WML && WML.cwTrialElements) ? (WML.cwTrialElements(n) || []) : []; }
+    function _cwTrialNAboutHTML(n, src) {
+        const T = CW_TRIAL_PAGE_TEXT[n] || {};
+        const where = src && src.draftStep ? _cwStepPlace(src.draftStep) : 'the drafting lesson before this one';
+        return '<h2>' + escapeHTML(T.title || ('Trial ' + n)) + '</h2>'
+            + '<p>This trial asks one question of Draft ' + n + ': <strong>' + escapeHTML(T.question || '') + '</strong> Your draft from ' + escapeHTML(where) + ' is below, exactly as you wrote it. Everything here is what the exam calls <strong>AO5: Content and Organisation</strong> — your ideas, and how the story is built.</p>'
+            + '<p>You will check what Draft ' + n + ' worked on: ' + escapeHTML(T.checks || '') + '. Then <strong>Technical Accuracy</strong> (spelling, punctuation and grammar), as in Trial 1. In the chat you mark them yourself, <strong>the way a real examiner marks</strong>, then Sophia reads your draft and makes her own level calls. Your marking and hers are both recorded here, and the places where you disagree are the most useful thing in this lesson.</p>';
+    }
+    function _cwTrialNJudgementBlock(n) {
+        const _els = _cwTrialNEls(n);
+        return dividerHTML('YOUR JUDGEMENT')
+            + sectionHTML('plan', 'Your Judgement', true, null,
+                '<h3>Your marking, the way an examiner marks</h3>'
+                + '<p><em>One line per check, out of 4: Level 1 (the check is there, but said rather than shown) is 1–2 marks, Level 2 (it does what a strong one does) is 3–4. '
+                + 'Then technical accuracy, out of 2. Your own sentence proves the mark — or names what is missing for Draft ' + (n + 1) + '.</em></p>'
+                + outlineRowHTML({ id: 'goal', label: 'Grade goal', prompt: 'The grade you are aiming for in creative writing.' }, 'cw-trial-' + n + '-goal')
+                + _els.map(function (e) {
+                    return outlineRowHTML({ id: e.id, label: e.label, prompt: 'Your mark out of ' + (e.outOf || 4) + ', and your sentence of evidence.' }, 'cw-trial-' + n + '-' + e.id);
+                }).join(''));
+    }
+    function _cwTrialNSophiaBlock(n) {
+        const T = CW_TRIAL_PAGE_TEXT[n] || {};
+        const _els = _cwTrialNEls(n);
+        const checks = _els.filter(function (e) { return e.ao !== 'AO6'; });
+        const checkMax = checks.reduce(function (a, e) { return a + (e.outOf || 4); }, 0);
+        const accMax = _els.reduce(function (a, e) { return a + (e.ao === 'AO6' ? (e.outOf || 4) : 0); }, 0);
+        return dividerHTML('SOPHIA’S ASSESSMENT')
+            + sectionHTML('response', 'Sophia’s Verdict', false, null,
+                '<h3>Her verdict on each check</h3>'
+                + '<p><em>Filled in after you have judged every check yourself — she reads your draft alongside your own judgement, never instead of it.</em></p>'
+                + _els.map(function (e) {
+                    return outlineRowHTML({ id: 'fb-' + e.id, label: e.label, prompt: 'Her level call on your ' + e.label.toLowerCase() + ', after you have marked it.', locked: true }, 'cw-trial-' + n + '-fb-' + e.id);
+                }).join(''))
+            + sectionHTML('response', 'Overall Feedback', false, null,
+                '<h3>The whole piece, in two lines</h3>'
+                + outlineRowHTML({ id: 'strength', label: 'Key Strength', prompt: 'The check that is working hardest for your character.', locked: true }, 'cw-trial-' + n + '-strength')
+                + outlineRowHTML({ id: 'priority', label: 'Priority for Draft ' + (n + 1), prompt: 'The one check that would improve the story most, and what to do to it.', locked: true }, 'cw-trial-' + n + '-priority'))
+            + sectionHTML('response', (T.dim || ('Trial ' + n)) + ' Mark', false, null,
+                '<h3>Sophia’s mark, and where you two disagreed</h3>'
+                + '<p><em>The mark is worked out from her level calls on the ' + checks.length + ' checks, out of ' + checkMax + ', plus technical accuracy out of ' + accMax + '.'
+                + ' The places where you saw your draft differently are the most useful thing on this page.</em></p>'
+                + outlineRowHTML({ id: 'mark', label: 'Mark', prompt: 'Filled in once Sophia has read your draft.', locked: true }, 'cw-trial-' + n + '-mark')
+                + outlineRowHTML({ id: 'gap', label: 'Where you differed', prompt: 'Filled in once Sophia has read your draft.', locked: true }, 'cw-trial-' + n + '-gap'));
+    }
+    function _cwTrialNTargetBlock(n) {
+        return sectionHTML('plan', 'Your Target for Draft ' + (n + 1), true, null,
+            '<h3>The one thing Draft ' + (n + 1) + ' must do</h3>'
+            + '<p><em>Written at the end of the trial, in your own words. It will be waiting at the top of the page when you open Draft ' + (n + 1) + '.</em></p>'
+            + outlineRowHTML({ id: 'target', label: 'My Target', prompt: 'One sentence — the single thing Draft ' + (n + 1) + ' must do that Draft ' + n + ' does not.' }, 'cw-trial-' + n + '-target'));
     }
 
     // ── v7.20.776: weekend lesson 11, Mark It Again (plan §2e.2) — the page's own words ──

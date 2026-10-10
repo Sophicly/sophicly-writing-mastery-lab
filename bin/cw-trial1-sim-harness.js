@@ -67,9 +67,11 @@ if (lgIdx < 0) { console.error('❌ _ladderGrade not found — the trial must no
 // eslint-disable-next-line no-new-func
 const LADDER_GRADE = new Function('return ' + SRC.slice(lgIdx, braceSliceFrom(SRC, lgIdx, '{', '}').end) + ';')();
 
-const ctlIdx = SRC.indexOf('const _cwTrial1Ctl = (function () {');
-if (ctlIdx < 0) { console.error('❌ _cwTrial1Ctl not found in wml-assessment.js'); process.exit(1); }
-const CTL_SRC = { src: braceSliceFrom(SRC, ctlIdx, '(', ')').text + '()' };
+// v7.20.824 (#884-①): the walk is ONE factory built per trial number; Trial 1 is _cwTrialCtlFactory(1).
+const ctlIdx = SRC.indexOf('function _cwTrialCtlFactory(N) {');
+if (ctlIdx < 0) { console.error('❌ _cwTrialCtlFactory not found in wml-assessment.js'); process.exit(1); }
+const CTL_BODY = braceSliceFrom(SRC, ctlIdx, '{', '}').text;
+const CTL_SRC = { src: '(function (N) ' + CTL_BODY + ')(1)' };
 
 const FIDS = ELEMENTS.map((e) => 'cw-trial-1-' + e.id)
     .concat(ELEMENTS.map((e) => 'cw-trial-1-fb-' + e.id))

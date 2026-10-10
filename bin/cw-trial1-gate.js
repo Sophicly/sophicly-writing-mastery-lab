@@ -26,7 +26,8 @@ const ok = (label, cond, got) => {
 };
 
 const CORE = fs.readFileSync(path.join(ROOT, 'frontend/wml-core.js'), 'utf8');
-const SRC = fs.readFileSync(path.join(ROOT, 'frontend/wml-assessment.js'), 'utf8');
+// v7.20.824 (#884-①): the trial walk is a factory built per trial; this gate reads it as TRIAL 1 renders it.
+const SRC = require('./walk-sim-lib').srcForTrial(1, fs.readFileSync(path.join(ROOT, 'frontend/wml-assessment.js'), 'utf8'));
 const PROTO_PATH = 'protocols/shared/creative-writing/CW-TRIAL-01-story-coherence.md';
 const PROTO = fs.readFileSync(path.join(ROOT, PROTO_PATH), 'utf8');
 
@@ -221,9 +222,12 @@ ok('⭐ …and it BACKFILLS verdicts from the walk sidecar into EMPTY rows only 
     /backfilled/.test(HEAL) && /if \(cur\) return;/.test(HEAL));
 ok('Trial 1\'s sidebar names what this trial actually does',
     /CW_SIDEBAR_STEPS\['trial_1'\] = \[[\s\S]{0,300}Judge the Seven Parts/.test(CORE));
+// v7.20.824 (#884-①): Trial 2 runs the same walk on its own six checks, with its own sidebar; Trials 3–6 stay generic
+// until each is built. Either way none of them shares Trial 1's.
 ok('…and trials 2–6 no longer share it (six trials looked identical because they did)',
-    (CORE.match(/CW_SIDEBAR_STEPS\['trial_[2-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length === 5,
-    (CORE.match(/CW_SIDEBAR_STEPS\['trial_[2-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length);
+    /CW_SIDEBAR_STEPS\['trial_2'\] = \[[\s\S]{0,200}Judge the Six Checks/.test(CORE)
+    && (CORE.match(/CW_SIDEBAR_STEPS\['trial_[3-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length === 4,
+    (CORE.match(/CW_SIDEBAR_STEPS\['trial_[3-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length);
 
 // ── 4. THE SEVEN WIRING POINTS — a walk missing one ships DEAD, and silently ───────────────────
 console.log('\nAll seven wiring points name the controller (the .490 incident):');
@@ -247,8 +251,8 @@ ok('+ chat-clear restarts the walk instead of summoning an API greeting',
 console.log('\nThe mark rides the ladder this repo already has:');
 ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.test(SRC));
 {
-    const ctlIdx = SRC.indexOf('const _cwTrial1Ctl = (function () {');
-    const CTL = ctlIdx < 0 ? '' : braceSliceFrom(SRC, ctlIdx, '(', ')').text;
+    const ctlIdx = SRC.indexOf('function _cwTrialCtlFactory(N) {');   // v7.20.824: one factory, built per trial
+    const CTL = ctlIdx < 0 ? '' : braceSliceFrom(SRC, ctlIdx, '{', '}').text;
     ok('⛔ …and defines no grade table of its own (two ladders is how they drift)',
         !/\bpct >= 85\b|\bGRADE_BOUNDARIES\b|85 \? 9/.test(CTL));
     ok('the marks are the examiner ladder\'s (#424): none=0 · l1_low=1 · l1_top=2 · l2_low=3 · l2_top=4',
@@ -299,8 +303,8 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
 // ── 7. THE LADDER PAD (#426 → #430) — the levels are a floating PAD, never chat bubbles ──────
 console.log('\nThe levels live on a floating pad, all visible at once:');
 {
-    const ctlIdx2 = SRC.indexOf('const _cwTrial1Ctl = (function () {');
-    const CTL2 = ctlIdx2 < 0 ? '' : braceSliceFrom(SRC, ctlIdx2, '(', ')').text;
+    const ctlIdx2 = SRC.indexOf('function _cwTrialCtlFactory(N) {');
+    const CTL2 = ctlIdx2 < 0 ? '' : braceSliceFrom(SRC, ctlIdx2, '{', '}').text;
     const SB = fs.readFileSync(path.join(ROOT, 'frontend/wml-section-block.js'), 'utf8');
     ok('a `ladder` section type exists as a real nodeView', /if \(type === 'ladder'\)/.test(SB));
     ok('…its card is FIREWALLED from ProseMirror\'s observer, wrapper attrs included (§PM law)',
@@ -375,6 +379,66 @@ console.log('\nThe marker lines are stripped at the one display renderer:');
         ok('…and keeps the prose', /Great work\./.test(out));
         ok('…and does not touch an @ in ordinary prose', 'email sophia@sophicly.com'.replace(re, '') === 'email sophia@sophicly.com');
     }
+}
+
+// ── TRIAL 2 (v7.20.824, FIXLIST #884-①) — the same walk, asking what DRAFT 2 taught ───────────────────────────────
+console.log('\nTrial 2 asks what Draft 2 taught, in the words it taught them:');
+{
+    const SRC_RAW = fs.readFileSync(path.join(ROOT, 'frontend/wml-assessment.js'), 'utf8');   // the factory, unspecialised
+    const RUB = fs.readFileSync(path.join(ROOT, 'protocols/shared/modules/rubrics/rubric-cw-narrative.md'), 'utf8');
+    const li = RUB.indexOf('### Lens `character_arc`');
+    const LENS = li < 0 ? '' : RUB.slice(li, RUB.indexOf('### Later lenses', li));
+    const s11 = SRC_RAW.indexOf('const _cwCharProfileCtl = (function () {');
+    const S11 = s11 < 0 ? '' : braceSliceFrom(SRC_RAW, s11, '(', ')').text;
+    const t2i = CORE.indexOf('const CW_TRIAL2_ELEMENTS = [');
+    // eslint-disable-next-line no-eval
+    const T2 = t2i < 0 ? [] : eval(braceSliceFrom(CORE, t2i, '[', ']').text);
+    const norm = (x) => String(x).replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ').toLowerCase();
+    // Each check's question carries the phrase the course taught it with: the Draft 2 lens's own tests and pointer
+    // phrases, and — for stakes — Step 11's definition ("most afraid of LOSING").
+    const TAUGHT = {
+        want: [LENS, 'Can the reader see what your protagonist wants, without being told?'],
+        flaw: [LENS, 'Is their flaw making this go wrong, or would any character react this way?'],
+        stakes: [S11, 'most afraid of LOSING'],
+        need: [LENS, "something here hints it isn't enough"],
+        dilemma: [LENS, 'The Climax is a choice that costs something. What does this choice cost your protagonist?'],
+        change: [LENS, 'By the last line, what shows me they are different \u2014 an action or an image, not a summary?'],
+    };
+    ok('the Draft 2 lens and Step 11\'s walk were found', LENS.length > 500 && S11.length > 5000);
+    ok('Trial 2 holds the six lens checks, in the lens\'s order', T2.map((e) => e.id).join(',') === 'want,flaw,stakes,need,dilemma,change',
+        T2.map((e) => e.id));
+    T2.forEach((e) => {
+        const t = TAUGHT[e.id];
+        ok('Trial 2 · ' + e.label + ': its question is the taught phrase, verbatim', !!t && norm(t[0]).indexOf(norm(t[1])) !== -1 && norm(e.prompt).indexOf(norm(t[1])) !== -1, e.prompt);
+        ok('Trial 2 · ' + e.label + ': Level 1 (said) and Level 2 (shown) are both written, never derived from a question', !!e.l1 && !!e.strong && e.l1 !== e.strong);
+    });
+    ok('Trial 2 · every check names the plan row it reads, and the course really writes that row',
+        T2.every((e) => e.planDoc && e.planFid && SRC_RAW.indexOf("'" + e.planFid + "'") !== -1 + 0 && (SRC_RAW.indexOf("'" + e.planFid + "'") !== -1 || SRC_RAW.indexOf("P + '" + e.planFid.replace('cw-step-10-', '') + "'") !== -1)));
+    ok('⭐ Trial 2 · no check id is a fixed row\'s name — the grade goal is fid(\'goal\'), so a check called goal would share its row (§5d)',
+        !T2.some((e) => ['goal', 'mark', 'gap', 'strength', 'priority', 'target'].indexOf(e.id) !== -1));
+    ok('⭐ Trial 2 · the page builds the rows the walk writes — ONE key template, both sides (§5d)',
+        /function fid\(id\) \{ return 'cw-trial-' \+ N \+ '-' \+ id; \}/.test(SRC_RAW)
+        && /'cw-trial-' \+ n \+ '-' \+ e\.id\)/.test(SRC_RAW) && /'cw-trial-' \+ n \+ '-fb-' \+ e\.id\)/.test(SRC_RAW)
+        && ['goal', 'mark', 'gap', 'strength', 'priority', 'target'].every((r) => SRC_RAW.indexOf("'cw-trial-' + n + '-" + r + "'") !== -1));
+    ok('Trial 2 · the page is built for any trial whose checks exist, never a literal "trial === 2"',
+        /if \(_cwTrialNEls\(stepDef\.trial\)\.length\) \{/.test(SRC_RAW));
+    ok('Trial 2 · its sidebar names its own job', /CW_SIDEBAR_STEPS\['trial_2'\] = \[[\s\S]{0,200}Judge the Six Checks/.test(CORE));
+    // The seven wiring points (the .490 incident: a walk missing one ships DEAD, and silently)
+    ok('Trial 2 · 1 · the dispatcher arm', /state\.task === 'cw_trial_2' && _cwTrial2Ctl\.active && _inboundIsAnswer/.test(SRC_RAW));
+    ok('Trial 2 · 2 · all three controller maps', (SRC_RAW.match(/cw_trial_2: _cwTrial2Ctl,/g) || []).length === 3);
+    ok('Trial 2 · 3 · the walk registry', /_cwTrial1Ctl, _cwTrial2Ctl, _cwAdaptCtl/.test(SRC_RAW));
+    ok('Trial 2 · 4 · the reply broadcast', /_cwTrial2Ctl\.onReply\(reply\);/.test(SRC_RAW));
+    ok('Trial 2 · 5 · the start-miss map', /t === 'cw_trial_2' \? _cwTrial2Ctl/.test(SRC_RAW));
+    ok('Trial 2 · 6 · the entry export, boot resume and fresh entry',
+        /cwTrial2Ctl: _cwTrial2Ctl,/.test(SRC_RAW) && /state\.task === 'cw_trial_2' && tp\.cwTrial2Ctl\) tp\.cwTrial2Ctl\.tryResume\(\);/.test(SRC_RAW)
+        && /state\.task === 'cw_trial_2' && !state\.reviewMode && tp\.cwTrial2Ctl\) \{/.test(SRC_RAW));
+    ok('Trial 2 · 7 · chat-clear restarts its own walk', /state\.task === 'cw_trial_2'\) \{[\s\S]{0,400}_cwTrial2Ctl\.reset\(\); _cwTrial2Ctl\.forceStart\(\);/.test(SRC_RAW));
+    const PROTO2 = fs.readFileSync(path.join(ROOT, 'protocols/shared/creative-writing/CW-TRIAL-02-character-depth.md'), 'utf8');
+    ok('⭐ Trial 2 · the protocol asks for exactly the walk\'s marker ids, and no 1–5 scale',
+        T2.concat([{ id: 'accuracy' }]).every((e) => PROTO2.indexOf('@TRIAL_VERDICT[' + e.id + '=') !== -1 && PROTO2.indexOf('@TRIAL_EXAMPLE[' + e.id + ']') !== -1)
+        && !/Score each criterion on a scale/i.test(PROTO2) && /YOU DO NOT RUN THIS LESSON/.test(PROTO2));   // the old stub's instruction
+    ok('Trial 2 · the protocol does not repeat the served checks (WML §5: served text never sits where the model narrates it)',
+        T2.every((e) => PROTO2.indexOf(e.prompt) === -1));
 }
 
 console.log(fails
