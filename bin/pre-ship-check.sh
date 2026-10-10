@@ -206,6 +206,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/comment-modal-harness.js >/tmp/comment-modal.out 2>&1 || { cat /tmp/comment-modal.out; fail=1; }
 fi
 
+# v7.20.802 (FIXLIST #857, #731 item 5): AQA Paper 1 Q1 in the 2026 multiple-choice format — the real PHP parser,
+# the real scoring code (executed), and the wiring from template to marking card. Mutation-proven 4/4 when written.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|class-topic-parser\.php|aqa-language-p1\.md|language1/modules/(protocol-a-assessment|knowledge-mark-scheme-lang1)\.md|q1-choices-harness\.js'; then
+  node bin/q1-choices-harness.js >/tmp/q1-choices.out 2>&1 || { cat /tmp/q1-choices.out; fail=1; }
+  tail -1 /tmp/q1-choices.out
+fi
+
 # v7.20.650 (FIXLIST #635–#637): the feedback cards' Previous · Best line and the per-paragraph
 # pop-out. The comparison rule and the quote→paragraph matcher are extracted from the shipped file
 # and driven through the measured document shapes; the server half's decode/dedupe/access contract

@@ -255,11 +255,11 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Why B:** Clear analysis explains how the metaphor creates its effect; this sentence merely labels the technique and asserts a generic feeling.
    * **Why C:** Some understanding still needs an attempt to explain the effect; a one-word emotion like "sad" with no development sits below even that.
 5. **Type: True/False \[Tests AO1\]**  
-   * **Question:** True or False: In AQA Question 1, you should write full paragraphs analyzing the text.  
+   * **Question:** True or False: In AQA Question 1 (from 2026, four multiple-choice questions), you should write full paragraphs analysing the text.  
    * **Answer:** False  
-   * **Feedback:** ✓ Correct. Question 1 is "List four things." You should list facts quickly to save time. Analysis is wasted here.  
+   * **Feedback:** ✓ Correct. From 2026, Question 1 is four multiple-choice questions: you choose one answer for each and write nothing. Save your analysis for Questions 2 to 4.  
    * **AO:** AO1
-   * **WhyWrong:** It is tempting to analyse everywhere in the exam, but Q1 only rewards correct retrieval; full paragraphs spend time the question cannot repay.
+   * **WhyWrong:** It is tempting to analyse everywhere in the exam, but Q1 only asks you to choose the right answer; there is nowhere to write a paragraph, and no mark for one.
 6. **Type: Select All That Apply \[Tests AO5/AO6 Writing\]**  
    * **Question:** Which of these are assessed in Question 5 (Creative Writing)? (Select all that apply)  
    * **Options:** A) Analysis of other writers, B) Content and Organization (AO5), C) Technical Accuracy (AO6), D) Comparison with the reading text.  
@@ -299,20 +299,20 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **AO:** AO2
     * **Why C:** The opening paragraph is a sequencing point about where the writer chooses to begin, which belongs in the Q3 structure answer rather than Q2.
 11. **Type: MCQ \[Tests AO1\]**
-    * **Question:** Question 1 ("List four things") draws on which AO1 skill?
+    * **Question:** Question 1 (from 2026, four multiple-choice questions about the opening lines) draws on which AO1 skill?
     * **Options:** A) Identifying explicit and implicit information from the text, B) Analysing how language creates effects, C) Comparing two writers' perspectives, D) Evaluating the text critically.
     * **Correct:** A
-    * **Feedback:** ✓ Correct. AO1 is "identify and interpret explicit and implicit information and ideas." Question 1 is the pure retrieval end of that skill — find and list, no analysis.
+    * **Feedback:** ✓ Correct. AQA says Question 1 assesses "identify and interpret explicit and implicit information and ideas". Some answers are stated in the source; others say the same thing in different words, so you have to interpret.
     * **AO:** AO1
     * **Why B:** Analysing how language creates effects is AO2, assessed in Question 2, not the retrieval that Question 1 rewards.
     * **Why C:** Comparing writers' perspectives is AO3, which appears on Paper 2, never on a single-source retrieval task.
-    * **Why D:** Critical evaluation is AO4, assessed in Question 4 — far beyond the listing Question 1 asks for.
+    * **Why D:** Critical evaluation is AO4, assessed in Question 4 — far beyond choosing the right answer, which is all Question 1 asks for.
 12. **Type: True/False \[Tests AO1\]**
-    * **Question:** True or False: a Question 1 answer can be a single word or short phrase rather than a full sentence.
+    * **Question:** True or False: from 2026, the right answer to a Question 1 question can use different words from the source.
     * **Answer:** True
-    * **Feedback:** ✓ Correct. The mark scheme states responses "can be a single word; full sentences are not required" — one mark per accurate, relevant point.
+    * **Feedback:** ✓ Correct. In AQA's 2026 sample, the source says hyenas "attack in packs" and the right answer is "As a group". Question 1 tests whether you can "identify and interpret" what the source tells you, not whether you can spot the same words.
     * **AO:** AO1
-    * **WhyWrong:** Writing full sentences feels safer, but Question 1 only rewards accurate retrieval; the extra words earn nothing and cost time.
+    * **WhyWrong:** Looking for the source's exact words feels safe, but the right answer is often a paraphrase: "attack in packs" becomes "As a group".
 13. **Type: MCQ \[Tests AO2\]**
     * **Question:** A Question 2 answer "explains clearly the effects of the writer's language and selects relevant detail." Which AQA Level is that?
     * **Options:** A) Level 4 — perceptive, detailed analysis, B) Level 3 — clear, relevant explanation, C) Level 2 — some understanding and comment, D) Level 1 — simple, limited comment.

@@ -9346,8 +9346,14 @@
                 return;
             }
         }
-        const plain = '**' + g.q + ' is worth ' + g.max + ' marks: one mark for each correct answer.** An answer is correct if it is true, and it comes from the lines the question names.\n\n'
-            + 'Read your answers to ' + g.q + ' again and check each one. **How many of your answers are correct?**';
+        // v7.20.802 (#731 item 5): a 2026 multiple-choice Q1 is checked choice by choice, not statement by statement.
+        let _mcDoc = false;
+        try { _mcDoc = !!document.querySelector('#swml-tiptap-editor [data-item-id^="' + g.q + '-mc"]'); } catch (e) {}
+        const plain = _mcDoc
+            ? '**' + g.q + ' is worth ' + g.max + ' marks: one mark for each question you answered correctly.** Each question has one right answer, and the lines it names show which one.\n\n'
+                + 'Check each of your choices against those lines. **How many of your answers are correct?**'
+            : '**' + g.q + ' is worth ' + g.max + ' marks: one mark for each correct answer.** An answer is correct if it is true, and it comes from the lines the question names.\n\n'
+                + 'Read your answers to ' + g.q + ' again and check each one. **How many of your answers are correct?**';
         try { if (_chatShell.messages) _chatShell.messages.querySelectorAll('[data-swml-ask="ladder-points"]').forEach(n => n.remove()); } catch (e) {}
         _chatShell.addMsg(formatAI(plain), 'ai', plain, { suppressActions: true });
         try { const _ab = _chatShell.messages && _chatShell.messages.lastElementChild; if (_ab) _ab.setAttribute('data-swml-ask', 'ladder-points'); } catch (e) {}
@@ -14904,9 +14910,77 @@
     // ground-truth `correct` attrs persisted on items. Sophia uses the key for
     // scoring; the protocol module also instructs her never to reveal it
     // verbatim to the student.
+    // v7.20.802 (#731 item 5, FIXLIST #857): the 2026 AQA Paper 1 Q1 — each question's options are checklist rows
+    // `Q1-mc{i}-{j}` with data-correct, under a locked italic stem. Read in document order from the editor state
+    // (DOM fallback, as above). Returns [{ qId, questions: [{ n, stem, options: [{ text, correct, checked }] }] }].
+    function _readChoiceAnswers(editor) {
+        const out = {};
+        const put = (qId, n, stem, text, correct, checked) => {
+            const Q = out[qId] || (out[qId] = {});
+            const it = Q[n] || (Q[n] = { n: n, stem: stem || '', options: [] });
+            if (!it.stem && stem) it.stem = stem;
+            it.options.push({ text: text, correct: correct, checked: checked });
+        };
+        const RE = /^([A-Za-z0-9_]+)-mc(\d+)-(\d+)$/;
+        let lastStem = '';
+        if (editor && editor.state) {
+            editor.state.doc.descendants((node) => {
+                if (!node.type) return;
+                if (node.type.name === 'paragraph') { const t = (node.textContent || '').trim(); if (t) lastStem = t; return; }
+                if (node.type.name !== 'checklistItem') return;
+                const m = String(node.attrs && node.attrs.itemId || '').match(RE);
+                if (!m) return;
+                put(m[1], parseInt(m[2], 10), lastStem, (node.textContent || '').trim(), node.attrs.correct === true, !!node.attrs.checked);
+            });
+        }
+        if (!Object.keys(out).length) {
+            const root = document.getElementById('swml-tiptap-editor') || (editor && editor.options && editor.options.element) || null;
+            if (root) root.querySelectorAll('p, [data-checklist-item]').forEach((el) => {
+                if (el.tagName === 'P') { const t = (el.textContent || '').trim(); if (t) lastStem = t; return; }
+                const m = String(el.getAttribute('data-item-id') || '').match(RE);
+                if (!m) return;
+                put(m[1], parseInt(m[2], 10), lastStem, (el.textContent || '').trim(), el.getAttribute('data-correct') === 'true', el.getAttribute('data-checked') === 'true');
+            });
+        }
+        return Object.keys(out).map((qId) => ({
+            qId: qId,
+            questions: Object.keys(out[qId]).map(Number).sort((a, b) => a - b).map((n) => out[qId][n]),
+        }));
+    }
+    // The CODE scores it — a choice is right or wrong, so Sophia is handed the mark, never asked to work it out
+    // (WML CLAUDE.md §4). One mark per question; more than one tick in a question scores 0 — OUR rule, enforcing the
+    // paper's instruction "Choose a maximum of one answer for each question" (the mark scheme itself is silent on it).
+    // Sophia's job is the feedback.
+    function _scoreChoiceAnswers(entry) {
+        let score = 0;
+        const lines = entry.questions.map((q) => {
+            const picked = q.options.filter((o) => o.checked);
+            const right = q.options.filter((o) => o.correct)[0];
+            const ok = picked.length === 1 && picked[0].correct;
+            if (ok) score++;
+            const stem = q.stem.replace(/^\d+\.\d+\s*/, '');
+            const head = entry.qId.replace(/^Q/i, '') + '.' + q.n + ' ' + stem;
+            const chose = picked.length === 0 ? 'NOT ANSWERED'
+                : picked.length > 1 ? 'MORE THAN ONE ANSWER (' + picked.map((o) => '"' + o.text + '"').join(', ') + ') — no mark: the paper says "Choose a maximum of one answer for each question"'
+                : 'chose "' + picked[0].text + '" — ' + (ok ? 'CORRECT' : 'WRONG');
+            return '  ' + head + '\n    ' + chose + (ok ? '' : '; the right answer: "' + (right ? right.text : '?') + '"');
+        });
+        return { score: score, max: entry.questions.length, lines: lines,
+            answered: entry.questions.filter((q) => q.options.some((o) => o.checked)).length };
+    }
+    function _formatChoiceSummary(editor) {
+        return _readChoiceAnswers(editor).map((entry) => {
+            const s = _scoreChoiceAnswers(entry);
+            return '[STUDENT ANSWERS — ' + entry.qId + ' — ' + s.max + ' multiple-choice questions, one answer each; SCORED BY THE PLATFORM]\n'
+                + s.lines.join('\n') + '\n'
+                + '[' + entry.qId + ' PLATFORM SCORE: ' + s.score + '/' + s.max + ' — this IS the mark. Write "' + entry.qId + ' Total: ' + s.score + '/' + s.max + '" exactly; never re-mark or change it.]';
+        }).join('\n\n');
+    }
+
     function _formatChecklistSummary(editor) {
+        const _choices = _formatChoiceSummary(editor);
         const items = _readChecklistTicks(editor);
-        if (items.length === 0) return '';
+        if (items.length === 0) return _choices;
         const blocks = items.map((it) => {
             const keys = Object.keys(it.statements).map(Number).sort((a, b) => a - b);
             const lines = [];
@@ -14932,7 +15006,7 @@
             }
             return lines.join('\n');
         });
-        return blocks.join('\n\n');
+        return blocks.concat(_choices ? [_choices] : []).join('\n\n');
     }
 
     // v7.18.33: small DJB2-style string hash. Stable across runs without
@@ -50273,9 +50347,19 @@
                             // moves the selection (caret redraw + possible scroll-into-view),
                             // which read as a gentle double-blink on uncheck (the flood animation
                             // masked it on check). setNodeMarkup doesn't need focus.
+                            // v7.20.802 (#731 item 5): a 2026 Paper 1 option (`Q1-mc{i}-{j}`) belongs to ONE question, and
+                            // the exam takes one answer per question — ticking it unticks the others in its question, in
+                            // the SAME transaction (attribute-only changes, so no position shifts).
+                            const _grp = !currentChecked ? (String(node.attrs.itemId || '').match(/^(.+-mc\d+)-\d+$/) || [])[1] : '';
                             editor.chain()
                                 .command(({ tr }) => {
                                     tr.setNodeMarkup(pos, undefined, { ...node.attrs, checked: !currentChecked });
+                                    if (_grp) {
+                                        tr.doc.descendants((n2, p2) => {
+                                            if (p2 === pos || !n2.type || n2.type.name !== 'checklistItem' || !n2.attrs.checked) return;
+                                            if (String(n2.attrs.itemId || '').indexOf(_grp + '-') === 0) tr.setNodeMarkup(p2, undefined, { ...n2.attrs, checked: false });
+                                        });
+                                    }
                                     return true;
                                 }).run();
                             // v7.19.145: setNodeMarkup transactions on ChecklistItem
@@ -61325,6 +61409,20 @@
                 const paras = _mqParas(section, false, isRetrievalQ);
                 const qWords = paras.length ? paras.join(' ').split(/\s+/).filter(Boolean).length : 0;
                 _lastQWordCounts[qId] = qWords;   // v7.19.841: auditor's Q5-ceiling source
+                // v7.20.802 (#731 item 5): a 2026 multiple-choice Q1 is answered by TICKS, which the paragraph reader
+                // (rightly) never reads — say so, and point at the scored block, instead of "NOT ATTEMPTED".
+                const _mcOpts = section.querySelectorAll('[data-item-id^="' + qId + '-mc"]');
+                if (_mcOpts.length) {
+                    const _mcQs = new Set(), _mcDone = new Set();
+                    _mcOpts.forEach((o) => {
+                        const g = (String(o.getAttribute('data-item-id') || '').match(/-mc(\d+)-/) || [])[1];
+                        if (!g) return;
+                        _mcQs.add(g);
+                        if (o.getAttribute('data-checked') === 'true') _mcDone.add(g);
+                    });
+                    parts.push(`=== ${qId} RESPONSE — multiple choice: ${_mcDone.size} of ${_mcQs.size} questions answered. The choices and the platform's score are in the [STUDENT ANSWERS — ${qId}] block ===`);
+                    return;
+                }
                 if (!paras.length) {
                     // v7.20.583 (#459): if the answer is sitting in the PLAN box, the marker is
                     // told so — otherwise it insists "I go by what's logged" while the student
@@ -65630,7 +65728,27 @@
             // ── Response area ──
             // v7.14.61: multiple_choice = checkboxes only (no response area)
             // All other types = single InputField per question
-            if (qType === 'multiple_choice') {
+            // v7.20.802 (#731 item 5, FIXLIST #857): the 2026 AQA Paper 1 Q1 — several questions, ONE answer each
+            // (q.choices, authored in the topic template's ### Choices block). Gated on the AUTHORED DATA, never on
+            // the paper: a past paper or an older document without choices keeps its own list-four boxes. Each
+            // question is a locked italic stem (the answer reader strips <em>, so a stem is never read as an answer)
+            // followed by its options as authored checklist rows (`Q1-mc{i}-{j}`, data-correct = the key). Ticking an
+            // option unticks the others in its question (the checklist node), and _formatChecklistSummary scores it.
+            if (Array.isArray(q.choices) && q.choices.length) {
+                html += dividerHTML(`ANSWERS — ${qId}`, _respStageAttrs);
+                const _qn = String(qId).replace(/^Q/i, '');
+                let rows = `<p data-locked="true"><em>Choose one answer for each question.</em></p>`;
+                q.choices.forEach((c, i) => {
+                    const n = i + 1;
+                    rows += `<p data-locked="true"><em><strong>${_qn}.${n}</strong> ${escapeHTML(c.q)}</em></p>`;
+                    (c.options || []).forEach((opt, j) => {
+                        rows += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-mc${n}-${j + 1}" data-authored="true" data-correct="${j === c.key ? 'true' : 'false'}" class="swml-checklist-item">${escapeHTML(opt)}</div>`;
+                    });
+                });
+                html += NOPLAN_NOTE;
+                html += sectionHTML('response', `${qId} Answers`, true, null, rows, _respStageAttrs);
+
+            } else if (qType === 'multiple_choice') {
                 // Checkboxes ARE the response — AI populates statement text via @POPULATE_CHECKLIST
                 const stmtCount = specQ?.description?.match(/(\d+)\s+true/i)?.[1] || 4;
                 // v7.19.295: prefer examiner-set statements authored in the template
@@ -70707,6 +70825,30 @@
                                     break outer;
                                 }
                             }
+                        }
+                    }
+                }
+                // v7.20.802 (#731 item 5): the topic now authors a question's CHOICES (the 2026 AQA Paper 1 Q1) and
+                // this document was built before them (no `Q1-mc1-1`). Its first 40 characters did not change ("Read
+                // again the first part of the source…"), so the text check below cannot see it. Flag it ONLY when no
+                // box in the document holds a single typed word — the regen below wipes the document, and the
+                // student-work test after it counts only answers and feedback, never Predictions or Keywords.
+                if (!specDriftMismatch && topicData.question_format === 'multi_question') {
+                    let _cm = topicData.metadata;
+                    if (typeof _cm === 'string') { try { _cm = JSON.parse(_cm || '{}'); } catch (e) { _cm = {}; } }
+                    const _choiceQ = ((_cm && _cm.questions) || []).filter((q) => Array.isArray(q.choices) && q.choices.length)
+                        .find((q) => !currentHTML.includes(`${q.id}-mc1-1`));
+                    if (_choiceQ) {
+                        let _typed = false;
+                        try {
+                            const _cd = document.createElement('div'); _cd.innerHTML = currentHTML;
+                            _cd.querySelectorAll('[data-input-field], .swml-input-field, [data-outline-row]').forEach((f) => { if ((f.textContent || '').trim()) _typed = true; });
+                        } catch (_) { _typed = true; }
+                        if (!_typed) {
+                            console.log(`WML: ${_choiceQ.id} now has multiple-choice questions this untouched document lacks — rebuilding it`);
+                            specDriftMismatch = true;
+                        } else {
+                            console.log(`WML: ${_choiceQ.id} now has multiple-choice questions, but this document holds the student's writing — kept as it is (marked by the list-four rules)`);
                         }
                     }
                 }

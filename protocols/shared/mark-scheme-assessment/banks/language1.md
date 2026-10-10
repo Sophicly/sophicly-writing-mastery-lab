@@ -13,26 +13,26 @@ AQA Paper 1 marks the READING answers across FOUR Levels (not six):
   L4 Perceptive, detailed · L3 Clear, relevant · L2 Some, attempts · L1 Simple, limited.
 Several ranking questions use AQA's OWN indicative-standard answers as the rungs: the 2026 sample scheme (item 27) and
 the June 2024 scheme (items 4, 10, 17, 25 — `research/sources/aqa-8700-1-jun24-ms.txt`). Every quotation in a Feedback or
-Why line is verbatim (gate: `bin/msa-quote-gate.js`); items 1 and 16 still teach the June 2024 Question 1 list and move
-with FIXLIST #731 item 5 (in 2026, Question 1 is multiple choice).
+Why line is verbatim (gate: `bin/msa-quote-gate.js`); items 1, 2 and 16 teach the 2026 Question 1,
+which is multiple choice (FIXLIST #731 item 5, #857).
 
 ### **SECTION A: AQA (8700 — Paper 1)**
 
 1. **Type: MCQ [Tests AO1]**
-   * **Question:** In Question 1 ("List four things"), a student writes four accurate statements, but two describe the weather and the room rather than the named character, Mary. Following the AQA marking rule, what is the most this can score?
-   * **Options:** A) 4 marks — any four accurate statements drawn from the source each earn a mark, B) 2 marks — only the two points about Mary can be credited; points not about her are rejected, C) 0 marks — a list with no analysis cannot be credited anywhere on this paper, D) 3 marks — one mark is lost for each point that is irrelevant to the question
+   * **Question:** In 2026, Question 1 is four multiple-choice questions about the opening lines, with three answers to choose from in each. How are its 4 marks given?
+   * **Options:** A) 4 marks only if all four answers are right, B) 1 mark for each question answered correctly, C) Marks by Level, from simple to perceptive, D) 1 mark each, if the answer is also explained
    * **Correct:** B
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA gives 1 mark per point, but each must pass the test "does it tell you something about Mary? Is it from the correct lines?" Points about the setting that don't include Mary sit in the mark scheme's "Reject" column. Two valid Mary-points = 2 marks; the other two earn nothing.
-   * **Why A:** Accuracy alone is not enough — a point must be ABOUT the named subject and from the specified lines.
-   * **Why C:** Question 1 is pure retrieval — selection is exactly what it rewards; analysis is not required.
-   * **Why D:** AQA does not deduct marks for irrelevant points; they simply score nothing.
+   * **Feedback:** ✓ Correct. The 2026 mark scheme gives one answer for each of the four questions, each worth 1 mark, with no levels. Three right answers earn 3 marks.
+   * **Why A:** Each question is marked on its own, so every right answer earns its mark.
+   * **Why C:** Levels belong to the longer answers (Questions 2 to 5). Question 1 has one right answer per question.
+   * **Why D:** You choose an answer and nothing else. The paper says "Choose one answer for each question."
 
 2. **Type: Fill [Tests AO1]**
    * **Question:** Complete the AO1 strand that Question 1 assesses: "Identify and interpret explicit and [BLANK] information and ideas."
    * **Answer:** implicit
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AO1 is "Identify and interpret explicit and implicit information and ideas… select and synthesise evidence." "Explicit" is stated on the surface; "implicit" is implied and must be inferred. Question 1 tests retrieval of the explicit; the inference questions reward reading the implicit.
+   * **Feedback:** ✓ Correct. AO1 is "Identify and interpret explicit and implicit information and ideas… select and synthesise evidence." "Explicit" is stated on the surface; "implicit" is implied and must be inferred. In 2026 AQA says Question 1 assesses both: "identify and interpret explicit and implicit information and ideas".
    * **WhyWrong:** The AQA word is "implicit" — the implied meaning a reader has to infer, as opposed to the explicit, directly stated meaning.
 
 3. **Type: MCQ [Tests AO2]**
@@ -155,14 +155,14 @@ with FIXLIST #731 item 5 (in 2026, Question 1 is multiple choice).
    * **Why D:** L1 is a "simple range"; a variety used for effect is above it.
 
 16. **Type: MCQ [Tests AO1]**
-   * **Question:** For Question 1 ("List four things about Mary"), which answer would the mark scheme REJECT?
-   * **Options:** A) "Her limbs were heavy" — a detail about Mary from the correct lines, B) "It was hot" — a fact about the setting, not about Mary, C) "Her head ached" — a state of Mary's drawn from the lines, D) "She went to get a glass of water" — an action Mary takes
+   * **Question:** In the 2026 sample source, Pi says hyenas are "hardy attackers". Question 1 asks "What sort of attackers are hyenas?" and the right answer is "Tough". What did choosing "Tough" ask the student to do?
+   * **Options:** A) Analyse the writer's choice of the word "hardy" and its effect on the reader, B) Interpret the source: find the answer that means the same, C) Evaluate how far they agree with a statement about the source, D) Find an answer that copies the exact words of the source
    * **Correct:** B
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. The mark scheme's test is "does it tell you something about Mary? Is it from the correct lines?" A fact about the weather or setting that doesn't include Mary sits in the Reject column; the other three are all about Mary.
-   * **Why A:** A detail about Mary's body from the named lines is exactly what Question 1 credits.
-   * **Why C:** A physical state of Mary's, drawn from the correct lines, is creditable.
-   * **Why D:** An action Mary performs is a valid thing "about Mary."
+   * **Feedback:** ✓ Correct. The source says "hardy attackers" and the answer is "Tough": different words, the same meaning. AQA says Question 1 assesses "identify and interpret explicit and implicit information and ideas", so the right answer is often in different words from the source.
+   * **Why A:** Analysing a word's effect is Question 2's job (AO2). Question 1 only asks what the source tells you.
+   * **Why C:** Evaluating a statement is Question 4 (AO4).
+   * **Why D:** The answer "Tough" does not appear in the source. Expecting the exact words would make you reject the right answer.
 17. **Type: Ranking [Tests AO2]**
    * **Question:** These four comments all answer the STRUCTURE question (Q3) about the same opening ("suddenly, the heat became intolerable"). Rank them WEAKEST to STRONGEST by AQA AO2 Level (letters in order, weakest first).
    * **Options:** A) The opening describes the heat, and a later line says "as time passed, the heat became an obsession", so we know the heat keeps getting worse over time, B) The opening focus on "suddenly, the heat became intolerable" is a moment of exposition that implies a climactic moment to come; the time shift "as time passed" and its absence of detail suggest Mary is so consumed that time has become immeasurable to her, C) The opening tells us the heat "suddenly" became "intolerable" so we understand it is worse than normal, and the writer repeats the idea of heat in the second paragraph to show it is all Mary can think about, D) The text opens on "suddenly, the heat became intolerable" so we immediately understand Mary was unprepared, which creates tension; the shift in time "as time passed" gives no detail of how much, showing the heat is all she can think about

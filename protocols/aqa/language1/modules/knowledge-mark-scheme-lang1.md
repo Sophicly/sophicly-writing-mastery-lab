@@ -3,7 +3,8 @@
 **[AI_INTERNAL] WHAT THIS FILE IS:** the verbatim AQA 8700/1 level descriptors (source: AQA GCSE
 English Language 8700/1 SAMPLE mark scheme, 2026 specification, first exam June 2026 — "AQA-8700-1-SMS-2026.pdf"
 = "AQA Lang P1 Mark Scheme 2026 Spec.pdf", Version 1.1. Q3's framing note, Q4 and the AO5 Content bullets + NB
-were re-sourced from it on 2026-10-05 (v7.20.694); Q1, Q2 and AO6 are unchanged from June 2024). This is REFERENCE DATA,
+were re-sourced from it on 2026-10-05 (v7.20.694); Q1 was re-sourced from it and from the 2026 sample question paper on
+2026-10-10 (v7.20.802 — it is now MULTIPLE CHOICE); Q2 and AO6 are unchanged from June 2024). This is REFERENCE DATA,
 not workflow. When Protocol A's "Level Alignment" step tells you to quote a level descriptor, quote
 it from THIS file — word for word, naming the level and its mark range. **NEVER invent, paraphrase
 from memory, or extrapolate a descriptor that is not on this page.** If a descriptor you need is not
@@ -40,7 +41,24 @@ granular mark — judge the writing against the descriptor language.
 
 ---
 
-## QUESTION 1 (AO1 — 4 marks) — marking guidance (no levels; per-point)
+## QUESTION 1 (AO1 — 4 marks) — marking guidance (no levels; one mark per question)
+
+**THE 2026 FORMAT — MULTIPLE CHOICE** (AQA-8700-1-SMS-2026.pdf p.8; the sample question paper, 01.1–01.4 — three
+options each, one of them correct):
+
+> Read again the first part of the source, from lines 1 to 9.
+> Answer all parts of this question.
+> Choose one answer for each question.
+> • Shade the circle in the box of the one that you think is correct.
+> • Choose a maximum of one answer for each question.
+
+> This assesses bullet point 1: identify and interpret explicit and implicit information and ideas
+
+The mark scheme gives each question's one answer, worth 1 mark (4 questions, 4 marks). On a Sophicly practice paper the
+platform scores the choices and hands you the mark — never re-mark it. It gives 0 for no answer, a wrong answer, or more
+than one answer (our rule, from the paper's own instruction: "Choose a maximum of one answer for each question.").
+
+**A PAST PAPER SAT BEFORE 2026 (list four things) — the June 2024 rules, for those papers only:**
 
 > Give 1 mark for each point:
 > - responses must be drawn only from the specified lines of the text

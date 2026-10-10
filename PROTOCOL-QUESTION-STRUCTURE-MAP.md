@@ -28,9 +28,9 @@ The derivation rules (para-count-by-marks, skip-list, TTECEA bedrock) live in `C
 
 ### language1 — AQA Language Paper 1 (fiction)
 
-#### Q1 — Retrieval — list 4 things from lines X-Y
+#### Q1 — Retrieval — 2026: four multiple-choice questions, one answer each (past papers: list 4 things)
 - **4 marks** · AOs: AO1 · structure: **SKIP (none)**
-- _Note:_ List-four retrieval, one mark per correct point (our practice papers; real past papers). ⚠️ AQA's 2026 sample (first exam June 2026) makes Q1 multiple choice — whether our papers follow is Neil's ruling (P1 audit A5, 2026-10-05). Universal SKIP rule applies either way.
+- _Note:_ **Our five practice papers use the 2026 format (Neil ruled 2026-10-05, PEDAGOGY §51.6; built 2026-10-10, FIXLIST #857):** four questions on the named lines, three options each, one mark each, authored in the topic template's `### Choices` block; the platform scores the ticks and Sophia gives the feedback. Real past papers sat before 2026 (live modelling) keep their list-four Q1 (one mark per correct point). Universal SKIP rule applies either way.
 - _Source:_ `protocols/aqa/language1/modules/protocol-a-assessment.md (PAPER MAP); protocols/shared/language-paper-specs.json aqa.language_p1.Q1; AQA-8700-1-SMS-2026.pdf p.8`
 
 #### Q2 — Language Analysis — how the writer uses language to...

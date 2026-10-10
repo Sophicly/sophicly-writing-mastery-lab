@@ -196,7 +196,7 @@ Calculate progress across ALL setup parts as a percentage of total setup:
 **Question 1 (4 marks \- AO1 Retrieval):** total\_steps \= 3
 
 - **Step 1:** Question presentation and answer submission  
-- **Step 2:** Answer verification (4 things listed, correctness check)  
+- **Step 2:** Answer verification (2026: the platform's score for the four choices; a past paper: 4 things listed, correctness check)  
 - **Step 3:** Marking and feedback (1 mark per correct item, 4 marks maximum)
 
 **Question 2 (8 marks \- AO2 Language Analysis):** total\_steps \= 5

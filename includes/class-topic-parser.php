@@ -581,6 +581,36 @@ class SWML_Topic_Parser {
                     $qcontent = preg_replace('/^###\s*Statements\s*\n.*?(?=\n^###|\n^##|\z)/smi', '', $qcontent);
                 }
 
+                // v7.20.802 (#731 item 5, FIXLIST #857): the 2026 AQA Paper 1 Q1 — several questions, ONE answer
+                // each. A `### Choices` block of `N. question` lines, each followed by `- [x]` / `- [ ]` options,
+                // becomes q['choices'] = [['q' => question, 'options' => [...], 'key' => index of the [x]]]. Stripped
+                // from the content (like ### Statements) so the key never reaches the student-visible prompt. A
+                // question without exactly one [x] is dropped and logged — never served with no answer or two.
+                if (preg_match('/^###\s*Choices\s*\n(.*?)(?=\n^###|\n^##|\z)/smi', $qcontent, $chm)) {
+                    $choices = [];
+                    $cur = null;
+                    foreach (preg_split('/\r?\n/', trim($chm[1])) as $ln) {
+                        if (preg_match('/^\s*\d+\.\s*(.+?)\s*$/', $ln, $qm2)) {
+                            if ($cur) $choices[] = $cur;
+                            $cur = ['q' => trim($qm2[1]), 'options' => [], 'keys' => []];
+                        } elseif ($cur && preg_match('/^\s*-\s*\[([ xX])\]\s*(.+?)\s*$/', $ln, $om)) {
+                            if (strtolower($om[1]) === 'x') $cur['keys'][] = count($cur['options']);
+                            $cur['options'][] = trim($om[2]);
+                        }
+                    }
+                    if ($cur) $choices[] = $cur;
+                    $valid = [];
+                    foreach ($choices as $c) {
+                        if (count($c['keys']) === 1 && count($c['options']) >= 2) {
+                            $valid[] = ['q' => $c['q'], 'options' => $c['options'], 'key' => $c['keys'][0]];
+                        } else {
+                            error_log('[WML] topic parser: ' . $q['id'] . ' choice "' . $c['q'] . '" has ' . count($c['keys']) . ' answers and ' . count($c['options']) . ' options — dropped');
+                        }
+                    }
+                    if (!empty($valid)) $q['choices'] = $valid;
+                    $qcontent = preg_replace('/^###\s*Choices\s*\n.*?(?=\n^###|\n^##|\z)/smi', '', $qcontent);
+                }
+
                 // Extract within question
                 if (preg_match('/^###\s*Extract\s*\n(.*?)(?=\n^###|\n^##|\z)/smi', $qcontent, $em)) {
                     $q['extract'] = trim($em[1]);

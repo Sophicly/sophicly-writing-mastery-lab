@@ -63,7 +63,25 @@ Alex Cold lives with his parents and two younger sisters, Andrea and Nicole, in 
 
 Read again the first part of the source, from lines 1 to 5.
 
-List four things about the bird in Alex's nightmare from this part of the source.
+Answer all parts of this question. Choose one answer for each question.
+
+### Choices
+1. What did the bird crash against?
+   - [ ] A door
+   - [x] A window
+   - [ ] The roof
+2. What did the bird carry off?
+   - [x] Alex's mother
+   - [ ] Alex's dog
+   - [ ] Alex's sister
+3. How did Alex watch what happened in his dream?
+   - [ ] Angrily
+   - [ ] Calmly
+   - [x] Helplessly
+4. Where did the bird disappear?
+   - [ ] Into the trees outside the house
+   - [x] Into a sky heavy with dark clouds
+   - [ ] Into the ocean
 
 ## Q2
 **Marks:** 8
@@ -195,7 +213,25 @@ Katniss lives with her mother, sister, Primrose, and Primrose's cat, Buttercup, 
 
 Read again the first part of the source, from lines 1 to 8.
 
-List four things about Katniss's family from this part of the source.
+Answer all parts of this question. Choose one answer for each question.
+
+### Choices
+1. Where is Prim when Katniss wakes up?
+   - [ ] Beside Katniss in her bed
+   - [ ] Outside the house
+   - [x] In bed with their mother
+2. Why does Katniss think Prim moved in the night?
+   - [x] She had bad dreams
+   - [ ] She was cold
+   - [ ] She was ill
+3. How does Katniss's mother look when she is asleep?
+   - [ ] Older
+   - [x] Younger
+   - [ ] Frightened
+4. What was Prim named after?
+   - [ ] A raindrop
+   - [ ] Her mother
+   - [x] A flower
 
 ## Q2
 **Marks:** 8
@@ -321,7 +357,25 @@ Write a story about a character who must make a dangerous journey.
 
 Read again the first part of the source, from lines 1 to 7.
 
-List four things about what Pi discovers inside the ship.
+Answer all parts of this question. Choose one answer for each question.
+
+### Choices
+1. What could Pi hear inside the ship?
+   - [x] Deep structural groans
+   - [ ] Animals crying out
+   - [ ] People shouting
+2. What blocked Pi's way after he had gone down one level?
+   - [ ] A locked door
+   - [x] Water
+   - [ ] Fallen boxes
+3. How did Pi react when he saw what was blocking his way?
+   - [ ] He ran back up the stairs
+   - [ ] He jumped in to swim down
+   - [x] He stood still, frightened
+4. Where was Pi's family?
+   - [ ] Up on the deck
+   - [x] Down below, where the water was
+   - [ ] In a lifeboat
 
 ## Q2
 **Marks:** 8
@@ -454,7 +508,25 @@ Write a story about a character who discovers they have been betrayed by someone
 
 Read again the first part of the source, from lines 1 to 8.
 
-List four things about Mr Fisher's life from this part of the source.
+Answer all parts of this question. Choose one answer for each question.
+
+### Choices
+1. Who does Mr Fisher live with?
+   - [x] Nobody: he lives alone
+   - [ ] His wife
+   - [ ] His sister
+2. How does Mr Fisher take his marking home?
+   - [ ] In his car
+   - [x] On the bus
+   - [ ] On his bicycle
+3. Where does Mr Fisher prefer to do his weekend marking?
+   - [ ] At home on Sundays
+   - [ ] In the school library
+   - [x] In the form room after school
+4. How do most of the boys in 3F feel about creative writing?
+   - [x] They are not interested in it
+   - [ ] They love it
+   - [ ] They find it too difficult
 
 ## Q2
 **Marks:** 8
@@ -583,7 +655,25 @@ Write a story about a moment that changed someone's life.
 
 Read again the first part of the source, from lines 1 to 7.
 
-List four things about the weather and the coach from this part of the source.
+Answer all parts of this question. Choose one answer for each question.
+
+### Choices
+1. What time of year is it?
+   - [ ] Early spring
+   - [x] Late November
+   - [ ] Midsummer
+2. What is the weather like?
+   - [ ] Bright sunshine
+   - [ ] Heavy snow
+   - [x] Mist and fine rain
+3. What do the leather seats feel like?
+   - [x] Damp
+   - [ ] Warm
+   - [ ] Torn
+4. Why does rain drip onto the leather?
+   - [ ] A window has been left open
+   - [x] There is a small crack in the roof
+   - [ ] The door does not shut properly
 
 ## Q2
 **Marks:** 8

@@ -636,7 +636,7 @@ implies — the map had it right; guessing from marks got it wrong. If the map a
 disagree, the map wins (it read the protocol); if the map is silent, read the protocol directly and
 cite it — do not fill the gap with the marks rule.
 - **Plan+outline ONLY for questions needing STRUCTURE.** SKIP the basic retrieval ones (no plan/outline):
-  AQA Lang P1 Q1 (list 4 statements), P2 Q1 (choose 4 true statements), and any true/false /
+  AQA Lang P1 Q1 (from 2026, four multiple-choice questions; past papers list 4 statements), P2 Q1 (choose 4 true statements), and any true/false /
   mark-per-statement / short-retrieval / MCQ comprehension. Right-or-wrong; we don't teach planning for them.
 - **Paragraph count by marks (default; a protocol may override):** 8→2 body ¶ · 12→3 ¶ · 16→4 ¶ OR 5
   (short intro + 3 strong body + short conclusion) · 20+/literature essays → full essay: intro + **ALWAYS

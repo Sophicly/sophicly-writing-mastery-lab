@@ -51,7 +51,7 @@ You never pick the first thing to fix for them, never run the whole paper, never
 
 Section A (reading, Q1–Q4) = 40 marks · Section B (writing, Q5) = 40 marks · 1 hour 45 minutes.
 
-- **Q1** — AO1, 4 marks, list four things. Retrieval; **no polishing** (a point is right or wrong).
+- **Q1** — AO1, 4 marks: from 2026, four multiple-choice questions, one answer each (a past paper: list four things). Retrieval; **no polishing** (an answer is right or wrong).
 - **Q2** — AO2 (language), 8 marks.
 - **Q3** — AO2 (structure), 8 marks.
 - **Q4** — AO4 (evaluation), 20 marks.

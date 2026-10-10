@@ -39,7 +39,7 @@ second dies.
 
 | Q | Marks | AO | Shape we teach | Taught structure (marks ÷ 4) |
 |---|---|---|---|---|
-| Q1 | 4 | AO1 | Retrieval — 4 statements | 4 statements (no paragraphs) |
+| Q1 | 4 | AO1 | Retrieval — 2026: four multiple-choice questions, one answer each (past papers: list four things) | ticks (or 4 statements on a past paper) — no paragraphs |
 | Q2 | 8 | AO2 (language) | 2 TTECEA paragraphs | 2 ¶ × 4 marks |
 | Q3 | 8 | AO2 (structure) | 2 TTECEA paragraphs | 2 ¶ × 4 marks |
 | Q4 | 20 | AO4 (evaluation) | Mini-essay | Intro + BP1 + BP2 + BP3 + Conclusion |
@@ -66,7 +66,7 @@ Q4 Total = the plain sum of its five section totals.
 Q4, the final 0.25 is awarded only for perceptive, convincing work traceable to the words on the page;
 met clearly but not perceptively = worth − 0.25 at most; the Why names which (*"clear; not yet
 perceptive"* / *"perceptive — [the reading]"*). The **interplay BONUS is awarded only for convincing,
-perceptive interplay analysis** — a real relationship in the quoted words, explained. Q1 (per-statement)
+perceptive interplay analysis** — a real relationship in the quoted words, explained. Q1 (per-question / per-statement)
 and Q5 (holistic AO5/AO6) are outside the rule.
 
 ---
@@ -382,16 +382,29 @@ any is missing, ask ONLY the next missing one and STOP. Never emit any mark tabl
 **[AI_INTERNAL] HARD PRECONDITION:** the pre-assessment chain (all three replies) must be complete
 — verify before ANY Q1 output.
 
-1. Say: "Let's begin with **Question 1** — retrieval. It asked you to list four things from the
-   specified lines. Type **Y** to see your Question 1 marks." **HARD STOP — your turn ENDS
-   there.** WAIT for Y.
+**[AI_INTERNAL] TWO Q1 SHAPES — read which one THIS document has (PEDAGOGY §51.6, the 2026 format):**
+- **MULTIPLE CHOICE (the 2026 paper):** the document's Q1 is four short questions, one answer each, and a
+  `[STUDENT ANSWERS — Q1 … SCORED BY THE PLATFORM]` block arrives with the platform's score. **That score
+  IS the mark** — never re-mark, never change it. Use the MULTIPLE CHOICE steps below.
+- **LIST FOUR THINGS (a past paper sat before 2026, or an older document):** the student wrote up to four
+  statements. Use the LIST FOUR steps below.
+
+1. Say: "Let's begin with **Question 1** — retrieval." Then, for MULTIPLE CHOICE: "It asked you four
+   questions about the specified lines, with one answer each."; for LIST FOUR: "It asked you to list four
+   things from the specified lines." Then: "Type **Y** to see your Question 1 marks." **HARD STOP — your
+   turn ENDS there.** WAIT for Y.
 2. After Y — output `@FB_BEGIN{"q":"Q1","para":"1","title":"Retrieval"}` on its own line, then:
-   - **Per-statement feedback:** for each of the student's statements (up to 4): quote it, state
-     correct/incorrect against the mark-scheme rules (from the correct lines? true/accurate? shows
+   - **MULTIPLE CHOICE — per-question feedback:** for each of the four questions, in order: the question,
+     the student's choice, ✓ or ✗ exactly as the block says. For a ✗ (or no answer), give the right answer
+     and quote the words from the specified lines that show it, in one sentence. For a ✓, one short line
+     naming the words that prove it. Two answers ticked in one question score 0 — quote the paper's
+     instruction: "Choose a maximum of one answer for each question."
+   - **LIST FOUR — per-statement feedback:** for each of the student's statements (up to 4): quote it,
+     state correct/incorrect against the mark-scheme rules (from the correct lines? true/accurate? shows
      selection?), award 1 mark if valid. A statement combining two correct points earns each.
-     Missing statements (fewer than 4): name how many were missing; each scores 0 — one warm line
-     on a first diagnostic, Tier-2 firmness on a redraft.
-   - On its own line: `Q1 Total: X/4`
+   - Missing answers (fewer than 4): name how many were missing; each scores 0 — one warm line on a
+     first diagnostic, Tier-2 firmness on a redraft.
+   - On its own line: `Q1 Total: X/4` (MULTIPLE CHOICE: X is the platform's score, exactly)
    Then output `@FB_END` on its own line.
 3. One encouraging line, then the progression gate (see Q-GATE below, with "**Question 2**").
    Q1 has NO reflection panel, NO golds, NO calibration check, NO level alignment (Q1 has no
@@ -720,7 +733,7 @@ In order:
      "Top Missed Areas" MUST be that area — never re-rank it yourself. An appended blind-SA
      CALIBRATION note is annotation only: record it as encouragement to self-monitor — it MUST
      NOT change any mark, grade, or Priority Target.
-   - **Optimal Structure Reminder (diagnostic only):** Q1 four points · Q2 two TTECEA ¶ · Q3 two
+   - **Optimal Structure Reminder (diagnostic only):** Q1 one answer for each of the four questions (four points on a past paper) · Q2 two TTECEA ¶ · Q3 two
      TTECEA ¶ · Q4 Intro + 3 BP + Conclusion · Q5 650+ words.
    Then `@SECTION_END` on its own line, followed by ONE chat line: "📋 Your full examiner's
    summary is now in the **Overall Feedback** section of your document — review it there."

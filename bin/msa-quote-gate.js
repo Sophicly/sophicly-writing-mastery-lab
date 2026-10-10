@@ -33,12 +33,13 @@ const PILOTS = [{
     section: 'AQA (',
     count: 40,
     ao: { AO1: 4, AO2: 10, AO4: 9, AO5: 9, AO6: 8 },
-    sources: ['research/sources/aqa-8700-1-sms-2026.txt', 'protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md'],
+    // v7.20.802 (#857): the 2026 sample QUESTION PAPER + insert are AQA's own 2026 documents too (Question 1's options).
+    sources: ['research/sources/aqa-8700-1-sms-2026.txt', 'protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md',
+        'research/sources/aqa-8700-1-sqp-2026.txt', 'research/sources/aqa-8700-1-sins-2026.txt'],
     jun24: ['research/sources/aqa-8700-1-jun24-ms.txt', 'research/sources/aqa-8700-1-jun24-insert.txt'],
     JUN24_ITEMS: [4, 10, 17, 25],
-    // Items 1 and 16 teach the June 2024 Question 1 list rules. In 2026 Question 1 is multiple choice; those two items move
-    // with the whole Question 1 change (FIXLIST #731 item 5), so they are named here, not silently skipped.
-    ALLOW: { 1: '#731 item 5 (Q1 → 2026 multiple choice)', 16: '#731 item 5 (Q1 → 2026 multiple choice)' },
+    // v7.20.802 (#857): items 1 and 16 now teach the 2026 multiple-choice Question 1 — no item is exempt any more.
+    ALLOW: {},
 }];
 
 // The section's items: "N. **Type: X [Tests AOn]**" blocks inside the section that starts "### **SECTION …: <label>".
