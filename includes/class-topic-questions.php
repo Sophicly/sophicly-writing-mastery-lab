@@ -329,7 +329,29 @@ class SWML_Topic_Questions {
      */
     private static function option_key($board, $text) {
         $board = str_replace('_', '-', $board);
+        // v7.20.818 (FIXLIST #872, LearnDash lane, measured on prod 10 Oct): ONE store per text — its CANONICAL slug
+        // ($SLUG_ALIASES, the registry every other bank resolves through). Lessons pass the canonical form, but this
+        // admin's own text list still offers alias forms ('pride_prejudice', 'aic', 'acc'…), so imports landed under
+        // alias keys: 32 of 163 prod stores, and for 25 texts the canonical store the lessons read was EMPTY (e.g.
+        // get_topics('aqa','pride_and_prejudice') = 0 while swml_topics_aqa_pride_prejudice held 10). Every read and
+        // write now meets on the canonical key; legacy_alias_keys() keeps the old stores readable (get_topics()).
+        if (class_exists('SWML_REST_API')) $text = SWML_REST_API::canonical_slug((string) $text);
         return 'swml_topics_' . sanitize_key($board) . '_' . sanitize_key($text);
+    }
+
+    /**
+     * v7.20.818 (#872): the RAW keys of stores filed under an alias of this text before option_key() normalised —
+     * read-only, for get_topics()' fallback. Nothing writes to them any more.
+     */
+    private static function legacy_alias_keys($board, $text) {
+        if (!class_exists('SWML_REST_API')) return [];
+        $canon = SWML_REST_API::canonical_slug((string) $text);
+        $board = str_replace('_', '-', $board);
+        $keys = [];
+        foreach (SWML_REST_API::slug_aliases() as $alias => $target) {
+            if ($target === $canon && $alias !== $canon) $keys[] = 'swml_topics_' . sanitize_key($board) . '_' . sanitize_key($alias);
+        }
+        return $keys;
     }
 
     /**
@@ -349,6 +371,19 @@ class SWML_Topic_Questions {
                 $alt_topics = get_option(self::option_key($board, $alt), []);
                 if (is_array($alt_topics) && !empty($alt_topics)) {
                     error_log(sprintf('[WML] topics: store for %s/%s is empty — served sibling form %s', $board, $text, $alt));
+                    $topics = $alt_topics;
+                    break;
+                }
+            }
+        }
+        // v7.20.818 (#872): the canonical store is still empty but an ALIAS store holds the text's topics (filed there by
+        // the admin list before option_key() normalised) — serve it, read-only, exactly like the sibling forms above.
+        // The first save or template import fills the canonical store, and from then on it wins.
+        if (empty($topics)) {
+            foreach (self::legacy_alias_keys($board, $text) as $k) {
+                $alt_topics = get_option($k, []);
+                if (is_array($alt_topics) && !empty($alt_topics)) {
+                    error_log(sprintf('[WML] topics: canonical store for %s/%s is empty — served the alias store %s', $board, $text, $k));
                     $topics = $alt_topics;
                     break;
                 }
@@ -530,6 +565,14 @@ class SWML_Topic_Questions {
         // staging were one template edit away from vanishing with no error. Template topics still
         // win for the numbers they define; every other stored topic is carried across unchanged.
         $stored = get_option(self::option_key($board, $text), []);
+        // v7.20.818 (#872): the first import into a canonical store merges with the text's ALIAS store, so a topic that
+        // lives only there (an installed past paper, an admin-authored topic) is carried across, never dropped.
+        if (empty($stored)) {
+            foreach (self::legacy_alias_keys($board, $text) as $k) {
+                $alt = get_option($k, []);
+                if (is_array($alt) && !empty($alt)) { $stored = $alt; break; }
+            }
+        }
         if (is_array($stored) && !empty($stored)) {
             $template_numbers = [];
             // v7.20.655 (#648): a RENUMBERED template (AQA Lang P2 dropped Conceptual Notes, T3..T10

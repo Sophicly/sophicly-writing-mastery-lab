@@ -221,6 +221,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/line-check-harness.js >/tmp/line-check.out 2>&1 || { cat /tmp/line-check.out; fail=1; }
 fi
 
+# v7.20.818 (#872, LearnDash lane, measured on prod): topic stores filed under an ALIAS slug (32 of 163) — 25 texts'
+# canonical stores were empty, so the lessons' topic lookup found nothing. One store per text (canonical key), the
+# old alias stores still readable, writes and template imports on the canonical key. Real classes + real alias map.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'class-topic-questions\.php|class-topic-parser\.php|class-rest-api\.php|topic-alias-store-harness\.php'; then
+  php bin/topic-alias-store-harness.php >/tmp/topic-alias.out 2>&1 || { cat /tmp/topic-alias.out; fail=1; }
+fi
+
 # v7.20.797 (FIXLIST #847): the tutor comment modal — house modal, body-mounted (centred on the screen), minimal
 # chips, the three quick comments Neil named, and every quick-comment deep link resolving to a real Toolkit
 # section / Table technique (a dead link draws nothing). Mutation-proven 6/6 when written.
