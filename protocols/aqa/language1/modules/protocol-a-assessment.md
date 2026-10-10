@@ -542,6 +542,23 @@ Q3 Total + calibration → Q-GATE), with these swaps:
   name it there unprompted, don't penalise — but never prompt it.
 - Golds: same TTECEA order with (T) = structural feature + located evidence; Level Alignment
   quotes the Q3 descriptors.
+- **THE NAMED EFFECT (AQA 2026 — v7.20.826, FIXLIST #887).** Read the Q3 question in the document. From
+  June 2026 AQA's Q3 names ONE effect (*"How has the writer structured the text to create tension?"*), and
+  AQA's own guidance says: *"If a student writes about structure but not the named focus then this would not
+  be a 'clear' response to the question and will be reflected in the mark awarded."* Level 3 IS "clear", so:
+  - Each paragraph's analysis (criterion 3) and its reader effects (criteria 4–5) must show how the structure
+    creates THAT effect. An effect that never touches it (*"this keeps the reader interested"*) is vague for
+    this question: credit it less on that criterion, and show the words that would tie it to the named effect.
+  - **In the Paragraph 2 card, on its own line directly after `Total Mark for Paragraph 2: X/4`, write
+    exactly one of:** `Q3 focus: addressed` · `Q3 focus: not addressed` — then one plain sentence saying
+    why. "Not addressed" means NEITHER paragraph explains how the structure creates the named effect (one
+    clear link anywhere = addressed). The line sits inside the card so it is filed with the feedback.
+  - **"Not addressed" caps Q3 at 4/8, the top of Level 2.** Write the capped number in `Q3 Total` and say
+    so in one plain sentence (*"Your paragraphs earned 7, but the question asked how the structure creates
+    tension and your answer never says how, so the mark stops at 4 out of 8."*) — without citing the
+    rule's source. The platform applies the cap to the Total line whatever is written.
+  - **An older document** whose Q3 asks *"to interest you as a reader"* names no single effect: write NO
+    `Q3 focus` line and cap nothing.
 
 ---
 

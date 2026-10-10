@@ -235,7 +235,8 @@
             "level0": "Nothing to reward",
             "notes": [
                 "This question assesses structure: i.e. structural features such as a pivotal point, juxtaposition, flash",
-                "back, shifts in focus, mood or tone, contrast, narrative pace and/or other structural features"
+                "back, shifts in focus, mood or tone, contrast, narrative pace and/or other structural features",
+                "AQA (2026): \"Question 3 now focuses on a single effect, for example, 'How has the writer structured the text to create suspense?'\" \"If a student writes about structure but not the named focus then this would not be a 'clear' response to the question and will be reflected in the mark awarded.\""
             ]
         },
         "aqa_lang1_q4_ao4": {
@@ -2333,9 +2334,9 @@
             ]
         }
     };
-    WML_MARK_SCHEMES.__sourceSha1 = '535a8c23c573fdc9f0f0e1dc341989bd8abffd88';
+    WML_MARK_SCHEMES.__sourceSha1 = '648af73c8f6463038dc2374bd6dde4d860269afd';
     WML_MARK_SCHEMES.__sources = {
-        "protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md": "535a8c23c573fdc9f0f0e1dc341989bd8abffd88",
+        "protocols/aqa/language1/modules/knowledge-mark-scheme-lang1.md": "648af73c8f6463038dc2374bd6dde4d860269afd",
         "protocols/aqa/language2/modules/knowledge-mark-scheme-lang2.md": "081186c2c022d46535b2480014e2fc307f1261a6",
         "protocols/aqa/unseen/modules/knowledge-mark-scheme-unseen.md": "aa6deccde24faafacfe73813fa24decdf89478b9",
         "protocols/aqa/literature/modules/knowledge-mark-scheme.md": "a3a5f52b400f35c9f487085bfdae1b12fac65532"

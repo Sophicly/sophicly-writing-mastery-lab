@@ -58,8 +58,9 @@ function fnSrc(name) {
     for (; j < SRC.length; j++) { if (SRC[j] === '{') d++; else if (SRC[j] === '}' && --d === 0) break; }
     return SRC.slice(i, j + 1);
 }
-const code = ['_readChoiceAnswers', '_scoreChoiceAnswers', '_platformChoiceScore', '_formatChoiceSummary'].map(fnSrc);
-ok(code.every(Boolean), 'the four scoring functions exist');
+// v7.20.826 (#887): _platformChoiceScore also reads Paper 2's true-statement ticks, so their reader + scorer ride along.
+const code = ['_readChoiceAnswers', '_scoreChoiceAnswers', '_readChecklistTicks', '_scoreChecklistTicks', '_platformChoiceScore', '_formatChoiceSummary'].map(fnSrc);
+ok(code.every(Boolean), 'the scoring functions exist');
 // A tiny ProseMirror-shaped doc: paragraphs (stems) and checklistItem nodes, walked in order.
 const P = (t) => ({ type: { name: 'paragraph' }, textContent: t, attrs: {} });
 const O = (id, t, correct, checked) => ({ type: { name: 'checklistItem' }, textContent: t, attrs: { itemId: id, correct, checked } });
@@ -124,7 +125,7 @@ ok(/const wordTarget = \(Array\.isArray\(q\.choices\) && q\.choices\.length\) \?
     'a multiple-choice question shows no "Aim for ~N words" — at build, and the load-time heal removes a stored one (found on staging)');
 ok(/_mcDoc = !!document\.querySelector\('#swml-tiptap-editor \[data-item-id\^="' \+ g\.q \+ '-mc"\]'\)/.test(SRC), 'the self-mark ask is worded for choices on a choices document');
 const A = SRC.slice(SRC.indexOf('function _auditAssessmentArithmetic(reply) {'), SRC.indexOf('function _auditAssessmentArithmetic(reply) {') + 60000);
-const iPc = A.indexOf('const _pc = _platformChoiceScore(qKey);'), iQ5 = A.indexOf("if (qn === '5') {"), iBad = A.indexOf('if (bad || !arr || arr.length < 2) return whole;');
+const iPc = A.indexOf('const _pc = _platformChoiceScore(qKey);'), iQ5 = A.indexOf("if (qn === '5') {"), iBad = A.indexOf('if (bad || !arr || arr.length < 2) {');   // v7.20.826: the exit now applies the Q3 focus cap first
 ok(iPc > 0 && iPc < iQ5 && iPc < iBad && /return prefix \+ _pc\.score \+ '\/' \+ _pc\.max|const _want = prefix \+ _pc\.score \+ '\/' \+ _pc\.max;[\s\S]{0,400}return _want;/.test(A.slice(iPc, iPc + 700)),
     "the filed Q1 Total IS the platform's score — the audit sets it before the 'unauditable card' exit (a Q1 card has no element table)");
 const PROTO = fs.readFileSync(path.join(ROOT, 'protocols/aqa/language1/modules/protocol-a-assessment.md'), 'utf8');

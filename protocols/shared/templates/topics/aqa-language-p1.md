@@ -102,30 +102,30 @@ You could include the writer's choice of:
 **Marks:** 8
 **AOs:** AO2
 
-You now need to think about the whole of the source.
+You now need to think about the structure of the source as a whole.
 
-This text is taken from the beginning of a novel.
+This text is from the beginning of a novel.
 
-How has the writer structured the text to interest you as a reader?
+How has the writer structured the text to create a sense of unease?
 
 You could write about:
-- what the writer focuses your attention on at the beginning
-- how and why the writer changes this focus as the source develops
-- any other structural features that interest you.
+- how the sense of unease has increased or decreased by the end of the source
+- how the writer uses structure to create an effect
+- the writer's use of any other structural features, such as changes in mood, tone or perspective.
 
 ## Q4
 **Marks:** 20
 **AOs:** AO4
 
-Focus this part of your answer on the second half of the source, from line 16 to the end.
+For this question focus on the second part of the source, from line 16 to the end.
 
-A student, having read this section of the text, said: "This part of the story, set during breakfast time, shows that Alex is struggling to cope with his mother's illness."
+In this part of the story, set during breakfast time, the writer shows that Alex is struggling to cope with his mother's illness.
 
-To what extent do you agree?
+To what extent do you agree and/or disagree with this statement?
 
 In your response, you could:
-- consider your own impressions of Alex
-- evaluate how the writer shows that Alex is struggling to cope
+- consider your impressions of Alex
+- comment on the methods the writer uses to show that Alex is struggling to cope
 - support your response with references to the text.
 
 ## Q5
@@ -253,30 +253,30 @@ You could include the writer's choice of:
 **Marks:** 8
 **AOs:** AO2
 
-You now need to think about the whole of the source.
+You now need to think about the structure of the source as a whole.
 
 This text is from the opening of a novel.
 
-How has the writer structured the text to interest you as a reader?
+How has the writer structured the text to create a sense of mystery?
 
 You could write about:
-- what the writer focuses your attention on at the beginning
-- how and why the writer changes this focus as the source develops
-- any other structural features that interest you.
+- how the sense of mystery has increased or decreased by the end of the source
+- how the writer uses structure to create an effect
+- the writer's use of any other structural features, such as changes in mood, tone or perspective.
 
 ## Q4
 **Marks:** 20
 **AOs:** AO4
 
-Focus this part of your answer on the second part of the source, from line 24 to the end.
+For this question focus on the second part of the source, from line 24 to the end.
 
-A student, having read this section of the text, said: "In this part of the text, the writer makes you feel that Katniss lives in a harsh and dangerous world."
+In this part of the text, the writer makes you feel that Katniss lives in a harsh and dangerous world.
 
-To what extent do you agree?
+To what extent do you agree and/or disagree with this statement?
 
 In your response, you could:
-- consider your own impressions of District 12
-- evaluate how the writer conveys danger and hardship
+- consider your impressions of District 12
+- comment on the methods the writer uses to convey danger and hardship
 - support your response with references to the text.
 
 ## Q5
@@ -397,28 +397,30 @@ You could include the writer's choice of:
 **Marks:** 8
 **AOs:** AO2
 
-You now need to think about the whole of the source.
+You now need to think about the structure of the source as a whole.
+
+This text is from a novel.
 
 How has the writer structured the text to build tension?
 
 You could write about:
-- what the writer focuses your attention on at the beginning
-- how and why the writer changes this focus as the source develops
-- any other structural features that interest you.
+- how tension has increased or decreased by the end of the source
+- how the writer uses structure to create an effect
+- the writer's use of any other structural features, such as changes in mood, tone or perspective.
 
 ## Q4
 **Marks:** 20
 **AOs:** AO4
 
-Focus this part of your answer on the second part of the source, from line 26 to the end.
+For this question focus on the second part of the source, from line 26 to the end.
 
-A student, having read this section of the text, said: "The writer makes us share Pi's trust in the crew, which makes the ending so shocking."
+In this part of the source, the writer makes us share Pi's trust in the crew, which makes the ending so shocking.
 
-To what extent do you agree?
+To what extent do you agree and/or disagree with this statement?
 
 In your response, you could:
-- consider your own impressions of Pi's feelings
-- evaluate how the writer creates and then shatters trust
+- consider your impressions of Pi's feelings
+- comment on the methods the writer uses to create and then shatter trust
 - support your response with references to the text.
 
 ## Q5
@@ -547,30 +549,30 @@ You could include the writer's choice of:
 **Marks:** 8
 **AOs:** AO2
 
-You now need to think about the whole of the source.
+You now need to think about the structure of the source as a whole.
 
 This text is from the beginning of a short story.
 
-How has the writer structured the text to interest you as a reader?
+How has the writer structured the text to create suspense?
 
 You could write about:
-- what the writer focuses your attention on at the beginning
-- how and why the writer changes this focus as the source develops
-- any other structural features that interest you.
+- how suspense has increased or decreased by the end of the source
+- how the writer uses structure to create an effect
+- the writer's use of any other structural features, such as changes in mood, tone or perspective.
 
 ## Q4
 **Marks:** 20
 **AOs:** AO4
 
-Focus this part of your answer on the second part of the source, from line 25 to the end.
+For this question focus on the second part of the source, from line 25 to the end.
 
-A student, having read this section of the text, said: "In this section, the writer shows how Mr Fisher rediscovers his passion for stories."
+In this section, the writer shows how Mr Fisher rediscovers his passion for stories.
 
-To what extent do you agree?
+To what extent do you agree and/or disagree with this statement?
 
 In your response, you could:
-- consider your own impressions of Mr Fisher's feelings
-- evaluate how the writer shows the change in Mr Fisher
+- consider your impressions of Mr Fisher's feelings
+- comment on the methods the writer uses to show the change in Mr Fisher
 - support your response with references to the text.
 
 ## Q5
@@ -694,30 +696,30 @@ You could include the writer's choice of:
 **Marks:** 8
 **AOs:** AO2
 
-You now need to think about the whole of the source.
+You now need to think about the structure of the source as a whole.
 
 This text is from the opening of a novel.
 
-How has the writer structured the text to interest you as a reader?
+How has the writer structured the text to create a sense of foreboding?
 
 You could write about:
-- what the writer focuses your attention on at the beginning
-- how and why the writer changes this focus as the source develops
-- any other structural features that interest you.
+- how the sense of foreboding has increased or decreased by the end of the source
+- how the writer uses structure to create an effect
+- the writer's use of any other structural features, such as changes in mood, tone or perspective.
 
 ## Q4
 **Marks:** 20
 **AOs:** AO4
 
-Focus this part of your answer on the second part of the source, from line 19 to the end.
+For this question focus on the second part of the source, from line 19 to the end.
 
-A student, having read this section of the text, said: "In this part of the text, the writer brings the passengers to life through their different reactions to the journey."
+In this part of the text, the writer brings the passengers to life through their different reactions to the journey.
 
-To what extent do you agree?
+To what extent do you agree and/or disagree with this statement?
 
 In your response, you could:
-- consider your own impressions of the passengers
-- evaluate how the writer uses the characters to create interest
+- consider your impressions of the passengers
+- comment on the methods the writer uses to bring the passengers to life
 - support your response with references to the text.
 
 ## Q5

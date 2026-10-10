@@ -232,9 +232,9 @@ Emit it after EVERY question's feedback, using the real values for THIS question
    * **Why B:** Words and phrases are the very heart of a language question, making them one of the MOST effective choices here rather than the least.
    * **Why D:** Techniques like metaphor can seem too advanced to attempt, but they are core language methods and central to what Q2 rewards.
 2. **Type: Fill-in-the-Blank \[Tests AO2 Structure\]**  
-   * **Question:** AQA Question 3 asks: "How has the writer \[BLANK\] the text to interest you as a reader?"  
+   * **Question:** AQA Question 3 asks: "How has the writer \[BLANK\] the text to create tension?"  
    * **Answer:** Structured  
-   * **Feedback:** ✓ Correct. You must focus on the *sequence* of events (e.g., shifts in focus, perspective, openings/endings).  
+   * **Feedback:** ✓ Correct. You must focus on the *sequence* of events (e.g., shifts in focus, perspective, openings/endings). Since 2026 the question names one effect (here, tension), so every point must explain how the structure creates that effect.  
    * **AO:** AO2
    * **WhyWrong:** If you wrote "language" or "written" you have blurred Q2 and Q3 together; Q3 names structure specifically because it tests sequencing choices rather than word choice.
 3. **Type: Select All That Apply \[Tests AO4 Evaluation\]**  
@@ -272,9 +272,9 @@ Emit it after EVERY question's feedback, using the real values for THIS question
 7. **Type: Fill-in-the-Blank \[Tests AO4\]**  
    * **Question:** In Question 4, you must focus on the "Writer's \[BLANK\]" to show you understand their deliberate choices.  
    * **Answer:** Methods  
-   * **Feedback:** ✓ Correct\! You cannot just evaluate the story; you must evaluate *how* the writer created it using methods.  
+   * **Feedback:** ✓ Correct\! You weigh up the statement, and the writer's methods are your evidence: the question says "comment on the methods the writer uses", and Level 4 "Shows perceptive understanding of writer's methods".  
    * **AO:** AO4
-   * **WhyWrong:** Answers like "ideas" or "opinions" miss that evaluation must judge the writer's deliberate craft choices, not simply react to the events of the story.
+   * **WhyWrong:** Ideas matter too, but AQA's phrase is "writer's methods": your judgement of the statement has to rest on how the writer created the effect, not simply on the events of the story.
 8. **Type: MCQ \[Tests AO2\]**  
    * **Question:** Which phrase is best to use when analyzing structure in Question 3?  
    * **Options:** A) "The writer uses the word...", B) "This metaphor suggests...", C) "At this point, the writer shifts the focus to...", D) "This makes the reader feel...".  
@@ -347,17 +347,17 @@ Emit it after EVERY question's feedback, using the real values for THIS question
     * **Question:** What does "critical evaluation" require in Question 4 that explaining the writer's effects does not?
     * **Options:** A) Testing the statement as an argument and reaching a weighed judgement, B) Finding as many quotations as possible to confirm it, C) Explaining each technique the writer uses in detail, D) Summarising the events of the second half of the source.
     * **Correct:** A
-    * **Feedback:** ✓ Correct. Level 4 AO4 "develops a convincing and critical response to the focus of the statement" — you weigh it and judge, rather than just agreeing or explaining effects.
+    * **Feedback:** ✓ Correct. Level 4 AO4 "Develops a convincing and critical understanding of ideas" — you weigh the statement and judge it, rather than just agreeing or explaining effects.
     * **AO:** AO4
     * **Why B:** Quantity of quotation is not evaluation; AQA rewards judicious references that support a judgement.
     * **Why C:** Explaining techniques is AO2 work carried into Question 4; evaluation must weigh and judge the statement.
     * **Why D:** Retelling the events of the source earns nothing for critical evaluation.
 18. **Type: Fill-in-the-Blank \[Tests AO4\]**
-    * **Question:** Complete the AQA Level 4 evaluation descriptor: "Develops a convincing and \[BLANK\] response to the focus of the statement."
+    * **Question:** Complete the AQA Level 4 evaluation descriptor: "Develops a convincing and \[BLANK\] understanding of ideas."
     * **Answer:** critical
     * **Feedback:** ✓ Correct. "Convincing and critical" is the top-band AO4 wording — testing the statement, not simply supporting it.
     * **AO:** AO4
-    * **WhyWrong:** "Detailed" or "clear" describe lower bands; the word that separates Level 4 evaluation is "critical."
+    * **WhyWrong:** "Clear" and "relevant" are the Level 3 words ("Makes a clear and relevant understanding of ideas"); the word that separates Level 4 evaluation is "critical."
 19. **Type: MCQ \[Tests AO5\]**
     * **Question:** The AQA top-band (Level 4) descriptor for Question 5 writing is "Communication is convincing and ___." Which word fits?
     * **Options:** A) engaging, B) compelling, C) sophisticated, D) detailed.

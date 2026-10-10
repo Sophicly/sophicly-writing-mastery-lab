@@ -872,6 +872,14 @@ is untouched (§8): quizzes are for maxing out through repetition. This ruling g
 FAMILY, not of one component. Any new interactive that scores multiple items inherits
 it by default — a component shipping per-question verdicts is a defect, not a variant.
 
+**Exception — practice drills (Neil, ruled 2026-10-10, his tap on the Components lane's picker: *"Two tries, like
+Brilliant"*; WML FIXLIST #889).** `[sophicly_drill]` items (Final-Read Pass, Tense Lock, Purpose Sharpener) are
+training, not measurement, so each item gets two tries: a Check, a hint after the first miss and the answer after the
+second (Brilliant's ladder). Only the FIRST-TRY score is saved, so a second try teaches without inflating the grade. The
+option he chose read: *"Your July rule stays for the other quizzes; drills become the practice exception, recorded in
+PEDAGOGY."* Everything else in §13 stands for the quiz family — a quiz shipping per-question verdicts is still a
+defect; a drill showing them is the ruling.
+
 ---
 
 ## §14. A STORY IS FINISHED TO FIRST DRAFT BEFORE A NEW ONE BEGINS — the CW project checkpoint (Neil, ruled 2026-07-25)
@@ -3353,3 +3361,28 @@ per-question targets in a v7.19.423 code comment attributed to him (12 Jun). **M
 - **No AQA Lang P1 or Edexcel IGCSE Language sample answers exist** on disk (both searches completed, nothing found).
 So our own exam-shaped TTECEA paragraphs run about 115–125 words: below the code's 150 and well below 170. The AQA rows stay
 as they are until he chooses; the measured numbers are on the Actions page for him.
+
+## §61. ⭐⭐ AQA'S 2026 LANGUAGE WORDING IS THE AUTHORITY FOR THE NOVEMBER 2026 RESITS — applied, not a new ruling (v7.20.826, FIXLIST #887; Library's handoff of 2026-10-10)
+
+AQA's question wording changed for exams "from summer 2026 onwards"; the specification, marks and AOs did not
+(`research/sources/aqa-8700-faq-2026-changes.txt`). Under the standing law that **the mark scheme is the authority**
+(WML `CLAUDE.md` §2a), these follow from AQA's own text — none is a house rule, so none is re-opened by preference:
+1. **AQA Paper 1 Q3 names ONE effect.** AQA: *"If a student writes about structure but not the named focus then this
+   would not be a 'clear' response to the question and will be reflected in the mark awarded."* Level 3 is "clear", so
+   an answer that never addresses the named effect stops at **4/8, the top of Level 2** — the same reasoning AQA prints
+   for its own Q5 cap. Sophia judges it (`Q3 focus: addressed / not addressed`, filed in the Paragraph 2 card); the code
+   applies it. An older document whose Q3 asks "to interest you as a reader" is never capped.
+2. **AQA Paper 2 Q1: a mark off for every tick beyond four.** AQA's November 2024 report: students who tick five or more
+   "lose one mark for each additional choice beyond the required four". The platform scores the ticks; never below 0.
+   (Our old rule scored the first four ticks — that was the defect.)
+3. **AQA Paper 2 Q4 compares ideas and perspectives; methods are commented on**, "not necessarily" compared directly
+   (FAQ p.5). Never deduct for two methods sitting side by side.
+4. **AQA Paper 2 Q2 may ask for similarities** (FAQ p.4) — the marking follows the question's own word.
+5. **Our practice papers carry the 2026 wording** (new documents only; a document already holding writing keeps the
+   wording it was written to). Named effects, chosen so each is present in its extract and differs from that paper's
+   Q4: City of the Beasts — a sense of unease · The Hunger Games — a sense of mystery · Life of Pi — build tension ·
+   Mr Fisher — suspense · Jamaica Inn — a sense of foreboding.
+**Already in place before #887:** the Q5 AO5 12-mark cap when the focus is missed (both papers' Protocol A).
+**Still Neil's to rule** (AQA's reports disagree with our teaching, not our marking): the Q5 650-word ceiling, the
+"SHOCKING STATISTIC" hook, "Picture this / Imagine" openers, the "Firstly… Secondly…" ban, and device stacking (§ ruled
+2026-07-15 — AQA's June 2025 report warns against systematic device use; recorded once here, not re-argued).

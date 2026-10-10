@@ -4,7 +4,9 @@
 English Language 8700/1 SAMPLE mark scheme, 2026 specification, first exam June 2026 — "AQA-8700-1-SMS-2026.pdf"
 = "AQA Lang P1 Mark Scheme 2026 Spec.pdf", Version 1.1. Q3's framing note, Q4 and the AO5 Content bullets + NB
 were re-sourced from it on 2026-10-05 (v7.20.694); Q1 was re-sourced from it and from the 2026 sample question paper on
-2026-10-10 (v7.20.802 — it is now MULTIPLE CHOICE); Q2 and AO6 are unchanged from June 2024). This is REFERENCE DATA,
+2026-10-10 (v7.20.802 — it is now MULTIPLE CHOICE); Q2 and AO6 are unchanged from June 2024). Q3's named-focus note
+(v7.20.826, FIXLIST #887) is AQA's "GCSE English Language (8700) changes" FAQ for teachers, 1 April 2025, p.3 —
+`research/sources/aqa-8700-faq-2026-changes.txt`; Protocol A caps an answer that misses the named focus at 4/8. This is REFERENCE DATA,
 not workflow. When Protocol A's "Level Alignment" step tells you to quote a level descriptor, quote
 it from THIS file — word for word, naming the level and its mark range. **NEVER invent, paraphrase
 from memory, or extrapolate a descriptor that is not on this page.** If a descriptor you need is not
@@ -141,6 +143,8 @@ Shows simple awareness of structural features:
 - Makes simple use of subject terminology, not always appropriately
 
 **Level 0 — No marks:** Nothing to reward
+
+> AQA (2026): "Question 3 now focuses on a single effect, for example, 'How has the writer structured the text to create suspense?'" "If a student writes about structure but not the named focus then this would not be a 'clear' response to the question and will be reflected in the mark awarded."
 
 ---
 

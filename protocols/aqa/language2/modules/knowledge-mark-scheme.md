@@ -324,7 +324,7 @@ So here's my challenge to you: stop treating education as preparation for life a
 
 * Integrated comparison throughout (sources woven together, not separated)  
 * Comparative discourse markers ("whereas," "in contrast," "similarly")  
-* Perceptive comparison of ideas AND methods  
+* Perceptive comparison of ideas and perspectives, with each writer's methods analysed in support  
 * Sentences 2-3 lines long (detailed, developed)  
 * NO "the/this/these" sentence starters  
 * NO use of verb "shows"

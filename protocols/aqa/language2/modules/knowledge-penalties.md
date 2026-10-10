@@ -111,7 +111,7 @@
 * **M1** – Retelling/describing instead of analysis (-0.5)  
   Detection: Describing source events or content without analyzing methods or making inferences  
   Fix: "The doctor is very busy" → "Through the extended metaphor of 'sailing the ship alone', the writer conveys the doctor's overwhelming isolation"  
-  **Applies to:** Q3 (describing instead of analyzing language), Q4 (retelling instead of comparing methods)
+  **Applies to:** Q3 (describing instead of analyzing language), Q4 (retelling instead of comparing perspectives and analysing methods)
 
 **Literature-Specific Penalties (NOT applicable to AQA Paper 2, listed for reference only):**
 
@@ -171,7 +171,7 @@ Students should structure their three paragraphs to analyze the beginning of the
 
 **Question 4 – AO3 (16 marks) – Comparative Analysis**
 
-Students must compare how the writers convey their different feelings and perspectives, and compare the methods they use to convey these across both Source A and Source B. Students should write a comparative response of four to five paragraphs: a brief introduction of one to two lines, three developed comparative body paragraphs, and an optional brief conclusion of one line.
+Students must compare the writers' different feelings and perspectives across both Source A and Source B, and comment on the methods each writer uses to convey them (AQA 2026: the methods support the comparison and need not be compared directly with each other). Students should write a comparative response of four to five paragraphs: a brief introduction of one to two lines, three developed comparative body paragraphs, and an optional brief conclusion of one line.
 
 The critical requirement is that every paragraph must compare both sources simultaneously throughout. Students must not write about Source A entirely, then Source B entirely. They must weave comparison throughout their response using the comparative TTECEA structure.
 

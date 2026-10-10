@@ -42,7 +42,7 @@ quotation in a Feedback or Why line of the AQA section is verbatim (gate: `bin/m
    * **Question:** Question 2 tests AO1's second bullet: "select and [BLANK] evidence from different texts." Complete the verb that names combining material across both sources.
    * **Answer:** synthesise
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA AO1 = "Select and synthesise evidence from different texts." Synthesis means weaving detail from BOTH sources into a combined point of difference — not handling each text in a separate paragraph. It is the skill Question 2 is built to test.
+   * **Feedback:** ✓ Correct. AQA AO1 = "Select and synthesise evidence from different texts." Synthesis means weaving detail from BOTH sources into a combined point of difference (or of similarity, when the question asks for one) — not handling each text in a separate paragraph. It is the skill Question 2 is built to test.
    * **WhyWrong:** The AQA word is "synthesise" — Question 2 rewards combining evidence across the two texts, not summarising them one at a time.
 
 4. **Type: Ranking [Tests AO1]**
@@ -102,7 +102,7 @@ quotation in a Feedback or Why line of the AQA section is verbatim (gate: `bin/m
    * **Question:** Complete the AQA AO3 wording for Question 4: "Compare writers' ideas and [BLANK], as well as how these are conveyed."
    * **Answer:** perspectives
    * **AO:** AO3
-   * **Feedback:** ✓ Correct. AQA AO3 = "Compare writers' ideas and perspectives, as well as how these are conveyed, across two or more texts." Question 4 has two halves: compare WHAT the writers think (ideas/perspectives) AND HOW they convey it (methods). Dropping either half caps the mark.
+   * **Feedback:** ✓ Correct. AQA AO3 = "Compare writers' ideas and perspectives, as well as how these are conveyed, across two or more texts." Question 4 has two halves: compare WHAT the writers think (ideas/perspectives) and explain HOW they convey it (methods) — since 2026 the methods need not be compared directly with each other. Dropping either half caps the mark.
    * **WhyWrong:** The AQA word is "perspectives" — Question 4 compares the writers' viewpoints, not only their language features.
 
 11. **Type: Select All [Tests AO3]**
@@ -185,7 +185,7 @@ quotation in a Feedback or Why line of the AQA section is verbatim (gate: `bin/m
    * **Options:** A) combines well-chosen detail from BOTH sources into a single comparative point, B) writes one full, self-contained paragraph on each source in turn, C) quotes as much as it can from both sources, to show it has covered everything, D) summarises each source accurately, but keeps the two entirely separate
    * **Correct:** A
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. Synthesis = weaving evidence from both texts together; "judicious" = well-judged selection. A synthesising, judicious response fuses a well-chosen detail from each source into ONE point of difference — exactly what Question 2 (AO1) and the comparison at Question 4 (AO3) reward.
+   * **Feedback:** ✓ Correct. Synthesis = weaving evidence from both texts together; "judicious" = well-judged selection. A synthesising, judicious response fuses a well-chosen detail from each source into ONE point of difference (or similarity) — exactly what Question 2 (AO1) and the comparison at Question 4 (AO3) reward.
    * **Why B:** A paragraph on each in turn is parallel summary, not synthesis.
    * **Why C:** Volume of quotation is the opposite of "judicious" selection.
    * **Why D:** Accurate but separate summaries miss the synthesis — the combining across texts.
@@ -263,7 +263,7 @@ quotation in a Feedback or Why line of the AQA section is verbatim (gate: `bin/m
    * **Why D:** Question 4 assesses methods too: AO3 compares ideas "as well as how these are conveyed".
 
 29. **Type: Select All [Tests AO3]**
-   * **Question:** The 2026 mark scheme lists METHODS you could compare at Question 4. Select ALL that are on its list (and none that are not).
+   * **Question:** The 2026 mark scheme lists METHODS you could comment on at Question 4. Select ALL that are on its list (and none that are not).
    * **Options:** A) Tone: sardonic and mocking in Source A, excited in Source B, B) The facts each source gives about the size of its train, C) Audience: Source B is a private letter to one reader, D) Whether each writer's spelling and punctuation are accurate
    * **Correct:** A, C
    * **AO:** AO3

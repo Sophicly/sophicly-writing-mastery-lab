@@ -50,7 +50,7 @@ Traditional frameworks become **unreliable under exam pressure** because they do
 - Skip technique identification entirely  
 - Provide only one effect instead of two  
 - Never evaluate author's purpose  
-- **Result:** Cap at Level 3-4 instead of reaching Level 5-6
+- **Result:** Stall at Level 2 or 3 instead of reaching Level 4 (AQA 8700 has four levels)
 
 TTECEA provides a **cognitive checklist** that ensures nothing is missed. Even under time pressure, students who internalize TTECEA structure will systematically cover all AO requirements.
 

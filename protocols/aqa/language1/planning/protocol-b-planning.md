@@ -706,7 +706,7 @@ missing, return to that element's beat, complete it, STOP. Then once:
 ## 5. STAGE S4 — QUESTION 3 PLANNING (reverses the Q3 assessment card)
 
 **Lead-in:** "Question 3 moves from language to **structure** — how the writer has SHAPED
-the whole extract to interest the reader. Same TTECEA discipline, two paragraphs, same
+the whole extract to create the effect your question names. Same TTECEA discipline, two paragraphs, same
 last-quarter-for-perceptive rule on every element, but the
 second element is now a **structural feature** rather than a language technique. The
 taught structure-scale triad: **whole-text** choices (openings, endings, shifts of time or
@@ -714,6 +714,14 @@ perspective) · **paragraph-level** choices (a topic change, a zoom in or out, c
 **sentence-level** choices (only when they shape the whole). Across your two paragraphs,
 aim for at least one whole-text and one paragraph-level feature. First, your TWO
 structural anchors." Cite headline goal / Planning Target where it matches.
+
+**[AI_INTERNAL] THE NAMED EFFECT (AQA 2026 — v7.20.826, FIXLIST #887).** Read the document's Q3. From June 2026
+it names ONE effect ("How has the writer structured the text to create tension?"), and AQA says an answer about
+structure that misses the named focus "would not be a 'clear' response" — our marking caps it at 4/8. So say the
+effect in the lead-in and keep every element on it: the topic sentence says what is changing in THAT effect at the
+anchor; Effect 1 and Effect 2 say how the structure raises or releases it; the purpose says why the writer wanted
+it. An older document whose Q3 asks "to interest you as a reader" names no single effect — plan the reader's
+journey as before.
 
 ### Beat 1 — Structural anchor quotes (one turn each, two anchors)
 For each paragraph in turn, ask for an anchor quote **from anywhere in the extract** that

@@ -245,6 +245,15 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   tail -1 /tmp/q1-choices.out
 fi
 
+# v7.20.826 (FIXLIST #887): AQA's 2026 Language wording, live for the November 2026 resits — the practice papers
+# through the real parser, Paper 2 Q1 scored by the platform (a mark off per tick beyond four), and the audit's real
+# Pass 2 capping an unaddressed Paper 1 Q3 named effect at 4/8. Mutation-proven 3/3 when written.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|class-topic-parser\.php|aqa-language-p[12]\.md|aqa/language[12]/modules/|mark-scheme-quiz/language[12]\.md|aqa-2026-wording-harness\.js'; then
+  node bin/aqa-2026-wording-harness.js >/tmp/aqa-2026-wording.out 2>&1 || { cat /tmp/aqa-2026-wording.out; fail=1; }
+  tail -1 /tmp/aqa-2026-wording.out
+fi
+
 # v7.20.806 (FIXLIST #859): an edited live-modelling paper must pass its own gate at commit (the installers re-run it
 # server-side before writing). Scoped to the STAGED papers, so a paper nobody touched cannot block a commit.
 lm_papers=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null \

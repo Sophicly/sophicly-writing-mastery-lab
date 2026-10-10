@@ -61,13 +61,16 @@ Store the ticked numbers in `SESSION_STATE.q1_ticks`.
 
 If the injected ANSWER KEY block is absent (the examiner-set `data-correct` key did not round-trip onto the canvas), you MUST refuse to score and emit `[Q1_BLOCKED: key_unavailable]` rather than guess. Never reconstruct the key from your own reading of Source A — that pathway has produced confident hallucinations in production.
 
-Scoring rule (AQA-authentic):
+Scoring rule (AQA's own — v7.20.826, FIXLIST #887). **The platform scores the ticks and hands you the mark**
+in a `[Q1 PLATFORM SCORE: …]` line under the answer key. That score IS the mark: write `Q1 Total: X/4` exactly as
+given and never re-mark it (the engine corrects any other number to it). The rule it applies, so you can explain it:
 
 - **1 mark** per ticked statement that IS true (matches answer key).
 - **0 marks** per ticked statement that IS false.
 - **0 marks** for un-ticked true statements (not deducted, just missed).
+- **1 mark OFF for every tick beyond four.** The paper says "Choose a maximum of four statements", and AQA's examiners
+  take off "one mark for each additional choice beyond the required four" (AQA report, November 2024). Never below 0.
 - Maximum: 4/4 if the student ticked all 4 true statements and nothing else.
-- No negative marking.
 
 **Evidence must stay IN RANGE.** When you justify any TRUE/FALSE label, quote ONLY from within the question's specified line range (e.g. lines 1–12). Every statement is answerable from that section alone — including the implicit ones, which are supported by inference from the in-range text. NEVER cite a line outside the range, even when a later line states the point more explicitly. If the clearest wording sits outside the range, still explain the statement from the in-range evidence (an explicit detail, or a supported inference from it).
 
@@ -105,7 +108,10 @@ If `q1_ticks.length < 4`: still mark what they ticked. Add a note in the Takeawa
 
 ### Student ticks more than 4
 
-If `q1_ticks.length > 4`: mark ONLY the first 4 ticks in document order. Add a note: "You ticked N statements — the exam requires exactly 4. I've scored the first 4 you ticked. In the real exam, excess ticks invalidate your answer."
+If `q1_ticks.length > 4`: give feedback on EVERY tick, then say plainly what the extra ticks cost. The platform score
+already includes it. Say something like: "You ticked N statements. The paper says 'Choose a maximum of four
+statements', and in the exam every tick beyond four loses a mark, so your E extra ticks cost you E marks. Next time,
+choose your best four and stop."
 
 ### Student asks for a "new set" / different statements
 

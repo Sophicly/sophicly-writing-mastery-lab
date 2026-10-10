@@ -12975,13 +12975,29 @@
                     console.warn('WML MarkAudit: corrected Q5 Total', val, '→', bCeil5.cap, '(word-count ceiling)');
                     return prefix + bCeil5.cap + den;
                 }
-                if (bad || !arr || arr.length < 2) return whole;
+                // ⭐ v7.20.826 (#887): the 2026 AQA Paper 1 Q3 names ONE effect ("…structured the text to create
+                // tension?"). AQA: an answer about structure but not the named focus "would not be a 'clear' response",
+                // and Level 3 IS "clear" — so it stops at the top of Level 2, 4 of 8 (the logic of AQA's own Q5 cap).
+                // Sophia JUDGES it and writes `Q3 focus: not addressed` (the AQA P1 protocol's line, no other protocol
+                // emits it); the CODE applies the cap, so it holds even when the Total she wrote does not.
+                const _q3Cap = _q3FocusCap(qn, den, out, (!arr || arr.length < 2) ? _q3FeedbackBoxText() : '');
+                if (bad || !arr || arr.length < 2) {
+                    if (_q3Cap !== null && parseFloat(val) > _q3Cap) {
+                        console.warn('WML MarkAudit: Q3 capped', val, '→', _q3Cap, '(the named effect was not addressed)');
+                        return prefix + _q3Cap + den;
+                    }
+                    return whole;
+                }
                 // v7.19.838: respect the question's MIN(sum, max) cap — Q4's sections total
                 // 22 raw (Intro 2 + 3×6 + Conclusion 2) but the question is out of 20. Never
                 // "correct" a properly-capped total past its own denominator.
                 const denNum = parseInt(String(den).replace(/\D/g, ''), 10) || 0;
                 let expected = Math.floor(arr.reduce((a, b) => a + b, 0) + 0.5); // half-up, ONCE
                 if (denNum) expected = Math.min(expected, denNum);
+                if (_q3Cap !== null && expected > _q3Cap) {
+                    console.warn('WML MarkAudit: Q3 capped', expected, '→', _q3Cap, '(the named effect was not addressed)');
+                    expected = _q3Cap;
+                }
                 if (expected === Math.round(parseFloat(val)) && String(parseFloat(val)) === String(Math.round(parseFloat(val)))) return whole;
                 if (expected !== parseFloat(val)) {
                     console.warn('WML MarkAudit: corrected', qKey, 'Total', val, '→', expected,
@@ -15169,12 +15185,59 @@
         return { score: score, max: entry.questions.length, lines: lines,
             answered: entry.questions.filter((q) => q.options.some((o) => o.checked)).length };
     }
+    // v7.20.826 (#887): the cap on a Q3 Total when Sophia judged that the answer never addresses the effect the 2026 AQA
+    // Paper 1 question names — the top of Level 2, i.e. 4 of an 8-mark question. null = no cap (any other question,
+    // any other denominator, the focus addressed, or an older document whose question names no effect). `text` is this
+    // reply; `recordText` is the filed Q3 feedback — passed only when this reply RESTATES Q3 Total without marking it
+    // (a summary), so the verdict filed with the Paragraph 2 card still holds after a reload.
+    // @Q3-FOCUS-PURE-START
+    function _q3FocusCap(qn, den, text, recordText) {
+        if (String(qn) !== '3') return null;
+        if (parseInt(String(den).replace(/\D/g, ''), 10) !== 8) return null;
+        const RE = /(?:^|\n)[\s*_`]*Q3 focus[\s*_`]*:[\s*_`]*(not addressed|addressed)\b/i;
+        const m = RE.exec(String(text || '')) || RE.exec(String(recordText || ''));
+        return (m && /^not/i.test(m[1])) ? 4 : null;
+    }
+    // @Q3-FOCUS-PURE-END
+    // The live document's Q3 feedback text (block elements give the line breaks the pattern above anchors on).
+    function _q3FeedbackBoxText() {
+        try {
+            const root = document.getElementById('swml-tiptap-editor');
+            if (!root) return '';
+            let t = '';
+            root.querySelectorAll('[data-section-type="feedback"]').forEach((sec) => {
+                if (/\bQ3\b/.test(sec.getAttribute('data-section-label') || '')) t += '\n' + (sec.innerText || '');
+            });
+            return t;
+        } catch (_) { return ''; }
+    }
+    // v7.20.826 (#887): AQA Paper 2 Question 1 — tick the TRUE statements; the paper says "Choose a maximum of four
+    // statements". The CODE scores it, as it does Paper 1's choices: one mark per true statement ticked, and ONE MARK OFF
+    // for every tick beyond the number of true statements — AQA's own rule (Nov 2024 report: students who select five or
+    // more "lose one mark for each additional choice beyond the required four"; Nov 2023 the same). Never below 0.
+    // Before this, the protocol scored only the first four ticks. null when the answer key is incomplete — the protocol
+    // then refuses to score ([Q1_BLOCKED: key_unavailable]) rather than guess.
+    function _scoreChecklistTicks(it) {
+        const key = it && it.answerKey;
+        const nums = Object.keys((it && it.statements) || {}).map(Number);
+        if (!key || !nums.length || nums.some((n) => key[n] !== true && key[n] !== false)) return null;
+        const need = nums.filter((n) => key[n] === true).length;
+        if (!need) return null;
+        const ticked = (it.ticked || []).filter((n) => nums.indexOf(n) !== -1);
+        const right = ticked.filter((n) => key[n] === true).length;
+        const extra = Math.max(0, ticked.length - need);
+        return { score: Math.max(0, right - extra), max: need, right: right, extra: extra, ticks: ticked.length };
+    }
     // The platform's score for one question's choices in the LIVE document, or null when it has none (a list-four
     // Q1, any other question). Read by the arithmetic audit so the filed Q1 Total IS this score, whatever was written.
+    // v7.20.826 (#887): Paper 2's true-statement ticks too (_scoreChecklistTicks).
     function _platformChoiceScore(qId) {
         try {
-            const e = _readChoiceAnswers(canvasEditor).find((x) => String(x.qId).toUpperCase() === String(qId).toUpperCase());
-            return (e && e.questions.length) ? _scoreChoiceAnswers(e) : null;
+            const want = String(qId).toUpperCase();
+            const e = _readChoiceAnswers(canvasEditor).find((x) => String(x.qId).toUpperCase() === want);
+            if (e && e.questions.length) return _scoreChoiceAnswers(e);
+            const t = _readChecklistTicks(canvasEditor).find((x) => String(x.qId).toUpperCase() === want);
+            return t ? _scoreChecklistTicks(t) : null;
         } catch (_) { return null; }
     }
     function _formatChoiceSummary(editor) {
@@ -15212,6 +15275,16 @@
                     const label = (v === true) ? 'TRUE' : (v === false ? 'FALSE' : 'UNKNOWN');
                     lines.push('  ' + n + '. ' + label);
                 });
+            }
+            // v7.20.826 (#887): the platform's score, so the mark is arithmetic and never the model's (as Paper 1's choices).
+            const s = _scoreChecklistTicks(it);
+            if (s) {
+                lines.push('');
+                lines.push('[' + it.qId + ' PLATFORM SCORE: ' + s.score + '/' + s.max + ' — ' + s.right + ' true statement'
+                    + (s.right === 1 ? '' : 's') + ' ticked'
+                    + (s.extra ? '; ' + s.ticks + ' ticks in all, ' + s.extra + ' beyond the ' + s.max + ' allowed, and each extra tick loses one mark'
+                        + ' (the paper says "Choose a maximum of four statements")' : '')
+                    + '. This IS the mark. Write "' + it.qId + ' Total: ' + s.score + '/' + s.max + '" exactly; never re-mark or change it.]');
             }
             return lines.join('\n');
         });

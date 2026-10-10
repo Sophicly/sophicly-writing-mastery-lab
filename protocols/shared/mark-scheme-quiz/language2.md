@@ -233,7 +233,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 - **Paper 2 focus:** How writers use language to influence (not just describe)  
 - **Key skill:** Analyzing persuasive/rhetorical techniques, not creative techniques  
-- **Tested in:** Question 2 (8 marks \- summary across two texts), Question 3 (12 marks \- language analysis)  
+- **Tested in:** Question 2 (8 marks \- inference across two texts), Question 3 (12 marks \- language analysis)  
 - **Critical point:** Analyse METHOD → EFFECT ON THE READER, perceptively. In nonfiction the effect usually works by shaping the reader's viewpoint or moving them to act; emotional effect is a legitimate persuasive tool, not a separate skill. Naming techniques without their effect (feature-spotting) is what caps the marks.
 
 **AO3 \- Compare writers' ideas and perspectives**
@@ -241,7 +241,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 - **Paper 2 focus:** How writers' attitudes and methods differ  
 - **Key skill:** Integrated comparison showing HOW perspectives are conveyed  
 - **Tested in:** Question 4 (16 marks \- comparison)  
-- **Critical distinction:** Must compare both IDEAS and METHODS
+- **Critical distinction:** Must compare the writers' IDEAS and perspectives, and explain how their METHODS are used (since 2026 the methods need not be compared directly)
 
 **AO5 \- Communicate clearly (Writing)**
 
@@ -272,7 +272,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 | :---- | :---- | :---- | :---- |
 | 1 | 1-4 | "Simple" | Simple comparison of surface differences |
 | 2 | 5-8 | "Some" | Some comparison of ideas/perspectives |
-| 3 | 9-12 | "Clear" | Clear comparison of ideas AND methods |
+| 3 | 9-12 | "Clear" | Clear comparison of ideas and perspectives; explains clearly how methods are used |
 | 4 | 13-16 | "Detailed, perceptive" | Perceptive analysis of how methods convey attitudes |
 
 **For AO5 (Writing to Present a Viewpoint):**
@@ -298,7 +298,7 @@ This section provides targeted overviews of each exam board's Paper 2 mark schem
 
 - **Q2 must deal with both texts** \- a candidate has to deal with both texts to reach Level 3 or above; a Level-2 response that deals with only one text is capped at 3 (not 4)  
 - **Q3 focuses on language for effect** \- must analyze how language influences reader opinion  
-- **Q4 needs ideas AND methods** \- comparing only content limits you to Level 2  
+- **Q4 needs ideas AND methods** \- compare the perspectives and explain how methods are used; comparing only content limits you to Level 2  
 - **Q5 form is specified** \- letter, article, speech, leaflet, essay (must show awareness)  
 - **19th century text challenges** \- archaic language shouldn't dominate your response
 
@@ -795,15 +795,15 @@ Part 3 Anthology texts: Disabled (Wilfred Owen) · "Out, Out—" (Robert Frost) 
 ---
 
 7. **Type: MCQ \[Tests AO1 vs AO3 Knowledge\]**
-   * **Question:** What is the key difference between a 'summary' (Question 2) and a 'comparison' (Question 4)?
-   * **Options:** A) Summary is shorter than comparison, B) Summary synthesises information across the texts; comparison analyses how the writers' methods convey differing attitudes and shape the reader, C) Summary doesn't need quotations; comparison does, D) Summary is about content; comparison is about language.
+   * **Question:** What is the key difference between the inference question (Question 2) and the comparison question (Question 4)?
+   * **Options:** A) Question 2 is shorter than Question 4, B) Question 2 infers and synthesises across both texts; Question 4 compares the writers' ideas and perspectives, supported by comment on their methods, C) Question 2 doesn't need quotations; Question 4 does, D) Question 2 is about content; Question 4 is about language.
    * **Correct:** B
-   * **Feedback:** ✓ Correct. Both use both texts, but summary (Q2) synthesises information across them while comparison (Q4) analyses different perspectives and *how* they're conveyed.
+   * **Feedback:** ✓ Correct. Both use both texts, but Question 2 ("What can you infer about the differences…") synthesises inferences across them, while Question 4 compares the writers' perspectives and comments on *how* they are conveyed.
    * **AO:** AO1
    * **Why A:** Length is a side-effect of the mark tariff, not the defining difference — the two questions reward fundamentally different skills, not different word counts.
-   * **Why C:** Both questions need textual references — believing summary is quote-free leads to unsupported statements that stall in the lower levels.
-   * **Why D:** Summary does work with content, but comparison is not simply 'about language' — it compares perspectives AND the methods that convey them.
-   * **Stretch (unscored):** Why do students confuse these two? Both involve two texts and finding connections — but one combines information, the other analyses differing perspectives.
+   * **Why C:** Both questions need textual references — believing Question 2 is quote-free leads to unsupported statements that stall in the lower levels.
+   * **Why D:** Question 2 does work with content, but Question 4 is not simply 'about language' — it compares perspectives, with the writers' methods as support.
+   * **Stretch (unscored):** Why do students confuse these two? Both involve two texts and finding connections — but one infers from details, the other compares the writers' perspectives.
 
 ---
 
@@ -836,10 +836,10 @@ Part 3 Anthology texts: Disabled (Wilfred Owen) · "Out, Out—" (Robert Frost) 
     * **Question:** An examiner is marking Question 4 (comparison). The response thoroughly compares different ideas but only briefly mentions methods. What's the likely level?
     * **Options:** A) Level 1 (1-4 marks), B) Level 2 (5-8 marks), C) Level 3 (9-12 marks), D) Level 4 (13-16 marks).
     * **Correct:** B
-    * **Feedback:** ✓ Correct. Level 3 requires clear comparison of ideas AND methods. Strong on ideas but thin on methods keeps it at Level 2.
+    * **Feedback:** ✓ Correct. Level 3 compares ideas and perspectives "in a clear and relevant way" AND "explains clearly how writers' methods are used". Strong on ideas but thin on methods keeps it at Level 2 ("makes some comment on how writers' methods are used").
     * **AO:** AO3
     * **Why A:** Level 1 undervalues the response — thorough comparison of ideas is genuine work; it is the missing methods analysis that stops it, not a lack of comparison altogether.
-    * **Why C:** The thorough ideas work makes Level 3 look earned, but Level 3 explicitly requires clear comparison of methods as well — a brief mention is not enough.
+    * **Why C:** The thorough ideas work makes Level 3 look earned, but Level 3 also requires a clear explanation of how the writers' methods are used — a brief mention is not enough.
     * **Why D:** Level 4 demands perceptive analysis of how methods convey attitudes — a response that barely touches methods is two whole levels away from that.
 
 ---
@@ -861,7 +861,7 @@ Part 3 Anthology texts: Disabled (Wilfred Owen) · "Out, Out—" (Robert Frost) 
     * **Feedback:** Level 3 needs comparison of ideas across both texts, analysis of how the writers' methods convey those attitudes, and comparison integrated within paragraphs rather than handled text-by-text. Long quotations aren't required and can crowd out the analysis; historical context can add value but is never a Level 3 requirement.
     * **AO:** AO3
     * **Why C:** Long quotations feel like strong evidence, but the levels reward well-chosen references — copying out chunks crowds the page and often replaces the analysis that earns marks.
-    * **Why E:** Context seems scholarly, yet AO3 here rewards comparing perspectives and methods — historical background is never named as a requirement in the comparison levels.
+    * **Why E:** Context seems scholarly, yet AO3 here rewards comparing perspectives, commenting on methods — historical background is never named as a requirement in the comparison levels.
 
 ---
 
@@ -870,7 +870,7 @@ Part 3 Anthology texts: Disabled (Wilfred Owen) · "Out, Out—" (Robert Frost) 
     * **Answer:** synthesise
     * **Feedback:** ✓ Correct. Question 2 asks you to select and *synthesise* — draw evidence from both sources together into a connected summary with inferences, not list each text separately.
     * **AO:** AO1
-    * **WhyWrong:** Answers like 'summarise' or 'compare' are close neighbours, but the AO1 bullet says SYNTHESISE — combining evidence from both texts; comparing methods belongs to Question 4.
+    * **WhyWrong:** Answers like 'summarise' or 'compare' are close neighbours, but the AO1 bullet says SYNTHESISE — combining evidence from both texts; comparing perspectives belongs to Question 4.
 
 ---
 
@@ -935,7 +935,7 @@ Part 3 Anthology texts: Disabled (Wilfred Owen) · "Out, Out—" (Robert Frost) 
     * **Scoring:** 2 marks for A, B, C. 1 mark if mostly correct.
     * **Feedback:** Level 4 names analysis of how the writers' methods are used, judicious supporting detail drawn from both texts, and a detailed, perceptive understanding of the different ideas and perspectives in both. Judging which writer is more convincing is evaluation, not AO3 comparison; historical context is not a descriptor requirement.
     * **AO:** AO3
-    * **Why D:** Ranking the writers feels comparative, but it is an evaluative judgement — AO3 compares perspectives and methods without declaring a winner.
+    * **Why D:** Ranking the writers feels comparative, but it is an evaluative judgement — AO3 compares perspectives, commenting on methods, without declaring a winner.
     * **Why E:** Context sounds like sophistication, yet the comparison descriptors never ask for historical background — marks come from the texts' perspectives and methods.
 
 ---

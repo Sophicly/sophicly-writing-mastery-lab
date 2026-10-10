@@ -104,7 +104,7 @@ British climber, Matt Dickinson, together with his team, is attempting to scale 
 **Marks:** 4
 **AOs:** AO1
 
-Read again Source A from lines 1 to 12. Identify four true statements about the approaching storm from this section.
+Read again Source A from lines 1 to 12. Choose four statements below which are true. Choose a maximum of four statements.
 
 ### Statements
 1. [T] Salkeld first saw the approaching storm while at base camp.
@@ -132,7 +132,7 @@ You now need to refer only to Source B, London Snow by Arthur Munby. How does Mu
 **Marks:** 16
 **AOs:** AO3
 
-For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different attitudes towards extreme weather. In your answer, you could: compare their different attitudes, compare the methods the writers use to convey their attitudes, support your response with references to both texts.
+For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different attitudes towards extreme weather. In your answer, you could: compare their different attitudes, comment on the methods the writers use to convey their attitudes, support your response with references to both texts.
 
 ## Q5
 **Marks:** 40 (24 content AO5 + 16 technical accuracy AO6)
@@ -270,7 +270,7 @@ In 2005, Ben Fogle and James Cracknell set off together in a seven week race acr
 **Marks:** 4
 **AOs:** AO1
 
-Read again Source A from lines 1 to 11. Identify four true statements about the conditions Ben Fogle faced while rowing.
+Read again Source A from lines 1 to 11. Choose four statements below which are true. Choose a maximum of four statements.
 
 ### Statements
 1. [T] The wind was gusting at around 40 knots as Ben rowed.
@@ -298,7 +298,7 @@ You now need to refer only to Source B, Idle Days in Patagonia by W H Hudson. Ho
 **Marks:** 16
 **AOs:** AO3
 
-For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different experiences of being at the mercy of the sea. In your answer, you could: compare their different experiences, compare the methods the writers use to convey their feelings, support your response with references to both texts.
+For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different experiences of being at the mercy of the sea. In your answer, you could: compare their different experiences, comment on the methods the writers use to convey their feelings, support your response with references to both texts.
 
 ## Q5
 **Marks:** 40 (24 content AO5 + 16 technical accuracy AO6)
@@ -440,7 +440,7 @@ For this question, you need to refer to the whole of Source A, together with the
 **Marks:** 4
 **AOs:** AO1
 
-Read again Source A from lines 1 to 15. Identify four true statements about the London riots and the people involved.
+Read again Source A from lines 1 to 15. Choose four statements below which are true. Choose a maximum of four statements.
 
 ### Statements
 1. [T] The rioting occurred mainly in poorer communities.
@@ -468,7 +468,7 @@ You now need to refer only to Source B, American Notes by Charles Dickens. How d
 **Marks:** 16
 **AOs:** AO3
 
-For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different perspectives on injustice in society. In your answer, you could: compare their different perspectives, compare the methods the writers use to convey their viewpoints, support your response with references to both texts.
+For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different perspectives on injustice in society. In your answer, you could: compare their different perspectives, comment on the methods the writers use to convey their viewpoints, support your response with references to both texts.
 
 ## Q5
 **Marks:** 40 (24 content AO5 + 16 technical accuracy AO6)
@@ -594,7 +594,7 @@ For this question, you need to refer to the whole of Source A, together with the
 **Marks:** 4
 **AOs:** AO1
 
-Read again Source A from lines 1 to 14. Identify four true statements about Mitchell's classification of cosmetics.
+Read again Source A from lines 1 to 14. Choose four statements below which are true. Choose a maximum of four statements.
 
 ### Statements
 1. [T] Mitchell argues there are two types of cosmetics.
@@ -622,7 +622,7 @@ You now need to refer only to Source B, The Arts of Beauty by Madame Lola Montez
 **Marks:** 16
 **AOs:** AO3
 
-For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different attitudes towards vanity and the beauty industry. In your answer, you could: compare their different attitudes, compare the methods the writers use to convey their perspectives, support your response with references to both texts.
+For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different attitudes towards vanity and the beauty industry. In your answer, you could: compare their different attitudes, comment on the methods the writers use to convey their perspectives, support your response with references to both texts.
 
 ## Q5
 **Marks:** 40 (24 content AO5 + 16 technical accuracy AO6)
@@ -751,7 +751,7 @@ For this question, you need to refer to the whole of Source A, together with the
 **Marks:** 4
 **AOs:** AO1
 
-Read again Source A from lines 1 to 16. Identify four true statements about the limitations of scientific proof.
+Read again Source A from lines 1 to 16. Choose four statements below which are true. Choose a maximum of four statements.
 
 ### Statements
 1. [T] Siegel argues it is impossible to prove anything in science.
@@ -779,7 +779,7 @@ You now need to refer only to Source B, An Essay Concerning Humane Understanding
 **Marks:** 16
 **AOs:** AO3
 
-For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different perspectives on the nature and limits of human knowledge. In your answer, you could: compare their different perspectives, compare the methods the writers use to convey their ideas, support your response with references to both texts.
+For this question, you need to refer to the whole of Source A, together with the whole of Source B. Compare how the two writers convey their different perspectives on the nature and limits of human knowledge. In your answer, you could: compare their different perspectives, comment on the methods the writers use to convey their ideas, support your response with references to both texts.
 
 ## Q5
 **Marks:** 40 (24 content AO5 + 16 technical accuracy AO6)
