@@ -1,0 +1,798 @@
+GCSE
+ENGLISH LANGUAGE
+8700/2
+Paper 2 Writers’ viewpoints and perspectives
+Mark scheme
+June 2024
+Version: 1.0 Final
+*246G8700/2/MS*
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+2
+Mark schemes are prepared by the Lead Assessment Writer and considered, together with the relevant
+questions, by a panel of subject teachers. This mark scheme includes any amendments made at the
+standardisation events which all associates participate in and is the scheme which was used by them in
+this examination. The standardisation process ensures that the mark scheme covers the students’
+responses to questions and that every associate understands and applies it in the same correct way.
+As preparation for standardisation each associate analyses a number of students’ scripts. Alternative
+answers not already covered by the mark scheme are discussed and legislated for. If, after the
+standardisation process, associates encounter unusual answers which have not been raised they are
+required to refer these to the Lead Examiner.
+It must be stressed that a mark scheme is a working document, in many cases further developed and
+expanded on the basis of students’ reactions to a particular paper. Assumptions about future mark
+schemes on the basis of one year’s document should be avoided; whilst the guiding principles of
+assessment remain constant, details will change, depending on the content of a particular examination
+paper.
+No student should be disadvantaged on the basis of their gender identity and/or how they refer to the
+gender identity of others in their exam responses.
+A consistent use of ‘they/them’ as a singular and pronouns beyond ‘she/her’ or ‘he/him’ will be credited in
+exam responses in line with existing mark scheme criteria.
+Further copies of this mark scheme are available from aqa.org.uk
+Copyright information
+AQA retains the copyright on all its publications. However, registered schools/colleges for AQA are permitted to copy material from this booklet for their own
+internal use, with the following important exception: AQA cannot give permission to schools/colleges to photocopy any material that is acknowledged to a third
+party even for internal use within the centre.
+Copyright © 2024 AQA and its licensors. All rights reserved.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+3
+Introduction
+The information provided for each question is intended to be a guide to the kind of answers anticipated
+and is neither exhaustive nor prescriptive. All appropriate responses should be given credit.
+Level of response marking instructions
+Level of response mark schemes for GCSE English Language are broken down into four levels (where
+appropriate). In the first column each level is identified with one or two key words that represent the
+differences in the skills then described. These key words show the progression from Level 1 to 4 and
+are:
+Level 4 Perceptive, detailed
+Level 3 Clear, relevant
+Level 2 Some, attempts
+Level 1 Simple, limited.
+This is followed in the second column by a description of the different qualities required in the student’s
+answer for that level. These are called the skills descriptors. In order to reach a given level, a student
+must fulfil one or more of the skills descriptors for that level.
+The third column of the mark scheme is the Indicative Standard. This is an important feature of the mark
+scheme for GCSE English Language. It provides exemplification of the skills descriptors at each level
+and offers a small number of different comments at the required standard to give an indication of the
+quality of response that is typical for that level. It shows the progression from Level 1 to 4.
+The Indicative Standard is not intended to be a model answer nor a complete response, and it does not
+exemplify required content. Students may reach a given level by making one or more comments of the
+quality demonstrated by the Indicative Standard and do not have to meet all the skill descriptors at that
+level.
+The standardising scripts will further exemplify each of the levels. You must refer to the standardising
+material throughout your marking.
+Step 1 Annotate the response
+When marking a response you should first read through the student’s answer and annotate each section
+using the comments from the statement bank to show the qualities that are being demonstrated, as
+instructed during standardising. You can then award a level and a mark.
+Step 2 Determine a level
+Start at the lowest level of the mark scheme and use it as a ladder to see whether the answer meets the
+descriptors for that level. The descriptors for the level indicate the different qualities that might be seen
+in the student’s answer for that level. If it meets the lowest level then go to the next one and decide if it
+meets this level, and so on, until you have a match between the level descriptor and the answer. With
+practice and familiarity you will find that for better answers you will be able to quickly skip through the
+lower levels of the mark scheme.
+The Indicative Standard column in the mark scheme will help you determine the correct level.
+Remember, students may reach a given level by making one or more comments of the quality
+demonstrated by the Indicative Standard and do not have to meet all the skill descriptors at that level. It
+is not the number of references, but the quality of the comments that will determine the level. The
+annotation you added to the script at Step 1 will help you determine the correct level.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+4
+Step 3 Determine a mark
+Once you have assigned a level you need to decide on the mark. This requires you to fine tune within
+the level to see how well each of the skills descriptors for that level has been met. A student only has to
+meet a skills descriptor at a given level once to be awarded that level. Since responses rarely match a
+level in all respects, you need to balance out the range of skills achieved and allow strong performance
+in some aspects to compensate for other skills that may be only partially fulfilled. Again, the annotation
+added at Step 1 will help you determine the mark.
+Reference to the standardising scripts throughout the marking period is essential. This will help you
+apply the level descriptors accurately and consistently. There will usually be an answer in the
+standardising materials which will correspond with each level of the mark scheme. This answer will have
+been awarded a mark by the Lead Examiner. You can compare the student’s answer with the example
+to determine if it is the same standard, better or worse than the example. You can then use this to
+allocate a mark for the answer based on the Lead Examiner’s mark on the example.
+You may well need to read back through the answer as you apply the mark scheme to clarify points and
+assure yourself that the level and the mark are appropriate.
+An answer which contains nothing of relevance to the question must be awarded no marks.
+Advice
+In fairness to students, all examiners must use the same marking methods. The following advice may
+seem obvious, but all examiners must follow it closely.
+1. Refer constantly to the mark scheme and standardising scripts throughout the marking period.
+2. Always credit accurate, relevant and appropriate responses that are not necessarily covered by
+the mark scheme or the standardising scripts.
+3. Use the full range of marks. Do not hesitate to give full marks if the response merits it.
+4. Remember the key to accurate and fair marking is consistency.
+5. If you have any doubt about how to allocate marks to a response, consult your Team Leader.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+5
+SECTION A: READING – Assessment Objectives
+AO1 • Identify and interpret explicit and implicit information and ideas.
+• Select and synthesise evidence from different texts.
+AO2 • Explain, comment on and analyse how writers use language and structure to
+achieve effects and influence readers, using relevant subject terminology to
+support their views.
+AO3 • Compare writers’ ideas and perspectives, as well as how these are
+conveyed, across two or more texts.
+AO4 • Evaluate texts critically and support this with appropriate textual references.
+SECTION B: WRITING – Assessment Objectives
+AO5 • Communicate clearly, effectively and imaginatively, selecting and adapting
+tone, style and register for different forms, purposes and audiences.
+• Organise information and ideas, using structural and grammatical features
+to support coherence and cohesion of texts.
+AO6 • Candidates must use a range of vocabulary and sentence structures for
+clarity, purpose and effect, with accurate spelling and punctuation.
+(This requirement must constitute 20% of the marks for each specification
+as a whole).
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+6
+Assessment Objective Section A
+AO1 
+AO2 
+AO3 
+AO4 n/a
+Section B
+AO5 
+AO6 
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+7
+0 1 Read again the first part of Source A from lines 1 to 13.
+Choose four statements below which are true.
+• Shade the circles in the boxes of the ones that you think are true.
+• Choose a maximum of four statements.
+• If you make an error cross out the whole box.
+• If you change your mind and require a statement that has been crossed out then draw
+a circle around the box.
+[4 marks]
+A Lots of people try to get into medical school.
+B Universities decide who to accept based only on their A-level grades.
+C Adam Kay’s musical qualifications helped to get him a place at medical school.
+D Adam Kay finished medical school in 1998.
+E Adam Kay thought learning about the human body was a straightforward task.
+F Adam Kay was excited by the thought of becoming a doctor.
+G Adam Kay thought changing his name would make him a criminal.
+H The time it took for Adam Kay to become a doctor went slowly.
+AO1 • Identify and interpret explicit and implicit information and ideas
+• Select and synthesise evidence from different texts
+This question assesses the first bullet point identify and interpret explicit and implicit
+information and ideas.
+A Lots of people try to get into medical school. [T]
+B Universities decide who to accept based only on their A-level grades. [F]
+C Adam Kay’s musical qualifications helped to get him a place at medical school. [T]
+D Adam Kay finished medical school in 1998. [F]
+E Adam Kay thought learning about the human body was a straightforward task. [F]
+F Adam Kay was excited by the thought of becoming a doctor. [T]
+G Adam Kay thought changing his name would make him a criminal. [F]
+H The time it took for Adam Kay to become a doctor went slowly. [T]
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+8
+0 2 You need to refer to Source A and Source B for this question.
+The doctor in Source A and the nurse in Source B are working in different places.
+Use details from both sources to write a summary of what you understand about the different
+places in which the doctor and the nurse are working.
+[8 marks]
+AO1 • Identify and interpret explicit and implicit information and ideas
+• Select and synthesise evidence from different texts
+This question assesses both bullets
+Level Skills Descriptors Indicative Standard
+This indicative standard provides an exemplification of the skills
+descriptors at each level.
+It is not a model answer, nor a complete response, nor does it
+seek to exemplify any particular content.
+Level 4
+Perceptive,
+detailed
+summary
+7–8 marks
+Shows perceptive or
+detailed synthesis and
+interpretation of both texts:
+• makes perceptive
+inferences from both texts
+• selects judicious
+references/use of textual
+detail relevant to the
+focus of the question
+• statements show
+perceptive differences
+between texts.
+The doctor in Source A is working in a modern
+hospital with advanced facilities for treating a range
+of patients. The variety of options to ‘book an MRI
+scan, refer to rheumatology, arrange an ECG test’
+emphasises both the technical equipment and
+professional expertise that is available to support him
+in doing his job. However, the nurse in Source B is
+in the open air by a harbour rather than an
+established hospital. Both places show chaotic
+conditions, but the doctor is in a safe, dedicated,
+hospital in peacetime whereas the nurse has to cope
+with huge inconvenience and a complete lack of
+facilities, working in a potentially dangerous warzone.
+Her patient is ‘a poor artilleryman stretched upon a
+wooden pallet’. This incredibly makeshift form of
+medical equipment reflects that the nurse is having to
+care for patients without even meeting basic human
+needs like shelter or beds, because of the demands
+of war.
+Level 3
+Clear, relevant
+summary
+5–6 marks
+Shows clear synthesis and
+interpretation of both texts:
+• makes clear inferences
+from both texts
+• selects clear references/
+textual detail relevant to
+the focus of the question
+• statements show clear
+differences between
+texts.
+In Source A the doctor works in a hospital that has a
+range of modern facilities. It says ‘book an MRI
+scan, refer to rheumatology, arrange an ECG test’,
+which shows that he has several options at his
+disposal to help treat the patients there. This
+hospital seems much more permanent than the
+wharf. Instead of a modern ward with technical
+equipment, the wharf is a temporary place for
+treating wounded soldiers. In Source B, the nurse is
+treating ‘a poor artilleryman stretched upon a wooden
+pallet’. This means the place where she works only
+has limited equipment for the nurse to try to do her
+job and make the patients comfortable as best she
+can.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+9
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+10
+Level 2
+Some attempts
+at summary
+3–4 marks
+Shows some interpretation
+from one/both texts:
+• attempts some
+inference(s) from
+one/both texts
+• selects some appropriate
+references/textual detail
+from one/both texts
+• statements show some
+difference(s) between
+texts.
+In Source A the doctor is part of a busy hospital. It
+says ‘book an MRI scan, refer to rheumatology,
+arrange an ECG test’, showing there are lots of
+options for helping people. However, the wharf in
+Source B is very different as there are not so many
+options because it says ‘a poor artilleryman stretched
+upon a wooden pallet’. This suggests a much more
+basic place without as much equipment.
+Level 1
+Simple, limited
+summary
+1–2 marks
+Shows simple awareness
+from one/both texts:
+• offers paraphrase rather
+than inference
+• selects simple
+reference(s)/textual
+detail(s) from one/both
+texts
+• statements show simple
+difference between texts.
+In Source A the doctor is in a hospital because it
+says ‘book an MRI scan, refer to rheumatology,
+arrange an ECG test’, which shows there is a lot of
+things. This is different to Source B because she is
+on a wharf where there is ‘a poor artilleryman
+stretched upon a wooden pallet’, which shows there
+isn't very much there.
+Level 0
+No marks
+Nothing to reward.
+Note
+• If the quality of the response is L1 but only deals with one text, the mark must be 1 not 2.
+• If the quality of the response is L2 but only deals with one text, the mark must be 3 not 4.
+• A candidate has to deal with both texts and address the correct focus of the question to achieve
+L3 or above.
+The focus of this question is the difference between the places in which the doctor and the nurse are
+working.
+AO1 content may include ideas such as:
+• their surroundings
+• their purpose
+• their level of permanence
+• the working conditions
+• their equipment
+• their facilities
+• their atmosphere
+• other staff/level of supervision.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+11
+0 3 You now need to refer only to Source A from lines 30 to 39.
+How does the writer use language to describe working night shifts at the hospital?
+[12 marks]
+AO2 Explain, comment on and analyse how writers use language and structure to achieve
+effects and influence readers, using relevant subject terminology to support their views.
+This question assesses Language ie: Words/Phrases/Language Features/Language
+Techniques/Sentence Forms.
+Level Skills Descriptors Indicative Standard
+This indicative standard provides an exemplification of the skills
+descriptors at each level.
+It is not a model answer, nor a complete response, nor does it
+seek to exemplify any particular content.
+Level 4
+Detailed,
+perceptive
+10–12 marks
+Shows detailed and
+perceptive understanding of
+language:
+• analyses the effects of
+the writer’s choices of
+language
+• selects a range of
+judicious textual detail
+• makes sophisticated and
+accurate use of subject
+terminology.
+The writer develops an extended metaphor to
+compare working a night shift to a nightmarish
+voyage at sea. He begins the metaphor with ‘sailing
+the ship alone’, juxtaposing the huge scale of a ‘ship’,
+in this case representing his overwhelming
+responsibility, with the isolated sense of being
+‘alone’, with no support to lean on. This is further
+developed when he describes this metaphorical ship
+as ‘enormous, and on fire’. The destructive image of
+being ‘on fire’ suggests the huge danger and urgency
+of his helpless situation as fire on board a ship is a
+horrific and inescapable fate.
+Level 3
+Clear, relevant
+7–9 marks
+Shows clear understanding
+of language:
+• explains clearly the
+effects of the writer’s
+choices of language
+• selects a range of
+relevant textual detail
+• makes clear and accurate
+use of subject
+terminology.
+The writer uses a metaphor to emphasise the scale
+of the task of working the night shift in the hospital.
+By comparing his role to ‘sailing the ship alone’, it
+suggests a huge responsibility for the treatment of all
+of his patients, just like a ship’s captain is responsible
+for the safety of their passengers.
+Level 2
+Some,
+attempts
+4–6 marks
+Shows some understanding
+of language:
+• attempts to comment on
+the effect of language
+• selects some appropriate
+textual detail
+• makes some use of
+subject terminology,
+mainly appropriately.
+The writer uses a metaphor to compare the difficulty
+of working on the night shift to ‘sailing the ship alone’.
+The use of ‘ship’ suggests that he has a big job to do
+and there is nobody there to help him with it.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+12
+Level 1
+Simple, limited
+1–3 marks
+Shows simple awareness of
+language:
+• offers simple comment on
+the effect of language
+• selects simple
+reference(s) or textual
+detail(s)
+• makes simple use of
+subject terminology, not
+always appropriately.
+The writer describes working night shifts when he
+says ‘sailing the ship alone’. This is a metaphor that
+he uses to compare working on the night shift in a
+hospital to sailing a ship by himself.
+Level 0
+No marks
+Nothing to reward.
+Note
+• If a student writes about language outside of the given lines or from the wrong source (but with the
+correct focus), the response should be placed in the appropriate level according to the quality of
+what is written, but placed at the bottom of the level.
+• A student has to address the correct focus of the question to achieve L3 or above.
+AO2 content may include the effect of language features such as:
+• juxtaposition/comparison – ‘made Hell look like Disneyland’
+• extended metaphor – ‘sailing the ship alone... enormous and on fire’
+• adjectives – ‘unrelenting’, ‘endless’
+• repetition – ‘ward after ward, nurse after nurse, with emergency after emergency’
+• listing/triplet – ‘one-man, mobile, essentially untrained A&E department’
+• metaphor – ‘stream of… patients’; ‘unrelenting nightmare’
+• direct address – ‘Your senior colleagues…’
+• onomatopoeia – ‘bleep’
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+13
+0 4 For this question, you need to refer to the whole of Source A, together with the whole of
+Source B.
+Compare how the writers convey their different feelings and perspectives on providing medical
+care.
+In your answer, you could:
+• compare their different feelings and perspectives on providing medical care
+• compare the methods they use to convey their feelings and perspectives
+• support your response with references to both texts.
+[16 marks]
+AO3 Compare writers’ ideas and perspectives, as well as how these are conveyed,
+across two or more texts.
+Level Skills Descriptors Indicative Standard
+This indicative standard provides an exemplification of the skills
+descriptors at each level.
+It is not a model answer, nor a complete response, nor does it seek
+to exemplify any particular content.
+Level 4
+Perceptive,
+detailed
+comparison
+13–16 marks
+Compares ideas and
+perspectives in a
+perceptive way:
+• analyses how writers’
+methods are used
+• selects a range of
+judicious supporting
+detail from both texts
+• shows a detailed and
+perceptive
+understanding of the
+different ideas and
+perspectives in both
+texts.
+The doctor in Source A describes his constantly shifting
+perspective, switching from the relentless horror of night
+shifts to the exhilaration of actually surviving the shift.
+His miserable life as a doctor is hammered home by a
+list: ‘Sure it was hard work, sure the hours were
+bordering on inhumane and sure I saw things that have
+scarred my retinas to this day,’ with adjectives like
+‘inhumane’ suggesting the brutal cruelty of his work.
+However, this is undercut by the deliberately casual use
+of ‘Sure...’ to indicate his tolerance of such suffering and
+by the proud assertion ‘but I was a doctor now’,
+indicating that he sees it as a badge of honour. This is
+very different to the perspective of Source B, as the
+nurse is entirely concerned with the welfare of her
+patients and embraces her own humble position,
+whereas the doctor in Source A is primarily concerned
+with his own professional prestige. The nurse’s sense
+of awe is shown when she describes ‘the sympathy and
+brotherly love shown by the strong to the weak’
+revealing the camaraderie and devotion of the doctors,
+with the word ‘brotherly’ suggesting the unquestioning,
+self-sacrificial commitment of a family member in caring
+for their patients. For Seacole, medicine seems like a
+spiritual vocation rather than a professional career as
+she feels they are bringing compassion and kindness to
+patients in a desperate situation of war and conflict.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+14
+Level 3
+Clear, relevant
+comparison
+9–12 marks
+Compares ideas and
+perspectives in a clear and
+relevant way:
+• explains clearly how
+writers’ methods are used
+• selects relevant detail to
+support from both texts
+• shows a clear
+understanding of the
+different ideas and
+perspectives in both
+texts.
+The doctor in Source A has mixed feelings about
+working in a hospital. He knows it’s traumatic but he
+focuses on the practical issues and realises that they
+are all part of the job. He uses the list ‘Sure it was
+hard work, sure the hours were bordering on
+inhumane and sure I saw things that have scarred
+my retinas to this day,’ to illustrate just how
+demanding his work is, although he finishes with ‘but
+I was a doctor now’, putting the previous list into
+perspective, showing that he accepts that these
+experiences are necessary. Although the nurse in
+Source B recognises the practical issues too, she
+mainly focuses on the emotional experience of
+providing medical care, using the phrase ‘the
+sympathy and brotherly love shown by the strong to
+the weak’. The adjective ‘brotherly’ suggests that the
+doctors are as caring and committed as if they were
+treating someone in their own family. This suggests
+that she has a very optimistic view of the role of
+medical staff, because they are so caring in coming
+to the aid of those affected by war.
+Level 2
+Some attempts
+at comparison
+5–8 marks
+Attempts to compare ideas
+and perspectives:
+• makes some comment on
+how writers’ methods are
+used
+• selects some appropriate
+textual detail/references,
+not always supporting,
+from one or both texts
+• shows some
+understanding of different
+ideas and perspectives.
+The doctor in Source A had a tough experience
+training to be a doctor. He says, ‘Sure it was hard
+work, sure the hours were bordering on inhumane
+and sure I saw things that have scarred my retinas to
+this day, but I was a doctor now.’ This list shows that
+he had some difficult experiences on his way to
+being a doctor. However, in Source B, the nurse is
+glad to have helped the wounded soldiers. She says
+‘the sympathy and brotherly love shown by the strong
+to the weak’. She uses the word ‘brotherly’ to
+describe how they treat the patients as if they were
+as close as brothers. This shows that she was
+impressed by how caring they were.
+Level 1
+Simple, limited
+comment
+1–4 marks
+Makes simple cross
+reference of ideas and
+perspectives:
+• makes simple
+identification of writers’
+methods
+• selects simple
+reference(s)/textual
+detail(s) from one or both
+texts
+• shows simple awareness
+of ideas and/or
+perspectives.
+The doctor in Source A finds working in the hospital
+hard. He uses repetition ‘Sure it was hard work, sure
+the hours were bordering on inhumane and sure I
+saw things that have scarred my retinas to this day,
+but I was a doctor now’, which shows that it wasn’t
+an easy job to do. However, in Source B the nurse is
+more positive because she says ‘the sympathy and
+brotherly love shown by the strong to the weak’. The
+word ‘sympathy’ shows that she feels sorry for them
+but she is still having a better time.
+Level 0
+No marks
+Nothing to reward.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+15
+Note
+• If the quality of the response is L1 but only deals with one text, the maximum mark is 2.
+• If the quality of the response is L2 but only deals with one text, the maximum mark is 6.
+• A student has to deal with both texts to achieve L3 or above.
+• References to the writers’ methods may be implicit without specific mention of the writer.
+AO3 content may include ideas such as:
+• their motivation
+• the nature of their work
+• their experiences of treating others
+• their training
+• their purpose
+and comments on methods such as:
+• tone – Source A as humorous, sarcastic, caustic; Source B as emotive, serious, worthy
+• use of first person, but use of direct address in both for different purposes
+• use of speech in Source B to bring the scene to life
+• structural shifts in both pieces, moving from training/arrival to actual practice
+• language features – metaphor, hyperbole, repetition in Source A; emotive language, rhetorical
+question, exclamations in Source B
+• word choices.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+16
+0 5 ‘Choosing a future career should be based on helping others and making a positive
+contribution to society, not achieving status or making lots of money.’
+Write an article for your school or college magazine in which you argue your point of view on
+this statement.
+(24 marks for content and organisation
+16 marks for technical accuracy)
+[40 marks]
+AO5 • Communicate clearly, effectively and imaginatively, selecting and adapting tone, style
+and register for different forms, purposes and audiences.
+• Organise information and ideas, using structural and grammatical features to support
+coherence and cohesion of texts.
+Content and Organisation
+Level Skills Descriptors
+Level 4
+Compelling,
+convincing
+communication
+19–24 marks
+Upper Level 4
+22–24 marks
+Content
+• Communication is convincing and compelling.
+• Tone, style and register are assuredly matched to
+purpose and audience.
+• Extensive and ambitious vocabulary with sustained
+crafting of linguistic devices.
+Organisation
+• Varied and inventive use of structural features.
+• Writing is compelling, incorporating a range of
+convincing and complex ideas.
+• Fluently linked paragraphs with seamlessly
+integrated discourse markers.
+Lower Level 4
+19–21 marks
+Content
+• Communication is convincing.
+• Tone, style and register are convincingly matched
+to purpose and audience.
+• Extensive vocabulary with conscious crafting of
+linguistic devices.
+Organisation
+• Varied and effective structural features.
+• Writing is highly engaging with a range of
+developed complex ideas.
+• Consistently coherent use of paragraphs with
+integrated discourse markers.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+17
+Upper Level 3
+16–18 marks
+Content
+Level 3
+Consistent,
+clear
+communication
+13–18 marks
+• Communication is consistently clear.
+• Tone, style and register are consistently matched
+to purpose and audience.
+• Increasingly sophisticated vocabulary and
+phrasing, chosen for effect with a range of
+successful linguistic devices.
+Organisation
+• Effective use of structural features.
+• Writing is engaging, using a range of clear,
+connected ideas.
+• Coherent paragraphs with integrated discourse
+markers.
+Lower Level 3
+13–15 marks
+Content
+• Communication is generally clear.
+• Tone, style and register are generally matched to
+purpose and audience.
+• Vocabulary clearly chosen for effect and
+appropriate use of linguistic devices.
+Organisation
+• Usually effective use of structural features.
+• Writing is engaging, with a range of connected
+ideas.
+• Usually coherent paragraphs with range of
+discourse markers.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+18
+Level 2
+Some
+successful
+communication
+7–12 marks
+Upper Level 2
+10–12 marks
+Content
+• Communicates with some sustained success.
+• Some sustained attempt to match tone, style and
+register to purpose and audience.
+• Conscious use of vocabulary with some use of
+linguistic devices.
+Organisation
+• Some use of structural features.
+• Increasing variety of linked and relevant ideas.
+• Some use of paragraphs and some use of
+discourse markers.
+Lower Level 2
+7–9 marks
+Content
+• Communicates with some success.
+• Attempts to match tone, style and register to
+purpose and audience.
+• Begins to vary vocabulary with some use of
+linguistic devices.
+Organisation
+• Attempts to use structural features.
+• Some linked and relevant ideas.
+• Attempt to write in paragraphs with some
+discourse markers, not always appropriate.
+Upper Level 1
+4–6 marks
+Content
+Level 1
+Simple, limited
+communication
+1–6 marks
+• Communicates simply.
+• Simple awareness of matching tone, style and
+register to purpose and audience.
+• Simple vocabulary; simple linguistic devices.
+Organisation
+• Evidence of simple structural features.
+• One or two relevant ideas, simply linked.
+• Random paragraph structure.
+Lower Level 1
+1–3 marks
+Content
+• Limited communication.
+• Occasional sense of matching tone, style and
+register to purpose and audience.
+• Simple vocabulary.
+Organisation
+• Limited or no evidence of structural features.
+• One or two unlinked ideas.
+• No paragraphs.
+Level 0
+No marks
+Students will not have offered any meaningful writing to assess.
+Nothing to reward.
+PMTMARK SCHEME – GCSE ENGLISH LANGUAGE – 8700/2 – JUNE 2024
+19
+AO6 Students must use a range of vocabulary and sentence structures for clarity, purpose
+and effect, with accurate spelling and punctuation.
+(This requirement must constitute 20% of the marks for each specification as a whole.)
+Technical Accuracy
+Level Skills Descriptors
+Level 4
+13–16 marks
+• Sentence demarcation is consistently secure and consistently accurate.
+• Wide range of punctuation is used with a high level of accuracy.
+• Uses a full range of appropriate sentence forms for effect.
+• Uses Standard English consistently and appropriately with secure control of
+complex grammatical structures.
+• High level of accuracy in spelling, including ambitious vocabulary.
+• Extensive and ambitious use of vocabulary.
+Level 3
+9–12 marks
+• Sentence demarcation is mostly secure and mostly accurate.
+• Range of punctuation is used, mostly with success.
+• Uses a variety of sentence forms for effect.
+• Mostly uses Standard English appropriately with mostly controlled grammatical
+structures.
+• Generally accurate spelling, including complex and irregular words.
+• Increasingly sophisticated use of vocabulary.
+Level 2
+5–8 marks
+• Sentence demarcation is mostly secure and sometimes accurate.
+• Some control of a range of punctuation.
+• Attempts a variety of sentence forms.
+• Some use of Standard English with some control of agreement.
+• Some accurate spelling of more complex words.
+• Varied use of vocabulary.
+Level 1
+1–4 marks
+• Occasional use of sentence demarcation.
+• Some evidence of conscious punctuation.
+• Simple range of sentence forms.
+• Occasional use of Standard English with limited control of agreement.
+• Accurate basic spelling.
+• Simple use of vocabulary.
+Level 0
+No marks
+Students’ spelling, punctuation etc is sufficiently poor to prevent understanding
+or meaning.
+PMT
