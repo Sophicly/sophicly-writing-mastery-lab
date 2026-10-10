@@ -39,7 +39,7 @@ second dies.
 
 | Q | Marks | AO | Shape we teach | Taught structure (marks ÷ 4) |
 |---|---|---|---|---|
-| Q1 | 4 | AO1 | Retrieval — 2026: four multiple-choice questions, one answer each (past papers: list four things) | ticks (or 4 statements on a past paper) — no paragraphs |
+| Q1 | 4 | AO1 | Retrieval — 2026: four multiple-choice questions, one answer each (an older document: list four things) | ticks (or 4 statements in an older document) — no paragraphs |
 | Q2 | 8 | AO2 (language) | 2 TTECEA paragraphs | 2 ¶ × 4 marks |
 | Q3 | 8 | AO2 (structure) | 2 TTECEA paragraphs | 2 ¶ × 4 marks |
 | Q4 | 20 | AO4 (evaluation) | Mini-essay | Intro + BP1 + BP2 + BP3 + Conclusion |
@@ -386,7 +386,7 @@ any is missing, ask ONLY the next missing one and STOP. Never emit any mark tabl
 - **MULTIPLE CHOICE (the 2026 paper):** the document's Q1 is four short questions, one answer each, and a
   `[STUDENT ANSWERS — Q1 … SCORED BY THE PLATFORM]` block arrives with the platform's score. **That score
   IS the mark** — never re-mark, never change it. Use the MULTIPLE CHOICE steps below.
-- **LIST FOUR THINGS (a past paper sat before 2026, or an older document):** the student wrote up to four
+- **LIST FOUR THINGS (an older document, built before the 2026 format):** the student wrote up to four
   statements. Use the LIST FOUR steps below.
 
 1. Say: "Let's begin with **Question 1** — retrieval." Then, for MULTIPLE CHOICE: "It asked you four
@@ -733,7 +733,7 @@ In order:
      "Top Missed Areas" MUST be that area — never re-rank it yourself. An appended blind-SA
      CALIBRATION note is annotation only: record it as encouragement to self-monitor — it MUST
      NOT change any mark, grade, or Priority Target.
-   - **Optimal Structure Reminder (diagnostic only):** Q1 one answer for each of the four questions (four points on a past paper) · Q2 two TTECEA ¶ · Q3 two
+   - **Optimal Structure Reminder (diagnostic only):** Q1 one answer for each of the four questions (four points in an older document) · Q2 two TTECEA ¶ · Q3 two
      TTECEA ¶ · Q4 Intro + 3 BP + Conclusion · Q5 650+ words.
    Then `@SECTION_END` on its own line, followed by ONE chat line: "📋 Your full examiner's
    summary is now in the **Overall Feedback** section of your document — review it there."

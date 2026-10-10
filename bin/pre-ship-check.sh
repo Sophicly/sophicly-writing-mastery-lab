@@ -214,6 +214,17 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   tail -1 /tmp/q1-choices.out
 fi
 
+# v7.20.806 (FIXLIST #859): an edited live-modelling paper must pass its own gate at commit (the installers re-run it
+# server-side before writing). Scoped to the STAGED papers, so a paper nobody touched cannot block a commit.
+lm_papers=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+  | grep -E '^bin/live-modelling-papers/.+/[0-9]{6,7}\.(md|checks\.json)$' | sed -E 's/\.checks\.json$/.md/' | sort -u)
+if [ -n "$lm_papers" ]; then
+  for f in $lm_papers; do
+    php bin/live-model-paper-gate.php "$f" >/tmp/lm-paper.out 2>&1 || { cat /tmp/lm-paper.out; fail=1; }
+  done
+  echo "live-model-paper-gate: $(printf '%s\n' $lm_papers | wc -l | tr -d ' ') staged paper(s) checked"
+fi
+
 # v7.20.650 (FIXLIST #635–#637): the feedback cards' Previous · Best line and the per-paragraph
 # pop-out. The comparison rule and the quote→paragraph matcher are extracted from the shipped file
 # and driven through the measured document shapes; the server half's decode/dedupe/access contract

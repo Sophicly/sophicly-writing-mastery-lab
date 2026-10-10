@@ -45,7 +45,7 @@ const info = await page.evaluate(() => {
     sections: labels.length ? labels : heads,
     tocCount: toc.length, toc: toc.slice(0, 14),
     hasExtract: /Rosabel bought a bunch of violets/.test(text),
-    hasQ1: /List four things/i.test(text), hasQ2: /lines? 6 to 14/i.test(text), hasQ4: /line 19 to the end/i.test(text), hasQ5: /describe|story/i.test(text),
+    hasQ1: /Choose one answer for each question|List four things/i.test(text), hasQ2: /lines? 6 to 14/i.test(text), hasQ4: /line 19 to the end/i.test(text), hasQ5: /describe|story/i.test(text),
     hasMultiQ: /Section A|Question 1|Q1/i.test(text) && /Question 5|Q5/i.test(text),
     hasEssayShell: /Essay Plan/i.test(text) && /Outline/i.test(text) && !/Question 2|Q2/i.test(text),
     title: document.title,

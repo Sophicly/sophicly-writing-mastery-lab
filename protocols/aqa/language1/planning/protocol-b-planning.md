@@ -449,7 +449,7 @@ respect:
 
 | Q | Marks | AO | Plan destination (= the assessment gold, reversed) |
 |---|-------|----|-----------------------------------------------------|
-| Q1 | 4 | AO1 | EXCLUDED from planning (retrieval — 2026: four multiple-choice questions; a past paper: list four — no plan) |
+| Q1 | 4 | AO1 | EXCLUDED from planning (retrieval — 2026: four multiple-choice questions; an older document: list four — no plan) |
 | Q2 | 8 | AO2 | 2 TTECEA body paragraphs — LANGUAGE analysis of the given lines |
 | Q3 | 8 | AO2 | 2 TTECEA body paragraphs — STRUCTURE analysis of the whole extract |
 | Q4 | 20 | AO4 | Brief intro (stance + thesis) + 3 evaluative TTECEA body paragraphs + brief conclusion |

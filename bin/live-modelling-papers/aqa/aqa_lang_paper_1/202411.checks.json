@@ -44,5 +44,8 @@
     "skipped": "no bank entry for November 2024"
   },
   "needs_human": [],
-  "notes": []
+  "notes": [
+    "Q1 converted to the 2026 multiple-choice format on Neil's ruling of 10 Oct 2026 (FIXLIST #859): four questions on the paper's own Q1 lines, three options, one answer each — authored by WML 343 A, each checked against those lines."
+  ],
+  "q1_format": "choices"
 }

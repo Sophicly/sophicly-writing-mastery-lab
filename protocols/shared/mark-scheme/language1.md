@@ -1791,7 +1791,7 @@ This section provides comprehensive board-specific knowledge base summaries extr
 
 | AO | What It Assesses | Key Skill | Tested In |
 |---|---|---|---|
-| **AO1** | Identify and interpret explicit and implicit information | Finding facts AND reading between lines | Q1 (4 marks - from 2026, four multiple-choice questions; past papers: list four things) |
+| **AO1** | Identify and interpret explicit and implicit information | Finding facts AND reading between lines | Q1 (4 marks - from 2026, four multiple-choice questions; an older document: list four things) |
 | **AO2** | Analyze how writers use language and structure | Explaining HOW techniques create effects | Q2 (8 marks - language), Q3 (8 marks - structure) |
 | **AO4** | Evaluate texts critically | Making judgments about writer's success | Q4 (20 marks) |
 | **AO5** | Communicate clearly and imaginatively (Writing) | Content, tone, style, structure, audience | Q5 (24 marks - creative/descriptive writing) |
@@ -1837,7 +1837,7 @@ This section provides comprehensive board-specific knowledge base summaries extr
 **Board-Specific Features:**
 
 - **Best-fit marking**: Examiners read the whole response and decide which level fits best overall
-- **Q1 is quick retrieval**: from 2026, choose one answer for each of four multiple-choice questions (past papers: list four facts) - no explanation needed
+- **Q1 is quick retrieval**: from 2026, choose one answer for each of four multiple-choice questions (an older document: list four facts) - no explanation needed
 - **Q4 statement must be tested**: You can't just agree. A critical response might partly agree, partly disagree, or argue it oversimplifies
 - **Indicative content is NOT a checklist**: Good points not in the list can still earn full marks
 

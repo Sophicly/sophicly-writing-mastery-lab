@@ -104,6 +104,20 @@ function swml_lm_paper_checks($md_path, &$report) {
         $ok($true === 4, "Q1 key has exactly 4 TRUE statements (got $true)");
         $ok(strpos($q1['text'], '[T]') === false && strpos($q1['text'], '[F]') === false, "Q1 text carries no [T]/[F] leak");
     }
+    // v7.20.806 (FIXLIST #859, Neil 10 Oct: the past papers take the 2026 format too): the 2026 AQA Paper 1 Q1 — four
+    // questions on the paper's own Q1 lines, three options, ONE answer each (a ### Choices block → q['choices']).
+    if (($side['q1_format'] ?? '') === 'choices') {
+        $q1 = $qs[0];
+        $ch = $q1['choices'] ?? [];
+        $ok(count($ch) === 4, "Q1 carries 4 multiple-choice questions (got " . count($ch) . ")");
+        $ok(!array_filter($ch, function ($c) { return count($c['options'] ?? []) !== 3 || !is_int($c['key'] ?? null) || $c['key'] < 0 || $c['key'] > 2; }),
+            "each question has 3 options and exactly one answer");
+        $ok(strpos($q1['text'], '[x]') === false && strpos($q1['text'], '- [') === false
+            && strpos($q1['text'], 'Choose one answer for each question.') !== false && stripos($q1['text'], 'list four') === false,
+            "Q1 text is the 2026 stem — no answer key in it, no list-four wording");
+        $keys = array_map(function ($c) { return $c['key']; }, $ch);
+        $ok(count(array_unique($keys)) > 1, "the answer is not always in the same position (" . implode(',', $keys) . ")");
+    }
     $nh = $side['needs_human'] ?? [];
     $ok(empty($nh), empty($nh) ? "nothing left for a human" : "NEEDS HUMAN: " . implode(' | ', $nh));
     return $fails;

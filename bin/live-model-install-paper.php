@@ -99,7 +99,15 @@ $extract = <<<'TXT'
 45 her say.
 TXT;
 
-$q1 = "Read again the first part of the source, from lines 1 to 5.\n\nList four things about Rosabel from this part of the source.";
+// v7.20.806 (FIXLIST #859, Neil 10 Oct 2026: the past papers take the 2026 format too): Q1 is four questions on lines
+// 1–5, three options, ONE answer each — the same shape the topic parser builds from a `### Choices` block.
+$q1 = "Read again the first part of the source, from lines 1 to 5.\n\nAnswer all parts of this question. Choose one answer for each question.";
+$q1_choices = [
+    ['q' => 'What did Rosabel buy at Oxford Circus?',            'options' => ['A new hat', 'A bunch of violets', 'A newspaper'],                         'key' => 1],
+    ['q' => 'What did Rosabel have for tea?',                     'options' => ['Fish and chips', 'Soup, bread and tea', 'A scone, an egg and cocoa'],   'key' => 2],
+    ['q' => 'Where does Rosabel work?',                           'options' => ['In a hat shop', "In a jeweller's shop", 'In a café'],                     'key' => 0],
+    ['q' => 'What would Rosabel have sacrificed her soul for?',   'options' => ['A new coat', 'A good dinner', 'A seat on the bus'],                       'key' => 1],
+];
 
 $q2 = "Look in detail at this extract, from lines 6 to 14 of the source:\n\n"
     . "> Rosabel looked out of the windows; the street was blurred and misty, but light striking on the panes turned their dullness to opal and silver, and the jewellers' shops seen through this were fairy palaces. Her feet were horribly wet, and she knew the bottom of her skirt and petticoat would be coated with black, greasy mud. There was a sickening smell of warm humanity – it seemed to be oozing out of everybody in the bus – and everybody had the same expression, sitting so still, staring in front of them. Rosabel stirred suddenly and unfastened the two top buttons of her coat… she felt almost stifled. Through her half-closed eyes, the whole row of people on the opposite seat seemed to resolve into one meaningless, staring face.\n\n"
@@ -149,7 +157,7 @@ $topic = [
        WELL-FORMED as PHP, and still wrong, because it did not match the shape the reader expects. */
     'metadata' => wp_json_encode([
         'questions' => [
-            ['id' => 'Q1', 'label' => 'Q1', 'text' => $q1, 'marks' => 4,  'aos' => 'AO1',        'extract' => '', 'bullets' => ''],
+            ['id' => 'Q1', 'label' => 'Q1', 'text' => $q1, 'marks' => 4,  'aos' => 'AO1',        'extract' => '', 'bullets' => '', 'choices' => $q1_choices],
             ['id' => 'Q2', 'label' => 'Q2', 'text' => $q2, 'marks' => 8,  'aos' => 'AO2',        'extract' => '', 'bullets' => ''],
             ['id' => 'Q3', 'label' => 'Q3', 'text' => $q3, 'marks' => 8,  'aos' => 'AO2',        'extract' => '', 'bullets' => ''],
             ['id' => 'Q4', 'label' => 'Q4', 'text' => $q4, 'marks' => 20, 'aos' => 'AO4',        'extract' => '', 'bullets' => ''],

@@ -2788,8 +2788,8 @@ Recorded here in the same session, as §0 requires. Each line is his tap; a quot
 6. **AQA Paper 1 Question 1 — switch to the 2026 multiple-choice format.** (card 9)
    **Built 2026-10-10 (WML 343 A, FIXLIST #857):** the five practice papers' Q1 are four questions, three options, one
    answer each (AQA's 2026 sample shape); the platform scores the ticks (one answer per question — the paper says "Choose a
-   maximum of one answer for each question") and Sophia gives the feedback. Real past papers sat before 2026 keep their own
-   list-four Q1, and a document that already holds a student's writing keeps the shape it was built with.
+   maximum of one answer for each question") and Sophia gives the feedback. The Live Modelling past papers use it too (Neil, 10 Oct 2026, Actions v93 card 2: *"Change them to the 2026 format
+   too"*; FIXLIST #859). A document that already holds a student's writing keeps the shape it was built with.
 7. **Retire the old chatbot lessons — add ours and retire the old ones.** (card 10)
 8. **Edexcel IGCSE Paper 1 Question 5 — the plan MUST compare the writers' purposes.** (card 11: "Required";
    already built in v7.20.710.)

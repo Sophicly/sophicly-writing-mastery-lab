@@ -58,7 +58,7 @@ The mark scheme gives each question's one answer, worth 1 mark (4 questions, 4 m
 platform scores the choices and hands you the mark — never re-mark it. It gives 0 for no answer, a wrong answer, or more
 than one answer (our rule, from the paper's own instruction: "Choose a maximum of one answer for each question.").
 
-**A PAST PAPER SAT BEFORE 2026 (list four things) — the June 2024 rules, for those papers only:**
+**AN OLDER DOCUMENT (list four things) — the June 2024 rules, for those documents only:**
 
 > Give 1 mark for each point:
 > - responses must be drawn only from the specified lines of the text

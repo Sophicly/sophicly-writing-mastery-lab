@@ -89,7 +89,7 @@
 
 - **Diagnostic:** Accept whatever the student submits, regardless of paragraph count or word count. Assess accurately based on what is provided. Students may not yet know the expected structure.  
 - **Redraft:** the taught structure is expected:  
-  - Q1: One answer for each of the four multiple-choice questions (a past paper: four distinct points)  
+  - Q1: One answer for each of the four multiple-choice questions (an older document: four distinct points)  
   - Q2: Two full TTECEA paragraphs  
   - Q3: Two full TTECEA paragraphs  
   - Q4: Five paragraphs (Introduction \+ 3 Body Paragraphs \+ Conclusion)  

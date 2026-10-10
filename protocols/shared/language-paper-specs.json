@@ -55,7 +55,7 @@
                 "AO1"
               ],
               "type": "retrieval",
-              "description": "Retrieval — 2026: four multiple-choice questions, one answer each (a past paper: list 4 things from lines X-Y)"
+              "description": "Retrieval — 2026: four multiple-choice questions, one answer each (an older document: list 4 things from lines X-Y)"
             },
             {
               "id": "Q2",
