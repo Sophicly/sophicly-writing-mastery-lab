@@ -490,7 +490,8 @@ if (!fs.existsSync(guidePath)) {
     } else {
         ok('the per-beat Examples button is rendered by the OutlineRow NodeView');
     }
-    if (!/const _beatConcept = _cw6ConceptFor\(/.test(nvBody)) {
+    // v7.20.825: a trial / Then-and-Now row is never a beat row, so the ONE matcher sits behind that guard.
+    if (!/const _beatConcept = (?:_notBeatRow \? null : )?_cw6ConceptFor\(/.test(nvBody)) {
         bad('the Examples button no longer resolves its concept through _cw6ConceptFor — a second '
             + 'matcher means a beat can show one concept in the chat and another in the panel (CLAUDE.md #7).');
     } else {

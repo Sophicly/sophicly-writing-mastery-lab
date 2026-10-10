@@ -5800,6 +5800,18 @@
         if (WML.cwInUnit && WML.cwInUnit() && CW_UNIT_LESSON_OF_STEP[stepNo]) return 'lesson ' + CW_UNIT_LESSON_OF_STEP[stepNo];
         return 'Step ' + stepNo;
     }
+    // ⭐ v7.20.825 — WHAT A LOCKED ROW'S LOCK CUE SAYS: where THIS row was set. It was a CSS literal, " set in Step 2", on
+    // every locked row (v7.19.467), right only for Step 3's carried idea: Step 2's sparks (set in Step 1), Step 4's logline
+    // (Step 3), Step 5's spine beats (Step 4) and every row of Sophia's on a trial page all told the student "Step 2".
+    // Named per row from its own id; a weekend lesson names its lesson (_cwStepPlace). '' = the lock icon alone.
+    function _lockedRowNote(fid) {
+        const f = String(fid || '');
+        if (/^cw-trial-\d+-/.test(f)) return 'filled in by Sophia';
+        if (/^cw-again-/.test(f)) return 'filled in for you';
+        const FROM = [['cw-step-2-liked-', 1], ['cw-step-3-chosen-idea', 2], ['cw-step-4-chosen-logline', 3], ['cw-step-5-s4-beat', 4]];
+        for (let i = 0; i < FROM.length; i++) if (f.indexOf(FROM[i][0]) === 0) return 'set in ' + _cwStepPlace(FROM[i][1]);
+        return '';
+    }
     // v7.20.756 (#801) — the generic CW greeting's prerequisite gate offered "Back to Steps", which in a weekend lesson
     // opens the FULL course's step dashboard: the unit has no Steps page (its lessons live in the course sidebar). The
     // way forward there is a re-check, the answer lesson 5's gate already gives (v7.20.737) — §4d, never a dead end.
@@ -51081,7 +51093,11 @@
                         criteriaEl.appendChild(aoTag);
                     }
 
-                    _appendBeatValence(criteriaEl, crit);
+                    // v7.20.825: the beat decorations (valence dot + Examples) find their concept by the row's LABEL, so a
+                    // trial row named after a story part (Trial 2's "Flaw") drew a Step 6 plot beat's dot and examples.
+                    // Trial and Then-and-Now rows are never beat rows — guarded by the row's own id.
+                    const _notBeatRow = /^cw-(trial-\d+|again)-/.test(String(fieldId || ''));
+                    if (!_notBeatRow) _appendBeatValence(criteriaEl, crit);
 
                     if (crit.label) {
                         const labelEl = document.createElement('span');
@@ -51108,7 +51124,7 @@
                     // before, because `_cw6ConceptFor` returns null for them.
                     // v7.20.408: archetype-aware — same source as the valence dot two lines above,
                     // so the dot and the panel can never describe two different concepts again.
-                    const _beatConcept = _cw6ConceptFor(crit.label, node.attrs.prompt, _cw6ArchKey());
+                    const _beatConcept = _notBeatRow ? null : _cw6ConceptFor(crit.label, node.attrs.prompt, _cw6ArchKey());
                     if (_beatConcept) {
                         const egBtn = document.createElement('button');
                         egBtn.type = 'button';
@@ -51552,6 +51568,8 @@
                     if (crit.locked) {
                         contentDOM.setAttribute('contenteditable', 'false');
                         contentDOM.classList.add('swml-outline-locked');
+                        const _lockNote = _lockedRowNote(fieldId);   // v7.20.825: the cue names where THIS row was set
+                        if (_lockNote) contentDOM.setAttribute('data-lock-note', _lockNote);
                     }
                     // v7.20.130: OPTIONAL rows (protocols that plan a RANGE — IUMVCC methodology
                     // is "2–3 points"). Fully editable; the class is the DOM signal the section
