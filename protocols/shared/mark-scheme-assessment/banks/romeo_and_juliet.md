@@ -45,7 +45,7 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Correct:** B, C, D, A
    * **AO:** AO1
    * **Feedback:** ✓ Correct. Each rung is one clear AQA band higher. The plot-summary rung, retelling events only, is Level 1 (simple comment). The simple value-judgement about a bad thing causing sadness, with no method and no evidence, is Level 2 (supported comment). The clear, explained response that names a method (the deaths) and its effect on the audience is Level 4 (clear explained response). The critical, conceptualised rung, arguing an idea from the first line, is Level 6. The ladder is plot → comment → explained method-and-effect → concept.
-   * **WhyWrong:** Weakest to strongest is B (plot only) then C (a value-judgement with no method) then D (an explained method + reader effect) then A (conceptualised). Each rung is exactly one AQA Level higher; the jump to Level 6 is the move from explaining events to arguing a concept.
+   * **WhyWrong:** Weakest to strongest: the plot-only opening ("a play about two young people"), then the value-judgement with no method ("a bad thing"), then the explained method and audience effect ("inherited hatred"), then the conceptualised argument ("a rigid inherited order"). Each rung is exactly one AQA Level higher; the jump to Level 6 is the move from explaining events to arguing a concept.
 
 5. **Type: MCQ [Tests AO1]**
    * **Question:** Two responses both quote "These violent delights have violent ends." Response X lists it after a point. Response Y selects it to pin an argument about self-consuming passion. For AO1, which AQA phrase distinguishes Y from X?
@@ -88,7 +88,7 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Correct:** B, D, C, A
    * **AO:** AO2
    * **Feedback:** ✓ Correct. Each rung is one clear AQA AO2 band higher. The bare identification of a method, with no effect at all, is Level 3. The clear explanation of one simple effect (playful and imaginative) is Level 4. The sustained examination of how the method reduces love to something trivial is Level 5. The analysis with exploration of layered effects, tied to a concept, is Level 6. The ladder is identify, explain one effect, examine how it works, then analyse-and-explore.
-   * **WhyWrong:** Weakest to strongest: B (identify) then D (explain) then C (examine) then A (analyse + explore effects). Level 6 explores layered effects, not a single stated one.
+   * **WhyWrong:** Weakest to strongest: the bare identification ("uses imagery"), then one explained effect ("playful and imaginative"), then the examination ("trivial and absurd"), then the analysis that explores layered effects ("self-deception"). Level 6 explores layered effects, not a single stated one.
 
 10. **Type: MCQ [Tests AO2]**
    * **Question:** Response P "examines" how Shakespeare's light or dark imagery works. Response Q does the same but reads the imagery as a sustained pattern that makes the lovers' world feel set apart from Verona, exploring several effects. For AO2, what single move takes Q from Level 5 to Level 6?
@@ -122,7 +122,7 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Options:** A) Context is used to drive a concept rather than bolted on as a fact, B) There are specific, detailed links between context, text and task, C) It explores ideas and perspectives opened up by the context, D) It lists a standalone historical fact with no link to text or task
    * **Correct:** A, B, C
    * **AO:** AO3
-   * **Feedback:** ✓ Correct. This is the AQA Level 6 AO3 chain: context drives concept drives method, with "specific, detailed links between context/text/task" and "exploration of ideas/perspectives/contextual factors." D is the opposite of what is happening.
+   * **Feedback:** ✓ Correct. This is the AQA Level 6 AO3 chain: context drives concept drives method, with "specific, detailed links between context/text/task" and "exploration of ideas/perspectives/contextual factors." A standalone historical fact is the opposite of what is happening here.
    * **Why D:** The response does the reverse of bolt-on — every element is linked.
 
 14. **Type: MCQ [Tests AO4]**

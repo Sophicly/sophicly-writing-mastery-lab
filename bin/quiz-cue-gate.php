@@ -236,7 +236,15 @@ if (in_array('--selftest', $argv, true)) {
     $okTwo = !verdict($mc, 'FQ') && (bool) verdict($md, 'FQ') && $mn['mcq'] === 0 && $mc['mcq'] === 9 && $md['mcq'] === 9;
     echo ($okTwo ? '  ✓ ' : '  ✗ ') . "section   a clean section passes, a dirty one in the same file fails, an absent board measures nothing\n";
     if (!$okTwo) $bad++;
-    echo $bad ? "quiz-cue-gate selftest FAILED ($bad)\n" : "quiz-cue-gate selftest passed (" . (count($cases) + 1) . " cases)\n";
+    // v7.20.815 (#866): the server's letter-cite predicate. A real citation keeps the authored order; naming a SOURCE or
+    // a part of the paper ("Source A,", "Section B is") must not — measured: 5 MSA items were pinned by those alone.
+    $lcCases = ['B (plot only) then C' => true, 'B is Level 1' => true, 'A, B and C are right' => true, 'see (C)' => true, 'D = Level 2' => true,
+        'no direct reference to reader in Source A, direct address' => false, 'Section B is imaginative' => false, 'Spec B is non-fiction' => false, 'Paper 1 Section B is' => false];
+    $lcBad = 0;
+    foreach ($lcCases as $s => $want) if (SWML_Quiz_Bank::cites_option_letter($s) !== $want) { $lcBad++; echo "  ✗ letter-cite: \"$s\" should " . ($want ? '' : 'NOT ') . "count as citing an option\n"; }
+    echo ($lcBad ? '' : '  ✓ letter-cite  real option citations keep the order; "Source A," / "Section B is" do not' . "\n");
+    if ($lcBad) $bad++;
+    echo $bad ? "quiz-cue-gate selftest FAILED ($bad)\n" : "quiz-cue-gate selftest passed (" . (count($cases) + 2) . " cases)\n";
     exit($bad ? 1 : 0);
 }
 
@@ -252,7 +260,7 @@ function letter_cite_shuffled($banksDirs) {
         foreach (SWML_Quiz_Bank::parse_file($p) as $qs) foreach ($qs as $q) {
             if (!in_array($q['type'], ['mcq', 'select_all', 'ranking'], true) || count((array) $q['options']) < 2) continue;
             $cite = $q['feedback'] . ' ' . implode(' ', (array) ($q['why'] ?? [])) . ' ' . ($q['why_generic'] ?? '');
-            if (!preg_match('/\([A-E]\)|(?<![A-Za-z\x{2019}\'])[A-E](?=\s*[\)=,]|\s+(?:\(|is\b|then\b))/u', $cite)) continue;
+            if (!SWML_Quiz_Bank::cites_option_letter($cite)) continue;   // v7.20.815 (#866): the server's own predicate
             $moved = false;
             for ($i = 0; $i < 8 && !$moved; $i++) { $r = $m->invoke(null, $q); if (array_values($r['options']) !== array_values($q['options'])) $moved = true; }
             if ($moved) $bad[] = $kind . '/' . basename($p) . ' #' . $q['q_num'];

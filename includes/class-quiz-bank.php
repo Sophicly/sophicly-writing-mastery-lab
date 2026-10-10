@@ -802,16 +802,27 @@ class SWML_Quiz_Bank {
      * authored order until rewritten content-referenced — re-lettering can then never
      * desync a letter reference. Fail-safe: any doubt → no shuffle.
      */
+    /**
+     * Does this note name an OPTION by its letter? Then the options keep their authored order (see shuffle_options).
+     * v7.20.783 (WML 339 A, measured): notes cite options as "(C)", "C)", "B =", "A, B", and also as
+     * "B (simple comment) then D …" and "B is Level 1" (28 of 5,522 shuffled items named the wrong option before).
+     * v7.20.815 (WML 345 A, FIXLIST #866, measured over all 3,798 MSA items): "Source A, …", "Section B is …",
+     * "Spec B is …" name a SOURCE or a part of the paper, never an option — yet they held 5 items in authored order
+     * (the key never moved on a re-sit). Those names are removed before looking. ONE predicate: shuffle_options and
+     * bin/quiz-cue-gate.php's letter-cite check both call this, so they cannot drift apart.
+     */
+    public static function cites_option_letter($cite) {
+        $cite = preg_replace('/\b(?:Sources?|Sections?|Spec|Specification|Paper|Component|Part|Text|Level|Question)\s+[A-E]\b/u', '', (string) $cite);
+        if (preg_match('/\([A-E]\)|(?<![A-Za-z])[A-E]\s*[\)=,]/', $cite)) return true;
+        return (bool) preg_match('/(?<![A-Za-z\x{2019}\'])[A-E](?=\s+(?:\(|is\b|then\b))/u', $cite);
+    }
+
     private static function shuffle_options($q) {
         if (empty($q['options']) || !in_array($q['type'], ['mcq', 'select_all', 'ranking'], true)) return $q;
         $letters = array_keys($q['options']);
         if (count($letters) < 2) return $q;
         $cite = $q['feedback'] . ' ' . implode(' ', (array) ($q['why'] ?? [])) . ' ' . ($q['why_generic'] ?? '');
-        if (preg_match('/\([A-E]\)|(?<![A-Za-z])[A-E]\s*[\)=,]/', $cite)) return $q;  // letter-cite → leave order
-        // v7.20.783 (WML 339 A, measured): notes also cite options as "B (simple comment) then D …" and "B is Level 1" —
-        // forms the line above misses, so those items shuffled and their notes named the wrong option for most students
-        // (28 of 5,522 shuffled items across every bank). Same fail-safe: a citation keeps the authored order.
-        if (preg_match('/(?<![A-Za-z\x{2019}\'])[A-E](?=\s+(?:\(|is\b|then\b))/u', $cite)) return $q;
+        if (self::cites_option_letter($cite)) return $q;  // letter-cite → leave order
 
         $perm = range(0, count($letters) - 1);
         shuffle($perm);

@@ -2,3 +2,4 @@
 # A bank joins this list the day it is rewritten to pass `php bin/quiz-cue-gate.php --bank=<file>`.
 # From then on pre-ship fails any edit that brings a cue back. Never remove a line to get a build through.
 MSA/language1.md#aqa
+MSA/language2.md#aqa

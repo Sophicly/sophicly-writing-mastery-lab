@@ -40,6 +40,19 @@ const PILOTS = [{
     JUN24_ITEMS: [4, 10, 17, 25],
     // v7.20.802 (#857): items 1 and 16 now teach the 2026 multiple-choice Question 1 — no item is exempt any more.
     ALLOW: {},
+}, {
+    // v7.20.813 (WML 345 A, FIXLIST #866): #815d step 2 — AQA Paper 2, the second most-used section on prod (6 real
+    // students). Same reading 23 / writing 17 split as the Paper 1 pilot, spread by Paper 2's marks (Q1+Q2 AO1 12,
+    // Q3 AO2 12, Q4 AO3 16 · Q5 AO5 24 + AO6 16).
+    bank: 'protocols/shared/mark-scheme-assessment/banks/language2.md',
+    section: 'AQA (',
+    count: 40,
+    ao: { AO1: 7, AO2: 7, AO3: 9, AO5: 9, AO6: 8 },
+    sources: ['research/sources/aqa-8700-2-sms-2026.txt', 'protocols/aqa/language2/modules/knowledge-mark-scheme-lang2.md'],
+    jun24: ['research/sources/aqa-8700-2-jun24-ms.txt'],
+    // Items 4, 8 and 12 rank AQA's own June 2024 indicative answers (the doctor and nurse sources).
+    JUN24_ITEMS: [4, 8, 12],
+    ALLOW: {},
 }];
 
 // The section's items: "N. **Type: X [Tests AOn]**" blocks inside the section that starts "### **SECTION …: <label>".
