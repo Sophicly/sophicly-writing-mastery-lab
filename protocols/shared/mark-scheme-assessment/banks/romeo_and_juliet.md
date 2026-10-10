@@ -8,22 +8,25 @@ server-side and are stripped before questions reach the client. The AI is never 
 
 AOs tagged per question for stratified random selection (the picker spreads the 10 across AO1–AO4).
 Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptors (June 2024 8702 MS):
-  L6 Convincing/critical · L5 Thoughtful/developed · L4 Clear · L3 Some/structured · L2 Supported · L1 Simple.
+  L6 Convincing/critical · L5 Thoughtful/developed · L4 Clear · L3 Explained/structured · L2 Supported · L1 Simple.
+AQA section (v7.20.821, FIXLIST #879, #815d — Neil: "40 per bank"): 40 items. Every quotation in a Feedback or Why line is verbatim
+from AQA's June 2024 8702/1 mark scheme (`research/sources/aqa-8702-1-jun24-ms.txt` + the -layout copy of the R&J page; gate:
+`bin/msa-quote-gate.js`).
 
 ### **SECTION A: AQA (8702 — Shakespeare)**
 
 1. **Type: MCQ [Tests AO1]**
-   * **Question:** A student writes: "Shakespeare presents Juliet as a strong character who stands up to her father." For AO1, which AQA Level does this response sit at, and why?
-   * **Options:** A) Level 6 — it is a critical, conceptualised argument built around an idea, B) Level 5 — it is a thoughtful, developed response with apt references woven in, C) Level 3 — it makes some explained comments but stays at character level rather than concept, D) Level 1 — it is an undeveloped, simple comment with no explanation
+   * **Question:** A student's whole response follows Juliet scene by scene. Each time she defies her family it explains what she does and why, but it never builds an argument about an idea. For AO1, which AQA Level does this response sit at, and why?
+   * **Options:** A) Level 6 — a critical, conceptualised argument organised around an idea, B) Level 5 — a thoughtful, developed response with apt, integrated references, C) Level 3 — some explained comment, but at plot level rather than concept, D) Level 1 — a simple, undeveloped comment with no explanation at all
    * **Correct:** C
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA Level 6 AO1 rewards a "critical, exploratory, conceptualised response". Describing what a character does ("stands up to her father") is character-level comment — AQA Level 3 "some explained response". To climb, the student must treat Juliet as a vehicle for a CONCEPT (e.g. individual autonomy against inherited authority).
-   * **Why A:** Level 6 demands a "conceptualised" argument with "judicious use of precise references" — there is no concept and no quotation here.
-   * **Why B:** Level 5 needs a "thoughtful, developed response" with "apt references integrated into interpretation" — this has neither development nor references.
-   * **Why D:** It is explained comment, not a bare "simple comment" — it is above Level 1.
+   * **Feedback:** ✓ Correct. Explaining what Juliet does, scene by scene, is AQA Level 3 AO1: "Some explained response to task and whole text." Level 6 rewards a "Critical, exploratory, conceptualised response to task and whole text." To climb, the student must treat Juliet as a vehicle for a CONCEPT (e.g. individual autonomy against inherited authority), not narrate her choices.
+   * **Why A:** There is no argument about an idea, so it cannot be "conceptualised".
+   * **Why B:** Level 5 is a "Thoughtful, developed response to task and whole text"; explaining the plot stage by stage is not yet developed thought.
+   * **Why D:** It explains each choice, so it is above Level 1's "Simple comments relevant to task and text".
 
 2. **Type: Fill [Tests AO1]**
-   * **Question:** Complete the AQA Level 6 AO1 descriptor. A top-band response is "critical, exploratory and [BLANK] in its response to task and whole text."
+   * **Question:** Complete the AQA Level 6 AO1 descriptor: "Critical, exploratory, [BLANK] response to task and whole text."
    * **Answer:** conceptualised
    * **AO:** AO1
    * **Feedback:** ✓ Correct. The AQA Level 6 AO1 strand is "Critical, exploratory, conceptualised response to task and whole text." "Conceptualised" is the word that separates the top band — it means the response is organised around an idea, not around the character or plot.
@@ -31,47 +34,47 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
 
 3. **Type: MCQ [Tests AO1]**
    * **Question:** A student says: "AO1 just means showing you understand the play." Which AQA Level does "showing understanding" actually describe, and what does Level 6 additionally require?
-   * **Options:** A) It describes Level 6 — "showing understanding" is already the top-band conceptualised response, B) It describes Level 3–4 (some/clear explained understanding); Level 6 additionally requires a "critical, exploratory, conceptualised response", C) It describes Level 1 — "showing understanding" is the bare "simple comment" of the lowest band, D) It describes AO4 — understanding the play is really a matter of technical accuracy
+   * **Options:** A) Level 6 — understanding the play already is the top-band conceptualised response, B) Level 3–4 — Level 6 also needs a critical, exploratory, conceptualised response, C) Level 1 — understanding is only the simple comment of the lowest band, D) AO4 — understanding the play is really a matter of technical accuracy
    * **Correct:** B
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. "Showing understanding" is AQA Level 3–4 language ("some explained response" / "clear, explained response"). It is the single most common way students undersell the top band to themselves. Level 6 AO1 = "critical, exploratory, conceptualised response... judicious use of precise references."
+   * **Feedback:** ✓ Correct. "Showing understanding" is AQA Level 3–4 language: Level 3 is "Some explained response to task and whole text", and Level 4 is "Clear understanding", a "Clear, explained response to task and whole text". It is the single most common way students undersell the top band to themselves. Level 6 AO1 is a "Critical, exploratory, conceptualised response to task and whole text", with "Judicious use of precise references to support interpretation(s)".
    * **Why A:** Level 6 is far more than understanding — it is a conceptualised, critical argument.
-   * **Why C:** "Showing understanding" is above a "simple comment" (Level 1).
+   * **Why C:** Explained understanding sits well above Level 1's "Simple comments relevant to task and text".
    * **Why D:** That is AO4 (technical accuracy), not AO1.
 
 4. **Type: Ranking [Tests AO1]**
    * **Question:** Rank these four openings from WEAKEST to STRONGEST by AQA AO1 Level (type the letters in order, weakest first).
-   * **Options:** A) "Shakespeare uses the lovers' deaths to explore how a rigid inherited order destroys the very lives it claims to protect.", B) "Romeo and Juliet is a play about two young people who fall in love and then die.", C) "The feud between the two families is a bad thing, and it leads to a lot of sadness in the play.", D) "Shakespeare presents the feud as destructive through the deaths of the lovers, making the audience feel how dangerous inherited hatred can be."
+   * **Options:** A) "Shakespeare uses the lovers' deaths to explore how a rigid inherited order destroys the very lives it claims to protect.", B) "Romeo and Juliet is a play about two young people who fall in love and then die.", C) "The feud between the two families is a bad thing, because it leads to Tybalt killing Mercutio.", D) "Shakespeare presents the feud as destructive through the deaths of the lovers, making the audience feel how dangerous inherited hatred can be."
    * **Correct:** B, C, D, A
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. Each rung is one clear AQA band higher. The plot-summary rung, retelling events only, is Level 1 (simple comment). The simple value-judgement about a bad thing causing sadness, with no method and no evidence, is Level 2 (supported comment). The clear, explained response that names a method (the deaths) and its effect on the audience is Level 4 (clear explained response). The critical, conceptualised rung, arguing an idea from the first line, is Level 6. The ladder is plot → comment → explained method-and-effect → concept.
-   * **WhyWrong:** Weakest to strongest: the plot-only opening ("a play about two young people"), then the value-judgement with no method ("a bad thing"), then the explained method and audience effect ("inherited hatred"), then the conceptualised argument ("a rigid inherited order"). Each rung is exactly one AQA Level higher; the jump to Level 6 is the move from explaining events to arguing a concept.
+   * **Feedback:** ✓ Correct. The plot-summary opening, retelling events only, is Level 1: AQA says such a response "is likely to be narrative and/or descriptive in approach". The comment that the feud is bad, supported by one event (Tybalt killing Mercutio) but naming no method, is Level 2: "Supported, relevant comments". The opening that names a method (the deaths) and its effect on the audience is Level 4, a "Clear, explained response to task and whole text". The opening that argues an idea from the first line is Level 6: "Critical, exploratory, conceptualised". The ladder is plot → comment → explained method-and-effect → concept.
+   * **WhyWrong:** Weakest to strongest: the plot-only opening ("a play about two young people"), then the comment supported by one event ("Tybalt killing Mercutio"), then the explained method and audience effect ("inherited hatred"), then the conceptualised argument ("a rigid inherited order"). The jump to Level 6 is the move from explaining events to arguing a concept.
 
 5. **Type: MCQ [Tests AO1]**
    * **Question:** Two responses both quote "These violent delights have violent ends." Response X lists it after a point. Response Y selects it to pin an argument about self-consuming passion. For AO1, which AQA phrase distinguishes Y from X?
-   * **Options:** A) Y embeds more quotations to show the breadth of its supporting evidence, B) Y makes "judicious use of precise references to support interpretation" rather than general reference, C) Y integrates the quotation with a clearly explained comment on its effect, D) Y identifies the writer's method in the quotation using subject terminology
+   * **Options:** A) Y embeds more quotations to show the breadth of its supporting evidence, B) Y makes judicious use of precise references to support interpretation, C) Y integrates the quotation with a clearly explained comment on its effect, D) Y identifies the writer's method in the quotation using subject terminology
    * **Correct:** B
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA Level 6 AO1 = "judicious use of precise references to support interpretation(s)." "Judicious" means the reference is chosen to do argumentative work, not listed. A precise reference tied to a concept is worth more than many general ones.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO1 is "Judicious use of precise references to support interpretation(s)." "Judicious" means the reference is chosen to do argumentative work, not listed. A precise reference tied to a concept is worth more than many general ones.
    * **Why A:** AQA rewards "judicious" selection, not quantity — more quotations can lower precision.
-   * **Why C:** Explaining the effect of the quotation is AO2 work, not the AO1 move — AO1 is about how the reference is SELECTED ("judicious") to support interpretation, not the comment on effect.
+   * **Why C:** Explaining the effect of the quotation is AO2 work; the AO1 move is how the reference is SELECTED to support interpretation.
    * **Why D:** Identifying the method and naming terminology is AO2 surface behaviour — it is not what distinguishes the two responses at AO1.
 
 6. **Type: MCQ [Tests AO2]**
    * **Question:** A paragraph reads: "Shakespeare uses the oxymoron 'loving hate'. This is a technique. It tells us Romeo is confused." For AO2, which AQA Level fits, and what is the ceiling?
-   * **Options:** A) Level 6 — analysis with sustained exploration of the effects, B) Level 5 — examination of how the writer's methods work, C) Level 3 — identification of the method with only a general comment on effect, D) Level 4 — clear explanation of the method and its effect
+   * **Options:** A) Level 6 — analysis with sustained exploration of the effects, B) Level 5 — examination of how the writer's methods work, C) Level 3 — the method named, with one obvious effect stated, D) Level 4 — clear explanation of the method and its effect
    * **Correct:** C
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. Naming the oxymoron and adding "it tells us he is confused" is AQA Level 3 AO2: "identification of the writer's methods" with only a general comment on effect. Level 4 needs "clear explanation of the effects"; Level 5 "examination"; Level 6 "analysis... exploration of effects of the writer's methods" with "judicious" terminology.
-   * **Why A:** No analysis and no exploration of layered effects — Level 6 is out of reach here.
-   * **Why B:** "Examination" (Level 5) requires sustained working-through of how the method creates meaning, absent here.
-   * **Why D:** "Clear explanation" (Level 4) needs the effect explained, not just asserted.
+   * **Feedback:** ✓ Correct. Naming the oxymoron is Level 2's "Identification of the writer's methods". Adding "It tells us Romeo is confused" states one obvious effect: Level 3's "Identification of effects of writer's methods to create meanings", at best. Level 4 needs "Clear explanation of the writer's methods"; Level 5 "Examination of the writer's methods"; Level 6 "Analysis of the writer's methods with subject terminology used judiciously".
+   * **Why A:** Level 6 needs "Exploration of effects of writer's methods to create meanings"; one stated effect is not explored.
+   * **Why B:** Level 5 needs "Examination of effects of writer's methods to create meanings"; nothing here is examined.
+   * **Why D:** Level 4 needs "Clear explanation of the writer's methods"; the effect is stated, not explained.
 
 7. **Type: Fill [Tests AO2]**
    * **Question:** Complete the AQA Level 6 AO2 descriptor: "Analysis of the writer's methods with subject terminology used [BLANK]."
    * **Answer:** judiciously
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA Level 6 AO2 = "Analysis of the writer's methods with subject terminology used judiciously." "Judiciously" warns against feature-spotting: terminology earns marks only when it is selected to serve the analysis of effect.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO2 is "Analysis of the writer's methods with subject terminology used judiciously." "Judiciously" warns against feature-spotting: terminology earns marks only when it is selected to serve the analysis of effect.
    * **WhyWrong:** The AQA word is "judiciously" — terminology used to serve analysis of effect, not scattered to impress.
 
 8. **Type: Select All [Tests AO2]**
@@ -79,7 +82,7 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Options:** A) It moves from identifying a method to analysing how it creates meaning, B) It explores several effects the writer's methods have on the reader, C) It names as many techniques as possible to demonstrate range, D) It uses subject terminology judiciously, only where it serves the analysis
    * **Correct:** A, B, D
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA Level 6 AO2 = "Analysis of the writer's methods... Exploration of effects of the writer's methods... subject terminology used judiciously." Analysis, exploration of effects and judicious terminology are all top-band. Maximising technique-count is feature-spotting, which the mark scheme penalises.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO2 is "Analysis of the writer's methods with subject terminology used judiciously" and "Exploration of effects of writer's methods to create meanings." Analysis, exploration of effects and judicious terminology are all top-band. Maximising technique-count is feature-spotting, which the mark scheme does not reward.
    * **Why C:** Naming many techniques is feature-spotting — AQA rewards judicious selection and exploration of effect, not quantity.
 
 9. **Type: Ranking [Tests AO2]**
@@ -87,34 +90,34 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Options:** A) "The extended Queen Mab fantasy lets Shakespeare explore how dreams are shaped by each dreamer's desire, so that Mercutio's cynicism becomes an analysis of love itself as self-deception.", B) "Shakespeare uses imagery in the Queen Mab speech.", C) "Shakespeare's imagery of tiny, fragile creatures examines how Mercutio reduces love to something trivial and absurd.", D) "Shakespeare uses imagery of small creatures to make Mercutio seem playful and imaginative."
    * **Correct:** B, D, C, A
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. Each rung is one clear AQA AO2 band higher. The bare identification of a method, with no effect at all, is Level 3. The clear explanation of one simple effect (playful and imaginative) is Level 4. The sustained examination of how the method reduces love to something trivial is Level 5. The analysis with exploration of layered effects, tied to a concept, is Level 6. The ladder is identify, explain one effect, examine how it works, then analyse-and-explore.
-   * **WhyWrong:** Weakest to strongest: the bare identification ("uses imagery"), then one explained effect ("playful and imaginative"), then the examination ("trivial and absurd"), then the analysis that explores layered effects ("self-deception"). Level 6 explores layered effects, not a single stated one.
+   * **Feedback:** ✓ Correct. Naming imagery and nothing more is Level 2: "Identification of the writer's methods". One stated effect (playful and imaginative) is Level 3: "Identification of effects of writer's methods to create meanings". Working through how the imagery reduces love to something trivial is Level 5: "Examination of effects of writer's methods to create meanings". Opening up layered effects, tied to an idea, is Level 6: "Exploration of effects of writer's methods to create meanings". The ladder is identify, state one effect, examine how it works, then explore.
+   * **WhyWrong:** Weakest to strongest: the bare identification ("uses imagery"), then one stated effect ("playful and imaginative"), then the examination ("trivial and absurd"), then the exploration of layered effects ("self-deception"). Level 6 explores layered effects, not a single stated one.
 
 10. **Type: MCQ [Tests AO2]**
    * **Question:** Response P "examines" how Shakespeare's light or dark imagery works. Response Q does the same but reads the imagery as a sustained pattern that makes the lovers' world feel set apart from Verona, exploring several effects. For AO2, what single move takes Q from Level 5 to Level 6?
-   * **Options:** A) It quotes more lines to widen the range of its supporting evidence, B) It moves from examination of the method to analysis with exploration of the effects of the writer's methods, C) It deploys rarer, more technical terminology across the response, D) It develops the point across longer, more sustained paragraphs
+   * **Options:** A) It quotes more lines to widen the range of its supporting evidence, B) It moves from examining the method to exploring its effects, C) It deploys rarer, more technical terminology across the response, D) It develops the point across longer, more sustained paragraphs
    * **Correct:** B
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. The AQA L5 to L6 AO2 shift is "examination" becoming "analysis... exploration of effects of the writer's methods." Q reads a sustained pattern and explores multiple effects — that is exploration, the top-band move. Length, rare terms and quote-count do not change the Level.
+   * **Feedback:** ✓ Correct. The AQA Level 5 to Level 6 AO2 shift is "Examination of effects of writer's methods to create meanings" becoming "Exploration of effects of writer's methods to create meanings." Q reads a sustained pattern and explores multiple effects — the top-band move. Length, rare terms and quote-count do not change the Level.
    * **Why A:** Quote quantity is not an AO2 criterion; judicious selection is.
    * **Why C:** Rarer terms without explored effect is feature-spotting.
    * **Why D:** Paragraph length is not a Level descriptor.
 
 11. **Type: MCQ [Tests AO3]**
    * **Question:** "Romeo and Juliet was written in Elizabethan times when fathers arranged marriages." A student adds this sentence to the end of a paragraph. For AO3, why does it stay low in the AQA bands?
-   * **Options:** A) It is factually inaccurate about marriage in the Elizabethan period, B) It is bolt-on context — AQA Level 6 AO3 needs "specific, detailed links between context, text and task" where context drives the interpretation, C) It is too brief — a contextual point must run to several sentences to score, D) Context is credited only on the Language paper, not on this question
+   * **Options:** A) It is factually inaccurate about marriage in the Elizabethan period, B) It is bolted on: Level 6 links context to text and task, C) It is too brief, as a context point must run to several sentences, D) Context is credited only on the Language paper, not on this question
    * **Correct:** B
    * **AO:** AO3
-   * **Feedback:** ✓ Correct. AQA Level 6 AO3 = "Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task." A free-standing fact is "bolt-on". Context must DRIVE the concept: inherited authority over marriage drives Juliet's struggle for autonomy, which drives Shakespeare's choices.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO3 is "Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task." A free-standing fact is bolt-on. Context must DRIVE the concept: inherited authority over marriage drives Juliet's struggle for autonomy, which drives Shakespeare's choices.
    * **Why A:** The fact is broadly accurate — accuracy is not the problem; integration is.
    * **Why C:** Length is not the issue; a short linked point can be Level 6.
-   * **Why D:** AO3 (context) is assessed throughout the AQA Shakespeare question.
+   * **Why D:** AQA says "Context is assessed throughout the paper."
 
 12. **Type: Fill [Tests AO3]**
-   * **Question:** Complete the AQA Level 6 AO3 descriptor: context should be shown by "specific, detailed [BLANK] between context, text and task."
+   * **Question:** Complete the AQA Level 6 AO3 descriptor: context is shown "by specific, detailed [BLANK] between context/text/task."
    * **Answer:** links
    * **AO:** AO3
-   * **Feedback:** ✓ Correct. AQA Level 6 AO3 = "specific, detailed links between context/text/task." The word is "links": context earns top marks only when it is connected to the text and the question, never when it sits alone as a fact.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO3 is "Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task." The word is "links": context earns top marks only when it is connected to the text and the question, never when it sits alone as a fact.
    * **WhyWrong:** The AQA word is "links" — context, text and task must be linked, not listed separately.
 
 13. **Type: Select All [Tests AO3]**
@@ -122,58 +125,255 @@ Question types: MCQ · Select All · Fill · Ranking. Exact AQA Level descriptor
    * **Options:** A) Context is used to drive a concept rather than bolted on as a fact, B) There are specific, detailed links between context, text and task, C) It explores ideas and perspectives opened up by the context, D) It lists a standalone historical fact with no link to text or task
    * **Correct:** A, B, C
    * **AO:** AO3
-   * **Feedback:** ✓ Correct. This is the AQA Level 6 AO3 chain: context drives concept drives method, with "specific, detailed links between context/text/task" and "exploration of ideas/perspectives/contextual factors." A standalone historical fact is the opposite of what is happening here.
+   * **Feedback:** ✓ Correct. This is the AQA Level 6 AO3 chain: context drives concept drives method, with "specific, detailed links between context/text/task" and "Exploration of ideas/perspectives/contextual factors." A standalone historical fact is the opposite of what is happening here.
    * **Why D:** The response does the reverse of bolt-on — every element is linked.
 
 14. **Type: MCQ [Tests AO4]**
-   * **Question:** On the AQA Shakespeare question, AO4 carries marks too. Which description matches the AO4 high band?
-   * **Options:** A) Ambitious, sophisticated vocabulary sustained throughout, whatever the cost to control, B) Spelling and punctuation consistently accurate, with vocabulary and sentence structures used to achieve effective control of meaning, C) Sentences kept long and complex throughout to demonstrate written range, D) Frequent quotation woven across the response to support every point
+   * **Question:** On the AQA Shakespeare question, AO4 carries 4 further marks. Which description matches the AO4 high performance band?
+   * **Options:** A) Ambitious vocabulary throughout, even where control of meaning slips, B) Consistent accuracy, with effective control of meaning, C) Long, complex sentences throughout, to show range in the writing, D) Quotations woven into every sentence to support each point
    * **Correct:** B
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. AQA AO4 rewards technical accuracy in the service of meaning: "spell and punctuate with consistent accuracy" and "use vocabulary and sentence structures to achieve effective control of meaning." Control matters more than showy vocabulary.
-   * **Why A:** Ambitious vocabulary without control does not earn the AO4 high band.
+   * **Feedback:** ✓ Correct. AQA's High performance (4 marks): "learners spell and punctuate with consistent accuracy, and consistently use vocabulary and sentence structures to achieve effective control of meaning." Control matters more than showy vocabulary.
+   * **Why A:** Ambitious vocabulary without control does not earn the high band: it needs "effective control of meaning".
    * **Why C:** Length is not an AO4 criterion.
    * **Why D:** Quotation count is not assessed by AO4.
 
-15. **Type: MCQ [Tests Vocabulary]**
+15. **Type: MCQ [Tests AO1]**
    * **Question:** AQA asks for a "critical style". In a mark scheme, what does "critical" actually mean?
-   * **Options:** A) Pointing out the play's faults and the things Shakespeare did badly, B) Forming an evaluative, argued judgement and taking a position on interpretation, C) Writing in a consistently serious, formal and academic tone, D) Disagreeing with the interpretations other readers have offered
+   * **Options:** A) Pointing out the play's faults and the things Shakespeare did badly, B) Forming an argued judgement and taking a position on meaning, C) Writing in a serious, formal and academic tone throughout, D) Disagreeing with the readings that other students offer
    * **Correct:** B
-   * **AO:** Vocabulary
-   * **Feedback:** ✓ Correct. In a mark scheme "critical" does NOT mean fault-finding. It means evaluative and argued — you weigh interpretations and commit to a position. AQA pairs it as "critical, exploratory": an argued reading that opens up meaning.
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. In a mark scheme "critical" does NOT mean fault-finding. It means evaluative and argued — you weigh interpretations and commit to a position. AQA pairs it as "Critical, exploratory", and AO1 asks students to "maintain a critical style and develop an informed personal response".
    * **Why A:** This is the everyday sense of "critical" (negative), not the assessment sense.
    * **Why C:** Tone is not what "critical" rewards — an argued judgement is.
    * **Why D:** Critical means evaluating the text, not other students.
 
-16. **Type: MCQ [Tests Vocabulary]**
+16. **Type: MCQ [Tests AO1]**
    * **Question:** Two students support the idea that Juliet matures. Student X quotes six lines about love. Student Y selects the single half-line "I'll no longer be a Capulet" to pin the turn to self-determination. Whose references are "judicious" — and what does "judicious" mean?
-   * **Options:** A) Student X — judicious means marshalling as much supporting evidence as possible, B) Student Y — judicious means a well-judged, selective reference chosen to do the most argumentative work, C) Both equally — judicious simply means quoting the text accurately and in full, D) Neither — judicious means choosing the longest, most detailed quotation available
+   * **Options:** A) Student X — judicious means marshalling as much supporting evidence as possible, B) Student Y — judicious means a well-judged reference chosen for its work, C) Both equally — judicious simply means quoting the text accurately and in full, D) Neither — judicious means choosing the longest, most detailed quotation available
    * **Correct:** B
-   * **AO:** Vocabulary
-   * **Feedback:** ✓ Correct. "Judicious" means well-judged and selective — the reference is chosen because it does real work, not because it is long or abundant. Y's precise half-line outperforms X's six general lines. This is why AQA Level 6 says "judicious use of precise references".
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. "Judicious" means well-judged and selective — the reference is chosen because it does real work, not because it is long or abundant. Y's precise half-line outperforms X's six general lines. This is why AQA Level 6 says "Judicious use of precise references".
    * **Why A:** Judicious is about wise selection, not quantity — more can mean less precise.
    * **Why C:** Accuracy alone is not judiciousness; the CHOICE must serve the argument.
    * **Why D:** Length is irrelevant; aptness to the point is what counts.
 
-17. **Type: MCQ [Tests Vocabulary]**
+17. **Type: MCQ [Tests AO1]**
    * **Question:** AQA Level 6 AO1 rewards a "conceptualised" response. A conceptualised response is one that...
-   * **Options:** A) uses difficult, complicated vocabulary to signal sophistication, B) is organised around an idea or concept, treating character and plot as evidence for that idea, C) packs in as much relevant historical context as it can, D) is very long and dense with closely-detailed observation
+   * **Options:** A) uses difficult, complicated vocabulary to signal sophistication, B) is built around an idea, with plot as its evidence, C) packs in as much relevant historical context as it can, D) is very long and dense with closely-detailed observation
    * **Correct:** B
-   * **AO:** Vocabulary
-   * **Feedback:** ✓ Correct. "Conceptualised" means built around a concept — e.g. reading the play as an exploration of autonomy versus inherited authority, with characters and events as evidence. It is about organising ideas, not about complexity, length or context-stuffing.
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. "Conceptualised" means built around a concept — e.g. reading the play as an exploration of autonomy versus inherited authority, with characters and events as evidence. AQA's top-level response "takes a conceptualised approach to the full task". It is about organising ideas, not about complexity, length or context-stuffing.
    * **Why A:** Hard vocabulary is not a concept — conceptualised is about the idea, not the wording.
    * **Why C:** Context supports AO3; it does not make a response conceptualised.
    * **Why D:** Length is not conceptualisation — a short response can be conceptualised.
 
-18. **Type: MCQ [Tests Vocabulary]**
-   * **Question:** AQA AO2 moves from "explanation of effects" (Level 4) to "exploration of effects" (Level 6). What does "exploration" add that "explanation" does not?
-   * **Options:** A) It names a greater number of techniques in the response, B) It opens up several possible effects or meanings and how they shift the reader, rather than stating a single fixed effect, C) It develops the same single effect at greater length, D) It works without relying on direct quotations
+18. **Type: MCQ [Tests AO2]**
+   * **Question:** For AO2, AQA moves from "clear explanation of the effects" (Level 4) to "Exploration of effects" (Level 6). What does "exploration" add that "explanation" does not?
+   * **Options:** A) It names a greater number of techniques across the whole response, B) It opens up several possible effects, not one fixed effect, C) It develops the same single effect at greater length, D) It works without relying on direct quotations
    * **Correct:** B
-   * **AO:** Vocabulary
+   * **AO:** AO2
    * **Feedback:** ✓ Correct. "Explanation" states one effect; "exploration" opens up several possible meanings and how they work on the reader. That shift from a single stated effect to layered, opened-up meaning is the AQA Level 4 to Level 6 climb for AO2.
    * **Why A:** Naming more techniques is feature-spotting, not exploration.
    * **Why C:** Length is not the difference — depth of opened-up meaning is.
    * **Why D:** Quotations are still needed; exploration works through precise references.
+
+19. **Type: Ranking [Tests AO1]**
+   * **Question:** These AQA AO1 bullets all describe how a response uses REFERENCES. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) Apt references integrated into interpretation(s), B) Reference to relevant details, C) Judicious use of precise references to support interpretation(s), D) References used to support a range of relevant comments
+   * **Correct:** B, D, A, C
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. Level 1: "Reference to relevant details." Level 3: "References used to support a range of relevant comments." Level 5: "Apt references integrated into interpretation(s)." Level 6: "Judicious use of precise references to support interpretation(s)." The climb is from mentioning details, to supporting comments, to weaving references into a reading, to choosing the precise reference that proves it.
+   * **WhyWrong:** Lowest to highest: "Reference to relevant details", then references that "support a range of relevant comments", then "Apt references integrated", then "Judicious use of precise references".
+
+20. **Type: MCQ [Tests AO1]**
+   * **Question:** The task says "Starting with this speech, explore how Shakespeare presents…". A student writes a strong answer on the printed speech and never mentions the rest of the play. What can happen to the mark?
+   * **Options:** A) It can be capped at the top of Level 2, which is 10 marks, B) It is marked as normal, because the printed speech is the focus, C) It is capped at the top of Level 4, which is 20 marks, D) It scores 0, because half of the task is missing
+   * **Correct:** A
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. AQA: a response that misses a defining feature of the task, such as "Paper 1 Section A response to extract and whole text", is "classed as a rubric infringement and could, as referenced in the mark scheme, be 'capped' at the top of Level 2." Level 2 is 6–10 marks.
+   * **Why B:** The speech and the whole play are both defining features of the task; missing one is a rubric infringement.
+   * **Why C:** The cap is the top of Level 2, not Level 4.
+   * **Why D:** It is capped, not zeroed; the quality of the speech answer still earns marks.
+
+21. **Type: MCQ [Tests AO1]**
+   * **Question:** A student's answer on Juliet makes a strong point that does not appear in AQA's indicative content. How is that point marked?
+   * **Options:** A) It is credited, because the list is a guide and not exhaustive, B) It is ignored, because only the points AQA listed can earn credit, C) It is credited only if the point is about the balcony scene, D) It is moved to AO3, because it is a personal response
+   * **Correct:** A
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. AQA: "Indicative content in the mark scheme is provided as a guide for examiners. It is not intended to be exhaustive and you must credit other valid points." And: "Students do not have to cover all of the points mentioned in the indicative content to reach the highest level of the mark scheme."
+   * **Why B:** Examiners "must credit other valid points".
+   * **Why C:** No scene is privileged; any valid point is credited.
+   * **Why D:** A personal response is AO1: "develop an informed personal response".
+
+22. **Type: Select All [Tests AO1]**
+   * **Question:** June 2024 asked: "Starting with this speech, explore how Shakespeare presents the difficulties faced by Juliet in Romeo and Juliet." Select ALL the points AQA listed under AO1 (and none it listed under AO2 or AO3).
+   * **Options:** A) Juliet's frustration and impatience at this moment in the play, B) Effects of dramatic irony that foreshadow later events, C) Juliet's feelings for Romeo, and about being a young girl in love, D) Ideas about the effects of conflict on the families of Verona
+   * **Correct:** A, C
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. Under AO1 AQA listed "the difficulties related to Juliet’s frustration / impatience at this moment" and "Juliet’s feelings for Romeo and about being a young girl in love". Dramatic irony is AO2 ("effects of dramatic irony"), and "ideas about effects of conflict" is AO3.
+   * **Why B:** Dramatic irony is a method: AQA lists "effects of dramatic irony" under AO2.
+   * **Why D:** AQA lists "ideas about effects of conflict" under AO3.
+
+23. **Type: MCQ [Tests AO1]**
+   * **Question:** June 2024's Juliet task had two bullets. What do they ask you to write about, taken together?
+   * **Options:** A) The printed speech and the play as a whole, B) The printed speech, worked through line by line, C) The play as a whole, leaving out the speech, D) Shakespeare's life and the play's first performances
+   * **Correct:** A
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. The bullets were "how Shakespeare presents the difficulties faced by Juliet in this speech" and "how Shakespeare presents the difficulties faced by Juliet in the play as a whole". Missing either half is a rubric infringement that can cap the answer at the top of Level 2.
+   * **Why B:** The second bullet widens the task to "the play as a whole".
+   * **Why C:** The first bullet asks about "this speech"; leaving it out misses half the task.
+   * **Why D:** Neither bullet asks about Shakespeare's life; that would be context at most.
+
+24. **Type: Fill [Tests AO1]**
+   * **Question:** Complete the AQA Level 5 AO1 descriptor: "[BLANK], developed response to task and whole text."
+   * **Answer:** Thoughtful
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. Level 5 AO1: "Thoughtful, developed response to task and whole text." The band is called "Thoughtful, developed consideration". Level 4 is "Clear, explained response to task and whole text"; Level 6 is "Critical, exploratory, conceptualised response to task and whole text".
+   * **WhyWrong:** The AQA word is "Thoughtful": Level 5 considers the task, where Level 4 explains it clearly.
+
+25. **Type: Ranking [Tests AO2]**
+   * **Question:** These AQA AO2 bullets all describe how a response handles the writer's METHODS. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) Examination of the writer's methods with subject terminology used effectively to support consideration of methods, B) Identification of the writer's methods, C) Analysis of the writer's methods with subject terminology used judiciously, D) Explained/relevant comments on the writer's methods with some relevant use of subject terminology
+   * **Correct:** B, D, A, C
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Level 2: "Identification of the writer's methods." Level 3: "Explained/relevant comments on the writer's methods with some relevant use of subject terminology." Level 5: "Examination of the writer's methods with subject terminology used effectively to support consideration of methods." Level 6: "Analysis of the writer's methods with subject terminology used judiciously."
+   * **WhyWrong:** Lowest to highest: "Identification", then "Explained/relevant comments", then "Examination", then "Analysis".
+
+26. **Type: Ranking [Tests AO2]**
+   * **Question:** These AQA AO2 bullets all describe how a response handles the EFFECTS of the writer's methods. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) Understanding of effects of writer's methods to create meanings, B) Exploration of effects of writer's methods to create meanings, C) Identification of effects of writer's methods to create meanings, D) Examination of effects of writer's methods to create meanings
+   * **Correct:** C, A, D, B
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Level 3: "Identification of effects of writer's methods to create meanings." Level 4: "Understanding of effects". Level 5: "Examination of effects". Level 6: "Exploration of effects". Only the first word changes, and that word is the level.
+   * **WhyWrong:** Lowest to highest: "Identification", "Understanding", "Examination", "Exploration".
+
+27. **Type: Select All [Tests AO2]**
+   * **Question:** For June 2024's Juliet question, select ALL the points AQA listed under AO2, the writer's methods (and none it listed under AO1 or AO3).
+   * **Options:** A) The language Juliet uses to express her impatience and frustration, B) Juliet's relationship with the Nurse, set beside the one with her parents, C) Imagery such as light, time, speed and birds, D) Ideas about Juliet's powerlessness and lack of independence
+   * **Correct:** A, C
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. AQA's AO2 list includes "language used by Juliet to express her impatience / frustration at this moment in the play" and "imagery such as light / time / speed / birds". Her relationship with the Nurse is listed under AO1, and her powerlessness under AO3.
+   * **Why B:** AQA lists Juliet's relationship with the Nurse, "possibly compared with the relationship with her parents", under AO1: what happens, not how it is written.
+   * **Why D:** AQA lists "ideas about Juliet’s powerlessness / lack of independence / reliance on others" under AO3.
+
+28. **Type: MCQ [Tests AO2]**
+   * **Question:** AQA's June 2024 list includes "effects of dramatic irony, or language used to foreshadow later events". Which kind of point is that?
+   * **Options:** A) A method: the audience knows more than Juliet does, B) Context: Elizabethan beliefs about fate and the stars, C) Plot: the events that happen to Juliet later on, D) Technical accuracy in the student's own writing
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. AQA lists "effects of dramatic irony, or language used to foreshadow later events" under AO2: the gap between what the audience knows and what Juliet knows is a dramatic method.
+   * **Why B:** Beliefs about fate would be context (AO3); this point is about how the play is built.
+   * **Why C:** What happens later is AO1 content; this point is about how Shakespeare prepares us for it.
+   * **Why D:** AO4 is the student's own spelling and punctuation, not a point about the play.
+
+29. **Type: MCQ [Tests AO2]**
+   * **Question:** A response's subject terminology is "used effectively to support consideration of methods". Which AQA AO2 Level does that wording describe?
+   * **Options:** A) Level 5, B) Level 4, C) Level 6, D) Level 3
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Level 5: "Examination of the writer's methods with subject terminology used effectively to support consideration of methods." Level 4 has "appropriate use of relevant subject terminology"; Level 6 has "subject terminology used judiciously".
+   * **Why B:** Level 4's terminology is "appropriate use of relevant subject terminology".
+   * **Why C:** Level 6's terminology is "used judiciously".
+   * **Why D:** Level 3 has "some relevant use of subject terminology".
+
+30. **Type: Fill [Tests AO2]**
+   * **Question:** AQA describes the top of Level 6: "There will be a fine-grained and [BLANK] analysis of methods supported by judicious use of subject terminology."
+   * **Answer:** insightful
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Top of Level 6: "There will be a fine-grained and insightful analysis of methods supported by judicious use of subject terminology." Fine-grained means close to the words; insightful means it sees what they do.
+   * **WhyWrong:** The AQA word is "insightful": analysis that sees what the methods do, not only what they are.
+
+31. **Type: MCQ [Tests AO2]**
+   * **Question:** A response says only that Shakespeare "chose to give Juliet a long speech in this scene", with no comment on why. Which AQA AO2 Level does that fit?
+   * **Options:** A) Level 1: awareness of the writer making choices, B) Level 2: identification of the writer's methods, C) Level 3: explained comments on the methods, D) Level 4: clear explanation of the methods
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Level 1 AO2: "Awareness of the writer making choices." The response notices that Shakespeare chose something, but names no method. Level 2 begins with "Identification of the writer's methods".
+   * **Why B:** No method is named, so it has not reached "Identification of the writer's methods".
+   * **Why C:** Nothing is explained, so it is below "Explained/relevant comments on the writer's methods".
+   * **Why D:** "Clear explanation of the writer's methods" needs an explanation; there is none.
+
+32. **Type: MCQ [Tests AO2]**
+   * **Question:** AQA's mark scheme names two assessment objectives as "the key skills" of the Shakespeare essay. Which two?
+   * **Options:** A) AO1 and AO2, B) AO2 and AO3, C) AO1 and AO3, D) AO3 and AO4
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. AQA: "Each mark scheme places assessment objectives AO1 and AO2 as the key skills." The split shows it: "30 marks – AO1=12, AO2=12, AO3=6".
+   * **Why B:** AO3 carries 6 of the 30 marks; AO1 carries 12.
+   * **Why C:** AO2 carries 12 marks; AO3 carries 6.
+   * **Why D:** AO4 is 4 separate marks for technical accuracy, outside the 30.
+
+33. **Type: Ranking [Tests AO3]**
+   * **Question:** These AQA AO3 bullets describe how a response handles CONTEXT. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) Thoughtful consideration of ideas/perspectives/contextual factors shown by examination of detailed links between context/text/task, B) Simple comment on explicit ideas/contextual factors, C) Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task, D) Some understanding of implicit ideas/perspectives/contextual factors shown by links between context/text/task
+   * **Correct:** B, D, A, C
+   * **AO:** AO3
+   * **Feedback:** ✓ Correct. Level 1: "Simple comment on explicit ideas/contextual factors." Level 3: "Some understanding of implicit ideas/perspectives/contextual factors shown by links between context/text/task." Level 5: "Thoughtful consideration of ideas/perspectives/contextual factors shown by examination of detailed links between context/text/task." Level 6: "Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task."
+   * **WhyWrong:** Lowest to highest: "Simple comment", then "Some understanding", then "Thoughtful consideration", then "Exploration". The links grow from none, to "links", to "detailed links", to "specific, detailed links".
+
+34. **Type: MCQ [Tests AO3]**
+   * **Question:** A student links Romeo and Juliet to the conventions of tragedy, where the lovers are doomed from the Prologue. Does AQA count that as context (AO3)?
+   * **Options:** A) Yes: AQA says context can include literary genres, B) No: context must be a historical date or fact, C) No: genre is a method, so it belongs to AO2, not AO3, D) Only if the student names the genre's first author
+   * **Correct:** A
+   * **AO:** AO3
+   * **Feedback:** ✓ Correct. AQA: "Context, where relevant, may also apply to literary contexts such as genres". It also says: "Acknowledgement of the universality of a literary text is an integral part of relating to it contextually."
+   * **Why B:** AQA says context can be considered "in a flexible way"; it is not limited to dates.
+   * **Why C:** AQA names genres as a literary context, so genre can serve AO3.
+   * **Why D:** No name is required; what counts is the link to the text and the task.
+
+35. **Type: MCQ [Tests AO3]**
+   * **Question:** How many of the 30 marks on the AQA Shakespeare essay are for AO3?
+   * **Options:** A) 6, B) 12, C) 10, D) 4
+   * **Correct:** A
+   * **AO:** AO3
+   * **Feedback:** ✓ Correct. AQA: "30 marks – AO1=12, AO2=12, AO3=6". Context matters, but it carries half the weight of AO1 or AO2, so it should drive your argument, not replace it.
+   * **Why B:** 12 is the weight of AO1, and also of AO2.
+   * **Why C:** No AO carries 10 marks on this question.
+   * **Why D:** 4 is AO4, the separate marks for technical accuracy.
+
+36. **Type: Select All [Tests AO3]**
+   * **Question:** For June 2024's Juliet question, select ALL the points AQA listed under AO3, context (and none it listed under AO1 or AO2).
+   * **Options:** A) Ideas about Juliet's powerlessness and lack of independence, B) Ideas about the effects of conflict, C) The language Juliet uses to express her impatience, D) Ideas about romantic relationships, and Juliet as a young woman in one
+   * **Correct:** A, B, D
+   * **AO:** AO3
+   * **Feedback:** ✓ Correct. AQA's AO3 list: "ideas about Juliet’s powerlessness / lack of independence / reliance on others", "ideas about effects of conflict" and "ideas about romantic relationships / Juliet as a young woman involved in one". The language Juliet uses is an AO2 method.
+   * **Why C:** AQA lists "language used by Juliet to express her impatience / frustration at this moment in the play" under AO2, the writer's methods.
+
+37. **Type: MCQ [Tests AO4]**
+   * **Question:** On AQA Literature Paper 1, where are the 4 AO4 marks for technical accuracy awarded?
+   * **Options:** A) Section A only: the Shakespeare question, B) Section B only: the 19th-century novel question, C) On both questions, 4 marks on each one, D) Neither: AO4 is on the Language papers
+   * **Correct:** A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. AQA: "AO4 will be assessed on Section A only." Section A is Shakespeare, so the Romeo and Juliet essay carries the 4 AO4 marks; the 19th-century novel essay does not.
+   * **Why B:** "AO4 will be assessed on Section A only", and Section B is the 19th-century novel.
+   * **Why C:** Only Section A carries AO4 on this paper.
+   * **Why D:** Literature has its own AO4: "Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation."
+
+38. **Type: Ranking [Tests AO4]**
+   * **Question:** Rank these AQA AO4 performance descriptions from the fewest marks to the most (letters in order, fewest first).
+   * **Options:** A) Spells and punctuates with consistent accuracy, with effective control of meaning, B) Spells and punctuates with reasonable accuracy; any errors do not hinder meaning, C) Spells and punctuates with considerable accuracy, with general control of meaning, D) Writes nothing, or fails to meet threshold performance
+   * **Correct:** D, B, C, A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. 0 marks: "Where a candidate writes nothing or fails to meet threshold performance they should receive 0 marks." 1 mark (Threshold): "reasonable accuracy" where "any errors do not hinder meaning". 2–3 marks (Intermediate): "considerable accuracy" and "general control of meaning". 4 marks (High): "consistent accuracy" and "effective control of meaning".
+   * **WhyWrong:** Fewest to most: nothing, then "reasonable accuracy", then "considerable accuracy", then "consistent accuracy".
+
+39. **Type: MCQ [Tests AO4]**
+   * **Question:** A Romeo and Juliet essay spells and punctuates "with considerable accuracy" and achieves "general control of meaning". How many AO4 marks?
+   * **Options:** A) 2–3 marks, B) 4 marks, C) 1 mark, D) 0 marks
+   * **Correct:** A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. Intermediate performance (2–3 marks): "learners spell and punctuate with considerable accuracy, and use a considerable range of vocabulary and sentence structures to achieve general control of meaning."
+   * **Why B:** 4 marks needs "consistent accuracy" and "effective control of meaning".
+   * **Why C:** 1 mark is Threshold: "reasonable accuracy".
+   * **Why D:** 0 marks is for writing nothing or failing to "meet threshold performance".
+
+40. **Type: Fill [Tests AO4]**
+   * **Question:** Complete AQA's AO4 high performance descriptor: learners "consistently use vocabulary and sentence structures to achieve effective [BLANK] of meaning."
+   * **Answer:** control
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. High performance (4 marks): "learners spell and punctuate with consistent accuracy, and consistently use vocabulary and sentence structures to achieve effective control of meaning."
+   * **WhyWrong:** The AQA word is "control": at 4 marks the writing says exactly what the student means, every time.
 
 ### **SECTION B: EDEXCEL GCSE (1ET0 — Shakespeare)**
 

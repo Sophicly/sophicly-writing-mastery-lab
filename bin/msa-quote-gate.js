@@ -89,6 +89,19 @@ const PILOTS = [{
     jun24: [],
     JUN24_ITEMS: [],
     ALLOW: {},
+}, {
+    // v7.20.821 (WML 345 A, FIXLIST #879): #815d step 4 — Romeo and Juliet AQA (4 attempts by 2 real students). Paper 1
+    // Section A (Shakespeare) → AO4 assessed → Macbeth's mix. The -raw extraction of the June 2024 R&J page lost its spaces
+    // ("beinga younggirlin love"), so that one page is also read from a -layout extraction (…-p12-romeo-juliet-layout.txt).
+    bank: 'protocols/shared/mark-scheme-assessment/banks/romeo_and_juliet.md',
+    section: 'AQA (',
+    count: 40,
+    ao: { AO1: 14, AO2: 14, AO3: 7, AO4: 5 },
+    sources: ['research/sources/aqa-8702-1-jun24-ms.txt', 'research/sources/aqa-8702-1-jun24-ms-p12-romeo-juliet-layout.txt',
+        'protocols/aqa/literature/modules/knowledge-mark-scheme.md'],
+    jun24: [],
+    JUN24_ITEMS: [],
+    ALLOW: {},
 }];
 
 // The section's items: "N. **Type: X [Tests AOn]**" blocks inside the section that starts "### **SECTION …: <label>".
@@ -134,6 +147,14 @@ function check(pilot, md, srcText) {
                 .replace(/\b(?:Sources?|Sections?|Spec|Specification|Paper|Component|Part|Text|Level|Question)\s+[A-E]\b/g, '');
             const m = body.match(/(?<![A-Za-z\u2019'])([A-D])(?=\s+(?:\(|is\b|then\b)|,\s*[A-D]\b)/);
             if (m) errs.push(`#${it.n} names option ${m[1]} by its letter — options shuffle when served, so name the answer by its words`);
+            // v7.20.821 (FIXLIST #880): AQA Level 2 IS "Supported response to task and text" / "Comments on references", so a
+            // note may never put a comment with no evidence at Level 2. Every ranking ladder inherited "the bare value-judgement,
+            // with no method and no evidence, is Level 2 (Supported…)" — a quote-true sentence that contradicts its own quote.
+            for (const sentence of body.split(/(?<=[.!?])\s+/)) {
+                if (/\b(?:no evidence|unsupported|no (?:supporting )?references?)\b/i.test(sentence) && /\bLevel 2\b|\bSupported, relevant\b/.test(sentence)) {
+                    errs.push(`#${it.n} puts a comment with no evidence at Level 2 — AQA Level 2 is "Supported response to task and text"`);
+                }
+            }
         }
         if (pilot.ALLOW[it.n]) continue;
         const pool = pilot.JUN24_ITEMS.includes(it.n) ? srcText.main + ' ' + srcText.jun24 : srcText.main;
@@ -158,6 +179,7 @@ if (process.argv.includes('--selftest')) {
         ['a fabricated quote', mk('Analyses the impact of the writer\'s methods', 'Shows perceptive'), 1],
         ['a June 2024 quote outside the allowed items', mk('the lizards darted', 'Shows perceptive'), 1],
         ['a note that names an option by its letter', mk('Shows perceptive', 'Shows perceptive') + '   * **WhyWrong:** B is Level 1, then D.\n', 1],
+        ['a comment with no evidence put at Level 2', mk('Shows perceptive', 'Shows perceptive') + '   * **WhyWrong:** The bare value-judgement, with no method and no evidence, is Level 2.\n', 1],
     ];
     let bad = 0;
     for (const [name, md, want] of cases) {
@@ -166,7 +188,7 @@ if (process.argv.includes('--selftest')) {
         if (!ok) bad++;
         console.log((ok ? '  ✓ ' : '  ✗ ') + name + (want ? ' fails' : ' passes') + (ok ? '' : ` (got ${got} error(s))`));
     }
-    console.log(bad ? 'msa-quote-gate selftest FAILED' : 'msa-quote-gate selftest passed (4 cases)');
+    console.log(bad ? 'msa-quote-gate selftest FAILED' : 'msa-quote-gate selftest passed (5 cases)');
     process.exit(bad ? 1 : 0);
 }
 
