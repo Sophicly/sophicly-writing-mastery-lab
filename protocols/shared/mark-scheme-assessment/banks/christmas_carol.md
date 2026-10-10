@@ -12,33 +12,36 @@ Question types: MCQ · Select All · Fill · Ranking. Boards differ for the 19th
 Edexcel IGCSE (4ET1) = AO1+AO2+AO4 with AO4 as CONTEXT, not SPaG; Eduqas (C720U) = AO1+AO2+AO3 equally weighted; OCR (J352) = AO1+AO2+AO3 context+AO4 technical accuracy, marked holistically;
 Cambridge IGCSE (0475) = knowledge-through-reference / critical understanding / response to the writer's effects / personal engagement; SQA = Understanding/Analysis/Evaluation.
 
+AQA section (v7.20.820, FIXLIST #877, #815d — Neil: "40 per bank"): 40 items. Every quotation in a Feedback or Why line is
+verbatim from AQA's June 2024 8702/1 mark scheme (`research/sources/aqa-8702-1-jun24-ms.txt`; gate: `bin/msa-quote-gate.js`).
+
 ### **SECTION A: AQA (8702)**
 
 1. **Type: MCQ [Tests AO1]**
-   * **Question:** A student writes: "Dickens presents Scrooge as a miser who is visited by three spirits and then becomes generous." For AO1, which AQA Level does this response sit at, and why?
-   * **Options:** A) Level 6 — it is a critical, exploratory, conceptualised response to task and whole text, B) Level 5 — it is a thoughtful, developed response examining methods with apt references integrated, C) Level 3 — it makes some explained comment but stays at character and plot level rather than concept, D) Level 1 — it is a simple, explicit comment with no explanation
+   * **Question:** A student's whole response follows Scrooge from stave to stave. For each visit it explains what he sees and why he changes, but it never builds an argument about an idea. For AO1, which AQA Level does this response sit at, and why?
+   * **Options:** A) Level 6 — a critical, conceptualised argument organised around an idea, B) Level 5 — a thoughtful, developed response with apt, integrated references, C) Level 3 — some explained comment, but at plot level rather than concept, D) Level 1 — a simple, undeveloped comment with no explanation at all
    * **Correct:** C
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA Level 6 AO1 rewards a "critical, exploratory, conceptualised response to task and whole text." Tracing what Scrooge does across the staves is character-and-plot comment — AQA's "some explained response" at Level 3. To climb, treat Scrooge as a construct through whom Dickens argues an idea (social responsibility answering Malthusian neglect), not narrate the conversion.
-   * **Why A:** The conceptualised, critical argument the top band demands is absent — this recounts a transformation, it does not argue an idea.
-   * **Why B:** A thoughtful, developed response examines methods with apt references integrated, and this offers neither developed method nor quotation.
-   * **Why D:** It is explained comment about the character, not a bare simple comment, so it sits above the lowest band.
+   * **Feedback:** ✓ Correct. Explaining each visit in turn is AQA Level 3 AO1: "Some explained response to task and whole text." Level 6 rewards a "Critical, exploratory, conceptualised response to task and whole text." To climb, treat Scrooge as a construct through whom Dickens argues an idea (social responsibility answering neglect), not narrate the conversion.
+   * **Why A:** There is no argument about an idea, so it cannot be "conceptualised".
+   * **Why B:** Level 5 is a "Thoughtful, developed response to task and whole text"; explaining the plot stage by stage is not yet developed thought.
+   * **Why D:** It explains each visit, so it is above Level 1's "Simple comments relevant to task and text".
 
 2. **Type: Fill [Tests AO1]**
-   * **Question:** Complete the AQA Level 6 AO1 descriptor. A top-band response to the novel is "critical, exploratory and [BLANK] in its response to task and whole text."
+   * **Question:** Complete the AQA Level 6 AO1 descriptor: "Critical, exploratory, [BLANK] response to task and whole text."
    * **Answer:** conceptualised
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. The AQA Level 6 AO1 strand is "critical, exploratory, conceptualised response to task and whole text." "Conceptualised" separates the top band — the response is organised around an idea, not around Scrooge's actions or the sequence of staves.
+   * **Feedback:** ✓ Correct. The AQA Level 6 AO1 strand is "Critical, exploratory, conceptualised response to task and whole text." "Conceptualised" separates the top band — the response is organised around an idea, not around Scrooge's actions or the sequence of staves.
    * **WhyWrong:** The missing AQA word is "conceptualised" — treating the novella as the vehicle for a concept is what lifts AO1 into Level 6.
 
 3. **Type: MCQ [Tests AO1]**
    * **Question:** A student says: "AO1 just means showing you understand the novella." Which AQA Level does "showing understanding" actually describe, and what does Level 6 additionally require?
-   * **Options:** A) It describes Level 6 — understanding the novella is already the top-band conceptualised response, B) It describes Level 3–4 (some or clear explained understanding); Level 6 additionally requires a critical, exploratory, conceptualised response, C) It describes Level 1 — understanding is the bare simple comment of the lowest band, D) It describes AO3 — understanding the novella is really a matter of context
+   * **Options:** A) Level 6 — understanding the novella already is the top-band conceptualised response, B) Level 3–4 — Level 6 also needs a critical, exploratory, conceptualised response, C) Level 1 — understanding is only the simple comment of the lowest band, D) AO3 — understanding the novella is really a matter of knowing its context
    * **Correct:** B
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. "Showing understanding" is AQA Level 3–4 language ("some explained response" then "clear understanding"). It is the commonest way students undersell the top band to themselves. Level 6 AO1 is a "critical, exploratory, conceptualised response... judicious use of precise references."
+   * **Feedback:** ✓ Correct. "Showing understanding" is AQA Level 3–4 language: Level 3 is "Some explained response to task and whole text", and Level 4 is "Clear understanding", a "Clear, explained response to task and whole text". It is the commonest way students undersell the top band to themselves. Level 6 AO1 is a "Critical, exploratory, conceptualised response to task and whole text", with "Judicious use of precise references to support interpretation(s)".
    * **Why A:** The top band is far more than understanding — it is a conceptualised, critical argument.
-   * **Why C:** Explained understanding sits well above a simple comment.
+   * **Why C:** Explained understanding sits well above Level 1's "Simple comments relevant to task and text".
    * **Why D:** Context is the AO3 strand, not AO1.
 
 4. **Type: Ranking [Tests AO1]**
@@ -46,34 +49,34 @@ Cambridge IGCSE (0475) = knowledge-through-reference / critical understanding / 
    * **Options:** A) "Dickens constructs Scrooge as the embodiment of Malthusian ideology, using the redemption to argue that social responsibility, not charity alone, answers the neglect the 1834 Poor Law entrenched.", B) "Scrooge is a mean man who is visited by three spirits and learns to be kind.", C) "Greed is a bad thing in the novella, and it makes people lonely and unhappy.", D) "Dickens presents greed as destructive through Scrooge's treatment of Bob Cratchit, making the reader judge his coldness."
    * **Correct:** B, C, D, A
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. Each rung is one clear AQA band higher. The plot-summary rung, narrating events only, is Level 1 (simple comment). The bare value-judgement about a bad thing causing unhappiness, with no method and no evidence, is Level 2 (supported comment). The clear, explained rung that names a method (the treatment of Cratchit) and its effect on the reader is Level 4 (clear understanding). The critical, conceptualised rung, arguing an idea from the first line, is Level 6. The ladder is plot → comment → explained method-and-effect → concept.
-   * **WhyWrong:** Weakest to strongest runs from plot narration, to a value-judgement with no method, to an explained method plus reader effect, to a conceptualised argument. Each rung is exactly one AQA Level higher; the jump to Level 6 is the move from explaining events to arguing a concept.
+   * **Feedback:** ✓ Correct. The plot-summary opening, narrating events only, is Level 1: AQA says such a response "is likely to be narrative and/or descriptive in approach". The bare value-judgement about a bad thing causing unhappiness, with no method and no evidence, is Level 2 ("Supported, relevant comments"). The opening that names a method (the treatment of Cratchit) and its effect on the reader is Level 4, a "Clear, explained response to task and whole text". The opening that argues an idea from the first line is Level 6: "Critical, exploratory, conceptualised". The ladder is plot → comment → explained method-and-effect → concept.
+   * **WhyWrong:** Weakest to strongest runs from plot narration, to a value-judgement with no method, to an explained method plus reader effect, to a conceptualised argument. The jump to Level 6 is the move from explaining events to arguing a concept.
 
 5. **Type: MCQ [Tests AO1]**
    * **Question:** Two responses both quote "decrease the surplus population." One lists it after a point. The other selects it to pin an argument that Scrooge parrots Malthusian economics before his awakening. For AO1, which AQA phrase distinguishes the second from the first?
-   * **Options:** A) It embeds more quotations to demonstrate the breadth of its supporting evidence, B) It makes "judicious use of precise references to support interpretations" rather than general reference, C) It integrates the quotation with a clearly explained comment on its effect, D) It identifies the writer's method in the quotation using subject terminology
+   * **Options:** A) It embeds more quotations to demonstrate the breadth of its supporting evidence, B) It makes judicious use of precise references to support interpretation, C) It integrates the quotation with a clearly explained comment on its effect, D) It identifies the writer's method in the quotation using subject terminology
    * **Correct:** B
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. AQA Level 6 AO1 is "judicious use of precise references to support interpretations." "Judicious" means the reference is chosen to do argumentative work, not listed. A precise reference tied to a concept outweighs many general ones.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO1 is "Judicious use of precise references to support interpretation(s)." "Judicious" means the reference is chosen to do argumentative work, not listed. A precise reference tied to a concept outweighs many general ones.
    * **Why A:** AQA rewards judicious selection, not quantity — more quotations can dilute precision.
    * **Why C:** Explaining the effect of the quotation is AO2 work; the AO1 move is how the reference is selected to support interpretation.
    * **Why D:** Naming the method and terminology is AO2 surface behaviour, not the AO1 distinction of judicious selection.
 
 6. **Type: MCQ [Tests AO2]**
    * **Question:** A paragraph reads: "Dickens uses the adjective 'wolfish'. This is a technique. It tells us the children are dangerous." For AO2, which AQA Level fits, and what is the ceiling?
-   * **Options:** A) Level 6 — analysis with sustained exploration of the effects, B) Level 5 — examination of how the writer's methods work, C) Level 3 — identification of the method with only a general comment on effect, D) Level 4 — clear explanation of the method and its effect
+   * **Options:** A) Level 6 — analysis with sustained exploration of the effects, B) Level 5 — examination of how the writer's methods work, C) Level 3 — the method named, with one obvious effect stated, D) Level 4 — clear explanation of the method and its effect
    * **Correct:** C
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. Naming the adjective and adding "it tells us they are dangerous" is AQA Level 3 AO2: identification of the writer's methods with only a general comment. Level 4 needs clear explanation of the effect; Level 6 is "analysis of the writer's methods with subject terminology used judiciously" plus "exploration of effects."
-   * **Why A:** No analysis and no exploration of layered effects — the top band is out of reach here.
-   * **Why B:** Examination requires sustained working-through of how the method makes meaning, absent here.
-   * **Why D:** Clear explanation needs the effect explained, not merely asserted.
+   * **Feedback:** ✓ Correct. Naming the adjective is Level 2's "Identification of the writer's methods". Adding "It tells us the children are dangerous" states one obvious effect: Level 3's "Identification of effects of writer's methods to create meanings", at best. Level 4 needs "Clear explanation of the writer's methods"; Level 5 "Examination of the writer's methods"; Level 6 "Analysis of the writer's methods with subject terminology used judiciously".
+   * **Why A:** Level 6 needs "Exploration of effects of writer's methods to create meanings"; one stated effect is not explored.
+   * **Why B:** Level 5 needs "Examination of effects of writer's methods to create meanings"; nothing here is examined.
+   * **Why D:** Level 4 needs "Clear explanation of the writer's methods"; the effect is stated, not explained.
 
 7. **Type: Fill [Tests AO2]**
    * **Question:** Complete the AQA Level 6 AO2 descriptor: "Analysis of the writer's methods with subject terminology used [BLANK]."
    * **Answer:** judiciously
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA Level 6 AO2 is "analysis of the writer's methods with subject terminology used judiciously." "Judiciously" warns against feature-spotting: terminology earns marks only when it is selected to serve the analysis of effect.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO2 is "Analysis of the writer's methods with subject terminology used judiciously." "Judiciously" warns against feature-spotting: terminology earns marks only when it is selected to serve the analysis of effect.
    * **WhyWrong:** The AQA word is "judiciously" — terminology used to serve analysis of effect, not scattered to impress.
 
 8. **Type: Select All [Tests AO2]**
@@ -81,7 +84,7 @@ Cambridge IGCSE (0475) = knowledge-through-reference / critical understanding / 
    * **Options:** A) It moves from identifying a method to analysing how it creates meaning, B) It explores several effects the writer's methods have on the reader, C) It names as many techniques as possible to demonstrate range, D) It uses subject terminology judiciously, only where it serves the analysis
    * **Correct:** A, B, D
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. AQA Level 6 AO2 is "analysis of the writer's methods... exploration of effects of the writer's methods... subject terminology used judiciously." Analysis, exploration of effects and judicious terminology are all top-band. Maximising technique-count is feature-spotting, which the mark scheme penalises.
+   * **Feedback:** ✓ Correct. AQA Level 6 AO2 is "Analysis of the writer's methods with subject terminology used judiciously" and "Exploration of effects of writer's methods to create meanings." Analysis, exploration of effects and judicious terminology are all top-band. Maximising technique-count is feature-spotting, which the mark scheme does not reward.
    * **Why C:** Naming many techniques is feature-spotting — AQA rewards judicious selection and exploration of effect, not quantity.
 
 9. **Type: Ranking [Tests AO2]**
@@ -89,34 +92,34 @@ Cambridge IGCSE (0475) = knowledge-through-reference / critical understanding / 
    * **Options:** A) "Dickens's animal adjective strips the child of childhood, so that 'wolfish' becomes an analysis of how neglect itself, not the boy, has bred the menace society then fears.", B) "Dickens uses an adjective to describe the child.", C) "Dickens's image of the 'wolfish' child examines how deprivation has begun to deform the young into what the comfortable most dread.", D) "Dickens uses the word 'wolfish' to make the child seem frightening and animal-like."
    * **Correct:** B, D, C, A
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. Each rung is one clear AQA AO2 band higher. The bare identification of a method, with no effect, is Level 3. The clear explanation of one simple effect (frightening and animal-like) is Level 4. The sustained examination of how the method deforms the child is Level 5. The analysis with exploration of layered effects, tied to a concept about neglect, is Level 6. The ladder is identify, explain one effect, examine how it works, then analyse-and-explore.
-   * **WhyWrong:** Weakest to strongest runs from identifying the adjective, to explaining one effect, to examining how the method works, to analysing and exploring layered effects. Level 6 explores several effects, not a single stated one.
+   * **Feedback:** ✓ Correct. Naming an adjective and nothing more is Level 2: "Identification of the writer's methods". One stated effect (frightening and animal-like) is Level 3: "Identification of effects of writer's methods to create meanings". Working through how the image deforms the child is Level 5: "Examination of effects of writer's methods to create meanings". Opening up layered effects, tied to an idea about neglect, is Level 6: "Exploration of effects of writer's methods to create meanings". The ladder is identify, state one effect, examine how it works, then explore.
+   * **WhyWrong:** Weakest to strongest runs from naming the adjective, to stating one effect, to examining how the method works, to exploring layered effects. Level 6 explores several effects, not a single stated one.
 
 10. **Type: MCQ [Tests AO2]**
     * **Question:** One response "examines" how Dickens's cold-and-fog imagery works around Scrooge. Another reads the cold as a sustained pattern that makes his isolation feel self-inflicted, exploring several effects. For AO2, what single move takes the second to Level 6?
-    * **Options:** A) It quotes more lines to widen the range of its supporting evidence, B) It moves from examination of the method to analysis with exploration of the effects of the writer's methods, C) It deploys rarer, more technical terminology across the response, D) It develops the point across longer, more sustained paragraphs
+    * **Options:** A) It quotes more lines to widen the range of its supporting evidence, B) It moves from examining the method to exploring its effects, C) It deploys rarer, more technical terminology across the response, D) It develops the point across longer, more sustained paragraphs
     * **Correct:** B
     * **AO:** AO2
-    * **Feedback:** ✓ Correct. The AQA Level 5 to Level 6 AO2 shift is "examination" becoming "analysis... exploration of effects of the writer's methods." Reading a sustained pattern and exploring multiple effects is the top-band move. Length, rare terms and quote-count do not change the Level.
+    * **Feedback:** ✓ Correct. The AQA Level 5 to Level 6 AO2 shift is "Examination of effects of writer's methods to create meanings" becoming "Exploration of effects of writer's methods to create meanings." Reading a sustained pattern and exploring multiple effects is the top-band move. Length, rare terms and quote-count do not change the Level.
     * **Why A:** Quote quantity is not an AO2 criterion; judicious selection is.
     * **Why C:** Rarer terms without explored effect is feature-spotting.
     * **Why D:** Paragraph length is not a Level descriptor.
 
 11. **Type: MCQ [Tests AO3]**
     * **Question:** "A Christmas Carol was published in 1843." A student adds this to the end of a paragraph. For AO3, why does it stay low in the AQA bands?
-    * **Options:** A) It is factually inaccurate about the Victorian period, B) It is bolt-on context — AQA Level 6 AO3 needs "specific, detailed links between context, text and task" where context drives the interpretation, C) It is too brief — a contextual point must run to several sentences to score, D) Context is credited only on the poetry question, not on the novel
+    * **Options:** A) It is factually inaccurate about the Victorian period, B) It is bolted on: Level 6 links context to text and task, C) It is too brief, as a context point must run to several sentences, D) Context is credited only on the poetry question, not on the novel
     * **Correct:** B
     * **AO:** AO3
-    * **Feedback:** ✓ Correct. AQA Level 6 AO3 is "exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task." A free-standing date is bolt-on. Context must drive the concept: the 1834 Poor Law and Malthusian economics make Scrooge's coldness a social argument, which drives Dickens's choices.
+    * **Feedback:** ✓ Correct. AQA Level 6 AO3 is "Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task." A free-standing date is bolt-on. Context must drive the concept: the 1834 Poor Law and Malthusian economics make Scrooge's coldness a social argument, which drives Dickens's choices.
     * **Why A:** The date is accurate — accuracy is not the problem; integration is.
     * **Why C:** Length is not the issue; a short linked point can be top-band.
-    * **Why D:** Context is assessed throughout the AQA novel question.
+    * **Why D:** AQA says "Context is assessed throughout the paper."
 
 12. **Type: Fill [Tests AO3]**
-    * **Question:** Complete the AQA Level 6 AO3 descriptor: context should be shown by "specific, detailed [BLANK] between context, text and task."
+    * **Question:** Complete the AQA Level 6 AO3 descriptor: context is shown "by specific, detailed [BLANK] between context/text/task."
     * **Answer:** links
     * **AO:** AO3
-    * **Feedback:** ✓ Correct. AQA Level 6 AO3 is "specific, detailed links between context/text/task." Context earns top marks only when it is connected to the text and the question, never when it sits alone as a fact.
+    * **Feedback:** ✓ Correct. AQA Level 6 AO3 is "Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task." Context earns top marks only when it is connected to the text and the question, never when it sits alone as a fact.
     * **WhyWrong:** The AQA word is "links" — context, text and task must be linked, not listed separately.
 
 13. **Type: Select All [Tests AO3]**
@@ -124,58 +127,255 @@ Cambridge IGCSE (0475) = knowledge-through-reference / critical understanding / 
     * **Options:** A) Context is used to drive a concept rather than bolted on as a fact, B) There are specific, detailed links between context, text and task, C) It explores ideas and perspectives opened up by the context, D) It lists a standalone historical fact with no link to text or task
     * **Correct:** A, B, C
     * **AO:** AO3
-    * **Feedback:** ✓ Correct. This is the AQA Level 6 AO3 chain: context drives concept drives method, with "specific, detailed links between context/text/task" and "exploration of ideas/perspectives/contextual factors." Listing a standalone fact is the opposite of what is happening here.
+    * **Feedback:** ✓ Correct. This is the AQA Level 6 AO3 chain: context drives concept drives method, with "specific, detailed links between context/text/task" and "Exploration of ideas/perspectives/contextual factors." Listing a standalone fact is the opposite of what is happening here.
     * **Why D:** The response does the reverse of bolt-on — every element is linked.
 
 14. **Type: MCQ [Tests AO3]**
     * **Question:** On the AQA 19th-century novel question, how are the 30 marks split across the assessment objectives?
-    * **Options:** A) AO1, AO2 and AO3 each carry 10 marks, B) AO1 and AO2 carry 12 marks each and AO3 carries 6, C) AO1 carries all 30 marks, D) AO2 and AO4 carry 15 marks each
+    * **Options:** A) AO1, AO2 and AO3 each carry 10 marks, B) AO1 12 marks, AO2 12, AO3 6, C) AO1 carries all 30 marks on its own, D) AO2 and AO4 carry 15 marks each
     * **Correct:** B
     * **AO:** AO3
-    * **Feedback:** ✓ Correct. The novel response is marked out of 30 across six levels of five marks, with AO1 and AO2 weighted equally at 12 marks each and AO3 (context) carrying half their weight at 6. Note there is no AO4 on the novel — SPaG is assessed only on the Shakespeare or modern-text answer.
+    * **Feedback:** ✓ Correct. AQA: "30 marks – AO1=12, AO2=12, AO3=6". Context carries half the weight of AO1 or AO2. There is no AO4 on the novel: "AO4 will be assessed on Section A only", which is the Shakespeare question.
     * **Why A:** Context is weighted at half, not equal — the split is 12, 12 and 6.
-    * **Why C:** Analysis and context are assessed too; pure knowledge cannot carry the whole tariff.
+    * **Why C:** Analysis and context are assessed too; AO1 alone carries 12.
     * **Why D:** AO4 is not assessed on the novel, and the weighting is 12/12/6, not 15/15.
 
-15. **Type: MCQ [Tests Vocabulary]**
+15. **Type: MCQ [Tests AO1]**
     * **Question:** In the AQA mark scheme, Level 4 (16–20 marks) is named which of the following?
-    * **Options:** A) Clear understanding, B) Convincing, critical analysis and exploration, C) Thoughtful, developed response, D) Simple, explicit comments
+    * **Options:** A) Clear understanding, B) Convincing, critical analysis and exploration, C) Thoughtful, developed consideration, D) Simple, explicit comments
     * **Correct:** A
-    * **AO:** Vocabulary
-    * **Feedback:** ✓ Correct. AQA names Level 4 "Clear understanding" — clear, explained and sustained, using references effectively to support explanation. Above it sit "Thoughtful, developed response" (Level 5) and "Convincing, critical analysis and exploration" (Level 6).
-    * **Why B:** Convincing, critical analysis and exploration is the top band (Level 6), two levels higher.
-    * **Why C:** Thoughtful, developed response is Level 5, one band above clear understanding.
-    * **Why D:** Simple, explicit comments is the bottom band (Level 1).
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. AQA names Level 4 "Clear understanding": a "Clear, explained response to task and whole text". Above it sit "Thoughtful, developed consideration" (Level 5) and "Convincing, critical analysis and exploration" (Level 6).
+    * **Why B:** "Convincing, critical analysis and exploration" is the top band (Level 6), two levels higher.
+    * **Why C:** "Thoughtful, developed consideration" is Level 5, one band above.
+    * **Why D:** "Simple, explicit comments" is the bottom band (Level 1).
 
-16. **Type: MCQ [Tests Vocabulary]**
+16. **Type: MCQ [Tests AO1]**
     * **Question:** AQA asks for a "critical style." In a mark scheme, what does "critical" actually mean?
-    * **Options:** A) Pointing out the novella's faults and the things Dickens did badly, B) Forming an evaluative, argued judgement and taking a position on interpretation, C) Writing in a consistently serious, formal and academic tone, D) Disagreeing with the interpretations other readers have offered
+    * **Options:** A) Pointing out the novella's faults and the things Dickens did badly, B) Forming an argued judgement and taking a position on meaning, C) Writing in a serious, formal and academic tone throughout, D) Disagreeing with the readings that other students offer
     * **Correct:** B
-    * **AO:** Vocabulary
-    * **Feedback:** ✓ Correct. In a mark scheme "critical" does NOT mean fault-finding. It means evaluative and argued — you weigh interpretations and commit to a position. AQA pairs it as "critical, exploratory": an argued reading that opens up meaning.
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. In a mark scheme "critical" does NOT mean fault-finding. It means evaluative and argued — you weigh interpretations and commit to a position. AQA pairs it as "Critical, exploratory", and AO1 asks students to "maintain a critical style and develop an informed personal response".
     * **Why A:** This is the everyday sense of "critical" (negative), not the assessment sense.
     * **Why C:** Tone is not what "critical" rewards — an argued judgement is.
     * **Why D:** Critical means evaluating the text, not other students.
 
-17. **Type: MCQ [Tests Vocabulary]**
+17. **Type: MCQ [Tests AO1]**
     * **Question:** AQA Level 6 AO1 rewards a "conceptualised" response. A conceptualised response to A Christmas Carol is one that...
-    * **Options:** A) uses difficult, complicated vocabulary to signal sophistication, B) is organised around an idea, treating Scrooge and the plot as evidence for that idea, C) packs in as much relevant historical context as it can, D) is very long and dense with closely-detailed observation
+    * **Options:** A) uses difficult, complicated vocabulary to signal sophistication, B) is built around an idea, with Scrooge's story as its evidence, C) packs in as much relevant historical context as it can, D) is very long and dense with closely-detailed observation
     * **Correct:** B
-    * **AO:** Vocabulary
-    * **Feedback:** ✓ Correct. "Conceptualised" means built around a concept — reading the novella as an argument about social responsibility, with Scrooge and events as evidence. It is about organising ideas, not complexity, length or context-stuffing.
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. "Conceptualised" means built around a concept — reading the novella as an argument about social responsibility, with Scrooge and events as evidence. AQA's top-level response "takes a conceptualised approach to the full task". It is about organising ideas, not complexity, length or context-stuffing.
     * **Why A:** Hard vocabulary is not a concept — conceptualised is about the idea, not the wording.
     * **Why C:** Context supports AO3; it does not by itself make a response conceptualised.
     * **Why D:** Length is not conceptualisation — a short response can be conceptualised.
 
-18. **Type: MCQ [Tests Vocabulary]**
-    * **Question:** AQA AO2 moves from "explanation of effects" (Level 4) to "exploration of effects" (Level 6). What does "exploration" add that "explanation" does not?
-    * **Options:** A) It names a greater number of techniques in the response, B) It opens up several possible effects or meanings and how they shift the reader, rather than stating a single fixed effect, C) It develops the same single effect at greater length, D) It works without relying on direct quotations
+18. **Type: MCQ [Tests AO2]**
+    * **Question:** For AO2, AQA moves from "clear explanation of the effects" (Level 4) to "Exploration of effects" (Level 6). What does "exploration" add that "explanation" does not?
+    * **Options:** A) It names a greater number of techniques across the whole response, B) It opens up several possible effects, not one fixed effect, C) It develops the same single effect at greater length, D) It works without relying on direct quotations
     * **Correct:** B
-    * **AO:** Vocabulary
+    * **AO:** AO2
     * **Feedback:** ✓ Correct. "Explanation" states one effect; "exploration" opens up several possible meanings and how they work on the reader. That shift from a single stated effect to layered, opened-up meaning is the AQA Level 4 to Level 6 climb for AO2.
     * **Why A:** Naming more techniques is feature-spotting, not exploration.
     * **Why C:** Length is not the difference — depth of opened-up meaning is.
     * **Why D:** Quotations are still needed; exploration works through precise references.
+
+19. **Type: Ranking [Tests AO1]**
+    * **Question:** These AQA AO1 bullets all describe how a response uses REFERENCES. Rank them from the lowest level to the highest (letters in order, lowest first).
+    * **Options:** A) Apt references integrated into interpretation(s), B) Reference to relevant details, C) Judicious use of precise references to support interpretation(s), D) References used to support a range of relevant comments
+    * **Correct:** B, D, A, C
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. Level 1: "Reference to relevant details." Level 3: "References used to support a range of relevant comments." Level 5: "Apt references integrated into interpretation(s)." Level 6: "Judicious use of precise references to support interpretation(s)." The climb is from mentioning details, to supporting comments, to weaving references into a reading, to choosing the precise reference that proves it.
+    * **WhyWrong:** Lowest to highest: "Reference to relevant details", then references that "support a range of relevant comments", then "Apt references integrated", then "Judicious use of precise references".
+
+20. **Type: MCQ [Tests AO1]**
+    * **Question:** The task says "Starting with this extract, explore how Dickens presents…". A student writes a strong answer on the printed extract and never mentions the rest of the novella. What can happen to the mark?
+    * **Options:** A) It can be capped at the top of Level 2, which is 10 marks, B) It is marked as normal, because the printed extract is the focus, C) It is capped at the top of Level 4, which is 20 marks, D) It scores 0, because half of the task is missing
+    * **Correct:** A
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. AQA: a response that misses a defining feature of the task, such as "Paper 1 Section B response to extract and whole text", is "classed as a rubric infringement and could, as referenced in the mark scheme, be 'capped' at the top of Level 2." Level 2 is 6–10 marks.
+    * **Why B:** The extract and the whole novella are both defining features of the task; missing one is a rubric infringement.
+    * **Why C:** The cap is the top of Level 2, not Level 4.
+    * **Why D:** It is capped, not zeroed; the quality of the extract answer still earns marks.
+
+21. **Type: MCQ [Tests AO1]**
+    * **Question:** A student's answer on Scrooge makes a strong point that does not appear in AQA's indicative content. How is that point marked?
+    * **Options:** A) It is credited, because the list is a guide and not exhaustive, B) It is ignored, because only the points AQA listed can earn credit, C) It is credited only if the point is about Stave One, D) It is moved to AO3, because it is a personal response
+    * **Correct:** A
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. AQA: "Indicative content in the mark scheme is provided as a guide for examiners. It is not intended to be exhaustive and you must credit other valid points." And: "Students do not have to cover all of the points mentioned in the indicative content to reach the highest level of the mark scheme."
+    * **Why B:** Examiners "must credit other valid points".
+    * **Why C:** No stave is privileged; any valid point is credited.
+    * **Why D:** A personal response is AO1: "develop an informed personal response".
+
+22. **Type: Select All [Tests AO1]**
+    * **Question:** June 2024 asked how Dickens presents "the lessons Scrooge learns about life in A Christmas Carol". Select ALL the points AQA listed under AO1 (and none it listed under AO2 or AO3).
+    * **Options:** A) Scrooge's reflections on looking at his own corpse, B) Imagery of light and dark across the five staves, C) What Scrooge learns at the end of the novel, D) Ideas about selfishness and altruism in Victorian society
+    * **Correct:** A, C
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. Under AO1 AQA listed "Scrooge’s reflections on looking at his own corpse" and "what Scrooge learns at the end of the novel". "imagery of light and dark" is AO2 (method), and "ideas about selfishness and altruism" is AO3 (context).
+    * **Why B:** Imagery is a method: AQA lists "imagery of light and dark" under AO2.
+    * **Why D:** AQA lists "ideas about selfishness and altruism" under AO3.
+
+23. **Type: MCQ [Tests AO1]**
+    * **Question:** June 2024's task had two bullets: "how Dickens presents Scrooge in this extract" and a second one. What does the SECOND bullet ask about?
+    * **Options:** A) The lessons Scrooge learns about life, across the novel, B) How Dickens presents Scrooge in the printed extract only, C) The life of Charles Dickens and his own hard childhood, D) What the Ghost of Christmas Yet to Come looks like
+    * **Correct:** A
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. The second bullet was "how Dickens presents the lessons Scrooge learns about life in the novel as a whole." The first bullet is about the extract; the second widens to the whole novel, which is why an extract-only answer can be capped.
+    * **Why B:** That is the FIRST bullet; the second widens to "the novel as a whole".
+    * **Why C:** Dickens's life is context at most, and it is not what either bullet asks.
+    * **Why D:** Describing a ghost is detail, not "the lessons Scrooge learns about life".
+
+24. **Type: Fill [Tests AO1]**
+    * **Question:** Complete the AQA Level 5 AO1 descriptor: "[BLANK], developed response to task and whole text."
+    * **Answer:** Thoughtful
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. Level 5 AO1: "Thoughtful, developed response to task and whole text." The band is called "Thoughtful, developed consideration". Level 4 is "Clear, explained response to task and whole text"; Level 6 is "Critical, exploratory, conceptualised response to task and whole text".
+    * **WhyWrong:** The AQA word is "Thoughtful": Level 5 considers the task, where Level 4 explains it clearly.
+
+25. **Type: MCQ [Tests AO1]**
+    * **Question:** An examiner reads a response that is mostly Level 3, with a small amount of Level 4 material. Where does AQA say to place it?
+    * **Options:** A) In Level 3, near the top, because of its Level 4 content, B) In Level 4, at the bottom, because some of it reaches Level 4, C) In Level 3, in the middle, because Level 4 parts are ignored, D) In Level 2, because the quality is uneven across the answer
+    * **Correct:** A
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. AQA: "if the response is predominantly Level 3 with a small amount of Level 4 material it would be placed in Level 3 but be awarded a mark near the top of the level because of the Level 4 content." The level is decided by "best fit"; the better parts lift the mark within it.
+    * **Why B:** Best fit places it in Level 3, where most of the answer sits.
+    * **Why C:** The Level 4 material is not ignored: it lifts the mark "near the top of the level".
+    * **Why D:** Uneven quality is balanced by best fit; it does not drop the answer a level.
+
+26. **Type: Ranking [Tests AO1]**
+    * **Question:** These AQA AO1 bullets describe the RESPONSE at four levels. Rank them from the lowest level to the highest (letters in order, lowest first).
+    * **Options:** A) Clear, explained response to task and whole text, B) Simple comments relevant to task and text, C) Critical, exploratory, conceptualised response to task and whole text, D) Supported response to task and text
+    * **Correct:** B, D, A, C
+    * **AO:** AO1
+    * **Feedback:** ✓ Correct. Level 1: "Simple comments relevant to task and text." Level 2: "Supported response to task and text." Level 4: "Clear, explained response to task and whole text." Level 6: "Critical, exploratory, conceptualised response to task and whole text." Notice that "whole text" only enters the wording from Level 3 upwards.
+    * **WhyWrong:** Lowest to highest: "Simple comments", then "Supported response", then "Clear, explained response", then "Critical, exploratory, conceptualised response".
+
+27. **Type: Ranking [Tests AO2]**
+    * **Question:** These AQA AO2 bullets all describe how a response handles the writer's METHODS. Rank them from the lowest level to the highest (letters in order, lowest first).
+    * **Options:** A) Examination of the writer's methods with subject terminology used effectively to support consideration of methods, B) Identification of the writer's methods, C) Analysis of the writer's methods with subject terminology used judiciously, D) Explained/relevant comments on the writer's methods with some relevant use of subject terminology
+    * **Correct:** B, D, A, C
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. Level 2: "Identification of the writer's methods." Level 3: "Explained/relevant comments on the writer's methods with some relevant use of subject terminology." Level 5: "Examination of the writer's methods with subject terminology used effectively to support consideration of methods." Level 6: "Analysis of the writer's methods with subject terminology used judiciously."
+    * **WhyWrong:** Lowest to highest: "Identification", then "Explained/relevant comments", then "Examination", then "Analysis".
+
+28. **Type: Ranking [Tests AO2]**
+    * **Question:** These AQA AO2 bullets all describe how a response handles the EFFECTS of the writer's methods. Rank them from the lowest level to the highest (letters in order, lowest first).
+    * **Options:** A) Understanding of effects of writer's methods to create meanings, B) Exploration of effects of writer's methods to create meanings, C) Identification of effects of writer's methods to create meanings, D) Examination of effects of writer's methods to create meanings
+    * **Correct:** C, A, D, B
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. Level 3: "Identification of effects of writer's methods to create meanings." Level 4: "Understanding of effects". Level 5: "Examination of effects". Level 6: "Exploration of effects". Only the first word changes, and that word is the level.
+    * **WhyWrong:** Lowest to highest: "Identification", "Understanding", "Examination", "Exploration".
+
+29. **Type: Select All [Tests AO2]**
+    * **Question:** For June 2024's question on the lessons Scrooge learns, select ALL the points AQA listed under AO2, the writer's methods (and none it listed under AO1 or AO3).
+    * **Options:** A) The contrast between the glee of the woman and Scrooge's emotions, B) The role of the Ghost of Christmas Yet to Come in making Scrooge afraid, C) The language used to present Scrooge's horror and fear, D) Ideas about society and responsibility for others
+    * **Correct:** A, C
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. AQA's AO2 list includes "contrast between the glee of the woman and Scrooge’s emotions" and "language used to present Scrooge’s horror and fear". "the role of the Ghost of Christmas Yet to Come to instil fear in Scrooge" is AO1 (what happens), and "ideas about society and responsibility for others" is AO3.
+    * **Why B:** AQA lists "the role of the Ghost of Christmas Yet to Come to instil fear in Scrooge" under AO1: what the ghost does, not how Dickens writes it.
+    * **Why D:** AQA lists "ideas about society and responsibility for others" under AO3.
+
+30. **Type: MCQ [Tests AO2]**
+    * **Question:** A student writes about the bright light that shines from the Ghost of Christmas Past. Which assessment objective is that point, in AQA's June 2024 list?
+    * **Options:** A) AO2: Dickens's imagery of light and dark, B) AO1: what happens to Scrooge in Stave Two, C) AO3: Victorian attitudes towards poverty, D) AO4: the accuracy of the student's writing
+    * **Correct:** A
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. AQA lists "imagery of light and dark" under AO2: light is a method Dickens uses, not just an event. What happens in Stave Two would be AO1; Victorian attitudes would be AO3.
+    * **Why B:** The point is about the image of light, which AQA lists as a method (AO2), not about the plot.
+    * **Why C:** AQA's AO3 list has "ideas about Victorian society and attitudes towards poverty and suffering"; light is not context.
+    * **Why D:** AO4 is not assessed on the novel: "AO4 will be assessed on Section A only."
+
+31. **Type: MCQ [Tests AO2]**
+    * **Question:** A response's subject terminology is "used effectively to support consideration of methods". Which AQA AO2 Level does that wording describe?
+    * **Options:** A) Level 5, B) Level 4, C) Level 6, D) Level 3
+    * **Correct:** A
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. Level 5: "Examination of the writer's methods with subject terminology used effectively to support consideration of methods." Level 4 has "appropriate use of relevant subject terminology"; Level 6 has "subject terminology used judiciously".
+    * **Why B:** Level 4's terminology is "appropriate use of relevant subject terminology".
+    * **Why C:** Level 6's terminology is "used judiciously".
+    * **Why D:** Level 3 has "some relevant use of subject terminology".
+
+32. **Type: MCQ [Tests AO2]**
+    * **Question:** A response says only that Dickens "chose to make Scrooge say a lot in the first stave", with no comment on why. Which AQA AO2 Level does that fit?
+    * **Options:** A) Level 1: awareness of the writer making choices, B) Level 2: identification of the writer's methods, C) Level 3: explained comments on the methods, D) Level 4: clear explanation of the methods
+    * **Correct:** A
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. Level 1 AO2: "Awareness of the writer making choices." The response notices that Dickens chose something, but names no method. Level 2 begins with "Identification of the writer's methods".
+    * **Why B:** No method is named, so it has not reached "Identification of the writer's methods".
+    * **Why C:** Nothing is explained, so it is below "Explained/relevant comments on the writer's methods".
+    * **Why D:** "Clear explanation of the writer's methods" needs an explanation; there is none.
+
+33. **Type: MCQ [Tests AO2]**
+    * **Question:** AQA's mark scheme names two assessment objectives as "the key skills" of the novel essay. Which two?
+    * **Options:** A) AO1 and AO2, B) AO2 and AO3, C) AO1 and AO3, D) AO3 and AO4
+    * **Correct:** A
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. AQA: "Each mark scheme places assessment objectives AO1 and AO2 as the key skills." The split shows it: "30 marks – AO1=12, AO2=12, AO3=6".
+    * **Why B:** AO3 carries 6 of the 30 marks; AO1 carries 12.
+    * **Why C:** AO2 carries 12 marks; AO3 carries 6.
+    * **Why D:** AO4 is not assessed on the novel at all.
+
+34. **Type: Fill [Tests AO2]**
+    * **Question:** Complete the AQA Level 5 AO2 descriptor: "Examination of the writer's methods with subject terminology used [BLANK] to support consideration of methods."
+    * **Answer:** effectively
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. Level 5: "Examination of the writer's methods with subject terminology used effectively to support consideration of methods." Level 4 has "appropriate use of relevant subject terminology"; Level 6 has "subject terminology used judiciously".
+    * **WhyWrong:** The AQA word is "effectively": at Level 5 the terminology does work in the argument, where Level 6 chooses it judiciously.
+
+35. **Type: Fill [Tests AO2]**
+    * **Question:** AQA describes the top of Level 6: "There will be a fine-grained and [BLANK] analysis of methods supported by judicious use of subject terminology."
+    * **Answer:** insightful
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. Top of Level 6: "There will be a fine-grained and insightful analysis of methods supported by judicious use of subject terminology." Fine-grained means close to the words; insightful means it sees what they do.
+    * **WhyWrong:** The AQA word is "insightful": analysis that sees what the methods do, not only what they are.
+
+36. **Type: MCQ [Tests AO2]**
+    * **Question:** In AQA's "how to arrive at a mark" notes, what does Level 5 add to Level 4's "clear explanation of the effects of a range of writer's methods"?
+    * **Options:** A) A detailed examination of the effects of methods, B) A longer list of the methods found in the extract, C) More quotations, taken from every stave of the novella, D) A full summary of the plot before the analysis
+    * **Correct:** A
+    * **AO:** AO2
+    * **Feedback:** ✓ Correct. Level 4: "there will be clear explanation of the effects of a range of writer’s methods supported by appropriate use of subject terminology". Level 5: "there will be a detailed examination of the effects of methods supported by apt use of subject terminology". The move is from explaining an effect to examining how it works.
+    * **Why B:** More methods is breadth, not depth; Level 5 asks for "detailed examination".
+    * **Why C:** Quotation count is not the difference; AQA wants references "integrated into interpretation".
+    * **Why D:** A plot summary is narrative, which AQA places at Level 1.
+
+37. **Type: Ranking [Tests AO3]**
+    * **Question:** These AQA AO3 bullets describe how a response handles CONTEXT. Rank them from the lowest level to the highest (letters in order, lowest first).
+    * **Options:** A) Thoughtful consideration of ideas/perspectives/contextual factors shown by examination of detailed links between context/text/task, B) Simple comment on explicit ideas/contextual factors, C) Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task, D) Some understanding of implicit ideas/perspectives/contextual factors shown by links between context/text/task
+    * **Correct:** B, D, A, C
+    * **AO:** AO3
+    * **Feedback:** ✓ Correct. Level 1: "Simple comment on explicit ideas/contextual factors." Level 3: "Some understanding of implicit ideas/perspectives/contextual factors shown by links between context/text/task." Level 5: "Thoughtful consideration of ideas/perspectives/contextual factors shown by examination of detailed links between context/text/task." Level 6: "Exploration of ideas/perspectives/contextual factors shown by specific, detailed links between context/text/task."
+    * **WhyWrong:** Lowest to highest: "Simple comment", then "Some understanding", then "Thoughtful consideration", then "Exploration". The links grow from none, to "links", to "detailed links", to "specific, detailed links".
+
+38. **Type: MCQ [Tests AO3]**
+    * **Question:** A student links A Christmas Carol to the conventions of the ghost story told at Christmas. Does AQA count that as context (AO3)?
+    * **Options:** A) Yes: AQA says context can include literary genres, B) No: context must be a historical date or fact, C) No: genre is a method, so it belongs to AO2, not AO3, D) Only if the student names the genre's first author
+    * **Correct:** A
+    * **AO:** AO3
+    * **Feedback:** ✓ Correct. AQA: "Context, where relevant, may also apply to literary contexts such as genres". It also says: "Acknowledgement of the universality of a literary text is an integral part of relating to it contextually."
+    * **Why B:** AQA says context can be considered "in a flexible way"; it is not limited to dates.
+    * **Why C:** AQA names genres as a literary context, so genre can serve AO3.
+    * **Why D:** No name is required; what counts is the link to the text and the task.
+
+39. **Type: MCQ [Tests AO3]**
+    * **Question:** A student considers how a reader today might respond to Scrooge's treatment of Bob Cratchit. Does AQA count that as context?
+    * **Options:** A) Yes: context includes how audiences engage with a text, B) No: only the year the novella was written counts for AO3, C) No: a modern reader's view belongs to AO1, not AO3, D) Not unless the student compares it with a Victorian review
+    * **Correct:** A
+    * **AO:** AO3
+    * **Feedback:** ✓ Correct. AQA says context may also apply to "the contexts in which texts are engaged with by different audiences, taking the reader outside the text in order to inform understanding of the meanings being conveyed."
+    * **Why B:** AQA says context "may also relate to the context within which the text is set" and to its audiences, not only the year it was written.
+    * **Why C:** AQA names the audience's context as AO3, as long as it informs the meaning.
+    * **Why D:** No review is required; the link to the text's meaning is what counts.
+
+40. **Type: Select All [Tests AO3]**
+    * **Question:** For June 2024's question on the lessons Scrooge learns, select ALL the points AQA listed under AO3, context (and none it listed under AO1 or AO2).
+    * **Options:** A) Scrooge's redemption across the novel, B) Ideas about Victorian society and attitudes towards poverty and suffering, C) The language used to present the corpse, D) Ideas about selfishness and altruism
+    * **Correct:** A, B, D
+    * **AO:** AO3
+    * **Feedback:** ✓ Correct. AQA's AO3 list includes "Scrooge’s redemption", "ideas about Victorian society and attitudes towards poverty and suffering" and "ideas about selfishness and altruism". The language used to present the corpse is an AO2 method.
+    * **Why C:** AQA lists "language used to present the corpse" under AO2, the writer's methods.
 
 ### **SECTION B: EDEXCEL GCSE (1ET0)**
 

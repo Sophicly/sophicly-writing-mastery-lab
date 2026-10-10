@@ -77,6 +77,18 @@ const PILOTS = [{
     jun24: [],
     JUN24_ITEMS: [],
     ALLOW: {},
+}, {
+    // v7.20.820 (WML 345 A, FIXLIST #877): #815d step 3c — A Christmas Carol AQA (4 attempts by 3 real students). Paper 1
+    // Section B, the 19th-century novel: June 2024 8702/1. NO AO4 here ("AO4 will be assessed on Section A only"), so the
+    // 30 marks alone set the mix (AO1 12 · AO2 12 · AO3 6): AO1 16 · AO2 16 · AO3 8.
+    bank: 'protocols/shared/mark-scheme-assessment/banks/christmas_carol.md',
+    section: 'AQA (',
+    count: 40,
+    ao: { AO1: 16, AO2: 16, AO3: 8 },
+    sources: ['research/sources/aqa-8702-1-jun24-ms.txt', 'protocols/aqa/literature/modules/knowledge-mark-scheme.md'],
+    jun24: [],
+    JUN24_ITEMS: [],
+    ALLOW: {},
 }];
 
 // The section's items: "N. **Type: X [Tests AOn]**" blocks inside the section that starts "### **SECTION …: <label>".
