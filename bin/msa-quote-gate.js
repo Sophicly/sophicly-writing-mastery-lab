@@ -127,6 +127,18 @@ const PILOTS = [{
     jun24: [],
     JUN24_ITEMS: [],
     ALLOW: {},
+}, {
+    // v7.20.823 (FIXLIST #882): #815d step 6 — Edexcel IGCSE Spec A Paper 2 (2 real students; the live slug
+    // edexcel_igcse_lang_a_paper_2 reaches this section). Mix by marks: AO1 12 · AO2 18 · AO4 18 · AO5 12 of 60.
+    // Sources = Pearson's own June 2024 mark scheme + question paper (the items quote the paper's instructions and poem).
+    bank: 'protocols/shared/mark-scheme-assessment/banks/language2.md',
+    section: 'Edexcel IGCSE Spec A (',
+    count: 40,
+    ao: { AO1: 8, AO2: 12, AO4: 12, AO5: 8 },
+    sources: ['research/sources/pearson-4ea1-02-jun24-ms.txt', 'research/sources/pearson-4ea1-02-jun24-qp.txt'],
+    jun24: [],
+    JUN24_ITEMS: [],
+    ALLOW: {},
 }];
 
 // The section's items: "N. **Type: X [Tests AOn]**" blocks inside the section that starts "### **SECTION …: <label>".

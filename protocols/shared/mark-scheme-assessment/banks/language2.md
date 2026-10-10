@@ -735,7 +735,7 @@ Edexcel marks Paper 2 on a FIVE-level scale. Q3 (AO2, 15) analyses persuasive la
 
 ### **SECTION D: Edexcel IGCSE Spec A (4EA1 — Paper 2)**
 
-Edexcel IGCSE Spec A (4EA1) Paper 2 is "Poetry and Prose Texts and Imaginative Writing": 1 hour 30 minutes, 60 marks. Section A is ONE question, Question 1 (30 marks): "How does the writer present … in <anthology text>?", with two bullet prompts plus "the use of language and structure", on a poem or prose text from Part 3 of the Anthology, printed in full. It is marked AO1 (12 marks, four levels: 1–3 · 4–6 · 7–9 · 10–12) and AO2 (18 marks, five levels: 1–3 · 4–6 · 7–10 · 11–14 · 15–18). Section B is imaginative writing: the student answers ONE of Questions 2, 3 or 4 (30 marks), marked AO4 (18 marks: 1–3 · 4–7 · 8–11 · 12–15 · 16–18) and AO5 (12 marks: 1–2 · 3–4 · 5–7 · 8–10 · 11–12). Question 4 offers images. There is no AO3, no comparison and no short retrieval question on this paper. Descriptor wording is quoted from the June 2024 mark scheme (4EA1_02_2406_MS); quotations are from "An Unknown Girl" (Moniza Alvi) as printed on the June 2024 paper.
+Edexcel IGCSE Spec A (4EA1) Paper 2 is "Poetry and Prose Texts and Imaginative Writing": 1 hour 30 minutes, 60 marks. Section A is ONE question, Question 1 (30 marks): "How does the writer present … in <anthology text>?", with two bullet prompts plus "the use of language and structure", on a poem or prose text from Part 3 of the Anthology, printed in full. It is marked AO1 (12 marks, four levels: 1–3 · 4–6 · 7–9 · 10–12) and AO2 (18 marks, five levels: 1–3 · 4–6 · 7–10 · 11–14 · 15–18). Section B is imaginative writing: the student answers ONE of Questions 2, 3 or 4 (30 marks), marked AO4 (18 marks: 1–3 · 4–7 · 8–11 · 12–15 · 16–18) and AO5 (12 marks: 1–2 · 3–4 · 5–7 · 8–10 · 11–12). Question 4 offers images. There is no AO3, no comparison and no short retrieval question on this paper. Descriptor wording is quoted from the June 2024 mark scheme (4EA1_02_2406_MS); quotations are from "An Unknown Girl" (Moniza Alvi) as printed on the June 2024 paper. v7.20.823 (FIXLIST #882, #815d step 6 — Neil: "40 per bank"): 40 items, AO1 8 · AO2 12 · AO4 12 · AO5 8 (by marks). Every quotation in a Feedback or Why line is verbatim from Pearson's June 2024 mark scheme or question paper (`research/sources/pearson-4ea1-02-jun24-ms.txt`, `…-qp.txt`; gate: `bin/msa-quote-gate.js`). The printed poem reads "It will fade in a week"; the mark scheme misquotes it as "within a week".
 
 1. **Type: MCQ [Tests AO1]**
    * **Question:** Paper 2 Question 1 is worth 30 marks. How are those marks split between the assessment objectives?
@@ -749,7 +749,7 @@ Edexcel IGCSE Spec A (4EA1) Paper 2 is "Poetry and Prose Texts and Imaginative W
 
 2. **Type: MCQ [Tests AO2]**
    * **Question:** Which assessment objective is NOT assessed anywhere on Spec A Paper 2?
-   * **Options:** A) AO1 — read and understand a variety of texts, B) AO2 — analyse how writers use linguistic and structural devices, C) AO3 — compare writers' ideas and perspectives, D) AO5 — write clearly, with accurate spelling, grammar and punctuation
+   * **Options:** A) AO1 — read and understand a variety of texts, B) AO2 — analyse how writers use language and structure, C) AO3 — compare writers' ideas and perspectives, D) AO5 — write clearly, spelling and punctuating accurately
    * **Correct:** C
    * **AO:** AO2
    * **Feedback:** ✓ Correct. Paper 2 assesses AO1 and AO2 in Section A and AO4 and AO5 in Section B. There is no comparison question on this paper, so AO3 is not assessed. Comparison belongs to Paper 1.
@@ -773,7 +773,7 @@ Edexcel IGCSE Spec A (4EA1) Paper 2 is "Poetry and Prose Texts and Imaginative W
 
 5. **Type: MCQ [Tests AO2]**
    * **Question:** A student writes about "An Unknown Girl": "The poet uses the word 'bazaar'. This is a word from India." Which AO2 level does this reach?
-   * **Options:** A) Level 1 (1–3) — limited identification, with a basic and simple comment, B) Level 2 (4–6) — some developing comment on the effect, C) Level 3 (7–10) — clear explanations of the effects, D) Level 4 (11–14) — detailed exploration of the effects
+   * **Options:** A) Level 1 (1–3) — limited identification, basic comment, B) Level 2 (4–6) — some developing comment on the effect, C) Level 3 (7–10) — clear explanations of the effects, D) Level 4 (11–14) — detailed exploration of the effects
    * **Correct:** A
    * **AO:** AO2
    * **Feedback:** ✓ Correct. It picks out one word and says where it comes from, but says nothing about what the word does for the reader. That is Level 1: "Limited identification of language and/or structural devices" and "Basic and simple comment on the effect". The mark scheme's own point shows the next step: words like "bazaar", "rupees" and "kameez" show the writer's "acknowledgement of and respect for" the culture.
@@ -783,7 +783,7 @@ Edexcel IGCSE Spec A (4EA1) Paper 2 is "Poetry and Prose Texts and Imaginative W
 
 6. **Type: MCQ [Tests AO2]**
    * **Question:** A student writes: "The metaphor 'She is icing my hand' clearly shows how smoothly and carefully the girl pipes the henna, as if she were decorating a cake, which shows the writer's admiration for her skill." Which AO2 level fits best?
-   * **Options:** A) Level 2 (4–6) — some developing comment, B) Level 3 (7–10) — clear explanations of the effects of language and structure, C) Level 4 (11–14) — detailed exploration of the effects, D) Level 5 (15–18) — perceptive analysis of the effects
+   * **Options:** A) Level 2 (4–6) — some developing comment on the effect, B) Level 3 (7–10) — clear explanations of the effects, C) Level 4 (11–14) — detailed exploration of the effects, D) Level 5 (15–18) — perceptive analysis of the effects
    * **Correct:** B
    * **AO:** AO2
    * **Feedback:** ✓ Correct. It selects a relevant device, quotes it accurately and clearly explains its effect (care, smoothness, admiration). That matches Level 3: "Clear and relevant selection", "Relevant and generally appropriate use of textual references" and "Clear explanations of the effects". To reach Level 4 it would need to explore the image further, for example how it links to the other images of craft and beauty in the poem.
@@ -819,7 +819,7 @@ Edexcel IGCSE Spec A (4EA1) Paper 2 is "Poetry and Prose Texts and Imaginative W
 
 10. **Type: MCQ [Tests AO2]**
    * **Question:** Question 1 always gives three bullet points under "In your answer, you should write about:". What is the third bullet point?
-   * **Options:** A) the use of language and structure, B) the writer's life and the time the text was written, C) how the text compares with another anthology text, D) your personal response to the text
+   * **Options:** A) the use of language and structure, B) the writer's life and times, C) a comparison with another text, D) your personal response to the text
    * **Correct:** A
    * **AO:** AO2
    * **Feedback:** ✓ Correct. The first two bullets change with each question (for example "how the writer presents feelings about the place"). The third is always "the use of language and structure", which points straight at AO2, worth 18 of the 30 marks.
@@ -829,33 +829,33 @@ Edexcel IGCSE Spec A (4EA1) Paper 2 is "Poetry and Prose Texts and Imaginative W
 
 11. **Type: MCQ [Tests AO1]**
    * **Question:** Question 1 ends: "You should support your answer with close reference to the poem, including brief quotations." At AO1 Level 4, how must those references work?
-   * **Options:** A) "The selection of references is detailed, appropriate and fully supports the points being made", B) As many quotations as possible, however long, C) One long quotation of a whole stanza, D) No quotations are needed if the points are strong
+   * **Options:** A) Detailed references that fully support each point, B) As many quotations as possible, however long they are, C) One long quotation of a whole stanza from the poem, D) No quotations at all, if the points made are strong
    * **Correct:** A
    * **AO:** AO1
-   * **Feedback:** ✓ Correct. That is the exact Level 4 wording. The question asks for BRIEF quotations, and the mark scheme rewards references that are chosen well and fully support each point, not the number of them.
+   * **Feedback:** ✓ Correct. Level 4 reads: "The selection of references is detailed, appropriate and fully supports the points being made." The question asks for "brief quotations": the mark scheme rewards references that are chosen well and fully support each point, not the number of them.
    * **Why B:** Quantity is not the test. Each reference must support the point it sits with.
    * **Why C:** The question asks for brief quotations. Copying a stanza shows no selection.
    * **Why D:** The question asks for close reference and brief quotations, and every AO1 level judges the references.
 
 12. **Type: MCQ [Tests AO2]**
    * **Question:** What is the difference between AO2 Level 3 (7–10) and Level 4 (11–14)?
-   * **Options:** A) Level 3 gives "clear explanations of the effects"; Level 4 gives "detailed exploration of the effects", with "confident and detailed" references, B) Level 4 simply uses more quotations, C) Level 4 compares the text with another anthology text, D) Level 4 adds facts about the writer's life
+   * **Options:** A) Level 4 explores effects where Level 3 explains them, B) Level 4 simply uses more quotations from the text, C) Level 4 compares the text with another anthology text, D) Level 4 adds facts about the writer's life and times
    * **Correct:** A
    * **AO:** AO2
-   * **Feedback:** ✓ Correct. Level 3 explains an effect clearly. Level 4 explores it in detail, following it further, for example across the poem, with "thorough and confident selection" of devices and "confident and detailed use of textual references".
+   * **Feedback:** ✓ Correct. Level 3 gives "Clear explanations of the effects of language and structure". Level 4 gives "Detailed exploration of the effects of language and structure", following an effect further, for example across the poem, with "Thorough and confident selection of language and structural devices" and "Confident and detailed use of textual references".
    * **Why B:** More quotations do not lift the level. Detailed exploration does.
    * **Why C:** There is no comparison on this paper.
    * **Why D:** Background facts are not part of the AO2 grid.
 
 13. **Type: MCQ [Tests AO4]**
    * **Question:** Section B prints three tasks, numbered Questions 2, 3 and 4. What does the student do?
-   * **Options:** A) Answer ONE of them, for 30 marks (AO4 18 + AO5 12), B) Answer all three, for 10 marks each, C) Answer two of them, for 15 marks each, D) Answer ONE of them, for 45 marks
+   * **Options:** A) Answer ONE of them, for 30 marks, B) Answer all three, for 10 marks each, C) Answer two of them, for 15 marks each, D) Answer ONE of them, for 45 marks
    * **Correct:** A
    * **AO:** AO4
    * **Feedback:** ✓ Correct. The paper says "Answer ONE question from this section." Whichever task is chosen is marked out of 30: AO4 (communication, 18 marks) and AO5 (technical accuracy, 12 marks), using the same grids for all three.
    * **Why B:** Only one task is answered.
    * **Why C:** Only one task is answered, and it carries all 30 marks.
-   * **Why D:** 45 marks is the Paper 1 writing task. Paper 2 writing is worth 30.
+   * **Why D:** Section B is worth 30 marks: "TOTAL FOR SECTION B = 30 MARKS".
 
 14. **Type: Fill [Tests AO4]**
    * **Question:** Complete the AO4 Level 5 (16–18 marks) descriptor: "Communication is perceptive and [BLANK]."
@@ -869,60 +869,238 @@ Edexcel IGCSE Spec A (4EA1) Paper 2 is "Poetry and Prose Texts and Imaginative W
    * **Options:** A) Level 2 (4–7), B) Level 3 (8–11), C) Level 4 (12–15), D) Level 5 (16–18)
    * **Correct:** B
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. Level 3 is "Communicates clearly", "Shows a clear sense of purpose and understanding of the expectations/requirements of the intended reader" and "Appropriate use of form, tone and register." Level 4 would "communicate successfully" with "A secure realisation of purpose" and "Effective use of form, tone and register."
+   * **Feedback:** ✓ Correct. Level 3 is "Communicates clearly", "Shows a clear sense of purpose and understanding of the expectations/requirements of the intended reader" and "Appropriate use of form, tone and register." Level 4 "Communicates successfully", with "A secure realisation of purpose" and "Effective use of form, tone and register."
    * **Why A:** Level 2 "Communicates in a broadly appropriate way", which is below clear communication.
    * **Why C:** Level 4 needs successful communication and a secure realisation of purpose.
    * **Why D:** Level 5 needs communication that is "perceptive and subtle".
 
 16. **Type: MCQ [Tests AO5]**
    * **Question:** On the AO5 grid, what separates Level 5 (11–12) from Level 4 (8–10)?
-   * **Options:** A) Level 5 "Manipulates complex ideas" and "Uses extensive vocabulary strategically"; Level 4 "Manages information and ideas" and "Uses a wide, selective vocabulary with only occasional spelling errors", B) Level 5 answers are simply longer, C) Level 5 uses more descriptive techniques, D) Level 5 has no paragraphs
+   * **Options:** A) Level 5 manipulates complex ideas, not just manages, B) Level 5 answers are simply longer than Level 4 answers, C) Level 5 uses more descriptive techniques in total, D) Level 5 writing no longer needs paragraphs
    * **Correct:** A
    * **AO:** AO5
-   * **Feedback:** ✓ Correct. Level 4 manages ideas and positions "a range of punctuation for clarity". Level 5 manipulates complex ideas, uses vocabulary strategically, and "Punctuates writing with accuracy to aid emphasis and precision, using a range of sentence structures accurately and selectively to achieve particular effects."
+   * **Feedback:** ✓ Correct. Level 4 "Manages information and ideas, with structural and grammatical features used cohesively and deliberately across the text" and "Uses a wide, selective vocabulary with only occasional spelling errors". Level 5 "Manipulates complex ideas, utilising a range of structural and grammatical features to support coherence and cohesion" and "Uses extensive vocabulary strategically".
    * **Why B:** Length is not in the grid.
    * **Why C:** Descriptive techniques are judged under AO4 (communication), not AO5.
    * **Why D:** Both levels use paragraphs and structural features. Level 5 uses them "to support coherence and cohesion".
 
 17. **Type: MCQ [Tests AO5]**
    * **Question:** Each Section B task ends with the same sentence. What does it tell the student?
-   * **Options:** A) "Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar." — technical accuracy (AO5) is 12 of the 30 marks, B) That spelling is not marked in imaginative writing, C) That the response must be between 250 and 350 words, D) That the response must be a true story
+   * **Options:** A) That spelling, punctuation and grammar are marked, B) That spelling is not marked in imaginative writing, C) That the response must be 250 to 350 words long, D) That the response has to be a true story
    * **Correct:** A
    * **AO:** AO5
-   * **Feedback:** ✓ Correct. That sentence is printed under every task, and the front of the paper repeats it for Section B. AO5 carries 12 of the 30 writing marks. The paper sets no word limit.
+   * **Feedback:** ✓ Correct. Each task ends: "Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar." AO5 carries 12 of the 30 writing marks. The paper sets no word limit.
    * **Why B:** Spelling, punctuation and grammar are marked. That is what AO5 assesses.
-   * **Why C:** The real paper gives no word limit, only a suggested time of about 45 minutes.
+   * **Why C:** The paper gives no word limit; it says "You should spend about 45 minutes on your chosen question."
    * **Why D:** Each task says "Your response could be real or imagined."
 
 18. **Type: MCQ [Tests AO4]**
    * **Question:** Question 4 says: "Look at the images provided. Write a story that begins 'Our eyes suddenly met'. … You may wish to base your response on one of the images." What is true about the images?
-   * **Options:** A) They are optional: the student may base the story on one of them, or not, B) The story must describe both images in detail, C) The images are marked separately from the story, D) Only a description of the image will be credited
+   * **Options:** A) They are optional: one may inspire the story, B) The story must describe both images in detail, C) The images are marked separately from the story, D) The story must be a description of one image
    * **Correct:** A
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. "You may wish to" means it is a choice. The mark scheme says responses may "use the images to inspire writing". The story is marked on the same AO4 and AO5 grids as Questions 2 and 3.
+   * **Feedback:** ✓ Correct. The task says "You may wish to base your response on one of the images", so it is a choice. The mark scheme says responses may "use the images to inspire writing". The story is marked on the same AO4 and AO5 grids as Questions 2 and 3.
    * **Why B:** The task never asks for both images. It offers them as a starting point.
    * **Why C:** There is no separate image mark. The whole response is marked out of 30.
-   * **Why D:** The task asks for a story that begins with the given words, not only a description.
+   * **Why D:** The task asks for "a story that begins ‘Our eyes suddenly met’", not a description.
 
 19. **Type: MCQ [Tests AO4]**
    * **Question:** Question 2 in June 2024 read: "Write about a time when you, or someone you know, decorated something. Your response could be real or imagined." What does the mark scheme allow?
-   * **Options:** A) The response can be real or imagined, and may "use the poem as inspiration", B) It must be a true event from the student's own life, C) It must be written as a formal essay, D) It must analyse the Section A poem
+   * **Options:** A) It can be real or imagined, and may use the poem, B) It must be a true event from the student's own life, C) It must be written as a formal discursive essay, D) It must analyse the poem printed in Section A
    * **Correct:** A
    * **AO:** AO4
-   * **Feedback:** ✓ Correct. The task says "real or imagined", and the indicative content says responses may "use the poem as inspiration" and "may be narrative, descriptive or a monologue". Question 2 often links to the Section A text; that year the poem was about a girl hennaing a hand.
+   * **Feedback:** ✓ Correct. The task says "Your response could be real or imagined", and the mark scheme says responses may "use the poem as inspiration" and that "the response may be narrative, descriptive or a monologue". Question 2 often links to the Section A text; that year the poem was about a girl hennaing a hand.
    * **Why B:** "Real or imagined" means an invented event is just as acceptable.
    * **Why C:** The form "may be narrative, descriptive or a monologue".
    * **Why D:** Analysis belongs to Section A. Section B is the student's own imaginative writing.
 
-20. **Type: MCQ [Tests Vocabulary]**
+20. **Type: MCQ [Tests AO2]**
    * **Question:** The mark scheme sums up each AO2 level with a few words. Which words sum up Level 4 (11–14)?
    * **Options:** A) Thorough, Confident, Exploratory, B) Clear, Relevant, Explanatory, C) Discriminating, Perceptive, Analytical, D) Some, Developing
    * **Correct:** A
-   * **AO:** Vocabulary
+   * **AO:** AO2
    * **Feedback:** ✓ Correct. The AO2 key words climb Limited/Basic (Level 1) → Some/Developing (Level 2) → Clear/Relevant/Explanatory (Level 3) → Thorough/Confident/Exploratory (Level 4) → Discriminating/Perceptive/Analytical (Level 5). Learning these words tells you what each level asks for.
    * **Why B:** Clear, Relevant, Explanatory is Level 3.
    * **Why C:** Discriminating, Perceptive, Analytical is Level 5.
    * **Why D:** Some, Developing is Level 2.
+
+21. **Type: Ranking [Tests AO1]**
+   * **Question:** These AO1 bullets describe how a Question 1 answer uses REFERENCES. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) The selection of references is appropriate and relevant to the points being made, B) Limited use of references, C) The selection of references is detailed, appropriate and fully supports the points being made, D) The selection of references is valid, but not developed
+   * **Correct:** B, D, A, C
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. Level 1: "Limited use of references." Level 2: "The selection of references is valid, but not developed." Level 3: "The selection of references is appropriate and relevant to the points being made." Level 4: "The selection of references is detailed, appropriate and fully supports the points being made."
+   * **WhyWrong:** Lowest to highest: "Limited", then "valid, but not developed", then "appropriate and relevant", then "detailed, appropriate and fully supports".
+
+22. **Type: Fill [Tests AO1]**
+   * **Question:** Complete the AO1 Level 3 (7–9 marks) descriptor: "[BLANK] understanding of the text."
+   * **Answer:** Sound
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. Level 3 is "Sound understanding of the text". The ladder is "Basic understanding" (Level 1), "Some understanding" (Level 2), "Sound understanding" (Level 3) and "Sustained understanding" (Level 4).
+   * **WhyWrong:** The Level 3 word is "Sound". "Some" is Level 2 and "Sustained" is Level 4.
+
+23. **Type: MCQ [Tests AO1]**
+   * **Question:** The June 2024 Question 1 asked: "How does the writer present the importance of traditional Indian culture in An Unknown Girl?" What did the mark scheme tell examiners to reward?
+   * **Options:** A) Explaining how the writer presents the culture, B) Facts about Moniza Alvi's own life and her family, C) A comparison with a second anthology poem, D) The student's own experience of having henna
+   * **Correct:** A
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. The mark scheme opens: "Reward responses that explain how the writer presents the importance of traditional Indian culture." The marks follow the question's focus, worked through the poem's own language and structure.
+   * **Why B:** The writer's life is not assessed on this paper; Question 1 marks understanding of the text and analysis of its methods.
+   * **Why C:** There is no comparison on Paper 2. Question 1 is about one text.
+   * **Why D:** The student's own experience belongs in Section B's imaginative writing, not in the Question 1 analysis.
+
+24. **Type: MCQ [Tests AO1]**
+   * **Question:** A student makes a sensible point about "An Unknown Girl" that is not in the mark scheme's list of points. How is it marked?
+   * **Options:** A) It is rewarded: examiners reward all valid points, B) It earns nothing, because the point is not on the list, C) It is rewarded at Level 1 at most, as an extra point, D) It moves the answer down a level for going off the list
+   * **Correct:** A
+   * **AO:** AO1
+   * **Feedback:** ✓ Correct. The list is introduced with "Responses may include the following points" and ends "Reward all valid points." It shows examiners what a good answer might say; it is not a checklist.
+   * **Why B:** Examiners are told to "Reward all valid points", not only the listed ones.
+   * **Why C:** A point is never capped for being new; the level follows the quality of the whole answer.
+   * **Why D:** A valid point never lowers the level; the mark scheme rewards it.
+
+25. **Type: Ranking [Tests AO2]**
+   * **Question:** These AO2 bullets describe how a Question 1 answer handles the EFFECTS of language and structure. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) Detailed exploration of the effects of language and structure, B) Some developing comment on the effect of language and/or structure, C) Perceptive analysis of the effects of language and structure, D) Clear explanations of the effects of language and structure
+   * **Correct:** B, D, A, C
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. Level 2: "Some developing comment on the effect of language and/or structure." Level 3: "Clear explanations of the effects of language and structure." Level 4: "Detailed exploration of the effects of language and structure." Level 5: "Perceptive analysis of the effects of language and structure."
+   * **WhyWrong:** Lowest to highest: "Some developing comment", then "Clear explanations", then "Detailed exploration", then "Perceptive analysis".
+
+26. **Type: MCQ [Tests AO2]**
+   * **Question:** The mark scheme's first point is that "repetition of the idea that the girl is ‘unknown’ creates a feeling of mystery about this cultural experience". Why is that an AO2 point?
+   * **Options:** A) It names a device and the effect it creates, B) It retells what happens in the evening bazaar, C) It gives a fact about traditional Indian culture, D) It quotes the poem, but without any comment
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. AO2 is "Understand and analyse how writers use linguistic and structural devices to achieve their effects." The point names a device (repetition) and its effect (mystery): that pairing is what AO2 rewards.
+   * **Why B:** Retelling events shows understanding (AO1) at most; it names no device.
+   * **Why C:** A fact about the culture is not a device in the poem.
+   * **Why D:** The point does comment: it says what the repetition creates.
+
+27. **Type: MCQ [Tests AO2]**
+   * **Question:** The mark scheme says "the movement from present tense in the poem to the future is positive". Which part of AO2 does that point use?
+   * **Options:** A) Structure: how the poem moves through time, B) Context: the year the poem was first published, C) Accuracy: the spelling and punctuation in the poem, D) Response: the student's own opinion of India
+   * **Correct:** A
+   * **AO:** AO2
+   * **Feedback:** ✓ Correct. AO2 covers "linguistic and structural devices". A shift from present to future tense is a structural choice, and the mark scheme names its effect: "the adverb, ‘when’, creating a feeling that positive action is happening".
+   * **Why B:** Publication facts are not assessed on this paper.
+   * **Why C:** Spelling and punctuation are assessed in the student's own Section B writing (AO5), not in the poem.
+   * **Why D:** AO2 is about how the writer uses devices, not the student's opinion.
+
+28. **Type: Ranking [Tests AO4]**
+   * **Question:** These AO4 bullets describe how a Section B response COMMUNICATES. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) Communicates successfully, B) Communicates in a broadly appropriate way, C) Communication is perceptive and subtle, D) Communicates clearly
+   * **Correct:** B, D, A, C
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. Level 2: "Communicates in a broadly appropriate way." Level 3: "Communicates clearly." Level 4: "Communicates successfully." Level 5: "Communication is perceptive and subtle." Level 1 is "Communication is at a basic level, and limited in clarity."
+   * **WhyWrong:** Lowest to highest: "broadly appropriate", then "clearly", then "successfully", then "perceptive and subtle".
+
+29. **Type: Ranking [Tests AO4]**
+   * **Question:** These AO4 bullets describe a response's use of FORM, TONE AND REGISTER. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) Effective use of form, tone and register, B) Little awareness of form, tone and register, C) Sophisticated use of form, tone and register, D) Straightforward use of form, tone and register
+   * **Correct:** B, D, A, C
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. Level 1: "Little awareness of form, tone and register." Level 2: "Straightforward use of form, tone and register." Level 4: "Effective use of form, tone and register." Level 5: "Sophisticated use of form, tone and register." Level 3, between them, is "Appropriate use of form, tone and register."
+   * **WhyWrong:** Lowest to highest: "Little awareness", then "Straightforward", then "Effective", then "Sophisticated".
+
+30. **Type: Fill [Tests AO4]**
+   * **Question:** Complete the AO4 Level 4 (12–15 marks) descriptor: "[BLANK] use of form, tone and register."
+   * **Answer:** Effective
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. Level 4 "Communicates successfully", with "A secure realisation of purpose and the expectations/requirements of the intended reader" and "Effective use of form, tone and register."
+   * **WhyWrong:** The Level 4 word is "Effective". "Appropriate" is Level 3 and "Sophisticated" is Level 5.
+
+31. **Type: MCQ [Tests AO4]**
+   * **Question:** The June 2024 mark scheme describes the audience for every Section B task. What does it say?
+   * **Options:** A) A general readership, adults or young people, B) The examiner, so the tone has to stay formal throughout, C) Children under ten, so the vocabulary must be simple, D) A panel of judges for a creative writing competition
+   * **Correct:** A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. The mark scheme: "Audience: the writing is for a general readership. Candidates can choose to write for an audience of adults or young people." Choosing a reader and writing for them is part of AO4: "the expectations/requirements of the intended reader".
+   * **Why B:** The audience is "a general readership", and the mark scheme allows "a more informal or colloquial approach".
+   * **Why C:** The student chooses "adults or young people"; nothing sets an age of ten.
+   * **Why D:** The mark scheme names a general readership, not judges.
+
+32. **Type: MCQ [Tests AO4]**
+   * **Question:** A student answers Question 3, 'A Perfect Place', as a monologue: one character speaking. Is that allowed?
+   * **Options:** A) Yes: the form may be narrative or a monologue, B) No: Question 3 asks for a story, so it must be in prose, C) No: a monologue is drama, which belongs to Paper 1, D) Yes, but a monologue is capped at Level 3 for AO4
+   * **Correct:** A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. The mark scheme: "Form: the response may be narrative, descriptive or a monologue." It adds that responses may include "a sustained single voice in a monologue".
+   * **Why B:** A monologue can tell a story; the mark scheme lists it as an allowed form.
+   * **Why C:** Form is the student's choice here; there is no penalty for a monologue.
+   * **Why D:** No form is capped: the grids judge how well the chosen form is used.
+
+33. **Type: MCQ [Tests AO4]**
+   * **Question:** A story meets two of the three Level 4 AO4 bullets, but its use of form, tone and register is only Level 3. How does the examiner decide the mark?
+   * **Options:** A) Best fit: the mark closest to its overall quality, B) It must meet every Level 4 bullet to be in Level 4, C) It takes the lowest level any bullet reaches, D) It is averaged across the bullets, one by one
+   * **Correct:** A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. The mark scheme: "An answer may not always satisfy every one of the assessment criteria for a particular level in order to receive a mark within that level range". "The best-fit approach should be used to determine the mark which corresponds most closely to the overall quality of the response."
+   * **Why B:** Pearson says an answer "may not always satisfy every one of the assessment criteria" for its level.
+   * **Why C:** Marking is by best fit, not by the weakest bullet.
+   * **Why D:** The grid is applied as a whole, by best fit, not bullet by bullet.
+
+34. **Type: MCQ [Tests AO4]**
+   * **Question:** A student's Question 2 response is a chatty monologue with colloquial phrases and some dialogue. Does that lose AO4 marks?
+   * **Options:** A) No: the register may include colloquial elements, B) Yes: colloquial language counts as a mistake in AO4, C) Yes: dialogue is not allowed in imaginative writing, D) It does if the chosen audience is adults
+   * **Correct:** A
+   * **AO:** AO4
+   * **Feedback:** ✓ Correct. The mark scheme says responses may "be written in a register and style appropriate for the chosen form, which may include colloquial elements, dialogue within description or narrative, or a sustained single voice in a monologue." AO4 judges whether the register suits the purpose and the reader.
+   * **Why B:** Pearson says "Some candidates may intentionally adapt their language and style to their audience by using, for example, a more informal or colloquial approach."
+   * **Why C:** The mark scheme names "dialogue within description or narrative" as allowed.
+   * **Why D:** The register should fit the chosen audience; colloquial elements are allowed for either audience.
+
+35. **Type: Ranking [Tests AO5]**
+   * **Question:** These AO5 bullets describe a response's VOCABULARY AND SPELLING. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) Uses a wide, selective vocabulary with only occasional spelling errors, B) Uses basic vocabulary, often misspelt, C) Uses extensive vocabulary strategically; rare spelling errors do not detract from overall meaning, D) Uses a varied vocabulary and spells words containing irregular patterns correctly
+   * **Correct:** B, D, A, C
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Level 1: "Uses basic vocabulary, often misspelt." Level 3: "Uses a varied vocabulary and spells words containing irregular patterns correctly." Level 4: "Uses a wide, selective vocabulary with only occasional spelling errors." Level 5: "Uses extensive vocabulary strategically; rare spelling errors do not detract from overall meaning."
+   * **WhyWrong:** Lowest to highest: "basic", then "varied", then "wide, selective", then "extensive … strategically".
+
+36. **Type: Ranking [Tests AO5]**
+   * **Question:** These AO5 bullets describe a response's PUNCTUATION AND SENTENCES. Rank them from the lowest level to the highest (letters in order, lowest first).
+   * **Options:** A) Positions a range of punctuation for clarity, managing sentence structures for deliberate effect, B) Uses punctuation with some control, creating a range of sentence structures, including coordination and subordination, C) Punctuates writing with accuracy to aid emphasis and precision, D) Uses accurate and varied punctuation, adapting sentence structures as appropriate
+   * **Correct:** B, D, A, C
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Level 2: "Uses punctuation with some control, creating a range of sentence structures, including coordination and subordination." Level 3: "Uses accurate and varied punctuation, adapting sentence structures as appropriate." Level 4: "Positions a range of punctuation for clarity, managing sentence structures for deliberate effect." Level 5: "Punctuates writing with accuracy to aid emphasis and precision, using a range of sentence structures accurately and selectively to achieve particular effects."
+   * **WhyWrong:** Lowest to highest: "some control", then "accurate and varied", then "for clarity", then "to aid emphasis and precision".
+
+37. **Type: Fill [Tests AO5]**
+   * **Question:** Complete the AO5 Level 4 (8–10 marks) descriptor: "Positions a range of punctuation for [BLANK], managing sentence structures for deliberate effect."
+   * **Answer:** clarity
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Level 4: "Positions a range of punctuation for clarity, managing sentence structures for deliberate effect." At Level 5 punctuation goes further: it is used "to aid emphasis and precision".
+   * **WhyWrong:** The word is "clarity": at Level 4 punctuation is placed so that the meaning is clear.
+
+38. **Type: MCQ [Tests AO5]**
+   * **Question:** A story has excellent, ambitious vocabulary but two spelling mistakes. Can it still reach AO5 Level 5?
+   * **Options:** A) Yes: rare errors that do not detract are allowed, B) No: Level 5 requires every word to be spelt right, C) No: two errors put it at Level 3 at most, D) Yes, but it loses one mark for each error
+   * **Correct:** A
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Level 5: "Uses extensive vocabulary strategically; rare spelling errors do not detract from overall meaning." Even Level 4 allows "only occasional spelling errors". The grid rewards ambition handled with control.
+   * **Why B:** Level 5 says "rare spelling errors do not detract from overall meaning"; it does not demand perfection.
+   * **Why C:** Two errors in a long story are rare; the level depends on the whole response.
+   * **Why D:** The grid is applied by best fit, not by taking a mark off for each error.
+
+39. **Type: MCQ [Tests AO5]**
+   * **Question:** Which AO5 level first mentions sentence structures "including coordination and subordination"?
+   * **Options:** A) Level 2 (3–4), B) Level 4 (8–10), C) Level 5 (11–12), D) Level 1 (1–2)
+   * **Correct:** A
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. Level 2: "Uses punctuation with some control, creating a range of sentence structures, including coordination and subordination." Joining clauses with words such as ‘and’, ‘but’ or ‘because’ is an early AO5 skill; the higher levels manage sentence structures "for deliberate effect".
+   * **Why B:** Level 4 is "managing sentence structures for deliberate effect".
+   * **Why C:** Level 5 uses sentence structures "accurately and selectively to achieve particular effects".
+   * **Why D:** Level 1 creates "undeveloped, often repetitive, sentence structures".
+
+40. **Type: Select All [Tests AO5]**
+   * **Question:** Section B is marked on two grids. Select ALL the phrases that come from the AO5 grid (and none from the AO4 grid).
+   * **Options:** A) Uses a varied vocabulary, B) Appropriate use of form, tone and register, C) Manages information and ideas, D) Shows a clear sense of purpose
+   * **Correct:** A, C
+   * **AO:** AO5
+   * **Feedback:** ✓ Correct. "Uses a varied vocabulary" (Level 3) and "Manages information and ideas" (Level 4) are AO5: how clearly and accurately the writing is built. "Appropriate use of form, tone and register" and "Shows a clear sense of purpose" are AO4: how well the writing communicates with its reader.
+   * **Why B:** Form, tone and register are AO4: "Appropriate use of form, tone and register" is its Level 3.
+   * **Why D:** Purpose is AO4: "Shows a clear sense of purpose" is its Level 3.
 
 ### **SECTION E: Eduqas (C700U20 — Component 2)**
 

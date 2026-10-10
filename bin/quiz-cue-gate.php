@@ -88,8 +88,10 @@ function blind_answer($q) {
 function measure_bank($path, $kind, $board = null) {
     $sections = SWML_Quiz_Bank::parse_file($path);
     if ($board !== null && $board !== '') {
+        // v7.20.823: compare case-insensitively — section headings keep their own case ("Edexcel IGCSE Spec A (…"), so an
+        // upper-cased want could only ever match an all-caps heading ("AQA (") and every other board's section was invisible.
         $want = strtoupper($board) . ' (';
-        $sections = array_filter($sections, function ($k) use ($want) { return strpos((string) $k, $want) === 0; }, ARRAY_FILTER_USE_KEY);
+        $sections = array_filter($sections, function ($k) use ($want) { return strpos(strtoupper((string) $k), $want) === 0; }, ARRAY_FILTER_USE_KEY);
     }
     $m = ['mcq' => 0, 'key_longest' => 0, 'length_cue' => 0, 'tf' => 0, 'tf_false' => 0,
           'sa' => 0, 'sa_counts' => [], 'blind' => 0.0, 'blind_max' => 0.0, 'absurd' => 0, 'no_why' => 0,
