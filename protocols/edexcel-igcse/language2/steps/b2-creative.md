@@ -109,8 +109,7 @@ plenty."
    **Example (quote exactly):** “Please, sir, I want some more.” — Oliver, a hungry boy in a workhouse, asks the
    master for a second helping, and soon he is sent away to work for an undertaker (*Oliver
    Twist*): one brave choice, and it goes wrong.
-   *[AI_INTERNAL] No Table button for this beat: its card ("Turning Point") is not linkable yet
-   (FIXLIST #863) — never invent a @RESOURCE_LINK for it.*
+@RESOURCE_LINK{"dest":"table","arg":"Turning Point","label":"Turning Point"}
    **Ask:** "What do they DO about it — the plan they try (and how it goes wrong)?" →
 @FIELD_COMMIT{"field":"plan-scene-Q2-proaction"}
 6. **Climax** — the moment of greatest tension.

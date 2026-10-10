@@ -69,8 +69,9 @@ for (const F of FILES) {
             ok(!!j && j.dest === 'table' && NAMES.has(j.arg) && j.label === j.arg,
                 `  ${beat}: button "${j && j.arg}" resolves in table-of-techniques.md (else the chat silently drops it)`);
         }
-        if (beat === 'Proaction') ok(!/@RESOURCE_LINK\{/.test(block) && /Turning Point/.test(block),
-            '  Proaction: no button until "Turning Point" is linkable (FIXLIST #863) — and the note says why');
+        // v7.20.810 (#863): WML's name list regenerated (304 cards) — Proaction's card is linkable now, so it MUST carry it.
+        if (beat === 'Proaction') ok(/@RESOURCE_LINK\{"dest":"table","arg":"Turning Point","label":"Turning Point"\}/.test(block),
+            '  Proaction: carries its "Turning Point" button (the card its example comes from)');
     });
     ok(/Use\s+THAT example, never one of your own/.test(sec), `${F.file}: the ask forbids swapping in an unchecked example of the model's own`);
     ok(!/TBD by\s+ruling/.test(src), `${F.file}: no "TBD by ruling" left for the story beats`);
