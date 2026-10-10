@@ -932,7 +932,12 @@
             if (!ops.length) return false;
             const tr = state.tr;
             ops.forEach((o) => { if (o.op === 'insert') tr.insert(o.pos, mark.create({ checked: false })); else tr.delete(o.pos, o.pos + 1); });
+            // The press happens on the toolbar, OUTSIDE the editor, so the structure lock would class this as a code
+            // fill and keep it out of undo history (measured on staging: Cmd+Z did nothing). It is the student's own
+            // edit — mark it as one, exactly like typing, so one Cmd+Z undoes it.
+            tr.setMeta('uiEvent', 'checklist');
             view.dispatch(tr);
+            view.focus();   // like every other toolbar button: the caret goes back to the document
             return true;
         } catch (e) {
             console.warn('[WML] ☑ on box lines failed', e);

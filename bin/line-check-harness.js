@@ -102,11 +102,12 @@ ok(/'span'/.test(REST) && /'data-type'/.test(REST) && /'data-checked'/.test(REST
 const act = SRC.slice(SRC.indexOf('            checklist: () => {'), SRC.indexOf('            undo: () =>'));
 ok(act.indexOf('_toggleLineChecks(canvasEditor)') > 0 && act.indexOf('_toggleLineChecks(canvasEditor)') < act.indexOf("type.name === 'paragraph'"),
     'C5 ☑ tries the box path FIRST, then the unchanged paragraph path');
-const tog = SRC.slice(SRC.indexOf('function _toggleLineChecks(editor)'), SRC.indexOf('function _toggleLineChecks(editor)') + 1800);
+const tog = SRC.slice(SRC.indexOf('function _toggleLineChecks(editor)'), SRC.indexOf('function _toggleLineChecks(editor)') + 2600);
 ok(/!editor\.isEditable \|\| _docDisplayLocked\(\)/.test(tog), 'C6 ☑ never edits for a viewer or in a display-locked lesson');
 ok(/node\.type\.name === 'sectionBlock' && node\.attrs\.editable === false/.test(tog), 'C7 ☑ never edits a read-only section');
 ok(/'paragraph' \|\| node\.type\.name === 'heading' \|\| node\.type\.name === 'checklistItem'/.test(tog), 'C8 paragraphs, headings and block checklist items stay with the block path');
-ok(/const tr = state\.tr;[\s\S]{0,260}view\.dispatch\(tr\)/.test(tog), 'C9 every line changes in ONE transaction (one Cmd+Z undoes it)');
+ok(/const tr = state\.tr;[\s\S]{0,800}view\.dispatch\(tr\)/.test(tog), 'C9 every line changes in ONE transaction (one Cmd+Z undoes it)');
+ok(/tr\.setMeta\('uiEvent', 'checklist'\);\s*view\.dispatch\(tr\);/.test(tog), 'C9c the ☑ change is marked as the student\'s own (uiEvent) — else the structure lock keeps it out of undo (measured)');
 const nv = SRC.slice(SRC.indexOf('const CheckMark = Node.create'), SRC.indexOf('// ── OutlineRow Node'));
 ok(nv.length > 500 && nv.length < 6000, 'C9b the CheckMark NodeView source is found (beside ChecklistItem)');
 ok(/dom\.closest\('\[data-swml-display-lock\]'\) \|\| !editor\.isEditable/.test(nv), 'C10 a tick is refused where ChecklistItem\'s is (display lock) and for anyone who cannot edit');
