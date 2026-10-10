@@ -5,7 +5,7 @@
 **See also:** `PRODUCT.md` (this dir) for users + voice. `../../../sophicly-plugins/BRAND.md` for design.
 
 **Plugin slug:** `sophicly-writing-mastery-lab`
-**Current version:** BRANCH `wml/q1-2026-mc` = 7.20.805 on STAGING (#857 AQA P1 Q1 → the 2026 multiple-choice format; waits for Neil's look, Actions v93 card 1) · MAIN 7.20.801 (.799 #851 Polish link · .800 #855 P1 Q5 stories only · .801 #818 Step 18 profession row) · PROD 7.20.798 — main ships only after notes 2.6.274 is live (deploy-production.sh refuses before) · **next bump is 7.20.806**
+**Current version:** 7.20.806 on main + staging (.799 #851 Polish link · .800 #855 P1 Q5 stories only · .801 #818 Step 18 profession row · .802–.805 #857 AQA P1 Q1 in the 2026 multiple-choice format · .806 #859 the Live Modelling past papers take it too) · PROD 7.20.798 — main ships only after notes 2.6.274 is live (deploy-production.sh refuses before); then install the converted past papers on prod (code first, data second) · **next bump is 7.20.807**
 **Purpose:** AI-powered GCSE/IGCSE English tutoring interface — essay writing, assessment, planning, polishing.
 **AI Provider:** `claude-sonnet-5` via MeowApps AI Engine (measured on prod from `mwai_chatbots`, 2026-09-06 — the header said Sonnet 4.6 for months; verify with `wp eval`, never from this line). GPT-5 fallback.
 
