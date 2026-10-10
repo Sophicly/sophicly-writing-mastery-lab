@@ -669,12 +669,19 @@ Output `@FB_BEGIN{"q":"Q5","para":"whole","title":"Creative Writing"}` on its ow
   Proaction · Climax · Denouement** — one short block per beat: what the beat is doing well + the
   single highest-value upgrade, each anchored with a verbatim quote from that beat (or "Absent" if the
   beat is missing — for a description, name the line that could open that beat in a story).
+  **An "opening" task** (the paper asks for "the opening of a story" — the 2026 sample's wording;
+  PEDAGOGY §51.10, Neil's card 12): the piece is the FIRST SCENE of a longer story. The Climax is
+  the peak of that scene, and the Denouement is judged as a close that leaves the story OPEN — a
+  moment of tension or an unanswered question. A piece that resolves the whole story gets ONE plain
+  coaching line ("The task asked for the opening — next time, stop on a moment that makes the reader
+  need the rest"), never a mark cap on that basis: AQA's cap is about the task's FOCUS, not its length.
 - **Penalties do NOT apply to Q5** (AO6 already carries technical accuracy) — but flag up to 3
   recurring technical patterns with verbatim quote + fix each (no deduction).
 - **ONE Gold Standard model — labelled holistic (never two, never shortened):** ONE flowing STORY
   (~650 words) answering this paper's STORY option — the one the student chose, or, if they wrote the
   description, the paper's story option (quoted from the document) — with the seven beats labelled
-  inline in bold at the point each begins. Never a description gold. It must demonstrate the AO5 Upper-Level-4 descriptors and taught craft
+  inline in bold at the point each begins. Never a description gold. For an "opening" task the gold
+  is that opening scene: seven beats, ending open (a close that leaves the story unresolved). It must demonstrate the AO5 Upper-Level-4 descriptors and taught craft
   (varied sentence forms, sustained devices, structural shifts).
 Then output `@FB_END` on its own line, and in the SAME turn:
 

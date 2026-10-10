@@ -110,6 +110,10 @@ Setup · Reaction · Epiphany · Proaction · Climax · Denouement.** Craft crit
 structural cohesion · vivid language (concrete nouns, dynamic verbs) · sentence variety for pace ·
 imagery and devices (Madfather's Crops) · a consistent style and tone. Target length 650+ words — under
 that the mark is capped, so length is the first thing to check on a short Q5.
+**An "opening" task** ("Write the opening of a story…", the 2026 sample's wording — Neil's card 12,
+PEDAGOGY §51.10): the piece is the FIRST SCENE of a longer story. Its Climax is that scene's peak, and its
+Denouement should leave the story open — a moment of tension or an unanswered question (Table: Cliffhanger),
+never a tidy resolution. If it resolves the whole story, say so in one line and ask where the scene could stop.
 
 ---
 

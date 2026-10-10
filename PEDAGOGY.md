@@ -2811,8 +2811,12 @@ Recorded here in the same session, as §0 requires. Each line is his tap; a quot
     IGCSE polishing. **Status (2026-10-10, WML 344 A, FIXLIST #861):** IGCSE polishing built v7.20.719; the IGCSE
     word limit is GONE everywhere a session reads it (v7.20.807): no ceiling, no target number, no word-count penalty,
     no length halt — including the P1 `knowledge-hub.md` the polishing environment loads, which still carried the
-    Q5 550-word and Q6 700-word halts; the page shows a word COUNT, never "N / 650". Story-step criteria + example and
-    the "opening" task: next build (v7.20.808).
+    Q5 550-word and Q6 700-word halts; the page shows a word COUNT, never "N / 650". **v7.20.808:** the seven story
+    beats (AQA P1 Q5 planning + Edexcel IGCSE P2 Section B) each ask with criteria → ONE example from a different,
+    well-known story (quoted word for word from the live Table card) → the Table button(s) → the question last; and an
+    AQA P1 **"opening" task** ("Write the opening of a story…", the 2026 sample) plans, is marked and is polished as the
+    FIRST SCENE of a story — Climax = that scene's peak, the close leaves the story open (Cliffhanger); a fully
+    resolved piece gets one coaching line, never a cap (AQA's cap is about the task's FOCUS). Gate: `bin/story-beat-gate.js`.
 11. **The Edexcel IGCSE Paper 2 anthology gets its OWN quiz and its own notes document — never the AQA forms quiz.**
     (card 3, then his correction in chat the same day: *"it has its own anthology, which comprises both poetry and prose…
     it only has… five [poems]… if we're going to have a forms quiz, we'd have to have… a special one… that only covers

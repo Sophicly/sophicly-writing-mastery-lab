@@ -206,6 +206,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/doc-template-mode-harness.js >/tmp/doc-template-mode.out 2>&1 || { cat /tmp/doc-template-mode.out; fail=1; }
 fi
 
+# v7.20.808 (#861 A/B, card 12): the seven story beats ask with criteria → one example → Table button → question, every
+# example quotation is word for word on the live Table card, every button resolves, and the AQA P1 "opening" task is
+# planned, marked and polished as an opening. Mutation-proven (misquote, unlinkable button, the old bare beats).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'language1/planning/protocol-b-planning\.md|language2/steps/b2-creative\.md|language1/modules/protocol-a-assessment\.md|rubric-aqa-lang-p1-fiction\.md|table-of-techniques\.md|story-beat-gate\.js'; then
+  node bin/story-beat-gate.js >/tmp/story-beat.out 2>&1 || { cat /tmp/story-beat.out; fail=1; }
+fi
+
 # v7.20.797 (FIXLIST #847): the tutor comment modal — house modal, body-mounted (centred on the screen), minimal
 # chips, the three quick comments Neil named, and every quick-comment deep link resolving to a real Toolkit
 # section / Table technique (a dead link draws nothing). Mutation-proven 6/6 when written.
