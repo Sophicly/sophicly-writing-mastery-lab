@@ -7,3 +7,5 @@ MSA/macbeth.md#aqa
 MSA/an_inspector_calls.md#aqa
 MSA/christmas_carol.md#aqa
 MSA/romeo_and_juliet.md#aqa
+MSA/love_relationships_poetry.md#aqa
+MSA/power_conflict_poetry.md#aqa

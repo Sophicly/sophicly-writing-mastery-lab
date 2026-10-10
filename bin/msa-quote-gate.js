@@ -26,6 +26,9 @@ const ROOT = path.resolve(__dirname, '..');
 const norm = (s) => String(s)
     .replace(/[‘’‛′]/g, "'").replace(/[“”‟″]/g, '"')
     .replace(/[–—−]/g, '-').replace(/…/g, '...')
+    // v7.20.822: pdftotext wraps lines after a slash ("ideas/perspectives/⏎contextual factors"), and AQA's indicative content
+    // spaces its slashes ("frustration / impatience") — so spacing around "/" never decides whether a quote is verbatim.
+    .replace(/\s*\/\s*/g, '/')
     .replace(/\s+/g, ' ').trim().toLowerCase();
 
 const PILOTS = [{
@@ -102,6 +105,28 @@ const PILOTS = [{
     jun24: [],
     JUN24_ITEMS: [],
     ALLOW: {},
+}, {
+    // v7.20.822 (WML 345 A, FIXLIST #881): #815d step 5 — AQA poetry, Paper 2 Section B. NO AO4 ("AO4 will be assessed on
+    // Section A only") → AO1 16 · AO2 16 · AO3 8. Source = the 8702/2 scheme ONLY: its wording differs from Paper 1 (AO1 is
+    // "comparison" at every level; AO2 says "writer's methods", no "the"), so a Paper 1 source here would pass Paper 1 words.
+    bank: 'protocols/shared/mark-scheme-assessment/banks/love_relationships_poetry.md',
+    section: 'AQA (',
+    count: 40,
+    ao: { AO1: 16, AO2: 16, AO3: 8 },
+    sources: ['research/sources/aqa-8702-2-jun24-ms.txt'],
+    jun24: [],
+    JUN24_ITEMS: [],
+    ALLOW: {},
+}, {
+    // v7.20.822 (FIXLIST #881): the same paper, the other cluster — same sources, same mix.
+    bank: 'protocols/shared/mark-scheme-assessment/banks/power_conflict_poetry.md',
+    section: 'AQA (',
+    count: 40,
+    ao: { AO1: 16, AO2: 16, AO3: 8 },
+    sources: ['research/sources/aqa-8702-2-jun24-ms.txt'],
+    jun24: [],
+    JUN24_ITEMS: [],
+    ALLOW: {},
 }];
 
 // The section's items: "N. **Type: X [Tests AOn]**" blocks inside the section that starts "### **SECTION …: <label>".
@@ -172,10 +197,11 @@ const load = (pilot) => ({
 
 if (process.argv.includes('--selftest')) {
     const pilot = { ...PILOTS[0], count: 2, ao: { AO2: 2 } };
-    const src = { main: norm('Shows perceptive and detailed understanding of language: Analyses the effects of the writer’s choices'), jun24: norm('the lizards darted') };
+    const src = { main: norm('Shows perceptive and detailed understanding of language: Analyses the effects of the writer’s choices. Shows perceptive/\nand detailed'), jun24: norm('the lizards darted') };
     const mk = (a, b) => '### **SECTION A: AQA (fixture)**\n\n1. **Type: MCQ [Tests AO2]**\n   * **Feedback:** ✓ Level 4 "' + a + '".\n\n2. **Type: MCQ [Tests AO2]**\n   * **Feedback:** "' + b + '"\n';
     const cases = [
         ['verbatim (curly apostrophe, line-joined)', mk('Analyses the effects of the writer\'s choices', 'Shows perceptive and detailed… language'), 0],
+        ['verbatim across a line wrapped after a slash', mk('Shows perceptive/ and detailed', 'Shows perceptive'), 0],
         ['a fabricated quote', mk('Analyses the impact of the writer\'s methods', 'Shows perceptive'), 1],
         ['a June 2024 quote outside the allowed items', mk('the lizards darted', 'Shows perceptive'), 1],
         ['a note that names an option by its letter', mk('Shows perceptive', 'Shows perceptive') + '   * **WhyWrong:** B is Level 1, then D.\n', 1],
@@ -188,7 +214,7 @@ if (process.argv.includes('--selftest')) {
         if (!ok) bad++;
         console.log((ok ? '  ✓ ' : '  ✗ ') + name + (want ? ' fails' : ' passes') + (ok ? '' : ` (got ${got} error(s))`));
     }
-    console.log(bad ? 'msa-quote-gate selftest FAILED' : 'msa-quote-gate selftest passed (5 cases)');
+    console.log(bad ? 'msa-quote-gate selftest FAILED' : 'msa-quote-gate selftest passed (6 cases)');
     process.exit(bad ? 1 : 0);
 }
 
