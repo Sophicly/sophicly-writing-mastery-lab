@@ -214,6 +214,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/story-beat-gate.js >/tmp/story-beat.out 2>&1 || { cat /tmp/story-beat.out; fail=1; }
 fi
 
+# v7.20.811 (#864, Neil): ☑ on lines inside a box gives each line an inline tick box (a box holds no paragraphs, so
+# the old block conversion silently did nothing). Pure line logic on his real plan box + three planted defects + wiring.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-canvas\.css|class-rest-api\.php|line-check-harness\.js'; then
+  node bin/line-check-harness.js >/tmp/line-check.out 2>&1 || { cat /tmp/line-check.out; fail=1; }
+fi
+
 # v7.20.797 (FIXLIST #847): the tutor comment modal — house modal, body-mounted (centred on the screen), minimal
 # chips, the three quick comments Neil named, and every quick-comment deep link resolving to a real Toolkit
 # section / Table technique (a dead link draws nothing). Mutation-proven 6/6 when written.

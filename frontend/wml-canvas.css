@@ -9621,6 +9621,38 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-checklist-text { color: rgba(0,0,0,0.75); }
 [data-swml-theme="light"] .swml-checklist-item[data-checked="true"] .swml-checklist-text { color: rgba(0,0,0,0.45); }
 
+/* v7.20.811 (#864): the INLINE tick box (CheckMark) at the start of a line inside a box. Same box, tick drawing,
+   colours, hover, light theme and display-lock rule as the block checklist above — only its placement and the
+   checked state's selector are its own (the block rules key on .swml-checklist-item). */
+.swml-check-mark {
+    display: inline-flex;
+    vertical-align: -3px;
+    margin-right: 8px;
+}
+.swml-check-mark .swml-checklist-box { margin-top: 0; }
+.swml-check-mark[data-checked="true"] .swml-checklist-box {
+    border-color: transparent;
+    box-shadow: inset 0 0 0 10px #1CD991;
+}
+.swml-check-mark[data-checked="true"] .swml-check-tick { stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: reduce) {
+    .swml-check-mark[data-checked="true"] .swml-checklist-box { box-shadow: inset 0 0 0 10px #1CD991; }
+    .swml-check-mark[data-checked="true"] .swml-check-tick { stroke-dashoffset: 0px; }
+}
+/* Stored HTML carries no NodeView chrome (the prior-attempt pad renders saved docs statically) — draw the box
+   from the persisted data-checked, exactly as the block checklist's pad rule does. */
+.swml-prior-pad [data-type="check-mark"] {
+    display: inline-block; vertical-align: -2px;
+    width: 14px; height: 14px; margin-right: 7px;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 4px;
+}
+.swml-prior-pad [data-type="check-mark"][data-checked="true"] {
+    background: #1CD991 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpolyline points='216 72 104 184 48 128' fill='none' stroke='%230b3b26' stroke-linecap='round' stroke-linejoin='round' stroke-width='36'/%3E%3C/svg%3E") 50% 50% / 9px no-repeat;
+    border-color: transparent;
+}
+[data-swml-theme="light"] .swml-prior-pad [data-type="check-mark"] { border-color: rgba(28,29,31,0.25); }
+
 /* ══════════════════════════════════════════
  *  SECTION CONTROL ROWS (v7.19.951 — replaces the absolute dropdown-overlay layer)
  * ══════════════════════════════════════════ */

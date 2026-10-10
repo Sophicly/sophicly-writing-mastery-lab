@@ -875,6 +875,70 @@
         if (WML.isLiveModelling && WML.isLiveModelling()) return true;
         return String(state.board || '') === 'edexcel-igcse' && _isAnyLanguagePaper();
     }
+    // v7.20.811 (FIXLIST #864 — Neil, live-modelling the IGCSE Q4 plan: selected lines + ☑ "didn't create a
+    // checklist… I wanted to turn those lines into checklists so we can tick them off as we're working through
+    // them"). A BOX (inputField / outlineRow) holds INLINE content — its lines are hardBreaks, never paragraphs —
+    // so the block ChecklistItem cannot live inside one and ☑ silently returned false there. ☑ on lines in a box
+    // now puts an inline tick box (the CheckMark node) at the START of each selected line.
+    // @LINE-CHECK-PURE-BEGIN — pure; driven by bin/line-check-harness.js
+    // blocks: [{ start, kids: [{ name, size }] }] — each box's children in order; `start` = the position of its
+    // first child. A LINE runs from the box start, or just after a hardBreak, to the next hardBreak. Returns the
+    // ops for ☑ on [from, to]: every selected line that holds anything besides its tick gets a tick at its start —
+    // or, when every such line already starts with one, the ticks come off (the button toggles, like ☑ on a
+    // paragraph). Back-to-front order, so applying one op never moves the position of the next.
+    function lineCheckOps(blocks, from, to) {
+        const lines = [];
+        (blocks || []).forEach((b) => {
+            let pos = b.start, cur = null;
+            const open = (p) => { cur = { start: p, end: p, hasMark: false, content: false }; lines.push(cur); };
+            open(pos);
+            (b.kids || []).forEach((k) => {
+                if (k.name === 'hardBreak') { cur.end = pos; pos += k.size; open(pos); return; }
+                if (k.name === 'checkMark' && pos === cur.start) cur.hasMark = true;
+                else cur.content = true;
+                pos += k.size; cur.end = pos;
+            });
+        });
+        const caret = from === to;
+        const hit = lines.filter((l) => l.content && (caret ? (l.start <= from && from <= l.end) : (l.start < to && l.end > from)));
+        if (!hit.length) return [];
+        const remove = hit.every((l) => l.hasMark);
+        return hit.filter((l) => (remove ? l.hasMark : !l.hasMark))
+            .map((l) => ({ op: remove ? 'delete' : 'insert', pos: l.start }))
+            .sort((a, b) => b.pos - a.pos);
+    }
+    // @LINE-CHECK-PURE-END
+    // The editor half: collect the boxes the selection touches and apply lineCheckOps in ONE transaction (one
+    // Cmd+Z undoes it). Paragraphs, headings and ChecklistItems are left to the block path — returns false so
+    // the caller falls through to it. Never touches a read-only section, a display-locked lesson or a viewer.
+    function _toggleLineChecks(editor) {
+        try {
+            if (!editor || !editor.isEditable || _docDisplayLocked()) return false;
+            const { state, view } = editor;
+            const mark = state.schema.nodes.checkMark;
+            if (!mark || !view) return false;
+            const { from, to } = state.selection;
+            const blocks = [];
+            state.doc.nodesBetween(from, to, (node, pos) => {
+                if (node.type.name === 'sectionBlock' && node.attrs.editable === false) return false;
+                if (!node.isTextblock) return true;
+                if (node.type.name === 'paragraph' || node.type.name === 'heading' || node.type.name === 'checklistItem') return false;
+                const kids = [];
+                node.forEach((c) => kids.push({ name: c.type.name, size: c.nodeSize }));
+                blocks.push({ start: pos + 1, kids });
+                return false;
+            });
+            const ops = lineCheckOps(blocks, from, to);
+            if (!ops.length) return false;
+            const tr = state.tr;
+            ops.forEach((o) => { if (o.op === 'insert') tr.insert(o.pos, mark.create({ checked: false })); else tr.delete(o.pos, o.pos + 1); });
+            view.dispatch(tr);
+            return true;
+        } catch (e) {
+            console.warn('[WML] ☑ on box lines failed', e);
+            return false;
+        }
+    }
     // v7.19.854: AQA-style Paper 2 (nonfiction, inference/comparison/transactional).
     // Registered port surface (PORT SOP §E2) — paper-true wording branches key on this.
     function _isLangPaper2() {
@@ -38907,6 +38971,9 @@
             hr: () => canvasEditor?.chain().focus().setHorizontalRule().run(),
             checklist: () => {
                 if (!canvasEditor) return;
+                // v7.20.811 (#864): lines inside a BOX get inline tick boxes — a box holds no paragraphs, so the
+                // block conversion below found nothing there and the button silently did nothing.
+                if (_toggleLineChecks(canvasEditor)) return;
                 const { $from } = canvasEditor.state.selection;
                 // v7.14.61: Toggle — convert current block to/from checklistItem (keeps cursor in place)
                 for (let d = $from.depth; d >= 0; d--) {
@@ -50566,6 +50633,74 @@
             },
         });
 
+        // ── CheckMark — an INLINE tick box at the start of a line inside a box (v7.20.811, FIXLIST #864) ──
+        // A box (inputField / outlineRow) holds inline content only, so the block ChecklistItem cannot live in one.
+        // This atom carries just its `checked` state: the same box, tick drawing and colours as ChecklistItem (the
+        // CSS is shared), and NO text — word counts, the plan text Sophia reads and the plan → response transfer
+        // never see it. Ticking is a PM transaction (NodeView law), refused exactly where ChecklistItem's is.
+        const CheckMark = Node.create({
+            name: 'checkMark',
+            inline: true,
+            group: 'inline',
+            atom: true,
+            selectable: false,
+            draggable: false,
+            addAttributes() {
+                return {
+                    checked: {
+                        default: false,
+                        parseHTML: el => el.getAttribute('data-checked') === 'true',
+                        renderHTML: attrs => ({ 'data-checked': attrs.checked ? 'true' : 'false' }),
+                    },
+                };
+            },
+            parseHTML() { return [{ tag: 'span[data-type="check-mark"]' }]; },
+            renderHTML({ HTMLAttributes }) {
+                return ['span', Object.assign({}, HTMLAttributes, { 'data-type': 'check-mark', class: 'swml-check-mark' })];
+            },
+            addNodeView() {
+                return ({ node, getPos, editor }) => {
+                    const dom = document.createElement('span');
+                    dom.className = 'swml-check-mark';
+                    dom.setAttribute('data-type', 'check-mark');
+                    dom.setAttribute('data-checked', node.attrs.checked ? 'true' : 'false');
+                    dom.contentEditable = 'false';
+                    const box = document.createElement('span');
+                    box.className = 'swml-checklist-box';
+                    box.setAttribute('role', 'checkbox');
+                    box.setAttribute('aria-checked', node.attrs.checked ? 'true' : 'false');
+                    box.innerHTML = '<svg class="swml-check-tick-svg" viewBox="0 0 24 24" aria-hidden="true"><path class="swml-check-tick" d="M4.5 12.5L9.5 17L19 6.5"/></svg>';
+                    dom.appendChild(box);
+                    box.addEventListener('mousedown', (e) => { e.preventDefault(); });   // the caret stays where it is
+                    box.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Same refusals as ChecklistItem: a display-locked lesson (§6) and anyone who cannot edit
+                        // (tutor review, a live-modelling viewer) see the ticks but cannot change them.
+                        if (dom.closest('[data-swml-display-lock]') || !editor.isEditable || typeof getPos !== 'function') return;
+                        const pos = getPos();
+                        const cur = editor.state.doc.nodeAt(pos);
+                        if (!cur || cur.type.name !== 'checkMark') return;
+                        editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, { ...cur.attrs, checked: !cur.attrs.checked }));
+                        // setNodeMarkup does not reliably fire onUpdate (v7.19.145, ChecklistItem) — save explicitly.
+                        try { clearTimeout(canvasSaveTimer); canvasSaveTimer = setTimeout(() => { saveCanvasContent(); }, 200); } catch (_) { /* in scope */ }
+                    });
+                    return {
+                        dom,
+                        update(n) {
+                            if (n.type.name !== 'checkMark') return false;
+                            const v = n.attrs.checked ? 'true' : 'false';
+                            if (dom.getAttribute('data-checked') !== v) dom.setAttribute('data-checked', v);
+                            if (box.getAttribute('aria-checked') !== v) box.setAttribute('aria-checked', v);
+                            return true;
+                        },
+                        ignoreMutation: () => true,
+                        stopEvent: (e) => e.type === 'mousedown' || e.type === 'click',
+                    };
+                };
+            },
+        });
+
         // ── OutlineRow Node (v7.14.70) ──
         // Two-column layout for essay outlines: LEFT = read-only criteria (checkboxes, AO tags),
         // RIGHT = editable writing area (contentDOM). Uses nodeView pattern from ChecklistItem.
@@ -53063,6 +53198,7 @@
                 SwmlFigure, // v7.20.414: teaching graphics (the Step-7 virtue scale) — the canvas has no image node
                 LearnChip, // v7.19.949: in-context Fix→Learn chip inline node (penalty lines)
                 ParaPop, // v7.20.650 (#637): pop-out-this-paragraph chip inline node (Your paragraph lines)
+                CheckMark, // v7.20.811 (#864): inline tick box at the start of a line inside a box (☑ on box lines)
                 // v7.14.76: PaginationPlus DISABLED — continuous scroll mode.
                 // Eliminates scroll-jump bugs, criteria splitting across page breaks,
                 // and NodeView recreation issues. Pages added no pedagogical value
