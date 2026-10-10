@@ -99,8 +99,13 @@ ok(bIdx > 0 && mcIdx > bIdx && mcIdx - bIdx < 2500, 'the builder gates on the AU
 const B = SRC.slice(bIdx, mcIdx);
 ok(/data-item-id="\$\{qId\}-mc\$\{n\}-\$\{j \+ 1\}" data-authored="true" data-correct="\$\{j === c\.key \? 'true' : 'false'\}"/.test(B),
     'each option is an authored checklist row carrying its question group and the key');
-ok(/<p data-locked="true"><em><strong>\$\{_qn\}\.\$\{n\}<\/strong> \$\{escapeHTML\(c\.q\)\}<\/em><\/p>/.test(B),
-    'each question stem is a LOCKED italic line (the answer reader strips <em>, so a stem is never read as an answer)');
+ok(/<p data-locked="true"><strong>\$\{_qn\}\.\$\{n\}<\/strong> \$\{escapeHTML\(c\.q\)\}<\/p>/.test(B),
+    'each question is a LOCKED line in the reading colour, never hint-grey italics (v7.20.805, found on staging)');
+// A tick-box section must be skipped whole by BOTH word counters, so a stem can never count as the student's words.
+ok(/if \(\/statement\/i\.test\(label\) \|\| hasChecklist\) return;/.test(SRC) && /section\.querySelector\('\[data-checklist-item\], \[data-item-id\]'\)/.test(SRC),
+    'both word counters skip a tick-box section whole (so the stems are never counted as the student\'s words)');
+ok(/checkbox\.addEventListener\('click', \(e\) => \{\s*e\.preventDefault\(\);\s*e\.stopPropagation\(\);[\s\S]{0,500}if \(dom\.closest\('\[data-swml-display-lock\]'\)\) return;/.test(SRC),
+    'a tick cannot be changed in a read-only (display-locked) lesson — its marking reads the ticks (found on staging)');
 ok(/sectionHTML\('response', `\$\{qId\} Answers`/.test(B), 'the options sit in a "Q1 Answers" response section');
 ok(/else if \(qType === 'retrieval' && qMarks <= 5\)/.test(SRC.slice(mcIdx, mcIdx + 6000)), 'without choices, the list-four boxes are still built (past papers, older documents)');
 ok(/const _grp = !currentChecked \? \(String\(node\.attrs\.itemId \|\| ''\)\.match\(\/\^\(\.\+-mc\\d\+\)-\\d\+\$\/\)/.test(SRC)

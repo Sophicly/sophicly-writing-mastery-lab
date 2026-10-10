@@ -50359,6 +50359,10 @@
                     checkbox.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        // v7.20.805 (#857): a display-locked lesson (assessment / discuss-feedback, PEDAGOGY §6) shows the
+                        // student's answers READ-ONLY — ticks included. Its marking reads these ticks, so a tick changed here
+                        // would change a mark already given. The typing handlers enforce the lock; this click bypassed it.
+                        if (dom.closest('[data-swml-display-lock]')) return;
                         if (typeof getPos === 'function') {
                             const pos = getPos();
                             const currentChecked = editor.state.doc.nodeAt(pos)?.attrs.checked;
@@ -65752,7 +65756,8 @@
             // v7.20.802 (#731 item 5, FIXLIST #857): the 2026 AQA Paper 1 Q1 — several questions, ONE answer each
             // (q.choices, authored in the topic template's ### Choices block). Gated on the AUTHORED DATA, never on
             // the paper: a past paper or an older document without choices keeps its own list-four boxes. Each
-            // question is a locked italic stem (the answer reader strips <em>, so a stem is never read as an answer)
+            // question is a locked stem in the reading colour (v7.20.805: the questions ARE what the student reads — never
+            // hint-grey; a tick-box section is skipped whole by both word counters and never reaches the answer reader)
             // followed by its options as authored checklist rows (`Q1-mc{i}-{j}`, data-correct = the key). Ticking an
             // option unticks the others in its question (the checklist node), and _formatChecklistSummary scores it.
             if (Array.isArray(q.choices) && q.choices.length) {
@@ -65761,7 +65766,7 @@
                 let rows = `<p data-locked="true"><em>Choose one answer for each question.</em></p>`;
                 q.choices.forEach((c, i) => {
                     const n = i + 1;
-                    rows += `<p data-locked="true"><em><strong>${_qn}.${n}</strong> ${escapeHTML(c.q)}</em></p>`;
+                    rows += `<p data-locked="true"><strong>${_qn}.${n}</strong> ${escapeHTML(c.q)}</p>`;
                     (c.options || []).forEach((opt, j) => {
                         rows += `<div data-checklist-item="true" data-checked="false" data-item-id="${qId}-mc${n}-${j + 1}" data-authored="true" data-correct="${j === c.key ? 'true' : 'false'}" class="swml-checklist-item">${escapeHTML(opt)}</div>`;
                     });
