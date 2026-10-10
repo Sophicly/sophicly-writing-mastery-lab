@@ -50,7 +50,7 @@ for (const F of FILES) {
     heads.forEach((h, i) => {
         const block = sec.slice(h.index, i + 1 < heads.length ? heads[i + 1].index : sec.length);
         const beat = h[2];
-        const iCrit = block.indexOf('**A strong'), iEx = block.indexOf('**Example:**');
+        const iCrit = block.indexOf('**A strong'), iEx = block.indexOf('**Example (quote exactly):**');
         const iChip = block.indexOf('@RESOURCE_LINK'), iAsk = block.indexOf('**Ask:**');
         const marker = `@FIELD_COMMIT{"field":"plan-scene-${F.q}-${beat.toLowerCase()}"}`;
         const iMark = block.lastIndexOf(marker);
@@ -58,7 +58,7 @@ for (const F of FILES) {
         ok(order, `${F.file.split('/').slice(-2).join('/')} ${beat}: criteria → example → button → question → ${marker.slice(0, 40)}…`);
         ok((block.match(/@FIELD_COMMIT\{/g) || []).length === 1, `  ${beat}: exactly ONE row marker`);
         // quotations: every “…” inside an Example line is on the live Table, word for word
-        const exLines = block.split('\n').map((l, k, arr) => l.includes('**Example:**') ? arr.slice(k, k + 4).join(' ') : '').filter(Boolean);
+        const exLines = block.split('\n').map((l, k, arr) => l.includes('**Example (quote exactly):**') ? arr.slice(k, k + 4).join(' ') : '').filter(Boolean);
         const quotes = [];
         exLines.forEach((t) => { for (const m of t.replace(/\s+/g, ' ').matchAll(/“([^”]+)”/g)) quotes.push(m[1]); });
         ok(quotes.length >= 1, `  ${beat}: carries a worked example with a quotation (${quotes.length})`);
@@ -72,6 +72,7 @@ for (const F of FILES) {
         if (beat === 'Proaction') ok(!/@RESOURCE_LINK\{/.test(block) && /Turning Point/.test(block),
             '  Proaction: no button until "Turning Point" is linkable (FIXLIST #863) — and the note says why');
     });
+    ok(/Use\s+THAT example, never one of your own/.test(sec), `${F.file}: the ask forbids swapping in an unchecked example of the model's own`);
     ok(!/TBD by\s+ruling/.test(src), `${F.file}: no "TBD by ruling" left for the story beats`);
     if (F.opening) {
         ok(/\*\*\(b\) An "opening" task\*\*/.test(sec) && /@RESOURCE_LINK\{"dest":"table","arg":"Cliffhanger","label":"Cliffhanger"\}/.test(sec)
