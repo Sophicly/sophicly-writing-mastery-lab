@@ -108,6 +108,9 @@ ok(/_mcOpts = section\.querySelectorAll\('\[data-item-id\^="' \+ qId \+ '-mc"\]'
 const D = SRC.slice(SRC.indexOf('now has multiple-choice questions this untouched document lacks') - 1400, SRC.indexOf('now has multiple-choice questions this untouched document lacks') + 400);
 ok(/includes\(`\$\{q\.id\}-mc1-1`\)/.test(D) && /\[data-input-field\], \.swml-input-field, \[data-outline-row\]/.test(D) && /if \(!_typed\) \{[\s\S]*specDriftMismatch = true;/.test(D),
     'an old document is rebuilt with the choices ONLY when no box holds a typed word');
+ok(/const wordTarget = \(Array\.isArray\(q\.choices\) && q\.choices\.length\) \? null/.test(SRC)
+    && /tmp\.querySelector\('\[data-item-id\^="' \+ qId \+ '-mc"\]'\) \? \{ target: 0, label: '' \} : _canonicalWordHint\(qId\)/.test(SRC),
+    'a multiple-choice question shows no "Aim for ~N words" — at build, and the load-time heal removes a stored one (found on staging)');
 ok(/_mcDoc = !!document\.querySelector\('#swml-tiptap-editor \[data-item-id\^="' \+ g\.q \+ '-mc"\]'\)/.test(SRC), 'the self-mark ask is worded for choices on a choices document');
 const PROTO = fs.readFileSync(path.join(ROOT, 'protocols/aqa/language1/modules/protocol-a-assessment.md'), 'utf8');
 ok(/TWO Q1 SHAPES/.test(PROTO) && /That score\s+IS the mark/.test(PROTO) && /LIST FOUR — per-statement feedback/.test(PROTO),

@@ -65683,7 +65683,9 @@
             // were two tables (marks-derived here vs MULTIQ_RESPONSE_TARGETS) — AQA P1 Q5 said
             // "~450–600" and was capped below 650. One source: the marking target wins wherever
             // it exists (0 = nothing written, e.g. AQA P2 Q1's tick-box → no hint).
-            const wordTarget = _canonicalWordHint(qId) || (qType ? getQuestionWordTarget(qType, qMarks) : null);
+            // v7.20.802 (#857): a multiple-choice question is answered by ticks — nothing to write, so no word hint.
+            const wordTarget = (Array.isArray(q.choices) && q.choices.length) ? null
+                : (_canonicalWordHint(qId) || (qType ? getQuestionWordTarget(qType, qMarks) : null));
             if (wordTarget && wordTarget.target > 0) qInner += `<p><em>Aim for ${wordTarget.label}.</em></p>`;
             html += sectionHTML('question', `${qId}`, false, null, qInner);
 
@@ -72819,7 +72821,8 @@
         tmp.querySelectorAll('[data-section-type="question"]').forEach(sec => {
             const qId = (sec.getAttribute('data-section-label') || '').trim();
             if (!/^Q\d$/.test(qId)) return;
-            const hint = _canonicalWordHint(qId);
+            // v7.20.802 (#857): a question answered by ticks (2026 AQA P1 Q1) has nothing to write — remove any hint.
+            const hint = tmp.querySelector('[data-item-id^="' + qId + '-mc"]') ? { target: 0, label: '' } : _canonicalWordHint(qId);
             if (!hint) return;
             sec.querySelectorAll('em').forEach(em => {
                 const t = (em.textContent || '').trim();
