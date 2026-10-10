@@ -65,6 +65,18 @@ const PILOTS = [{
     jun24: [],
     JUN24_ITEMS: [],
     ALLOW: {},
+}, {
+    // v7.20.819 (WML 345 A, FIXLIST #874): #815d step 3b — An Inspector Calls AQA (6 attempts by 3 real students). Paper 2
+    // Section A, modern texts: the June 2024 8702/2 scheme. Same marks as the Shakespeare essay (AO1 12 · AO2 12 · AO3 6
+    // + AO4 4 — "AO4 will be assessed on Section A only"), so the same mix.
+    bank: 'protocols/shared/mark-scheme-assessment/banks/an_inspector_calls.md',
+    section: 'AQA (',
+    count: 40,
+    ao: { AO1: 14, AO2: 14, AO3: 7, AO4: 5 },
+    sources: ['research/sources/aqa-8702-2-jun24-ms.txt', 'protocols/aqa/literature/modules/knowledge-mark-scheme.md'],
+    jun24: [],
+    JUN24_ITEMS: [],
+    ALLOW: {},
 }];
 
 // The section's items: "N. **Type: X [Tests AOn]**" blocks inside the section that starts "### **SECTION …: <label>".

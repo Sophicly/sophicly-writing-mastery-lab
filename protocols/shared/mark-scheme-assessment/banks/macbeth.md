@@ -208,7 +208,7 @@ verbatim from AQA's June 2024 8702/1 mark scheme (`research/sources/aqa-8702-1-j
 
 22. **Type: Select All [Tests AO1]**
     * **Question:** June 2024 asked: "Starting with this conversation, explore how far Shakespeare presents Lady Macbeth as a strong female character." Select ALL the points AQA listed under AO1 (and none it listed under AO2 or AO3).
-    * **Options:** A) Lady Macbeth's strength as she persuades Macbeth to kill Duncan, B) Her use of extreme images to persuade Macbeth, C) Lady Macbeth's lack of strength in the sleepwalking scene, D) Ideas about gender expectations
+    * **Options:** A) Lady Macbeth's strength as she persuades Macbeth to kill Duncan, B) Her use of extreme images to persuade Macbeth to kill the king, C) Lady Macbeth's lack of strength in the sleepwalking scene, D) Ideas about gender expectations for women in Shakespeare's time
     * **Correct:** A, C
     * **AO:** AO1
     * **Feedback:** ✓ Correct. Under AO1 AQA listed "comments on Lady Macbeth’s strength as she persuades Macbeth to kill Duncan" and "comments on Lady Macbeth’s lack of strength in the sleepwalking scene". "her use of extreme images to persuade Macbeth" is AO2 (method), and "ideas about gender expectations" is AO3 (context).
@@ -250,7 +250,7 @@ verbatim from AQA's June 2024 8702/1 mark scheme (`research/sources/aqa-8702-1-j
 
 27. **Type: Select All [Tests AO2]**
     * **Question:** For the June 2024 Lady Macbeth question, select ALL the points AQA listed under AO2, the writer's methods (and none it listed under AO1 or AO3).
-    * **Options:** A) Her repeated questions to Macbeth and challenges to his masculinity, B) Her resolve and strength in the banquet scene, C) Her gradual decline in strength and power over Macbeth, D) Her calling on spirits
+    * **Options:** A) Her repeated questions to Macbeth and challenges to his masculinity, B) Her resolve and strength in the banquet scene, as she covers for him, C) Her gradual decline in strength and power over Macbeth, D) Her calling on spirits to fill her with cruelty
     * **Correct:** A, C
     * **AO:** AO2
     * **Feedback:** ✓ Correct. AQA's AO2 list includes "Lady Macbeth’s repeated questions to Macbeth and challenges to his masculinity" (language) and "Lady Macbeth’s gradual decline in strength/power over Macbeth" (structure across the play). "comments on her resolve/strength in the banquet scene" is AO1, and her calling on spirits is listed under AO3.
