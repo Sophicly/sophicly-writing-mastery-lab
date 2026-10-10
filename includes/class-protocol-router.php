@@ -4474,6 +4474,11 @@ TEMPLATE;
                 $preamble .= "**Marks:** {$marks}\n";
                 // Word count guidance based on marks (v7.14.7)
                 $wc_target = $this->get_word_count_target($marks, $context['subject'] ?? '');
+                // v7.20.807 (#861, PEDAGOGY §51.10): Edexcel IGCSE Language sets no word limit (Pearson
+                // sets none; Neil's card 12) — never hand Sophia a minimum the paper does not have.
+                if (($context['board'] ?? '') === 'edexcel-igcse' && preg_match('/^lang/i', (string) ($context['subject'] ?? ''))) {
+                    $wc_target = 0;
+                }
                 if ($wc_target > 0) {
                     $preamble .= "**Minimum Word Count:** {$wc_target} words for proper assessment. Students should aim higher where possible.\n";
                 }

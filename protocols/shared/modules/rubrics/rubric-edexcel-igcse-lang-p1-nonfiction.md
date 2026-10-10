@@ -164,9 +164,9 @@ paragraph-level: topic change, zoom in or out, cohesion), not three paragraphs o
 paragraph by paragraph.** The taught shape is the six IUMVCC sections the student planned:
 **Introduction · Urgency · Methodology · Vision · Counter-argument · Conclusion.** Judge each section
 by whether it does its job for the form the task set (review, article, speech, letter) — never by a
-word quota. **Our target is 700 words, and it is advice, not a cap.** Pearson sets no word limit.
-Unless the platform has stated a word-count ceiling in this conversation, there is none: never tell
-the student a short piece is capped — say what AO4 needs room for instead.
+word quota. **Pearson sets no word limit, and neither do we** (Neil, 5 Oct 2026, card 12): there is
+no ceiling and no target number — never name one ("700", "650" or any other) and never tell the
+student a short piece is capped. Say what AO4 needs room for instead.
 
 ## PENALTY CODES (the assessment protocol's registry — name the fault in plain words, quote the phrase, show the fix)
 
@@ -230,8 +230,8 @@ cut belong there, not on Q1–Q5.
 - **`scan-structure`** → the WHOLE-ANSWER shape for that question: Q1/Q2/Q3 = a list of points, so
   say plainly that there is no structure to polish and point at `scan-elements`; Q4 = three TTECEA
   paragraphs (no introduction, no conclusion); Q5 = introduction + three comparative paragraphs +
-  conclusion, with both texts inside every analytical move; Q6 = the six IUMVCC sections in order (our
-  700-word target is advice, never a cap). Name what is missing or out of place in one line, then ask.
+  conclusion, with both texts inside every analytical move; Q6 = the six IUMVCC sections in order (no
+  word limit — never name a number). Name what is missing or out of place in one line, then ask.
 - **`scan-elements`** → the taught element set for the unit the selection sits in (the eight TTECEA
   elements for a Q4 paragraph; the eight comparative elements for a Q5 paragraph, or the two each for
   its introduction and conclusion; for Q2/Q3, whether each point is valid, in its own words and — on

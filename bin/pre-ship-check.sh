@@ -198,6 +198,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/live-modelling-apparatus-harness.js >/tmp/lm-apparatus.out 2>&1 || { cat /tmp/lm-apparatus.out; fail=1; }
 fi
 
+# v7.20.807 (#862, #861): a numbered-topic diagnostic always gets ESSAY PLAN + RESPONSE whatever the entry path (tutor
+# review mode and the standalone deep link set exam_prep — ONE resolver decides), and every file an Edexcel IGCSE
+# Language session loads carries no word minimum, target, penalty or halt (Neil, card 12). Mutation-proven on HEAD.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-app\.js|class-protocol-router\.php|protocols/edexcel-igcse/language[12]/|rubric-edexcel-igcse-lang|doc-template-mode-harness\.js'; then
+  node bin/doc-template-mode-harness.js >/tmp/doc-template-mode.out 2>&1 || { cat /tmp/doc-template-mode.out; fail=1; }
+fi
+
 # v7.20.797 (FIXLIST #847): the tutor comment modal — house modal, body-mounted (centred on the screen), minimal
 # chips, the three quick comments Neil named, and every quick-comment deep link resolving to a real Toolkit
 # section / Table technique (a dead link draws nothing). Mutation-proven 6/6 when written.

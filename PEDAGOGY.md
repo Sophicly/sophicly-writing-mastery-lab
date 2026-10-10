@@ -543,6 +543,12 @@ These sit AFTER assessment → the whole doc is frozen by §6. Three additional 
   discuss lesson — that contradicts diagnostic=write-cold. (Root trace: mode resolves 'diagnostic' for
   feedback_discussion, `_buildDocumentTemplate` emits OUTLINE only under `mode==='redraft'`;
   `seed_from_sibling_stage` walks back to `_assessment`/diagnostic.)
+- **REAFFIRMED by Neil, 2026-10-10 (FIXLIST #862), verbatim:** *"diagnostics should always have planning and
+  response area for both language and literature, please."* A numbered-topic diagnostic gets ESSAY PLAN + RESPONSE
+  however it is opened — embedded lesson, tutor review (`view_as`), or the standalone deep link. The plan was being
+  dropped because those two entry paths set `state.mode = 'exam_prep'` and the template chooser read that as free
+  practice. Since v7.20.807 ONE resolver (`_docTemplateMode`, wml-assessment.js) decides: the question + response
+  template belongs to FREE practice only (no topic). Gate: `bin/doc-template-mode-harness.js`.
 
 ---
 
@@ -2800,6 +2806,13 @@ Recorded here in the same session, as §0 requires. Each line is his tap; a quot
 10. **The rest of the protocol work — "Go ahead."** (card 12) His note: *"Polishing always comes after assessment
     and planning for everything; the creative writing course and Grade 9 core skills course have their own
     sequence."* — the lesson order is Assessment → Planning → … → Polishing everywhere except those two courses.
+    Card 12's parts (`wml-PROTOCOLS-PLAN-722-2026-10-05.md`): story-step criteria + example · an "opening" task plans
+    an opening · **Edexcel IGCSE Language has NO word limit** · IGCSE P1 Q5 loses its yes/no stop + 550-word stop ·
+    IGCSE polishing. **Status (2026-10-10, WML 344 A, FIXLIST #861):** IGCSE polishing built v7.20.719; the IGCSE
+    word limit is GONE everywhere a session reads it (v7.20.807): no ceiling, no target number, no word-count penalty,
+    no length halt — including the P1 `knowledge-hub.md` the polishing environment loads, which still carried the
+    Q5 550-word and Q6 700-word halts; the page shows a word COUNT, never "N / 650". Story-step criteria + example and
+    the "opening" task: next build (v7.20.808).
 11. **The Edexcel IGCSE Paper 2 anthology gets its OWN quiz and its own notes document — never the AQA forms quiz.**
     (card 3, then his correction in chat the same day: *"it has its own anthology, which comprises both poetry and prose…
     it only has… five [poems]… if we're going to have a forms quiz, we'd have to have… a special one… that only covers

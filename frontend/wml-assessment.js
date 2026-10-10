@@ -867,6 +867,14 @@
         const s = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         return /^language[cu][1-9]$/.test(s);
     }
+    // v7.20.807 (#861, PEDAGOGY §51.10): a paper that sets NO word target — the student sees a
+    // word COUNT, never "N / target". Live modelling (#447m) and Edexcel IGCSE Language (Neil,
+    // 5 Oct card 12: no word limit — Pearson sets none; the default 650 was a number from AQA).
+    // Every word-target DISPLAY keys on this, never on the board or the task.
+    function _noWordTarget() {
+        if (WML.isLiveModelling && WML.isLiveModelling()) return true;
+        return String(state.board || '') === 'edexcel-igcse' && _isAnyLanguagePaper();
+    }
     // v7.19.854: AQA-style Paper 2 (nonfiction, inference/comparison/transactional).
     // Registered port surface (PORT SOP §E2) — paper-true wording branches key on this.
     function _isLangPaper2() {
@@ -46242,13 +46250,13 @@
                     const readingPart = longQ
                         ? 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks (except 20+ mark questions, where a proper essay structure is best).'
                         : 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks.';
-                    return `${readingPart} Section B (writing): aim for ~650 words.`;
+                    return `${readingPart} Section B (writing): ${_noWordTarget() ? 'the board sets no word limit.' : 'aim for ~650 words.'}`;   // v7.20.807 (#861)
                 }
                 if (canvasDualTargets) {
                     const { partA, partB } = canvasDualTargets;
-                    return `This is a two-part question. Part A: aim for ${partA.target} words (${partA.marks} marks). Part B: aim for ${partB.target} words (${partB.marks} marks). A "Mark Complete" button will appear once you reach the combined minimum.`;
+                    return `This is a two-part question. Part A: aim for ${partA.target} words (${partA.marks} marks). Part B: aim for ${partB.target} words (${partB.marks} marks).`;   // v7.20.807 (#862b): no word-gated Mark Complete exists (the footer control is LearnDash's)
                 }
-                return `Aim for ${canvasWordTarget} words. Once you reach ${canvasWordMinimum} words, a "Mark Complete" button will appear — but push for ${canvasWordTarget} if you can.`;
+                return `Aim for ${canvasWordTarget} words.`;   // v7.20.807 (#862b): the word-gated button this promised no longer exists
             }
 
             const structureGuidance = isLangPaper
@@ -46475,7 +46483,7 @@
             // v7.19.208: Skip the essay word-target panel for mastery_codex.
             // v7.19.285: ...but give the Codex its own SOFT word-count panel (total
             // words written across the journal, aspirational 650/week target, no gate).
-            if (state.task !== 'mastery_codex' && !_isLiveModel) {   // v7.20.594 (#447m): no word target on a live-modelling lesson
+            if (state.task !== 'mastery_codex' && !_noWordTarget()) {   // v7.20.594 (#447m): no word target on a live-modelling lesson; v7.20.807 (#861): nor on Edexcel IGCSE Language
                 const progressWrap = el('div', { className: 'swml-canvas-plan-section', id: 'swml-canvas-wc-progress' });
                 progressWrap.appendChild(el('h4', { innerHTML: '<span class="swml-guide-icon" style="color:#4D76FD">' + SVG_GUIDE_GRAPH + '</span> Word Count Target' }));
                 const progressBar = el('div', { className: 'swml-canvas-progress-bar' });
@@ -49055,7 +49063,7 @@
 
         // Draggable floating word count widget
         const wcWidget = el('div', { className: 'swml-wc-widget', id: 'swml-wc-widget' });
-        const wcWidgetLabel = el('span', { id: 'swml-wc-widget-label', textContent: (state.task === 'planning' || (WML.isLiveModelling && WML.isLiveModelling())) ? '0 words' : `0 / ${canvasWordTarget}` });
+        const wcWidgetLabel = el('span', { id: 'swml-wc-widget-label', textContent: (state.task === 'planning' || _noWordTarget()) ? '0 words' : `0 / ${canvasWordTarget}` });   // v7.20.807 (#861): _noWordTarget = live modelling + IGCSE Language
         const wcWidgetClose = el('button', {
             className: 'swml-wc-widget-close',
             textContent: '×',
@@ -53654,7 +53662,7 @@
                 }
                 if (diagWcLabel) diagWcLabel.textContent = getWordCountLabel(wc);
                 if (diagCompleteBtn) diagCompleteBtn.style.display = wc >= canvasWordMinimum ? 'block' : 'none';
-                if (wcWidgetLabel) wcWidgetLabel.textContent = (WML.isLiveModelling && WML.isLiveModelling()) ? `${wc} word${wc !== 1 ? 's' : ''}` : `${wc} / ${canvasWordTarget}`;   // v7.20.790 (#839)
+                if (wcWidgetLabel) wcWidgetLabel.textContent = _noWordTarget() ? `${wc} word${wc !== 1 ? 's' : ''}` : `${wc} / ${canvasWordTarget}`;   // v7.20.790 (#839); v7.20.807 (#861) IGCSE Language too
                 applyWcWidgetColour(wc);
 
                 // v7.17.32: Auto-fire @POPULATE_CHECKLIST for any unpopulated MSQ
@@ -58279,7 +58287,7 @@
                     _setHTML(p, `<em>Days Elapsed:</em> ${elapsedStr || '—'}`);
                 } else if (text.includes('Word Count:')) {
                     const wc = getResponseWordCount(canvasEditor);
-                    _setHTML(p, `<em>Word Count:</em> ${wc} / ${canvasWordTarget}`);
+                    _setHTML(p, _noWordTarget() ? `<em>Word Count:</em> ${wc}` : `<em>Word Count:</em> ${wc} / ${canvasWordTarget}`);   // v7.20.807 (#861): no target on a paper that sets none
                 }
             });
 
@@ -59905,7 +59913,7 @@
     function applyWcWidgetColour(wc) {
         var w = document.getElementById('swml-wc-widget');
         if (!w) return;
-        if (state.task === 'planning' || (WML.isLiveModelling && WML.isLiveModelling())) { w.style.background = ''; w.style.color = ''; return; }
+        if (state.task === 'planning' || _noWordTarget()) { w.style.background = ''; w.style.color = ''; return; }   // v7.20.807 (#861): no target → no colour against one
         var bg = getWordCountColour(wc);
         var darkText = (bg === '#1CD991' || bg === '#F1C40F' || bg === '#f5a623');
         w.style.background = bg;
@@ -59917,12 +59925,12 @@
             const combined = partA.target + partB.target;
             if (wc > partA.ideal + partB.ideal) return `${wc} words (A: ${partA.target} + B: ${partB.target}) ✓ Excellent length!`;
             if (wc >= combined) return `${wc} words (A: ${partA.target} + B: ${partB.target}) ✓ Target reached`;
-            if (wc >= canvasWordMinimum) return `${wc} words (A: ${partA.target} + B: ${partB.target}) — minimum met, keep going`;
+            if (canvasWordMinimum > 0 && wc >= canvasWordMinimum) return `${wc} words (A: ${partA.target} + B: ${partB.target}) — minimum met, keep going`;   // v7.20.807 (#862b)
             return `${wc} / ${combined} words (A: ${partA.target} + B: ${partB.target})`;
         }
         if (wc > canvasWordIdeal) return `${wc} / ${canvasWordTarget} words ✓ Excellent length!`;
         if (wc >= canvasWordTarget) return `${wc} / ${canvasWordTarget} words ✓ Target reached`;
-        if (wc >= canvasWordMinimum) return `${wc} / ${canvasWordTarget} words — minimum met, keep going`;
+        if (canvasWordMinimum > 0 && wc >= canvasWordMinimum) return `${wc} / ${canvasWordTarget} words — minimum met, keep going`;   // v7.20.807 (#862b): a 0 minimum (first diagnostic) is never "met" at 0 words
         return `${wc} / ${canvasWordTarget} words`;
     }
 
@@ -60021,7 +60029,8 @@
             return;
         }
         // v7.20.790 (#839): live modelling has no word target (#447m) — count the words, no "/ target", no red.
-        if (WML.isLiveModelling && WML.isLiveModelling()) {
+        // v7.20.807 (#861): nor does Edexcel IGCSE Language — the one predicate covers both.
+        if (_noWordTarget()) {
             const wc = getResponseWordCount(editor);
             widget.textContent = `${wc} word${wc !== 1 ? 's' : ''}`;
             applyWcWidgetColour(wc);
@@ -65877,7 +65886,7 @@
             `<p><em>Date Started:</em> —</p>` +
             `<p><em>Date Completed:</em> —</p>` +
             `<p><em>Days Elapsed:</em> —</p>` +
-            `<p><em>Word Count:</em> — / ${canvasWordTarget}</p>` +
+            `<p><em>Word Count:</em> ${_noWordTarget() ? '—' : '— / ' + canvasWordTarget}</p>` +   // v7.20.807 (#861)
             `<p><em>Total Marks:</em> — / ${marks}</p>` +
             `<p><em>Percentage:</em> —</p>` +
             `<p><em>Grade:</em> NOT STARTED</p>` +
@@ -70148,18 +70157,25 @@
     //
     // Scope: single-part only. Dual/multi-question docs with the same gap get
     // handled in a follow-up pass if they surface — plan structure differs.
+    // v7.20.807 (#862 — Neil 2026-10-10: "diagnostics should always have planning and response area
+    // for both language and literature"; PEDAGOGY §6/§6b: Phase 1 = write cold = plan + response).
+    // ONE resolver for which template a topic canvas gets (it was two hand-kept mirrors). The
+    // `exam_practice` template (question + response, no plan) is FREE practice only — a doc with NO
+    // topic. `state.mode === 'exam_prep'` alone is not that signal: tutor review mode and the
+    // standalone deep link (`/writing-mastery-lab/?…&topic=N&task=diagnostic`) both set it for a
+    // numbered-topic diagnostic, which then built without its plan (measured on prod 10 Oct: the only
+    // two plan-less diagnostic docs of ~95, both saved through the deep link; Neil's view_as screen).
+    function _docTemplateMode() {
+        if (state.phase === 'redraft' || (state.draftType && String(state.draftType).includes('redraft'))) return 'redraft';
+        if (state.mode === 'exam_prep' && !(parseInt(state.topicNumber, 10) > 0)) return 'exam_practice';
+        return 'diagnostic';
+    }
     function _backfillMissingPlanSection(topicData) {
         if (!canvasEditor) return;
         if (state.reviewMode) return;
         if (!topicData) return;
 
-        // Mode resolution mirrors the template-generation logic at line ~15189.
-        let mode = 'diagnostic';
-        if (state.phase === 'redraft' || (state.draftType && state.draftType.includes('redraft'))) {
-            mode = 'redraft';
-        } else if (state.mode === 'exam_prep') {
-            mode = 'exam_practice';
-        }
+        const mode = _docTemplateMode();
         if (mode !== 'diagnostic' && mode !== 'redraft') return; // exam_practice has no plan by design
 
         const format = topicData.question_format || 'single';
@@ -70973,12 +70989,7 @@
         }
 
         // Determine mode from state (must be before fallback paths that reference it)
-        let mode = 'diagnostic';
-        if (state.phase === 'redraft' || state.draftType?.includes('redraft')) {
-            mode = 'redraft';
-        } else if (state.mode === 'exam_prep') {
-            mode = 'exam_practice';
-        }
+        const mode = _docTemplateMode();   // v7.20.807 (#862): the ONE resolver
 
         if (!topicData) {
             // v7.14.8: Board-aware fallback — generate correct document from board defaults
@@ -71071,12 +71082,12 @@
                 const readingPart = hasLongReadingQ
                     ? 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks (except 20+ mark questions, where a proper essay structure is best).'
                     : 'Section A (reading): no word count — write one TTECEA paragraph per roughly 4 marks.';
-                guideTip.innerHTML = `${iconHTML} ${readingPart} Section B (writing): aim for ~650 words.`;
+                guideTip.innerHTML = `${iconHTML} ${readingPart} Section B (writing): ${_noWordTarget() ? 'the board sets no word limit.' : 'aim for ~650 words.'}`;   // v7.20.807 (#861)
             } else if (canvasDualTargets) {
                 const { partA, partB } = canvasDualTargets;
-                guideTip.innerHTML = `${iconHTML} This is a two-part question. Part A: aim for ${partA.target} words (${partA.marks} marks). Part B: aim for ${partB.target} words (${partB.marks} marks). A "Mark Complete" button will appear once you reach the combined minimum.`;
+                guideTip.innerHTML = `${iconHTML} This is a two-part question. Part A: aim for ${partA.target} words (${partA.marks} marks). Part B: aim for ${partB.target} words (${partB.marks} marks).`;   // v7.20.807 (#862b): no word-gated Mark Complete exists (the footer control is LearnDash's)
             } else {
-                guideTip.innerHTML = `${iconHTML} Aim for ${canvasWordTarget} words. Once you reach ${canvasWordMinimum} words, a "Mark Complete" button will appear — but push for ${canvasWordTarget} if you can.`;
+                guideTip.innerHTML = `${iconHTML} Aim for ${canvasWordTarget} words.`;   // v7.20.807 (#862b): the word-gated button this promised no longer exists
             }
         }
     }

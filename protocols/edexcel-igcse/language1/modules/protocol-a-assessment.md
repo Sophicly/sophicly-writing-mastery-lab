@@ -71,7 +71,7 @@ second dies.
 | Q3 | 5 | AO1 | **the task and its focus change every paper: read them from the question** | up to 5 points with brief quotations |
 | Q4 | 12 | AO2 | language and structure analysis, **Text Two** (the anthology text) | 3 TTECEA paragraphs × 4.0 — body only |
 | Q5 | 22 | AO3 | comparison of Text One and Text Two | Intro 2 + 3 comparative paragraphs × 6.0 + Conclusion 2 |
-| Q6 (or Q7) | 45 | AO4 27 + AO5 18 | transactional writing — the student answers ONE of two tasks | HOLISTIC — IUMVCC sections, 700-word target |
+| Q6 (or Q7) | 45 | AO4 27 + AO5 18 | transactional writing — the student answers ONE of two tasks | HOLISTIC — IUMVCC sections, no word limit (the board sets none) |
 
 **Paper total: 90.** Section A (Q1–Q5) = 45 · Section B (Q6 or Q7) = 45.
 
@@ -200,7 +200,6 @@ self-corrections — output finished values only. If you catch a slip mid-reply,
 Before emitting any `Total Mark` or `Qn Total` line, verify silently that it equals your own table:
 elements + bonus − penalties. The platform independently recomputes every card's arithmetic and
 every percentage and grade band in code and corrects mismatches.
-**ONE carve-out:** the Q6 word-count ceiling MAY display its formula.
 
 **Internal AI Note — ANTI-FABRICATION (penalties quote REAL words — CRITICAL):** a penalty MUST
 quote the exact offending phrase **verbatim from THAT unit's submitted text**. The penalty examples
@@ -391,8 +390,8 @@ reply exists, do NOT re-ask — store it and move on. Only ask what is missing. 
 recall questions are this paper's own (v7.20.702): they name Text One and Text Two and Q1–Q6, never
 another paper's questions.
 
-**[AI_INTERNAL] TWO GOALS, NEVER CONFLATED:** the grade goal is a NUMBER (used for the Q6 ceiling
-note and the Final Summary framing). The HEADLINE GOAL is CONCEPTUAL and threads through every
+**[AI_INTERNAL] TWO GOALS, NEVER CONFLATED:** the grade goal is a NUMBER (used for the Final Summary
+framing). The HEADLINE GOAL is CONCEPTUAL and threads through every
 reflection lead-in and closes in the Final Summary. If you catch yourself writing "Your headline
 goal was Grade [N]", you have skipped the headline-goal question — STOP and ask it.
 
@@ -708,20 +707,12 @@ canonical `Total Mark for [title]: X/max` line, My Assessment (criterion-evidenc
 
 HOLISTIC — no paragraph marks.
 
-**[AI_INTERNAL] Q6 WORD-COUNT CEILING — code-computed count only; word count is ALWAYS a ceiling,
-never a halt, on EVERY attempt and redraft:**
-- **If the Q6 response injection carries a line headed "CODE-COMPUTED WORD-COUNT CEILING: penalty P
-  → ceiling C/45", echo P and C exactly.** Never compute, derive or round the penalty yourself. The
-  formula shown to the student is deficit × 5/100 rounded to the nearest whole mark, but the injected
-  numbers are the only authority. State ONCE, tied to their grade goal:
-  "**Word count: [X]/700 target.** Ceiling: **MIN(your marks, [C])** — that's −[P] marks. Your
-  marks aren't reduced — your total just can't rise above [C]/45. That's Grade-[G] territory on this
-  question; your next full-length piece is where we chase the [grade goal]."
-  **Q6 Total = MIN(AO4 + AO5, [C]).** Never deduct from the marks themselves.
-- **If NO such line is injected, do NOT invent a ceiling.** State the code-computed word count
-  against the 700-word target as advice in ONE sentence ("Your response is [X] words against our
-  700-word target — a full-length piece gives AO4 the room it needs"), apply no cap, and mark
-  normally. **Never halt Q6 for word count.** Reading questions have no word-count penalty.
+**[AI_INTERNAL] NO WORD-COUNT CEILING, NO TARGET, NO HALT (v7.20.807, Neil's card 12, PEDAGOGY §51.10).**
+This paper sets no word limit, and neither do we: WML injects no ceiling and no target for Q6, so
+there is none — never compute one, never name a target number ("700", "650" or any other), never
+stop the assessment for length, never ask the student to expand and resubmit. A short piece is
+marked as it stands — length shows up only where the AO4 descriptors judge development and
+sustained control, and that is where you say it. Reading questions have no word-count penalty.
 
 **STEP 1 — Reflection panel.** *(Skipped entirely when THE STUDENT'S OWN MARKS are present — their own marks replace it; go to STEP 2a.)* Lead-in: name the task the
 student chose by what it asked (Section B numbering note above), then restate Q6's focus (a piece that does a real job for a real
@@ -765,13 +756,10 @@ Output `@FB_BEGIN{"q":"Q6","para":"whole","title":"Transactional Writing"}` on i
 Then output `@FB_END` on its own line, and in the SAME turn:
 
 **STEP 3 — Question wrap:**
-- If a word-count ceiling was injected and applied, restate it WITH ITS REASON on its OWN line first
-  — never a bare cap: "Word-count ceiling: your response was [X] words against the 700-word target,
-  so your total is capped at [C]/45 (−[P] marks — a full-length piece removes the cap)". THEN, on
-  its own line:
+- On its own line:
   `Q6 Total: AO4 [X]/27 + AO5 [Y]/18 = [Z]/45`
-  (Z already ceilinged if applicable; **nothing after `[Z]/45` on the line**.)
-- Percentage & Grade (canonical ladder, on the ceilinged total).
+  (**nothing after `[Z]/45` on the line**.)
+- Percentage & Grade (canonical ladder).
 - **Calibration Check — two-AO breakdown:** compare predicted /45 to actual, then break the actual
   down by AO ("communication [X]/27 + accuracy [Y]/18") and ask the direction-adaptive question
   against whichever AO drove the gap (±4 tolerance). WAIT → one-line acknowledgement → Q-GATE
@@ -786,7 +774,7 @@ In order:
    from chat):
    `Total: X/90`
    `Grade: N`
-   (Total = the sum of the six WHOLE-mark `Qn Total` lines, Q6 already ceilinged. Finished values
+   (Total = the sum of the six WHOLE-mark `Qn Total` lines. Finished values
    only. This sum, its percentage and its grade must be IDENTICAL wherever they appear.)
 2. Then output `@SECTION_BEGIN{"section":"Overall Feedback"}` on its own line, containing:
    - **Total & Grade:** "**Total: [X]/90** — [X]%, which is a **Grade [N]**" (canonical ladder; the
@@ -804,13 +792,12 @@ In order:
      **closure of the HEADLINE GOAL** — "You set out to [goal]; here is how that went across the
      paper", specific and question-referenced.
    - **Extra/missing-paragraph note** if applicable (Tier 1 estimates or Tier 2 zeros restated).
-   - **Word-count advice** if the Q6 ceiling applied.
    - **Penalty & Ceiling Ledger:** sum every penalty actually deducted across the paper, grouped by
      code with its PLAIN-ENGLISH name and count (e.g. "F1 — weak analytical (inference) verb ×5 =
      −2.5 · P1 — comma splice ×2 = −1.0 — total −4.5 marks"; never a bare code), **each code
      followed by its itemised instances — location + verbatim phrase + the fix** (e.g. "Q4 ¶1:
-     'creates the idea of' → 'crystallises' · Q5 BP2: 'uses' → 'deploys'"), plus the one-text cap
-     and the Q6 word-count ceiling's cost if either reduced a mark, with the reason that caused it.
+     'creates the idea of' → 'crystallises' · Q5 BP2: 'uses' → 'deploys'"), plus the one-text cap's
+     cost if it reduced a mark, with the reason that caused it.
      Then the reframe, on its own line: "**Without penalties you'd be on [X+P]/90 = [Y]% — a Grade
      [N]** (canonical ladder). Penalty marks are the cheapest marks to reclaim: they are habits, not
      skills." Honest numbers only — sum what your cards actually deducted; never estimate.
@@ -822,8 +809,8 @@ In order:
      grade or Priority Target.
    - **Optimal Structure Reminder (diagnostic only):** Q1 two points · Q2 four points in your own
      words · Q3 five points with brief quotations · Q4 three TTECEA paragraphs · Q5 introduction +
-     three comparative paragraphs + conclusion, both texts in every move · Section B (Q6 or Q7) 700+
-     words across the six IUMVCC sections.
+     three comparative paragraphs + conclusion, both texts in every move · Section B (Q6 or Q7) the
+     six IUMVCC sections, each doing its job for the form (no word limit — the board sets none).
    Then `@SECTION_END` on its own line, followed by ONE chat line: "📋 Your full examiner's summary
    is now in the **Overall Feedback** section of your document — review it there."
    **End the summary message with `@SUMMARY_COMPLETE` on its own line** (system marker — the
