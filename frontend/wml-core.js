@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.835';
+var WML_BUILD = '7.20.836';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1183,7 +1183,8 @@ window.WML = (function() {
         { id: 'trial_4', label: 'Trial 4: Emotional Impact', tier: 'si', phase: 'drafting', trial: 4 },
         { step: 21, label: 'Theme & Tone',              tier: 'workbook', phase: 'drafting' },
         { step: 22, label: 'Update Plot: Theme',        tier: 'workbook', phase: 'drafting' },
-        { step: 23, label: 'Draft 5: Theme & Tone',     tier: 'si', phase: 'drafting', draft: 5 },
+        // v7.20.836 (FIXLIST #884-④): Draft 5 polishes too — the theme_tone lens (Steps 21–22 teach it).
+        { step: 23, label: 'Draft 5: Theme & Tone',     tier: 'si', phase: 'drafting', draft: 5, env: 'polishing', lens: 'theme_tone' },
         { id: 'trial_5', label: 'Trial 5: Thematic Clarity', tier: 'si', phase: 'drafting', trial: 5 },
         { step: 24, label: 'Genre',                      tier: 'workbook', phase: 'drafting' },
         { step: 25, label: 'Update Plot: Genre',        tier: 'workbook', phase: 'drafting' },
@@ -2014,6 +2015,18 @@ window.WML = (function() {
     ];
     const CW_TRIAL4_ELEMENTS_ALL = CW_TRIAL4_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
 
+    // ⭐ v7.20.836 (FIXLIST #884-④): THE STEP 21 PLAN — ONE list of the rows the Step 21 page writes (its template in
+    // wml-assessment.js; the ids keep their pre-renumber `cw-step-19-…` names, root §5d), read by Draft 5's pinned plan
+    // (CW_LENS_PLAN.theme_tone) and by Trial 5's checks, so each id is spelled once. Labels are the page's own.
+    const CW_THEME_TONE_PLAN = [
+        { id: 'values',     label: 'Universal Human Value(s)', fid: 'cw-step-19-values' },
+        { id: 'theme',      label: 'Theme Statement',          fid: 'cw-step-19-theme' },
+        { id: 'tone-begin', label: 'Tone at the Beginning',    fid: 'cw-step-19-tone-begin' },
+        { id: 'tone-mid',   label: 'Tone in the Middle',       fid: 'cw-step-19-tone-mid' },
+        { id: 'tone-end',   label: 'Tone at the End',          fid: 'cw-step-19-tone-end' },
+        { id: 'tone-check', label: 'Tone Shift Check',         fid: 'cw-step-19-tone-check' },
+    ];
+
     // ⭐ v7.20.831 (#884-②): THE WORDS THAT NAME A LATER TRIAL — one map, read by the walk (_cwTrialCtlFactory) and the page
     // (_cwTrialNAboutHTML / _cwTrialNSophiaBlock), so the two cannot drift. Trial 2's strings moved here byte for byte from the
     // factory and the page (bin/cw-trial2-sim-harness.js proves the walk still says them). Trial 1 keeps its own shipped text.
@@ -2069,6 +2082,10 @@ window.WML = (function() {
         // `empathy_plan`). The ONE technique list, CW_EMPATHY_TECHNIQUES (Neil's workbook labels, the ids every Step 18
         // page uses). `optional`: a student picks at least two per group, so an unchosen technique is left off the pin.
         empathy: CW_EMPATHY_TECHNIQUES.map(function (t) { return { label: t.label, doc: 'empathy_plan', fid: t.fid, optional: true }; }),
+        // v7.20.836 (#884-④): Draft 5 — the theme and the tone plan from Step 21 (its document is `theme_tone`). Every row
+        // shows: a theme or a tone left blank says "not filled in yet", as Draft 3's archetype rows do. The Tone Shift Check
+        // is kept because a student may have planned the tone to CONTRAST with events on purpose — the coach must know.
+        theme_tone: CW_THEME_TONE_PLAN.map(function (r) { return { label: r.label, doc: 'theme_tone', fid: r.fid }; }),
     };
     // The element list for trial N — ONE accessor for the walk, the page template and the gates.
     function cwTrialElements(n) {
@@ -6653,7 +6670,7 @@ window.WML = (function() {
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
-        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN,
+        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN, CW_THEME_TONE_PLAN,
         // Revision map
         REVISION_MAP,
         // Utilities

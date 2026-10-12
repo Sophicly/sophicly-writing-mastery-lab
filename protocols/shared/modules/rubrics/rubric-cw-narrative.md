@@ -195,6 +195,11 @@ name what is there, ask one question, stop. Never rewrite their passage for them
 | `cw-emp-cost` | Kindness at a cost: what does this act of care or virtue cost them? |
 | `cw-emp-balance` | Balance: flawed but trying — or too perfect, too weak, or too melodramatic here? |
 | `cw-emp-build` | Rising care: does this moment make the reader care more than the one before it? |
+| `cw-theme-tone` | Tone: which words here carry the atmosphere planned for this part of the story, and which one works against it? |
+| `cw-theme-shift` | The tone shift: at the turning point, does the atmosphere change, and can the reader feel it change? |
+| `cw-theme-image` | The thematic image: which image, object or natural detail recurs and connects to the theme, and does it come back with a changed meaning? |
+| `cw-theme-shown` | Shown, not stated: does the theme emerge here, or does a character or the narrator state it? |
+| `cw-theme-ending` | The final image: what last action or image carries the thematic weight? |
 | `check-sensory-variety` | Which senses are in play, and which one would add most here? |
 | `check-scene-structure-beats` | Do the beats inside this passage build, or sit flat? |
 | `check-show-dont-tell` | As `cw-scan-show`, on a shorter selection. |
@@ -392,9 +397,59 @@ feeling it has not earned: pull back — *sometimes the most powerful moments ar
 Earlier layers still count: the prose, the character arc and the archetypes are fair to raise, because
 this draft builds on them. Later layers are not.
 
+### Lens `theme_tone` — Draft 5
+
+The student wrote, in Step 21, the **Universal Human Value(s)** their story explores (from Step 7), their
+**theme** — what the story is ultimately saying about that value — and the **tone** at the beginning,
+middle and end, with a check on whether the tone shift mirrors their protagonist's emotional journey. In
+Step 22 they mapped theme and tone across their plot. Their plan is at the top of the document, under
+**"Your Plan for This Draft"**. **Never ask the student what their theme or tone is** — read it there.
+Where a row is not filled in yet, work from the draft and do not ask for it.
+
+The whole point of this draft: **the reader should feel what the story means without ever being told
+it, and the tone should carry them there.** Step 21 says it in one line: theme emerges from the
+protagonist's transformation, NOT from explicit statement. Tone is the emotional atmosphere, and it often
+shifts across the story, mirroring the protagonist's emotional journey. If the Tone Shift Check says the
+tone was **deliberately subverted** (it contrasts with events, for ironic effect), that is the student's
+choice: coach the contrast, never "correct" it.
+
+**The two halves the Step 23 workshop teaches:**
+1. **Tone is controlled at the word level.** Every word carries an emotional charge. The tools:
+   **diction** — the sound of a word (harsh consonants like *k* and *t* feel tense; soft vowels feel
+   calm) and its connotations; **syntax** — short, clipped sentences for urgency, longer flowing ones for
+   reflection; **imagery** — sensory details that build the atmosphere; **pacing** — fast for tension,
+   slow for contemplation. At the turning point the tone should shift, and the reader should feel it change.
+2. **The theme is shown through images and choices, never stated.** A **motif** (a recurring image or
+   idea), a **symbol** (an object that stands for something deeper — a broken watch for time running
+   out) or **pathetic fallacy** (the weather or setting reflecting the feeling, or deliberately
+   contrasting with it). Place it early, and let it return at the turning point with a changed meaning.
+   If the protagonist or the narrator says what the moral is, the layer has failed — the workbook's
+   rule: *avoid heavy-handed theme statement; let it emerge.*
+
+| Where the selection sits | What must become visible | Ask about |
+|---|---|---|
+| **Hook · Setup** | the tone planned for the beginning, set at once; the theme's question posed, never stated — the reader senses something deeper is at stake | the words carrying the atmosphere; the first appearance of an image that will return |
+| **Reaction · Epiphany** | the tone shifting at the turning point; the theme tested — the realisation connects to it without naming it | sentence length and the sound of the words at the shift; the image coming back with a changed meaning |
+| **Proaction · Climax · Denouement** | the theme proven through the protagonist's climactic choice; the final atmosphere; the theme answered through an action or an image, not a statement | the choice and what it shows; the final image that carries the thematic weight |
+
+**The three tests, in the student's own terms:**
+1. *Does each paragraph create the emotional atmosphere you want?*
+2. *Can the reader feel the atmosphere change at the turning point?*
+3. *Does your theme emerge, or is it stated?*
+
+**Pointer phrases:**
+- *Which words here carry the atmosphere? Which one works against it?*
+- *Which image, object or natural detail recurs in your scene and connects to your theme?*
+- *This sentence tells the reader the theme directly. How could you show the same idea through what your protagonist does instead of what they think?*
+- *The theme is there, but it is very subtle. Could one more image or moment reinforce it?*
+- *What final image carries the thematic weight?*
+
+Earlier layers still count: the prose, the character arc, the archetypes and the empathy are fair to
+raise, because this draft builds on them. Later layers are not.
+
 ### Later lenses
 
-Drafts 5–7 add theme and tone, genre, and structural elements. Each gets its own section
+Drafts 6–7 add genre and structural elements. Each gets its own section
 here as its step moves to this environment. **Until a lens is written down, do not coach it** —
 inventing a layer the student has not been taught is the failure this file exists to prevent.
 

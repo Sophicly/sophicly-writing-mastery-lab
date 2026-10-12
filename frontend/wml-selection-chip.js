@@ -111,10 +111,12 @@
         cwArch:       ['cw-arch-look', 'cw-arch-act', 'cw-arch-pressure', 'cw-arch-shift', 'cw-arch-proof'],
         // v7.20.834 (#884-③): Draft 4's lens — vulnerability shown, courage, kindness at a cost, balance, rising care.
         cwEmp:        ['cw-emp-hurt', 'cw-emp-courage', 'cw-emp-cost', 'cw-emp-balance', 'cw-emp-build'],
+        // v7.20.836 (#884-④): Draft 5's lens — the tone in the words, the shift, the image that carries the theme, shown not stated, the final image.
+        cwTheme:      ['cw-theme-tone', 'cw-theme-shift', 'cw-theme-image', 'cw-theme-shown', 'cw-theme-ending'],
     };
     // v7.20.830 (#884-②): which lens group a full-course polishing draft offers — read from the step's own `lens`
     // (WML.cwStepLens), so a draft that moves to this environment brings its buttons as data, never a step literal.
-    const CW_LENS_GROUP = { character_arc: 'cwArc', archetypes: 'cwArch', empathy: 'cwEmp' };
+    const CW_LENS_GROUP = { character_arc: 'cwArc', archetypes: 'cwArch', empathy: 'cwEmp', theme_tone: 'cwTheme' };
 
     const ACTION_LABELS = {
         // T1-T5 tier scans
@@ -178,6 +180,12 @@
         'cw-emp-cost':      'Kindness that costs',
         'cw-emp-balance':   'Check the balance',
         'cw-emp-build':     'Build the care',
+        // CW theme and tone lens (v7.20.836)
+        'cw-theme-tone':    'Check the tone',
+        'cw-theme-shift':   'Shift the tone',
+        'cw-theme-image':   'Find the image',
+        'cw-theme-shown':   'Show, don’t state',
+        'cw-theme-ending':  'The final image',
         // Turn into a device (non-fiction) — v7.19.272
         'device-suggest':            'Suggest a device',
         'device-metaphor':           'Metaphor',
@@ -215,6 +223,7 @@
         cwArc:        'Character arc',
         cwArch:       'Archetypes',
         cwEmp:        'Empathy',
+        cwTheme:      'Theme & tone',
         langScan:       'Scan your answer',
         langWordChoice: 'Word choice',
         litWordChoice:  'Word choice',
