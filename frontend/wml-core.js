@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.837';
+var WML_BUILD = '7.20.838';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1915,7 +1915,7 @@ window.WML = (function() {
             ],
         },
         {
-            id: 'pressure', label: 'Under Pressure', ao: 'AO5', planDoc: 'character_archetypes',
+            id: 'pressure', label: 'Reaction Under Pressure', ao: 'AO5', planDoc: 'character_archetypes',
             planFids: [['Beginning', 'cw-step-13-arch-begin'], ['Middle', 'cw-step-13-arch-mid'], ['End', 'cw-step-13-arch-end']],
             prompt: 'When things go wrong, does your protagonist react the way their archetype would?',
             l1: 'There is a moment when things go wrong, though the reaction could belong to any character, or the draft tells the reader how they feel instead of showing what they do.',
@@ -1927,7 +1927,7 @@ window.WML = (function() {
             ],
         },
         {
-            id: 'shift', label: 'The Shift', ao: 'AO5', planDoc: 'character_archetypes',
+            id: 'shift', label: 'Archetype Shift', ao: 'AO5', planDoc: 'character_archetypes',
             planFids: [['Middle', 'cw-step-13-arch-mid'], ['End', 'cw-step-13-arch-end']],
             prompt: 'Is there a moment where an old habit cracks and a different side of them shows?',
             l1: 'The draft says your protagonist is changing, though it tells the reader rather than letting a different side of them show in what they do.',
@@ -2077,7 +2077,7 @@ window.WML = (function() {
             ],
         },
         {
-            id: 'shown', label: 'Shown, Not Stated', ao: 'AO5', planDoc: 'theme_tone', planFids: _cwThemeFids(['values', 'theme']),
+            id: 'shown', label: 'Theme in Action', ao: 'AO5', planDoc: 'theme_tone', planFids: _cwThemeFids(['values', 'theme']),
             prompt: 'Does your theme emerge, or is it stated?',
             l1: 'The reader can find the theme, though the draft states it at least once (a character or the narrator says what the story means), or it is so hidden the reader cannot sense it.',
             strong: 'A strong draft lets the theme emerge from what the protagonist does and what happens as a result: nobody names the moral, and the reader still feels it.',
@@ -2088,7 +2088,7 @@ window.WML = (function() {
             ],
         },
         {
-            id: 'ending', label: 'The Final Image', ao: 'AO5', planDoc: 'theme_tone', planFids: _cwThemeFids(['theme', 'tone-end']),
+            id: 'ending', label: 'Final Image', ao: 'AO5', planDoc: 'theme_tone', planFids: _cwThemeFids(['theme', 'tone-end']),
             prompt: 'What final image carries the thematic weight?',
             l1: 'The scene ends, though the last moment explains its meaning in a sentence, or it ends on an image that does not connect to the theme.',
             strong: 'A strong draft ends on an action or image that answers the theme’s question, so the reader leaves feeling what the story means.',

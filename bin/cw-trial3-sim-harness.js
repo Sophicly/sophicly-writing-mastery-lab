@@ -272,7 +272,7 @@ async function main() {
         const w2 = reload(w);
         ok(w2.ctl.tryResume() === true, '7 · a reload resumes the walk');
         for (let i = 0; i < 6; i++) await settle();
-        ok(/\*\*Under Pressure\*\*/.test(lastBubble(w2)) && /3 of 6/.test(lastBubble(w2)), '7 · ⭐ …on the third check, where the student was — not the top', lastBubble(w2).slice(0, 80));
+        ok(/\*\*Reaction Under Pressure\*\*/.test(lastBubble(w2)) && /3 of 6/.test(lastBubble(w2)), '7 · ⭐ …on the third check, where the student was — not the top', lastBubble(w2).slice(0, 80));
     }
 
     // ── 8 · A STUCK STUDENT'S HELP CALL IS TRIAL 3'S ────────────────────────────────────────
@@ -304,8 +304,8 @@ async function main() {
         const a = newDevice(w);
         ok(a.ctl.tryResume() === true, '9a · ⭐ with NO saved position on this device, the walk still resumes (it used to return false: a dead screen)');
         for (let i = 0; i < 6; i++) await settle();
-        ok(/\*\*Under Pressure\*\*/.test(lastBubble(a)) && /3 of 6/.test(lastBubble(a)), '9a · …on the third check, read from the banked rows', lastBubble(a).slice(0, 80));
-        ok(!!ladder && ladder.title === 'Under Pressure', '9a · …with its marking card published');
+        ok(/\*\*Reaction Under Pressure\*\*/.test(lastBubble(a)) && /3 of 6/.test(lastBubble(a)), '9a · …on the third check, read from the banked rows', lastBubble(a).slice(0, 80));
+        ok(!!ladder && ladder.title === 'Reaction Under Pressure', '9a · …with its marking card published');
         ok(a.sends.length === 0, '9a · …and no API call');
         // (b) every check judged, no mark yet: a chip, never an unasked marking call
         const w2 = world();

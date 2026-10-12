@@ -485,6 +485,20 @@ const LATER_TRIALS = [
     const _fnSrc = (name) => { const i = CORE.indexOf('const ' + name + ' = function'); return i < 0 ? '' : CORE.slice(i, braceSliceFrom(CORE, i, '{', '}').end) + ';'; };
     const _arrSrc = (name) => { const i = CORE.indexOf('const ' + name + ' = ['); return i < 0 ? '' : 'const ' + name + ' = ' + braceSliceFrom(CORE, i, '[', ']').text + ';'; };
     const PLAN_SCOPE = [_arrSrc('CW_EMPATHY_TECHNIQUES'), _fnSrc('_cwEmpFids'), _arrSrc('CW_THEME_TONE_PLAN'), _fnSrc('_cwThemeFids')].join(' ');
+    // v7.20.838: a check's name is set INSIDE the walk's own sentences — "your ___ does at the moment", "**Another ___:**",
+    // "a strong ___", "Her level call on your ___" and the orientation's comma list. "The Shift" made "a strong the shift"
+    // and "Shown, Not Stated" split the list in two. So every name is Title Case words: no leading "The", no comma.
+    {
+        const bad = [];
+        ['CW_SCENE_ELEMENTS', 'CW_TRIAL2_ELEMENTS', 'CW_TRIAL3_ELEMENTS', 'CW_TRIAL4_ELEMENTS', 'CW_TRIAL5_ELEMENTS'].forEach((nm) => {
+            const i = CORE.indexOf('const ' + nm + ' = [');
+            if (i < 0) { bad.push(nm + ' missing'); return; }
+            // eslint-disable-next-line no-eval
+            const list = eval('(function () { ' + PLAN_SCOPE + ' return ' + braceSliceFrom(CORE, i, '[', ']').text + '; })()');
+            list.forEach((e) => { if (!/^(?!The )[A-Z][a-z]+(?: [A-Za-z]+)*$/.test(e.label || '')) bad.push(nm + ': ' + e.label); });
+        });
+        ok('⭐ every trial check name reads inside the walk\'s sentences ("a strong ___", "Another ___:") — no "The", no comma', bad.length === 0, bad);
+    }
     LATER_TRIALS.forEach((T) => {
         const N = T.n, P = 'Trial ' + N + ' · ';
         console.log('\nTrial ' + N + ' asks what Draft ' + N + ' taught, in the words it taught them:');
