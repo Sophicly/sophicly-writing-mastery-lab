@@ -173,6 +173,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/mc-gate-harness.js || fail=1
 fi
 
+# v7.20.839 (FIXLIST #899 — Neil, 12 Oct): from each ANSWER in the feedback lessons — its mark while collapsed,
+# "Pop out feedback ↗" and "Go to feedback ↓". The answer↔box pairing is a key match (§5d): a drifted key points an
+# answer at the wrong question's feedback. Mutation-proven at .839 (9 injected defects, all caught).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-canvas\.css|wml-section-block\.js|response-feedback-link-harness\.js'; then
+  node bin/response-feedback-link-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document

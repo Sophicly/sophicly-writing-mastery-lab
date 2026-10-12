@@ -16238,7 +16238,8 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
    atom at the end of a "Your paragraph: …" line, zero textContent, label from ::before) in the
    learn chip's own palette, so every in-card action reads as one family. The pad is the
    trial-draft reading surface, a little narrower (one paragraph, not a whole draft). */
-.swml-para-pop-node {
+.swml-para-pop-node,
+.swml-resp-fb-btn {
     display: inline-flex; align-items: center;
     margin-left: 8px; padding: 2px 9px 3px;
     border-radius: 999px; cursor: pointer;
@@ -16249,11 +16250,21 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 }
 .swml-para-pop-node::before { content: 'Pop out \2197'; }
 .swml-para-pop-node[data-para-pop="whole"]::before { content: 'Pop out your writing \2197'; }
-.swml-para-pop-node:hover { background: rgba(139, 123, 247, 0.26); }
+.swml-para-pop-node:hover,
+.swml-resp-fb-btn:hover { background: rgba(139, 123, 247, 0.26); }
 .swml-canvas-light .swml-para-pop-node,
-[data-swml-theme="light"] .swml-para-pop-node { color: var(--swml-purple, #5333ed); background: rgba(83, 51, 237, 0.10); }
+[data-swml-theme="light"] .swml-para-pop-node,
+.swml-canvas-light .swml-resp-fb-btn,
+[data-swml-theme="light"] .swml-resp-fb-btn { color: var(--swml-purple, #5333ed); background: rgba(83, 51, 237, 0.10); }
 .swml-canvas-light .swml-para-pop-node:hover,
-[data-swml-theme="light"] .swml-para-pop-node:hover { background: rgba(83, 51, 237, 0.18); }
+[data-swml-theme="light"] .swml-para-pop-node:hover,
+.swml-canvas-light .swml-resp-fb-btn:hover,
+[data-swml-theme="light"] .swml-resp-fb-btn:hover { background: rgba(83, 51, 237, 0.18); }
+/* ⭐ v7.20.839 (FIXLIST #899): an ANSWER's own row — its mark (the Analytics chip) and "Pop out feedback ↗" / "Go to
+   feedback ↓" in the pop-out chip's mold, so every take-me-to-the-other-half action reads as one family. A real
+   <button>: no border, the page's font; the row's own gap spaces it, not the chip's inline margin. */
+.swml-resp-fb-btn { border: 0; margin-left: 0; font-family: inherit; }
+.swml-resp-fb-btn:focus-visible { outline: 2px solid var(--swml-purple, #5333ed); outline-offset: 2px; }
 .swml-para-pad { width: 440px; max-height: 60vh; max-height: 60dvh; display: flex; flex-direction: column; }
 .swml-para-pad .swml-extract-panel-body {
     flex: 1 1 auto; min-height: 0;

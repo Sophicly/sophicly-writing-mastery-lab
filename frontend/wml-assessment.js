@@ -3546,6 +3546,49 @@
     // mis-rounds (9.5→9) AND mis-bands (9→Grade 2; 9 is Grade 3) → drifted from the
     // deterministic doc/commit grade. Returns 0 (★) until a mark is filed.
     let _docWcPenalty = 0; // v7.19.815: set by the Score Summary recalc — WC penalty in marks
+    // @RESP-FB-PURE-BEGIN
+    // ⭐ v7.20.839 (FIXLIST #899): ONE parser for a marked question's feedback label — "Feedback: Q3 (6 / 12)",
+    // "Part A Feedback: Introduction (— / 5)" (— = not marked yet). base is the label without its mark, which changes
+    // as the box is marked, so it is what the answer row, the one-question pad and "Go to feedback" match on.
+    function feedbackLabelParts(label) {
+        const m = String(label || '').match(/^(.*?Feedback:\s*.+?)\s*\((—|\d+(?:\.\d+)?)\s*\/\s*(\d+)\)$/);
+        return m ? { base: m[1].trim(), score: m[2] === '—' ? null : parseFloat(m[2]), max: parseInt(m[3], 10) } : null;
+    }
+    // ⭐ v7.20.839 (FIXLIST #899): THE DOCUMENT'S MARK FROM ITS FEEDBACK LABELS — one arithmetic for the grade chip
+    // (_deterministicDocGrade) and an essay's own answer row. The word-count ceiling is the Score Summary's (v7.19.816: a
+    // CEILING, never a deduction): MIN(sum, max − penalty). null = nothing marked yet.
+    function docMarkFromLabels(labels, wcPenalty) {
+        let total = 0, max = 0, any = false, allSet = true;
+        (labels || []).forEach(function (lbl) {
+            const mm = String(lbl || '').match(/\((\S+)\s*\/\s*(\d+)\)$/);
+            if (!mm) return;
+            max += parseInt(mm[2], 10);
+            if (mm[1] !== '—') { total += parseFloat(mm[1]) || 0; any = true; } else { allSet = false; }   // '—' = unset
+        });
+        if (!any || max <= 0) return null;
+        return { total: Math.min(total, Math.max(0, max - (wcPenalty || 0))), max: max, allSet: allSet };
+    }
+    // ⭐ v7.20.839 (FIXLIST #899 — Neil, 12 Oct): WHICH FEEDBACK AN ANSWER LINKS TO, and the mark it shows.
+    // boxes = feedbackLabelParts of every marked-question box, in document order.
+    //  · Several answers (a Language paper): an answer pairs with the box whose question key (keyOf = _paraKey — the
+    //    pairing the "Pop out your writing ↗" chip already uses the other way round) is its own, once that box is
+    //    MARKED (Neil: "once the feedback is done"). No key, no box, not marked yet → null: no row, never a wrong one.
+    //  · One answer (an essay): every box is its feedback, so the row appears once any box is marked; its mark is the
+    //    whole document's (docTotal: the audited result, or docMarkFromLabels), shown once every box is marked.
+    function responseFeedbackLink(respLabel, boxes, respCount, keyOf, docTotal) {
+        const list = Array.isArray(boxes) ? boxes : [];
+        if (respCount > 1) {
+            const k = keyOf(respLabel);
+            if (!k) return null;
+            const b = list.filter(function (x) { return keyOf(x.base) === k; })[0];
+            if (!b || b.score == null) return null;
+            return { whole: false, base: b.base, score: b.score, max: b.max };
+        }
+        if (respCount !== 1 || !list.some(function (x) { return x.score != null; })) return null;
+        const t = (docTotal && docTotal.allSet) ? docTotal : null;
+        return { whole: true, base: list[0].base, score: t ? t.total : null, max: t ? t.max : null };
+    }
+    // @RESP-FB-PURE-END
     function _deterministicDocGrade() {
         // v7.19.868: the single audited grade for THIS doc wins when present (set atomically
         // from the completion reply) — the DOM sum below is only the pre-completion
@@ -3557,18 +3600,11 @@
         }
         const editor = document.getElementById('swml-tiptap-editor');
         if (!editor || typeof _gradeFromPctRef !== 'function') return 0;
-        let total = 0, max = 0, any = false;
-        editor.querySelectorAll('[data-section-type="feedback"]').forEach(section => {
-            const lbl = section.getAttribute('data-section-label') || '';
-            const mm = lbl.match(/\((\S+)\s*\/\s*(\d+)\)$/);
-            if (!mm) return;
-            max += parseInt(mm[2], 10);
-            if (mm[1] !== '—') { total += parseFloat(mm[1]) || 0; any = true; } // '—' = unset
-        });
-        if (!any || max <= 0) return 0;
-        // v7.19.816: same WC CEILING as the Score Summary (Neil: ceiling, never a
-        // deduction) — the grade chip bands MIN(sum, max − penalty).
-        const g = _gradeFromPctRef(Math.round((Math.min(total, Math.max(0, max - _docWcPenalty)) / max) * 100));
+        // v7.19.816: same WC CEILING as the Score Summary (Neil: ceiling, never a deduction) — the grade chip bands
+        // MIN(sum, max − penalty). v7.20.839 (#899): that sum is docMarkFromLabels, shared with an essay's answer row.
+        const _dm = docMarkFromLabels(Array.from(editor.querySelectorAll('[data-section-type="feedback"]')).map(section => section.getAttribute('data-section-label') || ''), _docWcPenalty);
+        if (!_dm) return 0;
+        const g = _gradeFromPctRef(Math.round((_dm.total / _dm.max) * 100));
         return (g === 'U' || !g) ? 0 : (parseInt(g, 10) || 0);
     }
 
@@ -9120,6 +9156,9 @@
     // v7.20.650 (#637): the per-paragraph pop-out pads — same hook shape (the pads live in the
     // canvas closure; the chip click is module-scope).
     let _openParaPadHook = null;
+    // v7.20.839 (FIXLIST #899): an answer row's "Pop out feedback ↗" — the Feedback pad for ONE question (the pads live in
+    // the canvas closure, which sets this; the answer rows are filled from renderControlRows).
+    let _openFeedbackPadHook = null;
     // ⭐ v7.20.558 (#430) — the marking LEVELS pad. Same hook shape; a close hook too, because
     // the pad is ephemeral: it exists only while an element is being judged.
     let _openLadderPadHook = null;
@@ -18378,6 +18417,22 @@
             if (!target && s.getAttribute('data-section-label') === label) target = s;
         });
         _swmlScrollToTop(target);
+    }
+    // ⭐ v7.20.839 (FIXLIST #899): an answer's "Go to feedback ↓" — open the box if it was collapsed (the chevron's own
+    // class + stored key, _expandIfCollapsed) and bring its top into view (the ONE scroll, §4c.10). Matched by the label's
+    // base (feedbackLabelParts — the mark in brackets changes as the box is marked); a loop, never CSS.escape (WML rule).
+    function _goToFeedbackBox(base) {
+        const editor = document.getElementById('swml-tiptap-editor');
+        if (!editor || !base) return false;
+        let target = null;
+        editor.querySelectorAll('[data-section-type="feedback"]').forEach(s => {
+            const p = target ? null : feedbackLabelParts(s.getAttribute('data-section-label') || '');
+            if (p && p.base === base) target = s;
+        });
+        if (!target) { console.warn('WML answer row: no feedback box "' + base + '" on this page — nothing to go to.'); return false; }
+        _expandIfCollapsed(target);
+        requestAnimationFrame(() => _swmlScrollToTop(target, 24));
+        return true;
     }
     // Shared head + bar for both the CW (per-section) and Codex (per-unit) cards.
     // countText e.g. "3 of 6 sections complete" / "2 of 9 units complete". pct drives
@@ -43448,10 +43503,12 @@
             const srcEl = typeof sourceIdx === 'number' ? sourceEls[sourceIdx] : null;
             const isTabsMode = sourceIdx === 'tabs' && sourceEls && sourceEls.length >= 2;
             const isEssayMode = sourceIdx === 'essay'; // v7.19.813: student's own response(s), for side-by-side feedback reading
-            const isFeedbackMode = sourceIdx === 'feedback'; // v7.19.829 (Neil): every question's filed feedback in its own pad
+            // v7.20.839 (FIXLIST #899): 'feedback|<base>' = the same pad for ONE question, opened from that answer's own row.
+            const _fbOnly = (typeof sourceIdx === 'string' && sourceIdx.indexOf('feedback|') === 0) ? sourceIdx.slice(9) : null;
+            const isFeedbackMode = sourceIdx === 'feedback' || _fbOnly !== null; // v7.19.829 (Neil): every question's filed feedback in its own pad
             const isNotesMode = sourceIdx === 'notes'; // v7.19.974 (Neil): notes docs — all filled note sections in one pad
             const _workPad = _isAnyLanguagePaper() ? 'My Response' : 'My Essay'; // v7.19.829: language papers aren't essays
-            const label = isNotesMode ? 'My Notes' : (isFeedbackMode ? 'Feedback' : (isEssayMode ? _workPad : (isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract')))));
+            const label = isNotesMode ? 'My Notes' : (isFeedbackMode ? (_fbOnly || 'Feedback') : (isEssayMode ? _workPad : (isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract')))));
             header.appendChild(el('span', { textContent: label }));
             header.appendChild(el('button', {
                 className: 'swml-extract-panel-close', textContent: '✕',
@@ -43489,6 +43546,8 @@
                     const txt = (_sectionContentOf(f).textContent || '').trim(); // v7.19.951: skip control-row chrome — an EMPTY box with a mark widget must still read as placeholder
                     if (_isTemplatePlaceholderText(txt)) return;   // v7.20.606 (#478)
                     const fLbl = f.getAttribute('data-section-label') || ('Feedback ' + (i + 1));
+                    // v7.20.839 (#899): a one-question pad shows only that question's box — matched by its base, as the mark changes.
+                    if (_fbOnly !== null) { const _p = feedbackLabelParts(fLbl); if (!_p || _p.base !== _fbOnly) return; }
                     body.appendChild(el('div', { className: 'swml-extract-essay-heading', textContent: fLbl }));
                     // v7.19.920 (Neil Run 8): pad parity — the doc's Predicted·Actual·Δ readout
                     // lives in the absolute dropdown overlay, which cloneNode can't carry.
@@ -43550,7 +43609,7 @@
                     fbAdded++;
                 });
                 if (!fbAdded) {
-                    body.appendChild(el('p', { textContent: 'No feedback yet — it will appear here once marking begins.' }));
+                    body.appendChild(el('p', { textContent: _fbOnly !== null ? 'This question\u2019s feedback is not on the page yet — it will appear here once it is marked.' : 'No feedback yet — it will appear here once marking begins.' }));
                 }
                 // v7.19.922: Fix→Learn chips on the pad's non-PM clones (the doc itself stays
                 // chip-free v1 — PM schema drops <button>). Clones are rebuilt each render, so
@@ -43887,6 +43946,12 @@
         // no-op when the essay pad is already open.
         _openEssayPadHook = () => {
             if (!extractPanels['essay']) spawnExtractPanel([], 'essay', { top: '110px', right: '48px' });
+        };
+        // ⭐ v7.20.839 (FIXLIST #899): an answer row's "Pop out feedback ↗" — the Feedback pad for that question ('' = the whole
+        // lane, an essay's), toggled like every pad, cascading so a second question's pad never hides the first.
+        _openFeedbackPadHook = (base) => {
+            const n = Object.keys(extractPanels).filter(k => String(k).indexOf('feedback|') === 0).length;
+            spawnExtractPanel([], base ? 'feedback|' + base : 'feedback', { top: (140 + n * 28) + 'px', right: (76 + n * 28) + 'px' });
         };
 
         // ⭐ v7.20.556 (#426) — THE TRIAL DRAFT PAD. Neil, 2026-08-23: *"like in the literature
@@ -57905,6 +57970,63 @@
                 }
                 _rowFillEnd(row, sig);
             });
+
+            // ⭐ v7.20.839 (FIXLIST #899 — Neil, 12 Oct: "it does feel like you have to scroll down quite a lot to see the
+            // feedback… in the actual response areas, once the feedback is done… a button that allows us to pop out the
+            // student's feedback… so that we've got it in both places… the overall mark in the response area when it's
+            // collapsed… a button… it takes me to the actual feedback for that particular question"). Each ANSWER's own
+            // control row (the firewalled in-flow row every collapsible section carries; it stays visible while collapsed)
+            // shows its question's mark, "Pop out feedback ↗" and "Go to feedback ↓". Pairing and mark: responseFeedbackLink
+            // (pure, gated). Only where the feedback is live — the display-locked lessons (assessment, redraft assessment,
+            // discuss your feedback), in the student's view and the tutor's review alike.
+            if (_docDisplayLocked()) {
+                const _fbBoxes = [];
+                feedbackSections.forEach((s) => { const p = feedbackLabelParts(s.getAttribute('data-section-label') || ''); if (p) _fbBoxes.push(p); });
+                const _resps = Array.from(editor.querySelectorAll('[data-section-type="response"]'));
+                let _docTotal = null;
+                if (_resps.length === 1) {
+                    _docTotal = (_lastAuditedResult && _lastAuditedResult.docKey === _assessDocKey())
+                        ? { total: _lastAuditedResult.total, max: _lastAuditedResult.max, allSet: true }
+                        : docMarkFromLabels(Array.from(feedbackSections).map((s) => s.getAttribute('data-section-label') || ''), _docWcPenalty);
+                }
+                _resps.forEach((resp) => {
+                    const row = _ctlRowOf(resp);
+                    if (!row) return;   // NodeView not mounted yet — its mount fill re-runs this pass
+                    const link = responseFeedbackLink(resp.getAttribute('data-section-label') || '', _fbBoxes, _resps.length, _paraKey, _docTotal);
+                    const sig = 'resp|' + (link ? [link.whole ? 1 : 0, link.base, link.score, link.max].join('|') : '-');
+                    if (row.dataset.sig === sig) return;
+                    _rowFillStart(row);
+                    if (link) {
+                        if (link.score != null) {
+                            row.appendChild(_ctlLabel(link.whole ? 'Overall mark' : 'Mark'));
+                            const chip = document.createElement('span');
+                            // The feedback row's own tier ladder (_tierRank), and the Analytics chip's full-marks gradient.
+                            const _tier = String(Math.max(1, Math.min(9, Math.round(1 + (link.max > 0 ? link.score / link.max : 0) * 8))));
+                            chip.className = 'swml-ana-chip ' + (link.score >= link.max ? 'swml-ana-full' : 'swml-tier-' + _tier);
+                            chip.setAttribute('contenteditable', 'false');
+                            chip.textContent = link.score + ' / ' + link.max;
+                            row.appendChild(chip);
+                        }
+                        const _btn = (text, title, fn) => {
+                            const b = document.createElement('button');
+                            b.type = 'button';
+                            b.className = 'swml-resp-fb-btn';
+                            b.setAttribute('contenteditable', 'false');
+                            b.textContent = text;
+                            b.title = title;
+                            b.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });   // never steal the caret
+                            b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); fn(); });
+                            return b;
+                        };
+                        row.appendChild(_btn('Pop out feedback \u2197', link.whole ? 'Pop out the feedback, to read beside the writing' : 'Pop out this question\u2019s feedback, to read beside the answer', () => {
+                            if (typeof _openFeedbackPadHook === 'function') _openFeedbackPadHook(link.whole ? '' : link.base);
+                            else console.warn('WML answer row: the pad system is not mounted — pop-out ignored');
+                        }));
+                        row.appendChild(_btn('Go to feedback \u2193', link.whole ? 'Go to the feedback' : 'Go to this question\u2019s feedback', () => { _goToFeedbackBox(link.base); }));
+                    }
+                    _rowFillEnd(row, sig);
+                });
+            }
 
             // ── Self-Assessment Dropdowns (1-5 scale) — CATEGORISED groups at the section top
             // (Neil 2026-07-08: the v951 flat row lost the doc's own categories). The SA section
