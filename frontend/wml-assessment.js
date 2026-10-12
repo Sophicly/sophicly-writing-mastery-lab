@@ -37411,7 +37411,32 @@
                 const goalTxt = docRow(fid('goal'));
                 const markTxt = docRow(fid('mark'));
                 const fromDoc = deriveFromDoc();
-                if (!goalTxt && !fromDoc.i && !markTxt) return false;
+                if (!goalTxt && !fromDoc.i && !markTxt) {
+                    // Nothing banked yet. If the walk has never spoken here, entry starts it (false). If it HAS — the
+                    // transcript holds part of its orientation (measured on staging: one message, then the student left) —
+                    // a fresh entry will not run over an existing transcript, so carry on from the first unseen message.
+                    const said = (canvasChatHistory || []).filter(function (t) { return t && t.role === 'assistant' && !t.hidden; })
+                        .map(function (t) { return String(t.content || ''); });
+                    const chunks = orientationChunks();
+                    const heard = function (c) { const k = String(c).slice(0, 80); return said.some(function (x) { return x.indexOf(k) !== -1; }); };
+                    let seen = 0;
+                    while (seen < chunks.length && heard(chunks[seen])) seen++;
+                    if (!seen) return false;
+                    st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'goal' };
+                    done = false; active = true; pending = false;
+                    persist();
+                    console.log('WML trial' + N + ': no saved position on this device and nothing banked — orientation resumes at message ' + (seen + 1) + ' of ' + chunks.length + '.');
+                    const mark0 = emitted;
+                    setTimeout(function () {
+                        if (emitted !== mark0) return;   // another route already served
+                        if (seen < chunks.length) {
+                            serveCwChunks(chunks.slice(seen), { emit: aiBubble, onDone: function () { serveCurrent({ defer: true }); } });
+                        } else {
+                            _cwReplay(function () { serveCurrent(); });
+                        }
+                    }, 400);
+                    return true;
+                }
                 const g = parseInt(String(goalTxt).replace(/\D/g, ''), 10);
                 st = { i: fromDoc.i, levels: {}, marks: fromDoc.marks, notes: fromDoc.notes, moreSpent: {}, phase: 'items' };
                 if (GRADE_GOALS.indexOf(g) !== -1) st.gradeGoal = g;

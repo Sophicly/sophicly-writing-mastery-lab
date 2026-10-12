@@ -333,7 +333,23 @@ async function main() {
             '9c · ⭐ …and the target save carries the mark and Sophia\'s calls read back from the page — never an empty record', sv.payload);
         // (d) nothing of the walk on the page: false, so entry starts it fresh exactly as before
         const d4 = world();
-        ok(d4.ctl.tryResume() === false, '9d · an untouched page: false — the fresh entry starts the walk');
+        ok(d4.ctl.tryResume() === false, '9d · an untouched page and no transcript: false — the fresh entry starts the walk');
+        // (e) MEASURED on staging: the walk spoke once (orientation message 1), then the student left; a new device has the
+        // transcript but nothing banked. A fresh entry will not run over a transcript, so the walk must carry on itself.
+        const e0 = world();
+        e0.ctl.forceStart();
+        await settle();
+        const first = (e0.deps.canvasChatHistory || []).filter((t) => t.role === 'assistant').slice(0, 1);
+        ok(first.length === 1 && /watch it change/.test(first[0].content), '9e · (setup) the transcript holds orientation message 1');
+        const e5 = world({ history: first.map((t) => Object.assign({}, t)) });
+        ok(e5.ctl.tryResume() === true, '9e · ⭐ transcript started, nothing banked, new device: it resumes');
+        for (let i = 0; i < 4; i++) await settle();
+        ok(/Content and Organisation/.test(lastBubble(e5)) && !/watch it change/.test(lastBubble(e5)), '9e · …with orientation message 2, not message 1 again', lastBubble(e5).slice(0, 80));
+        ok(!!chipNamed(e5, /Continue/), '9e · …and a Continue chip (§4d: something to press)');
+        for (let i = 0; i < 10; i++) { await settle(); const c = chipNamed(e5, /Continue/); if (!c) break; e5.tap(c); }
+        await settle();
+        ok(!!chipNamed(e5, /Grade 8/), '9e · …through to the grade-goal question');
+        ok(e5.sends.length === 0, '9e · …with no API call');
     }
 
     console.log('\n   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
