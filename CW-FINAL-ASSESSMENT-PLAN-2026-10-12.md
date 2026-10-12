@@ -29,13 +29,17 @@ theirs is the lesson (§33.8). It ends on the student's own target, which Step 3
 | D9 | **Feedback order** (§33.9): her verdict per AO, each with one rewrite example (AO5: their own paragraph lifted a level; AO6: two of their sentences corrected — #434) → the disagreements → the priority → the grade as a quiet closing line → the target ask | Butler/EEF, ruled. |
 | D10 | **The target is pinned at the top of Step 31's page** | §33.9: feedback must be USED. Step 31's third paragraph is "Next Steps" (`CW-STEP-31-metacognitive-reflection.md`) — the target is what it should start from. Reuses the trial-target pin's shape (`tryFillCwDraftTarget`, `:54751`), which today runs on draft steps only. |
 | D11 | **Save identity: `trial: 'final', finale: true`** in the project's `trials` array | Measured, zero server change: the REST handler stamps only numbers 1–6 (`class-rest-api.php:7683`), so `'final'` is saved as sent, never touches `trial_completion` (`:7575`), and the new-story gate's `absint(...) === 1` (`:7344`) cannot mistake it for Trial 1. |
-| D12 | **Task id `cw_final_assessment`**, and a CW_STEPS entry `{ id: 'final_assessment', label: 'Final Assessment', tier: 'si', phase: 'polish', final: true }` between Step 30 and Step 31, carrying **no `step` and no `trial` key** | A new step NUMBER would renumber Step 31 and everything keyed on step numbers. Unnumbered, like the trials. No `trial` key, like weekend lesson 11 (`wml-core.js` step 91), so no trial-keyed path picks it up by accident. 37 JS gates read `startsWith('cw_')` and include it; exactly **five** name gates must learn it, each through ONE predicate per language (WML canvas rule 2 — gate on a capability, never on a name): router `:2812` and `:4163`, router label `:4189`, `getCwStepDef` (`wml-core.js:1249`), the score piggyback (`wml-assessment.js:69109`). |
+| D12 | **Task id `cw_final_assessment`**, and a CW_STEPS entry `{ id: 'final_assessment', label: 'Final Assessment', tier: 'si', phase: 'polish', final: true }` between Step 30 and Step 31, carrying **no `step` and no `trial` key** | A new step NUMBER would renumber Step 31 and everything keyed on step numbers. Unnumbered, like the trials. No `trial` key, like weekend lesson 11 (`wml-core.js` step 91), so no trial-keyed path picks it up by accident. 37 JS gates read `startsWith('cw_')` and include it; **six** name sites must learn it, each through ONE predicate per language (WML canvas rule 2 — gate on a capability, never on a name): router `:2812` and `:4163`, router label `:4189`, `getCwStepDef` (`wml-core.js:1249`), the task-id builder (`wml-app.js:1814-1818` — `'cw_trial_' + stepDef.trial` / `'cw_step_' + stepDef.step`), the score piggyback (`wml-assessment.js:69109`). The storage suffix follows by itself (`'_cw_' + (stepDef.step \|\| stepDef.id)` → `_cw_final_assessment`), and the server's draft-lineage seeding cannot touch it (its suffix regex is `/^_cw_(\d+)$/`, `class-rest-api.php:6468`). |
+| D14 | ⛔ **The story under assessment is NAMED, never walked back to: `final_draft`** (Step 30's artifact, `CW_ARTIFACT_MAP[30]`) | `cwTrialSource` (`wml-core.js:2285-2305`) finds a trial's draft by walking back to the nearest entry with `draft`. Step 30 has no `draft` key, so a lesson placed after Step 30 would resolve to **`draft_7` — the story BEFORE the SPAG polish**, and AO6 would mark errors the student has already fixed: the exact thing §33.6's placement exists to prevent. A named failure, designed out: the finale entry carries `assesses: 30`, its page and its marking call read `CW_ARTIFACT_MAP[30]`, and the finale gate asserts the resolved key is `final_draft`. (Found by the plan's own fact sweep, 12 Oct.) |
 | D13 | **The grade ring gets Sophia's /40** through the canvas-save score piggyback (#435, v7.20.561) | The piggyback is gated by task name today (`:69109`); D12's predicate opens it. Student-data's listener files `score_raw/score_max` from any canvas save (`class-wml-listener.php:967`), so no dashboard change is needed for the number itself — **verified on staging before shipping** by reading the `session_records` row, the way #435 was. |
 
 ## 2 · THE CHAIN — every layer (§15/§16)
 **Layer A — data and model (WML)**
-- CW_STEPS entry (D12) + `getCwStepDef` branch for `final: true` + `cwTrialSource`-style source: the draft under
-  assessment is the **`final_draft`** artifact (Step 30's; Step 31 already reads it — `CW-STEP-31-…md` "Reads from project").
+- CW_STEPS entry (D12, with `assesses: 30`) + `getCwStepDef` branch for `final: true` + the task-id builder. The draft under
+  assessment is the **`final_draft`** artifact, NAMED (D14) — never `cwTrialSource`'s walk-back, which would return `draft_7`.
+  (Step 31 already reads `final_draft` — `CW-STEP-31-…md` "Reads from project".)
+- The Step Dashboard lists CW_STEPS by phase (`wml-app.js:1747`), so the entry appears in the Polish phase by itself; its
+  link must open the LearnDash lesson the way a trial's does (trial lessons are not in `get_cw_step_urls`, main php :1742).
 - No new mark-scheme data (D2).
 
 **Layer B — the page (WML)**, one producer for the template AND the heal (the trial pages' law, `:62776`):
@@ -96,7 +100,13 @@ Proven end to end as test student 1938 on project `cwp_b9d0a5a233ab` (which alre
 
 ## 4 · HANDOFFS
 - **LD** — Layer G, with the measured unit ids, written at build time (as for Trial 6).
-- **Dashboard** — Layer H, one label line.
+- **Dashboard** — Layer H, one label line; and a dated amendment to the open
+  `wml-to-dashboard-CW-TRIAL-GRADES-have-no-consumer-…-2026-08-23.md`: the finale's entry (`trial:'final', finale:true`,
+  `out_of` 40), and two corrections to that file (every trial sends `ao_family:'AO5+AO6'`; trial grades reach
+  `session_records` through the canvas-save piggyback since v7.20.561).
+- **Gates to keep honest:** `cw-polishing-env-gate.js:204-208` (every non-polishing, non-workbook entry must be in
+  `$cw_protocol_map` — the finale's row satisfies it; check the gate iterates id-only entries) and
+  `cw-trial-judges-the-draft-gate.js:75-89` (trials only — the finale is not a trial, so its own gate carries D14).
 
 ## 5 · WHAT THIS DOES NOT DO
 - It does not change any trial, any draft step, or the Language host (the finale is a second host of the same ladder).

@@ -1975,7 +1975,8 @@ so no lane re-asks:
 5. **Scope is language and literature too, not just CW** (Neil, 2026-08-21) — so the ladder is
    AO-generic over (AO, levels, descriptors, band edges) and a new paper is a DATA job. The data
    pipeline (one source md → generated dataset → divergence gate) shipped as slice 1, v7.20.544.
-6. **The final 40-mark assessment sits after Step 29 (SPAG polish), before Step 30 (reflection)**
+6. **The final 40-mark assessment sits after Step 29 (SPAG polish), before Step 30 (reflection)** — *in today's numbers, after
+   **Step 30** and before **Step 31** (the v7.20.568 renumber moved both by one; noted 2026-10-12)*
    (suggested 2026-08-21; Neil delegated the call 2026-08-22 — "wwad"). AO6 IS technical accuracy:
    marking before the SPAG step scores errors the student is about to fix; after Step 29 the mark
    is of the finished piece and Step 30 has something real to reflect on.
