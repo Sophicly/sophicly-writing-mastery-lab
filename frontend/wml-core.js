@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.840';
+var WML_BUILD = '7.20.841';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1190,12 +1190,15 @@ window.WML = (function() {
         { step: 25, label: 'Update Plot: Genre',        tier: 'workbook', phase: 'drafting' },
         // v7.20.840 (FIXLIST #884-⑤): Draft 6 polishes too — the genre lens (Steps 24–25 teach it).
         { step: 26, label: 'Draft 6: Genre',            tier: 'si', phase: 'drafting', draft: 6, env: 'polishing', lens: 'genre' },
+        // ⭐ v7.20.841 (FIXLIST #884-⑤, PEDAGOGY §33.7): Trial 6 follows Draft 6 now, as a genre-focused trial (it followed
+        // Draft 7 and duplicated the finale's job). Every trial still judges the draft just before it (cwTrialSource derives
+        // that from this order). LearnDash mirrors the move — wml-to-ld handoff, 2026-10-12.
+        { id: 'trial_6', label: 'Trial 6: Genre Conventions', tier: 'si', phase: 'drafting', trial: 6 },
         // v7.20.761 (#804, PEDAGOGY §55.2): weekend lesson 6 runs this step as a chat-led walk, so in a unit it is 'si'
         // (read ONLY through cwStepTier). The full course keeps its no-chat workbook page.
         { step: 27, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting', unitTier: 'si' },
         { step: 28, label: 'Update Plot: Structural',   tier: 'workbook', phase: 'drafting' },
         { step: 29, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7 },
-        { id: 'trial_6', label: 'Trial 6: Technical Proficiency', tier: 'si', phase: 'drafting', trial: 6 },
         // Polish Phase
         { step: 30, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
         { step: 31, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
@@ -1468,7 +1471,12 @@ window.WML = (function() {
         { step: 2, label: 'Judge the Five Checks' },
         { step: 3, label: 'Sophia’s Verdict' },
     ];
-    CW_SIDEBAR_STEPS['trial_6'] = CW_SIDEBAR_STEPS['trial_generic'];
+    // v7.20.841 (#884-⑤): Trial 6 runs the same walk on its own five checks — no trial is generic any more.
+    CW_SIDEBAR_STEPS['trial_6'] = [
+        { step: 1, label: 'Read Your Draft' },
+        { step: 2, label: 'Judge the Five Checks' },
+        { step: 3, label: 'Sophia’s Verdict' },
+    ];
 
     // ══════════════════════════════════════════════════════════════════════════════════════════
     // ⭐ v7.20.551 (CW trials slice 4) — THE SEVEN SCENE ELEMENTS, AS TRIAL 1 ASSESSES THEM.
@@ -2113,6 +2121,73 @@ window.WML = (function() {
         { id: 'heart',   label: 'Heart Genres',             fid: 'cw-step-22-heart' },
     ];
 
+    // ⭐⭐ v7.20.841 (FIXLIST #884-⑤, CW trials slice 5) — TRIAL 6: GENRE CONVENTIONS. PEDAGOGY §33.7 moves Trial 6 to follow
+    // Draft 6 (Step 26) as a genre-focused trial — its old "final feedback" job belongs to the finale. Draft 6 teaches ONE
+    // lens, `genre` (rubric-cw-narrative.md, from the Step 24 page, the Step 25 prompts and the Step 26 workshop): genre is a
+    // promise of an emotional experience, kept through setting, atmosphere, plot devices and language, with the protagonist
+    // still at the centre — each `prompt` the lens's own test or pointer phrase verbatim (gated). Each check reads the genres
+    // the student chose in Step 24 (`planFids` on `genre`, from the ONE list CW_GENRE_PLAN; a blank category is not chosen and
+    // never handed over). Examples are DESCRIBED moments, never quotations (§5c-i), set texts first. 5 × 4 + 2 = /22.
+    const _cwGenreFids = function () { return CW_GENRE_PLAN.map(function (r) { return [r.label, r.fid]; }); };
+    const CW_TRIAL6_ELEMENTS = [
+        {
+            id: 'setting', label: 'Genre Setting', ao: 'AO5', planDoc: 'genre', planFids: _cwGenreFids(),
+            prompt: 'Does the world of your scene tell the reader what genre they are in before anything happens?',
+            l1: 'The scene has a setting, though it could belong to any genre, or the genre is named instead of shown in what the world looks, sounds and feels like.',
+            strong: 'A strong draft lets the setting make the genre’s promise at once: one or two well-chosen details tell the reader what kind of story this is before anything happens.',
+            example: 'Jekyll and Hyde opens on a London back street with a blistered, neglected door that has no bell and no knocker. Before anything happens, the reader knows they are in a Gothic mystery.',
+            more: [
+                'Macbeth opens on a deserted heath, in thunder and lightning, with three witches. One setting tells the audience to expect the supernatural and something terrible.',
+                'In Harry Potter and the Philosopher’s Stone, Diagon Alley is full of owls for sale, cauldrons and a bank run by goblins. The reader knows at once that this is a story of wonder.',
+            ],
+        },
+        {
+            id: 'atmosphere', label: 'Atmosphere', ao: 'AO5', planDoc: 'genre', planFids: _cwGenreFids(),
+            prompt: 'Does the atmosphere intensify as the tension peaks?',
+            l1: 'The scene has an atmosphere, though it stays the same from start to finish, or it fades just as the tension rises.',
+            strong: 'A strong draft builds the atmosphere with the tension: setting, weather, light and sound grow stronger as the scene reaches its highest point.',
+            example: 'In Jekyll and Hyde, the night Poole and Utterson break into the cabinet is wild: a pale moon, a wind that makes talking difficult, a street with nobody in it. The atmosphere tightens as they reach the door.',
+            more: [
+                'In Macbeth, the night of Duncan’s murder is full of strange signs: an owl shrieks, darkness hides the next day’s sun, and Duncan’s horses are said to have eaten each other. The atmosphere grows with the crime.',
+                'In The Lion King, the stampede fills the gorge with dust and noise, the ground shakes and the music swells as Simba is trapped. The atmosphere rises with the danger.',
+            ],
+        },
+        {
+            id: 'device', label: 'Plot Device', ao: 'AO5', planDoc: 'genre', planFids: _cwGenreFids(),
+            prompt: 'Which plot device from your genre is doing a job in your scene?',
+            l1: 'The scene uses a device from its genre, though it is there for decoration, or it does no real work in the story.',
+            strong: 'A strong draft uses one of its genre’s own devices, such as a ticking clock, hidden information or a relationship put to the test, and the device does real work: it raises the stakes or reveals something.',
+            example: 'Romeo and Juliet runs on a ticking clock: the wedding to Paris is brought forward a day, and the Friar’s letter never reaches Romeo. The device drives the story to its tragedy.',
+            more: [
+                'In An Inspector Calls, the Inspector reveals one piece of hidden information at a time, showing a photograph to each character in turn. Each reveal turns the mystery a little further.',
+                'In Finding Nemo, Nemo is about to be given to Darla, who shakes her fish. That deadline drives every escape attempt from the fish tank.',
+            ],
+        },
+        {
+            id: 'language', label: 'Genre Language', ao: 'AO5', planDoc: 'genre', planFids: _cwGenreFids(),
+            prompt: 'Do your key sentences sound like your genre?',
+            l1: 'The sentences tell the story clearly, though they would sound the same in any genre.',
+            strong: 'A strong draft’s sentences sound like its genre: short and precise for a thriller, rich and layered for Gothic, quick and urgent for adventure, quiet and reflective for drama.',
+            example: 'A Christmas Carol slows into long, heavy sentences of chains, cold and darkness when Marley’s ghost appears, then races through lists of food and laughter at Christmas. Dickens’s language changes with the feeling of each scene.',
+            more: [
+                'Animal Farm is told in plain, simple sentences, like a children’s fable. Because it sounds so gentle, the cruelty in the story lands harder.',
+                'In Of Mice and Men, the language is plain and spare, with short exchanges of dialogue. The style suits hard, simple lives and a story about friendship.',
+            ],
+        },
+        {
+            id: 'centre', label: 'Protagonist at the Centre', ao: 'AO5', planDoc: 'genre', planFids: _cwGenreFids(),
+            prompt: 'Is your protagonist still the centre of the scene?',
+            l1: 'The genre is there, though its conventions sometimes push the protagonist aside, or they are decoration that does not show what the protagonist feels.',
+            strong: 'A strong draft keeps the protagonist at the centre: each genre convention shows what they feel or face, so the genre amplifies their story instead of replacing it.',
+            example: 'In A Christmas Carol, the ghosts bring the supernatural, but every visit is about Scrooge: what he sees, what he feels and how he changes. The genre serves his story.',
+            more: [
+                'In Macbeth, the witches and Banquo’s ghost bring the supernatural, and each one matters because of what it does to Macbeth’s mind.',
+                'In Frozen, Elsa’s ice magic is a fantasy convention, but it always shows her fear and, in the end, her love for Anna.',
+            ],
+        },
+    ];
+    const CW_TRIAL6_ELEMENTS_ALL = CW_TRIAL6_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
+
     // ⭐ v7.20.831 (#884-②): THE WORDS THAT NAME A LATER TRIAL — one map, read by the walk (_cwTrialCtlFactory) and the page
     // (_cwTrialNAboutHTML / _cwTrialNSophiaBlock), so the two cannot drift. Trial 2's strings moved here byte for byte from the
     // factory and the page (bin/cw-trial2-sim-harness.js proves the walk still says them). Trial 1 keeps its own shipped text.
@@ -2144,6 +2219,13 @@ window.WML = (function() {
             checks: 'the tone built in your words, the shift at the turning point, an image that carries the theme, the theme shown and never stated, and the final image',
             checkNoun: 'theme and tone checks', checkWhat: 'how the scene’s atmosphere and images carry its meaning',
             planWhere: 'in their theme and tone plan from Step 21', planHeading: 'THEIR THEME AND TONE PLAN',
+        },
+        6: {
+            title: 'Trial 6: Genre Conventions', dim: 'Genre Conventions', dimLower: 'genre conventions', dimKey: 'genre_conventions',
+            question: 'does your scene keep the promise its genre makes, with your protagonist still at the centre?',
+            checks: 'the setting that signals your genre, the atmosphere as the tension peaks, a plot device from your genre, the language of your genre, and your protagonist at the centre',
+            checkNoun: 'genre checks', checkWhat: 'how the scene keeps its genre’s promise',
+            planWhere: 'in their genre plan from Step 24', planHeading: 'THEIR GENRE PLAN',
         },
     };
     function cwTrialDim(n) { return CW_TRIAL_DIMS[n] || null; }
@@ -2190,6 +2272,7 @@ window.WML = (function() {
         if (n === 3) return CW_TRIAL3_ELEMENTS_ALL;   // v7.20.831 (#884-②)
         if (n === 4) return CW_TRIAL4_ELEMENTS_ALL;   // v7.20.835 (#884-③)
         if (n === 5) return CW_TRIAL5_ELEMENTS_ALL;   // v7.20.837 (#884-④)
+        if (n === 6) return CW_TRIAL6_ELEMENTS_ALL;   // v7.20.841 (#884-⑤)
         return [];
     }
 
@@ -6767,7 +6850,7 @@ window.WML = (function() {
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
-        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, CW_TRIAL5_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN, CW_THEME_TONE_PLAN, CW_GENRE_PLAN,
+        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, CW_TRIAL5_ELEMENTS, CW_TRIAL6_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN, CW_THEME_TONE_PLAN, CW_GENRE_PLAN,
         // Revision map
         REVISION_MAP,
         // Utilities

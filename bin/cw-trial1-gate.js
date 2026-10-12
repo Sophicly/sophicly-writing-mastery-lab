@@ -229,8 +229,9 @@ ok('…and trials 2–6 no longer share it (six trials looked identical because 
     && /CW_SIDEBAR_STEPS\['trial_3'\] = \[[\s\S]{0,200}Judge the Five Checks/.test(CORE)   // v7.20.831 (#884-②)
     && /CW_SIDEBAR_STEPS\['trial_4'\] = \[[\s\S]{0,200}Judge the Five Checks/.test(CORE)   // v7.20.835 (#884-③)
     && /CW_SIDEBAR_STEPS\['trial_5'\] = \[[\s\S]{0,200}Judge the Five Checks/.test(CORE)   // v7.20.837 (#884-④)
-    && (CORE.match(/CW_SIDEBAR_STEPS\['trial_6'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length === 1,
-    (CORE.match(/CW_SIDEBAR_STEPS\['trial_6'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length);
+    && /CW_SIDEBAR_STEPS\['trial_6'\] = \[[\s\S]{0,200}Judge the Five Checks/.test(CORE)   // v7.20.841 (#884-⑤)
+    && !/CW_SIDEBAR_STEPS\['trial_[2-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/.test(CORE),
+    (CORE.match(/CW_SIDEBAR_STEPS\['trial_[2-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length);
 
 // ── 4. THE SEVEN WIRING POINTS — a walk missing one ships DEAD, and silently ───────────────────
 console.log('\nAll seven wiring points name the controller (the .490 incident):');
@@ -444,7 +445,7 @@ console.log('\nTrial 2 asks what Draft 2 taught, in the words it taught them:');
         T2.every((e) => PROTO2.indexOf(e.prompt) === -1));
 }
 
-// ── TRIALS 3–5 (v7.20.831 #884-②, v7.20.835 #884-③, v7.20.837 #884-④) — the same walk, each asking what ITS draft taught ─────────────
+// ── TRIALS 3–6 (v7.20.831 #884-②, v7.20.835 #884-③, v7.20.837 #884-④, v7.20.841 #884-⑤) — the same walk, each asking what ITS draft taught ─────────────
 const LATER_TRIALS = [
     { n: 3, lens: 'archetypes', ids: 'look,choices,pressure,shift,detail', planDoc: 'character_archetypes', proto: 'CW-TRIAL-03-archetype-coherence.md',
       TAUGHT: {
@@ -470,6 +471,14 @@ const LATER_TRIALS = [
         shown: 'Does your theme emerge, or is it stated?',
         ending: 'What final image carries the thematic weight?',
       } },
+    { n: 6, lens: 'genre', ids: 'setting,atmosphere,device,language,centre', planDoc: 'genre', proto: 'CW-TRIAL-06-genre-conventions.md',
+      TAUGHT: {
+        setting: 'Does the world of your scene tell the reader what genre they are in before anything happens?',
+        atmosphere: 'Does the atmosphere intensify as the tension peaks?',
+        device: 'Which plot device from your genre is doing a job in your scene?',
+        language: 'Do your key sentences sound like your genre?',
+        centre: 'Is your protagonist still the centre of the scene?',
+      } },
 ];
 {
     const SRC_RAW = fs.readFileSync(path.join(ROOT, 'frontend/wml-assessment.js'), 'utf8');
@@ -484,13 +493,13 @@ const LATER_TRIALS = [
     // The REAL plan helpers the later trials' checks are built with — sliced from wml-core, never copied (.835/.837).
     const _fnSrc = (name) => { const i = CORE.indexOf('const ' + name + ' = function'); return i < 0 ? '' : CORE.slice(i, braceSliceFrom(CORE, i, '{', '}').end) + ';'; };
     const _arrSrc = (name) => { const i = CORE.indexOf('const ' + name + ' = ['); return i < 0 ? '' : 'const ' + name + ' = ' + braceSliceFrom(CORE, i, '[', ']').text + ';'; };
-    const PLAN_SCOPE = [_arrSrc('CW_EMPATHY_TECHNIQUES'), _fnSrc('_cwEmpFids'), _arrSrc('CW_THEME_TONE_PLAN'), _fnSrc('_cwThemeFids')].join(' ');
+    const PLAN_SCOPE = [_arrSrc('CW_EMPATHY_TECHNIQUES'), _fnSrc('_cwEmpFids'), _arrSrc('CW_THEME_TONE_PLAN'), _fnSrc('_cwThemeFids'), _arrSrc('CW_GENRE_PLAN'), _fnSrc('_cwGenreFids')].join(' ');
     // v7.20.838: a check's name is set INSIDE the walk's own sentences — "your ___ does at the moment", "**Another ___:**",
     // "a strong ___", "Her level call on your ___" and the orientation's comma list. "The Shift" made "a strong the shift"
     // and "Shown, Not Stated" split the list in two. So every name is Title Case words: no leading "The", no comma.
     {
         const bad = [];
-        ['CW_SCENE_ELEMENTS', 'CW_TRIAL2_ELEMENTS', 'CW_TRIAL3_ELEMENTS', 'CW_TRIAL4_ELEMENTS', 'CW_TRIAL5_ELEMENTS'].forEach((nm) => {
+        ['CW_SCENE_ELEMENTS', 'CW_TRIAL2_ELEMENTS', 'CW_TRIAL3_ELEMENTS', 'CW_TRIAL4_ELEMENTS', 'CW_TRIAL5_ELEMENTS', 'CW_TRIAL6_ELEMENTS'].forEach((nm) => {
             const i = CORE.indexOf('const ' + nm + ' = [');
             if (i < 0) { bad.push(nm + ' missing'); return; }
             // eslint-disable-next-line no-eval

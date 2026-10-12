@@ -75,29 +75,29 @@ ok('Trial 2 → draft_2 (Step 14)', seen[1] && seen[1].artifactKey === 'draft_2'
 ok('Trial 3 → draft_3 (Step 17)', seen[2] && seen[2].artifactKey === 'draft_3' && seen[2].draftStep === 17, seen[2]);
 ok('Trial 4 → draft_4 (Step 20)', seen[3] && seen[3].artifactKey === 'draft_4' && seen[3].draftStep === 20, seen[3]);
 ok('Trial 5 → draft_5 (Step 23)', seen[4] && seen[4].artifactKey === 'draft_5' && seen[4].draftStep === 23, seen[4]);
-ok('Trial 6 → draft_7 (Step 29) — today it follows Draft 7, and the map is not asked to remember that',
-    seen[5] && seen[5].artifactKey === 'draft_7' && seen[5].draftStep === 29, seen[5]);
+ok('Trial 6 → draft_6 (Step 26) — it follows Draft 6 since v7.20.841 (PEDAGOGY §33.7), and the map is not asked to remember that',
+    seen[5] && seen[5].artifactKey === 'draft_6' && seen[5].draftStep === 26, seen[5]);
 ok('every trial carries the draft step\'s own LABEL, so the page can name where the writing came from',
     seen.every(s => s && /^Draft \d/.test(s.draftLabel)), seen.map(s => s && s.draftLabel));
 ok('a step that is not a trial resolves to nothing', WML.cwTrialSource('cw_step_10') === null);
 
 console.log('\n…and it DERIVES that, so a trial that MOVES stays correct with no edit here:');
 {
-    // PEDAGOGY §33 ruling 1 moves Trial 6 to follow Draft 6 (Step 26). Perform that move against
-    // the live course order and re-ask — a hand-written map would still answer draft_7.
+    // v7.20.841: PEDAGOGY §33.7 MOVED Trial 6 to follow Draft 6 (Step 26). Move it back behind Draft 7 against the live
+    // course order and re-ask — the resolver must follow the order, never a hand-written map.
     const steps = WML.CW_STEPS;
     const t6 = steps.findIndex(s => s.trial === 6);
-    const d6 = steps.findIndex(s => s.draft === 6);
-    ok('the fixture is real: trial 6 and draft 6 both exist in CW_STEPS', t6 > 0 && d6 > 0, { t6, d6 });
+    const d7 = steps.findIndex(s => s.draft === 7);
+    ok('the fixture is real: trial 6 and draft 7 both exist in CW_STEPS, and Trial 6 sits before Draft 7', t6 > 0 && d7 > t6, { t6, d7 });
     const entry = steps.splice(t6, 1)[0];
-    steps.splice(d6 + 1, 0, entry);                       // now: … Draft 6 (25) · Trial 6 · Step 26 …
+    steps.splice(steps.findIndex(s => s.draft === 7) + 1, 0, entry);   // the old order: … Draft 7 (29) · Trial 6 …
     const moved = WML.cwTrialSource('cw_trial_6');
-    ok('moved behind Draft 6, Trial 6 now assesses draft_6 (Step 26)',
-        moved && moved.artifactKey === 'draft_6' && moved.draftStep === 26, moved);
+    ok('moved behind Draft 7, Trial 6 would assess draft_7 (Step 29)',
+        moved && moved.artifactKey === 'draft_7' && moved.draftStep === 29, moved);
     steps.splice(steps.indexOf(entry), 1);
     steps.splice(t6, 0, entry);                           // put the course back
     ok('the course order is restored for the checks below',
-        WML.cwTrialSource('cw_trial_6').artifactKey === 'draft_7');
+        WML.cwTrialSource('cw_trial_6').artifactKey === 'draft_6');
 }
 
 // ── 2. A MINIMAL HTML SHIM — self-tested first, so a broken shim fails LOUD, never green ──────

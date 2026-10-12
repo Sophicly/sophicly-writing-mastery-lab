@@ -2861,7 +2861,7 @@ class SWML_Protocol_Router {
                 'cw_trial_3' => 'CW-TRIAL-03-archetype-coherence.md',
                 'cw_trial_4' => 'CW-TRIAL-04-emotional-impact.md',
                 'cw_trial_5' => 'CW-TRIAL-05-thematic-clarity.md',
-                'cw_trial_6' => 'CW-TRIAL-06-technical-proficiency.md',
+                'cw_trial_6' => 'CW-TRIAL-06-genre-conventions.md',   // v7.20.841 (#884-⑤): renamed with the trial's new job
             ];
 
             $filename = $cw_protocol_map[$task] ?? null;
@@ -4182,7 +4182,7 @@ TEMPLATE;
                 'cw_step_92' => 'Make the Reader Care',       // v7.20.777: the weekend bonus lesson
                 'cw_trial_1' => 'Trial 1: Story Coherence', 'cw_trial_2' => 'Trial 2: Character Depth',
                 'cw_trial_3' => 'Trial 3: Archetype Coherence', 'cw_trial_4' => 'Trial 4: Emotional Impact',
-                'cw_trial_5' => 'Trial 5: Thematic Clarity', 'cw_trial_6' => 'Trial 6: Technical Proficiency',
+                'cw_trial_5' => 'Trial 5: Thematic Clarity', 'cw_trial_6' => 'Trial 6: Genre Conventions',
             ];
             $step_label = $cw_step_labels[$task] ?? ucwords(str_replace(['cw_step_', 'cw_trial_', '_'], ['Step ', 'Trial ', ' '], $task));
 
