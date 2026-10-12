@@ -245,11 +245,13 @@ descriptor exists for what you need, say "no descriptor available" — never fab
      THIS word); (4) effect on reader — first detailed sentence; (5) effect on reader — second
      detailed sentence (different effect, later in the Focus→Feel→Think→Act chain); (6) writer's
      purpose. Format with TTECEA labels (**(T) Topic Sentence:** … **(A) Author's Purpose:** …).
-   - **Q4 golds (comparative TTECEA):** (1) comparative-conceptual topic sentence spanning BOTH
-     writers (no technique words); (2) Source A method + embedded quote + inference; (3) effect
-     on the reader — Source A; (4) pivot with a comparative discourse marker → Source B method +
-     embedded quote + inference; (5) effect on the reader — Source B; (6) word-level analysis of
-     the sharpest quotation; (7) writers' purposes compared against the question focus. ONE
+   - **Q4 golds (comparative TTECEA — the order the student planned in, PEDAGOGY §3c/§63):**
+     (1) comparative-conceptual topic sentence spanning BOTH writers (no technique words);
+     (2) Source A method + embedded quote + inference; (3) pivot with a comparative discourse
+     marker → Source B method + embedded quote + inference; (4) word-level analysis of a detail in
+     EACH source, each bridged back to its writer's method, and what the contrast reveals;
+     (5) effect on the reader — Source A; (6) effect on the reader — Source B; (7) writers'
+     purposes compared against the question focus. ONE
      effect sentence per source — tied to that text's method, never two floating generic ones.
      Every gold paragraph carries evidence from BOTH sources.
    Sentences 2–3 lines, varied starters, never "the/this/these" openers, **never ANY banned- or
@@ -620,12 +622,13 @@ your conclusion returns to them."
   thesis (Model 2's thesis anchors BP1–3's Model 2s). Teaching note where useful: body paragraphs
   carry 15 of Q4's 16 marks — plan and write them FIRST; the frame is added if time allows.
 - **Body Paragraph 1 (5 marks)** — `para:"BP1"`, `title:"Body Paragraph 1"`. Criteria (in the
-  taught order): comparative-conceptual topic sentence spanning both writers (AO3) 0.5 ·
-  Source A method + embedded quote + inference (AO3) 0.5 · effect on the reader — Source A
-  (AO3) 0.5 · Source B method + embedded quote + inference, opened with a comparative pivot
-  (AO3) 0.5 · effect on the reader — Source B (AO3) 0.5 · perceptive development of the
-  difference/similarity as a PAIR (AO3) 1.0 · word-level analysis of the sharpest quotation
-  (AO3) 0.5 · writers' purposes compared against the question focus (AO3) 1.0. (ONE effect
+  taught order — TTECEA, PEDAGOGY §3c/§63): comparative-conceptual topic sentence spanning both
+  writers (AO3) 0.5 · Source A method + embedded quote + inference (AO3) 0.5 · Source B method +
+  embedded quote + inference, opened with a comparative pivot (AO3) 0.5 · word-level analysis of
+  a detail in EACH source, each bridged back to its writer's method (AO3) 0.5 · perceptive
+  development of the difference/similarity as a PAIR (AO3) 1.0 · effect on the reader — Source A
+  (AO3) 0.5 · effect on the reader — Source B (AO3) 0.5 · writers' purposes compared against the
+  question focus (AO3) 1.0. (ONE effect
   sentence per source — the comparison paragraph writes two effects anyway, one tied to each
   text; never two floating generic ones.)
   Penalties: max 3 (−1.5), Q3 code list + K1 conflated/underdeveloped conceptual links (−0.5) +

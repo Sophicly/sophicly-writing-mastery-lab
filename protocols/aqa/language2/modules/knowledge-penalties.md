@@ -134,7 +134,7 @@
 * **WC** – Word-count CEILING (EVERY attempt and redraft; v7.19.900): the penalty and ceiling arrive CODE-COMPUTED (deficit × 5/100, rounded) — Q5 Total = MIN(marks, ceiling); marks are never deducted. Echo the injected numbers only.
   Detection: Any Q5 submission under the 650-word target for Section B
   Calculation: code-owned — ROUND((650 - word\_count) \* 5 / 100); never compute or round it yourself, echo the injected P and C
-  Fix: Expand response to 650+ words using full IUMVCC structure (6 paragraphs of ~100-110 words each)
+  Fix: Expand response to 650+ words using the full IUMVCC structure at its planned sizes (Introduction 50–100 · Urgency 100–150 · Methodology 250–350 · Vision 100–150 · Counter-argument 75–100 · Conclusion 75–100 words)
   Note: NEVER halt Q5 for word count — the old family-first ceiling-vs-halt split is retired (v7.19.900); a short Q5 is always marked-and-capped, never dead-ended
 
 ---
@@ -167,7 +167,7 @@ For example: "The writer uses an extended metaphor, describing the night shift a
 
 Key requirements include using sophisticated subject terminology, selecting judicious source detail, demonstrating perceptive understanding of language effects, and avoiding discussion of structural features.
 
-Students should structure their three paragraphs to analyze the beginning of the source (Paragraph 1), the middle or climactic section of the source (Paragraph 2), and the ending of the source (Paragraph 3). This ensures comprehensive coverage of the specified lines.
+Students select a range of judicious detail across the specified lines (AQA: "selects a range of judicious textual detail"). A beginning–middle–end spread is one good way to get that range; choosing the three quotations that interest the student most is equally valid (the planning protocol offers both routes). Neither is required, and neither is penalised.
 
 **Question 4 – AO3 (16 marks) – Comparative Analysis**
 
@@ -177,7 +177,7 @@ The critical requirement is that every paragraph must compare both sources simul
 
 The structure for each comparative body paragraph should follow this framework:
 
-Begin with a comparative topic sentence that establishes what aspect is being compared in both sources. Identify the technique the Source A writer uses, then use comparative connectives to identify the technique the Source B writer uses. Quote from Source A, then use comparative transition to quote from Source B. Provide close analysis zooming into Source A's specific details and what they suggest, then zoom into Source B's specific details and what they suggest, comparing what the contrast or similarity reveals. Write two sentences analyzing Source A's effects on readers, then two sentences analyzing Source B's effects on readers, followed by comparison of whether these effects are similar or different. Discuss Source A writer's purpose using tentative language, then discuss Source B writer's purpose, comparing whether purposes are similar or contrasting. Finally, evaluate which writer's approach is more effective for this specific aspect using comparative language.
+Begin with a comparative topic sentence that establishes what aspect is being compared in both sources. Identify the technique the Source A writer uses, then use comparative connectives to identify the technique the Source B writer uses. Quote from Source A, then use comparative transition to quote from Source B. Provide close analysis zooming into Source A's specific details and what they suggest, then zoom into Source B's specific details and what they suggest, comparing what the contrast or similarity reveals. Write ONE sentence on Source A's effect on readers, then ONE on Source B's (Neil, 2026-07-15, PEDAGOGY §3c — one effect per text), comparing whether these effects are similar or different. Discuss Source A writer's purpose using tentative language, then discuss Source B writer's purpose, comparing whether purposes are similar or contrasting. Finally, evaluate which writer's approach is more effective for this specific aspect using comparative language.
 
 Key requirements include sustained comparison throughout, use of comparative discourse markers, perceptive insight into both writers' perspectives and methods, judicious selection of evidence from both sources, and sophisticated analytical vocabulary.
 
@@ -187,7 +187,7 @@ Students must write in a specified form (article, letter, speech, or essay) for 
 
 On every attempt after the family-first one, students must follow the IUMVCC structure: Introduction (hook and thesis), Urgency (why action is needed now), Main argument with evidence, Vision (compelling future), Counter-argument with refutation, Conclusion (call to action and memorable close).
 
-Students should use a range of rhetorical devices including rule of three, direct address, rhetorical questions, anaphora, metaphor, emotive language, statistics, and anecdote. The tone and register must be consistently matched to the form, purpose, and audience throughout.
+Students should use a range of rhetorical devices including rule of three, direct address, rhetorical questions, anaphora, metaphor, emotive language, a real statistic the student actually knows followed by what it means for the reader (never an invented one — PEDAGOGY §61), and anecdote. The tone and register must be consistently matched to the form, purpose, and audience throughout.
 
 AO5 assessment focuses on compelling communication, sophisticated vocabulary, varied sentence structures, sustained tone/register, fluently linked paragraphs, and seamlessly integrated discourse markers. AO6 assessment focuses on sentence demarcation, range of punctuation, variety of sentence forms, Standard English with controlled grammar, and high-level spelling accuracy including ambitious vocabulary.
 

@@ -129,10 +129,10 @@
 
 * **(T) Topic:** Comparative-conceptual topic sentence spanning BOTH writers (no technique words)  
 * **Source A \- (T) Technique, (E) Evidence, (I) Inference:** the Source A writer's method + embedded quotation + inference  
-* **(E) Effect on Reader \- Source A:** one detailed sentence, tied to Source A's method  
 * **Source B \- (T) Technique, (E) Evidence, (I) Inference:** opens with a comparative discourse marker ("However," "In contrast," "Whereas," "Unlike"), then the Source B writer's method + embedded quotation + inference  
+* **(C) Close Analysis:** word-level analysis of a detail in EACH source, each bridged back to its writer's method, and what the contrast reveals  
+* **(E) Effect on Reader \- Source A:** one detailed sentence, tied to Source A's method  
 * **(E) Effect on Reader \- Source B:** one detailed sentence, tied to Source B's method — never two floating generic effects  
-* **(C) Close Analysis:** word-level analysis of the sharpest quotation, and how it differs from the other source  
 * **(A) Authors' Purposes Compared:** each writer's purpose in tentative language ("perhaps," "arguably"), compared against the question focus, then closing on a JUDGEMENT of which writer's approach is more effective for this aspect, and why — the judgement is what earns the top band
 
 **Sentence-Level Rules:**
@@ -159,13 +159,13 @@ Both writers describe a journey by train, yet they stand at opposite ends of rai
 
 Source A — (T)echnique, (E)vidence, (I)nference: Fleming conveys his weariness through a repetitive list of everything he will soon escape, from the food to 'no more of a monk’s existence', which suggests that a week on board felt like a cloistered life of silence and self-denial.
 
-(E)ffect on Reader — Source A: As a result, the reader feels the monotony of the journey through the relentless rhythm of the list itself, sharing his relief that it is nearly over.
-
 Source B — (T)echnique, (E)vidence, (I)nference: In contrast, Kemble opens her letter with playful hyperbole, insisting that 'only a large sheet can contain my raptures about my railroad journey', which implies a joy so abundant that it overflows the ordinary limits of a letter.
 
-(E)ffect on Reader — Source B: Straight away, her friend, and every later reader, is swept into her excitement before she describes a single detail of the ride.
-
 (C)lose Analysis: Most tellingly, Kemble's noun 'raptures', with its connotations of religious ecstasy, finds an ironic twin in Fleming's 'monk’s', since both writers reach for the language of faith yet draw opposite meanings from it: one describes a miracle, the other a penance.
+
+(E)ffect on Reader — Source A: In Source A, the reader feels the monotony of the journey through the relentless rhythm of the list itself, sharing his relief that it is nearly over.
+
+(E)ffect on Reader — Source B: Straight away, her friend, and every later reader, is swept into her excitement before she describes a single detail of the ride.
 
 (A)uthors' Purposes Compared: Fleming perhaps writes to amuse a public readership with the familiar grumbles of a seasoned traveller, whereas Kemble writes privately to share a marvel with a friend, so their purposes sharpen the contrast between a journey endured and a journey treasured. Of the two, Fleming's approach is perhaps the more effective here, because the dragging rhythm of his list makes the reader live through the monotony, whereas Kemble announces her joy before she has shown it.
 
@@ -175,13 +175,13 @@ Source B — (T)echnique, (E)vidence, (I)nference: In contrast, Kemble opens her
 
 Source A — (T)echnique, (E)vidence, (I)nference: Throughout his account, Fleming personifies the express as a domineering bully, complaining that 'For more than a week she had bullied us', which implies that the passengers were powerless victims of a machine meant to serve them.
 
-(E)ffect on Reader — Source A: In turn, the reader comes to share his resentment, experiencing the journey as a week of petty humiliations rather than the luxury its name promised.
-
 Source B — (T)echnique, (E)vidence, (I)nference: By contrast, Kemble turns the engine into a tame and endearing animal, 'This snorting little animal, which I felt rather inclined to pat', implying an affection that renders the powerful new machine safe and approachable.
 
-(E)ffect on Reader — Source B: Accordingly, the reader is charmed rather than intimidated by the new technology, sharing her impulse to reach out and stroke it.
-
 (C)lose Analysis: Most revealingly, the verb 'bullied' belongs to the playground and casts the passengers as helpless children, whereas 'pat' is the gesture an owner offers a favourite horse, so the same personification positions one writer as the train's victim and the other as its fond keeper.
+
+(E)ffect on Reader — Source A: As a result, Fleming's reader comes to share his resentment, experiencing the journey as a week of petty humiliations rather than the luxury its name promised.
+
+(E)ffect on Reader — Source B: Kemble's reader, by contrast, is charmed rather than intimidated by the new technology, sharing her impulse to reach out and stroke it.
 
 (A)uthors' Purposes Compared: Arguably, Fleming wishes to puncture the glamour of luxury rail travel by exposing its daily tyranny, whereas Kemble seeks to help her friend picture an unfamiliar machine through the familiar figure of a horse, so their opposite personifications carry opposite verdicts on the experience of travelling by train. Kemble's approach is arguably the more effective, since one tactile image, the urge to 'pat', makes an unfamiliar machine instantly familiar, whereas Fleming's complaint depends on the reader already sharing his irritation.
 
@@ -191,13 +191,13 @@ Source B — (T)echnique, (E)vidence, (I)nference: By contrast, Kemble turns the
 
 Source A — (T)echnique, (E)vidence, (I)nference: Once the train lies wrecked, Fleming recasts a serious derailment as entertainment, declaring 'This was great fun: a comical and violent climax', which suggests that a week of monotony left him craving drama, even at the cost of his own safety.
 
-(E)ffect on Reader — Source A: At this point, the reader is amused but also unsettled by his glee, sensing how completely familiarity blunts his fear.
-
 Source B — (T)echnique, (E)vidence, (I)nference: Whereas Fleming takes pleasure in the train's destruction, Kemble takes it in the train's power, assuring her friend that she 'had a perfect sense of security and not the slightest fear', which implies complete trust in a machine she first met that very day.
 
-(E)ffect on Reader — Source B: Consequently, the reader shares her exhilaration rather than any anxiety, especially when she claims that the carriage raced along 'swifter than a bird flies'.
-
 (C)lose Analysis: Sharpest of all, Fleming's paired adjectives 'comical and violent' yoke laughter to destruction, capturing a traveller so starved of excitement that he welcomes the machine's ruin, whereas Kemble's absolute 'not the slightest fear' admits no shadow of doubt.
+
+(E)ffect on Reader — Source A: Fleming's reader is amused but also unsettled by his glee, sensing how completely familiarity blunts his fear.
+
+(E)ffect on Reader — Source B: Kemble's reader, meanwhile, shares her exhilaration rather than any anxiety, especially when she claims that the carriage raced along 'swifter than a bird flies'.
 
 (A)uthors' Purposes Compared: Above all, Fleming perhaps wants to entertain readers who take trains for granted, turning his crash into the adventure a hardened traveller craves, whereas Kemble conveys the thrill of a new invention to a friend who can only imagine it, so their purposes crystallise the gap between experience and innocence. Fleming's approach is perhaps the more effective, because calling a wreck 'great fun' jolts the reader into questioning his perspective, whereas Kemble's reassurance asks only to be believed.
 
@@ -233,7 +233,7 @@ Ultimately, the two writers travel by the same invention but inhabit opposite wo
 
 * **AO5:** Compelling communication, sophisticated vocabulary, varied sentence structures, sustained tone/register  
 * **AO6:** Virtually error-free SPaG throughout  
-* **Devices:** Weave rhetorical devices naturally (rule of three, direct address, rhetorical questions, anaphora, metaphor, emotive language, statistics, anecdote)  
+* **Devices:** Weave rhetorical devices naturally (rule of three, direct address, rhetorical questions, anaphora, metaphor, emotive language, a REAL statistic the student actually knows followed by what it means for the reader — never an invented one, PEDAGOGY §61, anecdote)  
 * **Length:** 650+ words minimum
 
 ---

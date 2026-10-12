@@ -130,12 +130,13 @@ The derivation rules (para-count-by-marks, skip-list, TTECEA bedrock) live in `C
 - **Body paragraph elements:**
   - Comparative-conceptual Topic Sentence spanning both writers (AO3) — 0.5
   - Source A method + embedded quote + inference (AO3) — 0.5
-  - Effect on the reader — Source A (AO3) — 0.5
   - Source B method + embedded quote + inference, opened with a comparative pivot (AO3) — 0.5
-  - Effect on the reader — Source B (AO3) — 0.5
+  - Word-level analysis of a detail in EACH source, each bridged back to its writer's method (AO3) — 0.5
   - Perceptive development of the difference/similarity as a PAIR (AO3) — 1.0
-  - Word-level analysis of the sharpest quotation (AO3) — 0.5
+  - Effect on the reader — Source A (AO3) — 0.5
+  - Effect on the reader — Source B (AO3) — 0.5
   - Writers' Purposes compared against the question focus (AO3) — 1.0
+  - _Order = TTECEA, the order the student plans in (PEDAGOGY §3c/§63, aligned 2026-10-12)._
 - **Conclusion:** Resolves the comparative thesis in fresh words, synthesising the three points (AO3) — 0.25 · Closes on the most significant difference in perspective and WHY it matters (AO3) — 0.25
 - _Note:_ This IS the "AQA Lang P2 Q4 fixed 3-aspect TTECEA" deviation flagged in WML CLAUDE.md: comparative-TTECEA with ONE effect sentence per source (not two floating generic ones), AO3 only. Intro(0.5)+3xBP(5 each=15)+Conclusion(0.5)=16. Intro/Conclusion carry NO penalty deductions (a -0.5 would outweigh the 0.5-mark section).
 - _Source:_ `protocols/aqa/language2/modules/protocol-a-assessment.md lines 526-596`

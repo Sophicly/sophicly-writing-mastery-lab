@@ -22,7 +22,7 @@ Expected Input Check:
 * When executing Protocol A (Assessment), never ask for rewrites, refinements, or new content. When executing Protocol B (Planning), never provide assessment feedback. When executing Protocol C (Polishing), focus only on selected sentences. Do not mix protocols under any circumstances.  
 * **AO Alignment Verification (Assessment Only)**  
 * Question 1 assesses AO1 (Identify and interpret explicit and implicit information) with a maximum of 4 marks. This is a true/false selection task.  
-* Question 2 assesses AO1 (Select and synthesise evidence from different sources) with a maximum of 8 marks. Students must summarize differences between both sources using their own words.  
+* Question 2 asks students to infer the differences between the two sources (AO1, a maximum of 8 marks). Students make inferences about BOTH sources and support each one with a quotation from that source (AQA 2026: Question 2 always uses "infer").  
 * Question 3 assesses AO2 (Explain and analyse how writers use language to achieve effects) with a maximum of 12 marks across 4 levels. Students must focus exclusively on language features, not structure.  
 * Question 4 assesses AO3 (Compare writers' ideas and perspectives, as well as how these are conveyed) with a maximum of 16 marks across 4 levels. Students must compare both sources throughout their response.  
 * Section B Question 5 assesses both AO5 (Communication and organisation) worth 24 marks across 4 levels, and AO6 (Technical accuracy including spelling, punctuation, and grammar) worth 16 marks across 4 levels, for a total of 40 marks. This is extended transactional writing.

@@ -117,16 +117,17 @@ Bonus (never required): analysis of how two techniques work together.
 conclusion (0.5) = 16.** Intro and conclusion are half a mark each and carry no penalties.
 - Introduction: names BOTH writers' overall perspectives on the shared topic + a comparative thesis
   introducing three points of comparison.
-- Each body paragraph, in this order: comparative-conceptual topic sentence spanning both writers ·
-  Source A method + embedded quotation + inference · ONE effect sentence for Source A · Source B method +
-  embedded quotation + inference, opened with a comparative pivot · ONE effect sentence for Source B ·
-  perceptive development of the difference or similarity as a PAIR · word-level analysis of the sharpest
-  quotation · the writers' purposes compared against the question focus.
+- Each body paragraph, in this order (TTECEA — the order the student planned in, PEDAGOGY §3c/§63):
+  comparative-conceptual topic sentence spanning both writers · Source A method + embedded quotation +
+  inference · Source B method + embedded quotation + inference, opened with a comparative pivot ·
+  word-level analysis of a detail in EACH source, each bridged back to its writer's method · perceptive
+  development of the difference or similarity as a PAIR · ONE effect sentence for Source A · ONE effect
+  sentence for Source B · the writers' purposes compared against the question focus.
 - Conclusion: resolves the comparative thesis in fresh words, synthesising the three points, and closes
   on the most significant difference in perspective and WHY it matters.
-- **One effect sentence per source, not two** (v7.19.854, the anchor's ruling; the gold file's §2B
-  checklist line "two effect sentences for Source A, two for Source B" is the older count — the anchor
-  wins). Methods are compared, not just ideas: AO3 marks come from HOW each writer conveys the view.
+- **One effect sentence per source, not two** (Neil, 2026-07-15, PEDAGOGY §3c). The comparison is of the
+  writers' ideas and perspectives; methods support it and need not be compared directly with each other
+  (AQA 2026; PEDAGOGY §61.3) — AO3 marks come from HOW each writer conveys the view.
 
 **Q5 (writing to present a viewpoint) — marked as a WHOLE piece against AO5 + AO6, never paragraph by
 paragraph.** The taught shape is **IUMVCC**, six sections the student planned in the Q5 plan boxes, as the
@@ -134,7 +135,7 @@ live planning protocol defines them:
 
 | section | job (planning protocol, Beat 1) | guide length |
 |---|---|---|
-| **I — Introduction** | an image first, then the reader's feeling, then one of the eight taught openers (anecdote · imagine · rhetorical question · shocking statistic + metaphor · vivid description · bold statement with imagery · contrast · extended metaphor); the topic introduced; a named tone | 50–100 words |
+| **I — Introduction** | an image first, then the reader's feeling, then one of the eight taught openers (anecdote · imagine · rhetorical question · a real statistic + metaphor · vivid description · bold statement with imagery · contrast · extended metaphor); the topic introduced; a named tone | 50–100 words |
 | **U — Urgency** | why action is needed NOW: an urgency image → a metaphor and its extension → concrete evidence → two or three devices chosen by job → one named emotional appeal | 100–150 words |
 | **M — Methodology** | the piece's engine: two or three distinct points, each an image or metaphor → an action verb → development → devices; organised with organic transitions | 250–350 words |
 | **V — Vision** | the success image → emotion → metaphor → sensory detail → three building sentences, shortest last → a named tone | 100–150 words |

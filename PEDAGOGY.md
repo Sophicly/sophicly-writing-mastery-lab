@@ -3428,3 +3428,33 @@ Introduction's three-point thesis FIRST, even in note form"* in the conclusion's
 plan, and become the introduction's thesis after the paragraphs). **AQA Paper 1 Question 4 gets the same rule** — not an
 extension of this ruling: P1's own planning protocol already teaches the order (Beat 9, "bodies first, frame last"), and
 its marking cards had the same gap.
+
+## §63. ⭐ AQA LANGUAGE — EIGHT PLACES OUR OWN FILES DISAGREED, RESOLVED (2026-10-12, WML 348 A; v7.20.849) — APPLIED, NOT NEW RULINGS (except item 2, which is Neil's)
+Found by the Library lane auditing the AQA exam-prep guide against the protocols (Neil: *"check how the protocols get
+the students to do it"*; handoff `library-to-wml-2026-10-12b-…`; evidence `sophicly-plugins/…/research/AQA-LANG-GUIDE-vs-
+PROTOCOLS-AUDIT-2026-10-12.md`). Authority order used: AQA's own words → Neil's rulings → our files.
+1. **P2 Q4 close analysis + order → FIXED to §3c.** The marking card and the gold rule both CLAIMED "the taught order" /
+   "comparative TTECEA" but ran A method → effect A → B method → effect B → close analysis → purposes, and credited "the
+   sharpest quotation". §3c (Neil, 15 Jul: *"they still follow the same TTECEA structure"*) and AQA ("selects a range of
+   judicious supporting detail from both texts") → marking, golds, knowledge model, rubric, map and the three comparative
+   planning helpers now run **T → A method → B method (pivot) → close analysis of a detail in EACH source → pair → effect A
+   → effect B → purposes**, marks unchanged (5.0). The knowledge model's three paragraphs already analysed a word from each
+   source; only their sentence order and four connectives changed, every quotation verbatim.
+2. **P2 Q4 "which writer's approach is more effective" → NEIL'S CALL (Actions page).** No Neil ruling exists; AQA's Paper 2
+   Question 4 asks for a comparison of perspectives and methods ("perceptive, detailed comparison"), and "evaluation"
+   appears only in Paper 1's scheme — so our files' claim that the judgement "earns the top band" is not AQA's. Until he
+   rules, the judgement text is left as it is.
+3. **P2 Q4 conclusion → effect count FIXED** (knowledge-penalties asked two effect sentences per source; §3c, Neil 15 Jul:
+   one per text). The conclusion's CONTENT ("more effective" vs "the most significant difference and why it matters")
+   rides on item 2.
+4. **P2 Q3 anchor spread → FIXED:** knowledge-penalties' "should" (beginning/middle/end) now matches planning ("both routes
+   valid") and AQA ("a range of judicious textual detail"); neither route is penalised.
+5. **P2 Q2 "summary in their own words" → FIXED** in knowledge-algorithm.md (loaded in every P2 assessment) — contradicted
+   the protocol's own guard and AQA 2026 (Question 2 always uses "infer").
+6. **P2 Q5 length + statistics → FIXED:** the short-Q5 fix line now gives the planning section sizes (650–950) instead of
+   "6 × 100–110"; "statistics" in knowledge-penalties, knowledge-mark-scheme and the rubric's openers now say a REAL
+   statistic (Neil, 10 Oct, §61 — these three were missed by the .828 sweep).
+7. **P2 Q2 two inferences per quotation → NOT A CONFLICT.** The second inference is how a student earns "developed in
+   detail" on the marking card; AQA's own Level 4 example draws two inferences from one group of quotations.
+8. **P1 5–10-word anchors → NOT A CONFLICT.** The anchor is the plan's locator; the answer then zooms to ONE word or a pair
+   (planning's own close-analysis step) — exactly what AQA's June 2023 report praises ("a single word… more focused").
