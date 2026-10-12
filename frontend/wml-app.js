@@ -1482,7 +1482,7 @@
     }
 
     // ── Creative Writing Step Dashboard (v7.13.30) ──
-    // Shows all 29 steps + 6 trials as cards grouped by phase.
+    // Shows every CW_STEPS entry (steps, trials, the final assessment) as cards grouped by phase.
     // Loads project data from CW project storage to show progress.
     // CW_STEPS moved to wml-core.js (v7.13.34) — use WML.CW_STEPS
     const CW_STEPS = WML.CW_STEPS;
@@ -1560,8 +1560,11 @@
     // were not swept at the time. Same source, one helper, so a third picker cannot drift again.
     function _cwProgressLabel(p) {
         if (p.status === 'completed') return 'Completed';
-        return p.progress_label || ('Step ' + (p.current_step || 0) + ' of 29');
+        return p.progress_label || ('Step ' + (p.current_step || 0) + ' of ' + _cwStepCount());
     }
+    // v7.20.848 (backlog #4): the masterclass's step count, from CW_STEPS — the numbered steps that are not weekend-only.
+    // It was a typed 29; the course has had 31 since the renumber, and a typed number cannot follow the next one.
+    function _cwStepCount() { return (WML.CW_STEPS || []).filter(s => typeof s.step === 'number' && !s.unitOnly).length; }
 
     // ── Step 1 Project Picker (v7.19.179) ──
     // Fires when student enters cw_step_1 without an explicit ?cw_project_id=
@@ -1696,6 +1699,12 @@
             projectData = loadRes?.project || null;
         }
         const completedSteps = projectData?.step_completion || {};
+        // v7.20.848 (backlog #4): a trial or the final assessment has no step number, so step_completion never holds it and
+        // its card never showed complete. Read the project's own saved results: trial_completion (1–6, derived server-side
+        // from the saved trials) and the final assessment's saved result (`finale`).
+        const trialDone = projectData?.trial_completion || {};
+        const finaleDone = Array.isArray(projectData?.trials) && projectData.trials.some(t => t && (t.finale || t.trial === 'final'));
+        const isStepDone = (def) => def.trial ? !!trialDone[def.trial] : def.final ? finaleDone : !!completedSteps[def.step || def.id];
 
         transitionSetup(inner => {
             inner.appendChild(renderLogo());
@@ -1703,7 +1712,7 @@
             // Context card with project name
             const card = el('div', { className: 'swml-context-card' });
             card.appendChild(el('div', { className: 'swml-context-label', textContent: 'Creative Writing Masterclass' }));
-            card.appendChild(renderBadges([project?.name || 'My Story', `Step ${project?.current_step || 0} of 29`]));
+            card.appendChild(renderBadges([project?.name || 'My Story', `Step ${project?.current_step || 0} of ${_cwStepCount()}`]));
 
             const backRow = el('div', { className: 'swml-back-row' });
             backRow.appendChild(el('button', { className: 'swml-back-link', textContent: '\u2190 Back', onClick: () => { resetState(); renderExamPrepWizard(); } }));
@@ -1747,16 +1756,14 @@
                 const phaseSteps = CW_STEPS.filter(s => s.phase === phase.key);
 
                 phaseSteps.forEach((stepDef, idx) => {
-                    const stepKey = stepDef.step || stepDef.id;
-                    const isComplete = !!completedSteps[stepKey];
+                    const isComplete = isStepDone(stepDef);
                     const isTrial = !!stepDef.trial;
                     const isDraft = !!stepDef.draft;
 
                     // Determine recommended order indicator
                     const sequenceIdx = CW_STEPS.indexOf(stepDef);
                     const prevStep = sequenceIdx > 0 ? CW_STEPS[sequenceIdx - 1] : null;
-                    const prevKey = prevStep ? (prevStep.step || prevStep.id) : null;
-                    const prevComplete = prevKey ? !!completedSteps[prevKey] : true;
+                    const prevComplete = prevStep ? isStepDone(prevStep) : true;
                     const highestComplete = project?.current_step || 0;
                     const stepNum = stepDef.step || 0;
                     const needsEarlierSteps = stepNum > 1 && highestComplete < stepNum - 1 && !isComplete;

@@ -114,6 +114,29 @@ ok(/if \(isCwFinalTask\(task\)\) return CW_STEPS\.find\(s => s\.final\) \|\| nul
 ok(/state\.task = WML\.cwTaskFor\(stepDef\);/.test(APP) && !/state\.task = 'cw_step_' \+ stepDef\.step;/.test(APP),
     'site 5: the Step Dashboard takes its task from the ONE builder (no "cw_step_" + stepDef.step left — an unnumbered entry would be cw_step_undefined)');
 ok(/\} else if \(stepDef\.final\) \{\s*\/\/[^\n]*\n\s*numBadge\.textContent = 'F';/.test(APP), '…and its badge says F, never "undefined"');
+// v7.20.848 (backlog #4): the in-app Step Dashboard's count and its card completion, EXECUTED against the real CW_STEPS.
+{
+    const cntSrc = (/function _cwStepCount\(\) \{[^\n]*\}/.exec(APP) || [])[0];
+    ok(!!cntSrc, 'the dashboard step count is ONE helper, _cwStepCount');
+    // eslint-disable-next-line no-new-func
+    const stepCount = cntSrc && W ? new Function('WML', cntSrc + '\nreturn _cwStepCount;')({ CW_STEPS: W.CW_STEPS }) : null;
+    const main = W ? W.CW_STEPS.filter((s) => typeof s.step === 'number' && !s.unitOnly).map((s) => s.step) : [];
+    const last = main.length ? Math.max.apply(null, main) : -1;
+    ok(!!stepCount && stepCount() === last && main.length === last, '⭐ "Step X of N": N is the last masterclass step (' + last + '), counted from CW_STEPS, weekend lessons excluded', stepCount && stepCount());
+    const code = APP.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+    ok(!/of 29\b/.test(code), '…and no typed "of 29" is left in the code');
+    const defs = ['trialDone', 'finaleDone', 'isStepDone'].map((n) => new RegExp('const ' + n + ' = [^\\n]*;').exec(APP));
+    ok(defs.every(Boolean), 'the cards’ completion is ONE predicate (isStepDone) over the project data');
+    if (defs.every(Boolean) && W) {
+        // eslint-disable-next-line no-new-func
+        const mk = (pd) => new Function('projectData', 'completedSteps', defs.map((m) => m[0]).join('\n') + '\nreturn isStepDone;')(pd, pd.step_completion || {});
+        const T6 = W.CW_STEPS.filter((s) => s.trial === 6)[0], FIN = W.CW_STEPS.filter((s) => s.final)[0], S3 = W.CW_STEPS.filter((s) => s.step === 3)[0];
+        const done = mk({ step_completion: { 3: true }, trial_completion: { 6: true }, trials: [{ trial: 'final', finale: true }] });
+        const none = mk({ step_completion: {}, trial_completion: { 6: false }, trials: [{ trial: 6 }] });
+        ok(done(T6) && done(FIN) && done(S3), '⭐ a saved Trial 6 result, a saved final assessment and a completed step each show complete');
+        ok(!none(T6) && !none(FIN) && !none(S3), '…and none shows complete without its own saved result');
+    }
+}
 ok(/\.\.\.\(\(_cwScoredTask\(snap\.task\) && state\.cwTrialScore/.test(SRC) && !/snap\.task\.startsWith\('cw_trial_'\) \|\| snap\.task === 'cw_step_91'/.test(SRC),
     'site 6: the score piggyback reads ONE predicate (_cwScoredTask), and the old two-literal gate is gone');
 const scored = (() => { try { return take(SRC, 'function _cwScoredTask(task) {', '{', '}'); } catch (e) { return ''; } })();
