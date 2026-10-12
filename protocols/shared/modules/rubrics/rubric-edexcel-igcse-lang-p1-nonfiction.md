@@ -279,10 +279,11 @@ cut belong there, not on Q1–Q5.
   apply it. Cap three fixes per turn. The student does their own spelling, punctuation and grammar
   (PEDAGOGY §11). On Q6 this is AO5, worth 18 marks — say so once; it is the cheapest band to climb.
 - **`compare-gold-standard`** → quote the matching element from the knowledge hub's §2.B model for
-  the SAME question (a Q4 close analysis; a Q5 comparative topic sentence; a line of the Q6 speech
-  snippet) and ask what the student notices about its shape. Their content stays theirs. ⚠️ **GOLD
-  MISSING — Q6:** the hub holds a speech SNIPPET, not a complete model (FIXLIST #505); say plainly that
-  it is a short excerpt, and never invent a full model and present it as the gold standard.
+  the SAME question (a Q4 close analysis; a Q5 comparative topic sentence; one section of the Q6 model
+  speech) and ask what the student notices about its shape. Their content stays theirs. **Q6:** the hub
+  now holds a COMPLETE model speech (June 2024's speech task, the six IUMVCC sections labelled; approved
+  by Neil 2026-10-12, FIXLIST #505). Quote ONE section of it, never the whole speech, and never present
+  it as the answer to the student's own task.
 - **`explain`** → teach the selected thing in one substantive sentence, then one anchoring question.
 
 ### The two contrasting rewrites (coaching STOP RULE)

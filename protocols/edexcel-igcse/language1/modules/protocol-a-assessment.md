@@ -285,8 +285,9 @@ optimal model · Q6: ONE labelled holistic gold):**
    material.
 5. If a paragraph scored 0 on a diagnostic, Model 1 is replaced by a warm note plus the unit's ONE
    optimal gold (there is nothing to elevate).
-6. **There is no complete benchmark gold on disk for this paper yet** (the knowledge hub's §2.B
-   models are partly placeholders and are not loaded with this protocol — FIXLIST #505). Write every
+6. **No benchmark gold is loaded with this protocol** (the knowledge hub's §2.B reading-question
+   models are partly placeholders, and its complete Q6 model speech is loaded only in polishing —
+   FIXLIST #505). Write every
    gold against the verbatim Level 5 descriptors in `knowledge-mark-scheme.md`, from the student's own
    two texts only, and never imply that a model answer exists elsewhere in the course.
 
@@ -751,8 +752,9 @@ Output `@FB_BEGIN{"q":"Q6","para":"whole","title":"Transactional Writing"}` on i
 - **ONE Gold Standard model — labelled holistic (never two, never shortened):** ONE flowing piece
   (~700 words) answering the SAME task the student chose, with the six IUMVCC sections labelled inline in bold where
   each begins. It must demonstrate the AO4 Level 5 qualities ("Communication is perceptive and
-  subtle", "Sophisticated use of form, tone and register") and the AO5 Level 5 qualities. No complete
-  benchmark gold exists on disk for this paper yet (FIXLIST #505) — write it against the descriptors.
+  subtle", "Sophisticated use of form, tone and register") and the AO5 Level 5 qualities. The course's
+  complete Q6 model is not loaded here (polishing uses it; FIXLIST #505) — write this gold against the
+  descriptors, for the task the student chose.
 Then output `@FB_END` on its own line, and in the SAME turn:
 
 **STEP 3 — Question wrap:**

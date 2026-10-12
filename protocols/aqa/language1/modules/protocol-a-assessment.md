@@ -598,6 +598,14 @@ quote + fix, canonical `Total Mark for [title]: X/max` line, My Assessment (crit
 rule), BOTH golds (self-anchoring Model 2s). Missing sections → missing-paragraph rule; extra
 paragraphs → Tier 1/Tier 2.
 
+**Q4 WRITING ORDER — every Priority Improvement, fix and teaching note on these five cards follows it (this paper's
+own planning order, protocol-b-planning.md Beat 9 "bodies first, frame last"; the same order Neil ruled for Paper 2
+Q4 on 2026-10-12, PEDAGOGY §62):** a SHORT PLAN (the three evaluative points, in note form) → the three body
+paragraphs → the introduction and conclusion LAST. NEVER advise writing the introduction, or its thesis, first.
+Where a missing thesis leaves the conclusion nothing to return to, the fix names the PLAN: "put your three
+evaluative points in your short plan; after the three paragraphs, turn them into your introduction's thesis — and
+your conclusion returns to them."
+
 - **Introduction (1 mark)** — `para:"intro"`, `title:"Introduction"`. Criteria: clear opening
   engaging the question's evaluative keywords with a sophisticated stance — not bare
   agree/disagree (AO4) 0.5 · precise thesis introducing three evaluative points (AO4) 0.5.

@@ -3412,3 +3412,19 @@ TEACHING, not our marking; these are his answers, applied v7.20.828 across every
   "Single-device sentences score low on AO5" was removed — no mark scheme says it.
 **Still his rule, not re-asked:** the Q5 650-word ceiling (AQA's ~350-word Level 3 sample would cap at 25/40, inside AQA's
 Level 3 range of 22–30).
+
+## §62. ⭐⭐ THE QUESTION 4 WRITING ORDER — a short plan, the three paragraphs, then the introduction and conclusion LAST (Neil, ruled 2026-10-12 via the Library lane, Actions S57 / library-FIXLIST N799.4; WML FIXLIST lib-igcse-models+q4-order)
+**The ruling (AQA Language Paper 2 Question 4), verbatim from his note:** *"Short plan; liaise with the wml chat about
+'Sophia's marking told this student: Write your Introduction's three-point thesis FIRST.'"* → a SHORT PLAN, then the
+three comparison paragraphs, then the introduction and conclusion last.
+**Why it needed writing down — the line was the marking's own, not the protocol's.** The planning protocol already
+taught this order (`protocols/aqa/language2/planning/protocol-b-planning.md` Beat 10, "bodies first, frame last"), and
+the Introduction card carried the teaching note ("body paragraphs carry 15 of Q4's 16 marks — plan and write them
+FIRST"). The CONCLUSION card had no such guard. Measured on prod (student 857, 10 Oct, AQA P2 T1): her introduction had
+no thesis, the conclusion criterion is "resolves the comparative thesis", and Sophia reasoned backwards to *"Write your
+Introduction's three-point thesis FIRST, even in note form"* in the conclusion's Priority Improvements.
+**Applied (v7.20.846):** one WRITING ORDER rule above the five Q4 cards, so it governs every card's advice — never
+"intro first"; where a missing thesis starves the conclusion, the fix names the PLAN (the three points go in the short
+plan, and become the introduction's thesis after the paragraphs). **AQA Paper 1 Question 4 gets the same rule** — not an
+extension of this ruling: P1's own planning protocol already teaches the order (Beat 9, "bodies first, frame last"), and
+its marking cards had the same gap.

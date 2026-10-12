@@ -158,11 +158,38 @@ Both Fogle and Levine explore the theme of unusual competitions, yet they approa
 
 In conclusion, both writers masterfully craft engaging narratives about unconventional competitions, yet their divergent purposes shape entirely different reader experiences—one introspective and poignant, the other exhilarating and externally focused.
 
-**Gold Standard Model – Section B: Transactional Writing (Q6 Speech \- AO4/AO5 \- 45 Marks Total)**
+**Gold Standard Model – Section B: Transactional Writing (Q6 \- AO4/AO5 \- 45 Marks Total) — a COMPLETE model, approved by Neil 2026-10-12 (FIXLIST #505)**
 
-**Prompt:** 'Too much emphasis is, perhaps, placed on the idea of winning...'
+**Sitting:** June 2024, Paper 1 (4EA1/01), Section B, Question 7 (the speech task). Question 7 is one of the two Section B tasks the paper offers; in our course it is written with the same six-part plan as Question 6, so this is the model for Question 6. The six IUMVCC sections are labelled in bold where each begins.
 
-**Model Snippet:** Friends, peers, competitors. Look around you. We live in a world obsessed with the podium, the trophy, the number one spot. We are told, relentlessly, that to come second is to be the first loser. But I ask you: is that truly the measure of our worth? Is the person who stumbles at the final hurdle, yet showed immense courage to even reach it, a failure? This obsession with winning, this toxic, all-or-nothing mindset, is not just misguided; it is dangerous. It is a poison that seeps into our minds, telling us that participation is pointless and effort is worthless without victory. We must find the antidote.
+**Task:**
+
+7 ‘Too much emphasis is, perhaps, placed on the idea of winning. It can be just as important to take part and try hard.’
+
+Write the text for a speech to be delivered to your peers in which you express your views on this statement.
+
+Your speech may include:
+- what winning might mean in different areas of life
+- the benefits of taking part
+- any other points you wish to make.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+(Total for Question 7 = 45 marks)
+
+**Model answer:**
+
+**Introduction** Last spring I came forty-first in a cross-country race of forty-four. I had mud on my knees and a stitch in my side, and the teacher at the finish line was already reading out the names of the winners. Put your hand up if you have ever lost at something you worked hard for. Keep it up if somebody then said, “Never mind, it’s only a game”. Those words did not help at all. Today I want to persuade you that taking part and trying hard can matter just as much as winning.
+
+**Urgency** Why talk about this now? Because we are growing up in a world that counts only the person who comes first. Newspapers print the champion’s name and forget the rest of the field. We measure ourselves in marks, rankings, followers and likes. A mark of 62 feels like failure when a friend gets 64. In a class of thirty, twenty-nine of us will not come first in any single task. So why build our confidence on something that almost all of us will miss? The cost is real. Students who fear losing often stop trying. They do not enter the competition, put up a hand or join the team, because failing in front of other people feels worse than never trying. Each of those missed chances is a loss that no scoreboard records.
+
+**Methodology** So what can we do? First, we can change the question we ask. Winning means different things in different places. In sport it is a medal. At school it is the top mark. In a friendship there is no scoreboard at all. Nobody wins by beating a friend. If we ask, “Did I improve?” instead of “Did I beat everyone?”, we ask a question that every one of us can answer honestly. Second, we can learn from the Olympic Games. Their creed says that taking part matters more than winning, and that the essential thing is “not to have conquered but to have fought well”. At the greatest sporting event on Earth, where the prize is gold, the founders chose to honour effort first. Third, we can act. When a classmate loses a match or stumbles through a poem, we can mean it when we say, “Well done for trying”. Then we can join one thing this term that we might not win: a debate, a race, a drama club. We will learn what no trophy can teach: how to practise patiently, how to lose without breaking, and how to cheer for somebody else.
+
+**Vision** Now walk into a school where this is normal. Nobody laughs at the person who finishes last, because everyone knows that person had the courage to start. The hall is as full for the school play as it is for the cup final. A student who gets a lower mark than expected says, “I will try a different way next time”, instead of “I am useless.” In that school more people would join in, more people would improve, and here is the surprise: more people would win, because they would no longer be frightened of losing.
+
+**Counter-argument** Some of you are thinking, “That is easy to say. Universities and employers choose the winners. Without a prize to chase, why would anyone work hard?” I am not asking you to stop wanting to win, because ambition is healthy. But look at what makes a winner. Years of turning up. Years of practising, failing and trying again. No champion became one without long hours of taking part when nobody was watching. The effort comes first, and the trophy, if it arrives at all, comes second. Praise only the trophy and we teach people to stop making the effort. So I am not saying that winning does not matter. I am saying that winning should not be the only thing that matters.
+
+**Conclusion** So here is my challenge. This week, find something you might not win. Give it everything you have. When someone else tries and fails, tell them they were brave to try. I ran that cross-country race again in the autumn. I came thirty-eighth. Nobody gave me a medal, and I have never been prouder of a result. The scoreboard will show us who came first. Only we can decide who was brave. Thank you.
 
 ### **Gold Standard Generation Rules (4EA1/01, Non-Fiction)**
 

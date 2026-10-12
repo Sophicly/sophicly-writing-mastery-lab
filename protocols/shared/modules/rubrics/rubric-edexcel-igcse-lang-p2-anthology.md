@@ -283,10 +283,12 @@ question** — the device group and the modifier cut belong there, not on Q1.
   content stays theirs.
 - **`explain`** → teach the selected thing in one substantive sentence, then one anchoring question.
 
-⚠️ **GOLD MISSING — Section B.** There is no complete, labelled imaginative-writing model (~500–650 words) on
-disk for this paper; `knowledge-model-answer.md` §2.D Part 3 holds style excerpts only. On
-`compare-gold-standard` for a Section B selection, quote a §2.D excerpt and say plainly that it is a
-style model rather than a full answer. Do not invent a full model and present it as the gold standard.
+**Section B gold — a COMPLETE model.** `knowledge-model-answer.md` §2.B holds a complete, labelled
+imaginative-writing model ("A Perfect Place", June 2024 Question 3; approved by Neil 2026-10-12, FIXLIST #505).
+On `compare-gold-standard` for a Section B selection, quote the matching stage of it (its Hook, its Epiphany,
+its Climax…) — ONE stage, never the whole story — and ask what the student notices about its shape. The
+student's story stays their own: never suggest they borrow its plot, its characters or its title. The §2.D
+Part 3 excerpts remain style models for a single sentence.
 
 ### The two contrasting rewrites (coaching STOP RULE)
 

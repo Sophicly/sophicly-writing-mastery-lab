@@ -605,6 +605,13 @@ quote + fix, canonical `Total Mark for [title]: X/max` line, My Assessment (crit
 rule), BOTH golds (self-anchoring Model 2s). Missing sections → missing-paragraph rule; extra
 paragraphs → Tier 1/Tier 2.
 
+**Q4 WRITING ORDER — every Priority Improvement, fix and teaching note on these five cards follows it (Neil's
+ruling, 2026-10-12; PEDAGOGY §62):** a SHORT PLAN (the three points of comparison, in note form) → the three
+comparison paragraphs → the introduction and conclusion LAST. NEVER advise writing the introduction, or its thesis,
+first. Where a missing thesis leaves the conclusion nothing to return to, the fix names the PLAN: "put your three
+points of comparison in your short plan; after the three paragraphs, turn them into your introduction's thesis — and
+your conclusion returns to them."
+
 - **Introduction (0.5 marks)** — `para:"intro"`, `title:"Introduction"`. Criteria: names BOTH
   writers' overall feelings/perspectives on the shared topic (AO3) 0.25 · comparative thesis
   introducing three points of comparison (AO3) 0.25. **NO penalty deductions on this card** (a

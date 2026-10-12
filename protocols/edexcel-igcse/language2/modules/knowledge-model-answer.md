@@ -40,6 +40,40 @@ In conclusion, this essay has explored how Alvi undermines the notion of fixed c
 
 **Model Snippet:** Silence in the car was a physical thing, a heavy blanket smothering the space between them. Elias stared at the road, his knuckles white on the steering wheel. Each flicker of a passing streetlight illuminated the rigid set of his jaw. Beside him, Clara watched the city lights smear into long, sorrowful streaks through the rain-spattered window. Arguments had ended ten minutes ago, but their ghost remained, conducting the tense orchestra of the wiper blades' rhythmic sweep and the engine's low hum. Words themselves no longer echoed, but the chasm they had opened remained. A disagreement over something as trivial as a forgotten set of keys had somehow become a referendum on their entire life together, and neither of them knew how to bridge the divide.
 
+**Gold Standard Model \- Section B, COMPLETE (AO4/AO5 \- Imaginative Writing, 30 marks) — approved by Neil 2026-10-12 (FIXLIST #505)**
+
+**Sitting:** June 2024 (4EA1/02), Section B, Question 3. The story's stages are labelled in bold where each begins (the course's story spine); the labels are for study, not for the exam.
+
+**Task:**
+
+Write a story with the title ‘A Perfect Place’.
+
+Your response could be real or imagined.
+
+Your response will be marked for the accurate and appropriate use of vocabulary, spelling, punctuation and grammar.
+
+(Total for Question 3 = 30 marks)
+
+**Model answer:**
+
+*A Perfect Place*
+
+**Hook** “A perfect place has a smell,” Grandad told me every evening, “and mine smells of lemons.” He said it while staring at the grey wall of the next tower block, as if a garden were growing there.
+
+**Setup** We lived on the fourteenth floor, Grandad and I, because Mum worked abroad. The lift had been broken since November. The roof above us was locked; Mr Hale, the caretaker, guarded the key like treasure. Grandad’s lemon garden lay in a village he had left forty years ago. Now he forgot names and called me by his brother’s name. Only the lemons never slipped away from him. Mum rang every Sunday. “How is Grandad?” “Fine,” I said, every time, eyes on the grey wall.
+
+**Reaction** I tried to cope. I drew lemons on the kitchen calendar. I bought a plastic one at the market and sprayed it with air freshener. Grandad smiled politely, the way you smile at a stranger’s baby. Then, on Thursday, he asked me for the third time where the garden gate was, and I stopped coping altogether. “There is no garden!” I shouted. The words hit the kitchen like a dropped plate. Grandad said nothing. He sat small and folded, holding his empty cup. I knew that silence. It was mine.
+
+**Epiphany** That night I lay awake and listened to the wind whistling down the dead lift shaft. I thought of Grandad’s hands. They shook when they held nothing, but went calm when they shelled peas, wound the clock or mended a chair. Not a place, then. A job. I could not give him a village, but I could give him something to look after.
+
+**Proaction** On Saturday I fished the pips out of our sour lemon tea, then found a baking tin and a bag of compost. Mr Hale listened to my whole story, sighed, and handed over the key. “One hour,” he said. “The wind up there is bad.” We pushed twelve pips into the soil, and Grandad pressed each one down with his thumb, slowly, like a man signing an important letter. For one whole afternoon he knew exactly who I was. But by Wednesday white frost had covered the tin and nothing had grown. I decided the pips were dead. I hung the key on its hook, meaning to take it back, and told no one. That week Grandad’s fingernails were black with soil. I scrubbed them and thought nothing of it.
+
+**Climax** A week after I shouted at him, on Thursday night, the storm arrived. I woke to a slammed door and an empty bed. Gone.
+
+I ran down the stairs, past the thirteenth floor, past the twelfth, calling his name into the dark. Then I remembered the tin. I ran back up, past our own door, until my lungs burned and the roof door stood open, banging in the wind. On the roof the storm clawed at everything it could reach. Grandad was kneeling beside the tin in his pyjamas, shielding it with his body. “They will freeze,” he shouted. “Help me!” Mr Hale slept two floors down and Mum was an ocean away. I was all the rescue he had. I could have told him the pips were dead. Instead I knelt down, wrapped my arms around Grandad and the tin, cold as a stone, and held on. The wind pulled; we pulled back. Step by step we carried the tin down to our flat, and neither of us let go.
+
+**Denouement** Three weeks later, a single green curl pushed out of the soil on our kitchen windowsill. Grandad found it first. He rubbed one tiny leaf between his finger and thumb and held it under my nose. It smelled of lemons. Every morning after that he watered it with a teaspoon; some mornings he forgot my name, but he never forgot the water. On Sunday, when Mum rang, I did not say “Fine.” I said, “Mum, come and smell this,” and held the phone beside the leaf. Outside, the next tower block was still grey, but Grandad was not looking at it any more.
+
 ### **2.C. Internal Gold Standard Model Essay Plan**
 
 This is the essay plan that was used to construct the Gold Standard Model Answer. It can be used as a reference during the planning stage to show how a clear, structured plan translates into a high-quality essay.
