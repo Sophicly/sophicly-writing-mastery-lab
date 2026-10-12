@@ -806,6 +806,16 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw-trial6-sim-harness.js || fail=1   # v7.20.841 (#884-⑤): Trial 6 = the trial factory built for N=6, after Draft 6
 fi
 
+# v7.20.844 (FIXLIST #884-⑦): THE CW FINAL ASSESSMENT. The SIM drives the real host AND the real shared examiner ladder on
+# one rig (one call, one resolver for both marks, a reload mid-climb, a new device, no dead screen); the GATE holds what no
+# walk can see (the entry names final_draft, one task id on both sides, one predicate per language at the six name sites,
+# protocol ↔ parser ↔ resolver, page rows = walk rows, the seven wiring points, the ladder's host hooks). Falsified 14/14.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|wml-app\.js|walk-sim-lib\.js|class-protocol-router\.php|wml-examiner-ladder\.js|wml-markscheme-data\.js|cw-final-(gate|sim-harness)\.js|CW-FINAL-ASSESSMENT\.md'; then
+  node bin/cw-final-gate.js || fail=1
+  node bin/cw-final-sim-harness.js || fail=1
+fi
+
 # v7.20.413: CW STEP-7 DOCUMENT GATE. The document half of Step 7 — the fifteen rows, their
 # completion rule and Neil's teaching prose. (The walk that fills them is gated by cw7-sim above.)
 # It runs the REAL builder and

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.843';
+var WML_BUILD = '7.20.844';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1202,6 +1202,12 @@ window.WML = (function() {
         { step: 29, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7, env: 'polishing', lens: 'structural' },
         // Polish Phase
         { step: 30, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
+        // ⭐ v7.20.844 (FIXLIST #884-⑦, PEDAGOGY §33.6): THE FINAL ASSESSMENT — the full 40-mark marking, once, on the
+        // finished story (CW-FINAL-ASSESSMENT-PLAN-2026-10-12.md). Unnumbered like the trials, so Step 31 keeps its number;
+        // NO `trial` key, so no trial-keyed path can pick it up by accident. `assesses` NAMES the step whose artifact it
+        // marks (Step 30 → final_draft): a walk back to the nearest `draft` would find Draft 7, the story BEFORE the SPAG
+        // polish (plan D14). Its task id is CW_FINAL_TASK, built by cwTaskFor — never spelled out anywhere else.
+        { id: 'final_assessment', label: 'Final Assessment', tier: 'si', phase: 'polish', final: true, assesses: 30 },
         { step: 31, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
         // ⭐ v7.20.753 — UNIT-ONLY STEPS live at 90+ (WEEKEND-STORY-PLAN §2c) so a course renumber can never
         // collide with them. Phase `unit` is in no full-course phase list, so the CW Step Dashboard never
@@ -1243,9 +1249,22 @@ window.WML = (function() {
     function cwStepLabel(def) { return def ? ((cwInUnit() && def.unitLabel) || def.label || '') : ''; }
     function cwStepTier(def) { return def ? ((cwInUnit() && def.unitTier) || def.tier || '') : ''; }
 
+    // ⭐ v7.20.844 (#884-⑦): THE FINAL ASSESSMENT'S TASK ID — one constant, one predicate, one builder. Every place that
+    // names a CW lesson's task reads these (WML canvas rule 2: gate on what a lesson IS, never on a spelled-out name).
+    const CW_FINAL_TASK = 'cw_final_assessment';
+    function isCwFinalTask(task) { return task === CW_FINAL_TASK; }
+    // The task id of a CW_STEPS entry — the ONE builder (the Step Dashboard and anything else that opens a lesson).
+    function cwTaskFor(def) {
+        if (!def) return '';
+        if (def.final) return CW_FINAL_TASK;
+        if (def.trial) return 'cw_trial_' + def.trial;
+        return 'cw_step_' + def.step;
+    }
+
     // Lookup helper: task string → CW_STEPS entry
     function getCwStepDef(task) {
         if (!task || !task.startsWith('cw_')) return null;
+        if (isCwFinalTask(task)) return CW_STEPS.find(s => s.final) || null;   // v7.20.844 (#884-⑦)
         if (task.startsWith('cw_trial_')) {
             const trialNum = parseInt(task.replace('cw_trial_', ''), 10);
             return CW_STEPS.find(s => s.trial === trialNum) || null;
@@ -1477,6 +1496,13 @@ window.WML = (function() {
         { step: 1, label: 'Read Your Draft' },
         { step: 2, label: 'Judge the Five Checks' },
         { step: 3, label: 'Sophia’s Verdict' },
+    ];
+    // v7.20.844 (#884-⑦): the final assessment — the two objectives the exam marks, then her marking.
+    CW_SIDEBAR_STEPS['final_assessment'] = [
+        { step: 1, label: 'Read Your Story' },
+        { step: 2, label: 'Content and Organisation' },
+        { step: 3, label: 'Technical Accuracy' },
+        { step: 4, label: 'Sophia’s Marking' },
     ];
 
     // ══════════════════════════════════════════════════════════════════════════════════════════
@@ -2304,6 +2330,26 @@ window.WML = (function() {
         return null;
     }
 
+    // ⭐ v7.20.844 (#884-⑦, plan D14) — WHAT THE FINAL ASSESSMENT MARKS: the artifact of the step its entry NAMES
+    // (`assesses: 30` → final_draft). Never cwTrialSource's walk-back: Step 30 has no `draft` key, so the nearest draft
+    // behind the finale is Draft 7 — the story before the SPAG polish, whose errors AO6 would then mark.
+    // Returns { artifactKey, draftStep, draftNumber, draftLabel } (the cwTrialSource shape, so the page reuses its
+    // renderer) or null.
+    function cwFinalSource() {
+        const def = CW_STEPS.find(s => s.final);
+        if (!def || !def.assesses) return null;
+        const key = CW_ARTIFACT_MAP[def.assesses];
+        const src = CW_STEPS.find(s => s.step === def.assesses);
+        if (!key || !src) return null;
+        return { artifactKey: key, draftStep: def.assesses, draftNumber: null, draftLabel: src.label };
+    }
+    // The step the finale hands its target to (§33.9: feedback must be USED): the first numbered step after it — Step 31.
+    function cwFinalTargetStep() {
+        const i = CW_STEPS.findIndex(s => s.final);
+        for (let k = i + 1; i >= 0 && k < CW_STEPS.length; k++) if (CW_STEPS[k].step && CW_STEPS[k].phase !== 'unit') return CW_STEPS[k].step;
+        return null;
+    }
+
     // ⭐ v7.20.554 (#424 / PEDAGOGY §33.9) — WHICH TRIAL FEEDS A DRAFT ITS TARGET?
     // The mirror of cwTrialSource, DERIVED the same way: a draft opens on the target the student
     // wrote at the end of the trial immediately before it, so the answer is "walk back to the
@@ -3121,7 +3167,9 @@ window.WML = (function() {
                     // A step with no chat has no walk, so a walk sidebar would be a list of
                     // sub-steps nothing can ever tick — the §4d "screen that lies" shape.
                     sidebarSteps: noChat ? null : ((cwInUnit() && CW_UNIT_SIDEBAR_STEPS[stepKey]) || CW_SIDEBAR_STEPS[stepKey] || null),   // v7.20.746
-                    chatHeaderLabel: noChat ? null : ('Step ' + stepKey + ': ' + stepDef.label),
+                    // v7.20.844: only a NUMBERED step says "Step N:" — a trial or the final assessment has no number, and
+                    // "Step trial_6:" printed its machine key in the chat header (root §14). Its label already names it.
+                    chatHeaderLabel: noChat ? null : (stepDef.step ? ('Step ' + stepDef.step + ': ' + stepDef.label) : stepDef.label),
                 };
             }
         }
@@ -6856,6 +6904,7 @@ window.WML = (function() {
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
+        CW_FINAL_TASK, isCwFinalTask, cwTaskFor, cwFinalSource, cwFinalTargetStep,   // v7.20.844 (#884-⑦)
         CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, CW_TRIAL5_ELEMENTS, CW_TRIAL6_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN, CW_THEME_TONE_PLAN, CW_GENRE_PLAN,
         // Revision map
         REVISION_MAP,

@@ -20603,6 +20603,10 @@
                             // v7.20.841 (#884-⑤): Trial 6 runs the same walk — it owns chat-clear the same way.
                             clearWalkResume();
                             setTimeout(() => { _cwTrial6Ctl.reset(); _cwTrial6Ctl.forceStart(); }, 200);
+                        } else if (WML.isCwFinalTask(state.task)) {
+                            // v7.20.844 (#884-⑦): the final assessment owns chat-clear too — and a half-climbed ladder goes with it.
+                            clearWalkResume();
+                            setTimeout(() => { _examinerLadderCtl.reset(); _cwFinalCtl.reset(); _cwFinalCtl.forceStart(); }, 200);
                         } else if (state.task === 'cw_step_91') {
                             // v7.20.776: weekend lesson 11 (Mark It Again) runs Trial 1's walk — it owns chat-clear the same way.
                             clearWalkResume();
@@ -21540,7 +21544,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_trial_5: _cwTrial5Ctl, cw_trial_6: _cwTrial6Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_trial_5: _cwTrial5Ctl, cw_trial_6: _cwTrial6Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl, [WML.CW_FINAL_TASK]: _cwFinalCtl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -21554,7 +21558,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_trial_5: _cwTrial5Ctl, cw_trial_6: _cwTrial6Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_trial_5: _cwTrial5Ctl, cw_trial_6: _cwTrial6Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl, [WML.CW_FINAL_TASK]: _cwFinalCtl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -21767,7 +21771,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_trial_5: _cwTrial5Ctl, cw_trial_6: _cwTrial6Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_trial_5: _cwTrial5Ctl, cw_trial_6: _cwTrial6Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl, [WML.CW_FINAL_TASK]: _cwFinalCtl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -21903,6 +21907,11 @@
             // v7.20.841 (#884-⑤): Trial 6 — the same walk, its own instance.
             if (state.task === 'cw_trial_6' && _cwTrial6Ctl.active && _inboundIsAnswer) {
                 await _cwTrial6Ctl.handleTurn(msg);
+                return;
+            }
+            // v7.20.844 (#884-⑦): the final assessment — its own walk (a ladder climb is claimed by the ladder arm above).
+            if (WML.isCwFinalTask(state.task) && _cwFinalCtl.active && _inboundIsAnswer) {
+                await _cwFinalCtl.handleTurn(msg);
                 return;
             }
             // v7.20.776: weekend lesson 11 (Mark It Again) — the same walk, on its own page.
@@ -33707,6 +33716,10 @@
             // The host's contract, set by open(). `walkId` namespaces the answer slot and the
             // sidecar so two hosts can never file into each other's ask.
             let cfg = null;
+            // ⭐ v7.20.844 (#884-⑦): a host's hand-back that SURVIVES A RELOAD. `cfg.onDone` is a function, so it is lost
+            // in the sidecar's JSON; a climb resumed after a reload would finish with nobody to hand back to (§4d: a dead
+            // screen). A host registers here once, by walkId; the ladder calls it when cfg.onDone is gone.
+            const _ladderHostResumers = {};
             // The climb state. Never trusted from the sidecar alone — posOf() re-derives it from
             // the document, because the document survives a reload and a counter does not.
             let st = null;
@@ -33838,6 +33851,11 @@
             function orientationChunks() {
                 const s = scheme();
                 const n = s ? engine().rungs(s).length : 4;
+                // v7.20.844 (#884-⑦): a host that has ALREADY taught the method (the CW final assessment teaches it once
+                // for both objectives) opens each ladder on its first line only — three chunks twice is the wall (§4b).
+                if (isBestFit() && cfg && cfg.orientation === 'short') {
+                    return ['Now you mark your own writing for **' + aoName() + '**, the way a real examiner does — against the exam board’s own words.'];
+                }
                 if (isBestFit()) {
                     return [
                         'Now you mark your own writing for **' + aoName() + '**, the way a real examiner does — against the exam board’s own words.',
@@ -34009,6 +34027,22 @@
                 const level = engine().rungs(s).filter(function (l) { return l.level === st.stoppedAt; })[0];
                 const res = level ? engine().resolve(s, { levelNumber: level.level, bandName: st.bandName, placement: st.placement }) : null;
                 _walkSlot.clear(WALK);
+                // ⭐ v7.20.844 (#884-⑦): a host that draws its OWN wrap (the CW final assessment) gets the result and the
+                // screen. The finished climb's sidecar is cleared FIRST, so a reload can never resurrect it over the host's
+                // next stage; a host whose onDone did not survive a reload is reached through its registered resumer.
+                // Every other host (Language, Literature) never sets hostOwnsWrap and keeps the wrap below, unchanged.
+                if (cfg && cfg.hostOwnsWrap) {
+                    const hostCfg = cfg;
+                    done = true; active = false; clearPersist();
+                    const back = typeof hostCfg.onDone === 'function' ? hostCfg.onDone : _ladderHostResumers[hostCfg.walkId];
+                    if (typeof back === 'function') {
+                        try { back(res, JSON.parse(JSON.stringify(st))); } catch (e) { console.warn('WML ladder: host hand-back threw —', e && e.message); }
+                    } else {
+                        console.warn('WML ladder: a host-owned climb finished with no host to hand back to (' + hostCfg.walkId + ').');
+                    }
+                    resetSend();
+                    return;
+                }
                 _cwReplay(function () {
                     aiBubble('**Your own mark for ' + aoName() + ': ' + (res ? res.mark + ' / ' + res.outOf : '—') + '**\n\n'
                         + 'It is in your document, with your reason, and you can change it at any time.');
@@ -34231,10 +34265,20 @@
                 serveCurrent();
                 return true;
             }
+            // v7.20.844 (#884-⑦): is a climb for THIS host part-way through in this browser? Read from the sidecar, not
+            // from `active`, so a host's resume does not depend on whether the boot has resumed the ladder yet.
+            function inProgressFor(walkId) {
+                try {
+                    const raw = localStorage.getItem(lsKey());
+                    const d = raw ? JSON.parse(raw) : null;
+                    return !!(d && d.cfg && d.cfg.walkId === walkId && !d.done);
+                } catch (e) { return false; }
+            }
+            function registerHost(walkId, fn) { if (walkId && typeof fn === 'function') _ladderHostResumers[walkId] = fn; }
 
             return {
                 handleTurn, onReply: function () { /* zero-API walk: no markers to detect */ },
-                reset, tryResume, nudge, open,
+                reset, tryResume, nudge, open, inProgressFor, registerHost,
                 forceStart: function () { return false; },   // only a host opens this walk
                 atStart: function () { return !done; },
                 get active() { return active; },
@@ -37662,6 +37706,736 @@
         const _cwTrial5Ctl = _cwTrialCtlFactory(5);   // v7.20.837 (#884-④): thematic clarity
         const _cwTrial6Ctl = _cwTrialCtlFactory(6);   // v7.20.841 (#884-⑤): genre conventions
 
+        // ══════════════════════════════════════════════════════════════════════════════════════════════════════════
+        // ⭐⭐ v7.20.844 (FIXLIST #884-⑦, PEDAGOGY §33.6, CW-FINAL-ASSESSMENT-PLAN-2026-10-12.md) — THE FINAL ASSESSMENT.
+        //
+        // The full 40-mark marking, ONCE, on the finished story (Step 30's final_draft — NAMED, never walked back to, D14).
+        //  · The student marks first (PEDAGOGY §19): Content and Organisation, then Technical Accuracy, each climbed through
+        //    the SHARED examiner ladder (_examinerLadderCtl) on the exam's own descriptors, word for word, best fit (§35 —
+        //    AQA's own marking steps say the same, research/sources/aqa-8700-1-sms-2026.txt:83–101). Zero API.
+        //  · Sophia then marks the same story in ONE call. Her level calls go through the SAME resolver the student's climb
+        //    did (WML_EXAMINER_LADDER.resolve), so the two marks compare like with like; the gap is the lesson (§33.8), and
+        //    the ring gets HER mark. A number in her prose changes nothing (§33.4).
+        //  · The full assessment shape (§33.15): grade goal first · calibration ±3 on /40 · How am I going? / Where to
+        //    next? · the grade quiet, last (§33.9) · it ENDS on the student's own target, which Step 31 opens with.
+        //  · DOCUMENT-DRIVEN, like the Language host: the rows are the state, so a reload or a new device lands on the
+        //    stage the document says. A climb part-way through belongs to the ladder, which hands back through
+        //    registerHost when its onDone did not survive the reload.
+        // ══════════════════════════════════════════════════════════════════════════════════════════════════════════
+        const CW_FINAL_LADDER_WALK = 'cw-final-ladder';
+        const _cwFinalCtl = (function () {
+            let active = false, pending = false, done = false;
+            let emitted = 0;
+            let st = null;
+            const WALK = 'cwfinal';
+            const GRADE_GOALS = [7, 8, 9];
+            // AQA Language Paper 1's own tolerance on /40 (the trials use ±2, which is this scaled to /30).
+            const CALIB_TOLERANCE = 3;
+            // The four sidebar rows (CW_SIDEBAR_STEPS.final_assessment), ticked from code like every other walk's.
+            const SUBSTEPS = { 1: 'Read Your Story', 2: 'Content and Organisation', 3: 'Technical Accuracy', 4: 'Sophia’s Marking' };
+            // What each objective is about, in plain words — read from the board's own two strands (Content: communication,
+            // tone and register, vocabulary and crafted language; Organisation: structure, ideas, linked paragraphs) and its
+            // accuracy list (demarcation, punctuation, sentence forms, Standard English, spelling, vocabulary). The
+            // descriptors themselves are the board's, word for word, and the ladder serves them.
+            const AO_WHAT = {
+                ao5: 'how well your story communicates (its tone, its vocabulary and the way its language is crafted) and how it is organised (its structure, its ideas and how its paragraphs link).',
+                ao6: 'your sentences, punctuation, grammar, spelling and vocabulary, across the whole story.',
+            };
+
+            function aos() { return CW_FINAL_AOS; }
+            function fid(part) { return _cwFinalFid(part); }
+            function ladderFids(ao) {
+                return { level: fid(ao.id + '-level'), met: fid(ao.id + '-met'), mark: fid(ao.id + '-mark'), reason: fid(ao.id + '-reason') };
+            }
+            function engine() { return (typeof window !== 'undefined' && window.WML_EXAMINER_LADDER) || null; }
+            function scheme(ao) {
+                try {
+                    const all = (typeof window !== 'undefined' && window.WML_MARK_SCHEMES) || null;
+                    return (all && all[ao.schemeKey]) || null;
+                } catch (e) { return null; }
+            }
+            function maxOf(ao) { const s = scheme(ao); return (s && typeof s.maxMarks === 'number') ? s.maxMarks : 0; }
+            function totalMax() { return aos().reduce(function (a, ao) { return a + maxOf(ao); }, 0); }
+
+            const lsKey = () => {
+                try { return (typeof CANVAS_SAVE_KEY === 'function' ? CANVAS_SAVE_KEY() : 'cwfinal') + '_cwfinal'; }
+                catch (e) { return 'swml_cwfinal'; }
+            };
+            function persist() { try { localStorage.setItem(lsKey(), JSON.stringify({ st: st, done: done })); } catch (e) {} }
+            function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
+            function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
+
+            function aiBubble(plain) {
+                emitted++;
+                addChatMessage(formatAI(plain), 'ai', plain);
+                if (_cwIsReplay()) return;   // a resume re-serve is DRAWN, never saved (§4c.7)
+                WML.recordTurn(canvasChatHistory, { role: 'assistant', content: plain }, { durable: true, why: 'a real turn Sophia took' });
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function userTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student sent it — it happened, it stays' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function pickTurn(text) {
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: text }, { durable: true, why: 'the student tapped it — a pick is a real user turn' });
+                addChatMessage(text, 'user');
+                saveCanvasChat(canvasChatHistory, canvasChatId);
+            }
+            function docRow(f) {
+                let out = '';
+                try {
+                    if (canvasEditor) canvasEditor.state.doc.descendants(function (node) {
+                        if (out) return false;
+                        if ((node.type.name === 'outlineRow' || node.type.name === 'inputField') && node.attrs && node.attrs.fieldId === f) {
+                            out = (typeof _cwNodeText === 'function' ? _cwNodeText(node) : (node.textContent || '')).trim();
+                        }
+                        return true;
+                    });
+                } catch (err) {}
+                return out;
+            }
+            function writeRow(f, text, opts) {
+                if (!f || !text) return false;
+                try {
+                    const wrote = _writeOutlineRowField(f, text, opts || { replace: true });
+                    if (wrote && typeof saveCanvasContent === 'function') saveCanvasContent();
+                    return wrote;
+                } catch (e) {
+                    console.warn('WML final: write failed (non-fatal) for ' + f + ' —', e && e.message);
+                    return false;
+                }
+            }
+            function progress(sub) {
+                try { if (sub > 0) applyCwSubstepProgress({ stepNum: 0, substepNum: sub, name: SUBSTEPS[sub] }); } catch (e) {}
+            }
+
+            // ── chips (a PRIVATE copy, per the walk contract) ──────────────────────────────────────────────────────
+            function chipBar(options, onPick) {
+                const bubble = chatMessages.lastElementChild;
+                const bc = bubble ? (bubble.querySelector('.swml-bubble-content') || bubble) : null;
+                if (!bc) return false;
+                if (bc.querySelector('.' + BUBBLE_CONTROL_KINDS.choice)) return false;
+                const bar = el('div', { className: 'swml-quick-actions ' + BUBBLE_CONTROL_KINDS.choice });
+                options.forEach(function (opt) {
+                    const label = (opt && typeof opt === 'object') ? opt.label : opt;
+                    bar.appendChild(el('button', {
+                        className: 'swml-quick-btn', textContent: label,
+                        onClick: function () { bar.remove(); onPick(label); },
+                    }));
+                });
+                bc.appendChild(bar);
+                return true;
+            }
+            function chipBarOrRetry(options, onPick, retryText) {
+                if (chipBar(options, onPick)) return true;
+                _cwReplay(function () { aiBubble(retryText); });
+                return chipBar(options, onPick);
+            }
+
+            // ── what the document says ─────────────────────────────────────────────────────────────────────────────
+            function markOfRow(text) {
+                const m = /(\d+(?:\.\d+)?)\s*\/\s*(\d+)/.exec(String(text || ''));
+                return m ? { got: parseFloat(m[1]), max: parseInt(m[2], 10) } : null;
+            }
+            function selfMark(ao) { return markOfRow(docRow(ladderFids(ao).mark)); }
+            function selfTotal() { return aos().reduce(function (a, ao) { const m = selfMark(ao); return a + (m ? m.got : 0); }, 0); }
+            // THE STAGE, from the rows alone — the only authority a new device has.
+            function position() {
+                if (docRow(fid('mark'))) return docRow(fid('target')) ? 'done' : 'target';
+                const goal = docRow(fid('goal'));
+                const next = aos().filter(function (ao) { return !selfMark(ao); })[0];
+                if (!goal && next === aos()[0]) return 'start';
+                if (!goal) return 'goal';
+                if (next) return 'ladder:' + next.id;
+                return 'ready';
+            }
+            function selfSummary() {
+                return aos().map(function (ao) {
+                    const f = ladderFids(ao);
+                    const lvl = docRow(f.level), mark = docRow(f.mark), why = docRow(f.reason), met = docRow(f.met);
+                    return '- ' + ao.name + ' (' + ao.code + '): ' + (lvl || '—') + ' · ' + (mark || '—')
+                        + (met ? ' · criteria met: ' + met.replace(/\n+/g, '; ') : '') + (why ? ' — "' + why + '"' : '');
+                }).join('\n');
+            }
+
+            // ── the walk ───────────────────────────────────────────────────────────────────────────────────────────
+            function orientationChunks() {
+                const tm = totalMax();
+                const parts = aos().map(function (ao) { const m = maxOf(ao); return '**' + ao.name + '** (usually called **' + ao.code + '**' + (m ? ', out of ' + m : '') + ')'; });
+                return [
+                    'This is the **final assessment**: the whole marking, once, on your finished story. Everything you built across seven drafts is in it, and your story is on the page beside this chat.',
+                    'The exam marks a story on two things: ' + parts.join(' and ') + (tm ? ', which together make **' + tm + '**.' : '.')
+                        + ' The first is how well your story communicates and how it is organised. The second is your sentences, punctuation, grammar, spelling and vocabulary. (Edexcel IGCSE numbers them AO4 and AO5, and Cambridge IGCSE puts accuracy inside its one writing objective.)',
+                    'You mark it **the way a real examiner marks**. You read the exam board’s own level descriptors, word for word, starting at **Level 1**, and at each level you ask: *is my story still better than this description?* Where the description **fits**, you stop, and decide where inside that level your mark sits.',
+                    'Be honest rather than kind. An honest mark tells you what to take into the exam; a hopeful one tells you nothing.\n\nWhen you have marked both, I will read your story and mark it myself in exactly the same way. The places where we disagree are the most useful thing in this lesson.',
+                ];
+            }
+            function serveGoalAsk(opts) {
+                st = st || {};
+                st.phase = 'goal';
+                persist();
+                _walkSlot.clear(WALK);             // a chip pick, never typed
+                const text = '**Before we begin: what grade are you aiming for in creative writing?**\n\n'
+                    + 'Say it honestly. It shapes how I talk to you at the end, and it goes in your document.';
+                const attach = function () {
+                    chipBarOrRetry(GRADE_GOALS.map(function (g) { return 'Grade ' + g; }), onGoalPick, '**Which grade are you aiming for?**');
+                    resetSend();
+                };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            function onGoalPick(label) {
+                const g = parseInt(String(label).replace(/\D/g, ''), 10);
+                if (GRADE_GOALS.indexOf(g) === -1) return;
+                st = st || {};
+                st.gradeGoal = g;
+                pickTurn('Grade ' + g);
+                writeRow(fid('goal'), 'Grade ' + g, { replace: true });
+                openLadder(aos()[0]);
+            }
+            // Between the two objectives, and on any resume onto an unmarked one: a plain-words line and ONE chip. The
+            // ladder is never opened unasked — the student taps in, so a reload never starts a climb behind their back.
+            function serveAoPrompt(ao, opts) {
+                st = st || {};
+                st.phase = 'prompt:' + ao.id;
+                persist();
+                _walkSlot.clear(WALK);
+                const m = maxOf(ao);
+                const first = ao === aos()[0];
+                const text = (first ? '**' + ao.name + '** first' : '**Next: ' + ao.name + '**') + (m ? ', out of ' + m : '') + '. It is about ' + AO_WHAT[ao.id]
+                    + (first ? '' : '\n\nYou can stop here and come back. This lesson opens exactly here.');
+                const label = 'Mark ' + ao.name + ' →';
+                const attach = function () {
+                    chipBarOrRetry([label], function () { pickTurn(label); openLadder(ao); }, '**Ready to mark ' + ao.name + '?**');
+                    resetSend();
+                };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            function openLadder(ao) {
+                st = st || {};
+                st.phase = 'ladder:' + ao.id;
+                st.opened = ao.id;
+                persist();
+                progress(aos().indexOf(ao) + 1);
+                const opened = _examinerLadderCtl.open({
+                    schemeKey: ao.schemeKey, aoName: ao.name + ' (' + ao.code + ')', walkId: CW_FINAL_LADDER_WALK,
+                    regime: 'bestfit', orientation: 'short', hostOwnsWrap: true,
+                    fids: ladderFids(ao),
+                    onDone: function () { afterLadder(); },
+                });
+                if (!opened) {
+                    // The ladder has already told the student, in words; a way forward goes with it (§4d).
+                    chipBarOrRetry(['Try again →'], function () { pickTurn('Try again →'); openLadder(ao); }, '**Try again when you are ready.**');
+                    resetSend();
+                }
+            }
+            // A climb finished — called by the ladder (its onDone), or through registerHost after a reload.
+            function afterLadder() {
+                st = st || {};
+                let i = aos().findIndex(function (a) { return a.id === st.opened; });
+                if (i < 0) {   // no record of which climb this was: the document says which objectives are marked
+                    const firstOpen = aos().findIndex(function (a) { return !selfMark(a); });
+                    i = firstOpen < 0 ? aos().length - 1 : firstOpen - 1;
+                }
+                const finished = aos()[i] || null;
+                const next = aos()[i + 1] || null;
+                const fm = finished ? selfMark(finished) : null;
+                if (finished && !fm) console.warn('WML final: the ' + finished.id + ' climb finished but its mark row is empty — asking again.');
+                if (finished && fm) aiBubble('You marked **' + finished.name + '** at **' + fm.got + ' / ' + fm.max + '**. It is in your document, with your reason.');
+                st.opened = null;
+                progress(i + 2);
+                if (finished && !fm) { serveAoPrompt(finished); return; }
+                if (next) { serveAoPrompt(next); return; }
+                serveMarking();
+            }
+            function serveReady() {
+                st = st || {};
+                st.phase = 'ready';
+                persist();
+                _walkSlot.clear(WALK);
+                _cwReplay(function () { aiBubble('You have marked both objectives. When you are ready, I will read your story and make my own level calls.'); });
+                chipBarOrRetry(['Give me my marks →'], function () { pickTurn('Give me my marks →'); serveMarking(); }, '**You have marked both objectives.**');
+                resetSend();
+            }
+
+            // ── the ONE API turn: Sophia marks what they have just marked ────────────────────────────────────────────
+            function schemeText(ao) {
+                const s = scheme(ao), E = engine();
+                if (!s || !E) return '(the descriptors could not be loaded)';
+                const out = [ao.name + ' (' + ao.code + '), out of ' + s.maxMarks + ':'];
+                E.rungs(s).slice().reverse().forEach(function (l) {
+                    const bands = E.hasBands(l) ? E.bandsOf(l) : [{ name: 'Level ' + l.level, min: l.min, max: l.max, strands: (l.bands && l.bands[0] && l.bands[0].strands) || [] }];
+                    bands.forEach(function (b) {
+                        out.push(b.name + ' (' + b.min + '–' + b.max + ' marks):');
+                        E.descriptorsOf({ bands: [b] }).forEach(function (d) { out.push('  - ' + (d.strand ? d.strand + ': ' : '') + d.text); });
+                    });
+                });
+                return out.join('\n');
+            }
+            function serveMarking() {
+                st = st || {};
+                st.phase = 'marking';
+                persist();
+                _walkSlot.clear(WALK);
+                aiBubble('That is both objectives marked. Here is your own marking:\n\n' + selfSummary()
+                    + '\n\nNow I will read your story and make my own level calls, in exactly the same way. One moment.');
+                const ctx = '[THE FINAL ASSESSMENT. The student has just marked their own finished story the way an examiner '
+                    + 'marks: for each of the two objectives below they read the exam board’s level descriptors from Level 1 '
+                    + 'upwards (best fit: "is the story still better than this description?"), stopped where the description '
+                    + 'fits, and placed the mark inside that level. Their story is in the document above, under "Your Draft". '
+                    + 'Do THREE things, in this order and nothing else:\n'
+                    + '1. Your own call on each objective, Content and Organisation first, then Technical Accuracy, one short '
+                    + 'paragraph each: quote a few of the student’s own words and say, in words, which level their story reaches, '
+                    + 'for Content and Organisation which half of that level (upper or lower), and where inside it (top, middle '
+                    + 'or bottom). Judge the STORY against the descriptors below, not their reasons.\n'
+                    + '2. The ONE thing that would raise their mark most in the exam, and what to do about it.\n'
+                    + '3. End your reply with exactly these six marker lines, and nothing else on those lines:\n'
+                    + '@FINAL_LEVEL[ao5=<level>|<upper|lower>|<top|middle|bottom>] one sentence for the student’s document, quoting two or three of their own words\n'
+                    + '@FINAL_EXAMPLE[ao5] two or three sentences: a moment of THEIR story rewritten one level higher (their names, setting and voice; never a new story)\n'
+                    + '@FINAL_LEVEL[ao6=<level>|<top|middle|bottom>] one sentence, quoting two or three of their own words\n'
+                    + '@FINAL_EXAMPLE[ao6] two of their actual sentences, corrected\n'
+                    + '@FINAL_STRENGTH one line: what is working hardest in this story, and why\n'
+                    + '@FINAL_PRIORITY one line: the one thing to do to raise the mark in the exam\n'
+                    + '<level> is 1, 2, 3 or 4, the level whose description fits; or 0 when nothing in the story is creditable '
+                    + '(then write only @FINAL_LEVEL[ao5=0] or @FINAL_LEVEL[ao6=0]). Both level lines are required. Do NOT give a '
+                    + 'mark, a score, a number out of ' + aos().map(maxOf).join(', ') + ' or ' + totalMax() + ', a percentage or a grade '
+                    + 'anywhere in your prose: the marks are worked out from your level calls by the system, in exactly the way '
+                    + 'the student’s were. Do NOT rewrite their story.]'
+                    + '\n\nWHAT THE STUDENT DECIDED (their level, the criteria they said were met, their mark, their reason):\n' + selfSummary()
+                    + '\n\nTHE EXAM’S LEVEL DESCRIPTORS, word for word (judge against these and nothing else):\n'
+                    + aos().map(schemeText).join('\n\n');
+                WML.recordTurn(canvasChatHistory, { role: 'user', content: ctx, hidden: true }, { durable: true, why: 'hidden context the model needs on every later turn' });
+                active = false; pending = true;
+                armWalkResume('cwfinal-marking', function (reply, meta) {
+                    pending = false;
+                    onMarkingReply(reply, meta);
+                }, { timeoutMs: 90000 });
+                canvasSilentSend = true;
+                chatTextarea.value = 'I have marked both objectives. Please read my story and make your own level calls.';
+                sendCanvasMessage();
+            }
+
+            // The model omitting or mangling a marker is a NAMED failure mode, engineered out (§11): a mark is filed only
+            // when BOTH level calls parse and resolve. Comments, examples, strength and priority are best-effort.
+            function parseReply(reply) {
+                const src = String(reply || '');
+                const out = { levels: {}, comments: {}, examples: {}, strength: '', priority: '' };
+                const re = /@FINAL_LEVEL\s*\[\s*(ao5|ao6)\s*=\s*([0-4])\s*(?:\|\s*(upper|lower)\s*)?(?:\|\s*(top|middle|bottom)\s*)?\][^\S\n]*([^\n]*)/gi;
+                let m;
+                while ((m = re.exec(src)) !== null) {
+                    const id = m[1].toLowerCase();
+                    out.levels[id] = { level: parseInt(m[2], 10), half: m[3] ? m[3].toLowerCase() : null, placement: m[4] ? m[4].toLowerCase() : null };
+                    if ((m[5] || '').trim()) out.comments[id] = m[5].trim();
+                }
+                const rx = /@FINAL_EXAMPLE\s*\[\s*(ao5|ao6)\s*\][^\S\n]*([^\n]*)/gi;
+                while ((m = rx.exec(src)) !== null) { if ((m[2] || '').trim()) out.examples[m[1].toLowerCase()] = m[2].trim(); }
+                const one = function (name) {
+                    const mm = new RegExp('@FINAL_' + name + '(?:\\s*\\[[^\\]]*\\])?[^\\S\\n]*([^\\n]*)', 'i').exec(src);
+                    return mm ? (mm[1] || '').trim() : '';
+                };
+                out.strength = one('STRENGTH');
+                out.priority = one('PRIORITY');
+                return out;
+            }
+            // Her level call → a mark, through the ONE resolver the student's climb used. null = not a valid call.
+            function resolveCall(ao, v) {
+                const s = scheme(ao), E = engine();
+                if (!s || !E || !v) return null;
+                if (v.level === 0) return { mark: 0, outOf: s.maxMarks, level: 0, band: null, placement: null };
+                const lvl = E.rungs(s).filter(function (l) { return l.level === v.level; })[0];
+                if (!lvl) return null;
+                let bandName = null;
+                if (E.hasBands(lvl)) {
+                    if (!v.half) return null;
+                    const b = E.bandsOf(lvl).filter(function (x) { return new RegExp('^' + v.half, 'i').test(String(x.name || '')); })[0];
+                    if (!b) return null;
+                    bandName = b.name;
+                }
+                if (!v.placement) return null;
+                return E.resolve(s, { levelNumber: v.level, bandName: bandName, placement: v.placement });
+            }
+            function callWords(r) {
+                if (!r) return '';
+                if (r.level === 0) return 'Nothing creditable yet — 0 / ' + r.outOf;
+                return 'Level ' + r.level + (r.band ? ' · ' + r.band : '') + ' · ' + r.placement + ' of the ' + (r.band ? 'band' : 'level') + ' — ' + r.mark + ' / ' + r.outOf;
+            }
+            function onMarkingReply(reply, meta) {
+                if (!reply || (meta && meta.timedOut)) {
+                    console.warn('WML final: the marking call failed or timed out — honest message + retry chip served.');
+                    active = true; persist();
+                    _cwReplay(function () {
+                        aiBubble('I could not read your story just now. That is my end, not yours: **your own marking is saved** in your document, so nothing is lost. Try again when you are ready.');
+                    });
+                    chipBarOrRetry(['Try again →'], function () { pickTurn('Try again →'); serveMarking(); }, '**Your marking is saved.**');
+                    resetSend();
+                    return;
+                }
+                const p = parseReply(reply);
+                const calls = {};
+                aos().forEach(function (ao) { calls[ao.id] = resolveCall(ao, p.levels[ao.id]); });
+                if (!aos().every(function (ao) { return !!calls[ao.id]; })) {
+                    // FAIL LOUD, to the student, and never file half a mark.
+                    console.warn('WML final: level calls did not resolve for both objectives — ' + JSON.stringify(p.levels) + ' — no mark filed.');
+                    active = true; persist();
+                    chipBarOrRetry(['Give me my marks →'], function () { pickTurn('Give me my marks →'); serveMarking(); },
+                        '**I gave you my thoughts, but I did not finish the marking properly. Tap below and I will do the marks again.**');
+                    resetSend();
+                    return;
+                }
+                let got = 0;
+                aos().forEach(function (ao) { got += calls[ao.id].mark; });
+                const max = totalMax();
+                const pct = max ? Math.round((got / max) * 100) : 0;
+                st = st || {};
+                st.sophia = {};
+                aos().forEach(function (ao) { st.sophia[ao.id] = calls[ao.id].mark; });
+                st.sophiaComments = p.comments;
+                st.sophiaExamples = p.examples;
+                st.mark = { got: got, max: max, pct: pct, grade: _ladderGrade(pct) };
+                st.selfTotal = selfTotal();
+                done = false; active = true;
+                // Her calls land in the DOCUMENT, one row per objective (locked rows), with her example.
+                aos().forEach(function (ao) {
+                    const c = p.comments[ao.id] || '', x = p.examples[ao.id] || '';
+                    writeRow(fid('fb-' + ao.id), callWords(calls[ao.id]) + (c ? ' — ' + c : '') + (x ? ' For example: “' + x + '”' : ''), { replace: true });
+                });
+                // Strength / priority: her lines when they parsed; derived from her own calls when not (the higher and the
+                // lower share of its objective) — her judgement either way, and the miss is loud in the console.
+                const share = function (ao) { return maxOf(ao) ? calls[ao.id].mark / maxOf(ao) : 0; };
+                const byShare = aos().slice().sort(function (a, b) { return share(b) - share(a); });
+                st.strengthLine = p.strength || (byShare[0].name + ' — her full note is in the chat.');
+                st.priorityLine = p.priority || (byShare[byShare.length - 1].name + ' — her full note is in the chat.');
+                if (!p.strength) console.warn('WML final: no @FINAL_STRENGTH line — derived from her level calls.');
+                if (!p.priority) console.warn('WML final: no @FINAL_PRIORITY line — derived from her level calls.');
+                writeRow(fid('strength'), st.strengthLine, { replace: true });
+                writeRow(fid('priority'), st.priorityLine, { replace: true });
+                writeRow(fid('mark'), 'Grade ' + st.mark.grade + ' (' + got + '/' + max + ' · ' + pct + '%) for the final assessment', { replace: true });
+                const gaps = gapRows();
+                writeRow(fid('gap'), gaps.length
+                    ? gaps.map(function (g) { return g.ao.name + ': you ' + g.a + ' / ' + g.max + ', Sophia ' + g.b + ' / ' + g.max; }).join(' | ')
+                    : 'You and Sophia gave the same mark for both objectives.', { replace: true });
+                persist();
+                publishScore();
+                progress(4);
+                // ⭐ REVEAL ORDER (PEDAGOGY §33.9): the disagreements and the words lead; the grade is a quiet closing line.
+                _cwReplay(function () {
+                    aiBubble((gaps.length
+                        ? 'Where we saw it differently:\n\n' + gaps.map(function (g) {
+                            const x = (st.sophiaExamples || {})[g.ao.id];
+                            return '- **' + g.ao.name + '**: you said *' + g.a + ' / ' + g.max + '*, I said *' + g.b + ' / ' + g.max + '*.'
+                                + (x ? '\n  ↳ *One level higher, it could read:* “' + x + '”' : '');
+                        }).join('\n')
+                            + '\n\nThose are the places worth looking at again: not because I am right, but because two readers disagreeing about your story is exactly where the useful question is.'
+                        : 'We gave the same mark for both objectives, which means you are already reading your own writing the way an examiner does. That is the harder half of this.')
+                        + '\n\n*For the record, the arithmetic on my level calls: ' + got + ' out of ' + max + ', Grade ' + st.mark.grade
+                        + '. It is in your document; the sentences above are the part that matters for the exam.*');
+                });
+                saveResult({ withDelta: true });
+                serveCalibration();
+            }
+            function gapRows() {
+                return aos().map(function (ao) {
+                    const sm = selfMark(ao);
+                    return { ao: ao, a: sm ? sm.got : 0, b: (st.sophia || {})[ao.id] || 0, max: maxOf(ao) };
+                }).filter(function (g) { return g.a !== g.b; })
+                    .sort(function (x, y) { return Math.abs(y.a - y.b) - Math.abs(x.a - x.b); });
+            }
+
+            // ── #437's spine: calibration · How am I going? / Where to next? · the target (all code-served) ─────────────
+            function calibDelta() { return (st.selfTotal || 0) - ((st.mark && st.mark.got) || 0); }
+            function serveCalibration(opts) {
+                st.phase = 'calib';
+                persist();
+                _walkSlot.clear(WALK);
+                const d = calibDelta();
+                const self = st.selfTotal || 0, hers = (st.mark && st.mark.got) || 0, max = totalMax();
+                if (Math.abs(d) <= CALIB_TOLERANCE || !gapRows().length) {
+                    const text = '**Calibration check.** You marked yourself **' + self + ' out of ' + max + '**; I marked **' + hers
+                        + '**, within ' + CALIB_TOLERANCE + ' marks of each other. That is a well-calibrated examiner’s eye, and it is a skill in itself: you can already see your own writing the way a marker will.';
+                    serveCwChunks([text], { emit: aiBubble, onDone: function () { serveSummary(); }, deferFirst: !!(opts && opts.defer) });
+                    return;
+                }
+                const text = '**Calibration check.** You marked yourself **' + self + ' out of ' + max + '**; I marked **' + hers + '**: '
+                    + '**' + Math.abs(d) + ' marks ' + (d > 0 ? 'higher' : 'lower') + '** than me. Examiners call that ' + (d > 0 ? 'over' : 'under') + '-marking, and '
+                    + 'the useful question is not who is right but **which objective drove the gap**. Which do you think it was?';
+                const attach = function () {
+                    chipBarOrRetry(gapRows().map(function (g) { return g.ao.name; }).concat(['Something else']), onCalibPick, '**Which objective drove the gap?**');
+                    resetSend();
+                };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            function onCalibPick(label) {
+                pickTurn(label);
+                st.calibPick = label;
+                const d = calibDelta();
+                const habit = d > 0
+                    ? 'claim a level only when you can point at the line in your story that proves it'
+                    : 'give yourself the mark the evidence earns: modesty is not accuracy';
+                const hit = gapRows().filter(function (g) { return g.ao.name === label; })[0];
+                let text;
+                if (hit) {
+                    const c = (st.sophiaComments || {})[hit.ao.id] || '';
+                    const x = (st.sophiaExamples || {})[hit.ao.id] || '';
+                    text = '**' + hit.ao.name + '**: you said *' + hit.a + ' / ' + hit.max + '*, I said *' + hit.b + ' / ' + hit.max + '*.'
+                        + (c ? '\n\n' + c : '') + (x ? '\n\n*One level higher, it could read:* “' + x + '”' : '')
+                        + '\n\nThe habit to carry into the exam: **' + habit + '.**';
+                } else {
+                    text = 'Fair: the gap does not always sit in one place. The habit to carry into the exam is still the same: **' + habit + '.**';
+                }
+                persist();
+                serveCwChunks([text], { emit: aiBubble, onDone: function () { serveSummary(); } });
+            }
+            function serveSummary(opts) {
+                st.phase = 'summary';
+                persist();
+                _walkSlot.clear(WALK);
+                const m = st.mark || {};
+                const goal = st.gradeGoal || parseInt(String(docRow(fid('goal'))).replace(/\D/g, ''), 10) || null;
+                const d = calibDelta();
+                let going = '**How am I going?**\n\n**Grade ' + m.grade + '** in the final assessment: ' + m.got + ' out of ' + m.max
+                    + ' (' + aos().map(function (ao) { return ao.name.toLowerCase() + ' ' + ((st.sophia || {})[ao.id] || 0) + '/' + maxOf(ao); }).join(', ') + ').';
+                if (goal) {
+                    going += m.grade >= goal
+                        ? ' Against your goal of **Grade ' + goal + '**: you are there. Hold it in the exam.'
+                        : ' Against your goal of **Grade ' + goal + '**: the gap is ' + (goal - m.grade) + ' grade' + (goal - m.grade === 1 ? '' : 's') + ', and this marking shows exactly where it lives.';
+                }
+                if (st.strengthLine) going += '\n\n**Working hardest for you:** ' + st.strengthLine;
+                going += '\n\n**Your marking:** ' + (Math.abs(d) <= CALIB_TOLERANCE
+                    ? 'within ' + CALIB_TOLERANCE + ' marks of mine, well calibrated.'
+                    : Math.abs(d) + ' marks ' + (d > 0 ? 'above' : 'below') + ' mine' + (st.calibPick ? ', and you put that down to ' + st.calibPick.toLowerCase() : '') + '.');
+                const next = '**Where to next?**\n\n' + (st.priorityLine || 'Take the objective we disagreed on most and work on it first.')
+                    + '\n\nStep 31 is where you look back on the whole course, and it opens with your own target at the top of the page.';
+                serveCwChunks([going, next], { emit: aiBubble, onDone: function () { serveTargetAsk(); }, deferFirst: !!(opts && opts.defer) });
+            }
+            // ⭐ THE CLOSING ASK (§33.9 — feedback must be USED): the lesson ends on the student's own words, banked into
+            // the document and pinned at the top of Step 31 (tryFillCwFinalTarget).
+            function serveTargetAsk(opts) {
+                st = st || {};
+                st.phase = 'target';
+                persist();
+                _walkSlot.arm(WALK, fid('target'), { cycle: 'rewrite' });
+                const text = '**Last thing, and it matters most: your one target for the exam, in your own words.**\n\n'
+                    + 'Look at what we both found. In one sentence, say the single thing your story in the exam must do. '
+                    + 'It goes in your document, and it will be waiting at the top of Step 31.';
+                const attach = function () { resetSend(); };
+                if (opts && opts.defer) { serveCwChunks([text], { emit: aiBubble, onDone: attach, deferFirst: true }); return; }
+                aiBubble(text);
+                attach();
+            }
+            function onTarget(clean) {
+                st.target = clean;
+                writeRow(fid('target'), clean, { replace: true });
+                st.phase = 'done';
+                done = true; active = false;
+                persist();
+                publishScore();
+                saveResult({ withDelta: false });
+                aiBubble('That is your target for the exam. It is in your document, and it will be at the top of Step 31 when you open it. Mark the lesson complete when you are ready.');
+                chipBarOrRetry(['Change my answers →'], onChangeAnswers, '**Your target is filed.**');
+                resetSend();
+            }
+            function onChangeAnswers() {
+                pickTurn('Change my answers →');
+                st = { phase: 'redo', gradeGoal: st && st.gradeGoal };
+                done = false; active = true;
+                persist();
+                openLadder(aos()[0]);
+            }
+            function serveWrap() {
+                _walkSlot.clear(WALK);
+                const m = st && st.mark;
+                _cwReplay(function () {
+                    aiBubble(m
+                        ? 'This assessment is finished: **' + m.got + ' out of ' + m.max + ', Grade ' + m.grade + '**, all in your document'
+                            + (st.target ? ', with your target for the exam filed' : '') + '. You can mark it again whenever you want.'
+                        : 'Your marking is in your document. You can mark it again whenever you want.');
+                });
+                chipBarOrRetry(['Change my answers →'], onChangeAnswers, '**This assessment is finished.**');
+                resetSend();
+            }
+
+            // ── the ring and the project (Sophia's mark, §33.8) ──────────────────────────────────────────────────────
+            // The canvas-save score piggyback (#435) — the path that reaches student-data's session_records and the ring.
+            function publishScore() {
+                try {
+                    const m = st && st.mark;
+                    if (!m || m.max == null) { state.cwTrialScore = null; return; }
+                    state.cwTrialScore = { task: WML.CW_FINAL_TASK, projectId: state.cwProjectId || '', score: m.got, total: m.max, percentage: m.pct, grade: m.grade,
+                        strength_1: st.strengthLine || '', target_1: st.priorityLine || '', target_2: st.target || '' };
+                    if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                } catch (err) {}
+            }
+            // The project's trials list, as `trial: 'final', finale: true` — never stamped 1–6, so trial_completion and
+            // the new-story gate cannot mistake it for a trial (plan D11). A redo appends; readers take the LAST entry.
+            function saveResult(opts) {
+                try {
+                    if (!(state.cwProjectId && WML.cwProject && WML.cwProject.saveTrial)) return;
+                    const m = st.mark || {};
+                    const self = {}, notes = {}, selfLevels = {};
+                    aos().forEach(function (ao) {
+                        const sm = selfMark(ao); self[ao.id] = sm ? sm.got : null;
+                        notes[ao.id] = docRow(ladderFids(ao).reason) || '';
+                        selfLevels[ao.id] = docRow(ladderFids(ao).level) || '';
+                    });
+                    const payload = {
+                        trial: 'final', finale: true, dimension: 'final_assessment', ao_family: 'AO5+AO6',
+                        self: self, self_levels: selfLevels, sophia: st.sophia || {}, notes: notes,
+                        self_total: st.selfTotal || 0,
+                        marks: m.got, out_of: m.max, percent: m.pct, grade: m.grade,
+                        target: st.target || '',
+                        timestamp: new Date().toISOString(),
+                    };
+                    if (st.sophiaComments) payload.sophia_comments = st.sophiaComments;
+                    if (st.sophiaExamples) payload.sophia_examples = st.sophiaExamples;
+                    const goal = st.gradeGoal || parseInt(String(docRow(fid('goal'))).replace(/\D/g, ''), 10) || null;
+                    if (goal) payload.grade_goal = goal;
+                    if (st.calibPick) payload.calibration_pick = st.calibPick;
+                    // ONE calibration entry per run (the server appends each to the trend).
+                    if (opts && opts.withDelta) payload.calibration_delta = (st.selfTotal || 0) - (m.got || 0);
+                    WML.cwProject.saveTrial(state.cwProjectId, payload, null)
+                        .catch(function (e) { console.warn('WML final: saveTrial failed —', e && e.message); });
+                } catch (e) { console.warn('WML final: saveTrial threw —', e && e.message); }
+            }
+
+            // ── the turn ───────────────────────────────────────────────────────────────────────────────────────────
+            async function handleTurn(msg) {
+                if (pending) return;
+                const clean = (msg || '').trim();
+                if (!clean) { resetSend(); return; }
+                const slot = _walkSlot.consume(WALK);
+                if (!slot) {
+                    _cwNoAskGuard(WALK, function () { serveCurrent(); }, aiBubble);
+                    resetSend();
+                    return;
+                }
+                userTurn(clean);
+                if (slot.fid === fid('target')) { onTarget(clean); return; }
+                serveCurrent();
+            }
+
+            function serveCurrent(opts) {
+                if (st && st.phase === 'calib' && st.mark) { serveCalibration(opts); return; }
+                if (st && st.phase === 'summary' && st.mark) { serveSummary(opts); return; }
+                const pos = position();
+                if (pos === 'done') { serveWrap(); return; }
+                if (pos === 'target') { serveTargetAsk(opts); return; }
+                if (pos === 'ready') { serveReady(); return; }
+                if (pos === 'start' || pos === 'goal') { serveGoalAsk(opts); return; }
+                const ao = aos().filter(function (a) { return pos === 'ladder:' + a.id; })[0];
+                if (ao) { serveAoPrompt(ao, opts); return; }
+                serveWrap();
+            }
+            // Sophia's marking, rebuilt from her rows (a new device holds no sidecar), so the wrap and the ring still carry it.
+            function rebuildFromDoc() {
+                const mm = /^Grade (\d)\s*\((\d+)\/(\d+)\s*·\s*(\d+)%\)/.exec(docRow(fid('mark')));
+                if (!mm) return;
+                st.mark = { grade: +mm[1], got: +mm[2], max: +mm[3], pct: +mm[4] };
+                st.sophia = {};
+                aos().forEach(function (ao) { const r = markOfRow(docRow(fid('fb-' + ao.id))); if (r) st.sophia[ao.id] = r.got; });
+                st.selfTotal = selfTotal();
+                st.strengthLine = docRow(fid('strength'));
+                st.priorityLine = docRow(fid('priority'));
+                const tgt = docRow(fid('target'));
+                if (tgt) st.target = tgt;
+            }
+
+            // ── lifecycle ──────────────────────────────────────────────────────────────────────────────────────────
+            function forceStart() {
+                st = { phase: 'orient' };
+                active = true; pending = false; done = false;
+                persist();
+                serveCwChunks(orientationChunks(), {
+                    emit: aiBubble,
+                    onDone: function () { serveGoalAsk({ defer: true }); },
+                });
+                return true;
+            }
+            function reset() {
+                active = false; pending = false; done = false;
+                st = null;
+                _walkSlot.clear(WALK);
+                clearPersist();
+            }
+            function tryResume() {
+                try {
+                    if (!(WML.isCwFinalTask && WML.isCwFinalTask(state.task))) return false;
+                    let saved = null;
+                    try { const raw = localStorage.getItem(lsKey()); saved = raw ? JSON.parse(raw) : null; } catch (e) {}
+                    st = (saved && saved.st) ? saved.st : {};
+                    // A climb part-way through belongs to the LADDER (the boot resumes it); it hands back here when it
+                    // finishes (registerHost). Serving anything now would put two asks on one screen.
+                    if (_examinerLadderCtl.inProgressFor(CW_FINAL_LADDER_WALK)) {
+                        active = true; pending = false; done = false;
+                        console.log('WML final: a climb is part-way through — the ladder resumes it and hands back here.');
+                        return true;
+                    }
+                    const pos = position();
+                    const mark0 = emitted;
+                    if (pos === 'start') {
+                        // Nothing banked. Never spoken here → entry starts it (false). Part of the orientation heard → carry
+                        // on from the first unseen message (the trials' #897 rule).
+                        const said = (canvasChatHistory || []).filter(function (t) { return t && t.role === 'assistant' && !t.hidden; })
+                            .map(function (t) { return String(t.content || ''); });
+                        const chunks = orientationChunks();
+                        const heard = function (c) { const k = String(c).slice(0, 80); return said.some(function (x) { return x.indexOf(k) !== -1; }); };
+                        let seen = 0;
+                        while (seen < chunks.length && heard(chunks[seen])) seen++;
+                        if (!seen) return false;
+                        st.phase = 'orient';
+                        active = true; pending = false; done = false;
+                        persist();
+                        setTimeout(function () {
+                            if (emitted !== mark0) return;   // another route already served
+                            if (seen < chunks.length) serveCwChunks(chunks.slice(seen), { emit: aiBubble, onDone: function () { serveGoalAsk({ defer: true }); } });
+                            else _cwReplay(function () { serveGoalAsk(); });
+                        }, 400);
+                        return true;
+                    }
+                    if (docRow(fid('mark'))) rebuildFromDoc();
+                    if (st.mark) publishScore();   // later autosaves keep carrying the grade (#435)
+                    // The sidebar, from the rows.
+                    const marked = aos().filter(function (ao) { return !!selfMark(ao); }).length;
+                    progress(docRow(fid('mark')) ? 4 : (marked ? marked + 1 : 0));
+                    if (pos === 'done') {
+                        active = false; pending = false; done = true;
+                        setTimeout(function () { if (emitted !== mark0) return; _cwReplay(serveWrap); }, 500);
+                        return false;
+                    }
+                    // In-session calibration/summary are conversation, not rows: a resume after Sophia's marking goes
+                    // straight to the target — the trials' rule.
+                    if (pos === 'target' && (st.phase === 'calib' || st.phase === 'summary')) st.phase = 'target';
+                    active = true; pending = false; done = false;
+                    persist();
+                    console.log('WML final: resumed from the document (' + pos + ').');
+                    setTimeout(function () { if (emitted !== mark0) return; _cwReplay(function () { serveCurrent(); }); }, 400);
+                    return true;
+                } catch (e) { return false; }
+            }
+            function nudge() {
+                if (!active || pending) return false;
+                serveCurrent();
+                return true;
+            }
+            // After a reload the ladder's climb finishes without its onDone — it hands back through here.
+            _examinerLadderCtl.registerHost(CW_FINAL_LADDER_WALK, function () {
+                if (WML.isCwFinalTask && WML.isCwFinalTask(state.task)) afterLadder();
+            });
+
+            return {
+                handleTurn, onReply: function () { /* the marking reply arrives through armWalkResume */ },
+                reset, tryResume, nudge, forceStart,
+                atStart: function () { return !st || st.phase === 'orient' || st.phase === 'goal'; },
+                get active() { return active; },
+                get pending() { return pending; },
+            };
+        })();
+
         // ══════════════════════════════════════════════════════════════════════════════════════
         // STEP 12 — UPDATE PLOT: GOALS (FIXLIST #440, v7.20.567). Neil's ruling, 2026-08-25:
         //   (a) *"Step twelve needs to update the plot with the details from the character
@@ -38296,7 +39070,7 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwTrial2Ctl, _cwTrial3Ctl, _cwTrial4Ctl, _cwTrial5Ctl, _cwTrial6Ctl, _cwAdaptCtl, _cwStructCtl, _cwEmpathyCtl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwTrial2Ctl, _cwTrial3Ctl, _cwTrial4Ctl, _cwTrial5Ctl, _cwTrial6Ctl, _cwAdaptCtl, _cwStructCtl, _cwEmpathyCtl, _cwFinalCtl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
@@ -38322,6 +39096,7 @@
             _cwTrial4Ctl.onReply(reply);
             _cwTrial5Ctl.onReply(reply);
             _cwTrial6Ctl.onReply(reply);
+            _cwFinalCtl.onReply(reply);   // v7.20.844 (#884-⑦)
             _cwCharProfileCtl.onReply(reply);
             _cwGoalsPlotCtl.onReply(reply);
             _cwAdaptCtl.onReply(reply);
@@ -38351,6 +39126,7 @@
                 : t === 'cw_trial_4' ? _cwTrial4Ctl   // v7.20.835 (#884-③)
                 : t === 'cw_trial_5' ? _cwTrial5Ctl   // v7.20.837 (#884-④)
                 : t === 'cw_trial_6' ? _cwTrial6Ctl   // v7.20.841 (#884-⑤)
+                : WML.isCwFinalTask(t) ? _cwFinalCtl  // v7.20.844 (#884-⑦)
                 : t === 'cw_step_91' ? _cwTrial1Ctl   // v7.20.776: weekend lesson 11
                 : t === 'cw_step_11' ? _cwCharProfileCtl
                 : t === 'cw_step_12' ? _cwGoalsPlotCtl
@@ -38407,6 +39183,7 @@
             cwTrial4Ctl: _cwTrial4Ctl,         // v7.20.835 (#884-③) — the same two entry points
             cwTrial5Ctl: _cwTrial5Ctl,         // v7.20.837 (#884-④) — the same two entry points
             cwTrial6Ctl: _cwTrial6Ctl,         // v7.20.841 (#884-⑤) — the same two entry points
+            cwFinalCtl: _cwFinalCtl,           // v7.20.844 (#884-⑦) — fresh entry calls forceStart(), boot resume tryResume()
             cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
             cwAdaptCtl: _cwAdaptCtl,
             cwEmpathyCtl: _cwEmpathyCtl,         // v7.20.777 — the weekend bonus lesson; same two entry points             // v7.20.753 — weekend lesson 9; same two entry points
@@ -45949,6 +46726,7 @@
                     if (state.task === 'cw_trial_4' && tp.cwTrial4Ctl) tp.cwTrial4Ctl.tryResume();   // v7.20.835 (#884-③)
                     if (state.task === 'cw_trial_5' && tp.cwTrial5Ctl) tp.cwTrial5Ctl.tryResume();   // v7.20.837 (#884-④)
                     if (state.task === 'cw_trial_6' && tp.cwTrial6Ctl) tp.cwTrial6Ctl.tryResume();   // v7.20.841 (#884-⑤)
+                    if (WML.isCwFinalTask(state.task) && tp.cwFinalCtl) tp.cwFinalCtl.tryResume();   // v7.20.844 (#884-⑦)
                     if (state.task === 'cw_step_91' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();   // v7.20.776 (weekend lesson 11)
                     if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
                     if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
@@ -46181,6 +46959,12 @@
                     if (state.task === 'cw_trial_6' && !state.reviewMode && tp.cwTrial6Ctl) {
                         console.log('WML v7.20.841: CW Trial 6 — deterministic self-assessment start (isCwSi entry)');
                         tp.cwTrial6Ctl.forceStart();
+                        return;
+                    }
+                    // v7.20.844 (#884-⑦): the final assessment — started in code; no protocol greeting to wait for (§4).
+                    if (WML.isCwFinalTask(state.task) && !state.reviewMode && tp.cwFinalCtl) {
+                        console.log('WML v7.20.844: CW Final Assessment — deterministic start (isCwSi entry)');
+                        tp.cwFinalCtl.forceStart();
                         return;
                     }
                     // v7.20.776: weekend lesson 11 (Mark It Again) — Trial 1's walk, started in code the same way.
@@ -54567,9 +55351,13 @@
         // page that assesses writing it never shows.
         // ══════════════════════════════════════════════════════════════════════════════════════
         const tryFillCwTrialDraft = async () => {
-            if (!isCwTask || !canvasEditor || !cwStepDef?.trial || state.reviewMode) return;
-            const src = (WML.cwTrialSource && WML.cwTrialSource(state.task)) || null;
-            if (!src) { console.warn('WML CW trial: no draft step precedes trial ' + cwStepDef.trial + ' — nothing to show.'); return; }
+            // v7.20.844 (#884-⑦): the final assessment shows its story the same way — from the step its entry NAMES
+            // (cwFinalSource → final_draft), never the walk-back, which would find Draft 7 (plan D14).
+            if (!isCwTask || !canvasEditor || !(cwStepDef?.trial || cwStepDef?.final) || state.reviewMode) return;
+            const src = cwStepDef.final
+                ? ((WML.cwFinalSource && WML.cwFinalSource()) || null)
+                : ((WML.cwTrialSource && WML.cwTrialSource(state.task)) || null);
+            if (!src) { console.warn('WML CW trial: no draft step precedes ' + (cwStepDef.final ? 'the final assessment' : 'trial ' + cwStepDef.trial) + ' — nothing to show.'); return; }
             try {
                 let docHTML = '';
                 if (!state.cwProjectId) {
@@ -54581,7 +55369,7 @@
                     } catch (e) { console.warn('WML CW trial: loading ' + src.artifactKey + ' failed —', e && e.message); }
                 }
                 const prose = _cwDraftProseFromDoc(docHTML);
-                if (!prose) console.warn('WML CW trial ' + cwStepDef.trial + ': no writing under "' + src.artifactKey + '" — the page says so and points back to Step ' + src.draftStep + '.');
+                if (!prose) console.warn('WML CW ' + (cwStepDef.final ? 'final assessment' : 'trial ' + cwStepDef.trial) + ': no writing under "' + src.artifactKey + '" — the page says so and points back to Step ' + src.draftStep + '.');
                 const inner = _cwTrialDraftInner(src, prose);
 
                 const box = document.createElement('div');
@@ -54596,7 +55384,7 @@
                     // Anchor on the divider's own TEXT, not an attr — it is the one thing a
                     // save→reload round-trip cannot change.
                     const marker = Array.from(box.querySelectorAll('[data-section-type="divider"]'))
-                        .find((d) => ['ASSESSMENT', 'YOUR JUDGEMENT'].indexOf((d.textContent || '').trim().toUpperCase()) !== -1);
+                        .find((d) => ['ASSESSMENT', 'YOUR JUDGEMENT', 'YOUR MARKING'].indexOf((d.textContent || '').trim().toUpperCase()) !== -1);   // v7.20.844: + the final assessment's
                     if (marker) marker.insertAdjacentHTML('beforebegin', block);
                     else box.insertAdjacentHTML('afterbegin', block);
                 }
@@ -54606,7 +55394,7 @@
                 finally { _migrationActive = _was; }
                 try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
-                console.log('WML CW trial ' + cwStepDef.trial + ': draft section refreshed from ' + src.artifactKey + (prose ? '' : ' (empty — missing-draft message shown)') + '.');
+                console.log('WML CW ' + (cwStepDef.final ? 'final assessment' : 'trial ' + cwStepDef.trial) + ': draft section refreshed from ' + src.artifactKey + (prose ? '' : ' (empty — missing-draft message shown)') + '.');
             } catch (e) {
                 console.warn('WML CW trial draft refresh failed (document untouched) —', e && e.message);
             }
@@ -54803,6 +55591,48 @@
                 console.log('WML CW draft ' + cwStepDef.draft + ': trial target pinned from Trial ' + src.trial + '.');
             } catch (e) {
                 console.warn('WML CW draft target pin failed (document untouched) —', e && e.message);
+            }
+        };
+        // ⭐ v7.20.844 (FIXLIST #884-⑦, PEDAGOGY §33.9) — THE FINAL ASSESSMENT'S TARGET, PINNED ON STEP 31. The lesson ends on
+        // the student's own target for the exam; the step after it (cwFinalTargetStep — the reflection, whose last paragraph
+        // is "Next Steps") opens with it. The LAST finale entry wins (a redo supersedes); read fresh at every mount (#402),
+        // never cached. No target yet → no section, and the page is exactly what it was.
+        const CW_FINAL_TARGET_LABEL = 'Your Target from the Final Assessment';
+        const tryFillCwFinalTarget = async () => {
+            if (!isCwTask || !canvasEditor || state.reviewMode || !cwStepDef?.step) return;
+            if (!(WML.cwFinalTargetStep && cwStepDef.step === WML.cwFinalTargetStep()) || !state.cwProjectId) return;
+            try {
+                let target = '';
+                try {
+                    const res = await WML.cwProject.load(state.cwProjectId);
+                    const trials = (res && res.success && res.project && Array.isArray(res.project.trials)) ? res.project.trials : [];
+                    for (let i = trials.length - 1; i >= 0; i--) {
+                        const t = trials[i];
+                        if (t && t.finale && t.target && String(t.target).trim()) { target = String(t.target).trim(); break; }
+                    }
+                } catch (e) { console.warn('WML CW final target: project load failed —', e && e.message); }
+                if (!target) return;
+                const inner = '<h3>The target you set yourself</h3>'
+                    + '<p><em>You wrote this at the end of the Final Assessment. Use it in your last paragraph, Next Steps.</em></p>'
+                    + '<p><strong>' + escapeHTML(target) + '</strong></p>';
+                const box = document.createElement('div');
+                box.innerHTML = canvasEditor.getHTML();
+                const sec = box.querySelector('[data-section-label="' + CW_FINAL_TARGET_LABEL + '"]');
+                if (sec) {
+                    if (sec.innerHTML === inner) return;      // already current — no churn, no save
+                    sec.innerHTML = inner;
+                } else {
+                    box.insertAdjacentHTML('afterbegin', sectionHTML('question', CW_FINAL_TARGET_LABEL, false, null, inner));
+                }
+                const _was = _migrationActive;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(box.innerHTML, false); }
+                finally { _migrationActive = _was; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW step ' + cwStepDef.step + ': the final assessment target is pinned.');
+            } catch (e) {
+                console.warn('WML CW final target pin failed (document untouched) —', e && e.message);
             }
         };
         // ⭐ v7.20.830 (FIXLIST #884-②, #893) — A FULL-COURSE POLISHING DRAFT'S PAGE: its own About, and the plan it polishes
@@ -56500,7 +57330,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwPolishDraftPage()).then(() => tryFillCwStructPlan()).then(() => tryFillCwAdaptRewrite()).then(() => tryFillCwAgain()).then(() => tryFillCwEmpathyStory()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwPolishDraftPage()).then(() => tryFillCwFinalTarget()).then(() => tryFillCwStructPlan()).then(() => tryFillCwAdaptRewrite()).then(() => tryFillCwAgain()).then(() => tryFillCwEmpathyStory()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -60696,6 +61526,19 @@
             return html;
         }
 
+        // ── v7.20.844 (#884-⑦): the FINAL ASSESSMENT — the whole 40-mark marking on the finished story ──
+        // The story is NAMED (cwFinalSource → final_draft, plan D14), filled at mount by tryFillCwTrialDraft like a trial's.
+        if (stepDef.final) {
+            const _finalSrc = (window.WML && WML.cwFinalSource) ? WML.cwFinalSource() : null;
+            html += sectionHTML('question', 'Assessment Focus', false, null, _cwFinalAboutHTML());
+            html += dividerHTML('YOUR DRAFT');
+            html += sectionHTML('response', CW_TRIAL_DRAFT_LABEL, false, null, _cwTrialDraftInner(_finalSrc, ''));
+            html += _cwFinalMarkingBlock();
+            html += _cwFinalSophiaBlock();
+            html += _cwFinalTargetBlock();
+            return html;
+        }
+
         // ── Trial steps ──
         if (stepDef.trial) {
             const _trialSrc = (window.WML && WML.cwTrialSource) ? WML.cwTrialSource('cw_trial_' + stepDef.trial) : null;
@@ -62902,6 +63745,92 @@
             + outlineRowHTML({ id: 'target', label: 'My Target', prompt: 'One sentence — the single thing Draft ' + (n + 1) + ' must do that Draft ' + n + ' does not.' }, 'cw-trial-' + n + '-target'));
     }
 
+    // ══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.844 (FIXLIST #884-⑦, PEDAGOGY §33.6) — THE FINAL ASSESSMENT'S PAGE, and the ONE list of what it marks.
+    // The two objectives the exam marks a story on, each named in plain words with its code attached (§33.11; no board
+    // name on the criteria, §33.3). The page AND the walk read this list and _cwFinalFid, so the rows the page builds are
+    // the rows the walk writes (§5d). Maximum marks come from the generated dataset (scheme.maxMarks), never a typed
+    // number. Plan: CW-FINAL-ASSESSMENT-PLAN-2026-10-12.md.
+    // ══════════════════════════════════════════════════════════════════════════════════════
+    const CW_FINAL_AOS = [
+        { id: 'ao5', schemeKey: 'aqa_lang1_q5_ao5', name: 'Content and Organisation', code: 'AO5' },
+        { id: 'ao6', schemeKey: 'aqa_lang1_q5_ao6', name: 'Technical Accuracy', code: 'AO6' },
+    ];
+    function _cwFinalFid(part) { return 'cw-final-' + part; }
+    // v7.20.844 (#884-⑦): WHICH CW LESSONS CARRY A MARK onto the canvas save (the #435 score piggyback → student-data's
+    // session_records → the ring) — ONE predicate, so a newly graded lesson is added here once, never by a second literal.
+    function _cwScoredTask(task) {
+        const t = String(task || '');
+        return t.indexOf('cw_trial_') === 0 || t === 'cw_step_91'
+            || !!(typeof window !== 'undefined' && window.WML && window.WML.isCwFinalTask && window.WML.isCwFinalTask(t));
+    }
+    function _cwFinalMax(ao) {
+        try {
+            const s = (typeof window !== 'undefined' && window.WML_MARK_SCHEMES) ? window.WML_MARK_SCHEMES[ao.schemeKey] : null;
+            return (s && typeof s.maxMarks === 'number') ? s.maxMarks : null;
+        } catch (e) { return null; }
+    }
+    function _cwFinalTotalMax() {
+        let t = 0;
+        for (const ao of CW_FINAL_AOS) { const m = _cwFinalMax(ao); if (m == null) return null; t += m; }
+        return t;
+    }
+    function _cwFinalAboutHTML() {
+        const tm = _cwFinalTotalMax();
+        const parts = CW_FINAL_AOS.map(function (ao) {
+            const m = _cwFinalMax(ao);
+            return '<strong>' + escapeHTML(ao.name) + '</strong> (usually called <strong>' + escapeHTML(ao.code) + '</strong>' + (m ? ', out of ' + m : '') + ')';
+        });
+        return '<h2>Final Assessment</h2>'
+            + '<p>This is the whole marking, once, on your finished story. The exam marks a story on two things: ' + parts.join(' and ')
+            + (tm ? ', which together make ' + tm + ' marks' : '') + '. Edexcel IGCSE numbers them AO4 and AO5, and Cambridge IGCSE puts accuracy inside its one writing objective.</p>'
+            + '<p>In the chat you mark your story yourself, <strong>the way a real examiner marks</strong>: you read the exam board’s own level descriptors, word for word, from Level 1 upwards. Then Sophia reads your story and marks it herself. Your marking and hers are both recorded here, and the places where you disagree are the most useful thing in this lesson.</p>';
+    }
+    // The student's own marking: the ladder writes its level, criteria, mark and reason into these boxes (the shape the
+    // Language self-assessment uses — the same ladder, the same output). Every box is the student's decision.
+    function _cwFinalMarkingBlock() {
+        let h = '<h3>Your marking, the way an examiner marks</h3>'
+            + '<p><em>Every box in this section is your own decision. Sophia’s marks go in the next section, so you can compare the two.</em></p>'
+            + inputHTML('Your grade goal — the grade you are aiming for in creative writing', _cwFinalFid('goal'));
+        CW_FINAL_AOS.forEach(function (ao) {
+            const m = _cwFinalMax(ao);
+            h += '<h3>' + escapeHTML(ao.name + ' (' + ao.code + (m ? ', out of ' + m : '') + ')') + '</h3>'
+                + inputHTML('The level you gave yourself', _cwFinalFid(ao.id + '-level'))
+                + inputHTML('The criteria you said your story meets', _cwFinalFid(ao.id + '-met'))
+                + inputHTML('The mark you gave yourself', _cwFinalFid(ao.id + '-mark'))
+                + inputHTML('Your reason — the evidence in your own story', _cwFinalFid(ao.id + '-reason'));
+        });
+        return dividerHTML('YOUR MARKING') + sectionHTML('plan', 'Your Marking', true, null, h);
+    }
+    // Sophia's marking — LOCKED, and 'response'-typed (never 'feedback': that type recomputes readonly from
+    // _feedbackEditable() and would unlock her marks in edit mode — the trials' rule, :62783).
+    function _cwFinalSophiaBlock() {
+        const tm = _cwFinalTotalMax();
+        let h = '<h3>Her marking of each objective</h3>'
+            + '<p><em>Filled in after you have marked your story yourself. She reads it alongside your own marking, never instead of it.</em></p>';
+        CW_FINAL_AOS.forEach(function (ao) {
+            h += outlineRowHTML({ id: 'fb-' + ao.id, label: ao.name, prompt: 'Her level and mark for ' + ao.name.toLowerCase() + ', after you have marked it.', locked: true }, _cwFinalFid('fb-' + ao.id));
+        });
+        return dividerHTML('SOPHIA’S ASSESSMENT')
+            + sectionHTML('response', 'Sophia’s Verdict', false, null, h)
+            + sectionHTML('response', 'Overall Feedback', false, null,
+                '<h3>The whole story, in two lines</h3>'
+                + outlineRowHTML({ id: 'strength', label: 'Key Strength', prompt: 'What is working hardest in your story.', locked: true }, _cwFinalFid('strength'))
+                + outlineRowHTML({ id: 'priority', label: 'Priority for the Exam', prompt: 'The one thing that would raise your mark most, and what to do.', locked: true }, _cwFinalFid('priority')))
+            + sectionHTML('response', 'Final Mark', false, null,
+                '<h3>Sophia’s mark, and where you two disagreed</h3>'
+                + '<p><em>Her mark is worked out from her level calls in exactly the way yours was' + (tm ? ', out of ' + tm : '') + '.</em></p>'
+                + outlineRowHTML({ id: 'mark', label: 'Mark', prompt: 'Filled in once Sophia has read your story.', locked: true }, _cwFinalFid('mark'))
+                + outlineRowHTML({ id: 'gap', label: 'Where you differed', prompt: 'Filled in once Sophia has read your story.', locked: true }, _cwFinalFid('gap')));
+    }
+    // §33.9: the lesson ends on the student's own target — and Step 31 opens with it (tryFillCwFinalTarget).
+    function _cwFinalTargetBlock() {
+        return sectionHTML('plan', 'Your Target for the Exam', true, null,
+            '<h3>The one thing your exam story must do</h3>'
+            + '<p><em>Written at the end of this lesson, in your own words. It will be waiting at the top of Step 31.</em></p>'
+            + outlineRowHTML({ id: 'target', label: 'My Target', prompt: 'One sentence: the single thing your story in the exam must do.' }, _cwFinalFid('target')));
+    }
+
     // ── v7.20.776: weekend lesson 11, Mark It Again (plan §2e.2) — the page's own words ──
     function _cwMarkAgainAboutHTML() {
         return '<h2>Mark It Again</h2>'
@@ -62963,7 +63892,10 @@
             const box = document.createElement('div');
             box.innerHTML = String(docHTML);
             const draft = box.querySelector('[data-student-composition="true"]')
-                || box.querySelector('[data-section-label="Draft"]');
+                || box.querySelector('[data-section-label="Draft"]')
+                // v7.20.844 (#884-⑦): Step 30's own section, for a story written there with no Draft 7 page underneath
+                // (its template box carries no composition flag). Last, so every other reader's result is unchanged.
+                || box.querySelector('[data-section-label="Final Draft"]');
             if (!draft) return '';
             if ((draft.textContent || '').trim().length === 0) return '';
             const paras = Array.from(draft.children)
@@ -69106,7 +70038,8 @@
             // v7.20.561 (#435): a CW trial's mark rides the same piggyback, gated to THIS task
             // and THIS project so a score can never leak onto a sibling lesson's row.
             // v7.20.776: weekend lesson 11 (Mark It Again) is a graded activity of its own, on its own page.
-            ...((snap.task && (snap.task.startsWith('cw_trial_') || snap.task === 'cw_step_91') && state.cwTrialScore
+            // v7.20.844 (#884-⑦): ONE predicate (_cwScoredTask) — the final assessment's /40 rides it too.
+            ...((_cwScoredTask(snap.task) && state.cwTrialScore
                     && state.cwTrialScore.task === snap.task && state.cwTrialScore.projectId === (state.cwProjectId || '')) ? {
                 score_raw:        state.cwTrialScore.score,
                 score_max:        state.cwTrialScore.total,

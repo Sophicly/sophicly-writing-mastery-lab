@@ -2809,7 +2809,8 @@ class SWML_Protocol_Router {
         }
 
         // Creative Writing: direct protocol file load — no manifest needed (v7.13.34)
-        if (strpos($task, 'cw_step_') === 0 || strpos($task, 'cw_trial_') === 0) {
+        // v7.20.844 (#884-⑦): the ONE predicate, so the unnumbered final assessment is a CW lesson here too.
+        if (self::is_cw_lesson_task($task)) {
             $cw_protocol_map = [
                 'cw_step_1'  => 'CW-STEP-01-writer-profile.md',
                 'cw_step_2'  => 'CW-STEP-02-explore-story-ideas.md',
@@ -2864,6 +2865,7 @@ class SWML_Protocol_Router {
                 'cw_trial_4' => 'CW-TRIAL-04-emotional-impact.md',
                 'cw_trial_5' => 'CW-TRIAL-05-thematic-clarity.md',
                 'cw_trial_6' => 'CW-TRIAL-06-genre-conventions.md',   // v7.20.841 (#884-⑤): renamed with the trial's new job
+                self::CW_FINAL_TASK => 'CW-FINAL-ASSESSMENT.md',      // v7.20.844 (#884-⑦): the 40-mark final assessment
             ];
 
             $filename = $cw_protocol_map[$task] ?? null;
@@ -3964,6 +3966,18 @@ TEMPLATE;
      */
     const LIT_LADDER_AO_CARD = true;
 
+    /**
+     * v7.20.844 (#884-⑦): IS THIS A CREATIVE-WRITING LESSON TASK? — the ONE server predicate (WML canvas rule 2: gate on
+     * what a lesson IS, never on a spelled-out name). A step (cw_step_N), a trial (cw_trial_N), or the final assessment —
+     * the server twin of the client's CW_FINAL_TASK. Before this, two prefix checks decided it, and an unnumbered lesson
+     * was invisible to both: it would have been served NO protocol and no creative-writing preamble at all.
+     */
+    const CW_FINAL_TASK = 'cw_final_assessment';
+    public static function is_cw_lesson_task($task) {
+        $task = (string) $task;
+        return strpos($task, 'cw_step_') === 0 || strpos($task, 'cw_trial_') === 0 || $task === self::CW_FINAL_TASK;
+    }
+
     /** v7.20.673: the AQA Literature ESSAY family — server twin of the client's _isLitEssay(). */
     public static function is_lit_essay_subject($subject) {
         $s = preg_replace('/[^a-z0-9]/', '', strtolower((string) $subject));
@@ -4160,7 +4174,8 @@ TEMPLATE;
         }
 
         // v7.13.34: Creative Writing preamble — entirely different context
-        if (strpos($task, 'cw_step_') === 0 || strpos($task, 'cw_trial_') === 0) {
+        // v7.20.844 (#884-⑦): the ONE predicate (the final assessment is a CW lesson with no step number).
+        if (self::is_cw_lesson_task($task)) {
             $cw_step_labels = [
                 'cw_step_1' => 'Writer Profile', 'cw_step_2' => 'Explore Story Ideas',
                 'cw_step_3' => 'Create Logline', 'cw_step_4' => 'Brief Outline',
@@ -4185,6 +4200,7 @@ TEMPLATE;
                 'cw_trial_1' => 'Trial 1: Story Coherence', 'cw_trial_2' => 'Trial 2: Character Depth',
                 'cw_trial_3' => 'Trial 3: Archetype Coherence', 'cw_trial_4' => 'Trial 4: Emotional Impact',
                 'cw_trial_5' => 'Trial 5: Thematic Clarity', 'cw_trial_6' => 'Trial 6: Genre Conventions',
+                self::CW_FINAL_TASK => 'Final Assessment',   // v7.20.844 (#884-⑦)
             ];
             $step_label = $cw_step_labels[$task] ?? ucwords(str_replace(['cw_step_', 'cw_trial_', '_'], ['Step ', 'Trial ', ' '], $task));
 

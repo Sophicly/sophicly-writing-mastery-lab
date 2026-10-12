@@ -265,7 +265,7 @@ ok('older trial documents are HEALED — the section is inserted, not silently a
     /insertAdjacentHTML\('beforebegin', block\)/.test(FILL) && /insertAdjacentHTML\('afterbegin', block\)/.test(FILL));
 ok('…anchored on the divider\'s TEXT, which a save→reload round-trip cannot change — and it knows '
     + 'both doc generations (pre-.552 ASSESSMENT, .552 YOUR JUDGEMENT)',
-    /\['ASSESSMENT', 'YOUR JUDGEMENT'\]\.indexOf\(\(d\.textContent \|\| ''\)\.trim\(\)\.toUpperCase\(\)\) !== -1/.test(FILL));
+    /\['ASSESSMENT', 'YOUR JUDGEMENT'(?:, '[A-Z ]+')*\]\.indexOf\(\(d\.textContent \|\| ''\)\.trim\(\)\.toUpperCase\(\)\) !== -1/.test(FILL));   // v7.20.844: + the final assessment's YOUR MARKING
 ok('the document write runs under _migrationActive (or the section guard reverts it)',
     /_migrationActive = true;/.test(FILL) && /_migrationActive = _was;/.test(FILL));
 ok('a missing draft is NAMED in the console with the key that was looked for, never swallowed',

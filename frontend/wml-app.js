@@ -1773,6 +1773,10 @@
                     if (isTrial) {
                         numBadge.textContent = 'T' + stepDef.trial;
                         numBadge.classList.add('trial-badge');
+                    } else if (stepDef.final) {
+                        // v7.20.844 (#884-⑦): unnumbered like a trial — without this the badge printed "undefined".
+                        numBadge.textContent = 'F';
+                        numBadge.classList.add('trial-badge');
                     } else {
                         numBadge.textContent = stepDef.step;
                     }
@@ -1810,12 +1814,9 @@
                         state.cwProjectName = project?.name || '';
                         state.cwStep = stepDef.step || null;
                         state.cwTrial = stepDef.trial || null;
-                        // Set task for protocol router
-                        if (stepDef.trial) {
-                            state.task = 'cw_trial_' + stepDef.trial;
-                        } else {
-                            state.task = 'cw_step_' + stepDef.step;
-                        }
+                        // Set task for protocol router — v7.20.844 (#884-⑦): from the ONE builder, so an unnumbered
+                        // entry (the final assessment) cannot become "cw_step_undefined".
+                        state.task = WML.cwTaskFor(stepDef);
                         // v7.13.34: Render the CW exercise canvas
                         state.canvasTimer = 0;
                         state.step = 0;

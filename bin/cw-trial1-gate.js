@@ -273,7 +273,9 @@ ok('the trial calls the canonical _ladderGrade', /grade: _ladderGrade\(pct\)/.te
         && /@TRIAL_EXAMPLE\[hook\]/.test(PROTO));
     ok('⭐ the mark reaches STUDENT-DATA via the canvas-save score piggyback, gated to this task + project (#435)',
         /function publishTrialScore\(\)/.test(CTL) && /state\.cwTrialScore = \{ task: 'cw_trial_1', projectId/.test(CTL)
-        && /snap\.task\.startsWith\('cw_trial_'\)(?: \|\| snap\.task === 'cw_step_91'\))? && state\.cwTrialScore/.test(SRC)   // v7.20.776: + weekend lesson 11
+        && (/snap\.task\.startsWith\('cw_trial_'\)(?: \|\| snap\.task === 'cw_step_91'\))? && state\.cwTrialScore/.test(SRC)   // v7.20.776: + weekend lesson 11
+            // v7.20.844 (#884-⑦): ONE predicate now — accepted only while it still covers every trial.
+            || (/_cwScoredTask\(snap\.task\) && state\.cwTrialScore/.test(SRC) && /function _cwScoredTask\(task\) \{[\s\S]{0,200}t\.indexOf\('cw_trial_'\) === 0/.test(SRC)))
         && /state\.cwTrialScore\.projectId === \(state\.cwProjectId \|\| ''\)/.test(SRC));
     ok('⭐ #437 the P1 shape: grade goal upfront (7/8/9, banked) · calibration question (±tolerance, gap parts as chips) · How am I going? / Where to next? · THEN the target',
         /function serveGoalAsk/.test(CTL) && /GRADE_GOALS = \[7, 8, 9\]/.test(CTL) && /writeRow\('cw-trial-1-goal'/.test(CTL)
