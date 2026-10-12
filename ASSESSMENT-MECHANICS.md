@@ -530,6 +530,13 @@ code-owned source.
   reconstruction from the saved doc; skip only when the doc yields nothing. Beat replay (§2) and
   the label-derived grand total (§4) are the same pattern. New accumulator with no doc twin =
   known-fragile, does not ship.
+- **A walk step that files in two moves is done only when BOTH are on the page** (v7.20.845 CW finale,
+  v7.20.851 Language mark-scheme host). The examiner ladder files the MARK at placement and the REASON
+  after it, and its in-progress state is a per-device sidecar — so done-ness keyed on the mark alone
+  sent a student on a new device straight past the reason ask. Done = mark AND (no reason box, or the
+  reason); a page holding the mark but not the reason reopens the climb with `resumeReason`, rebuilt from
+  the page's rows by `WML_EXAMINER_LADDER.fromRows` (or from Level 1 when the rows do not reproduce the
+  mark — never a guessed level). Gates: `cw-final-sim-harness` 9b · `assess-ladder-host-harness` K.
 - SPA boot: `__swmlBooted` single-boot guard; inline IIFEs re-run every nav (run-once guards);
   stale-template wipes and uncancelled fetches are the known killers (memories:
   `reference_wml_canvas_blank_on_refresh_stale_template_wipe`,

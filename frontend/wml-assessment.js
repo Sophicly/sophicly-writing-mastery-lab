@@ -9434,8 +9434,16 @@
     function _ladderIsLit() { try { return _isLitEssay() && _ladderSchemeKeysFor().some(k => k.key.indexOf('aqa_lit_') === 0); } catch (e) { return false; } }
     function _reflectAoOnly() { try { return _litLadderKeepsAoCard() && _isLitEssay() && _ladderMarksInHistory(); } catch (e) { return false; } }
     function _ladderReplacesReflect() { try { return _ladderMarksInHistory() && !_reflectAoOnly(); } catch (e) { return false; } }
+    // ⭐ v7.20.851 (the Language twin of #884-⑦-reason, .845): the ladder files the MARK at placement, before the reason,
+    // and its in-progress state lives in a per-device sidecar — so on a new device a scheme holding a mark but no reason
+    // used to count as done and the walk moved on, leaving the reason box empty for good. Done = the mark AND, where the
+    // scheme has a reason box, the reason. (Measured on prod first, 12 Oct: 0 of 235 schemes in 53 docs had the gap.)
     function _ladderHostGroups() {
-        return _ladderSchemeKeysFor().map(k => Object.assign({}, k, { fids: _ladderFids(k.key), done: !!_ladderRowText(_ladderFids(k.key).mark) || _ladderPointExempt(k) }));
+        return _ladderSchemeKeysFor().map(k => {
+            const f = _ladderFids(k.key);
+            const done = (!!_ladderRowText(f.mark) && (!f.reason || !!_ladderRowText(f.reason))) || _ladderPointExempt(k);
+            return Object.assign({}, k, { fids: f, done: done });
+        });
     }
     function _ladderHostConfidence() { return _ladderRowText('sa-ms-confidence'); }
     function _ladderHostComplete() {
@@ -9523,6 +9531,9 @@
             const qNum = parseInt(String(next.q).replace(/^Q/i, ''), 10);
             _ladderOpenHook({
                 schemeKey: next.key, aoName: next.q + ' — ' + next.ao, walkId: LADDER_SA_WALK, regime: 'bestfit',
+                // v7.20.851: a mark already on the page (no reason yet) → seat the climb at the reason ask, rebuilt from the
+                // page's own rows (the ladder climbs again from Level 1 when the rows do not reproduce the mark).
+                resumeReason: !!_ladderRowText(next.fids.mark),
                 fids: next.fids,
                 onDone: function (res) {
                     // Feed the EXISTING calibration path: the student's own mark IS their prediction

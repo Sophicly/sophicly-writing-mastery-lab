@@ -379,9 +379,10 @@ async function main() {
         const c = world({ prefill: bad });
         c.ctl.tryResume(); await settle(); await continueAll(c);
         ok(/\*\*Level 1\b/.test(last(c)) && !c.rows.get(F('ao5-reason')), '⭐ 9b · rows that disagree with their mark → the climb again from Level 1, never a guessed level', last(c).slice(0, 120));
-        // The Language host never asks for this — its open() is unchanged (a page with a mark and no reason climbs as before).
-        ok(!/resumeReason/.test(SRC.slice(SRC.indexOf('function _ladderHostRenderCurrent'), SRC.indexOf('function _ladderHostAskConfidence'))),
-            '9b · the Language host does not opt in (its behaviour is unchanged by this fix)');
+        // v7.20.851: the Language host now opts in too (measured on prod first: 0 of 235 schemes had the gap — latent), keyed on
+        // the mark its own page holds; its done-ness is behaviour-tested in assess-ladder-host-harness section K.
+        ok(/resumeReason: !!_ladderRowText\(next\.fids\.mark\)/.test(SRC.slice(SRC.indexOf('function _ladderHostRenderCurrent'), SRC.indexOf('function _ladderHostAskConfidence'))),
+            '9b · the Language host opts in the same way — keyed on the mark its page holds (v7.20.851)');
     }
 
     // ── 10 · change my answers · a missing scheme · a typed message with no ask ─────────────────────────────────────

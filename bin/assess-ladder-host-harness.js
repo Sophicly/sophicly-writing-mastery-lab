@@ -449,5 +449,43 @@ console.log('\nJ · Literature under the mark scheme — one comparison, the AO-
         'a top-out ("better than the top level") records WHERE it stopped — it used to file "Level null", no mark, and re-open the same question');
 }
 
+// ── K · v7.20.851 — a mark without its reason is NOT done; the host reopens the climb at the reason ─────
+// The ladder files the mark at placement, before the reason, and its in-progress state is a per-device sidecar.
+// On a new device the host used to count the scheme done on the mark alone and walk on — the reason never asked
+// (the Language twin of the CW finale's #884-⑦-reason, .845). Executes the SHIPPED _ladderHostGroups.
+console.log('\nK · a scheme with a mark but no reason is not done; the host reopens it at the reason (v7.20.851)');
+{
+    const sl = (name) => { const i = JS.indexOf('    function ' + name + '('); if (i === -1) return ''; let d = 0; for (let k = JS.indexOf('{', i); k < JS.length; k++) { if (JS[k] === '{') d++; else if (JS[k] === '}') { d--; if (!d) return JS.slice(i, k + 1); } } return ''; };
+    const rows = {};
+    const ctx = {
+        window: { WML_MARK_SCHEMES: data }, state: { board: 'aqa', subject: 'language', text: 'aqa_lang_paper_2', attempt: 1 }, console,
+        _canvasHistoryHook: null,
+        document: { querySelector: (sel) => { const m = /data-field-id="([^"]+)"/.exec(sel); return (m && m[1] in rows) ? { textContent: rows[m[1]] } : null; } },
+    };
+    vm.createContext(ctx);
+    vm.runInContext(kbSrc + sl('_ladderFids') + sl('_ladderOneSentence') + sl('_ladderRowText') + sl('_ladderMarksInHistory')
+        + sl('_ladderPointExempt') + sl('_ladderHostGroups'), ctx);
+    const groups = () => vm.runInContext('_ladderHostGroups()', ctx);
+    const g0 = groups();
+    const lv = g0.find((g) => !g.points), pt = g0.find((g) => g.points);
+    ok(!!(lv && pt && lv.fids.reason && !pt.fids.reason), 'AQA P2 carries a levelled scheme (with a reason box) and a point-marked one (no reason box)');
+    if (lv && pt) {
+        const doneOf = (key) => groups().find((g) => g.key === key).done;
+        ok(doneOf(lv.key) === false, 'nothing filed → not done');
+        rows[lv.fids.mark] = '5 / 8';
+        ok(doneOf(lv.key) === false, 'mark filed, reason empty → NOT done — a new device must come back for the reason');
+        rows[lv.fids.reason] = 'Two quotations, each analysed';
+        ok(doneOf(lv.key) === true, 'mark + reason → done');
+        rows[lv.fids.reason] = '   ';
+        ok(doneOf(lv.key) === false, 'a reason of only spaces is not a reason');
+        rows[pt.fids.mark] = '3 / 4';
+        ok(doneOf(pt.key) === true, 'a point-marked question (no reason box) is done on its mark alone, as before');
+    }
+    const rc = JS.slice(JS.indexOf('    function _ladderHostRenderCurrent() {'), JS.indexOf('    function _ladderHostAskConfidence() {'));
+    ok(/resumeReason: !!_ladderRowText\(next\.fids\.mark\)/.test(rc), 'the host opens the climb with resumeReason when the page already holds that scheme\'s mark');
+    ok(/o\.resumeReason && engine\(\) && typeof engine\(\)\.fromRows === 'function'/.test(ladderSrc),
+        'CONTROL: the ladder honours resumeReason — rebuilt from the rows, else the whole climb from Level 1 (never a guessed level)');
+}
+
 console.log('\n' + (fail ? '❌' : '✅') + ' assess-ladder-host-harness: ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
