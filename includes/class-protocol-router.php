@@ -2756,6 +2756,7 @@ class SWML_Protocol_Router {
             'cw_step_17' => 'archetypes',   // v7.20.830 (FIXLIST #884-②): Draft 3
             'cw_step_20' => 'empathy',      // v7.20.834 (FIXLIST #884-③): Draft 4
             'cw_step_23' => 'theme_tone',   // v7.20.836 (FIXLIST #884-④): Draft 5
+            'cw_step_26' => 'genre',        // v7.20.840 (FIXLIST #884-⑤): Draft 6
         ];
         // v7.20.740 (PEDAGOGY §34.1, §55): a step run as a UNIT variant can be a polishing step too —
         // the weekend story's guided Draft 1 is Step 10 with Sophia reached from a selection. Same
@@ -2845,7 +2846,8 @@ class SWML_Protocol_Router {
                 // source of the rubric's `theme_tone` lens, never loaded.
                 'cw_step_24' => 'CW-STEP-24-genre.md',
                 'cw_step_25' => 'CW-STEP-25-update-plot-genre.md',
-                'cw_step_26' => 'CW-STEP-26-draft-6-genre.md',
+                // cw_step_26 is DELIBERATELY ABSENT (v7.20.840, #884-⑤) — Draft 6 polishes; CW-STEP-26 stays on disk as the
+                // source of the rubric's `genre` lens, never loaded.
                 'cw_step_27' => 'CW-STEP-27-structural-elements.md',
                 'cw_step_28' => 'CW-STEP-28-update-plot-structural.md',
                 'cw_step_29' => 'CW-STEP-29-draft-7-structural-elements.md',

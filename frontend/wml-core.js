@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.839';
+var WML_BUILD = '7.20.840';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1188,7 +1188,8 @@ window.WML = (function() {
         { id: 'trial_5', label: 'Trial 5: Thematic Clarity', tier: 'si', phase: 'drafting', trial: 5 },
         { step: 24, label: 'Genre',                      tier: 'workbook', phase: 'drafting' },
         { step: 25, label: 'Update Plot: Genre',        tier: 'workbook', phase: 'drafting' },
-        { step: 26, label: 'Draft 6: Genre',            tier: 'si', phase: 'drafting', draft: 6 },
+        // v7.20.840 (FIXLIST #884-⑤): Draft 6 polishes too — the genre lens (Steps 24–25 teach it).
+        { step: 26, label: 'Draft 6: Genre',            tier: 'si', phase: 'drafting', draft: 6, env: 'polishing', lens: 'genre' },
         // v7.20.761 (#804, PEDAGOGY §55.2): weekend lesson 6 runs this step as a chat-led walk, so in a unit it is 'si'
         // (read ONLY through cwStepTier). The full course keeps its no-chat workbook page.
         { step: 27, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting', unitTier: 'si' },
@@ -2101,6 +2102,17 @@ window.WML = (function() {
     ];
     const CW_TRIAL5_ELEMENTS_ALL = CW_TRIAL5_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
 
+    // ⭐ v7.20.840 (FIXLIST #884-⑤): THE STEP 24 PLAN — ONE list of the genre rows the Step 24 page writes (its template in
+    // wml-assessment.js; the ids keep their pre-renumber `cw-step-22-…` names, root §5d), read by Draft 6's pinned plan
+    // (CW_LENS_PLAN.genre) and Trial 6's checks. A student blends one or two categories, so a blank row is not chosen.
+    const CW_GENRE_PLAN = [
+        { id: 'courage', label: 'Courage Genres',           fid: 'cw-step-22-courage' },
+        { id: 'fear',    label: 'Fear and Loathing Genres', fid: 'cw-step-22-fear' },
+        { id: 'wonder',  label: 'Wonder and Awe Genres',    fid: 'cw-step-22-wonder' },
+        { id: 'mystery', label: 'Need to Know Genres',      fid: 'cw-step-22-mystery' },
+        { id: 'heart',   label: 'Heart Genres',             fid: 'cw-step-22-heart' },
+    ];
+
     // ⭐ v7.20.831 (#884-②): THE WORDS THAT NAME A LATER TRIAL — one map, read by the walk (_cwTrialCtlFactory) and the page
     // (_cwTrialNAboutHTML / _cwTrialNSophiaBlock), so the two cannot drift. Trial 2's strings moved here byte for byte from the
     // factory and the page (bin/cw-trial2-sim-harness.js proves the walk still says them). Trial 1 keeps its own shipped text.
@@ -2167,6 +2179,9 @@ window.WML = (function() {
         // shows: a theme or a tone left blank says "not filled in yet", as Draft 3's archetype rows do. The Tone Shift Check
         // is kept because a student may have planned the tone to CONTRAST with events on purpose — the coach must know.
         theme_tone: CW_THEME_TONE_PLAN.map(function (r) { return { label: r.label, doc: 'theme_tone', fid: r.fid }; }),
+        // v7.20.840 (#884-⑤): Draft 6 — the genres the student chose in Step 24 (its document is `genre`). `optional`: a
+        // student blends one or two of the five categories, so a category they left blank is left off the pin.
+        genre: CW_GENRE_PLAN.map(function (r) { return { label: r.label, doc: 'genre', fid: r.fid, optional: true }; }),
     };
     // The element list for trial N — ONE accessor for the walk, the page template and the gates.
     function cwTrialElements(n) {
@@ -6752,7 +6767,7 @@ window.WML = (function() {
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
-        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, CW_TRIAL5_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN, CW_THEME_TONE_PLAN,
+        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, CW_TRIAL5_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN, CW_THEME_TONE_PLAN, CW_GENRE_PLAN,
         // Revision map
         REVISION_MAP,
         // Utilities

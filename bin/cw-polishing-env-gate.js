@@ -98,8 +98,8 @@ ok('its artifact key is untouched — Trial 3 marks draft_3', WML.CW_ARTIFACT_MA
 ok('Step 17 is not tools-minimal', !WML.cwToolsMinimal('cw_step_17'));
 
 console.log('\nNothing else moved:');
-ok('exactly FOUR steps declare env=polishing (Drafts 2, 3, 4 and 5)',
-    JSON.stringify(WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => s.step)) === '[14,17,20,23]',
+ok('exactly FIVE steps declare env=polishing (Drafts 2, 3, 4, 5 and 6)',
+    JSON.stringify(WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => s.step)) === '[14,17,20,23,26]',
     WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => s.step));
 ok('exactly ONE step declares env=diagnostic',
     JSON.stringify(WML.CW_STEPS.filter(s => s.env === 'diagnostic').map(s => s.step)) === '[10]',
@@ -111,7 +111,12 @@ ok('Step 13 keeps its training walk', cfg('cw_step_13').environment === 'trainin
 ok('Step 13 keeps its chat panel', cfg('cw_step_13').panels.chat === true);
 ok('Step 12 keeps its training walk', cfg('cw_step_12').environment === 'training', cfg('cw_step_12').environment);
 ok('Step 10 keeps its diagnostic env', cfg('cw_step_10').environment === 'free', cfg('cw_step_10').environment);
-ok('Step 26 (Draft 6) has NOT been flipped yet — its lens is not written', cfg('cw_step_26').environment === 'training', cfg('cw_step_26').environment);
+ok('Step 29 (Draft 7) has NOT been flipped yet — its lens is not written', cfg('cw_step_29').environment === 'training', cfg('cw_step_29').environment);
+ok('Step 26 (Draft 6) polishes with the genre lens', cfg('cw_step_26').environment === 'inline-coaching' && WML.getCwStepDef('cw_step_26').lens === 'genre' && cfg('cw_step_26').protocolSource === null);
+ok('…and Steps 24 and 25 (the genre workbook pages) are untouched', cfg('cw_step_24').environment !== 'inline-coaching' && cfg('cw_step_25').environment !== 'inline-coaching');
+ok('…and Draft 6\'s pinned plan shows only the genres the student CHOSE (optional rows, from the ONE list)',
+    JSON.stringify((WML.CW_LENS_PLAN.genre || []).map(r => r.fid)) === JSON.stringify((WML.CW_GENRE_PLAN || []).map(r => r.fid))
+    && (WML.CW_LENS_PLAN.genre || []).length === 5 && WML.CW_LENS_PLAN.genre.every(r => r.optional === true && r.doc === 'genre'));
 ok('Step 23 (Draft 5) polishes with the theme_tone lens', cfg('cw_step_23').environment === 'inline-coaching' && WML.getCwStepDef('cw_step_23').lens === 'theme_tone' && cfg('cw_step_23').protocolSource === null);
 ok('…and Steps 21 and 22 (the theme and tone workbook pages) are untouched', cfg('cw_step_21').environment !== 'inline-coaching' && cfg('cw_step_22').environment !== 'inline-coaching');
 ok('…and Draft 5\'s pinned plan is the six Step 21 rows, every one shown (a blank theme says so), from the ONE list',
@@ -219,7 +224,7 @@ ok('…and it carries a section for every lens the JS declares',
 // is the §5c "never author pedagogy from general knowledge" failure with a tap to trigger it.
 console.log('\nEvery Creative Writing button is defined in the rubric:');
 const CHIP = fs.readFileSync(path.join(ROOT, 'frontend/wml-selection-chip.js'), 'utf8');
-const cwGroups = ['cwScan', 'cwWordChoice', 'cwArc', 'cwArch', 'cwEmp', 'cwTheme', 'cw'];
+const cwGroups = ['cwScan', 'cwWordChoice', 'cwArc', 'cwArch', 'cwEmp', 'cwTheme', 'cwGenre', 'cw'];
 let cwActions = [];
 for (const g of cwGroups) {
     const m = CHIP.match(new RegExp(g + ":\\s*\\[([^\\]]*)\\]"));

@@ -200,6 +200,11 @@ name what is there, ask one question, stop. Never rewrite their passage for them
 | `cw-theme-image` | The thematic image: which image, object or natural detail recurs and connects to the theme, and does it come back with a changed meaning? |
 | `cw-theme-shown` | Shown, not stated: does the theme emerge here, or does a character or the narrator state it? |
 | `cw-theme-ending` | The final image: what last action or image carries the thematic weight? |
+| `cw-genre-setting` | Setting: does a detail here tell the reader what genre they are in? One well-chosen detail, or three generic ones? |
+| `cw-genre-atmosphere` | Atmosphere: does the feeling here keep the genre's promise, and does it intensify as the tension peaks? |
+| `cw-genre-device` | Plot device: which of the genre's own mechanisms is doing a job here, or could be? |
+| `cw-genre-language` | Language: do these sentences sound like the genre — precise, rich, urgent or intimate, as the genre needs? |
+| `cw-genre-centre` | The protagonist at the centre: is the protagonist still the centre here, or has a convention pushed them aside? Decoration, or craft? |
 | `check-sensory-variety` | Which senses are in play, and which one would add most here? |
 | `check-scene-structure-beats` | Do the beats inside this passage build, or sit flat? |
 | `check-show-dont-tell` | As `cw-scan-show`, on a shorter selection. |
@@ -447,9 +452,58 @@ choice: coach the contrast, never "correct" it.
 Earlier layers still count: the prose, the character arc, the archetypes and the empathy are fair to
 raise, because this draft builds on them. Later layers are not.
 
+### Lens `genre` — Draft 6
+
+The student chose, in Step 24, the genre or genres their story blends — from five categories, each named
+for the emotion it promises (Courage · Fear and Loathing · Wonder and Awe · Need to Know · Heart) — and
+the conventions of each they will use. In Step 25 they mapped genre across their plot, stage by stage.
+The genres they chose are at the top of the document, under **"Your Plan for This Draft"** (a category
+they did not choose is left off). **Never ask the student which genre they chose** — read it there.
+Where nothing is filled in yet, work from the draft and do not ask for it.
+
+The whole point of this draft: **genre is a promise to the reader about what emotional experience they
+will have** (Step 24), and this draft keeps that promise. Most strong stories blend genres, and a story
+can shift genre from beginning to middle to end. **Genre serves the character, never the other way
+round** (Step 26): the character arc drives the story, and the genre's conventions amplify how it feels.
+
+**The four channels the Step 26 workshop teaches:**
+1. **Setting details** — the physical world signals the genre before anything happens (a crumbling
+   mansion for Gothic, a vast landscape for Adventure). One well-chosen detail beats three generic ones.
+2. **Atmosphere** — the feeling made by setting, weather, light and sound together. It should intensify
+   as the tension peaks. Pathetic fallacy can carry it, or deliberately work against it, for effect.
+3. **Plot devices** — the genre's own mechanisms: a ticking clock or hidden information (Thriller);
+   decay, entrapment, things half-seen (Gothic, Horror); an obstacle that seems impossible (Adventure);
+   a magical object, or a rule of the world revealed (Fantasy); a moment of painful honesty, or a
+   relationship tested (Drama, Coming-of-Age).
+4. **Language** — the words themselves sound like the genre: precise and stripped-down for a thriller,
+   rich and layered for Gothic, dynamic and urgent for adventure, intimate and reflective for drama.
+
+**Convention with intention** (Step 26): a dark forest added because it is Gothic is decoration. A dark
+forest added because the setting reflects the protagonist's confusion is craft.
+
+| Where the selection sits | What must become visible | Ask about |
+|---|---|---|
+| **Hook · Setup** | the genre's promise, made at once — the world looks, sounds and feels like the genre before anything happens | one setting detail that signals the genre; the atmosphere of the opening |
+| **Reaction · Epiphany** | the genre's own darkest moment (Step 25: nightmares, horrors, the genre's worst point); a blend or shift, if the plan has one, landing where it serves the character | the plot device at work; whether a shift in genre is intentional |
+| **Proaction · Climax · Denouement** | the promise kept at the highest point — the atmosphere intensifying as the tension peaks; the genre's final emotional note | the climax's atmosphere and language; the last feeling the reader is left with |
+
+**The three tests, in the student's own terms:**
+1. *Does the world of your scene tell the reader what genre they are in before anything happens?*
+2. *Does the atmosphere intensify as the tension peaks?*
+3. *Is your protagonist still the centre of the scene?*
+
+**Pointer phrases:**
+- *Which plot device from your genre is doing a job in your scene?*
+- *Do your key sentences sound like your genre?*
+- *Is this detail decoration, or does it show what your protagonist is feeling?*
+- *One well-chosen detail beats three generic ones. Which one would you keep?*
+
+Earlier layers still count: the prose, the character arc, the archetypes, the empathy, and the theme and
+tone are fair to raise, because this draft builds on them. Later layers are not.
+
 ### Later lenses
 
-Drafts 6–7 add genre and structural elements. Each gets its own section
+Draft 7 adds structural elements. It gets its own section
 here as its step moves to this environment. **Until a lens is written down, do not coach it** —
 inventing a layer the student has not been taught is the failure this file exists to prevent.
 

@@ -113,10 +113,12 @@
         cwEmp:        ['cw-emp-hurt', 'cw-emp-courage', 'cw-emp-cost', 'cw-emp-balance', 'cw-emp-build'],
         // v7.20.836 (#884-④): Draft 5's lens — the tone in the words, the shift, the image that carries the theme, shown not stated, the final image.
         cwTheme:      ['cw-theme-tone', 'cw-theme-shift', 'cw-theme-image', 'cw-theme-shown', 'cw-theme-ending'],
+        // v7.20.840 (#884-⑤): Draft 6's lens — the genre's setting, atmosphere, plot device and language, with the protagonist central.
+        cwGenre:      ['cw-genre-setting', 'cw-genre-atmosphere', 'cw-genre-device', 'cw-genre-language', 'cw-genre-centre'],
     };
     // v7.20.830 (#884-②): which lens group a full-course polishing draft offers — read from the step's own `lens`
     // (WML.cwStepLens), so a draft that moves to this environment brings its buttons as data, never a step literal.
-    const CW_LENS_GROUP = { character_arc: 'cwArc', archetypes: 'cwArch', empathy: 'cwEmp', theme_tone: 'cwTheme' };
+    const CW_LENS_GROUP = { character_arc: 'cwArc', archetypes: 'cwArch', empathy: 'cwEmp', theme_tone: 'cwTheme', genre: 'cwGenre' };
 
     const ACTION_LABELS = {
         // T1-T5 tier scans
@@ -186,6 +188,12 @@
         'cw-theme-image':   'Find the image',
         'cw-theme-shown':   'Show, don’t state',
         'cw-theme-ending':  'The final image',
+        // CW genre lens (v7.20.840)
+        'cw-genre-setting':    'Signal the genre',
+        'cw-genre-atmosphere': 'Build the atmosphere',
+        'cw-genre-device':     'Add a plot device',
+        'cw-genre-language':   'Sound like the genre',
+        'cw-genre-centre':     'Keep them central',
         // Turn into a device (non-fiction) — v7.19.272
         'device-suggest':            'Suggest a device',
         'device-metaphor':           'Metaphor',
@@ -224,6 +232,7 @@
         cwArch:       'Archetypes',
         cwEmp:        'Empathy',
         cwTheme:      'Theme & tone',
+        cwGenre:      'Genre',
         langScan:       'Scan your answer',
         langWordChoice: 'Word choice',
         litWordChoice:  'Word choice',
