@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.841';
+var WML_BUILD = '7.20.842';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1198,7 +1198,8 @@ window.WML = (function() {
         // (read ONLY through cwStepTier). The full course keeps its no-chat workbook page.
         { step: 27, label: 'Structural Elements',       tier: 'workbook', phase: 'drafting', unitTier: 'si' },
         { step: 28, label: 'Update Plot: Structural',   tier: 'workbook', phase: 'drafting' },
-        { step: 29, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7 },
+        // v7.20.842 (FIXLIST #884-⑥): Draft 7 polishes too — the structural lens (Steps 27–28 teach it).
+        { step: 29, label: 'Draft 7: Structural',       tier: 'si', phase: 'drafting', draft: 7, env: 'polishing', lens: 'structural' },
         // Polish Phase
         { step: 30, label: 'Final Draft — SPAG',        tier: 'si', phase: 'polish' },
         { step: 31, label: 'Metacognitive Reflection',  tier: 'workbook', phase: 'polish' },
@@ -2264,6 +2265,11 @@ window.WML = (function() {
         // v7.20.840 (#884-⑤): Draft 6 — the genres the student chose in Step 24 (its document is `genre`). `optional`: a
         // student blends one or two of the five categories, so a category they left blank is left off the pin.
         genre: CW_GENRE_PLAN.map(function (r) { return { label: r.label, doc: 'genre', fid: r.fid, optional: true }; }),
+        // v7.20.842 (#884-⑥): Draft 7 — the structural techniques chosen in Step 27 (its document is `structural_elements`).
+        // The ONE technique list, CW_STRUCT_TECHNIQUES, whose ids the full-course Step 27 page and weekend lesson 6 share
+        // (cwStructFid). The three a student MUST use (irony, the ending, the five senses) always show — blank says "not
+        // filled in yet"; the rest are `optional`, so one turned down ("Not using this one." or blank) is left off the pin.
+        structural: CW_STRUCT_TECHNIQUES.map(function (t) { return { label: t.label, doc: 'structural_elements', fid: cwStructFid(t.id), optional: !t.must }; }),
     };
     // The element list for trial N — ONE accessor for the walk, the page template and the gates.
     function cwTrialElements(n) {

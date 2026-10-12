@@ -115,10 +115,12 @@
         cwTheme:      ['cw-theme-tone', 'cw-theme-shift', 'cw-theme-image', 'cw-theme-shown', 'cw-theme-ending'],
         // v7.20.840 (#884-⑤): Draft 6's lens — the genre's setting, atmosphere, plot device and language, with the protagonist central.
         cwGenre:      ['cw-genre-setting', 'cw-genre-atmosphere', 'cw-genre-device', 'cw-genre-language', 'cw-genre-centre'],
+        // v7.20.842 (#884-⑥): Draft 7's lens — the compulsory irony, the five senses, dialogue, hooks and pacing, the ending.
+        cwStruct:     ['cw-struct-irony', 'cw-struct-senses', 'cw-struct-dialogue', 'cw-struct-pace', 'cw-struct-ending'],
     };
     // v7.20.830 (#884-②): which lens group a full-course polishing draft offers — read from the step's own `lens`
     // (WML.cwStepLens), so a draft that moves to this environment brings its buttons as data, never a step literal.
-    const CW_LENS_GROUP = { character_arc: 'cwArc', archetypes: 'cwArch', empathy: 'cwEmp', theme_tone: 'cwTheme', genre: 'cwGenre' };
+    const CW_LENS_GROUP = { character_arc: 'cwArc', archetypes: 'cwArch', empathy: 'cwEmp', theme_tone: 'cwTheme', genre: 'cwGenre', structural: 'cwStruct' };
 
     const ACTION_LABELS = {
         // T1-T5 tier scans
@@ -194,6 +196,12 @@
         'cw-genre-device':     'Add a plot device',
         'cw-genre-language':   'Sound like the genre',
         'cw-genre-centre':     'Keep them central',
+        // CW structural lens (v7.20.842)
+        'cw-struct-irony':     'Find the irony',
+        'cw-struct-senses':    'Use all five senses',
+        'cw-struct-dialogue':  'Sharpen the dialogue',
+        'cw-struct-pace':      'Hook and pace',
+        'cw-struct-ending':    'Land the ending',
         // Turn into a device (non-fiction) — v7.19.272
         'device-suggest':            'Suggest a device',
         'device-metaphor':           'Metaphor',
@@ -233,6 +241,7 @@
         cwEmp:        'Empathy',
         cwTheme:      'Theme & tone',
         cwGenre:      'Genre',
+        cwStruct:     'Structure',
         langScan:       'Scan your answer',
         langWordChoice: 'Word choice',
         litWordChoice:  'Word choice',

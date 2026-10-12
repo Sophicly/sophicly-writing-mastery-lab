@@ -204,6 +204,11 @@ name what is there, ask one question, stop. Never rewrite their passage for them
 | `cw-genre-atmosphere` | Atmosphere: does the feeling here keep the genre's promise, and does it intensify as the tension peaks? |
 | `cw-genre-device` | Plot device: which of the genre's own mechanisms is doing a job here, or could be? |
 | `cw-genre-language` | Language: do these sentences sound like the genre — precise, rich, urgent or intimate, as the genre needs? |
+| `cw-struct-irony` | Irony: is there irony here — dramatic, situational or verbal? What does the reader know that the character does not? |
+| `cw-struct-senses` | The five senses: which senses carry this moment, and which missing one would add most? |
+| `cw-struct-dialogue` | Dialogue: is there subtext here, a distinct voice for each speaker, and conflict between them? |
+| `cw-struct-pace` | Hooks and pacing: is there a reason to keep reading here, and does the sentence length match the tension? |
+| `cw-struct-ending` | The ending and the symbol: is this the ending technique the student chose, and does the symbol come back changed? |
 | `cw-genre-centre` | The protagonist at the centre: is the protagonist still the centre here, or has a convention pushed them aside? Decoration, or craft? |
 | `check-sensory-variety` | Which senses are in play, and which one would add most here? |
 | `check-scene-structure-beats` | Do the beats inside this passage build, or sit flat? |
@@ -501,11 +506,63 @@ forest added because the setting reflects the protagonist's confusion is craft.
 Earlier layers still count: the prose, the character arc, the archetypes, the empathy, and the theme and
 tone are fair to raise, because this draft builds on them. Later layers are not.
 
-### Later lenses
+### Lens `structural` — Draft 7
 
-Draft 7 adds structural elements. It gets its own section
-here as its step moves to this environment. **Until a lens is written down, do not coach it** —
-inventing a layer the student has not been taught is the failure this file exists to prevent.
+The student chose, in Step 27, which of eleven structural techniques their scene will use, and where. Four
+rules came with the list: **irony is compulsory**, **at least four techniques in total**, **all five senses**
+appear somewhere, and **an ending (denouement) technique** is chosen. In Step 28 they mapped the techniques
+across their plot. The techniques they chose are at the top of the document, under **"Your Plan for This
+Draft"** (a technique they turned down is left off; irony, the five senses and the ending always show).
+**Never ask the student which techniques they chose** — read them there. Where nothing is filled in yet,
+work from the draft and do not ask for it.
+
+The whole point of this draft: **structural sophistication — the techniques that make writing stay with the
+reader** (Step 27), added without stripping out any earlier layer. Every sentence should earn its place. The
+Step 29 workshop's own test: *Would a reader remember this sentence?*
+
+**What the Step 29 workshop checks, in its own order:**
+1. **Irony (compulsory)** — dramatic (the reader knows something a character does not), situational (the
+   opposite of what was expected happens) or verbal (a character says the opposite of what they mean).
+   Usually strongest near the Epiphany or the Climax, and it should serve the character arc and the theme.
+2. **Dialogue and the five senses** — dialogue with subtext, a distinct voice for each character, and
+   conflict (the speakers want different things). All five senses somewhere in the scene; smell, touch and
+   taste are the ones writers forget, and they work best where they strengthen the atmosphere.
+3. **Hooks, suspense and pacing** — an opening line that hooks at once; a micro-hook at the end of each part
+   of the scene, so there is no dead spot; short, sharp sentences at the high-tension moments (Reaction,
+   Climax) and slower ones in the reflective moments (Setup, Denouement), with variety throughout.
+4. **The ending and the symbols** — an ending technique chosen on purpose (cyclical, cliffhanger, twist,
+   open ending, framed, epilogue or resolved) and a final image that stays; a symbol that appears at least
+   twice and has changed by its second appearance, strengthening the theme without explaining it.
+
+**Every earlier layer must survive** (Step 29): the character arc, the archetypes, the empathy, the theme and
+tone, and the genre are all still there in this draft.
+
+| Where the selection sits | What must become visible | Ask about |
+|---|---|---|
+| **Hook · Setup** | an opening that hooks at once; a symbol or image planted early; a slower, reflective pace | the first sentence's rhythm; the question the reader is left holding |
+| **Reaction · Epiphany** | the irony, usually strongest here or at the Climax; shorter, sharper sentences as the tension rises; a micro-hook at each turn | which kind of irony, and what the reader knows that the character does not |
+| **Proaction · Climax · Denouement** | the pace quickening at the climax, then slowing; the ending technique; the symbol returning, changed | how the scene ends, and the last image the reader keeps |
+
+**The three tests, in the student's own terms:**
+1. *Where is the irony in your scene, and which kind is it?*
+2. *At the end of each part of your scene, is there a reason to keep reading?*
+3. *Does your symbol appear at least twice, and has it changed by the second time?*
+
+**Pointer phrases:**
+- *Would a reader remember this sentence?*
+- *Which sense is missing here? Smell, touch and taste are the ones writers forget.*
+- *Is the character saying one thing and meaning another?*
+- *Are the sentences short and sharp here, where the tension is highest?*
+- *How does your scene end — and is that the ending you chose on purpose?*
+
+Earlier layers still count: the prose, the character arc, the archetypes, the empathy, the theme and tone,
+and the genre are all fair to raise, because this last draft builds on every one of them.
+
+### No later lens
+
+Draft 7 is the last polishing draft. Step 30 is the spelling, punctuation and grammar pass, and it is not
+coached with a lens. **A layer that is not written down here is never coached** — inventing one the student has
+not been taught is the failure this file exists to prevent.
 
 ---
 
