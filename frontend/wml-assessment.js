@@ -3588,6 +3588,17 @@
         const t = (docTotal && docTotal.allSet) ? docTotal : null;
         return { whole: true, base: list[0].base, score: t ? t.total : null, max: t ? t.max : null };
     }
+    // ⭐ v7.20.843 (FIXLIST #899-back — Neil, 12 Oct: "Yes, add it"): WHICH ANSWER A FEEDBACK BOX LEADS BACK TO — the
+    // answer row's pairing above, reversed, never a second rule. One answer (an essay) → that answer; several (a Language
+    // paper) → the first whose question key (keyOf = _paraKey) is this box's own; no key or no match → null (no button).
+    function feedbackAnswerLink(fbBase, respLabels, keyOf) {
+        const list = Array.isArray(respLabels) ? respLabels : [];
+        if (list.length === 1) return list[0] || null;
+        if (list.length < 2) return null;
+        const k = keyOf(fbBase);
+        if (!k) return null;
+        return list.filter(function (l) { return keyOf(l) === k; })[0] || null;
+    }
     // @RESP-FB-PURE-END
     function _deterministicDocGrade() {
         // v7.19.868: the single audited grade for THIS doc wins when present (set atomically
@@ -18430,6 +18441,20 @@
             if (p && p.base === base) target = s;
         });
         if (!target) { console.warn('WML answer row: no feedback box "' + base + '" on this page — nothing to go to.'); return false; }
+        _expandIfCollapsed(target);
+        requestAnimationFrame(() => _swmlScrollToTop(target, 24));
+        return true;
+    }
+    // ⭐ v7.20.843 (FIXLIST #899-back): a feedback box's "Back to answer ↑" — the twin of _goToFeedbackBox. Matched by the
+    // answer's exact label (feedbackAnswerLink); a loop, never CSS.escape (WML rule).
+    function _goToAnswer(label) {
+        const editor = document.getElementById('swml-tiptap-editor');
+        if (!editor || !label) return false;
+        let target = null;
+        editor.querySelectorAll('[data-section-type="response"]').forEach(s => {
+            if (!target && (s.getAttribute('data-section-label') || '') === label) target = s;
+        });
+        if (!target) { console.warn('WML feedback row: no answer "' + label + '" on this page — nothing to go back to.'); return false; }
         _expandIfCollapsed(target);
         requestAnimationFrame(() => _swmlScrollToTop(target, 24));
         return true;
@@ -57822,6 +57847,24 @@
             // Lit → a half-step dropdown (Neil's choice) + decimal-aware parsing throughout.
             const _halfMarks = !/^language/.test((state.subject || '').toLowerCase());
             const feedbackSections = editor.querySelectorAll('[data-section-type="feedback"]');
+            // v7.20.839/.843 (#899): the answer ↔ feedback link buttons — ONE helper for both directions.
+            const _linkBtn = (text, title, fn) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'swml-resp-fb-btn';
+                b.setAttribute('contenteditable', 'false');
+                b.textContent = text;
+                b.title = title;
+                b.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });   // never steal the caret
+                b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); fn(); });
+                return b;
+            };
+            // v7.20.843 (#899-back): the answers a marked feedback box can lead back to — only where the answer row's
+            // links live too (the display-locked lessons).
+            const _docLocked = _docDisplayLocked();
+            const _respLabels = _docLocked
+                ? Array.from(editor.querySelectorAll('[data-section-type="response"]')).map((s) => s.getAttribute('data-section-label') || '')
+                : [];
             feedbackSections.forEach((section) => {
                 const label = section.getAttribute('data-section-label') || '';
                 // v7.20.653 (#644): prefix-tolerant — "Part A Feedback: Introduction (— / 5)"
@@ -57853,7 +57896,9 @@
 
                 // v7.20.650 (#635/#636): the history line rides the sig too — the card redraws when it lands.
                 const _histHtml = _qForCalib ? _qHistReadoutHTML(baseName, currentMarks, maxMarks) : '';
-                const sig = 'fb|' + baseName + '|' + currentMarks + '/' + maxMarks + '|' + _pred + '|' + _ratingPred + '|' + _halfMarks + '|' + _qHistSig() + '|' + _histHtml.length;
+                // v7.20.843 (#899-back): the paired answer rides the sig — the row redraws when it appears or changes.
+                const _backTo = (_docLocked && currentMarks >= 0) ? feedbackAnswerLink(baseName, _respLabels, _paraKey) : null;
+                const sig = 'fb|' + baseName + '|' + currentMarks + '/' + maxMarks + '|' + _pred + '|' + _ratingPred + '|' + _halfMarks + '|' + _qHistSig() + '|' + _histHtml.length + '|' + (_backTo || '-');
                 if (row.dataset.sig === sig) return;
                 _rowFillStart(row);
 
@@ -57981,6 +58026,10 @@
                 } catch (e) { console.warn('[WML calib] readout error', e && e.message); }
 
                 row.appendChild(widget);
+                // ⭐ v7.20.843 (FIXLIST #899-back — Neil: "Yes, add it"): the way back from a marked box to its answer.
+                if (_backTo) {
+                    row.appendChild(_linkBtn('Back to answer \u2191', _respLabels.length === 1 ? 'Back to the writing' : 'Back to this question\u2019s answer', () => { _goToAnswer(_backTo); }));
+                }
                 // v7.20.650 (#635/#636): Previous · Best — its own line (flex-basis 100%) under the readout.
                 if (_histHtml) {
                     const histEl = document.createElement('div');
@@ -57999,7 +58048,7 @@
             // shows its question's mark, "Pop out feedback ↗" and "Go to feedback ↓". Pairing and mark: responseFeedbackLink
             // (pure, gated). Only where the feedback is live — the display-locked lessons (assessment, redraft assessment,
             // discuss your feedback), in the student's view and the tutor's review alike.
-            if (_docDisplayLocked()) {
+            if (_docLocked) {
                 const _fbBoxes = [];
                 feedbackSections.forEach((s) => { const p = feedbackLabelParts(s.getAttribute('data-section-label') || ''); if (p) _fbBoxes.push(p); });
                 const _resps = Array.from(editor.querySelectorAll('[data-section-type="response"]'));
@@ -58027,22 +58076,11 @@
                             chip.textContent = link.score + ' / ' + link.max;
                             row.appendChild(chip);
                         }
-                        const _btn = (text, title, fn) => {
-                            const b = document.createElement('button');
-                            b.type = 'button';
-                            b.className = 'swml-resp-fb-btn';
-                            b.setAttribute('contenteditable', 'false');
-                            b.textContent = text;
-                            b.title = title;
-                            b.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });   // never steal the caret
-                            b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); fn(); });
-                            return b;
-                        };
-                        row.appendChild(_btn('Pop out feedback \u2197', link.whole ? 'Pop out the feedback, to read beside the writing' : 'Pop out this question\u2019s feedback, to read beside the answer', () => {
+                        row.appendChild(_linkBtn('Pop out feedback \u2197', link.whole ? 'Pop out the feedback, to read beside the writing' : 'Pop out this question\u2019s feedback, to read beside the answer', () => {
                             if (typeof _openFeedbackPadHook === 'function') _openFeedbackPadHook(link.whole ? '' : link.base);
                             else console.warn('WML answer row: the pad system is not mounted — pop-out ignored');
                         }));
-                        row.appendChild(_btn('Go to feedback \u2193', link.whole ? 'Go to the feedback' : 'Go to this question\u2019s feedback', () => { _goToFeedbackBox(link.base); }));
+                        row.appendChild(_linkBtn('Go to feedback \u2193', link.whole ? 'Go to the feedback' : 'Go to this question\u2019s feedback', () => { _goToFeedbackBox(link.base); }));
                     }
                     _rowFillEnd(row, sig);
                 });

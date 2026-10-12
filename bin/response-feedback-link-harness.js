@@ -10,6 +10,8 @@
  * checks the wiring that turns it into the row, the one-question pad and the jump. §5d: the answer and its box must
  * reach the SAME question key, or the row points at the wrong feedback — so the pairing is tested, never assumed.
  *
+ * v7.20.843 (#899-back): and the way back — each marked feedback box's "Back to answer ↑" (section 7).
+ *
  * Usage: node bin/response-feedback-link-harness.js
  */
 'use strict';
@@ -35,8 +37,8 @@ const pk = SRC.indexOf('function _paraKey(s) {');
 if (b < 0 || e < 0 || pk < 0) { console.error('❌ the @RESP-FB-PURE block or _paraKey is missing from wml-assessment.js'); process.exit(1); }
 const PARA_KEY = SRC.slice(pk, braceSliceFrom(SRC, pk, '{', '}').end);
 // eslint-disable-next-line no-new-func
-const M = new Function(SRC.slice(b, e) + '\n' + PARA_KEY + '\nreturn { feedbackLabelParts, docMarkFromLabels, responseFeedbackLink, _paraKey };')();
-const { feedbackLabelParts: parts, docMarkFromLabels: docMark, responseFeedbackLink: link, _paraKey: keyOf } = M;
+const M = new Function(SRC.slice(b, e) + '\n' + PARA_KEY + '\nreturn { feedbackLabelParts, docMarkFromLabels, responseFeedbackLink, feedbackAnswerLink, _paraKey };')();
+const { feedbackLabelParts: parts, docMarkFromLabels: docMark, responseFeedbackLink: link, feedbackAnswerLink: back, _paraKey: keyOf } = M;
 const boxesOf = (labels) => labels.map(parts).filter(Boolean);
 
 console.log('\nRESPONSE ↔ FEEDBACK — the answer row (FIXLIST #899)\n');
@@ -87,7 +89,7 @@ ok(link('Your Essay', boxesOf(EA), 1, keyOf, { total: 6, max: 10, allSet: true }
 console.log('\n6 · The wiring that turns the link into a row, a pad and a jump:');
 const rcIdx = SRC.indexOf('function _renderControlRows() {');
 const RC = rcIdx < 0 ? '' : braceSliceFrom(SRC, rcIdx, '{', '}').text;
-const passAt = RC.indexOf('if (_docDisplayLocked()) {\n                const _fbBoxes');
+const passAt = RC.indexOf('if (_docLocked) {\n                const _fbBoxes');
 ok(passAt !== -1, 'renderControlRows fills each answer\'s own row — only in the display-locked lessons (feedback is live there)');
 const PASS = passAt < 0 ? '' : RC.slice(passAt, RC.indexOf('// ── Self-Assessment Dropdowns', passAt));
 ok(/_ctlRowOf\(resp\)/.test(PASS) && /responseFeedbackLink\(resp\.getAttribute\('data-section-label'\) \|\| '', _fbBoxes, _resps\.length, _paraKey, _docTotal\)/.test(PASS),
@@ -95,7 +97,9 @@ ok(/_ctlRowOf\(resp\)/.test(PASS) && /responseFeedbackLink\(resp\.getAttribute\(
 ok(/feedbackLabelParts\(/.test(PASS) && /docMarkFromLabels\(/.test(PASS) && /_lastAuditedResult\.docKey === _assessDocKey\(\)/.test(PASS),
     'its boxes come from the ONE label parser; an essay\'s total from the ONE arithmetic, the audited result first');
 ok(/if \(row\.dataset\.sig === sig\) return;/.test(PASS) && /_rowFillStart\(row\)/.test(PASS) && /_rowFillEnd\(row, sig\)/.test(PASS), 'sig-idempotent like every row (PM law rule 4: an unchanged row is never rewritten)');
-ok(/mousedown', \(e\) => \{ e\.preventDefault\(\); e\.stopPropagation\(\); \}\)/.test(PASS), 'its buttons never steal the caret');
+const LB = RC.slice(RC.indexOf('const _linkBtn = (text, title, fn) => {'), RC.indexOf('const _docLocked = _docDisplayLocked();'));
+ok(/mousedown', \(e\) => \{ e\.preventDefault\(\); e\.stopPropagation\(\); \}\)/.test(LB) && /b\.className = 'swml-resp-fb-btn';/.test(LB), 'its buttons (ONE helper, _linkBtn) never steal the caret');
+ok(/row\.appendChild\(_linkBtn\('Pop out feedback/.test(PASS) && /row\.appendChild\(_linkBtn\('Go to feedback/.test(PASS) && !/const _btn = /.test(RC), 'the answer row uses that one helper — no second copy');
 ok(/_openFeedbackPadHook\(link\.whole \? '' : link\.base\)/.test(PASS) && /_goToFeedbackBox\(link\.base\)/.test(PASS), '"Pop out feedback ↗" opens the pad for that question; "Go to feedback ↓" jumps to its box');
 ok(/let _openFeedbackPadHook = null;/.test(SRC) && /_openFeedbackPadHook = \(base\) => \{[\s\S]{0,300}spawnExtractPanel\(\[\], base \? 'feedback\|' \+ base : 'feedback'/.test(SRC),
     'the hook is declared at module scope and set where the pads live');
@@ -116,6 +120,28 @@ ok(/\.swml-para-pop-node,\n\.swml-resp-fb-btn \{/.test(CSS) && /\.swml-resp-fb-b
     'the buttons wear the pop-out chip\'s own mould (one family, no new look)');
 ok(/ctlRow\.className = 'swml-ctl-row';/.test(SB) && /if \(ctlRow === mutation\.target \|\| ctlRow\.contains\(mutation\.target\)\) return true;/.test(SB),
     'every collapsible section (answers included) has the control row, and its fills are firewalled from ProseMirror');
+
+
+console.log('\n7 · The way BACK — "Back to answer ↑" on each marked feedback box (FIXLIST #899-back):');
+ok(back('Feedback: Q3', RESP, keyOf) === 'Q3 Response', '⭐ Feedback: Q3 → Q3 Response', back('Feedback: Q3', RESP, keyOf));
+ok(back('Feedback: Q1', RESP, keyOf) === 'Q1 Statements' && back('Feedback: Q5', RESP, keyOf) === 'Q5 Response', 'Q1 → "Q1 Statements", Q5 → "Q5 Response" (the real template labels)');
+RESP.forEach((r) => { const q = r.split(' ')[0]; ok(back('Feedback: ' + q, RESP, keyOf) === r, 'round trip: ' + r + ' → its box → back to ' + r); });
+ok(back('Feedback: Q1', ['Q1 Statements', 'Q10 Response'], keyOf) === 'Q1 Statements' && back('Feedback: Q10', ['Q1 Statements', 'Q10 Response'], keyOf) === 'Q10 Response', '⭐ "Q10" vs "Q1": whole keys, never prefixes');
+ok(back('Feedback: Q1', ['Q10 Response', 'Q1 Statements'], keyOf) === 'Q1 Statements', '…and with Q10 listed FIRST, Q1 still finds Q1 (a prefix match would take Q10)', back('Feedback: Q1', ['Q10 Response', 'Q1 Statements'], keyOf));
+ok(back('Feedback: Introduction', ['Your Essay'], keyOf) === 'Your Essay' && back('Feedback: Body Paragraph 2', ['Your Essay'], keyOf) === 'Your Essay', 'one essay → every box leads back to it');
+ok(back('Feedback: Q6', RESP, keyOf) === null, 'a box with no answer of its own → no button, never a neighbour\'s');
+ok(back('Feedback', RESP, keyOf) === null, 'a box with no question key → no button');
+ok(back('Feedback: Q3', [], keyOf) === null, 'no answers on the page → no button');
+const FBP = RC.slice(RC.indexOf("feedbackSections.forEach((section) => {"), passAt);
+ok(/const _respLabels = _docLocked\s*\? Array\.from\(editor\.querySelectorAll\('\[data-section-type="response"\]'\)\)/.test(RC), 'the answers are read only in the display-locked lessons');
+ok(/const _backTo = \(_docLocked && currentMarks >= 0\) \? feedbackAnswerLink\(baseName, _respLabels, _paraKey\) : null;/.test(FBP), '⭐ only on a MARKED box, paired through the pure function + _paraKey (the answer row\'s rule reversed)');
+ok(/\+ '\|' \+ \(_backTo \|\| '-'\);/.test(FBP), 'the paired answer rides the sig — the row redraws when it appears');
+ok(/if \(_backTo\) \{\s*row\.appendChild\(_linkBtn\('Back to answer \\u2191'[\s\S]{0,160}_goToAnswer\(_backTo\)/.test(FBP), 'the button sits in the box\'s own firewalled row and calls _goToAnswer');
+const aIdx = SRC.indexOf('function _goToAnswer(label) {');
+const GA = aIdx < 0 ? '' : braceSliceFrom(SRC, aIdx, '{', '}').text;
+ok(/\[data-section-type="response"\]/.test(GA) && /_expandIfCollapsed\(target\)/.test(GA) && /_swmlScrollToTop\(target, 24\)/.test(GA) && !/CSS\.escape/.test(GA),
+    '"Back to answer ↑" opens a collapsed answer the chevron\'s way and uses the ONE scroll; no CSS.escape');
+ok(/function _stripChipsFromClone\(node\) \{[\s\S]{0,1200}node\.querySelectorAll\('\.swml-ctl-row'\)\.forEach\(c => c\.remove\(\)\)/.test(SRC), 'pad clones drop every control row — no dead copies of the button in a pad');
 
 console.log(fail
     ? '\n❌ response-feedback-link-harness FAILED (' + fail + ' of ' + (pass + fail) + ')'
