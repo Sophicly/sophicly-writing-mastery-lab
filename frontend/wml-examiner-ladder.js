@@ -192,6 +192,37 @@
      */
     function resumeAt(scheme, state) { return next(scheme, state); }
 
+    /**
+     * v7.20.845 (#884-⑦-reason): a climb that reached its MARK but not its REASON, rebuilt from the two rows the walk
+     * wrote — the level row ("Level 3 · Lower Level 3 · Top of this level") and the mark row ("15 / 24"). The walk files
+     * the mark at placement, before the reason, and a new device has no sidecar: without this the reason is never asked.
+     * Returns the state next() resolves to 'reason', or null — and it is null unless resolve() reproduces the stored mark
+     * EXACTLY, so a hand-edited row, a changed format or another scheme can never seat a student at the wrong level.
+     */
+    function fromRows(scheme, levelRow, markRow) {
+        const r = rungs(scheme);
+        const lm = /^Level (\d+)/.exec(String(levelRow || '').trim());
+        const mm = /(\d+)\s*\/\s*(\d+)/.exec(String(markRow || ''));
+        if (!r.length || !lm || !mm) return null;
+        const n = parseInt(lm[1], 10);
+        const idx = r.findIndex(function (l) { return l.level === n; });
+        if (idx < 0) return null;
+        const segs = String(levelRow).split('·').map(function (x) { return x.trim(); });
+        const band = bandsOf(r[idx]).filter(function (b) { return segs.indexOf(b.name) !== -1; })[0];
+        const pm = /^(top|middle|bottom) of this level$/i.exec(segs[segs.length - 1] || '');
+        // A one-mark range has no inside to place in — the walk files it as the top, with no placement words.
+        const placement = pm ? pm[1].toLowerCase() : 'top';
+        const state = {
+            levelIndex: idx, metAll: {}, met: [], partial: [], stoppedAt: n,
+            bandName: band ? band.name : null, placement: placement,
+        };
+        state.metAll[n] = false;
+        const res = resolve(scheme, { levelNumber: n, bandName: state.bandName, placement: placement });
+        if (!res || res.mark !== parseInt(mm[1], 10) || res.outOf !== parseInt(mm[2], 10)) return null;
+        const step = next(scheme, state);
+        return step && step.step === 'reason' ? state : null;
+    }
+
     const API = {
         rungs: rungs,
         descriptorsOf: descriptorsOf,
@@ -204,6 +235,7 @@
         topOut: topOut,
         next: next,
         resumeAt: resumeAt,
+        fromRows: fromRows,
         PLACEMENTS: PLACEMENTS,
     };
     if (typeof window !== 'undefined') { window.WML_EXAMINER_LADDER = API; }

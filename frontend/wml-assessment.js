@@ -34211,10 +34211,18 @@
                     cfg = null;
                     return false;
                 }
-                st = { levelIndex: 0, metAll: {}, met: [], stoppedAt: null, bandName: null, placement: null };
+                // ⭐ v7.20.845 (#884-⑦-reason): `resumeReason` — the page holds this climb's mark but not its reason (the
+                // mark is filed at placement, before the reason; a new device has no sidecar). Seat the climb at the reason
+                // ask, rebuilt from the page's own rows. Only when the rebuild reproduces the stored mark exactly; else the
+                // whole climb, from Level 1 (never a guessed level).
+                const rebuilt = (o.resumeReason && engine() && typeof engine().fromRows === 'function')
+                    ? engine().fromRows(scheme(), rowText(fid('level')), rowText(fid('mark'))) : null;
+                if (o.resumeReason && !rebuilt) console.warn('WML ladder: could not rebuild ' + o.walkId + ' from its rows — climbing again from Level 1.');
+                st = rebuilt || { levelIndex: 0, metAll: {}, met: [], stoppedAt: null, bandName: null, placement: null };
                 critIdx = 0;
                 active = true; pending = false; done = false;
                 persist();
+                if (rebuilt) { serveCurrent(); return true; }
                 serveCwChunks(orientationChunks(), {
                     emit: aiBubble,
                     onDone: function () { serveCurrent({ defer: true }); },
@@ -37840,11 +37848,14 @@
             }
             function selfMark(ao) { return markOfRow(docRow(ladderFids(ao).mark)); }
             function selfTotal() { return aos().reduce(function (a, ao) { const m = selfMark(ao); return a + (m ? m.got : 0); }, 0); }
+            // v7.20.845 (#884-⑦-reason): a climb is FINISHED when it has its reason, not its mark — the ladder files the
+            // mark at placement, before the reason. Keyed on the mark alone, a new device skipped the reason (measured).
+            function aoDone(ao) { return !!selfMark(ao) && !!docRow(ladderFids(ao).reason); }
             // THE STAGE, from the rows alone — the only authority a new device has.
             function position() {
                 if (docRow(fid('mark'))) return docRow(fid('target')) ? 'done' : 'target';
                 const goal = docRow(fid('goal'));
-                const next = aos().filter(function (ao) { return !selfMark(ao); })[0];
+                const next = aos().filter(function (ao) { return !aoDone(ao); })[0];
                 if (!goal && next === aos()[0]) return 'start';
                 if (!goal) return 'goal';
                 if (next) return 'ladder:' + next.id;
@@ -37915,7 +37926,7 @@
                 aiBubble(text);
                 attach();
             }
-            function openLadder(ao) {
+            function openLadder(ao, opts) {
                 st = st || {};
                 st.phase = 'ladder:' + ao.id;
                 st.opened = ao.id;
@@ -37924,6 +37935,7 @@
                 const opened = _examinerLadderCtl.open({
                     schemeKey: ao.schemeKey, aoName: ao.name + ' (' + ao.code + ')', walkId: CW_FINAL_LADDER_WALK,
                     regime: 'bestfit', orientation: 'short', hostOwnsWrap: true,
+                    resumeReason: !!(opts && opts.resumeReason),
                     fids: ladderFids(ao),
                     onDone: function () { afterLadder(); },
                 });
@@ -38328,6 +38340,8 @@
                 if (pos === 'ready') { serveReady(); return; }
                 if (pos === 'start' || pos === 'goal') { serveGoalAsk(opts); return; }
                 const ao = aos().filter(function (a) { return pos === 'ladder:' + a.id; })[0];
+                // Marked but no reason: the climb is NOT done — go straight back to its reason ask, never "Next: …".
+                if (ao && selfMark(ao)) { openLadder(ao, { resumeReason: true }); return; }
                 if (ao) { serveAoPrompt(ao, opts); return; }
                 serveWrap();
             }
@@ -38400,7 +38414,7 @@
                     if (docRow(fid('mark'))) rebuildFromDoc();
                     if (st.mark) publishScore();   // later autosaves keep carrying the grade (#435)
                     // The sidebar, from the rows.
-                    const marked = aos().filter(function (ao) { return !!selfMark(ao); }).length;
+                    const marked = aos().filter(function (ao) { return aoDone(ao); }).length;
                     progress(docRow(fid('mark')) ? 4 : (marked ? marked + 1 : 0));
                     if (pos === 'done') {
                         active = false; pending = false; done = true;

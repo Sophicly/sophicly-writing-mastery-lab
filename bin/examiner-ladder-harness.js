@@ -136,6 +136,22 @@ const midStop = { levelIndex: 0, metAll: { 1: true, 2: true, 3: false }, partial
 eq(L.resumeAt(AO5, midStop).step, 'placement', 'a student mid-verdict resumes on the placement question');
 eq(L.resumeAt(AO5, midStop).range.min, 13, '…with Lower Level 3’s range, not the whole level’s');
 
+// v7.20.845 (#884-⑦-reason): a NEW DEVICE holds only the rows. The mark is filed at placement, before the reason, so a
+// climb with a mark and no reason must rebuild to the reason ask — and to nothing at all unless the rows agree exactly.
+console.log('\nrebuilt from the page’s rows (a new device, mid-reason):');
+const fr = L.fromRows(AO5, 'Level 3 · Lower Level 3 · Top of this level', '15 / 24');
+ok(!!fr && L.next(AO5, fr).step === 'reason', 'the rows of a placed, unreasoned AO5 climb rebuild to the REASON ask');
+ok(!!fr && fr.bandName === 'Lower Level 3' && fr.placement === 'top' && fr.stoppedAt === 3, '…at the level, half and placement the student chose');
+ok(!!fr && L.resolve(AO5, { levelNumber: fr.stoppedAt, bandName: fr.bandName, placement: fr.placement }).mark === 15, '…which resolve back to the stored mark');
+const fr6 = L.fromRows(AO6, 'Level 2 · Middle of this level', '6 / 16');
+ok(!!fr6 && L.next(AO6, fr6).step === 'reason' && fr6.bandName === null, 'AO6 (no halves) rebuilds too, with no invented half');
+eq(L.fromRows(AO5, 'Level 3 · Lower Level 3 · Top of this level', '16 / 24'), null, 'a mark the rows do not produce is REFUSED — never a guessed level');
+eq(L.fromRows(AO5, 'Level 3 · Top of this level', '15 / 24'), null, 'a half missing from the row is refused (the walk would have asked it)');
+eq(L.fromRows(AO5, 'my level is three', '15 / 24'), null, 'a row in no format the walk writes is refused');
+eq(L.fromRows(AO5, 'Level 9 · Top of this level', '24 / 24'), null, 'a level the scheme does not have is refused');
+eq(L.fromRows(AO5, 'Level 3 · Lower Level 3 · Top of this level', ''), null, 'no mark row → nothing to rebuild');
+eq(L.fromRows(AO6, 'Level 3 · Lower Level 3 · Top of this level', '15 / 24'), null, 'another scheme’s rows are refused (15/24 is not an AO6 mark)');
+
 // ── 6 · LIVENESS — every reachable state names a next step ──────────────────
 console.log('\nliveness — no reachable state leaves the student with nothing:');
 let dead = 0, states = 0;

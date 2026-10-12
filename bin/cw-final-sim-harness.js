@@ -346,6 +346,44 @@ async function main() {
         ok(n5.bubbles.length >= 1 && !/This is the \*\*final assessment\*\*/.test(n5.bubbles[0] || ''), '9 · …from the first UNSEEN message, not from the top', n5.bubbles[0]);
     }
 
+    // ── 9b · ⭐ a NEW DEVICE between the placement and the reason (v7.20.845, #884-⑦-reason — measured on staging: the
+    //         mark is filed at placement, so a page keyed on the mark alone skipped the reason and served "Next: …") ──────
+    {
+        // The rows come from a REAL climb, so the format the walk WRITES and the one the rebuild READS are proven to agree.
+        const a = world({ ls: new Map() });
+        a.ctl.forceStart(); await settle(); await continueAll(a);
+        await tapNamed(a, /^Grade 8$/); await continueAll(a);
+        for (let k = 0; k < 2; k++) { await tapNamed(a, /^Mine is better than this$/); await continueAll(a); }
+        await tapNamed(a, /^This is where mine sits$/);
+        let g = 0;
+        while (chip(a, /I met this one|Not this one/) && g++ < 30) await tapNamed(a, g === 1 ? /I met this one/ : /Not this one/);
+        await tapNamed(a, /^Lower Level/);
+        await tapNamed(a, /^Top of this level$/);
+        ok(a.rows.get(F('ao5-mark')) === '15 / 24' && !a.rows.get(F('ao5-reason')), '9b · (setup) a real climb placed at 15/24, its reason not yet typed', [a.rows.get(F('ao5-mark')), a.rows.get(F('ao5-reason'))]);
+        const pre = {};
+        ALL_FIDS.forEach((f) => { const t = a.rows.get(f); if (t) pre[f] = t; });
+        const b = world({ prefill: pre, history: a.deps.canvasChatHistory.slice() });
+        const h0 = b.deps.canvasChatHistory.length;
+        b.ctl.tryResume(); await settle();
+        ok(/Now justify it/.test(last(b)) && /15 out of 24/.test(last(b)), '⭐ 9b · another device lands on the REASON ask, with the mark the page holds', last(b).slice(0, 160));
+        ok(!/Next: \*\*?Technical Accuracy/.test(all(b)) && !chip(b, /Mark Technical Accuracy/), '⭐ 9b · …never on "Next: Technical Accuracy" with the reason unanswered', b.chips().map((c) => c.textContent));
+        ok(!!b.deps._walkSlot.armed && b.ladder.active, '9b · …the answer slot is armed and the climb owns the next turn (§4d)');
+        ok(b.deps.canvasChatHistory.length === h0, '9b · …and the re-served ask is DRAWN, never stored (§4c.7)');
+        await say(b, 'The paragraphs link, but the middle stays plain.');
+        ok(b.rows.get(F('ao5-reason')) === 'The paragraphs link, but the middle stays plain.', '9b · the reason is filed VERBATIM in the page', b.rows.get(F('ao5-reason')));
+        ok(b.rows.get(F('ao5-mark')) === '15 / 24', '9b · …and the mark is untouched', b.rows.get(F('ao5-mark')));
+        ok(/You marked \*\*Content and Organisation\*\* at \*\*15 \/ 24\*\*/.test(all(b)) && !!chip(b, /^Mark Technical Accuracy →$/),
+            '9b · then the host takes over: their mark, then ONE chip into Technical Accuracy', b.chips().map((c) => c.textContent));
+        // Rows that do not reproduce their own mark are never trusted: the climb starts again, from Level 1.
+        const bad = Object.assign({}, pre, { [F('ao5-mark')]: '16 / 24' });
+        const c = world({ prefill: bad });
+        c.ctl.tryResume(); await settle(); await continueAll(c);
+        ok(/\*\*Level 1\b/.test(last(c)) && !c.rows.get(F('ao5-reason')), '⭐ 9b · rows that disagree with their mark → the climb again from Level 1, never a guessed level', last(c).slice(0, 120));
+        // The Language host never asks for this — its open() is unchanged (a page with a mark and no reason climbs as before).
+        ok(!/resumeReason/.test(SRC.slice(SRC.indexOf('function _ladderHostRenderCurrent'), SRC.indexOf('function _ladderHostAskConfidence'))),
+            '9b · the Language host does not opt in (its behaviour is unchanged by this fix)');
+    }
+
     // ── 10 · change my answers · a missing scheme · a typed message with no ask ─────────────────────────────────────
     {
         const r = world({ prefill: prefillThrough('done') });
