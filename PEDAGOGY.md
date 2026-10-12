@@ -328,8 +328,11 @@ adding rows for it would teach the wrong thing:
 - **C** — a detail in EACH source, each bridged micro-to-macro, then the contrast (`:481-485`).
 - **E** — the four-fold sequence for EACH source, then "A creates [effect] while B creates
   [effect]…" (`:486-494`). **ONE effect per source, two per paragraph** — see below.
-- **A** — each writer's purpose, the explicit purpose-comparison as its own move, then the
-  JUDGEMENT that earns the top band: "which writer's approach is more effective?" (`:491-498`).
+- **A** — each writer's purpose, the explicit purpose-comparison as its own move, then what the
+  comparison REVEALS about each perspective and why it matters. ⛔ **AQA P2 Q4: no judgement of which
+  writer's approach is more effective** — *"As far as I am aware, it is just an analytical comparison,
+  rather than a judgement"* (Neil, 12 Oct 2026, §63 item 2; AQA Level 4 = "compares ideas and
+  perspectives in a perceptive way"). Edexcel IGCSE P1 Q5 is not covered by that ruling — see §63.
 
 **⭐ THE EFFECT ROWS — ONE EFFECT PER TEXT (Neil, 2026-07-15, ruled directly):**
 
@@ -354,8 +357,9 @@ and it was corrected in the same session (the four-fold sequence — focus/emoti
 is the ANALYSIS the student runs and was left alone; it was never a sentence count). AQA Lang P2 was
 the only protocol carrying the claim — grepped, not assumed.
 
-**JUDGEMENT rides in the A row's helper text**, not a new row — same reason: a seventh row would
-break the structure the ruling preserves.
+**The comparison's closing move rides in the A row's helper text**, not a new row — same reason: a
+seventh row would break the structure the ruling preserves. (Until v7.20.850 that move was a
+"which is more effective" JUDGEMENT; Neil ruled it out for AQA P2 Q4 — §63 item 2.)
 
 **Implementation:** this is the `v7.20.107` FOCUS-OVERLAY pattern, already built and shipped — it
 swaps a row's label/prompt/items while **ids never change**, so a reword can never drift a write-key.
@@ -3440,13 +3444,22 @@ PROTOCOLS-AUDIT-2026-10-12.md`). Authority order used: AQA's own words → Neil'
    planning helpers now run **T → A method → B method (pivot) → close analysis of a detail in EACH source → pair → effect A
    → effect B → purposes**, marks unchanged (5.0). The knowledge model's three paragraphs already analysed a word from each
    source; only their sentence order and four connectives changed, every quotation verbatim.
-2. **P2 Q4 "which writer's approach is more effective" → NEIL'S CALL (Actions page).** No Neil ruling exists; AQA's Paper 2
-   Question 4 asks for a comparison of perspectives and methods ("perceptive, detailed comparison"), and "evaluation"
-   appears only in Paper 1's scheme — so our files' claim that the judgement "earns the top band" is not AQA's. Until he
-   rules, the judgement text is left as it is.
+2. **P2 Q4 "which writer's approach is more effective" → ⭐ RULED (Neil, 12 Oct 2026, Actions round p, card 1):**
+   *"As far as I am aware, it is just an analytical comparison, rather than a judgement."* AQA agrees: Level 4 = "compares
+   ideas and perspectives in a perceptive way… a detailed and perceptive understanding of the different ideas and
+   perspectives in both texts" — no effectiveness verdict; our own quiz already said so (`mark-scheme-quiz/language2.md`
+   :938, "without declaring a winner"). **Applied v7.20.850** everywhere AQA P2 Q4 is taught or marked: the planning
+   protocol's Beat 5 (A — purposes compared, then "what does the difference reveal, and why does it matter?"), the A-row
+   ladder entry, Beat 10's thesis, Beat 11's conclusion (plan box now "Key difference | Why it matters"), the S7 review
+   line; knowledge-mark-scheme's (A) element, checklist and the three model (A) sentences (quotations verbatim);
+   knowledge-penalties' Q4 paragraph; the beat-step marking/gold files (the 0.5 mark that credited "comparative judgement
+   of effectiveness" now credits what the comparison reveals — marks unchanged); the AQA comparison plan-box prompts
+   (+ a load-time heal of saved documents, exact old strings only). **NOT changed, because the ruling did not name them
+   (root §0/§23):** Edexcel IGCSE P1 Q5 (shares the plan-box builder and keeps its wording), the Eduqas P2 comparison (`b5-q6-comparative.md`), Edexcel
+   GCSE P2 (`b3-planning.md`), and the AQA Literature poetry comparison (`protocol-a-assessment-poetry.md` marks a 1.0 "final evaluative
+   judgement") — each needs its own fit check against its own mark scheme before anyone applies this.
 3. **P2 Q4 conclusion → effect count FIXED** (knowledge-penalties asked two effect sentences per source; §3c, Neil 15 Jul:
-   one per text). The conclusion's CONTENT ("more effective" vs "the most significant difference and why it matters")
-   rides on item 2.
+   one per text). The conclusion's CONTENT → "the most significant difference and why it matters" (item 2, ruled).
 4. **P2 Q3 anchor spread → FIXED:** knowledge-penalties' "should" (beginning/middle/end) now matches planning ("both routes
    valid") and AQA ("a range of judicious textual detail"); neither route is penalised.
 5. **P2 Q2 "summary in their own words" → FIXED** in knowledge-algorithm.md (loaded in every P2 assessment) — contradicted

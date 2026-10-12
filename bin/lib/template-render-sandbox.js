@@ -27,7 +27,10 @@ const MARKERS = [
     ['function buildInferenceOutlineSection(', '('], ['function buildIUMVCCOutlineSection(', '('], ['function _iumvccFieldId(', '('],
     ['function _iuPoint(', '('], ['function _langSpecPaper(', '('], ['function lookupQuestionSpec(', '('],
     ['function buildSectionMap(', '('], ['function _specSubjectKey(', '('], ['function _isLangPaper2(', '('],
-    ['function buildPlanSection(', '('], ['function buildIUMVCCPlanSection(', '('], ['function buildComparativePlanSection(', '('],
+    ['function buildPlanSection(', '('], ['function buildIUMVCCPlanSection(', '('],
+    // v7.20.850: the comparison plan boxes' wording is board-gated (PEDAGOGY §63 item 2)
+    ['const CMP_PLAN_PROMPTS_OLD = {'], ['const CMP_PLAN_PROMPTS_AQA = {'], ['function _cmpPlanAnalyticalOnly(', '('],
+    ['function buildComparativePlanSection(', '('],
     ['function buildCreativeScenePlan(', '('], ['function _redraftPlanSectionsHTML(', '('], ['function _canonicalWordHint(', '('],
     ['function getQuestionWordTarget(', '('], ['const MULTIQ_RESPONSE_TARGETS = {'], ['function _multiqTargetKey(', '('],
     ['function _questionWritingFlags(', '('], ['function _redraftOutlineSectionsHTML(', '('],

@@ -20,9 +20,9 @@ Say: "Type **Y** when you're ready to see your Body Paragraph \[N\] assessment."
 * Comparative technique identification for both sources (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
 * Evidence from both sources with comparative transitions (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
 * Comparative close analysis of both sources (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
-* Effects on readers for both sources (4 sentences total) (AO3): **plus 1 mark** → Awarded **\[X\]** because \[specific reason\]  
+* Effects on readers for both sources (ONE sentence per source, each tied to its method — PEDAGOGY §3c) (AO3): **plus 1 mark** → Awarded **\[X\]** because \[specific reason\]  
 * Comparative author's purpose analysis (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
-* Comparative judgement of effectiveness (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]
+* What the comparison reveals — the difference or similarity in perspective, and why it matters; never a verdict on which writer is more effective (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]
 
 **Potential marks: 4.0 marks**
 

@@ -133,7 +133,7 @@
 * **(C) Close Analysis:** word-level analysis of a detail in EACH source, each bridged back to its writer's method, and what the contrast reveals  
 * **(E) Effect on Reader \- Source A:** one detailed sentence, tied to Source A's method  
 * **(E) Effect on Reader \- Source B:** one detailed sentence, tied to Source B's method — never two floating generic effects  
-* **(A) Authors' Purposes Compared:** each writer's purpose in tentative language ("perhaps," "arguably"), compared against the question focus, then closing on a JUDGEMENT of which writer's approach is more effective for this aspect, and why — the judgement is what earns the top band
+* **(A) Authors' Purposes Compared:** each writer's purpose in tentative language ("perhaps," "arguably"), compared against the question focus, then closing on what the comparison REVEALS about the two writers' perspectives on this aspect, and why that difference or similarity matters — the perceptive comparison AQA's Level 4 rewards ("compares ideas and perspectives in a perceptive way"). ⛔ No verdict on which writer's approach is more effective: AQA Question 4 compares, it never ranks (Neil, 12 Oct 2026 — PEDAGOGY §63 item 2)
 
 **Sentence-Level Rules:**
 
@@ -167,7 +167,7 @@ Source B — (T)echnique, (E)vidence, (I)nference: In contrast, Kemble opens her
 
 (E)ffect on Reader — Source B: Straight away, her friend, and every later reader, is swept into her excitement before she describes a single detail of the ride.
 
-(A)uthors' Purposes Compared: Fleming perhaps writes to amuse a public readership with the familiar grumbles of a seasoned traveller, whereas Kemble writes privately to share a marvel with a friend, so their purposes sharpen the contrast between a journey endured and a journey treasured. Of the two, Fleming's approach is perhaps the more effective here, because the dragging rhythm of his list makes the reader live through the monotony, whereas Kemble announces her joy before she has shown it.
+(A)uthors' Purposes Compared: Fleming perhaps writes to amuse a public readership with the familiar grumbles of a seasoned traveller, whereas Kemble writes privately to share a marvel with a friend, so their purposes sharpen the contrast between a journey endured and a journey treasured. Set side by side, their methods reveal how each perspective is built: the dragging rhythm of Fleming's list makes the reader live through the monotony he resents, whereas Kemble announces her joy before she has shown it, because for her the wonder needs no persuading.
 
 **(Body Paragraph 2 \- 5 Marks)**
 
@@ -183,7 +183,7 @@ Source B — (T)echnique, (E)vidence, (I)nference: By contrast, Kemble turns the
 
 (E)ffect on Reader — Source B: Kemble's reader, by contrast, is charmed rather than intimidated by the new technology, sharing her impulse to reach out and stroke it.
 
-(A)uthors' Purposes Compared: Arguably, Fleming wishes to puncture the glamour of luxury rail travel by exposing its daily tyranny, whereas Kemble seeks to help her friend picture an unfamiliar machine through the familiar figure of a horse, so their opposite personifications carry opposite verdicts on the experience of travelling by train. Kemble's approach is arguably the more effective, since one tactile image, the urge to 'pat', makes an unfamiliar machine instantly familiar, whereas Fleming's complaint depends on the reader already sharing his irritation.
+(A)uthors' Purposes Compared: Arguably, Fleming wishes to puncture the glamour of luxury rail travel by exposing its daily tyranny, whereas Kemble seeks to help her friend picture an unfamiliar machine through the familiar figure of a horse, so their opposite personifications carry opposite verdicts on the experience of travelling by train. What the contrast reveals is the distance each writer stands from the machine: one tactile image, the urge to 'pat', lets Kemble make an unfamiliar machine instantly familiar, whereas Fleming's complaint assumes a reader who already shares his irritation.
 
 **(Body Paragraph 3 \- 5 Marks)**
 
@@ -199,7 +199,7 @@ Source B — (T)echnique, (E)vidence, (I)nference: Whereas Fleming takes pleasur
 
 (E)ffect on Reader — Source B: Kemble's reader, meanwhile, shares her exhilaration rather than any anxiety, especially when she claims that the carriage raced along 'swifter than a bird flies'.
 
-(A)uthors' Purposes Compared: Above all, Fleming perhaps wants to entertain readers who take trains for granted, turning his crash into the adventure a hardened traveller craves, whereas Kemble conveys the thrill of a new invention to a friend who can only imagine it, so their purposes crystallise the gap between experience and innocence. Fleming's approach is perhaps the more effective, because calling a wreck 'great fun' jolts the reader into questioning his perspective, whereas Kemble's reassurance asks only to be believed.
+(A)uthors' Purposes Compared: Above all, Fleming perhaps wants to entertain readers who take trains for granted, turning his crash into the adventure a hardened traveller craves, whereas Kemble conveys the thrill of a new invention to a friend who can only imagine it, so their purposes crystallise the gap between experience and innocence. Compared directly, their responses to danger expose opposite relationships with risk: calling a wreck 'great fun' jolts the reader into questioning Fleming's perspective, whereas Kemble's reassurance asks only to be believed.
 
 ---
 
@@ -317,7 +317,7 @@ So here's my challenge to you: stop treating education as preparation for life a
 * ✓ Evidence from BOTH sources with comparative transitions  
 * ✓ Close analysis zooming into BOTH sources' specific details  
 * ✓ ONE effect sentence for Source A and ONE for Source B, each tied to that source's method (v7.19.854 — never two floating generic effects)  
-* ✓ Author's purpose for BOTH sources with comparative evaluation, closing on a judgement of which writer's approach is more effective  
+* ✓ Author's purpose for BOTH sources compared, closing on what the difference or similarity reveals about each writer's perspective — never a verdict on which approach is more effective (PEDAGOGY §63 item 2)  
 * ✓ Perceptive development of the difference or similarity as a PAIR
 
 **Quality Indicators:**

@@ -14,7 +14,7 @@
 
 * Summarizes key comparative insights (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
 * Reinforces both writers' perspectives (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
-* Links back to question with clear comparative judgment (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
+* Links back to the question through the most significant difference in perspective, and why it matters — not a verdict on which writer is more effective (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]  
 * Perceptive final reflection on comparison (AO3): **plus 0.5 marks** → Awarded **\[X\]** because \[specific reason\]
 
 **Potential marks: 2.0 marks**

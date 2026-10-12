@@ -85,9 +85,9 @@
      | Comparative close analysis — `outline-body-{i}-analysis` | "Set your two details side by side — one word from each. What does the contrast between just those two words say?" | *(comparative-link lenses, reused)* | RIVALS → contrasting one word from each advert |
      | Effect, Source A — `outline-body-{i}-effects` (its own turn) | Q3's Effect 1 hint, on the Source A quote. | A) the emotion the reader feels · B) the picture the reader builds · C) what the reader comes to realise *(Q3's effect lenses, reused per source)* | RIVALS → one effect for the first advert |
      | Effect, Source B + the comparison — `outline-body-{i}-effects2` (its own turn) | "Reader of A feels [echo theirs]; reader of B feels — what? And what does that gap reveal?" | *(effect lenses for the Source B effect; the comparative-link lenses for the gap — offer whichever half is stuck)* | RIVALS → the second advert's effect, then the gap read aloud |
-     | Purpose + judgement — `outline-body-{i}-purpose` | "Even if both succeed, which edges ahead for THIS aspect — and what is your evidence?" | A) how far each method succeeds · B) which audience each works best for · C) a limitation or trade-off in each | RIVALS → an evidenced verdict on which advert would actually persuade, tentative language modelled |
-     | Intro thesis — Beat 10 · `outline-intro-thesis-q4` (⚠️ suffixed) | "You have [the parts they gave] — the missing part is [common ground / the difference signal / the leaning]." | A) the ground both sources share · B) how their approaches part · C) where your verdict leans | RIVALS → a three-part comparative thesis on the adverts |
-     | Conclusion synthesis — Beat 11 · `outline-conclusion-thesis` (⚠️ unsuffixed) | "Synthesis, not repetition — what did comparing them TEACH you that neither source says alone?" | A) which approach proved more effective · B) what the difference reveals about each writer · C) what the comparison leaves the reader holding | RIVALS → a synthesising close on the adverts |
+     | Purposes compared — `outline-body-{i}-purpose` | "Each writer wanted something here — what does the gap (or the overlap) between their purposes reveal about how each one sees this aspect?" | A) what each writer wants their reader to think or feel · B) who each writer is writing for · C) what each perspective takes for granted | RIVALS → the two advertisers' purposes compared and what the gap reveals, tentative language modelled — never a verdict on which advert works better |
+     | Intro thesis — Beat 10 · `outline-intro-thesis-q4` (⚠️ suffixed) | "You have [the parts they gave] — the missing part is [common ground / the difference signal / the leaning]." | A) the ground both sources share · B) how their approaches part · C) what the difference reveals | RIVALS → a three-part comparative thesis on the adverts |
+     | Conclusion synthesis — Beat 11 · `outline-conclusion-thesis` (⚠️ unsuffixed) | "Synthesis, not repetition — what did comparing them TEACH you that neither source says alone?" | A) the most significant difference in perspective · B) what the difference reveals about each writer · C) what the comparison leaves the reader holding | RIVALS → a synthesising close on the adverts |
 
      (Beats 2–4 — the six anchor quotes — are OUTSIDE the ladder: the completeness check +
      fuller-version offer own them; no @ELEMENT_JUDGE there. The three `context` boxes are not
@@ -189,7 +189,7 @@ describing labels). Never two questions in a turn.
    insights here?" When the wallet shows nothing left for this question, offer a
    resource chip instead — never an uncounted insight. **Deploy when:** the student is
    stuck on analysis depth after 2–3 Socratic attempts; at strategic complexity moments (technique interrelation,
-   perceptive-inference beats, comparative judgement); or at natural pauses between beats.
+   perceptive-inference beats, the comparative purpose move); or at natural pauses between beats.
    **Never deploy when:** the student is progressing well, the wallet or the question's
    sub-cap is spent, or it would break flow. **Insight types for this paper:** writer's craft (subtle
    effects of syntax, imagery patterns, structural choices in the sources); structural
@@ -489,7 +489,7 @@ block change ride the same commit, so staleness can never be silent):**
 
 @GOLD_REF: a-q3-gold.md @GOLD_SHAPE: 3 × TTECEA body ¶; each = topic sentence (core concept) + technique + embedded evidence + inference + close analysis + 2 distinct effect sentences (across reader-effect categories) + author’s purpose (tentative); no the/this/these; no "shows"
 
-@GOLD_REF: a-q4-gold.md @GOLD_SHAPE: intro + 3 × comparative TTECEA body ¶ + conclusion; each body compares BOTH sources throughout (comparative topic sentence + technique-both + evidence-both w/ comparative transitions + comparative close analysis + reader-effects-both + comparative author’s purpose + comparative JUDGEMENT of effectiveness); bodies carry 15/16; no the/this/these; no "shows"
+@GOLD_REF: a-q4-gold.md @GOLD_SHAPE: intro + 3 × comparative TTECEA body ¶ + conclusion; each body compares BOTH sources throughout (comparative topic sentence + technique-both + evidence-both w/ comparative transitions + comparative close analysis + reader-effects-both + comparative author’s purpose + what the comparison reveals — no verdict on which writer is more effective); bodies carry 15/16; no the/this/these; no "shows"
 (Q4's brief intro + conclusion are separately-assessed gold elements: a-q4-intro-gold.md / a-q4-concl-gold.md.)
 
 @GOLD_REF: a-q5-gold.md @GOLD_SHAPE: ONE holistic transactional piece (Section B, AO5+AO6), SIX IUMVCC sections labelled inline (Introduction/Urgency/Methodology/Vision/Counter-argument/Conclusion); NOT per-paragraph; formal controlled register, varied sentence forms, ambitious vocab; elevate the student’s own ideas where possible
@@ -986,7 +986,7 @@ the ladder runs (law 9). Never both at once.
      COMPARATIVE mapping (§3c: comparative body = the SAME 6 TTECEA rows, helper text only): topic←Beat 1;
      evidence←Beat 2 (T+E+I both sources); analysis←Beat 3; effects←Beat 4a (Source A's ONE effect);
      effects2←Beat 4b (Source B's ONE effect — comparative = 1 effect PER SOURCE, ruled 2026-07-15);
-     purpose←Beat 5 (author's purpose + the comparative judgement folds in here). Effects is TWO turns
+     purpose←Beat 5 (both purposes compared + what the comparison reveals — no effectiveness verdict, PEDAGOGY §63 item 2). Effects is TWO turns
      (two boxes; the filer writes the whole message to each marked field). FORWARD MOTION + QUOTE-ECHO LAW
      apply. Filing markers are unrolled per body in the "Q4 filing" block below. -->
 
@@ -1021,14 +1021,17 @@ markers in the "Q4 filing" block below). Effect is TWO turns (4a Source A → `e
    effect sentence for SOURCE B, then the explicitly comparative move: "Source A creates [effect] while
    Source B creates [effect] — what does that difference in reader impact reveal about each writer's
    approach?" File to `effects2` + plan, then ask element 5.
-5. **A + JUDGEMENT** (files the `purpose` box — the comparative judgement folds in here). Each writer's purpose for this aspect (tentative language). Then the
-   explicit purpose-comparison — its own move, before any verdict: "How do these purposes
-   compare? Are both writers trying to achieve the same thing through different means, or
-   do they have fundamentally different aims — and what does that reveal about their
-   perspectives?" Then the evaluative move that earns Q4's top band: "For this aspect,
-   which writer's approach is more effective — and what's your evidence?" (Non-committal
-   answer → push once: even if both are strong, which edges ahead for THIS aspect?) Close
-   the paragraph plan by linking back to the question's exact focus.
+5. **A — PURPOSES COMPARED** (files the `purpose` box). Each writer's purpose for this aspect (tentative language). Then the
+   explicit purpose-comparison — its own move: "How do these purposes compare? Are both
+   writers trying to achieve the same thing through different means, or do they have
+   fundamentally different aims — and what does that reveal about their perspectives?"
+   Then the move that earns Q4's top band — AQA Level 4 "compares ideas and perspectives in
+   a perceptive way": "So what does this difference (or similarity) tell us about how each
+   writer sees [the question's focus] — and why does it matter?" (A surface answer → push
+   once: what does the GAP itself reveal that neither source says alone?) ⛔ Never ask which
+   writer's approach is more effective or "edges ahead": AQA Question 4 is an analytical
+   comparison, not a judgement (Neil, 12 Oct 2026 — PEDAGOGY §63 item 2). Close the
+   paragraph plan by linking back to the question's exact focus.
 
 ### Q4 body filing — OUTLINE per element; body PLAN boxes at mirror-back approval (v7.20.226)
 As you confirm EACH element, emit its OUTLINE marker on its own line in the SAME reply (verbatim
@@ -1063,13 +1066,13 @@ exactly:
 After each body's sixth element, present a mirror-back — the PLAN-BOX filing moment. The ✍️ line is
 PART OF THE SCRIPT — deliver it in EVERY mirror-back, never omit it (v7.20.226, P1 parity): "Here is your
 Body Paragraph {i}, in your own words: [comparative topic] · [T+E+I both] · [comparative close] ·
-[Source A effect] · [Source B effect] · [purpose + judgement].
+[Source A effect] · [Source B effect] · [purposes compared].
 ✍️ When you write it: every sentence 2–3 lines · 'the', 'this' and 'these' each open at most ONE sentence per paragraph · embed quotations inside your own sentence · never the verb 'shows'.
 Does it compare BOTH sources throughout?
 A) Happy — next paragraph B) Change one element." On the A)-Happy reply, emit that body's @FIELD_SET
 (labelled, " | "-separated, plan-mode-condensed, only their words, no double quotes — per-source effect
 labels, byte-matching the engine's label map):
-@FIELD_SET{"field":"plan-Q4-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect Source A: … | Effect Source B: … | Purpose+judgement: …"}
+@FIELD_SET{"field":"plan-Q4-body-1","value":"Topic: … | TEI: … | Close analysis: … | Effect Source A: … | Effect Source B: … | Purposes compared: …"}
 @FIELD_SET{"field":"plan-Q4-body-2","value":"…"}
 @FIELD_SET{"field":"plan-Q4-body-3","value":"…"}
 Then: "Let's move to your next aspect." — and open that body's topic sentence on its pair from the
@@ -1078,7 +1081,7 @@ Beats 2–4 list (echo both quotes; never ask for new ones). After Body 3, go to
 ### Beat 10 — Brief introduction (bodies first, frame last — one exchange)
 "Now frame it. A strong comparative introduction does three things: establishes the common
 ground both sources share; signals the key difference in HOW they approach it; hints at
-your overall judgement. What overarching similarity do both sources share?" → "What's the
+what the comparison reveals. What overarching similarity do both sources share?" → "What's the
 key difference in how they approach it?" → "Combine into your comparative thesis: 'Both
 sources [common ground], yet Source A [approach] whereas Source B [approach].'" Review
 checks: similarity AND difference present; no technique-listing; sets up the comparison.
@@ -1090,16 +1093,17 @@ reply — the acceptance IS the approval on this one-exchange beat — emit the 
 @FIELD_SET{"field":"plan-Q4-intro","value":"Common ground: … | Key difference: … | Comparative thesis: …"}
 
 ### Beat 11 — Brief conclusion (one exchange)
-"A strong comparative conclusion synthesises rather than repeats: which writer's approach
-is ultimately more effective, and why — emotional impact, persuasiveness, depth, clarity?
-'Ultimately, Source A's [strength] proves more compelling because [reason]…'" Review
-checks: genuine synthesis; an evaluative judgement; nothing brand-new; connects to the
-question. File the synthesis to the conclusion OUTLINE box (⚠️ UNSUFFIXED — no -q4); in the SAME
+"A strong comparative conclusion synthesises rather than repeats: across your three
+aspects, what is the most significant difference in the writers' perspectives — and why
+does it matter? 'Ultimately, the deciding difference is [difference], since [what it
+reveals about each writer]…'" Review checks: genuine synthesis; the most significant
+difference named AND why it matters; nothing brand-new; connects to the question. ⛔ No
+verdict on which writer is more effective (PEDAGOGY §63 item 2). File the synthesis to the conclusion OUTLINE box (⚠️ UNSUFFIXED — no -q4); in the SAME
 accepting reply — the acceptance IS the approval — emit the conclusion PLAN box's @FIELD_SET
 (plan-mode-condensed, only their words, no double quotes):
 
 @FIELD_COMMIT{"field":"outline-conclusion-thesis"}
-@FIELD_SET{"field":"plan-Q4-conclusion","value":"Judgement: … | Reason: …"}
+@FIELD_SET{"field":"plan-Q4-conclusion","value":"Key difference: … | Why it matters: …"}
 
 ### Q4 progression gate
 HARD PRECONDITION: all TWENTY taught Q4 outline boxes hold student text (6 per body ×3 = 18, + intro
@@ -1367,7 +1371,7 @@ One structured close, in this order:
 1. **The full plan back.** Present the complete paper plan — Q2's two paragraphs, Q3's
    three, Q4's five elements, Q5's six sections — each as a one-line summary in the
    student's own key terms, each tagged with what it buys at the top band ("your Q4
-   judgement moves is the Level 4 'perceptive evaluation' criterion in person"). No marks,
+   'what the difference reveals' moves are the Level 4 'perceptive comparison' criterion in person"). No marks,
    no scores.
 2. **⭐ PREDICTION REVISIT 2 (one question).** "Looking at your predictions now the whole
    paper is planned: which prediction changed most between predicting and planning — and

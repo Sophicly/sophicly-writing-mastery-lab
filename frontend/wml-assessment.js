@@ -8582,7 +8582,7 @@
         return null;
     }
     // Label → outline element key. Tolerant prefixes (Q3 says "Structural feature+…",
-    // Q4 says "Purpose+judgement") — unrecognised labels warn + skip (fail loud, raw kept).
+    // Q4 says "Purposes compared") — unrecognised labels warn + skip (fail loud, raw kept).
     // v7.20.226 P2 families: paired-inference (Source A/B topic+inferences → inf{1,2}-*)
     // and comparative per-source effects (Effect Source A/B → effects/effects2).
     // v7.20.228 (lit port): optional FAMILY arg for the per-element intro/conclusion fan-outs
@@ -57405,6 +57405,7 @@
             _migrateStep('healLadderPointRows', healLadderPointRows);   // v7.20.713 (#726): Q1 into the student's own total
             _migrateStep('healDuplicateInputFields', healDuplicateInputFields);   // v7.20.713 (#730): one field id = one box
             _migrateStep('healCalibGoal', healCalibGoal);   // v7.20.682 (#701)
+            _migrateStep('healCmpPlanPrompts', healCmpPlanPrompts);   // v7.20.850 (PEDAGOGY §63 item 2)
             // v7.19.619: after dividers exist (RESULTS anchor), heal-in the Overall Feedback section.
             _migrateStep('migrateOverallFeedbackSection', migrateOverallFeedbackSection);
             _migrateStep('migrateExtractQuestionDivider', migrateExtractQuestionDivider);
@@ -57434,6 +57435,7 @@
                 try { healLadderPointRows(); } catch (_) {}   // v7.20.713 (#726)
                 try { healDuplicateInputFields(); } catch (_) {}   // v7.20.713 (#730)
                 try { healCalibGoal(); } catch (_) {}   // v7.20.682 (#701)
+                try { healCmpPlanPrompts(); } catch (_) {}   // v7.20.850: state.board/subject settled
             }, 1800));
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
             // inject the Reflection section once it resolves (record-gated; the filing
@@ -64065,13 +64067,29 @@
     // 2026-07-12 (brief §11.2): brief intro + 3 comparative bodies + brief conclusion —
     // bodies carry 15 of 16 marks; the 4-straight-paragraphs route is taught live only.
     // fieldIds are qId-namespaced; the planning protocol's filing markers target exactly these.
+    // v7.20.850 (Neil, 12 Oct — PEDAGOGY §63 item 2): AQA Paper 2 Question 4 is an analytical comparison, not a
+    // judgement, so its plan boxes ask what the comparison reveals. Edexcel IGCSE P1 Q5 shares this builder and is
+    // NOT ruled — it keeps its wording (root §23, flagged in the handoff). healCmpPlanPrompts() rewrites a saved
+    // AQA document's boxes from exactly the OLD strings.
+    const CMP_PLAN_PROMPTS_OLD = {
+        body: i => `Aspect ${i}: A-concept, B-concept, integration + comparative judgement.`,
+        conclusion: 'Brief: overall comparative judgement — which text does it more effectively, and why.',
+    };
+    const CMP_PLAN_PROMPTS_AQA = {
+        body: i => `Aspect ${i}: A-concept, B-concept, integration + what the comparison reveals.`,
+        conclusion: 'Brief: the most significant difference in the writers’ perspectives — and why it matters.',
+    };
+    function _cmpPlanAnalyticalOnly() {
+        return (state.board || '').toLowerCase() === 'aqa' && _isLangPaper2();
+    }
     function buildComparativePlanSection(qId) {
+        const P = _cmpPlanAnalyticalOnly() ? CMP_PLAN_PROMPTS_AQA : CMP_PLAN_PROMPTS_OLD;
         return sectionHTML('plan', `Plan: Introduction — ${qId}`, true, null,
                 inputHTML('Brief: name the two sources + your overall comparative line.', `plan-${qId}-intro`)) +
             [1, 2, 3].map(i => sectionHTML('plan', `Plan: Comparative Body ${i} — ${qId}`, true, null,
-                inputHTML(`Aspect ${i}: A-concept, B-concept, integration + comparative judgement.`, `plan-${qId}-body-${i}`))).join('') +
+                inputHTML(P.body(i), `plan-${qId}-body-${i}`))).join('') +
             sectionHTML('plan', `Plan: Conclusion — ${qId}`, true, null,
-                inputHTML('Brief: overall comparative judgement — which text does it more effectively, and why.', `plan-${qId}-conclusion`));
+                inputHTML(P.conclusion, `plan-${qId}-conclusion`));
     }
 
     /**
@@ -73322,6 +73340,34 @@
         if (still) { console.warn('WML calib-goal heal: the empty goal box is still in the document — something reverted it'); return; }
         console.warn('WML calib-goal heal: removed the empty "Your next goal" box (the Action Plan holds it)');
         try { if (typeof _recomputeAllCompletion === 'function') _recomputeAllCompletion(); } catch (_) {}
+        try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
+    }
+
+    // v7.20.850 (PEDAGOGY §63 item 2): an AQA Paper 2 document saved before .850 carries the "comparative
+    // judgement — which text does it more effectively" prompts on its comparison plan boxes. Rewrites EXACTLY
+    // the old strings (a box with any other prompt is left alone); attributes only, never a box's text.
+    // Idempotent, out of undo, under _migrationActive — the healLadderSaWording dispatch.
+    function healCmpPlanPrompts() {
+        if (!canvasEditor || state.reviewMode || !_cmpPlanAnalyticalOnly()) return;
+        const rows = [];
+        canvasEditor.state.doc.descendants((n, p) => {
+            if (n.type.name !== 'inputField' || !n.attrs) return true;
+            const m = /^plan-Q\d+-(?:body-(\d)|(conclusion))$/.exec(n.attrs.fieldId || '');
+            if (!m) return false;
+            const oldP = m[2] ? CMP_PLAN_PROMPTS_OLD.conclusion : CMP_PLAN_PROMPTS_OLD.body(m[1]);
+            const newP = m[2] ? CMP_PLAN_PROMPTS_AQA.conclusion : CMP_PLAN_PROMPTS_AQA.body(m[1]);
+            if (n.attrs.prompt === oldP) rows.push({ pos: p, node: n, prompt: newP });
+            return false;
+        });
+        if (!rows.length) return;
+        const tr = canvasEditor.state.tr;
+        rows.forEach(r => tr.setNodeMarkup(r.pos, undefined, Object.assign({}, r.node.attrs, { prompt: r.prompt })));
+        tr.setMeta('addToHistory', false);
+        _migrationActive = true;
+        try { canvasEditor.view.dispatch(tr); }
+        catch (e) { console.warn('WML comparison plan prompt heal skipped —', e && e.message); return; }
+        finally { _migrationActive = false; }
+        console.warn('WML comparison plan prompt heal: ' + rows.length + ' box prompt(s) rewritten (Q4 compares, never ranks)');
         try { if (typeof saveCanvasContent === 'function') saveCanvasContent(); } catch (_) {}
     }
 
