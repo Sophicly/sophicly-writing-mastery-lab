@@ -292,6 +292,50 @@ async function main() {
         }
     }
 
+    // ── 9 · ⭐ A NEW DEVICE (no saved position in this browser) — rebuilt from the DOCUMENT (#897, §4d) ──────────────
+    {
+        const newDevice = (w) => world({ prefill: Object.fromEntries(w.rows) });   // the page's rows, none of this browser's state
+        // (a) mid-walk: two checks banked
+        const w = world();
+        w.ctl.forceStart();
+        await toFirstAsk(w);
+        await score(w, 3, 'Her boots are too big for her.');
+        await score(w, 2, 'She keeps quiet when the coach shouts.');
+        const a = newDevice(w);
+        ok(a.ctl.tryResume() === true, '9a · ⭐ with NO saved position on this device, the walk still resumes (it used to return false: a dead screen)');
+        for (let i = 0; i < 6; i++) await settle();
+        ok(/\*\*Under Pressure\*\*/.test(lastBubble(a)) && /3 of 6/.test(lastBubble(a)), '9a · …on the third check, read from the banked rows', lastBubble(a).slice(0, 80));
+        ok(!!ladder && ladder.title === 'Under Pressure', '9a · …with its marking card published');
+        ok(a.sends.length === 0, '9a · …and no API call');
+        // (b) every check judged, no mark yet: a chip, never an unasked marking call
+        const w2 = world();
+        w2.ctl.forceStart();
+        await toFirstAsk(w2);
+        await scoreAll(w2, 3);
+        const rowsB = Object.fromEntries(w2.rows);
+        delete rowsB['cw-trial-3-mark'];
+        const b2 = world({ prefill: rowsB });
+        ok(b2.ctl.tryResume() === true, '9b · all checks banked, no mark: it resumes');
+        for (let i = 0; i < 6; i++) await settle();
+        ok(!!chipNamed(b2, /Give me my marks/), '9b · ⭐ …offering "Give me my marks" (§4d: something to press)');
+        ok(b2.sends.length === 0, '9b · ⭐ …and it does NOT send the marking call by itself', b2.sends.length);
+        // (c) marked, no target yet: the target ask, with the mark read back from its row
+        w2.resolveApi('Calls.\n\n' + markerBlock({ look: 'l2_top', choices: 'l2_low', pressure: 'l1_top', shift: 'l1_low', detail: 'l2_top', accuracy: 'l2' }));
+        for (let i = 0; i < 8; i++) await settle();
+        const c3 = newDevice(w2);
+        ok(c3.ctl.tryResume() === true, '9c · marked, no target: it resumes');
+        for (let i = 0; i < 6; i++) await settle();
+        ok(/your one target for Draft 4/i.test(lastBubble(c3)), '9c · …on the target ask', lastBubble(c3).slice(0, 80));
+        await c3.say('Let her stop arguing and take the penalty herself.');
+        for (let i = 0; i < 4; i++) await settle();
+        const sv = c3.saved[c3.saved.length - 1] || {};
+        ok(sv.payload && sv.payload.marks === 16 && sv.payload.out_of === 22 && sv.payload.sophia && sv.payload.sophia.look === 4 && sv.payload.target,
+            '9c · ⭐ …and the target save carries the mark and Sophia\'s calls read back from the page — never an empty record', sv.payload);
+        // (d) nothing of the walk on the page: false, so entry starts it fresh exactly as before
+        const d4 = world();
+        ok(d4.ctl.tryResume() === false, '9d · an untouched page: false — the fresh entry starts the walk');
+    }
+
     console.log('\n   ' + asserts.pass + ' assertions passed' + (asserts.fail ? ', ' + asserts.fail + ' FAILED' : ''));
     console.log(fail ? '❌ cw-trial3-sim FAILED' : '✅ cw-trial3-sim passed (' + asserts.pass + ' assertions, 0 failed)');
     process.exit(fail);

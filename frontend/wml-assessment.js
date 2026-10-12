@@ -37330,6 +37330,7 @@
                 if (st.phase === 'calib') { serveCalibration(opts); return; }
                 if (st.phase === 'summary') { serveSummary(opts); return; }
                 if (st.phase === 'target') { serveTargetAsk(opts); return; }
+                if (st.phase === 'ready') { serveReady(); return; }   // v7.20.832 (#897)
                 if (st.awaitNote) {
                     const e = els().filter(function (x) { return x.id === st.awaitNote; })[0];
                     if (e) { serveNote(e, (st.marks || {})[e.id] || 0, opts); return; }
@@ -37398,12 +37399,63 @@
                 closeLadderPad();
             }
 
+            // ⭐ v7.20.832 (FIXLIST #897, measured on staging 12 Oct) — A TRIAL RESUMES ON ANY DEVICE. The walk's position lived
+            // ONLY in this browser (localStorage), so on another computer, or after the browser's data was cleared (the normal
+            // state of a school machine), the trial opened on its replayed transcript with nothing to press: a dead screen
+            // (§4d — a reload must leave a question or a chip). Trial 1 had it since v7.20.551. The DOCUMENT holds everything
+            // the walk banks — the grade goal, each check's mark and sentence, Sophia's calls, the mark, the target — so the walk
+            // is rebuilt from it, the way the weekend walks already resume (cwAdaptCtl, cwStructCtl). Nothing of the walk on the
+            // page → false, and entry starts it fresh, as before. Every check judged but no mark yet → a chip, never a marking
+            // call nobody asked for.
+            function resumeFromDocument() {
+                const goalTxt = docRow(fid('goal'));
+                const markTxt = docRow(fid('mark'));
+                const fromDoc = deriveFromDoc();
+                if (!goalTxt && !fromDoc.i && !markTxt) return false;
+                const g = parseInt(String(goalTxt).replace(/\D/g, ''), 10);
+                st = { i: fromDoc.i, levels: {}, marks: fromDoc.marks, notes: fromDoc.notes, moreSpent: {}, phase: 'items' };
+                if (GRADE_GOALS.indexOf(g) !== -1) st.gradeGoal = g;
+                else if (!fromDoc.i) st.phase = 'goal';
+                const mm = /^Grade (\d)\s*\((\d+)\/(\d+)\s*\u00b7\s*(\d+)%\)/.exec(markTxt);
+                if (mm) {
+                    st.mark = { grade: +mm[1], got: +mm[2], max: +mm[3], pct: +mm[4] };
+                    st.sophia = {};
+                    els().forEach(function (e) { const m2 = /^(\d)\/\d/.exec(docRow(fid('fb-' + e.id))); if (m2) st.sophia[e.id] = +m2[1]; });
+                    st.selfTotal = selfTotal();
+                    st.strengthLine = docRow(fid('strength'));
+                    st.priorityLine = docRow(fid('priority'));
+                    const tgt = docRow(fid('target'));
+                    if (tgt) { st.target = tgt; st.phase = 'done'; } else st.phase = 'target';
+                } else if (st.i >= els().length) {
+                    st.phase = 'ready';
+                }
+                done = st.phase === 'done';
+                active = !done; pending = false;
+                persist();
+                if (st.mark) publishTrialScore();
+                console.log('WML trial' + N + ': no saved position on this device — rebuilt from the document (' + st.phase
+                    + (st.phase === 'items' ? ', check ' + (st.i + 1) + ' of ' + els().length : '') + ').');
+                const mark = emitted;
+                setTimeout(function () {
+                    if (emitted !== mark) return;   // another route already served
+                    _cwReplay(function () { serveCurrent(); });
+                }, 400);
+                return true;
+            }
+            // Every check is judged and nothing has been marked: the marking is one tap away, never sent unasked.
+            function serveReady() {
+                _walkSlot.clear(WALK);
+                _cwReplay(function () { aiBubble('Every part is marked. When you are ready, I will read your draft and make my own level calls.'); });
+                chipBarOrRetry(['Give me my marks \u2192'], function () { pickTurn('Give me my marks \u2192'); serveMarking(); }, '**Every part is marked.**');
+                resetSend();
+            }
+
             function tryResume() {
                 try {
                     if (_cwIsAgain() && !(WML.cwInUnit && WML.cwInUnit())) return false;   // v7.20.776: weekend only
                     const raw = localStorage.getItem(lsKey());
                     const d = raw ? JSON.parse(raw) : null;
-                    if (!d || !d.st) return false;
+                    if (!d || !d.st) return resumeFromDocument();   // v7.20.832 (#897): no saved position on THIS device
                     st = d.st;
                     done = !!d.done;
                     // ⭐ v7.20.554: a sidecar written by the pre-examiner walk (verdicts, no

@@ -651,6 +651,24 @@ async function main() {
             '11 · …with the ladder card republished for that element, so the page is not dead after a reload');
     }
 
+    // ── 11n · ⭐ A NEW DEVICE (#897, v7.20.832): no saved position in THIS browser — the walk rebuilds from the page ──
+    // Trial 1 is LIVE: a student who started it at school and opens it at home (or on a machine that clears its data) used
+    // to get the transcript with nothing to press — tryResume returned false because the position lived only in localStorage.
+    {
+        const w = world();
+        w.ctl.forceStart();
+        await toFirstAsk(w);
+        await score(w, 4);               // hook
+        await score(w, 3);               // setup
+        const w2 = world({ prefill: Object.fromEntries(w.rows) });   // the page's rows, none of this browser's state
+        const resumed = w2.ctl.tryResume();
+        for (let i = 0; i < 6; i++) await settle();
+        ok(resumed === true, '11n · ⭐ with no saved position on this device, Trial 1 still resumes');
+        ok(/Reaction/.test(lastBubble(w2)), '11n · …on the third part (Reaction), read from the banked rows', lastBubble(w2).slice(0, 80));
+        ok(!!ladder && ladder.title === 'Reaction' && (ladder.levels || []).some((lv) => lv.shown && !lv.verdict), '11n · …with the marking card up — never a dead screen');
+        ok(w2.sends.length === 0, '11n · …and no API call');
+    }
+
     // ── 11b · RESUME MID-CLIMB LANDS ON THE EXACT LEVEL, NOT THE ELEMENT'S TOP ───────────
     {
         const w = world();
