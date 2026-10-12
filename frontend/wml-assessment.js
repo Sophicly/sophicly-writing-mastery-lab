@@ -20511,6 +20511,10 @@
                             // v7.20.831 (#884-②): Trial 3 runs the same walk — it owns chat-clear the same way.
                             clearWalkResume();
                             setTimeout(() => { _cwTrial3Ctl.reset(); _cwTrial3Ctl.forceStart(); }, 200);
+                        } else if (state.task === 'cw_trial_4') {
+                            // v7.20.835 (#884-③): Trial 4 runs the same walk — it owns chat-clear the same way.
+                            clearWalkResume();
+                            setTimeout(() => { _cwTrial4Ctl.reset(); _cwTrial4Ctl.forceStart(); }, 200);
                         } else if (state.task === 'cw_step_91') {
                             // v7.20.776: weekend lesson 11 (Mark It Again) runs Trial 1's walk — it owns chat-clear the same way.
                             clearWalkResume();
@@ -21448,7 +21452,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -21462,7 +21466,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -21675,7 +21679,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -21796,6 +21800,11 @@
             // v7.20.831 (#884-②): Trial 3 — the same walk, its own instance.
             if (state.task === 'cw_trial_3' && _cwTrial3Ctl.active && _inboundIsAnswer) {
                 await _cwTrial3Ctl.handleTurn(msg);
+                return;
+            }
+            // v7.20.835 (#884-③): Trial 4 — the same walk, its own instance.
+            if (state.task === 'cw_trial_4' && _cwTrial4Ctl.active && _inboundIsAnswer) {
+                await _cwTrial4Ctl.handleTurn(msg);
                 return;
             }
             // v7.20.776: weekend lesson 11 (Mark It Again) — the same walk, on its own page.
@@ -36427,7 +36436,8 @@
                     try {
                         return e.planFids.map(function (p) {
                             const v = _cwDocValue(e.planDoc, p[1]) || '';
-                            return v ? p[0] + ': ' + v : '';
+                            // v7.20.835: "Not using this one." is a technique the student chose NOT to use.
+                            return (v && v !== (WML.CW_EMPATHY_NOT_USING || 'Not using this one.')) ? p[0] + ': ' + v : '';
                         }).filter(Boolean).join(' · ');
                     } catch (err) { return ''; }
                 }
@@ -37550,6 +37560,7 @@
         const _cwTrial1Ctl = _cwTrialCtlFactory(1);
         const _cwTrial2Ctl = _cwTrialCtlFactory(2);   // v7.20.824 (#884-①): character depth
         const _cwTrial3Ctl = _cwTrialCtlFactory(3);   // v7.20.831 (#884-②): archetype coherence
+        const _cwTrial4Ctl = _cwTrialCtlFactory(4);   // v7.20.835 (#884-③): emotional impact
 
         // ══════════════════════════════════════════════════════════════════════════════════════
         // STEP 12 — UPDATE PLOT: GOALS (FIXLIST #440, v7.20.567). Neil's ruling, 2026-08-25:
@@ -38185,7 +38196,7 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwTrial2Ctl, _cwTrial3Ctl, _cwAdaptCtl, _cwStructCtl, _cwEmpathyCtl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwTrial2Ctl, _cwTrial3Ctl, _cwTrial4Ctl, _cwAdaptCtl, _cwStructCtl, _cwEmpathyCtl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
@@ -38208,6 +38219,7 @@
             _cwTrial1Ctl.onReply(reply);
             _cwTrial2Ctl.onReply(reply);
             _cwTrial3Ctl.onReply(reply);
+            _cwTrial4Ctl.onReply(reply);
             _cwCharProfileCtl.onReply(reply);
             _cwGoalsPlotCtl.onReply(reply);
             _cwAdaptCtl.onReply(reply);
@@ -38234,6 +38246,7 @@
                 : t === 'cw_trial_1' ? _cwTrial1Ctl
                 : t === 'cw_trial_2' ? _cwTrial2Ctl   // v7.20.824 (#884-①)
                 : t === 'cw_trial_3' ? _cwTrial3Ctl   // v7.20.831 (#884-②)
+                : t === 'cw_trial_4' ? _cwTrial4Ctl   // v7.20.835 (#884-③)
                 : t === 'cw_step_91' ? _cwTrial1Ctl   // v7.20.776: weekend lesson 11
                 : t === 'cw_step_11' ? _cwCharProfileCtl
                 : t === 'cw_step_12' ? _cwGoalsPlotCtl
@@ -38287,6 +38300,7 @@
             cwTrial1Ctl: _cwTrial1Ctl,         // v7.20.551 — fresh entry calls forceStart(), boot resume tryResume()
             cwTrial2Ctl: _cwTrial2Ctl,         // v7.20.824 (#884-①) — the same two entry points
             cwTrial3Ctl: _cwTrial3Ctl,         // v7.20.831 (#884-②) — the same two entry points
+            cwTrial4Ctl: _cwTrial4Ctl,         // v7.20.835 (#884-③) — the same two entry points
             cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
             cwAdaptCtl: _cwAdaptCtl,
             cwEmpathyCtl: _cwEmpathyCtl,         // v7.20.777 — the weekend bonus lesson; same two entry points             // v7.20.753 — weekend lesson 9; same two entry points
@@ -45816,6 +45830,7 @@
                     if (state.task === 'cw_trial_1' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();
                     if (state.task === 'cw_trial_2' && tp.cwTrial2Ctl) tp.cwTrial2Ctl.tryResume();   // v7.20.824 (#884-①)
                     if (state.task === 'cw_trial_3' && tp.cwTrial3Ctl) tp.cwTrial3Ctl.tryResume();   // v7.20.831 (#884-②)
+                    if (state.task === 'cw_trial_4' && tp.cwTrial4Ctl) tp.cwTrial4Ctl.tryResume();   // v7.20.835 (#884-③)
                     if (state.task === 'cw_step_91' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();   // v7.20.776 (weekend lesson 11)
                     if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
                     if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
@@ -46030,6 +46045,12 @@
                     if (state.task === 'cw_trial_3' && !state.reviewMode && tp.cwTrial3Ctl) {
                         console.log('WML v7.20.831: CW Trial 3 — deterministic self-assessment start (isCwSi entry)');
                         tp.cwTrial3Ctl.forceStart();
+                        return;
+                    }
+                    // v7.20.835 (#884-③): Trial 4 — the same walk on its own five checks, started in code the same way.
+                    if (state.task === 'cw_trial_4' && !state.reviewMode && tp.cwTrial4Ctl) {
+                        console.log('WML v7.20.835: CW Trial 4 — deterministic self-assessment start (isCwSi entry)');
+                        tp.cwTrial4Ctl.forceStart();
                         return;
                     }
                     // v7.20.776: weekend lesson 11 (Mark It Again) — Trial 1's walk, started in code the same way.

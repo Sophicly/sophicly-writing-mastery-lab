@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.834';
+var WML_BUILD = '7.20.835';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1454,7 +1454,12 @@ window.WML = (function() {
         { step: 2, label: 'Judge the Five Checks' },
         { step: 3, label: 'Sophia’s Verdict' },
     ];
-    CW_SIDEBAR_STEPS['trial_4'] = CW_SIDEBAR_STEPS['trial_generic'];
+    // v7.20.835 (#884-③): Trial 4 runs the same walk on its own five checks.
+    CW_SIDEBAR_STEPS['trial_4'] = [
+        { step: 1, label: 'Read Your Draft' },
+        { step: 2, label: 'Judge the Five Checks' },
+        { step: 3, label: 'Sophia’s Verdict' },
+    ];
     CW_SIDEBAR_STEPS['trial_5'] = CW_SIDEBAR_STEPS['trial_generic'];
     CW_SIDEBAR_STEPS['trial_6'] = CW_SIDEBAR_STEPS['trial_generic'];
 
@@ -1942,6 +1947,73 @@ window.WML = (function() {
     ];
     const CW_TRIAL3_ELEMENTS_ALL = CW_TRIAL3_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
 
+    // ⭐⭐ v7.20.835 (FIXLIST #884-③, CW trials slice 5) — TRIAL 4: EMOTIONAL IMPACT. Draft 4 (Step 20) teaches ONE lens,
+    // `empathy` (rubric-cw-narrative.md, distilled from the Step 18 page, the Step 19 prompts and the Step 20 workshop): the
+    // reader should feel WITH the protagonist, not just sorry for them. The five checks are that lens — the hurt shown in the
+    // body, courage while afraid (compulsory), a kindness that costs something, the balance (flawed but trying), and the care
+    // rising by the end — each `prompt` the lens's own test or pointer phrase verbatim (gated). Each check reads the techniques
+    // the student CHOSE in Step 18 for it (`planFids` on `empathy_plan`, the ONE technique list's ids). Examples are DESCRIBED
+    // moments, never quotations (§5c-i), set texts first. Technical accuracy is Trial 1's row. 5 × 4 + 2 = /22.
+    const _cwEmpFids = function (pred) { return CW_EMPATHY_TECHNIQUES.filter(pred).map(function (t) { return [t.label, t.fid]; }); };
+    const CW_TRIAL4_ELEMENTS = [
+        {
+            id: 'hurt', label: 'Vulnerability', ao: 'AO5', planDoc: 'empathy_plan', planFids: _cwEmpFids(function (t) { return t.cat === 'victim'; }),
+            prompt: 'What does their body do when it hurts? Show me one detail.',
+            l1: 'The draft tells the reader your protagonist is hurt or afraid, though it names the feeling instead of showing it in something they do.',
+            strong: 'A strong draft lets the reader feel with the protagonist: the hurt or fear shows in one concrete thing their body does, and nobody has to name the feeling.',
+            example: 'The Ghost shows Scrooge himself as a boy, alone in a cold schoolroom at Christmas while the other boys have gone home, reading by a weak fire. Nobody says the boy is lonely; the empty room says it, and the reader feels with him.',
+            more: [
+                'In Harry Potter and the Philosopher’s Stone, Harry goes back to the Mirror of Erised night after night to look at the family he lost. The returning says how much he misses them.',
+                'In Inside Out, Bing Bong sits down and cries tears of sweets when his rocket is lost for ever. One strange, small detail makes the loss land.',
+            ],
+        },
+        {
+            id: 'courage', label: 'Courage', ao: 'AO5', planDoc: 'empathy_plan', planFids: _cwEmpFids(function (t) { return t.id === 'courage'; }),
+            prompt: 'Where are they afraid but act anyway?',
+            l1: 'The protagonist does something brave, though the draft does not show the fear they push through, so it costs them nothing the reader can see.',
+            strong: 'A strong draft shows the fear first and the brave act anyway, so the reader feels what it costs the protagonist to be brave.',
+            example: 'Before she drinks the Friar’s potion, Juliet imagines waking alone in the tomb among her dead ancestors, beside Tybalt’s body. She is terrified, and she drinks it anyway.',
+            more: [
+                'In The Wizard of Oz, the Cowardly Lion, shaking with fear, still goes into the Witch’s castle to rescue Dorothy.',
+                'In Finding Nemo, Marlin is afraid of the open sea, yet he swims through jellyfish and past sharks to reach his son.',
+            ],
+        },
+        {
+            id: 'cost', label: 'Kindness at a Cost', ao: 'AO5', planDoc: 'empathy_plan', planFids: _cwEmpFids(function (t) { return t.cat === 'virtues'; }),
+            prompt: 'Where does your protagonist still try, even though it costs them something?',
+            l1: 'The protagonist does something kind or good, though it costs them little, or the draft tells the reader it is kind instead of showing the price.',
+            strong: 'A strong draft shows a kindness or a virtue that costs the protagonist something real, so the reader sees a vulnerable person who still tries.',
+            example: 'In Of Mice and Men, George could travel alone, keep a job and spend his money as he likes, but he keeps Lennie with him and gets him out of trouble again and again. His care costs him, and the reader feels with him for it.',
+            more: [
+                'In A Christmas Carol, Bob Cratchit, poor and underpaid, still raises a toast to Scrooge at Christmas dinner, the man who keeps his family poor.',
+                'In Frozen, Anna steps between Hans’s sword and Elsa while she is freezing to death herself.',
+            ],
+        },
+        {
+            id: 'balance', label: 'Balance', ao: 'AO5', planDoc: 'empathy_plan', planFids: _cwEmpFids(function (t) { return t.id === 'mistakes' || t.id === 'courage'; }),
+            prompt: 'Is your protagonist flawed but trying — not too perfect, not too weak?',
+            l1: 'The reader can follow the protagonist, though they come across as too perfect to relate to, or too weak to root for, or the moment is pushed too hard.',
+            strong: 'A strong draft makes the protagonist flawed, vulnerable and still trying, so the reader understands their choices even when they would not make them.',
+            example: 'Macbeth is a murderer, yet Shakespeare lets us hear his terror before and after the killing: the dagger he imagines, the blood he thinks no ocean could wash from his hands. The audience does not approve of him, but it understands him.',
+            more: [
+                'In Toy Story, Woody is jealous of Buzz and causes his fall from the window, but he keeps trying to put it right. The audience stays with him because he tries.',
+                'In The Lion King, Simba hides from his past and argues when Nala finds him, then goes back anyway. He is neither a saint nor a coward.',
+            ],
+        },
+        {
+            id: 'build', label: 'Rising Care', ao: 'AO5', planDoc: 'empathy_plan', planFids: _cwEmpFids(function (t) { return t.cat === 'qualities'; }),
+            prompt: 'Does the reader care more at the end of the scene than at the start?',
+            l1: 'The reader cares about the protagonist, though about as much at the end of the scene as at the start.',
+            strong: 'A strong draft builds the care: each moment gives the reader a little more reason to be on the protagonist’s side, so they care most at the end.',
+            example: 'At the start of A Christmas Carol the reader dislikes Scrooge. By the time he begs, at his own grave, to change his future, the reader is on his side. Dickens has spent the whole story building that.',
+            more: [
+                'In Of Mice and Men, the reader starts by smiling at Lennie and his mice and ends the novel heartbroken for him. Every scene adds to how much we care.',
+                'In Up, Carl begins as a grumpy old man shouting at builders. As the film shows how much he loved Ellie, the audience cares about him more and more.',
+            ],
+        },
+    ];
+    const CW_TRIAL4_ELEMENTS_ALL = CW_TRIAL4_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
+
     // ⭐ v7.20.831 (#884-②): THE WORDS THAT NAME A LATER TRIAL — one map, read by the walk (_cwTrialCtlFactory) and the page
     // (_cwTrialNAboutHTML / _cwTrialNSophiaBlock), so the two cannot drift. Trial 2's strings moved here byte for byte from the
     // factory and the page (bin/cw-trial2-sim-harness.js proves the walk still says them). Trial 1 keeps its own shipped text.
@@ -1959,6 +2031,13 @@ window.WML = (function() {
             checks: 'how your protagonist looks, what they do and say, how they react under pressure, the shift at the turn, and the final detail that proves it',
             checkNoun: 'archetype checks', checkWhat: 'how their protagonist’s archetype shows in the scene, and how it shifts',
             planWhere: 'in their archetype plan from Step 15', planHeading: 'THEIR ARCHETYPE PLAN',
+        },
+        4: {
+            title: 'Trial 4: Emotional Impact', dim: 'Emotional Impact', dimLower: 'emotional impact', dimKey: 'emotional_impact',
+            question: 'does the reader feel with your protagonist, and care more by the end?',
+            checks: 'the hurt shown in the body, courage while afraid, a kindness that costs something, the balance between flawed and trying, and the care rising by the end',
+            checkNoun: 'empathy checks', checkWhat: 'how the reader is made to feel with their protagonist',
+            planWhere: 'in their empathy plan from Step 18', planHeading: 'THEIR EMPATHY PLAN',
         },
     };
     function cwTrialDim(n) { return CW_TRIAL_DIMS[n] || null; }
@@ -1996,6 +2075,7 @@ window.WML = (function() {
         if (n === 1) return cwTrial1Elements();
         if (n === 2) return CW_TRIAL2_ELEMENTS_ALL;
         if (n === 3) return CW_TRIAL3_ELEMENTS_ALL;   // v7.20.831 (#884-②)
+        if (n === 4) return CW_TRIAL4_ELEMENTS_ALL;   // v7.20.835 (#884-③)
         return [];
     }
 
@@ -6573,7 +6653,7 @@ window.WML = (function() {
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
-        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN,
+        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN,
         // Revision map
         REVISION_MAP,
         // Utilities
