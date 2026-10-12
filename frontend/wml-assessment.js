@@ -36417,6 +36417,19 @@
             };
             function persist() {
                 try { localStorage.setItem(lsKey(), JSON.stringify({ st: st, active: active, done: done })); } catch (e) {}
+                tick();
+            }
+            // v7.20.847 (backlog #3): the sidebar ticks from code, the final assessment's way — row 1 (read the draft) once
+            // the checks begin, row 2 (judge the checks) once the marking is asked for, row 3 (Sophia's verdict) once her
+            // marks land. Derived from the walk's own state in ONE place, and reached from persist, serveCurrent and
+            // serveWrap, so a live turn, a sidecar resume and a page rebuild on another device tick the same rows.
+            let _ticked = 0;
+            function tick() {
+                const ph = st && st.phase;
+                const sub = (st && st.mark) ? 3 : (ph === 'marking' || ph === 'ready') ? 2 : (ph === 'items') ? 1 : 0;
+                if (sub <= _ticked) return;
+                _ticked = sub;
+                try { applyCwSubstepProgress({ stepNum: 0, substepNum: sub, name: 'trial ' + N + ' · row ' + sub }); } catch (e) {}
             }
             function clearPersist() { try { localStorage.removeItem(lsKey()); } catch (e) {} }
             function resetSend() { chatSendBtn.style.opacity = '1'; chatSendBtn.style.pointerEvents = 'auto'; }
@@ -37485,6 +37498,7 @@
 
             function serveCurrent(opts) {
                 if (!st) st = { i: 0, levels: {}, marks: {}, notes: {}, moreSpent: {}, phase: 'items' };
+                tick();
                 if (st.phase === 'done') { serveWrap(); return; }
                 if (st.phase === 'goal') { serveGoalAsk(opts); return; }
                 if (st.phase === 'calib') { serveCalibration(opts); return; }
@@ -37502,6 +37516,7 @@
 
             function serveWrap() {
                 _walkSlot.clear(WALK);
+                tick();
                 const m = st && st.mark;
                 _cwReplay(function () {
                     aiBubble(m
@@ -37552,7 +37567,7 @@
 
             function reset() {
                 active = false; pending = false; done = false;
-                st = null;
+                st = null; _ticked = 0;
                 _walkSlot.clear(WALK);
                 clearPersist();
                 setTrialLadderModel(null);   // a stale ladder must never outlive its walk

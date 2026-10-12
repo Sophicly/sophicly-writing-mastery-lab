@@ -85,6 +85,7 @@ function world(opts) {
     opts = opts || {};
     planLoaded = {};
     ladder = null;
+    const ticks = [];   // v7.20.847 (backlog #3): every sidebar tick the walk asks for, in order
     const w = makeWorld(CTL_SRC, Object.assign({
         task: 'cw_trial_6',
         fids: FIDS,
@@ -96,9 +97,11 @@ function world(opts) {
             _cwLoadDocValues: function (pid, key) { return new Promise((res) => setImmediate(() => { planLoaded[key] = true; res({}); })); },
             setTrialLadderModel: function (m) { ladder = m; },
             _swmlScrollToTop: function () {},
+            applyCwSubstepProgress: function (d) { ticks.push(d.substepNum); },
         },
     }, opts));
     _pickWorld = w;
+    w.ticks = ticks;
     w.saved = [];
     // Added AFTER the controller is built — exactly what the walk must survive (the trial's words are read when USED).
     Object.assign(w.deps.WML, {
@@ -222,9 +225,11 @@ async function main() {
     {
         const w = world();
         w.ctl.forceStart();
+        ok(w.ticks.length === 0, '3 · the sidebar ticks nothing before the checks begin', w.ticks);
         await toFirstAsk(w);
         const n = await scoreAll(w, 3);
         ok(n === 6, '3 · all six judged', n);
+        ok(w.ticks.join() === '1,2', '⭐ 3 · the sidebar ticks row 1 as the checks begin and row 2 as the marking is asked for (backlog #3)', w.ticks);
         ok(w.sends.length === 1, '3 · ⭐ ONE API call — the marking turn', w.sends.length);
         const ctx = hiddenCtx(w);
         ok(/TRIAL 6 — GENRE CONVENTIONS/.test(ctx) && /their own Draft 6 the way an examiner does/.test(ctx), '3 · the marking turn names the trial and the draft it judges');
@@ -240,6 +245,7 @@ async function main() {
         w.resolveApi('My calls, check by check.\n\n' + markerBlock({ setting: 'l2_top', atmosphere: 'l2_low', device: 'l1_top', language: 'l1_low', centre: 'l2_top', accuracy: 'l2' }));
         for (let i = 0; i < 8; i++) await settle();
         ok(/^4\/4 \(top of Level 2\)/.test(w.rows.get('cw-trial-6-fb-setting') || ''), '4 · her verdict lands in the document, per check', w.rows.get('cw-trial-6-fb-setting'));
+        ok(w.ticks.join() === '1,2,3', '⭐ 4 · …and row 3 (Sophia\'s verdict) ticks when it lands — once each, in order', w.ticks);
         const mk = w.rows.get('cw-trial-6-mark') || '';
         ok(/^Grade 7 \(16\/22 · 73%\) for genre conventions$/.test(mk), '4 · ⭐ the mark is CODE arithmetic: 4+3+2+1+4+2 = 16 / 22, for genre conventions', mk);
         const all = allText(w);
@@ -314,6 +320,7 @@ async function main() {
         for (let i = 0; i < 6; i++) await settle();
         ok(/\*\*Plot Device\*\*/.test(lastBubble(a)) && /3 of 6/.test(lastBubble(a)), '9a · …on the third check, read from the banked rows', lastBubble(a).slice(0, 80));
         ok(!!ladder && ladder.title === 'Plot Device', '9a · …with its marking card published');
+        ok(a.ticks.join() === '1', '9a · ⭐ …and the sidebar ticks row 1 from the page alone', a.ticks);
         ok(a.sends.length === 0, '9a · …and no API call');
         // (b) every check judged, no mark yet: a chip, never an unasked marking call
         const w2 = world();
@@ -327,6 +334,7 @@ async function main() {
         for (let i = 0; i < 6; i++) await settle();
         ok(!!chipNamed(b2, /Give me my marks/), '9b · ⭐ …offering "Give me my marks" (§4d: something to press)');
         ok(b2.sends.length === 0, '9b · ⭐ …and it does NOT send the marking call by itself', b2.sends.length);
+        ok(b2.ticks.join() === '2', '9b · …the sidebar ticks rows 1–2 (every check judged)', b2.ticks);
         // (c) marked, no target yet: the target ask, with the mark read back from its row
         w2.resolveApi('Calls.\n\n' + markerBlock({ setting: 'l2_top', atmosphere: 'l2_low', device: 'l1_top', language: 'l1_low', centre: 'l2_top', accuracy: 'l2' }));
         for (let i = 0; i < 8; i++) await settle();
@@ -334,6 +342,7 @@ async function main() {
         ok(c3.ctl.tryResume() === true, '9c · marked, no target: it resumes');
         for (let i = 0; i < 6; i++) await settle();
         ok(/your one target for Draft 7/i.test(lastBubble(c3)), '9c · …on the target ask', lastBubble(c3).slice(0, 80));
+        ok(c3.ticks.join() === '3', '9c · …the sidebar ticks rows 1–3 (her verdict is on the page)', c3.ticks);
         await c3.say('Let the floodlights fail at the final whistle.');
         for (let i = 0; i < 4; i++) await settle();
         const sv = c3.saved[c3.saved.length - 1] || {};
