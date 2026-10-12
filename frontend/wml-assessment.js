@@ -3612,6 +3612,22 @@
         return { left: left, text: left + (left === 1 ? ' mark' : ' marks') + ' still available', cls: 'swml-tier-' + tier };
     }
     // @RESP-FB-PURE-END
+    // @STALE-REGEN-PURE-BEGIN
+    // ⭐ v7.20.853 (FIXLIST blank-plan-1298 — Neil, 12 Oct: "she definitely had work up to I think around question three,
+    // but it looks like her document is blank"). MEASURED: the 12 Oct go re-worded AQA Paper 2 Topic 1's Question 1 (2026
+    // wording), so every saved Topic 1 document read as STALE ("questionInDoc: false"); the guard below counted student work
+    // only as response words or feedback, so a PLANNING document — whose work is all in plan and outline boxes — counted as
+    // empty and was wiped and rebuilt from the template (a tutor saw a blank page; a student's page re-filled partly from the
+    // chat and SAVED over the server copy). THE RULE: a stale document is rebuilt only when nothing in it was written by a
+    // person — no typed box of any kind, no response words, no feedback — and never while a tutor is viewing it (a review
+    // must show what is stored, and must never change it).
+    function staleRegenVerdict(o) {
+        if (!o || !o.isStale) return 'keep';
+        if (o.reviewMode) return 'preserve';
+        if ((o.responseWords || 0) > 20 || o.hasFeedback || o.typedBox) return 'preserve';
+        return 'regen';
+    }
+    // @STALE-REGEN-PURE-END
     function _deterministicDocGrade() {
         // v7.19.868: the single audited grade for THIS doc wins when present (set atomically
         // from the completion reply) — the DOM sum below is only the pre-completion
@@ -72968,11 +72984,18 @@
                 // template placeholder ("Write your essay here.") regardless of whether the response
                 // baseline has rehydrated yet — so a genuinely pristine template still regenerates.
                 const _responseWords = (typeof getResponseWordCount === 'function') ? getResponseWordCount(canvasEditor) : 0;
-                const hasStudentWork = _responseWords > 20 || _hasFeedbackContent;
+                // v7.20.853 (blank-plan-1298): ANY box a person typed in is student work — plan boxes, outline rows,
+                // predictions — not only responses and feedback. A read that fails counts as work (preserve, never wipe).
+                let _typedBox = false;
+                try {
+                    const _tb = document.createElement('div'); _tb.innerHTML = currentHTML;
+                    _tb.querySelectorAll('[data-input-field], .swml-input-field, [data-outline-row]').forEach((f) => { if ((f.textContent || '').trim()) _typedBox = true; });
+                } catch (_) { _typedBox = true; }
+                const hasStudentWork = staleRegenVerdict({ isStale, responseWords: _responseWords, hasFeedback: _hasFeedbackContent, typedBox: _typedBox, reviewMode: !!state.reviewMode }) === 'preserve';
                 if (isStale && hasStudentWork) {
                     // Fail loud (CLAUDE.md #10): a real doc tripped a stale signal — preserve, never wipe.
                     console.warn('WML: stale-signal on a doc WITH student work — preserving (no regen).',
-                        'responseWords:', _responseWords, 'hasFeedback:', _hasFeedbackContent,
+                        'responseWords:', _responseWords, 'hasFeedback:', _hasFeedbackContent, 'typedBox:', _typedBox, 'review:', !!state.reviewMode,
                         'questionInDoc:', questionInDoc, 'marksMismatch:', marksMismatch,
                         'specDriftMismatch:', specDriftMismatch, 'multiQuestionDrift:', multiQuestionDrift);
                     _backfillMissingPlanSection(topicData);
