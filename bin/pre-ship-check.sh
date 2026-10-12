@@ -794,6 +794,7 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/cw-trial2-sim-harness.js || fail=1   # v7.20.824 (#884-①): Trial 2 = the trial factory built for N=2
   node bin/cw-trial3-sim-harness.js || fail=1   # v7.20.831 (#884-②): Trial 3 = the trial factory built for N=3
   node bin/cw-trial4-sim-harness.js || fail=1   # v7.20.835 (#884-③): Trial 4 = the trial factory built for N=4
+  node bin/cw-trial5-sim-harness.js || fail=1   # v7.20.837 (#884-④): Trial 5 = the trial factory built for N=5
 fi
 
 # v7.20.413: CW STEP-7 DOCUMENT GATE. The document half of Step 7 — the fifteen rows, their

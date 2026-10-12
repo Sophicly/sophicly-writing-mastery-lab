@@ -1,25 +1,27 @@
 #!/usr/bin/env node
 /* eslint-env node */
 /**
- * cw-trial4-sim-harness.js — BEHAVIOURAL gate for Trial 4: Emotional Impact (v7.20.835, FIXLIST #884-③, CW trials slice 5). Made from cw-trial3-sim-harness.js.
+ * cw-trial4-sim-harness.js — BEHAVIOURAL gate for Trial 4: Emotional Impact (v7.20.835, FIXLIST #884-③, CW trials slice 5).
+ * Generated from cw-trial3-sim-harness.js with an ordered replacement list.
  *
- * Trial 3 is the SAME examiner walk as Trials 1 and 2 — `_cwTrialCtlFactory(3)` — on Trial 3's own checks (wml-core.js
- * CW_TRIAL3_ELEMENTS: the Draft 3 `archetypes` lens). bin/cw-trial1-sim-harness.js and bin/cw-trial2-sim-harness.js prove the
- * factory still IS Trials 1 and 2; this proves Trial 3's half: its rows, its words (WML.cwTrialDim, read at use-time), a plan
- * that spans the story (planFids: beginning · middle · end), its arithmetic (/22) and its saved result.
+ * Trial 4 is the SAME examiner walk as the earlier trials — `_cwTrialCtlFactory(4)` — on Trial 4's own checks
+ * (wml-core.js CW_TRIAL4_ELEMENTS: the Draft 4 `empathy` lens). The other trial sims prove the factory still IS
+ * the earlier trials; this proves Trial 4's half: its rows, its words (WML.cwTrialDim, read at use-time), a plan read from the ONE technique list (only the techniques the student chose; a turned-down one is never handed over),
+ * its arithmetic (/22) and its saved result.
  *
  *  1. The opening pages, names the dimension; the first ask is the first check, verbatim.
  *  2. ⭐ The grade-goal row and the five checks' rows never collide.
- *  3. ⭐ ONE API call for the whole trial; the marking turn carries THEIR archetype plan, part by part, the checks' marker
- *     contract, and the right totals (20 or 22, never Trial 1's or Trial 2's).
- *  4. Sophia's verdicts land in the document; the mark is /22 for archetype coherence.
- *  5. ⭐ Every next-draft word says Draft 4; the target is filed and saved as trial 3.
+ *  3. ⭐ ONE API call for the whole trial; the marking turn carries THEIR plan as background, the checks' marker contract,
+ *     and the right totals.
+ *  4. Sophia's verdicts land in the document; the mark is /22 for emotional impact.
+ *  5. ⭐ Every next-draft word says Draft 5; the target is filed and saved as trial 4.
  *  6. A marking reply missing a verdict files NO mark and leaves a chip (§4d, §11).
  *  7. A reload mid-walk lands on the check in flight (§4c.8b).
- *  8. A stuck student's help call names Trial 3's checks and plan, never Trial 2's.
+ *  8. A stuck student's help call names Trial 4's checks and the plan for THAT check, never an earlier trial's.
+ *  9. A new device (no saved position in this browser) rebuilds the walk from the document (#897).
  *  Liveness is checked automatically inside every say()/tap() (walk-sim-lib, §4d).
  *
- * Usage: node bin/cw-trial3-sim-harness.js
+ * Usage: node bin/cw-trial4-sim-harness.js
  */
 'use strict';
 

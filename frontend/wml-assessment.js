@@ -20515,6 +20515,10 @@
                             // v7.20.835 (#884-③): Trial 4 runs the same walk — it owns chat-clear the same way.
                             clearWalkResume();
                             setTimeout(() => { _cwTrial4Ctl.reset(); _cwTrial4Ctl.forceStart(); }, 200);
+                        } else if (state.task === 'cw_trial_5') {
+                            // v7.20.837 (#884-④): Trial 5 runs the same walk — it owns chat-clear the same way.
+                            clearWalkResume();
+                            setTimeout(() => { _cwTrial5Ctl.reset(); _cwTrial5Ctl.forceStart(); }, 200);
                         } else if (state.task === 'cw_step_91') {
                             // v7.20.776: weekend lesson 11 (Mark It Again) runs Trial 1's walk — it owns chat-clear the same way.
                             clearWalkResume();
@@ -21452,7 +21456,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_trial_5: _cwTrial5Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
             };
             if (_examinerLadderCtl.active) {
                 try { return !!_examinerLadderCtl.nudge(); } catch (e) { console.warn('WML ladder: nudge threw', e && e.message); return false; }
@@ -21466,7 +21470,7 @@
                 cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                 cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_trial_5: _cwTrial5Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
             };
             if (_examinerLadderCtl.active) return true;
             const c = m[(state && state.task) || ''];
@@ -21679,7 +21683,7 @@
                     cw_step_1: _cwProfileCtl, cw_step_2: _cwIdeasCtl, cw_step_3: _cwLoglineCtl,
                     cw_step_4: _cwSpineCtl, cw_step_5: _cwStructureCtl, cw_step_6: _cwOutlineCtl,
                 cw_step_7: _cwValuesCtl, cw_step_8: _cwPlotValuesCtl, cw_step_9: _cw9SceneCtl, cw_step_13: _cw13SceneCtl,
-                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
+                    cw_step_11: _cwCharProfileCtl, cw_step_12: _cwGoalsPlotCtl, cw_trial_1: _cwTrial1Ctl, cw_trial_2: _cwTrial2Ctl, cw_trial_3: _cwTrial3Ctl, cw_trial_4: _cwTrial4Ctl, cw_trial_5: _cwTrial5Ctl, cw_step_90: _cwAdaptCtl, cw_step_27: _cwStructCtl, cw_step_91: _cwTrial1Ctl, cw_step_92: _cwEmpathyCtl,
                 };
                 const _cwCtl = _cwCtls[state.task];
                 if (_cwCtl && !_cwCtl.active) {
@@ -21805,6 +21809,11 @@
             // v7.20.835 (#884-③): Trial 4 — the same walk, its own instance.
             if (state.task === 'cw_trial_4' && _cwTrial4Ctl.active && _inboundIsAnswer) {
                 await _cwTrial4Ctl.handleTurn(msg);
+                return;
+            }
+            // v7.20.837 (#884-④): Trial 5 — the same walk, its own instance.
+            if (state.task === 'cw_trial_5' && _cwTrial5Ctl.active && _inboundIsAnswer) {
+                await _cwTrial5Ctl.handleTurn(msg);
                 return;
             }
             // v7.20.776: weekend lesson 11 (Mark It Again) — the same walk, on its own page.
@@ -37561,6 +37570,7 @@
         const _cwTrial2Ctl = _cwTrialCtlFactory(2);   // v7.20.824 (#884-①): character depth
         const _cwTrial3Ctl = _cwTrialCtlFactory(3);   // v7.20.831 (#884-②): archetype coherence
         const _cwTrial4Ctl = _cwTrialCtlFactory(4);   // v7.20.835 (#884-③): emotional impact
+        const _cwTrial5Ctl = _cwTrialCtlFactory(5);   // v7.20.837 (#884-④): thematic clarity
 
         // ══════════════════════════════════════════════════════════════════════════════════════
         // STEP 12 — UPDATE PLOT: GOALS (FIXLIST #440, v7.20.567). Neil's ruling, 2026-08-25:
@@ -38196,7 +38206,7 @@
             };
         })();
 
-        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwTrial2Ctl, _cwTrial3Ctl, _cwTrial4Ctl, _cwAdaptCtl, _cwStructCtl, _cwEmpathyCtl]);
+        registerCwWalkCtls([_cwProfileCtl, _cwIdeasCtl, _cwLoglineCtl, _cwSpineCtl, _cwStructureCtl, _cwOutlineCtl, _cwValuesCtl, _cwPlotValuesCtl, _cw9SceneCtl, _cw13SceneCtl, _examinerLadderCtl, _cwCharProfileCtl, _cwGoalsPlotCtl, _cwTrial1Ctl, _cwTrial2Ctl, _cwTrial3Ctl, _cwTrial4Ctl, _cwTrial5Ctl, _cwAdaptCtl, _cwStructCtl, _cwEmpathyCtl]);
         // v7.20.495: cross-closure handle for the TWIN pipeline's step-9 intercepts (its greeting
         // emitter + chat-clear live in the other chat closure and cannot see _cw9SceneCtl —
         // same pattern as __swmlPoetrySeqResume). This closure's chat surface is the live DOM.
@@ -38220,6 +38230,7 @@
             _cwTrial2Ctl.onReply(reply);
             _cwTrial3Ctl.onReply(reply);
             _cwTrial4Ctl.onReply(reply);
+            _cwTrial5Ctl.onReply(reply);
             _cwCharProfileCtl.onReply(reply);
             _cwGoalsPlotCtl.onReply(reply);
             _cwAdaptCtl.onReply(reply);
@@ -38247,6 +38258,7 @@
                 : t === 'cw_trial_2' ? _cwTrial2Ctl   // v7.20.824 (#884-①)
                 : t === 'cw_trial_3' ? _cwTrial3Ctl   // v7.20.831 (#884-②)
                 : t === 'cw_trial_4' ? _cwTrial4Ctl   // v7.20.835 (#884-③)
+                : t === 'cw_trial_5' ? _cwTrial5Ctl   // v7.20.837 (#884-④)
                 : t === 'cw_step_91' ? _cwTrial1Ctl   // v7.20.776: weekend lesson 11
                 : t === 'cw_step_11' ? _cwCharProfileCtl
                 : t === 'cw_step_12' ? _cwGoalsPlotCtl
@@ -38301,6 +38313,7 @@
             cwTrial2Ctl: _cwTrial2Ctl,         // v7.20.824 (#884-①) — the same two entry points
             cwTrial3Ctl: _cwTrial3Ctl,         // v7.20.831 (#884-②) — the same two entry points
             cwTrial4Ctl: _cwTrial4Ctl,         // v7.20.835 (#884-③) — the same two entry points
+            cwTrial5Ctl: _cwTrial5Ctl,         // v7.20.837 (#884-④) — the same two entry points
             cwCharProfileCtl: _cwCharProfileCtl, // v7.20.563 (#428) — fresh entry calls start(), boot resume tryResume()
             cwAdaptCtl: _cwAdaptCtl,
             cwEmpathyCtl: _cwEmpathyCtl,         // v7.20.777 — the weekend bonus lesson; same two entry points             // v7.20.753 — weekend lesson 9; same two entry points
@@ -45831,6 +45844,7 @@
                     if (state.task === 'cw_trial_2' && tp.cwTrial2Ctl) tp.cwTrial2Ctl.tryResume();   // v7.20.824 (#884-①)
                     if (state.task === 'cw_trial_3' && tp.cwTrial3Ctl) tp.cwTrial3Ctl.tryResume();   // v7.20.831 (#884-②)
                     if (state.task === 'cw_trial_4' && tp.cwTrial4Ctl) tp.cwTrial4Ctl.tryResume();   // v7.20.835 (#884-③)
+                    if (state.task === 'cw_trial_5' && tp.cwTrial5Ctl) tp.cwTrial5Ctl.tryResume();   // v7.20.837 (#884-④)
                     if (state.task === 'cw_step_91' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();   // v7.20.776 (weekend lesson 11)
                     if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
                     if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
@@ -46051,6 +46065,12 @@
                     if (state.task === 'cw_trial_4' && !state.reviewMode && tp.cwTrial4Ctl) {
                         console.log('WML v7.20.835: CW Trial 4 — deterministic self-assessment start (isCwSi entry)');
                         tp.cwTrial4Ctl.forceStart();
+                        return;
+                    }
+                    // v7.20.837 (#884-④): Trial 5 — the same walk on its own five checks, started in code the same way.
+                    if (state.task === 'cw_trial_5' && !state.reviewMode && tp.cwTrial5Ctl) {
+                        console.log('WML v7.20.837: CW Trial 5 — deterministic self-assessment start (isCwSi entry)');
+                        tp.cwTrial5Ctl.forceStart();
                         return;
                     }
                     // v7.20.776: weekend lesson 11 (Mark It Again) — Trial 1's walk, started in code the same way.
@@ -62684,7 +62704,7 @@
                 }).join(''))
             + sectionHTML('response', 'Overall Feedback', false, null,
                 '<h3>The whole piece, in two lines</h3>'
-                + outlineRowHTML({ id: 'strength', label: 'Key Strength', prompt: 'The check that is working hardest for your character.', locked: true }, 'cw-trial-' + n + '-strength')
+                + outlineRowHTML({ id: 'strength', label: 'Key Strength', prompt: 'The check that is working hardest in your draft.', locked: true }, 'cw-trial-' + n + '-strength')
                 + outlineRowHTML({ id: 'priority', label: 'Priority for Draft ' + (n + 1), prompt: 'The one check that would improve the story most, and what to do to it.', locked: true }, 'cw-trial-' + n + '-priority'))
             + sectionHTML('response', (T.dim || ('Trial ' + n)) + ' Mark', false, null,
                 '<h3>Sophia’s mark, and where you two disagreed</h3>'

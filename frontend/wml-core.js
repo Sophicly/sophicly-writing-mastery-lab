@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.836';
+var WML_BUILD = '7.20.837';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1461,7 +1461,12 @@ window.WML = (function() {
         { step: 2, label: 'Judge the Five Checks' },
         { step: 3, label: 'Sophia’s Verdict' },
     ];
-    CW_SIDEBAR_STEPS['trial_5'] = CW_SIDEBAR_STEPS['trial_generic'];
+    // v7.20.837 (#884-④): Trial 5 runs the same walk on its own five checks.
+    CW_SIDEBAR_STEPS['trial_5'] = [
+        { step: 1, label: 'Read Your Draft' },
+        { step: 2, label: 'Judge the Five Checks' },
+        { step: 3, label: 'Sophia’s Verdict' },
+    ];
     CW_SIDEBAR_STEPS['trial_6'] = CW_SIDEBAR_STEPS['trial_generic'];
 
     // ══════════════════════════════════════════════════════════════════════════════════════════
@@ -2027,6 +2032,75 @@ window.WML = (function() {
         { id: 'tone-check', label: 'Tone Shift Check',         fid: 'cw-step-19-tone-check' },
     ];
 
+    // ⭐⭐ v7.20.837 (FIXLIST #884-④, CW trials slice 5) — TRIAL 5: THEMATIC CLARITY. Draft 5 (Step 23) teaches ONE lens,
+    // `theme_tone` (rubric-cw-narrative.md, distilled from the Step 21 page, the Step 22 prompts and the Step 23 workshop):
+    // the reader should feel what the story means without being told, and the tone should carry them there. The five checks
+    // are that lens — the tone built in the words, the shift at the turning point, an image that carries the theme, the theme
+    // shown never stated, and the final image — each `prompt` the lens's own test or pointer phrase verbatim (gated). Each
+    // check reads the Step 21 rows it is judged against (`planFids` on `theme_tone`, from the ONE list CW_THEME_TONE_PLAN).
+    // Examples are DESCRIBED moments, never quotations (§5c-i), set texts first. Technical accuracy is Trial 1's row. /22.
+    const _cwThemeFids = function (ids) {
+        return CW_THEME_TONE_PLAN.filter(function (r) { return ids.indexOf(r.id) !== -1; }).map(function (r) { return [r.label, r.fid]; });
+    };
+    const CW_TRIAL5_ELEMENTS = [
+        {
+            id: 'tone', label: 'Tone', ao: 'AO5', planDoc: 'theme_tone', planFids: _cwThemeFids(['tone-begin', 'tone-mid', 'tone-end']),
+            prompt: 'Does each paragraph create the emotional atmosphere you want?',
+            l1: 'The draft has an atmosphere, though some words work against the tone you planned, or the feeling is named instead of built from the words.',
+            strong: 'A strong draft builds the planned tone from its words: their sounds, the length of the sentences and the sensory details all work together, so the reader feels the atmosphere without being told.',
+            example: 'A Christmas Carol opens on Christmas Eve, yet everything is cold: fog pouring in at the keyholes, a clerk trying to warm himself at a candle, Scrooge keeping the coal in his own room. Dickens never says the mood is bleak; every detail makes it so.',
+            more: [
+                'When Utterson goes to Hyde’s house in Jekyll and Hyde, the fog makes the morning as dark as evening, and the street looks like part of a city in a nightmare. The fog builds the fear before anyone is found.',
+                'In The Lion King, the elephant graveyard is grey, full of bones and silent except for the hyenas’ laughter. The audience feels the danger before anything attacks.',
+            ],
+        },
+        {
+            id: 'shift', label: 'Tone Shift', ao: 'AO5', planDoc: 'theme_tone', planFids: _cwThemeFids(['tone-begin', 'tone-mid', 'tone-end', 'tone-check']),
+            prompt: 'Can the reader feel the atmosphere change at the turning point?',
+            l1: 'The tone changes during the scene, though the change is sudden or explained in a sentence, or it does not come at the turning point.',
+            strong: 'A strong draft changes the atmosphere at the turning point and builds the change from the words: the sentences, sounds and images change with the protagonist, so the reader feels the shift happen.',
+            example: 'At the start of An Inspector Calls, Priestley asks for the lighting to be pink and intimate until the Inspector arrives, and then brighter and harder. The warm celebration turns cold at the exact moment the story turns.',
+            more: [
+                'On Scrooge’s Christmas morning, after the darkness of the last Ghost, there is no fog: the air is clear, bright and cold, the church bells ring, and Scrooge laughs. The tone changes because Scrooge has.',
+                'In Up, the warm, bright years of Carl and Ellie’s life together give way to a hospital room, and then to a house where Carl lives alone. The music slows, and the audience feels the loss before a word is spoken.',
+            ],
+        },
+        {
+            id: 'image', label: 'Thematic Image', ao: 'AO5', planDoc: 'theme_tone', planFids: _cwThemeFids(['theme']),
+            prompt: 'Which image, object or natural detail recurs in your scene and connects to your theme?',
+            l1: 'The draft has an image, object or detail that could carry the theme, though it appears only once, or it comes back without gaining any new meaning.',
+            strong: 'A strong draft shows an image, object or natural detail early and brings it back at the turning point with a changed meaning, so it carries the theme without a word of explanation.',
+            example: 'In Macbeth, blood keeps coming back: on the daggers, on Macbeth’s hands, and finally on Lady Macbeth’s hands as she sleepwalks, trying to wash away a stain nobody else can see. Each time, the guilt it stands for grows heavier.',
+            more: [
+                'In Romeo and Juliet, light keeps appearing in darkness: Romeo calls Juliet the sun, the lovers meet at night, and even in the tomb he says her beauty fills it with light.',
+                'In Of Mice and Men, the dream of a little farm with rabbits returns again and again. Each time it is told, it feels more fragile, until it is the last thing Lennie hears.',
+            ],
+        },
+        {
+            id: 'shown', label: 'Shown, Not Stated', ao: 'AO5', planDoc: 'theme_tone', planFids: _cwThemeFids(['values', 'theme']),
+            prompt: 'Does your theme emerge, or is it stated?',
+            l1: 'The reader can find the theme, though the draft states it at least once (a character or the narrator says what the story means), or it is so hidden the reader cannot sense it.',
+            strong: 'A strong draft lets the theme emerge from what the protagonist does and what happens as a result: nobody names the moral, and the reader still feels it.',
+            example: 'Dickens does not end A Christmas Carol with a lecture about generosity. He shows Scrooge sending the biggest turkey to the Cratchits, raising Bob’s salary and becoming a second father to Tiny Tim. The reader works out the meaning from what Scrooge does.',
+            more: [
+                'In Macbeth, nobody stops to say that ambition destroys. Instead, when Macbeth hears that his wife is dead, he says life is a story that means nothing. The audience feels what his ambition has cost him.',
+                'In Toy Story, nobody says the film is about friendship winning over jealousy. Woody and Buzz work together to get back to Andy, and the audience understands.',
+            ],
+        },
+        {
+            id: 'ending', label: 'The Final Image', ao: 'AO5', planDoc: 'theme_tone', planFids: _cwThemeFids(['theme', 'tone-end']),
+            prompt: 'What final image carries the thematic weight?',
+            l1: 'The scene ends, though the last moment explains its meaning in a sentence, or it ends on an image that does not connect to the theme.',
+            strong: 'A strong draft ends on an action or image that answers the theme’s question, so the reader leaves feeling what the story means.',
+            example: 'Of Mice and Men ends with Slim leading George away, while Carlson wonders what is wrong with the two of them. The one man who understands walks off with George; everyone else is blind to what has been lost.',
+            more: [
+                'An Inspector Calls ends with a telephone call: a girl has just died, and a police inspector is on his way. The final moment sends the family back to the start, and the audience sees that the older Birlings have learned nothing.',
+                'Up ends with Carl and Russell sitting on the kerb, eating ice cream and counting cars, the way Russell once did with his father. A lonely old man and a lonely boy are not alone any more.',
+            ],
+        },
+    ];
+    const CW_TRIAL5_ELEMENTS_ALL = CW_TRIAL5_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
+
     // ⭐ v7.20.831 (#884-②): THE WORDS THAT NAME A LATER TRIAL — one map, read by the walk (_cwTrialCtlFactory) and the page
     // (_cwTrialNAboutHTML / _cwTrialNSophiaBlock), so the two cannot drift. Trial 2's strings moved here byte for byte from the
     // factory and the page (bin/cw-trial2-sim-harness.js proves the walk still says them). Trial 1 keeps its own shipped text.
@@ -2051,6 +2125,13 @@ window.WML = (function() {
             checks: 'the hurt shown in the body, courage while afraid, a kindness that costs something, the balance between flawed and trying, and the care rising by the end',
             checkNoun: 'empathy checks', checkWhat: 'how the reader is made to feel with their protagonist',
             planWhere: 'in their empathy plan from Step 18', planHeading: 'THEIR EMPATHY PLAN',
+        },
+        5: {
+            title: 'Trial 5: Thematic Clarity', dim: 'Thematic Clarity', dimLower: 'thematic clarity', dimKey: 'thematic_clarity',
+            question: 'does the reader feel what your story means without being told, and does the tone carry them there?',
+            checks: 'the tone built in your words, the shift at the turning point, an image that carries the theme, the theme shown and never stated, and the final image',
+            checkNoun: 'theme and tone checks', checkWhat: 'how the scene’s atmosphere and images carry its meaning',
+            planWhere: 'in their theme and tone plan from Step 21', planHeading: 'THEIR THEME AND TONE PLAN',
         },
     };
     function cwTrialDim(n) { return CW_TRIAL_DIMS[n] || null; }
@@ -2093,6 +2174,7 @@ window.WML = (function() {
         if (n === 2) return CW_TRIAL2_ELEMENTS_ALL;
         if (n === 3) return CW_TRIAL3_ELEMENTS_ALL;   // v7.20.831 (#884-②)
         if (n === 4) return CW_TRIAL4_ELEMENTS_ALL;   // v7.20.835 (#884-③)
+        if (n === 5) return CW_TRIAL5_ELEMENTS_ALL;   // v7.20.837 (#884-④)
         return [];
     }
 
@@ -6670,7 +6752,7 @@ window.WML = (function() {
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
-        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN, CW_THEME_TONE_PLAN,
+        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, CW_TRIAL4_ELEMENTS, CW_TRIAL5_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN, CW_THEME_TONE_PLAN,
         // Revision map
         REVISION_MAP,
         // Utilities

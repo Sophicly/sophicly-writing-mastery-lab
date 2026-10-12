@@ -228,8 +228,9 @@ ok('…and trials 2–6 no longer share it (six trials looked identical because 
     /CW_SIDEBAR_STEPS\['trial_2'\] = \[[\s\S]{0,200}Judge the Six Checks/.test(CORE)
     && /CW_SIDEBAR_STEPS\['trial_3'\] = \[[\s\S]{0,200}Judge the Five Checks/.test(CORE)   // v7.20.831 (#884-②)
     && /CW_SIDEBAR_STEPS\['trial_4'\] = \[[\s\S]{0,200}Judge the Five Checks/.test(CORE)   // v7.20.835 (#884-③)
-    && (CORE.match(/CW_SIDEBAR_STEPS\['trial_[5-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length === 2,
-    (CORE.match(/CW_SIDEBAR_STEPS\['trial_[5-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length);
+    && /CW_SIDEBAR_STEPS\['trial_5'\] = \[[\s\S]{0,200}Judge the Five Checks/.test(CORE)   // v7.20.837 (#884-④)
+    && (CORE.match(/CW_SIDEBAR_STEPS\['trial_6'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length === 1,
+    (CORE.match(/CW_SIDEBAR_STEPS\['trial_6'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length);
 
 // ── 4. THE SEVEN WIRING POINTS — a walk missing one ships DEAD, and silently ───────────────────
 console.log('\nAll seven wiring points name the controller (the .490 incident):');
@@ -443,7 +444,7 @@ console.log('\nTrial 2 asks what Draft 2 taught, in the words it taught them:');
         T2.every((e) => PROTO2.indexOf(e.prompt) === -1));
 }
 
-// ── TRIALS 3–4 (v7.20.831 #884-②, v7.20.835 #884-③) — the same walk, each asking what ITS draft taught ─────────────
+// ── TRIALS 3–5 (v7.20.831 #884-②, v7.20.835 #884-③, v7.20.837 #884-④) — the same walk, each asking what ITS draft taught ─────────────
 const LATER_TRIALS = [
     { n: 3, lens: 'archetypes', ids: 'look,choices,pressure,shift,detail', planDoc: 'character_archetypes', proto: 'CW-TRIAL-03-archetype-coherence.md',
       TAUGHT: {
@@ -461,6 +462,14 @@ const LATER_TRIALS = [
         balance: 'Is your protagonist flawed but trying — not too perfect, not too weak?',
         build: 'Does the reader care more at the end of the scene than at the start?',
       } },
+    { n: 5, lens: 'theme_tone', ids: 'tone,shift,image,shown,ending', planDoc: 'theme_tone', proto: 'CW-TRIAL-05-thematic-clarity.md',
+      TAUGHT: {
+        tone: 'Does each paragraph create the emotional atmosphere you want?',
+        shift: 'Can the reader feel the atmosphere change at the turning point?',
+        image: 'Which image, object or natural detail recurs in your scene and connects to your theme?',
+        shown: 'Does your theme emerge, or is it stated?',
+        ending: 'What final image carries the thematic weight?',
+      } },
 ];
 {
     const SRC_RAW = fs.readFileSync(path.join(ROOT, 'frontend/wml-assessment.js'), 'utf8');
@@ -472,6 +481,10 @@ const LATER_TRIALS = [
         && !/CW_TRIAL_PAGE_TEXT/.test(SRC_RAW) && !/'character depth'/.test(SRC_RAW.slice(SRC_RAW.indexOf('function _cwTrialCtlFactory(N) {'), SRC_RAW.indexOf('const _cwTrial1Ctl = _cwTrialCtlFactory(1);'))));
     ok('the walk reads a plan that spans several rows (planFids) through the ONE planLine',
         /if \(e && Array\.isArray\(e\.planFids\)\)/.test(SRC_RAW) && /return e\.planFid \|\| e\.planFids;/.test(SRC_RAW));
+    // The REAL plan helpers the later trials' checks are built with — sliced from wml-core, never copied (.835/.837).
+    const _fnSrc = (name) => { const i = CORE.indexOf('const ' + name + ' = function'); return i < 0 ? '' : CORE.slice(i, braceSliceFrom(CORE, i, '{', '}').end) + ';'; };
+    const _arrSrc = (name) => { const i = CORE.indexOf('const ' + name + ' = ['); return i < 0 ? '' : 'const ' + name + ' = ' + braceSliceFrom(CORE, i, '[', ']').text + ';'; };
+    const PLAN_SCOPE = [_arrSrc('CW_EMPATHY_TECHNIQUES'), _fnSrc('_cwEmpFids'), _arrSrc('CW_THEME_TONE_PLAN'), _fnSrc('_cwThemeFids')].join(' ');
     LATER_TRIALS.forEach((T) => {
         const N = T.n, P = 'Trial ' + N + ' · ';
         console.log('\nTrial ' + N + ' asks what Draft ' + N + ' taught, in the words it taught them:');
@@ -479,9 +492,7 @@ const LATER_TRIALS = [
         const LENS = li < 0 ? '' : RUB.slice(li, RUB.indexOf('### ', li + 10));
         const ti = CORE.indexOf('const CW_TRIAL' + N + '_ELEMENTS = [');
         // eslint-disable-next-line no-eval
-        const EL = ti < 0 ? [] : eval('(function () { const CW_EMPATHY_TECHNIQUES = ' + braceSliceFrom(CORE, CORE.indexOf('const CW_EMPATHY_TECHNIQUES = ['), '[', ']').text
-            + '; ' + CORE.slice(CORE.indexOf('const _cwEmpFids = function'), CORE.indexOf('\n', CORE.indexOf('const _cwEmpFids = function'))) + ' return '   // the REAL helper, never a copy
-            + braceSliceFrom(CORE, ti, '[', ']').text + '; })()');
+        const EL = ti < 0 ? [] : eval('(function () { ' + PLAN_SCOPE + ' return ' + braceSliceFrom(CORE, ti, '[', ']').text + '; })()');
         ok('the Draft ' + N + ' lens (' + T.lens + ') was found', LENS.length > 1500, LENS.length);
         ok(P + 'holds the five lens checks, in the lens\'s order', EL.map((e) => e.id).join(',') === T.ids, EL.map((e) => e.id));
         EL.forEach((e) => {
