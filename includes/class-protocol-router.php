@@ -2753,6 +2753,7 @@ class SWML_Protocol_Router {
         // declaring env:'polishing' in CW_STEPS on the JS side, so the two languages cannot drift.
         $cw_polishing_lenses = [
             'cw_step_14' => 'character_arc',
+            'cw_step_17' => 'archetypes',   // v7.20.830 (FIXLIST #884-②): Draft 3
         ];
         // v7.20.740 (PEDAGOGY §34.1, §55): a step run as a UNIT variant can be a polishing step too —
         // the weekend story's guided Draft 1 is Step 10 with Sophia reached from a selection. Same
@@ -2830,7 +2831,8 @@ class SWML_Protocol_Router {
                 // the rubric was distilled from, but must never be loaded at a student again.
                 'cw_step_15' => 'CW-STEP-15-character-archetypes.md',
                 'cw_step_16' => 'CW-STEP-16-update-plot-archetypes.md',
-                'cw_step_17' => 'CW-STEP-17-draft-3-archetypes.md',
+                // cw_step_17 is DELIBERATELY ABSENT (v7.20.830, #884-②) — Draft 3 polishes, like Step 14. Its
+                // CW-STEP-17 markdown stays on disk as the source of the rubric's `archetypes` lens, never loaded.
                 'cw_step_18' => 'CW-STEP-18-deepen-empathy.md',
                 'cw_step_19' => 'CW-STEP-19-update-plot-empathy.md',
                 'cw_step_20' => 'CW-STEP-20-draft-4-empathy.md',

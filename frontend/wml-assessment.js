@@ -54498,7 +54498,25 @@
                         if (tn === src.trial && t.target && String(t.target).trim()) { target = String(t.target).trim(); break; }
                     }
                 } catch (e) { console.warn('WML CW draft target: project load failed —', e && e.message); }
-                if (!target) return;
+                if (!target) {
+                    // v7.20.830 (FIXLIST #884-②): the draft lineage copies the previous draft's WHOLE page (REST
+                    // seed_from_cw_lineage), its pinned target included — so a Draft 3 opened before Trial 2 has a target
+                    // went on showing Trial 1's, as if it were this draft's. A target section naming another trial is that
+                    // copy: remove it. One naming THIS trial is the student's own and stays.
+                    const box0 = document.createElement('div');
+                    box0.innerHTML = canvasEditor.getHTML();
+                    const stale = box0.querySelector('[data-section-label="' + CW_DRAFT_TARGET_LABEL + '"]');
+                    if (!stale || (stale.textContent || '').indexOf(src.trialLabel) !== -1) return;
+                    stale.remove();
+                    const _was0 = _migrationActive;
+                    _migrationActive = true;
+                    try { canvasEditor.commands.setContent(box0.innerHTML, false); }
+                    finally { _migrationActive = _was0; }
+                    try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+                    if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                    console.log('WML CW draft ' + cwStepDef.draft + ': removed a target copied from an earlier draft (no ' + src.trialLabel + ' target yet).');
+                    return;
+                }
                 const inner = '<h3>The target you set yourself</h3>'
                     + '<p><em>You wrote this at the end of ' + escapeHTML(src.trialLabel) + ' — this draft exists to hit it.</em></p>'
                     + '<p><strong>' + escapeHTML(target) + '</strong></p>';
@@ -54520,6 +54538,78 @@
                 console.log('WML CW draft ' + cwStepDef.draft + ': trial target pinned from Trial ' + src.trial + '.');
             } catch (e) {
                 console.warn('WML CW draft target pin failed (document untouched) —', e && e.message);
+            }
+        };
+        // ⭐ v7.20.830 (FIXLIST #884-②, #893) — A FULL-COURSE POLISHING DRAFT'S PAGE: its own About, and the plan it polishes
+        // towards. (1) The draft lineage copies the previous draft's WHOLE page, so Draft 3 opened with Draft 2's About
+        // ("Draft 2: Character goals and needs"). The About is code-owned (a `question` section the student cannot edit), so it
+        // is re-synced from THIS step's template whenever its heading differs — the ONE producer, _cwDocTemplateInner.
+        // (2) "Your Plan for This Draft": the lens's plan rows (WML.CW_LENS_PLAN), read fresh at every mount (#402) and pinned
+        // above the writing box. The coaching request carries the whole document and nothing else of the project, so this is
+        // also how Sophia sees the plan her lens tells her to use. Idempotent: an unchanged page is neither rewritten nor saved.
+        const CW_DRAFT_PLAN_LABEL = 'Your Plan for This Draft';
+        const tryFillCwPolishDraftPage = async () => {
+            if (!isCwTask || !canvasEditor || !cwStepDef?.draft || state.reviewMode) return;
+            if (WML.cwInUnit && WML.cwInUnit()) return;   // the weekend story composes its own page (§55)
+            if (!(WML.cwStepEnv && WML.cwStepEnv(cwStepDef) === 'polishing')) return;
+            const rows = (WML.CW_LENS_PLAN || {})[WML.cwStepLens ? WML.cwStepLens(cwStepDef) : ''] || [];
+            const norm = function (t) { return String(t || '').replace(/\s+/g, ' ').trim(); };
+            try {
+                const box = document.createElement('div');
+                box.innerHTML = canvasEditor.getHTML();
+                let changed = false;
+                // (1) this draft's own About
+                const tpl = document.createElement('div');
+                tpl.innerHTML = _cwDocTemplateInner(cwStepDef);
+                const want = tpl.querySelector('[data-section-label="About This Draft"]');
+                const have = box.querySelector('[data-section-label="About This Draft"]');
+                const h2 = function (el) { const h = el && el.querySelector('h2'); return h ? norm(h.textContent) : ''; };
+                if (want && have && h2(want) && h2(want) !== h2(have)) {
+                    console.log('WML CW draft ' + cwStepDef.draft + ': About replaced ("' + h2(have) + '" was copied from an earlier draft).');
+                    have.innerHTML = want.innerHTML;
+                    changed = true;
+                }
+                // (2) the plan this draft polishes towards
+                if (rows.length && state.cwProjectId) {
+                    const docs = [];
+                    rows.forEach(function (r) { if (docs.indexOf(r.doc) < 0) docs.push(r.doc); });
+                    const maps = {};
+                    await Promise.all(docs.map(function (d) {
+                        return _cwLoadDocValues(state.cwProjectId, d, true).then(function (m) { maps[d] = m || {}; });
+                    }));
+                    const stepOf = {};   // where each row was planned: CW_ARTIFACT_MAP, doc → step
+                    Object.keys(WML.CW_ARTIFACT_MAP || {}).forEach(function (k) { stepOf[WML.CW_ARTIFACT_MAP[k]] = parseInt(k, 10); });
+                    const from = docs.map(function (d) { return stepOf[d] ? _cwStepPlace(stepOf[d]) : ''; }).filter(Boolean).join(' and ');
+                    const val = function (r) { return norm((maps[r.doc] || {})[r.fid]); };
+                    const inner = '<h3>Your plan for this draft</h3>'
+                        + '<p><em>From ' + escapeHTML(from) + '. Polish your draft so the reader can see this, without being told it.</em></p>'
+                        + (rows.some(val)
+                            ? rows.map(function (r) {
+                                return '<p><strong>' + escapeHTML(r.label) + ':</strong> ' + (val(r) ? escapeHTML(val(r)) : '<em>not filled in yet</em>') + '</p>';
+                            }).join('')
+                            : '<p><em>Your plan is not filled in yet. You can still polish your draft; finishing ' + escapeHTML(from) + ' puts it here.</em></p>');
+                    const probe = document.createElement('div');
+                    probe.innerHTML = inner;
+                    const sec = box.querySelector('[data-section-label="' + CW_DRAFT_PLAN_LABEL + '"]');
+                    if (sec) {
+                        if (norm(sec.textContent) !== norm(probe.textContent)) { sec.innerHTML = inner; changed = true; }
+                    } else {
+                        const div = Array.prototype.slice.call(box.querySelectorAll('[data-section-type="divider"]')).filter(function (d) { return /YOUR WRITING/i.test(d.textContent || ''); })[0];
+                        const html = sectionHTML('question', CW_DRAFT_PLAN_LABEL, false, null, inner);
+                        if (div) div.insertAdjacentHTML('beforebegin', html); else box.insertAdjacentHTML('afterbegin', html);
+                        changed = true;
+                    }
+                }
+                if (!changed) return;
+                const _was = _migrationActive;
+                _migrationActive = true;
+                try { canvasEditor.commands.setContent(box.innerHTML, false); }
+                finally { _migrationActive = _was; }
+                try { _sectionCount = countSections(canvasEditor.state.doc); } catch (e) {}
+                if (typeof saveCanvasContent === 'function') saveCanvasContent();
+                console.log('WML CW draft ' + cwStepDef.draft + ': page composed (' + rows.length + ' plan row(s)).');
+            } catch (e) {
+                console.warn('WML CW draft page compose failed (document untouched) —', e && e.message);
             }
         };
         // ⭐ v7.20.761 (PEDAGOGY §55.2) — WEEKEND LESSON 7 (Draft 1) WRITES WITH THE LESSON-6 PLAN. The plan lives in
@@ -56140,7 +56230,7 @@
                 }
             } catch (e) { console.warn('WML scaffold-lock paragraphs:', e && e.message); }
         };
-        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwStructPlan()).then(() => tryFillCwAdaptRewrite()).then(() => tryFillCwAgain()).then(() => tryFillCwEmpathyStory()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
+        tryServerLoad().then(() => tryHealCwStep2()).then(() => tryHealCwStep2IdeasSection()).then(() => _syncCwStep2ChosenIdea()).then(() => _syncCwStep1LikedSeeds()).then(() => deriveTaskFromTopicBank()).then(() => tryTopicTemplate()).then(() => tryCwPrePopulate()).then(() => tryCwSeedFromPrevious()).then(() => tryFillCwTrialDraft()).then(() => tryHealCwTrial1Doc()).then(() => tryFillCwDraftTarget()).then(() => tryFillCwPolishDraftPage()).then(() => tryFillCwStructPlan()).then(() => tryFillCwAdaptRewrite()).then(() => tryFillCwAgain()).then(() => tryFillCwEmpathyStory()).then(() => tryExamPrepTemplate()).then(() => tryLoadPlotTemplate()).then(() => tryHealCwStep7Values()).then(() => tryHealCwStep7Scaffold()).then(() => tryHealCwStep7Teaching()).then(() => tryHealCwStep7Figure()).then(() => tryHealCwStep6DropAnchors()).then(() => tryHealCwStep6StageArcs()).then(() => tryFillChosenIdea()).then(() => tryHealCwStep2SparksSection()).then(() => tryFillLikedSeeds()).then(() => tryHealCwStep3Wound()).then(() => tryHealCwStep3LoglineCheckboxes()).then(() => tryFillStep3ChosenLogline()).then(() => tryHealCwStep4ChosenLoglineSection()).then(() => tryFillStep4ChosenLogline()).then(() => tryHealCwStep4Throughline()).then(() => tryHealCwStep5OutlineSection()).then(() => tryFillStep5Outline()).then(() => tryHealCwStep1SeedLoglines()).then(() => tryHealCwStep1LoglineCheckboxes()).then(() => tryHealCwProgressSection()).then(() => spliceGeneralNotesIntoEditor()).then(() => applyQuizResultToEditor()).then(() => { try { setTimeout(_recomputeAllCompletion, 350); setTimeout(_recomputeAllCompletion, 1400); setTimeout(_phaseCoachAndScroll, 600); } catch (_) {} }).catch(err => {
             // v7.15.0: CRITICAL — catch any error in the init chain so the document doesn't stay blank.
             // Log the error for debugging but continue with migrations + cleanup below.
             console.error('WML: Error in document init chain — recovering:', err);
@@ -59801,7 +59891,8 @@
                 // no chat to ask in).
                 1: { layer: 'basic prose style', journey: 'Writing Your First Draft', desc: 'Your scene from Step 9 is waiting in the box below, exactly as you transferred it. This lesson is <strong>yours alone</strong> \u2014 no Sophia, no walk. Read it through, polish it as well as you can, then mark the lesson complete and take it into your assessment. Stephen King says in <em>On Writing</em>: \u201cThe first draft is just you telling yourself the story.\u201d Work on strong nouns and dynamic verbs, show rather than tell, and aim for around 450\u2013600 words.<br><br><em>If the box below is empty, go back to Step 9 and tap \u201cTransfer my scene\u201d \u2014 that is what sends your writing here.</em>' },
                 2: { layer: 'character goals and needs', journey: 'The Road of Trials intensifies', desc: 'Your scene from Step 13 is waiting in the box below \u2014 the beats you had already drafted arrived with your Draft 1 prose in them, the new ones as your plan lines. Now add your protagonist\u2019s <strong>character arc</strong>. Robert McKee writes that the reader should <em>feel</em> the protagonist\u2019s internal struggle driving the external action. Every element of your scene should connect to this arc.<br><br><em>If the box below is empty, go back to Step 13 and tap \u201cTransfer my scene\u201d \u2014 that is what sends your writing here.</em>' },
-                3: { layer: 'archetypes', journey: 'Making Character Transformation Visible', desc: 'In Steps 15 and 16, you defined the archetypal masks your protagonist wears. Now make that transformation visible in your prose. Christopher Vogler teaches that archetype shifts are the visible evidence of character change.' },
+                // v7.20.830 (#884-②): Draft 3 is a polishing lesson now — the page says where the plan and the draft are, and how to reach Sophia.
+                3: { layer: 'archetypes', journey: 'Making Character Transformation Visible', desc: 'In Steps 15 and 16, you defined the archetypal masks your protagonist wears at the beginning, middle and end of your story. Your plan is just below, and your Draft 2 is in the box under it. Now make that transformation visible in your prose, without ever naming the archetype. Christopher Vogler teaches that archetype shifts are the visible evidence of character change.<br><br><strong>Sophia can help.</strong> Select any sentence in your draft and tap <strong>Sophia</strong>. She points to one thing that would make it stronger, and you write it.<br><br><em>If the box below is empty, go back to Step 14 and write your Draft 2. This lesson polishes that draft.</em>' },
                 4: { layer: 'empathy techniques', journey: 'Making Readers Care Deeply', desc: 'This is the draft where we make your reader <em>care</em>. Karl Iglesias writes in <em>Writing for Emotional Impact</em> that empathy is the most important emotion a writer can generate. Weave victim, virtue, and desirable quality techniques into your prose.' },
                 5: { layer: 'theme and tone', journey: 'Making Your Story Mean Something', desc: 'Your theme must never be stated \u2014 it must emerge through what your protagonist <em>does</em>, what happens as a result, and the images you choose. John Truby calls this the \u201cmoral argument\u201d of your story. Every word choice should reinforce both theme and tone.' },
                 6: { layer: 'genre conventions', journey: 'Adding the Emotional Contract', desc: 'Genre is a <em>promise</em> to the reader about what emotional experience they will have. John Truby writes that most sophisticated stories <strong>blend genres</strong>. Your job is to deliver on that promise while keeping the character arc at the centre.' },

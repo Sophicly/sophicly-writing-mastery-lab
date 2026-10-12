@@ -107,7 +107,12 @@
         // The LENS group — what THIS draft is for. Draft 2 is the character arc; Drafts 3-7 swap
         // this array for their own as they move to the polishing environment.
         cwArc:        ['cw-arc-goal', 'cw-arc-flaw', 'cw-arc-stakes', 'cw-arc-need', 'cw-arc-proof'],
+        // v7.20.830 (#884-②): Draft 3's lens — the archetype shown through appearance, choices and reactions, then the shift.
+        cwArch:       ['cw-arch-look', 'cw-arch-act', 'cw-arch-pressure', 'cw-arch-shift', 'cw-arch-proof'],
     };
+    // v7.20.830 (#884-②): which lens group a full-course polishing draft offers — read from the step's own `lens`
+    // (WML.cwStepLens), so a draft that moves to this environment brings its buttons as data, never a step literal.
+    const CW_LENS_GROUP = { character_arc: 'cwArc', archetypes: 'cwArch' };
 
     const ACTION_LABELS = {
         // T1-T5 tier scans
@@ -159,6 +164,12 @@
         'cw-arc-stakes': 'Show the stakes',
         'cw-arc-need':   'Surface the need',
         'cw-arc-proof':  'Prove the change',
+        // CW archetypes lens (v7.20.830)
+        'cw-arch-look':     'Show it in how they look',
+        'cw-arch-act':      'Show it in what they do',
+        'cw-arch-pressure': 'Show it under pressure',
+        'cw-arch-shift':    'Show the shift',
+        'cw-arch-proof':    'The final detail',
         // Turn into a device (non-fiction) — v7.19.272
         'device-suggest':            'Suggest a device',
         'device-metaphor':           'Metaphor',
@@ -194,6 +205,7 @@
         cwScan:       'Scan your scene',
         cwWordChoice: 'Word choice',
         cwArc:        'Character arc',
+        cwArch:       'Archetypes',
         langScan:       'Scan your answer',
         langWordChoice: 'Word choice',
         litWordChoice:  'Word choice',
@@ -716,10 +728,18 @@
                     { key: 'reference',    actions: ACTION_MAP.reference },
                 ];
             }
+            // v7.20.830: the lens group is the step's own (Draft 2 → character arc, Draft 3 → archetypes); a step with no
+            // known lens keeps the character-arc group, exactly as before.
+            let _lensKey = 'cwArc';
+            try {
+                const _def = (typeof WML !== 'undefined' && WML.getCwStepDef) ? WML.getCwStepDef(taskCtx.task) : null;
+                const _lens = (_def && WML.cwStepLens) ? WML.cwStepLens(_def) : '';
+                if (CW_LENS_GROUP[_lens]) _lensKey = CW_LENS_GROUP[_lens];
+            } catch (_) { /* keep the default group */ }
             return [
                 { key: 'cwScan',       actions: ACTION_MAP.cwScan },
                 { key: 'cwWordChoice', actions: ACTION_MAP.cwWordChoice },
-                { key: 'cwArc',        actions: ACTION_MAP.cwArc },
+                { key: _lensKey,       actions: ACTION_MAP[_lensKey] },
                 { key: 'polishProse',  actions: ACTION_MAP.polishProse },
                 { key: 'cw',           actions: ACTION_MAP.cw },
                 { key: 'fixSpag',      actions: ACTION_MAP.fixSpag },

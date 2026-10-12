@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.829';
+var WML_BUILD = '7.20.830';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1171,7 +1171,10 @@ window.WML = (function() {
         { id: 'trial_2', label: 'Trial 2: Character Depth', tier: 'si', phase: 'drafting', trial: 2 },
         { step: 15, label: 'Character Archetypes',      tier: 'workbook', phase: 'drafting' },
         { step: 16, label: 'Update Plot: Archetypes',   tier: 'workbook', phase: 'drafting' },
-        { step: 17, label: 'Draft 3: Archetypes',       tier: 'si', phase: 'drafting', draft: 3 },
+        // v7.20.830 (FIXLIST #884-②): Draft 3 joins Draft 2 as a POLISHING environment — the same lesson with a different
+        // lens (Neil's Step 14 ruling, 27 Aug, #457; PEDAGOGY §29: "the drafts of the scene will work the same way").
+        // Steps 15–16 teach the archetypes and map them across the plot; Step 17 is where the student applies them.
+        { step: 17, label: 'Draft 3: Archetypes',       tier: 'si', phase: 'drafting', draft: 3, env: 'polishing', lens: 'archetypes' },
         { id: 'trial_3', label: 'Trial 3: Archetype Coherence', tier: 'si', phase: 'drafting', trial: 3 },
         { step: 18, label: 'Deepen Empathy',            tier: 'workbook', phase: 'drafting' },
         { step: 19, label: 'Update Plot: Empathy',      tier: 'workbook', phase: 'drafting' },
@@ -1858,6 +1861,31 @@ window.WML = (function() {
         },
     ];
     const CW_TRIAL2_ELEMENTS_ALL = CW_TRIAL2_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
+    // ⭐ v7.20.830 (FIXLIST #884-②, #893) — WHAT EACH POLISHING LENS WAS PLANNED FROM. The coaching request carries the
+    // selection, the section and the WHOLE document — never the student's project — so the rubric's "their plan is handed to
+    // you" was untrue on Draft 2 (measured by a complete trace, 12 Oct). These rows are pinned at the top of the draft as
+    // "Your Plan for This Draft": the student polishes beside their plan, and Sophia reads it in the document she already
+    // receives. Labels are the plan rows' own labels; `doc` + `fid` are the rows the student filled (pre-renumber ids, §5d).
+    const CW_LENS_PLAN = {
+        character_arc: [
+            { label: 'External Goal(s)', doc: 'character_profile', fid: 'cw-step-10-ext-goal-begin' },
+            { label: 'Internal Goal(s)', doc: 'character_profile', fid: 'cw-step-10-int-goal-begin' },
+            { label: 'Need', doc: 'character_profile', fid: 'cw-step-10-need-begin' },
+            { label: 'Stakes / Fears', doc: 'character_profile', fid: 'cw-step-10-stakes-begin' },
+            { label: 'Flaw (Emotional Shield)', doc: 'logline', fid: 'cw-step-3-flaw' },
+            { label: 'Dilemma', doc: 'character_profile', fid: 'cw-step-10-dilemma' },
+            { label: 'Realisation', doc: 'character_profile', fid: 'cw-step-10-realisation' },
+            { label: 'Arc Type', doc: 'character_profile', fid: 'cw-step-10-arc-type' },
+        ],
+        archetypes: [
+            { label: 'Beginning — Archetype(s)', doc: 'character_archetypes', fid: 'cw-step-13-arch-begin' },
+            { label: 'Beginning — Physical Appearance', doc: 'character_archetypes', fid: 'cw-step-13-phys-begin' },
+            { label: 'Middle — Archetype(s)', doc: 'character_archetypes', fid: 'cw-step-13-arch-mid' },
+            { label: 'Middle — Physical Appearance', doc: 'character_archetypes', fid: 'cw-step-13-phys-mid' },
+            { label: 'End — Archetype(s)', doc: 'character_archetypes', fid: 'cw-step-13-arch-end' },
+            { label: 'End — Physical Appearance', doc: 'character_archetypes', fid: 'cw-step-13-phys-end' },
+        ],
+    };
     // The element list for trial N — ONE accessor for the walk, the page template and the gates.
     function cwTrialElements(n) {
         if (n === 1) return cwTrial1Elements();
@@ -6439,7 +6467,7 @@ window.WML = (function() {
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
-        CW_TRIAL2_ELEMENTS, cwTrialElements,
+        CW_TRIAL2_ELEMENTS, cwTrialElements, CW_LENS_PLAN,
         // Revision map
         REVISION_MAP,
         // Utilities

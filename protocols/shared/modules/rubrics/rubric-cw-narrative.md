@@ -12,7 +12,8 @@ structure. This is the same scene across every draft — the student is not writ
 are deepening the one they have.
 
 **Source:** distilled from the Creative Writing protocols the student has already been taught —
-Step 10 (prose style), Step 11 (character profile), Step 14 (character arc). Every principle and
+Step 10 (prose style), Step 11 (character profile), Step 14 (character arc), and for Draft 3 the
+Step 15 archetypes page, the Step 16 plot update and the Step 17 workshop. Every principle and
 example below is theirs already. Nothing here is new teaching.
 
 ---
@@ -183,6 +184,11 @@ name what is there, ask one question, stop. Never rewrite their passage for them
 | `cw-arc-stakes` | What does the reader feel is at risk? Make it concrete. |
 | `cw-arc-need` | Subtext — what hints that what they want isn't what they need? |
 | `cw-arc-proof` | What action or image proves they have changed? Not a summary sentence. |
+| `cw-arch-look` | Appearance: where does the reader learn how the protagonist looks or moves? Is it woven into an action, and does it signal the archetype planned for this part of the story? |
+| `cw-arch-act` | Choices and speech: does what they do (and say, if the scene has dialogue) fit the archetype planned for this part of the story? |
+| `cw-arch-pressure` | Under pressure: when things go wrong here, does the reaction fit their archetype? |
+| `cw-arch-shift` | The shift: is there a moment where a trait of a DIFFERENT archetype starts to show? |
+| `cw-arch-proof` | The final detail: what last action, image or change in appearance proves the shift is complete? |
 | `check-sensory-variety` | Which senses are in play, and which one would add most here? |
 | `check-scene-structure-beats` | Do the beats inside this passage build, or sit flat? |
 | `check-show-dont-tell` | As `cw-scan-show`, on a shorter selection. |
@@ -241,8 +247,9 @@ theme, genre). The student has not been taught them.
 ### Lens `character_arc` — Draft 2
 
 The student has already defined, in Steps 11–12: **external goal · internal goal · need · stakes ·
-arc type · flaw · dilemma · realisation.** These are in the project data and are handed to you.
-**Never ask the student to tell you what they are** — you have them.
+arc type · flaw · dilemma · realisation.** They are at the top of the document, under **"Your Plan
+for This Draft"**. **Never ask the student to tell you what they are** — read them there. Where that
+section says a row is not filled in yet, work from the draft and do not ask for it.
 
 The whole point of this draft: **the reader should feel the protagonist's internal struggle driving
 the external action.** Where the passage sits decides which part of the arc it must carry.
@@ -268,11 +275,73 @@ the external action.** Where the passage sits decides which part of the arc it m
 gains meaning), an **aphorism** from a mentor figure, a **paradox**, a **rhetorical refrain**, or a
 deliberate **contrast**. One, placed well, reinforcing the story's message. Not five.
 
+### Lens `archetypes` — Draft 3
+
+The student defined, in Step 15, which **archetype(s)** their protagonist embodies at the
+**beginning, middle and end** of the story, and their **physical appearance** at each point; in
+Step 16 they mapped those archetypes across their plot. Their plan is at the top of the document,
+under **"Your Plan for This Draft"**. **Never ask the student to tell you what it says** — read it
+there. Where a row is not filled in yet, work from the draft and do not ask for it.
+
+The whole point of this draft: **the reader should be able to tell what kind of person the
+protagonist is, and watch it change, without the archetype ever being named.** Step 15 says it in
+one line: the protagonist shifts between archetypes as they transform, and *this shift is the
+visible evidence of their change*. The scene comes from one part of the story (beginning, middle or
+end), so the archetype planned for that part is the one the scene should mainly show.
+
+**The four ways an archetype shows** (Step 17's channels):
+1. **How they look and move** — appearance, clothes, a prop, posture — woven into an action, never a
+   still description like a police report.
+2. **What they do and choose** — how they act under pressure, what they put first, how they treat others.
+3. **How they speak** — sentence length, how direct they are, what they talk about and what they
+   avoid. Only where the scene has dialogue: a scene with none is fine.
+4. **How they react when things go wrong** — fight, run, freeze, bargain, trick, or give something up.
+
+| Where the selection sits | What must become visible | Ask about |
+|---|---|---|
+| **Hook · Setup** | the archetype planned for this part of the story — shown through appearance woven into action, a choice, or a way of speaking, never named | a physical detail inside an action; a decision; a line of dialogue |
+| **Reaction · Epiphany** | the archetype under pressure; at the turn, the first sign of a DIFFERENT archetype — an old habit cracking | how they react when things go wrong; the moment something in them shifts |
+| **Proaction · Climax · Denouement** | the new archetype in action at the climax; one final detail that proves the shift is complete | the choice they make now that they would not have made at the start; the last gesture, image or change in appearance |
+
+**The three tests, in the student's own terms:**
+1. *Can the reader tell what kind of person your protagonist is from what they do, wear or say, without the archetype being named?*
+2. *When things go wrong, does your protagonist react the way their archetype would?*
+3. *Is there a moment where an old habit cracks and a different side of them shows?*
+
+**What some archetypes tend to look like on the page** (Step 17's own cues — a starting point for a
+question, never a checklist the student must copy):
+
+| Archetype | What they do | How they speak | Under pressure |
+|---|---|---|---|
+| Everyman | | plainly, in common language | |
+| Underdog | hesitates and second-guesses, but pushes forward despite fear | hedges ("Maybe I could…", "I'm not sure, but…") | freezes or trembles, then finds a way forward |
+| Rebel | challenges authority, speaks when others stay silent | challenges, questions, provokes ("Why should we listen to them?") | pushes back, refuses to back down |
+| Hero | acts decisively, puts others first, faces danger head-on | short, decisive sentences ("I'll go.") | stands firm, makes the hard choice, takes the cost |
+| Lost Soul | withdraws, avoids connection, pushes help away | | retreats inward, isolates, lashes out |
+| Trickster | finds unusual solutions, uses humour to deflect | | |
+| Mentor | gives advice, sees the bigger picture, makes sacrifices for others' growth | guiding questions ("What do you think would happen if…?") | |
+| Explorer | | | looks for escape routes and other paths |
+| Shadow | | ultimatums, threats, cold logic | dominates, threatens, destroys |
+
+**Show it, never name it** (Step 17's own examples): *"She moved with the quiet confidence of
+someone who had seen worse"* shows a Hero without the word "heroic". And instead of *"She was small
+with messy hair and wore an old coat"*, *"She tugged the coat tighter — it had been her mother's, and
+the sleeves still drowned her hands"* gives her size, her clothes and her family in one action.
+
+**Pointer phrases:**
+- *Your plan says who your protagonist is in this part of the story. What could the reader see them do here that shows it, without the word ever appearing?*
+- *How does this character move when they are afraid? Show me one physical detail inside the action.*
+- *Where does an old habit crack? What does a different side of them do in that moment?*
+- *The last line matters. What final detail proves they are no longer who they were at the start?*
+
+Earlier layers still count: the prose (Layer 1) and the character arc (Draft 2) are fair to raise,
+because this draft builds on them. Later layers are not.
+
 ### Later lenses
 
-Drafts 3–7 add archetypes, empathy, theme and tone, genre, and structural elements. Each gets its
-own section here as its step moves to this environment. **Until a lens is written down, do not coach
-it** — inventing a layer the student has not been taught is the failure this file exists to prevent.
+Drafts 4–7 add empathy, theme and tone, genre, and structural elements. Each gets its own section
+here as its step moves to this environment. **Until a lens is written down, do not coach it** —
+inventing a layer the student has not been taught is the failure this file exists to prevent.
 
 ---
 

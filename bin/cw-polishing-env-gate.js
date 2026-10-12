@@ -86,9 +86,20 @@ ok('Step 14 is not tools-minimal', !WML.cwToolsMinimal('cw_step_14'));
 ok('…so the notes tab, rail and Resources all stay (one predicate feeds all three)',
     !WML.cwToolsMinimal('cw_step_14'));
 
+// v7.20.830 (FIXLIST #884-②): Draft 3 joins — the same environment, its own lens.
+console.log('\nStep 17 (Draft 3) runs the polishing environment with the archetypes lens:');
+const c17 = cfg('cw_step_17');
+ok('environment is inline-coaching', c17.environment === 'inline-coaching', c17.environment);
+ok('the chat PANEL is off', c17.panels.chat === false, c17.panels);
+ok('no walk sidebar steps', !c17.sidebarSteps, c17.sidebarSteps);
+ok('protocolSource is null — the old Step-17 walk markdown is never loaded at the student', c17.protocolSource === null, c17.protocolSource);
+ok('its lens is archetypes', WML.getCwStepDef('cw_step_17').lens === 'archetypes', WML.getCwStepDef('cw_step_17').lens);
+ok('its artifact key is untouched — Trial 3 marks draft_3', WML.CW_ARTIFACT_MAP[17] === 'draft_3', WML.CW_ARTIFACT_MAP[17]);
+ok('Step 17 is not tools-minimal', !WML.cwToolsMinimal('cw_step_17'));
+
 console.log('\nNothing else moved:');
-ok('exactly ONE step declares env=polishing so far',
-    JSON.stringify(WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => s.step)) === '[14]',
+ok('exactly TWO steps declare env=polishing (Drafts 2 and 3)',
+    JSON.stringify(WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => s.step)) === '[14,17]',
     WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => s.step));
 ok('exactly ONE step declares env=diagnostic',
     JSON.stringify(WML.CW_STEPS.filter(s => s.env === 'diagnostic').map(s => s.step)) === '[10]',
@@ -100,8 +111,8 @@ ok('Step 13 keeps its training walk', cfg('cw_step_13').environment === 'trainin
 ok('Step 13 keeps its chat panel', cfg('cw_step_13').panels.chat === true);
 ok('Step 12 keeps its training walk', cfg('cw_step_12').environment === 'training', cfg('cw_step_12').environment);
 ok('Step 10 keeps its diagnostic env', cfg('cw_step_10').environment === 'free', cfg('cw_step_10').environment);
-ok('Step 17 (Draft 3) has NOT been flipped yet — it follows once Step 14 is proven',
-    cfg('cw_step_17').environment === 'training', cfg('cw_step_17').environment);
+ok('Step 20 (Draft 4) has NOT been flipped yet — its lens is not written', cfg('cw_step_20').environment === 'training', cfg('cw_step_20').environment);
+ok('Steps 15 and 16 (the archetype workbook pages) are untouched', cfg('cw_step_15').environment !== 'inline-coaching' && cfg('cw_step_16').environment !== 'inline-coaching');
 
 console.log('\nThe env ladder still resolves by capability, not by step number:');
 ok('a step with no env falls back to its tier', cfg('cw_step_11').environment === 'training');
@@ -200,7 +211,7 @@ ok('…and it carries a section for every lens the JS declares',
 // is the §5c "never author pedagogy from general knowledge" failure with a tap to trigger it.
 console.log('\nEvery Creative Writing button is defined in the rubric:');
 const CHIP = fs.readFileSync(path.join(ROOT, 'frontend/wml-selection-chip.js'), 'utf8');
-const cwGroups = ['cwScan', 'cwWordChoice', 'cwArc', 'cw'];
+const cwGroups = ['cwScan', 'cwWordChoice', 'cwArc', 'cwArch', 'cw'];
 let cwActions = [];
 for (const g of cwGroups) {
     const m = CHIP.match(new RegExp(g + ":\\s*\\[([^\\]]*)\\]"));
@@ -213,6 +224,40 @@ ok(`all ${cwActions.length} CW actions have a rubric row`, undefinedActions.leng
 const missingLabel = cwActions.filter(a => !new RegExp("'" + a + "':").test(CHIP));
 ok('every CW action has a human label — no student sees a raw id (root §14)',
     missingLabel.length === 0, missingLabel);
+
+// v7.20.830 (#884-②): the lens group is DATA — each full-course polishing lens names its own button group, so Draft 3
+// cannot quietly offer Draft 2's "Character arc" buttons again (it did, by construction, until this build).
+console.log('\nEach polishing draft offers ITS OWN lens buttons, and is pinned ITS OWN plan:');
+const lgBlock = CHIP.match(/const CW_LENS_GROUP = \{([^}]*)\}/);
+ok('the chip declares a lens → group map', !!lgBlock);
+const lensGroup = lgBlock ? Object.fromEntries([...lgBlock[1].matchAll(/([a-z_]+):\s*'([A-Za-z]+)'/g)].map(m => [m[1], m[2]])) : {};
+for (const j of jsPolishing) {
+    const g = lensGroup[j.lens];
+    ok(`${j.task} (${j.lens}): has a button group (${g || 'MISSING'}) that the ladder defines`,
+        !!g && new RegExp(g + ':\\s*\\[').test(CHIP), lensGroup);
+    ok(`${j.task} (${j.lens}): has plan rows to pin (WML.CW_LENS_PLAN)`, ((WML.CW_LENS_PLAN || {})[j.lens] || []).length > 0);
+}
+ok('the ladder picks the group through the step\'s own lens (WML.cwStepLens), never a step literal',
+    /CW_LENS_GROUP\[_lens\]/.test(CHIP) && /WML\.cwStepLens\(_def\)/.test(CHIP) && !/cw_step_17/.test(CHIP));
+const ASSESS = fs.readFileSync(path.join(ROOT, 'frontend/wml-assessment.js'), 'utf8');
+const artifactDocs = new Set(Object.values(WML.CW_ARTIFACT_MAP));
+for (const [lens, rows] of Object.entries(WML.CW_LENS_PLAN || {})) {
+    const badDoc = rows.filter(r => !artifactDocs.has(r.doc)).map(r => r.doc);
+    ok(`${lens}: every plan row names a real step document (CW_ARTIFACT_MAP)`, badDoc.length === 0, badDoc);
+    // §5d: a pinned row whose id no template builds reads "not filled in yet" for ever — the id must be one a page writes.
+    const badFid = rows.filter(r => ASSESS.indexOf("'" + r.fid + "'") === -1).map(r => r.fid);
+    ok(`${lens}: every plan row id is one a step template actually builds`, badFid.length === 0, badFid);
+}
+ok('both lenses tell Sophia the plan is pinned under "Your Plan for This Draft" (never "handed to you")',
+    (RUBRIC.match(/"Your Plan\s+for This Draft"/g) || []).length >= 2 && !/project data and are handed to you/.test(RUBRIC));
+ok('the page composer is in the mount chain, straight after the target pin',
+    /\.then\(\(\) => tryFillCwDraftTarget\(\)\)\.then\(\(\) => tryFillCwPolishDraftPage\(\)\)/.test(ASSESS));
+ok('…it skips the weekend story (which composes its own page) and review mode',
+    /const tryFillCwPolishDraftPage = async \(\) => \{\s*if \(!isCwTask \|\| !canvasEditor \|\| !cwStepDef\?\.draft \|\| state\.reviewMode\) return;\s*if \(WML\.cwInUnit && WML\.cwInUnit\(\)\) return;/.test(ASSESS));
+ok('…it syncs the About from the ONE producer (_cwDocTemplateInner), by heading',
+    /tpl\.innerHTML = _cwDocTemplateInner\(cwStepDef\)/.test(ASSESS));
+ok('a draft with no target for ITS trial drops a target copied from an earlier draft',
+    /stale\.remove\(\)/.test(ASSESS) && /indexOf\(src\.trialLabel\) !== -1\) return;/.test(ASSESS));
 
 console.log('\nThe prose layer is the researched one, and its landmines are guarded:');
 ok('the verb comes FIRST — Hale\'s order, not alphabetical', /The verb is the engine — go here FIRST/.test(RUBRIC));
