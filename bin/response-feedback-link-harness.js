@@ -37,7 +37,7 @@ const pk = SRC.indexOf('function _paraKey(s) {');
 if (b < 0 || e < 0 || pk < 0) { console.error('❌ the @RESP-FB-PURE block or _paraKey is missing from wml-assessment.js'); process.exit(1); }
 const PARA_KEY = SRC.slice(pk, braceSliceFrom(SRC, pk, '{', '}').end);
 // eslint-disable-next-line no-new-func
-const M = new Function(SRC.slice(b, e) + '\n' + PARA_KEY + '\nreturn { feedbackLabelParts, docMarkFromLabels, responseFeedbackLink, feedbackAnswerLink, _paraKey };')();
+const M = new Function(SRC.slice(b, e) + '\n' + PARA_KEY + '\nreturn { feedbackLabelParts, docMarkFromLabels, responseFeedbackLink, feedbackAnswerLink, marksLeftChip, _paraKey };')();
 const { feedbackLabelParts: parts, docMarkFromLabels: docMark, responseFeedbackLink: link, feedbackAnswerLink: back, _paraKey: keyOf } = M;
 const boxesOf = (labels) => labels.map(parts).filter(Boolean);
 
@@ -142,6 +142,32 @@ const GA = aIdx < 0 ? '' : braceSliceFrom(SRC, aIdx, '{', '}').text;
 ok(/\[data-section-type="response"\]/.test(GA) && /_expandIfCollapsed\(target\)/.test(GA) && /_swmlScrollToTop\(target, 24\)/.test(GA) && !/CSS\.escape/.test(GA),
     '"Back to answer ↑" opens a collapsed answer the chevron\'s way and uses the ONE scroll; no CSS.escape');
 ok(/function _stripChipsFromClone\(node\) \{[\s\S]{0,1200}node\.querySelectorAll\('\.swml-ctl-row'\)\.forEach\(c => c\.remove\(\)\)/.test(SRC), 'pad clones drop every control row — no dead copies of the button in a pad');
+
+console.log('\n8 · "N marks still available" on each marked feedback box (v7.20.852 — Neil, 12 Oct, Qamar\'s Paper 2):');
+{
+    const left = M.marksLeftChip;
+    // Neil's own screen: Q1 4/4 · Q2 5/8 · Q3 6/12 · Q4 4/16 · Q5 24/40.
+    const q1 = left(4, 4), q2 = left(5, 8), q3 = left(6, 12), q4 = left(4, 16), q5 = left(24, 40);
+    ok(q3 && q3.text === '6 marks still available' && q3.cls === 'swml-tier-5', '⭐ Q3 6 / 12 → "6 marks still available", tier 5 — the SAME colour as its 6 / 12 chip', q3);
+    ok(q4 && q4.text === '12 marks still available' && q4.cls === 'swml-tier-3', 'Q4 4 / 16 → "12 marks still available", tier 3 (red, like its chip)', q4);
+    ok(q5 && q5.text === '16 marks still available' && q5.cls === 'swml-tier-6', 'Q5 24 / 40 → "16 marks still available", tier 6', q5);
+    ok(q2 && q2.text === '3 marks still available' && q2.cls === 'swml-tier-6', 'Q2 5 / 8 (a pill-row question) → "3 marks still available"', q2);
+    ok(q1 && q1.text === 'Full marks' && q1.cls === 'swml-ana-full', 'Q1 4 / 4 → "Full marks", on the full-marks gradient', q1);
+    ok(left(7, 8).text === '1 mark still available', 'one mark → "1 mark", never "1 marks"', left(7, 8));
+    ok(left(3.75, 8).text === '4.25 marks still available', 'a Literature quarter mark → 4.25, never float noise', left(3.75, 8));
+    ok(left(-1, 12) === null && left(NaN, 12) === null && left(undefined, 12) === null, 'not marked (—) → no chip, never "12 marks still available" on an unmarked box');
+    ok(left(6, 0) === null && left(6, undefined) === null, 'no maximum → no chip');
+    const ladder = (v, m) => String(Math.max(1, Math.min(9, Math.round(1 + (m > 0 ? (v / m) : 0) * 8))));
+    let same = true;
+    [[0, 8], [1, 8], [3, 8], [5, 12], [9, 12], [11, 16], [30, 40], [39, 40]].forEach(([v, m]) => { if (left(v, m).cls !== 'swml-tier-' + ladder(v, m)) same = false; });
+    ok(same, 'every chip wears the feedback row\'s own _tierRank colour (one ladder, two places)');
+    const FB2 = RC.slice(RC.indexOf("feedbackSections.forEach((section) => {"), passAt);
+    const iW = FB2.indexOf('row.appendChild(widget);'), iL = FB2.indexOf('const _left = marksLeftChip(currentMarks, maxMarks);'), iB = FB2.indexOf("row.appendChild(_linkBtn('Back to answer");
+    ok(iW > -1 && iL > iW && iB > iL, '⭐ placement: after the score, before "Back to answer" (Neil\'s words)', [iW, iL, iB]);
+    ok(/leftChip\.className = 'swml-ana-chip swml-marks-left ' \+ _left\.cls;/.test(FB2) && /leftChip\.setAttribute\('contenteditable', 'false'\);/.test(FB2),
+        'the chip is the Analytics chip (one family), non-editable, in the box\'s firewalled row');
+    ok(/\.swml-ana-chip\.swml-marks-left \{ font-size: 11px; white-space: nowrap; \}/.test(CSS), 'it sits on the row\'s 11px line, never wrapping mid-phrase');
+}
 
 console.log(fail
     ? '\n❌ response-feedback-link-harness FAILED (' + fail + ' of ' + (pass + fail) + ')'

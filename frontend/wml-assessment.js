@@ -3599,6 +3599,18 @@
         if (!k) return null;
         return list.filter(function (l) { return keyOf(l) === k; })[0] || null;
     }
+    // ⭐ v7.20.852 (FIXLIST marks-available-badge — Neil, 12 Oct: "per question how many marks are actually still
+    // available… with our color ladder… so they can see visually"). The marks a MARKED box still has to give, on the SAME
+    // 9-step ladder as its score (the feedback row's _tierRank), full marks on the Analytics chip's gradient. "Still" is
+    // his word and it matters: "6 marks available" reads as the question's total ("[12 marks]" on the paper). Not marked
+    // (score < 0) or no max → null: no chip, never "12 marks still available" on a box Sophia has not marked.
+    function marksLeftChip(score, max) {
+        if (!(max > 0) || !(score >= 0)) return null;
+        const left = Math.round((max - score) * 100) / 100;
+        if (left <= 0) return { left: 0, text: 'Full marks', cls: 'swml-ana-full' };
+        const tier = String(Math.max(1, Math.min(9, Math.round(1 + (score / max) * 8))));
+        return { left: left, text: left + (left === 1 ? ' mark' : ' marks') + ' still available', cls: 'swml-tier-' + tier };
+    }
     // @RESP-FB-PURE-END
     function _deterministicDocGrade() {
         // v7.19.868: the single audited grade for THIS doc wins when present (set atomically
@@ -58898,6 +58910,16 @@
                 } catch (e) { console.warn('[WML calib] readout error', e && e.message); }
 
                 row.appendChild(widget);
+                // ⭐ v7.20.852 (FIXLIST marks-available-badge): the marks still available on this question — after its score,
+                // before "Back to answer" (Neil's placement). Same colour ladder as the score; rides the sig through currentMarks.
+                const _left = marksLeftChip(currentMarks, maxMarks);
+                if (_left) {
+                    const leftChip = document.createElement('span');
+                    leftChip.className = 'swml-ana-chip swml-marks-left ' + _left.cls;
+                    leftChip.setAttribute('contenteditable', 'false');
+                    leftChip.textContent = _left.text;
+                    row.appendChild(leftChip);
+                }
                 // ⭐ v7.20.843 (FIXLIST #899-back — Neil: "Yes, add it"): the way back from a marked box to its answer.
                 if (_backTo) {
                     row.appendChild(_linkBtn('Back to answer \u2191', _respLabels.length === 1 ? 'Back to the writing' : 'Back to this question\u2019s answer', () => { _goToAnswer(_backTo); }));
