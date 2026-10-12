@@ -582,16 +582,25 @@ class SWML_Topic_Questions {
             // under an old number — never carry it. Installed past papers and admin-authored topics
             // have their own labels and are carried exactly as before.
             $template_labels = [];
+            // v7.20.829 (FIXLIST #894, LearnDash lane, measured on prod 12 Oct): the OLD Language interleave also stored
+            // a "Redraft: <work>" topic after each practice paper (Eduqas P1: T4 "Redraft: The Hunger Games (Suzanne
+            // Collins)", T6, T8, T10). A redraft is now a phase inside its paper's own topic, so such a row is that paper
+            // under an old number too — a ghost when <work> is what follows the dash in a template label.
+            $template_works = [];
             foreach ($parsed as $t) {
                 $template_numbers[(int) ($t['topic_number'] ?? 0)] = true;
                 $lbl = strtolower(trim((string) ($t['label'] ?? '')));
                 if ($lbl !== '') $template_labels[$lbl] = true;
+                $dash = strpos($lbl, ' — ');
+                if ($dash !== false) $template_works[trim(substr($lbl, $dash + strlen(' — ')))] = true;
             }
             $carried = 0; $ghosts = 0;
             foreach ($stored as $t) {
                 $n = (int) ($t['topic_number'] ?? 0);
                 if (!$n || isset($template_numbers[$n])) continue;
-                if (isset($template_labels[strtolower(trim((string) ($t['label'] ?? '')))])) { $ghosts++; continue; }
+                $slbl = strtolower(trim((string) ($t['label'] ?? '')));
+                if (isset($template_labels[$slbl])) { $ghosts++; continue; }
+                if (preg_match('/^redraft:\s*(.+)$/', $slbl, $rm) && isset($template_works[trim($rm[1])])) { $ghosts++; continue; }
                 $parsed[] = $t; $carried++;
             }
             if ($ghosts) {

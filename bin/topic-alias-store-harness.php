@@ -24,6 +24,7 @@ function sanitize_key($k) { return strtolower(preg_replace('/[^a-z0-9_\-]/i', ''
 function sanitize_file_name($f) { return preg_replace('/[^A-Za-z0-9._\-]/', '', (string) $f); }
 function plugin_dir_path($f) { return rtrim(dirname($f), '/') . '/'; }
 function current_time($t = 'mysql') { return gmdate('Y-m-d H:i:s'); }
+function wp_json_encode($d, $o = 0) { return json_encode($d, $o); }   // the multi-question (Language) parser stores metadata with it
 ini_set('error_log', '/dev/null');
 $TQ = getenv('TQ_FILE') ?: __DIR__ . '/../includes/class-topic-questions.php';   // falsify: TQ_FILE=<old copy>
 require __DIR__ . '/../includes/class-rest-api.php';
@@ -77,6 +78,28 @@ ok($label1('aqa', 'macbeth') === 'Macbeth T1', 'E1 a text with no alias reads it
 $GLOBALS['__opts']['swml_topics_aqa_aqa_lang_paper_1'] = [$topic(1, 'P1 T1')];
 ok($label1('aqa', 'language1') === 'P1 T1', 'E2 the language sibling fallback (v7.20.589) still serves language1 from aqa_lang_paper_1');
 ok(SWML_Topic_Questions::get_topics('aqa', 'christmas_carol') === [], 'E3 a text with no store anywhere is still empty (no invented topics)');
+
+// F — v7.20.829 (#894): PROD's Eduqas P1 store, label for label (measured 12 Oct), re-imported from the REAL template
+$reset();
+$GLOBALS['__opts']['swml_topics_eduqas_eduqas_lang_paper_1'] = [
+    $topic(1, 'Practice Paper 1 — City of the Beasts (Isabel Allende)'), $topic(2, 'Conceptual Notes'),
+    $topic(3, 'Practice Paper 2 — The Hunger Games (Suzanne Collins)'), $topic(4, 'Redraft: The Hunger Games (Suzanne Collins)'),
+    $topic(5, 'Practice Paper 3 — Life of Pi (Yann Martel)'), $topic(6, 'Redraft: Life of Pi (Yann Martel)'),
+    $topic(7, 'Practice Paper 4 — Mr Fisher (Joanne Harris)'), $topic(8, 'Redraft: Mr Fisher (Joanne Harris)'),
+    $topic(9, 'Practice Paper 5 — Jamaica Inn (Daphne du Maurier)'), $topic(10, 'Redraft: Jamaica Inn (Daphne du Maurier)'),
+    $topic(11, 'Redraft: A Story No Template Names'),
+    $topic(201906, 'Eduqas Language Component 1 — June 2019 · Untitled prose extract'),
+    $topic(202306, 'Eduqas Language Component 1 — June 2023 · A World of Her Own'),
+];
+$imp->invoke(null, 'eduqas', 'eduqas_lang_paper_1');
+$ed = SWML_Topic_Questions::get_topics('eduqas', 'eduqas_lang_paper_1');
+$byNum = []; foreach ($ed as $t) $byNum[(int) $t['topic_number']] = (string) $t['label'];
+$pp = true; foreach (range(1, 5) as $i) $pp = $pp && strpos($byNum[$i] ?? '', 'Practice Paper ' . $i . ' — ') === 0;
+ok($pp, 'F1 topics 1–5 are Practice Papers 1–5 (LD\'s done_when) — ' . implode(' | ', array_map(function ($i) use ($byNum) { return $i . ':' . substr($byNum[$i] ?? '—', 0, 22); }, range(1, 5))));
+ok(!isset($byNum[6]) && !isset($byNum[8]) && !isset($byNum[10]), 'F2 the old interleave\'s "Redraft: <paper>" rows (6, 8, 10) are dropped as ghosts');
+ok(isset($byNum[201906]) && isset($byNum[202306]), 'F3 the installed past papers are carried');
+ok(($byNum[11] ?? '') === 'Redraft: A Story No Template Names', 'F4 a "Redraft:" topic naming a work NO template label names is carried (only exact paper matches are ghosts)');
+ok(count(array_filter($byNum, function ($l) { return stripos($l, 'Conceptual Notes') === 0; })) === 0, 'F5 no "Conceptual Notes" topic survives (old T2 sits under a template number)');
 
 echo ($fail ? '✗ FAIL' : '✓ PASS') . " — topic-alias-store-harness: " . ($n - $fail) . " passed, $fail failed\n";
 exit($fail ? 1 : 0);
