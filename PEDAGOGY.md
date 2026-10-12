@@ -1968,6 +1968,10 @@ so no lane re-asks:
    mark arithmetic is CODE from band + placement, never a number the model (or the student) invents.
    The rest of #221 survives: reason banked verbatim · re-openable · model answer auto-filed ·
    reuse the existing sign-off machinery.
+   ⚠️ **The RUNG QUESTION here is superseded by §35 (24 Aug): best fit, never hurdles** — climb while the
+   writing is *still better than* the description, stop where it *fits*. "Prove every criterion" above is
+   the 21 Aug wording; every board-descriptor ladder (Language, Literature, the CW final assessment) runs
+   `regime:'bestfit'`. (Recorded 2026-10-12, planning the finale — `CW-FINAL-ASSESSMENT-PLAN-2026-10-12.md` D1.)
 5. **Scope is language and literature too, not just CW** (Neil, 2026-08-21) — so the ladder is
    AO-generic over (AO, levels, descriptors, band edges) and a new paper is a DATA job. The data
    pipeline (one source md → generated dataset → divergence gate) shipped as slice 1, v7.20.544.
