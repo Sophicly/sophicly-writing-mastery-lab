@@ -721,8 +721,9 @@ function makeWorld(ctl, opts) {
 function specialiseTrialCtl(src, N) {
     const vals = [
         ['NEXT_DRAFT', 'Draft ' + (N + 1)], ['THIS_DRAFT', 'Draft ' + N],
-        ['DIM', N === 1 ? 'story coherence' : 'character depth'],
-        ['nextStepLabel()', N === 1 ? 'Step 11' : 'Step 15'], ['N', String(N)],
+        // v7.20.831: + Trial 3 (archetype coherence, next step 18 — the step after trial_3 in CW_STEPS).
+        ['dimName()', ({ 1: 'story coherence', 2: 'character depth', 3: 'archetype coherence' })[N] || 'trial ' + N],
+        ['nextStepLabel()', ({ 1: 'Step 11', 2: 'Step 15', 3: 'Step 18' })[N] || 'the next step'], ['N', String(N)],
     ];
     let out = String(src)
         .replace(/fid\('([a-z0-9-]+)'\)/g, "'cw-trial-" + N + "-$1'")

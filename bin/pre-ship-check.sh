@@ -788,10 +788,11 @@ fi
 # the loaded protocol retain teaching text the model would narrate? are all seven wiring points
 # present?). A walk missing a wiring point ships dead, and it ships dead silently.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
-     | grep -qE 'wml-assessment\.js|wml-core\.js|cw-trial1-(gate|sim-harness)\.js|CW-TRIAL-01-story-coherence\.md'; then
+     | grep -qE 'wml-assessment\.js|wml-core\.js|walk-sim-lib\.js|cw-trial[0-9]-(gate|sim-harness)\.js|CW-TRIAL-0[1-6]-[a-z-]+\.md|rubric-cw-narrative\.md'; then
   node bin/cw-trial1-gate.js || fail=1
   node bin/cw-trial1-sim-harness.js || fail=1
   node bin/cw-trial2-sim-harness.js || fail=1   # v7.20.824 (#884-①): Trial 2 = the trial factory built for N=2
+  node bin/cw-trial3-sim-harness.js || fail=1   # v7.20.831 (#884-②): Trial 3 = the trial factory built for N=3
 fi
 
 # v7.20.413: CW STEP-7 DOCUMENT GATE. The document half of Step 7 — the fifteen rows, their

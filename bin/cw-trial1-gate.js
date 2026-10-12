@@ -226,8 +226,9 @@ ok('Trial 1\'s sidebar names what this trial actually does',
 // until each is built. Either way none of them shares Trial 1's.
 ok('…and trials 2–6 no longer share it (six trials looked identical because they did)',
     /CW_SIDEBAR_STEPS\['trial_2'\] = \[[\s\S]{0,200}Judge the Six Checks/.test(CORE)
-    && (CORE.match(/CW_SIDEBAR_STEPS\['trial_[3-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length === 4,
-    (CORE.match(/CW_SIDEBAR_STEPS\['trial_[3-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length);
+    && /CW_SIDEBAR_STEPS\['trial_3'\] = \[[\s\S]{0,200}Judge the Five Checks/.test(CORE)   // v7.20.831 (#884-②)
+    && (CORE.match(/CW_SIDEBAR_STEPS\['trial_[4-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length === 3,
+    (CORE.match(/CW_SIDEBAR_STEPS\['trial_[4-6]'\] = CW_SIDEBAR_STEPS\['trial_generic'\];/g) || []).length);
 
 // ── 4. THE SEVEN WIRING POINTS — a walk missing one ships DEAD, and silently ───────────────────
 console.log('\nAll seven wiring points name the controller (the .490 incident):');
@@ -426,7 +427,7 @@ console.log('\nTrial 2 asks what Draft 2 taught, in the words it taught them:');
     // The seven wiring points (the .490 incident: a walk missing one ships DEAD, and silently)
     ok('Trial 2 · 1 · the dispatcher arm', /state\.task === 'cw_trial_2' && _cwTrial2Ctl\.active && _inboundIsAnswer/.test(SRC_RAW));
     ok('Trial 2 · 2 · all three controller maps', (SRC_RAW.match(/cw_trial_2: _cwTrial2Ctl,/g) || []).length === 3);
-    ok('Trial 2 · 3 · the walk registry', /_cwTrial1Ctl, _cwTrial2Ctl, _cwAdaptCtl/.test(SRC_RAW));
+    ok('Trial 2 · 3 · the walk registry', /registerCwWalkCtls\(\[[^\]]*\b_cwTrial2Ctl\b[^\]]*\]\)/.test(SRC_RAW));
     ok('Trial 2 · 4 · the reply broadcast', /_cwTrial2Ctl\.onReply\(reply\);/.test(SRC_RAW));
     ok('Trial 2 · 5 · the start-miss map', /t === 'cw_trial_2' \? _cwTrial2Ctl/.test(SRC_RAW));
     ok('Trial 2 · 6 · the entry export, boot resume and fresh entry',
@@ -439,6 +440,61 @@ console.log('\nTrial 2 asks what Draft 2 taught, in the words it taught them:');
         && !/Score each criterion on a scale/i.test(PROTO2) && /YOU DO NOT RUN THIS LESSON/.test(PROTO2));   // the old stub's instruction
     ok('Trial 2 · the protocol does not repeat the served checks (WML §5: served text never sits where the model narrates it)',
         T2.every((e) => PROTO2.indexOf(e.prompt) === -1));
+}
+
+// ── TRIAL 3 (v7.20.831, FIXLIST #884-②) — the same walk, asking what DRAFT 3 taught ─────────────────────────────────
+console.log('\nTrial 3 asks what Draft 3 taught, in the words it taught them:');
+{
+    const SRC_RAW = fs.readFileSync(path.join(ROOT, 'frontend/wml-assessment.js'), 'utf8');
+    const RUB = fs.readFileSync(path.join(ROOT, 'protocols/shared/modules/rubrics/rubric-cw-narrative.md'), 'utf8');
+    const li = RUB.indexOf('### Lens `archetypes`');
+    const LENS = li < 0 ? '' : RUB.slice(li, RUB.indexOf('### Later lenses', li));
+    const t3i = CORE.indexOf('const CW_TRIAL3_ELEMENTS = [');
+    // eslint-disable-next-line no-eval
+    const T3 = t3i < 0 ? [] : eval(braceSliceFrom(CORE, t3i, '[', ']').text);
+    const norm = (x) => String(x).replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ').toLowerCase();
+    // Each check's question carries the Draft 3 lens's own test or pointer phrase.
+    const TAUGHT = {
+        look: 'Show me one physical detail inside the action.',
+        choices: 'Can the reader tell what kind of person your protagonist is from what they do, wear or say, without the archetype being named?',
+        pressure: 'When things go wrong, does your protagonist react the way their archetype would?',
+        shift: 'Is there a moment where an old habit cracks and a different side of them shows?',
+        detail: 'What final detail proves they are no longer who they were at the start?',
+    };
+    ok('the Draft 3 lens was found', LENS.length > 1500, LENS.length);
+    ok('Trial 3 holds the five lens checks, in the lens\'s order', T3.map((e) => e.id).join(',') === 'look,choices,pressure,shift,detail', T3.map((e) => e.id));
+    T3.forEach((e) => {
+        const t = TAUGHT[e.id];
+        ok('Trial 3 · ' + e.label + ': its question is the taught phrase, verbatim', !!t && norm(LENS).indexOf(norm(t)) !== -1 && norm(e.prompt).indexOf(norm(t)) !== -1, e.prompt);
+        ok('Trial 3 · ' + e.label + ': Level 1 (said or named) and Level 2 (shown) are both written', !!e.l1 && !!e.strong && e.l1 !== e.strong);
+        ok('Trial 3 · ' + e.label + ': one inline example and two more (the help ladder, §4c.9)', !!e.example && (e.more || []).length === 2);
+    });
+    ok('Trial 3 · every check names its Step 15 rows, and the course really builds each one',
+        T3.every((e) => e.planDoc === 'character_archetypes' && Array.isArray(e.planFids) && e.planFids.length
+            && e.planFids.every((p) => SRC_RAW.indexOf("'" + p[1] + "'") !== -1)));
+    ok('⭐ Trial 3 · no check id is a fixed row\'s name (§5d)',
+        !T3.some((e) => ['goal', 'mark', 'gap', 'strength', 'priority', 'target'].indexOf(e.id) !== -1));
+    ok('Trial 3 · the walk reads a plan that spans the story (planFids) through the ONE planLine',
+        /if \(e && Array\.isArray\(e\.planFids\)\)/.test(SRC_RAW) && /return e\.planFid \|\| e\.planFids;/.test(SRC_RAW));
+    ok('⭐ Trial 3 · the walk and the page read the trial\'s words from ONE map, at use-time (WML.cwTrialDim)',
+        /function td\(\) \{ return T1 \? \{\} : \(\(WML && WML\.cwTrialDim && WML\.cwTrialDim\(N\)\) \|\| \{\}\); \}/.test(SRC_RAW)
+        && /function _cwTrialPageText\(n\) \{ return \(window\.WML && WML\.cwTrialDim && WML\.cwTrialDim\(n\)\) \|\| \{\}; \}/.test(SRC_RAW)
+        && !/CW_TRIAL_PAGE_TEXT/.test(SRC_RAW) && !/'character depth'/.test(SRC_RAW.slice(SRC_RAW.indexOf('function _cwTrialCtlFactory(N) {'), SRC_RAW.indexOf('const _cwTrial1Ctl = _cwTrialCtlFactory(1);'))));
+    ok('Trial 3 · its sidebar names its own job', /CW_SIDEBAR_STEPS\['trial_3'\] = \[[\s\S]{0,200}Judge the Five Checks/.test(CORE));
+    ok('Trial 3 · 1 · the dispatcher arm', /state\.task === 'cw_trial_3' && _cwTrial3Ctl\.active && _inboundIsAnswer/.test(SRC_RAW));
+    ok('Trial 3 · 2 · all three controller maps', (SRC_RAW.match(/cw_trial_3: _cwTrial3Ctl,/g) || []).length === 3);
+    ok('Trial 3 · 3 · the walk registry', /registerCwWalkCtls\(\[[^\]]*\b_cwTrial3Ctl\b[^\]]*\]\)/.test(SRC_RAW));
+    ok('Trial 3 · 4 · the reply broadcast', /_cwTrial3Ctl\.onReply\(reply\);/.test(SRC_RAW));
+    ok('Trial 3 · 5 · the start-miss map', /t === 'cw_trial_3' \? _cwTrial3Ctl/.test(SRC_RAW));
+    ok('Trial 3 · 6 · the entry export, boot resume and fresh entry',
+        /cwTrial3Ctl: _cwTrial3Ctl,/.test(SRC_RAW) && /state\.task === 'cw_trial_3' && tp\.cwTrial3Ctl\) tp\.cwTrial3Ctl\.tryResume\(\);/.test(SRC_RAW)
+        && /state\.task === 'cw_trial_3' && !state\.reviewMode && tp\.cwTrial3Ctl\) \{/.test(SRC_RAW));
+    ok('Trial 3 · 7 · chat-clear restarts its own walk', /state\.task === 'cw_trial_3'\) \{[\s\S]{0,400}_cwTrial3Ctl\.reset\(\); _cwTrial3Ctl\.forceStart\(\);/.test(SRC_RAW));
+    const PROTO3 = fs.readFileSync(path.join(ROOT, 'protocols/shared/creative-writing/CW-TRIAL-03-archetype-coherence.md'), 'utf8');
+    ok('⭐ Trial 3 · the protocol asks for exactly the walk\'s marker ids, and no 1–5 scale',
+        T3.concat([{ id: 'accuracy' }]).every((e) => PROTO3.indexOf('@TRIAL_VERDICT[' + e.id + '=') !== -1 && PROTO3.indexOf('@TRIAL_EXAMPLE[' + e.id + ']') !== -1)
+        && !/scale of 1/i.test(PROTO3) && /YOU DO NOT RUN THIS LESSON/.test(PROTO3));
+    ok('Trial 3 · the protocol does not repeat the served checks (WML §5)', T3.every((e) => PROTO3.indexOf(e.prompt) === -1));
 }
 
 console.log(fails

@@ -45,6 +45,11 @@ const CHECKS = eval(braceSliceFrom(CORE, t2Idx, '[', ']').text);
 // eslint-disable-next-line no-eval
 const ACCURACY = eval('(' + braceSliceFrom(CORE, accIdx, '{', '}').text + ')');
 const ELEMENTS = CHECKS.concat([ACCURACY]);
+// v7.20.831: the trial's words live in ONE map in wml-core (CW_TRIAL_DIMS) — the REAL one, so a drift in Trial 2's strings fails here.
+const dimIdx = CORE.indexOf('const CW_TRIAL_DIMS = {');
+if (dimIdx < 0) { console.error('❌ CW_TRIAL_DIMS not found in wml-core.js'); process.exit(1); }
+// eslint-disable-next-line no-eval
+const DIMS = eval('(' + braceSliceFrom(CORE, dimIdx, '{', '}').text + ')');
 const OUT_OF = ELEMENTS.reduce((a, e) => a + (e.outOf || 4), 0);   // 26
 
 const lgIdx = SRC.indexOf('function _ladderGrade(pct)');
@@ -88,6 +93,7 @@ function world(opts) {
     w.saved = [];
     Object.assign(w.deps.WML, {
         cwTrialElements: function (n) { return n === 2 ? ELEMENTS : []; },
+        cwTrialDim: function (n) { return DIMS[n] || null; },
         CW_STEPS: [{ step: 14, draft: 2 }, { id: 'trial_2', trial: 2 }, { step: 15 }],
         cwProject: { saveTrial: function (pid, payload, n) { w.saved.push({ payload: payload, n: n }); return Promise.resolve({ success: true }); } },
     });

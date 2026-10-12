@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.830';
+var WML_BUILD = '7.20.831';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1447,7 +1447,12 @@ window.WML = (function() {
         { step: 2, label: 'Judge the Six Checks' },
         { step: 3, label: 'Sophia’s Verdict' },
     ];
-    CW_SIDEBAR_STEPS['trial_3'] = CW_SIDEBAR_STEPS['trial_generic'];
+    // v7.20.831 (#884-②): Trial 3 runs the same walk on its own five checks.
+    CW_SIDEBAR_STEPS['trial_3'] = [
+        { step: 1, label: 'Read Your Draft' },
+        { step: 2, label: 'Judge the Five Checks' },
+        { step: 3, label: 'Sophia’s Verdict' },
+    ];
     CW_SIDEBAR_STEPS['trial_4'] = CW_SIDEBAR_STEPS['trial_generic'];
     CW_SIDEBAR_STEPS['trial_5'] = CW_SIDEBAR_STEPS['trial_generic'];
     CW_SIDEBAR_STEPS['trial_6'] = CW_SIDEBAR_STEPS['trial_generic'];
@@ -1861,6 +1866,101 @@ window.WML = (function() {
         },
     ];
     const CW_TRIAL2_ELEMENTS_ALL = CW_TRIAL2_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
+
+    // ⭐⭐ v7.20.831 (FIXLIST #884-②, CW trials slice 5) — TRIAL 3: ARCHETYPE COHERENCE. A trial checks what its own draft
+    // taught (PEDAGOGY §33.1), and Draft 3 (Step 17) teaches ONE lens, `archetypes` (rubric-cw-narrative.md, "Lens
+    // archetypes", distilled from the Step 15 page, the Step 16 prompts and the Step 17 workshop): "the reader should be able
+    // to tell what kind of person the protagonist is, and watch it change, without the archetype ever being named". So the
+    // five checks are that lens: the archetype in how they look (inside an action), in what they do and say, under pressure;
+    // the shift at the turn; the final detail. Dialogue is not a check of its own — a scene may have none (Step 17) — so it
+    // rides "what they do and say". Each `prompt` carries the lens's own test or pointer phrase verbatim (bin/cw-trial1-gate.js
+    // diffs them). `l1` = the check said or named, not yet shown. The plan spans the story, so each check reads its Step 15
+    // rows by part (`planFids`: beginning · middle · end; ids keep their pre-renumber `cw-step-13-` names, §5d). Examples are
+    // DESCRIBED moments, never quotations (§5c-i), set texts first. Technical accuracy is Trial 1's row. 5 × 4 + 2 = /22.
+    const CW_TRIAL3_ELEMENTS = [
+        {
+            id: 'look', label: 'Appearance', ao: 'AO5', planDoc: 'character_archetypes',
+            planFids: [['Beginning', 'cw-step-13-phys-begin'], ['Middle', 'cw-step-13-phys-mid'], ['End', 'cw-step-13-phys-end']],
+            prompt: 'How does your protagonist look and move? Show me one physical detail inside the action.',
+            l1: 'The draft describes how your protagonist looks, though in a separate description, or by naming what kind of person they are, rather than inside an action.',
+            strong: 'A strong draft shows how the protagonist looks and moves inside an action, and the detail tells the reader what kind of person they are, without the archetype ever being named.',
+            example: 'When Scrooge first appears, the cold is on him: frost on his head and eyebrows, and a chill he carries everywhere he goes. Dickens never calls him a miser; the cold says it.',
+            more: [
+                'In An Inspector Calls, the Inspector gives an impression of massiveness and purpose, and he looks hard at each person before he speaks to them. Before he asks a single question, the audience knows he will not be pushed around.',
+                'Harry Potter wears round glasses held together with tape, broken because his cousin keeps hitting him. One detail tells the reader he is the underdog in that house.',
+            ],
+        },
+        {
+            id: 'choices', label: 'Choices', ao: 'AO5', planDoc: 'character_archetypes',
+            planFids: [['Beginning', 'cw-step-13-arch-begin'], ['Middle', 'cw-step-13-arch-mid'], ['End', 'cw-step-13-arch-end']],
+            prompt: 'Can the reader tell what kind of person your protagonist is from what they do, wear or say, without the archetype being named?',
+            l1: 'Your protagonist’s choices fit the archetype you planned, though the draft names or explains what kind of person they are instead of letting the choices show it.',
+            strong: 'A strong draft lets the protagonist’s choices, and their words where there is dialogue, show the archetype planned for this part of the story, so the reader recognises the kind of person without being told.',
+            example: 'In Of Mice and Men, when they meet the boss, George answers for Lennie and keeps him quiet. Nobody says that George is Lennie’s protector; every choice he makes in that room says it.',
+            more: [
+                'In Finding Nemo, Marlin checks, warns and counts before every move his son makes. His choices show a frightened father long before anyone names his fear.',
+                'In Harry Potter, Hermione answers the teacher’s questions first and corrects how other students say their spells. Her choices show the know-it-all before anyone calls her one.',
+            ],
+        },
+        {
+            id: 'pressure', label: 'Under Pressure', ao: 'AO5', planDoc: 'character_archetypes',
+            planFids: [['Beginning', 'cw-step-13-arch-begin'], ['Middle', 'cw-step-13-arch-mid'], ['End', 'cw-step-13-arch-end']],
+            prompt: 'When things go wrong, does your protagonist react the way their archetype would?',
+            l1: 'There is a moment when things go wrong, though the reaction could belong to any character, or the draft tells the reader how they feel instead of showing what they do.',
+            strong: 'A strong draft makes the reaction belong to this archetype: when things go wrong, the protagonist does what their kind of person would do, and the reader recognises them in it.',
+            example: 'When her little sister’s name is called for the Hunger Games, Katniss steps forward and volunteers in her place. Under the worst pressure she can imagine, she does what a hero does: she takes the cost herself.',
+            more: [
+                'In Frozen, when her secret is exposed at her coronation, Elsa runs to the mountains and shuts everyone out. Under pressure, a lost soul retreats and isolates.',
+                'In Macbeth, when Banquo’s ghost appears at the feast, Macbeth cannot hide his terror from his guests. The soldier who was fearless in battle falls apart under guilt.',
+            ],
+        },
+        {
+            id: 'shift', label: 'The Shift', ao: 'AO5', planDoc: 'character_archetypes',
+            planFids: [['Middle', 'cw-step-13-arch-mid'], ['End', 'cw-step-13-arch-end']],
+            prompt: 'Is there a moment where an old habit cracks and a different side of them shows?',
+            l1: 'The draft says your protagonist is changing, though it tells the reader rather than letting a different side of them show in what they do.',
+            strong: 'A strong draft lets a trait of a different archetype break through at the turn: an old habit cracks, and the reader sees a new side of the protagonist in what they do.',
+            example: 'In A Christmas Carol, Scrooge, who has shut everyone out, asks the Ghost of Christmas Present whether Tiny Tim will live, with an interest he has never felt before. For the first time he cares about someone else: a different side of him breaks through.',
+            more: [
+                'In An Inspector Calls, Sheila begins the evening enjoying her engagement and ends it refusing to let her parents pretend nothing happened. The moment she admits her part in Eva Smith’s sacking, the spoilt daughter starts to become the rebel.',
+                'In Harry Potter and the Philosopher’s Stone, Neville, laughed at by almost everyone, stands up to his own friends to stop them breaking the rules. The underdog shows a hero’s courage.',
+            ],
+        },
+        {
+            id: 'detail', label: 'Final Detail', ao: 'AO5', planDoc: 'character_archetypes',
+            planFids: [['End', 'cw-step-13-arch-end'], ['End (appearance)', 'cw-step-13-phys-end']],
+            prompt: 'What final detail proves they are no longer who they were at the start?',
+            l1: 'The ending says your protagonist is different, though it tells the reader rather than proving it with an action, an image or a change in how they look.',
+            strong: 'A strong ending proves the shift with one final detail, an action, an image or a change in appearance, that the protagonist could not have shown at the start.',
+            example: 'At the start of A Christmas Carol, Scrooge frightens a carol singer away from his door. On Christmas morning he throws open his window and calls to a boy in the street to buy the prize turkey for the Cratchits. One action shows the change.',
+            more: [
+                'In Frozen, the queen who wore gloves to hide her hands ends the film making an ice rink for the whole kingdom. The final image shows she is no longer hiding.',
+                'At the end of Harry Potter and the Philosopher’s Stone, Neville wins the last ten points that take Gryffindor to the House Cup. The boy everyone laughed at is cheered by the whole hall.',
+            ],
+        },
+    ];
+    const CW_TRIAL3_ELEMENTS_ALL = CW_TRIAL3_ELEMENTS.concat([CW_TRIAL1_ACCURACY]);
+
+    // ⭐ v7.20.831 (#884-②): THE WORDS THAT NAME A LATER TRIAL — one map, read by the walk (_cwTrialCtlFactory) and the page
+    // (_cwTrialNAboutHTML / _cwTrialNSophiaBlock), so the two cannot drift. Trial 2's strings moved here byte for byte from the
+    // factory and the page (bin/cw-trial2-sim-harness.js proves the walk still says them). Trial 1 keeps its own shipped text.
+    const CW_TRIAL_DIMS = {
+        2: {
+            title: 'Trial 2: Character Depth', dim: 'Character Depth', dimLower: 'character depth', dimKey: 'character_depth',
+            question: 'can the reader feel your protagonist’s inner struggle driving what happens?',
+            checks: 'the goal, the flaw and the stakes at the start, the need surfacing, the dilemma, and the proof of change at the end',
+            checkNoun: 'character-depth checks', checkWhat: 'how their protagonist’s inner struggle shows in the scene',
+            planWhere: 'in their character profile or, for the flaw, their logline', planHeading: 'THEIR CHARACTER PLAN',
+        },
+        3: {
+            title: 'Trial 3: Archetype Coherence', dim: 'Archetype Coherence', dimLower: 'archetype coherence', dimKey: 'archetype_coherence',
+            question: 'can the reader tell what kind of person your protagonist is, and watch it change?',
+            checks: 'how your protagonist looks, what they do and say, how they react under pressure, the shift at the turn, and the final detail that proves it',
+            checkNoun: 'archetype checks', checkWhat: 'how their protagonist’s archetype shows in the scene, and how it shifts',
+            planWhere: 'in their archetype plan from Step 15', planHeading: 'THEIR ARCHETYPE PLAN',
+        },
+    };
+    function cwTrialDim(n) { return CW_TRIAL_DIMS[n] || null; }
     // ⭐ v7.20.830 (FIXLIST #884-②, #893) — WHAT EACH POLISHING LENS WAS PLANNED FROM. The coaching request carries the
     // selection, the section and the WHOLE document — never the student's project — so the rubric's "their plan is handed to
     // you" was untrue on Draft 2 (measured by a complete trace, 12 Oct). These rows are pinned at the top of the draft as
@@ -1890,6 +1990,7 @@ window.WML = (function() {
     function cwTrialElements(n) {
         if (n === 1) return cwTrial1Elements();
         if (n === 2) return CW_TRIAL2_ELEMENTS_ALL;
+        if (n === 3) return CW_TRIAL3_ELEMENTS_ALL;   // v7.20.831 (#884-②)
         return [];
     }
 
@@ -6467,7 +6568,7 @@ window.WML = (function() {
         CW_SCENE_FOCUS_FID, CW_SCENE_FOCUS_PARTS, cwSceneFocusText, cwSceneFocusBeat,
         CW_EMPATHY_CATS, CW_EMPATHY_MIN_PER_CAT, CW_EMPATHY_TECHNIQUES, CW_EMPATHY_NOT_USING, POETIC_FORM_TECH_CARDS,
         cwTrialSource, cwDraftTrialSource, CW_SCENE_ELEMENTS, CW_TRIAL1_ACCURACY, CW_TRIAL1_ELEMENTS,
-        CW_TRIAL2_ELEMENTS, cwTrialElements, CW_LENS_PLAN,
+        CW_TRIAL2_ELEMENTS, CW_TRIAL3_ELEMENTS, cwTrialElements, CW_TRIAL_DIMS, cwTrialDim, CW_LENS_PLAN,
         // Revision map
         REVISION_MAP,
         // Utilities
