@@ -2754,6 +2754,7 @@ class SWML_Protocol_Router {
         $cw_polishing_lenses = [
             'cw_step_14' => 'character_arc',
             'cw_step_17' => 'archetypes',   // v7.20.830 (FIXLIST #884-②): Draft 3
+            'cw_step_20' => 'empathy',      // v7.20.834 (FIXLIST #884-③): Draft 4
         ];
         // v7.20.740 (PEDAGOGY §34.1, §55): a step run as a UNIT variant can be a polishing step too —
         // the weekend story's guided Draft 1 is Step 10 with Sophia reached from a selection. Same
@@ -2835,7 +2836,8 @@ class SWML_Protocol_Router {
                 // CW-STEP-17 markdown stays on disk as the source of the rubric's `archetypes` lens, never loaded.
                 'cw_step_18' => 'CW-STEP-18-deepen-empathy.md',
                 'cw_step_19' => 'CW-STEP-19-update-plot-empathy.md',
-                'cw_step_20' => 'CW-STEP-20-draft-4-empathy.md',
+                // cw_step_20 is DELIBERATELY ABSENT (v7.20.834, #884-③) — Draft 4 polishes; CW-STEP-20 stays on disk as the
+                // source of the rubric's `empathy` lens, never loaded.
                 'cw_step_21' => 'CW-STEP-21-theme-tone.md',
                 'cw_step_22' => 'CW-STEP-22-update-plot-theme.md',
                 'cw_step_23' => 'CW-STEP-23-draft-5-theme-tone.md',

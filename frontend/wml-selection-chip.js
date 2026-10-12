@@ -109,10 +109,12 @@
         cwArc:        ['cw-arc-goal', 'cw-arc-flaw', 'cw-arc-stakes', 'cw-arc-need', 'cw-arc-proof'],
         // v7.20.830 (#884-②): Draft 3's lens — the archetype shown through appearance, choices and reactions, then the shift.
         cwArch:       ['cw-arch-look', 'cw-arch-act', 'cw-arch-pressure', 'cw-arch-shift', 'cw-arch-proof'],
+        // v7.20.834 (#884-③): Draft 4's lens — vulnerability shown, courage, kindness at a cost, balance, rising care.
+        cwEmp:        ['cw-emp-hurt', 'cw-emp-courage', 'cw-emp-cost', 'cw-emp-balance', 'cw-emp-build'],
     };
     // v7.20.830 (#884-②): which lens group a full-course polishing draft offers — read from the step's own `lens`
     // (WML.cwStepLens), so a draft that moves to this environment brings its buttons as data, never a step literal.
-    const CW_LENS_GROUP = { character_arc: 'cwArc', archetypes: 'cwArch' };
+    const CW_LENS_GROUP = { character_arc: 'cwArc', archetypes: 'cwArch', empathy: 'cwEmp' };
 
     const ACTION_LABELS = {
         // T1-T5 tier scans
@@ -170,6 +172,12 @@
         'cw-arch-pressure': 'Show it under pressure',
         'cw-arch-shift':    'Show the shift',
         'cw-arch-proof':    'The final detail',
+        // CW empathy lens (v7.20.834)
+        'cw-emp-hurt':      'Show the hurt',
+        'cw-emp-courage':   'Show the courage',
+        'cw-emp-cost':      'Kindness that costs',
+        'cw-emp-balance':   'Check the balance',
+        'cw-emp-build':     'Build the care',
         // Turn into a device (non-fiction) — v7.19.272
         'device-suggest':            'Suggest a device',
         'device-metaphor':           'Metaphor',
@@ -206,6 +214,7 @@
         cwWordChoice: 'Word choice',
         cwArc:        'Character arc',
         cwArch:       'Archetypes',
+        cwEmp:        'Empathy',
         langScan:       'Scan your answer',
         langWordChoice: 'Word choice',
         litWordChoice:  'Word choice',

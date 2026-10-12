@@ -98,8 +98,8 @@ ok('its artifact key is untouched — Trial 3 marks draft_3', WML.CW_ARTIFACT_MA
 ok('Step 17 is not tools-minimal', !WML.cwToolsMinimal('cw_step_17'));
 
 console.log('\nNothing else moved:');
-ok('exactly TWO steps declare env=polishing (Drafts 2 and 3)',
-    JSON.stringify(WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => s.step)) === '[14,17]',
+ok('exactly THREE steps declare env=polishing (Drafts 2, 3 and 4)',
+    JSON.stringify(WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => s.step)) === '[14,17,20]',
     WML.CW_STEPS.filter(s => s.env === 'polishing').map(s => s.step));
 ok('exactly ONE step declares env=diagnostic',
     JSON.stringify(WML.CW_STEPS.filter(s => s.env === 'diagnostic').map(s => s.step)) === '[10]',
@@ -111,7 +111,10 @@ ok('Step 13 keeps its training walk', cfg('cw_step_13').environment === 'trainin
 ok('Step 13 keeps its chat panel', cfg('cw_step_13').panels.chat === true);
 ok('Step 12 keeps its training walk', cfg('cw_step_12').environment === 'training', cfg('cw_step_12').environment);
 ok('Step 10 keeps its diagnostic env', cfg('cw_step_10').environment === 'free', cfg('cw_step_10').environment);
-ok('Step 20 (Draft 4) has NOT been flipped yet — its lens is not written', cfg('cw_step_20').environment === 'training', cfg('cw_step_20').environment);
+ok('Step 23 (Draft 5) has NOT been flipped yet — its lens is not written', cfg('cw_step_23').environment === 'training', cfg('cw_step_23').environment);
+ok('Step 20 (Draft 4) polishes with the empathy lens', cfg('cw_step_20').environment === 'inline-coaching' && WML.getCwStepDef('cw_step_20').lens === 'empathy' && cfg('cw_step_20').protocolSource === null);
+ok('…and Steps 18 and 19 (the empathy workbook pages) are untouched', cfg('cw_step_18').environment !== 'inline-coaching' && cfg('cw_step_19').environment !== 'inline-coaching');
+ok('…and Draft 4\'s pinned plan shows only the techniques the student CHOSE (optional rows)', (WML.CW_LENS_PLAN.empathy || []).length === 15 && WML.CW_LENS_PLAN.empathy.every(r => r.optional === true));
 ok('Steps 15 and 16 (the archetype workbook pages) are untouched', cfg('cw_step_15').environment !== 'inline-coaching' && cfg('cw_step_16').environment !== 'inline-coaching');
 
 console.log('\nThe env ladder still resolves by capability, not by step number:');
@@ -211,7 +214,7 @@ ok('…and it carries a section for every lens the JS declares',
 // is the §5c "never author pedagogy from general knowledge" failure with a tap to trigger it.
 console.log('\nEvery Creative Writing button is defined in the rubric:');
 const CHIP = fs.readFileSync(path.join(ROOT, 'frontend/wml-selection-chip.js'), 'utf8');
-const cwGroups = ['cwScan', 'cwWordChoice', 'cwArc', 'cwArch', 'cw'];
+const cwGroups = ['cwScan', 'cwWordChoice', 'cwArc', 'cwArch', 'cwEmp', 'cw'];
 let cwActions = [];
 for (const g of cwGroups) {
     const m = CHIP.match(new RegExp(g + ":\\s*\\[([^\\]]*)\\]"));

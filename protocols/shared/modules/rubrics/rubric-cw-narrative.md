@@ -13,7 +13,8 @@ are deepening the one they have.
 
 **Source:** distilled from the Creative Writing protocols the student has already been taught —
 Step 10 (prose style), Step 11 (character profile), Step 14 (character arc), and for Draft 3 the
-Step 15 archetypes page, the Step 16 plot update and the Step 17 workshop. Every principle and
+Step 15 archetypes page, the Step 16 plot update and the Step 17 workshop; for Draft 4 the Step 18
+empathy page, the Step 19 plot update and the Step 20 workshop. Every principle and
 example below is theirs already. Nothing here is new teaching.
 
 ---
@@ -189,6 +190,11 @@ name what is there, ask one question, stop. Never rewrite their passage for them
 | `cw-arch-pressure` | Under pressure: when things go wrong here, does the reaction fit their archetype? |
 | `cw-arch-shift` | The shift: is there a moment where a trait of a DIFFERENT archetype starts to show? |
 | `cw-arch-proof` | The final detail: what last action, image or change in appearance proves the shift is complete? |
+| `cw-emp-hurt` | Vulnerability: where is the protagonist hurt or afraid here, and is it shown through something their body does, or only named? |
+| `cw-emp-courage` | Courage (compulsory): where are they afraid but act anyway? |
+| `cw-emp-cost` | Kindness at a cost: what does this act of care or virtue cost them? |
+| `cw-emp-balance` | Balance: flawed but trying — or too perfect, too weak, or too melodramatic here? |
+| `cw-emp-build` | Rising care: does this moment make the reader care more than the one before it? |
 | `check-sensory-variety` | Which senses are in play, and which one would add most here? |
 | `check-scene-structure-beats` | Do the beats inside this passage build, or sit flat? |
 | `check-show-dont-tell` | As `cw-scan-show`, on a shorter selection. |
@@ -337,9 +343,58 @@ the sleeves still drowned her hands"* gives her size, her clothes and her family
 Earlier layers still count: the prose (Layer 1) and the character arc (Draft 2) are fair to raise,
 because this draft builds on them. Later layers are not.
 
+### Lens `empathy` — Draft 4
+
+The student chose, in Step 18, empathy techniques from three groups — **making the protagonist a
+victim, giving them humanistic virtues, giving them desirable qualities** — at least two from each
+group, with **courage compulsory**; in Step 19 they mapped them across their plot. The techniques they
+chose are at the top of the document, under **"Your Plan for This Draft"**. **Never ask the student
+which techniques they chose** — read them there.
+
+The whole point of this draft: **the reader should feel WITH the protagonist, not just sorry for
+them** — understand their inner world, their fears and their reasons, even when the reader disagrees
+with their choices (Step 18: empathy, not sympathy). Karl Iglesias, whom the course quotes: empathy is
+the most important emotion a writer can generate.
+
+**The two halves the Step 20 workshop teaches:**
+1. **Vulnerability, shown in the body.** Pain, fear or struggle the reader can see in a concrete
+   detail, never an abstract statement. Instead of *"She felt hurt and alone"*, *"She pressed her
+   thumbnail into her palm until it left a crescent. Nobody noticed."* — the hurt, and the isolation,
+   without either being named.
+2. **Virtue and courage, at a cost.** *Vulnerability alone creates pity. What creates empathy is
+   seeing a vulnerable character who still tries.* Courage is compulsory, but it need not be fighting a
+   monster: speaking up when it is safer to stay quiet, helping someone while barely coping, refusing to
+   betray what they believe, getting up and trying again after failing. The virtue should cost the
+   protagonist something.
+
+**The balance** (Step 20): too perfect, and readers cannot relate; too weak, and readers get
+frustrated; just right is **flawed, vulnerable, but trying**. Too melodramatic, and the moment asks for
+feeling it has not earned: pull back — *sometimes the most powerful moments are the quietest.*
+
+| Where the selection sits | What must become visible | Ask about |
+|---|---|---|
+| **Hook · Setup** | an early reason to care: a wish anyone understands, or an unfair injury, shown | a small detail that shows what they want, or what has been done to them |
+| **Reaction · Epiphany** | vulnerability under pressure, shown in the body; the lowest point should ask for the most empathy (Step 19) | what their body does when it hurts; what nobody else notices |
+| **Proaction · Climax · Denouement** | courage while afraid, and a kindness that costs something; by the end the reader should care more than at the start (Step 19) | the brave act and its price; the last image of them |
+
+**The three tests, in the student's own terms:**
+1. *Does the reader feel with your protagonist here, or only feel sorry for them?*
+2. *Where does your protagonist still try, even though it costs them something?*
+3. *Is your protagonist flawed but trying — not too perfect, not too weak?*
+
+**Pointer phrases:**
+- *What does their body do when it hurts? Show me one detail.*
+- *Where are they afraid but act anyway? Courage is the one technique every protagonist needs.*
+- *What does this kindness cost them?*
+- *Pull back here. Sometimes the most powerful moments are the quietest.*
+- *Does the reader care more at the end of the scene than at the start?*
+
+Earlier layers still count: the prose, the character arc and the archetypes are fair to raise, because
+this draft builds on them. Later layers are not.
+
 ### Later lenses
 
-Drafts 4–7 add empathy, theme and tone, genre, and structural elements. Each gets its own section
+Drafts 5–7 add theme and tone, genre, and structural elements. Each gets its own section
 here as its step moves to this environment. **Until a lens is written down, do not coach it** —
 inventing a layer the student has not been taught is the failure this file exists to prevent.
 

@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.833';
+var WML_BUILD = '7.20.834';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -1178,7 +1178,8 @@ window.WML = (function() {
         { id: 'trial_3', label: 'Trial 3: Archetype Coherence', tier: 'si', phase: 'drafting', trial: 3 },
         { step: 18, label: 'Deepen Empathy',            tier: 'workbook', phase: 'drafting' },
         { step: 19, label: 'Update Plot: Empathy',      tier: 'workbook', phase: 'drafting' },
-        { step: 20, label: 'Draft 4: Empathy',          tier: 'si', phase: 'drafting', draft: 4 },
+        // v7.20.834 (FIXLIST #884-③): Draft 4 polishes too — the empathy lens (Steps 18–19 teach it).
+        { step: 20, label: 'Draft 4: Empathy',          tier: 'si', phase: 'drafting', draft: 4, env: 'polishing', lens: 'empathy' },
         { id: 'trial_4', label: 'Trial 4: Emotional Impact', tier: 'si', phase: 'drafting', trial: 4 },
         { step: 21, label: 'Theme & Tone',              tier: 'workbook', phase: 'drafting' },
         { step: 22, label: 'Update Plot: Theme',        tier: 'workbook', phase: 'drafting' },
@@ -1985,6 +1986,10 @@ window.WML = (function() {
             { label: 'End — Archetype(s)', doc: 'character_archetypes', fid: 'cw-step-13-arch-end' },
             { label: 'End — Physical Appearance', doc: 'character_archetypes', fid: 'cw-step-13-phys-end' },
         ],
+        // v7.20.834 (#884-③): Draft 4 — the empathy techniques the student chose in Step 18 (its document is
+        // `empathy_plan`). The ONE technique list, CW_EMPATHY_TECHNIQUES (Neil's workbook labels, the ids every Step 18
+        // page uses). `optional`: a student picks at least two per group, so an unchosen technique is left off the pin.
+        empathy: CW_EMPATHY_TECHNIQUES.map(function (t) { return { label: t.label, doc: 'empathy_plan', fid: t.fid, optional: true }; }),
     };
     // The element list for trial N — ONE accessor for the walk, the page template and the gates.
     function cwTrialElements(n) {
