@@ -43990,10 +43990,39 @@
                 // after that check would otherwise mount into a detached node and never show.
                 if (!ldNav.isConnected) statusBar.appendChild(ldNav);
             }
+            // ⭐ v7.20.865 (Neil, LearnDash Calls v41, 13 Oct: "Undo Mark Complete: Yes, show it"; theme WD-975): on a
+            // COMPLETED lesson the theme renders LearnDash's own undo form inside .spl-footer — which WML hides on every
+            // WML lesson (wml-canvas.css: body.swml-embedded-active .spl-footer). Without this proxy the undo the student
+            // was promised is invisible exactly where most lessons are. Same shape as the Mark Complete proxy: mirror the
+            // theme's button (its own label, its own muted underlined look) and forward the click, so LearnDash's nonce
+            // and handler do the work. Dormant until the theme ships it: no undo button on the page → nothing mounts.
+            const LD_UNDO_SEL = '.spl-footer .spl-undo-complete, .spl-footer .learndash_mark_incomplete_button';
+            function mountLdUndoProxy(ldUndoBtn) {
+                if (ldNav.querySelector('.swml-ld-undo')) return;
+                const label = (ldUndoBtn.value || ldUndoBtn.textContent || '').trim() || 'Mark as not finished';
+                const undoBtn = el('button', {
+                    className: 'swml-ld-undo',
+                    textContent: label,
+                    title: 'Mark this lesson as not finished in LearnDash',
+                    onClick: () => {
+                        undoBtn.disabled = true;
+                        undoBtn.textContent = label + '\u2026';
+                        try { ldUndoBtn.click(); }
+                        catch (e) { console.warn('WML: LearnDash undo click failed', e); undoBtn.disabled = false; undoBtn.textContent = label; }
+                    },
+                });
+                const nextBtn = ldNav.querySelector('.swml-ld-next');
+                if (nextBtn) ldNav.insertBefore(undoBtn, nextBtn);
+                else ldNav.appendChild(undoBtn);
+                if (!ldNav.isConnected) statusBar.appendChild(ldNav);
+            }
             {
                 const found = document.querySelector(LD_COMPLETE_SEL);
+                const undo = found ? null : document.querySelector(LD_UNDO_SEL);
                 if (found) {
                     mountLdCompleteProxy(found);
+                } else if (undo) {
+                    mountLdUndoProxy(undo);   // a completed lesson: the theme's undo, never a 6 s "no Mark Complete" watch
                 } else {
                     // Watch for a late footer. Bounded (~6s) so a lesson that legitimately has no
                     // Mark Complete costs one observer and one log line, not a permanent watcher.

@@ -5503,6 +5503,18 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     color: #4D76FD; background: rgba(77,118,253,0.1);
 }
 .swml-canvas-light .swml-ld-complete:hover { background: rgba(77,118,253,0.16); }
+/* v7.20.865: the theme's "Mark as not finished" undo (WD-975), mirrored — its own look (no fill, muted, underlined),
+   at the status bar's 11px instead of the theme footer's 12px. */
+.swml-ld-undo {
+    background: none; border: 0; padding: 3px 8px; cursor: pointer;
+    font: inherit; font-size: 11px;
+    color: rgba(255,255,255,0.55); text-decoration: underline; text-underline-offset: 3px;
+}
+.swml-ld-undo:hover { color: rgba(255,255,255,0.85); }
+.swml-ld-undo:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 4px; }
+.swml-ld-undo:disabled { opacity: 0.5; cursor: default; }
+.swml-canvas-light .swml-ld-undo { color: rgba(20,22,28,0.55); }
+.swml-canvas-light .swml-ld-undo:hover { color: rgba(20,22,28,0.82); }
 /* Comment count in status bar */
 .swml-comment-count {
     font-size: 11px;

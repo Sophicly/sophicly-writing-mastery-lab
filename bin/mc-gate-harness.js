@@ -284,5 +284,20 @@ console.log('\n9. the footer proxy never mirrors LearnDash\'s Mark INCOMPLETE bu
         'the walks\' closing line ("press Mark Complete") does not count the Incomplete button either', ep);
 }
 
+console.log('\n10. a completed WML lesson shows the theme\'s undo (v7.20.865 — Neil: "Undo Mark Complete: Yes, show it")');
+{
+    // WML hides .spl-footer on its lessons, so the theme's undo is invisible there unless WML mirrors it.
+    const js = read('frontend/wml-assessment.js');
+    const css = read('frontend/wml-canvas.css');
+    ok(/body\.swml-embedded-active \.spl-footer \{\s*display: none !important;/.test(css), 'premise: WML still hides the LearnDash footer on its lessons');
+    ok(/const LD_UNDO_SEL = '\.spl-footer \.spl-undo-complete, \.spl-footer \.learndash_mark_incomplete_button';/.test(js), 'the undo selector names the theme\'s button (and LD\'s own class)');
+    ok(/const undo = found \? null : document\.querySelector\(LD_UNDO_SEL\);\s*if \(found\) \{\s*mountLdCompleteProxy\(found\);\s*\} else if \(undo\) \{\s*mountLdUndoProxy\(undo\);/.test(js),
+        '⭐ no Mark Complete on the page + the theme\'s undo present → the undo is mirrored (Complete always wins when both exist)');
+    const fn = (js.match(/function mountLdUndoProxy\(ldUndoBtn\) \{[\s\S]*?\n            \}/) || [''])[0];
+    ok(/ldUndoBtn\.value \|\| ldUndoBtn\.textContent/.test(fn) && /ldUndoBtn\.click\(\)/.test(fn), 'it wears the theme\'s own label and forwards the click to LearnDash\'s form (LD\'s nonce + handler)');
+    ok(!/_mcGateCheckBeforeComplete/.test(fn), 'undoing never goes through the Mark Complete gate');
+    ok(/\.swml-ld-undo \{[^}]*text-decoration: underline;/.test(css), 'it has its own look (the theme\'s underlined muted text), not the Mark Complete pill');
+}
+
 console.log('\n' + (failN ? '✗ ' + failN + ' failed, ' + pass + ' passed' : '✓ all ' + pass + ' checks passed'));
 process.exit(failN ? 1 : 0);
