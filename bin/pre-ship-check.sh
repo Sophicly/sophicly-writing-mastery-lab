@@ -204,6 +204,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/review-chrome-harness.js || fail=1
 fi
 
+# v7.20.867 (FIXLIST grades-wrong-anam-reeham): the topic orphan rescue never borrows across a mark-scheme document's
+# topic 0 (Final Assessment `_ms` / Spot the Difference `_msu` are their own documents). Falsified on the pre-fix file.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'class-rest-api\.php|topic0-rescue-harness\.js'; then
+  node bin/topic0-rescue-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document

@@ -2907,7 +2907,7 @@ class SWML_REST_API {
         // session shouldn't override a fresh sibling-seed for the per-stage chain.
         // Without this gate, an orphan `swml_canvas_{board}_{text}_outlining` doc
         // from earlier dev sessions blocked seed_from_sibling_stage from ever firing.
-        if (empty($raw) && $topic_number !== null && $topic_number > 0 && empty($request->get_param('seedFromSiblings'))) {
+        if (empty($raw) && $topic_number !== null && $topic_number > 0 && empty($request->get_param('seedFromSiblings')) && !self::topic0_is_own_document($suffix)) {
             $no_topic_key = $this->canvas_meta_key($board, $text, null, $suffix, $attempt, $cw_project_id);
             $no_topic_raw = get_user_meta($user_id, $no_topic_key, true);
             if (!empty($no_topic_raw)) {
@@ -2915,7 +2915,7 @@ class SWML_REST_API {
                 $raw = $no_topic_raw;
             }
         }
-        if (empty($raw) && ($topic_number === null || $topic_number === 0)) {
+        if (empty($raw) && ($topic_number === null || $topic_number === 0) && !self::topic0_is_own_document($suffix)) {
             // Scan topics 1-15 (covers all current Sophicly mastery courses; cheap
             // since get_user_meta is cached per request). Return first non-empty.
             for ($t = 1; $t <= 15; $t++) {
@@ -3297,14 +3297,14 @@ class SWML_REST_API {
         //
         // Direction A: topic_number>0 + main key empty → fall back to no-topic.
         // Direction B: topic_number=null/0 + main key empty → scan _t1.._t15.
-        if (empty($raw) && $topic_number !== null && $topic_number > 0) {
+        if (empty($raw) && $topic_number !== null && $topic_number > 0 && !self::topic0_is_own_document($suffix)) {
             $no_topic_key = $this->canvas_meta_key($board, $text, null, $suffix, $attempt, $cw_project_id);
             $no_topic_raw = get_user_meta($student_id, $no_topic_key, true);
             if (!empty($no_topic_raw)) {
                 $raw = $no_topic_raw;
             }
         }
-        if (empty($raw) && ($topic_number === null || $topic_number === 0)) {
+        if (empty($raw) && ($topic_number === null || $topic_number === 0) && !self::topic0_is_own_document($suffix)) {
             for ($t = 1; $t <= 15; $t++) {
                 $variant_key = $this->canvas_meta_key($board, $text, $t, $suffix, $attempt, $cw_project_id);
                 $variant_raw = get_user_meta($student_id, $variant_key, true);
@@ -6167,6 +6167,22 @@ class SWML_REST_API {
      * CW (_cw_*) is deliberately ABSENT — one long project, separate pass (Neil ruling
      * 2026-07-07). Neil WILL evolve the sequences — edit THIS map + stage_seed_chain() only.
      */
+    /**
+     * ⭐ v7.20.867 (FIXLIST grades-wrong-anam-reeham — Neil, 13 Oct: "Please also check Reeham's assessments; the grades
+     * seem to be in the wrong places"). The v7.19.138/140 topic orphan rescue treats topic 0 as a LOST topic: an empty
+     * topic-0 doc borrows the first `_t1…_t15` doc (Direction B) and an empty `_tN` doc borrows — and WRITES FORWARD —
+     * the topic-0 doc (Direction A). For the mark-scheme family topic 0 is a REAL, separate lesson's own document: the
+     * Final Assessment (`_ms`, v7.20.859) and Spot the Difference (`_msu`) beside Assessment 2 / the Quiz (`_t1_ms`,
+     * `_t1_msu`). Measured on prod: Reeham's A Christmas Carol Final Assessment (no `_ms` of its own) showed Assessment
+     * 2's 16/20 · Grade 7; an empty Assessment 2 would have been seeded with the Final Assessment's marked work.
+     * Pure — bin/topic0-rescue-harness.php extracts and runs it.
+     */
+    // @TOPIC0-OWN-PURE-BEGIN
+    public static function topic0_is_own_document($suffix) {
+        return in_array((string) $suffix, ['_ms', '_msu'], true);
+    }
+    // @TOPIC0-OWN-PURE-END
+
     private static function reseed_stage_config() {
         return [
             '_assessment'   => 'marked',
