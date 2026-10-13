@@ -19014,11 +19014,16 @@
     /* @MC-GATE-PURE-START — extracted and unit-tested by bin/mc-gate-harness.js.
        PURE: no DOM, no globals beyond the arguments. */
     const MC_GATE_ENFORCE_FAMILIES = ['cw', 'diagnostic', 'assessment'];
+    // v7.20.857 (§40 "watch-only until MEASURED", applied per CW step): the CW steps where a properly
+    // finished document was MEASURED reaching 100% in a real browser (prod, 13 Oct 2026: 1389 steps 1–9,
+    // 1352 + 1332 steps 6/8/10). No student has finished a later step, a trial or the final assessment,
+    // so those stay watch-only (their own `other:` family) until one is measured — widen this then.
+    const MC_GATE_CW_MEASURED = /^cw_step_(?:[1-9]|10)$/;
     function mcGateFamily(task) {
         const t = String(task || '');
         if (t === '' || t === 'diagnostic') return 'diagnostic';
         if (t === 'assessment' || t === 'redraft_assessment') return 'assessment';
-        if (t.indexOf('cw_') === 0) return 'cw';
+        if (t.indexOf('cw_') === 0) return MC_GATE_CW_MEASURED.test(t) ? 'cw' : 'other:' + t;
         return 'other:' + t;
     }
     // r = { verdict: 'complete'|'incomplete'|'unknown', family, exempt, sessionFinished, unmarked[] }

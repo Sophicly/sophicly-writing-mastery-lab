@@ -744,6 +744,11 @@ in user meta `swml_mc_gate_log`, stops nobody) · `enforce`.** Switch it with WP
   until MEASURED — the ticks exist only in the live page (0 of 657 stored docs carry them), so
   "does a properly finished doc of family X reach 100%?" is answered in a real browser, never by
   reading code. Add a family to `MC_GATE_ENFORCE_FAMILIES` only with that evidence.
+- **CW is scoped PER STEP (v7.20.857):** `MC_GATE_CW_MEASURED` = `cw_step_1…10`, the steps where a finished document
+  was measured at 100% on prod (13 Oct: 1389 steps 1–9; 1352 + 1332 steps 6/8/10 — kit `~/.sophicly/probe/wml-351/`,
+  `run-prod-probe.sh cw-gate-1389.mjs`, STUDENT/PROJECT/ONLY env). Every other CW task (step 11+, trials, final
+  assessment) is `other:<task>` = watch-only until a finished one is measured; widen the regex then.
+  Prod `swml_mc_gate_families` = `assessment,diagnostic` until Neil types the go to add `cw`.
 
 ---
 

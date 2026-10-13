@@ -66,6 +66,13 @@ console.log('\n1. families');
 ok(family('') === 'diagnostic' && family('diagnostic') === 'diagnostic', "'' and 'diagnostic' are the diagnostic family");
 ok(family('assessment') === 'assessment' && family('redraft_assessment') === 'assessment', 'assessment + redraft_assessment are the assessment family');
 ok(family('cw_step_3') === 'cw', 'a CW step is the cw family');
+// v7.20.857: only the CW steps measured at 100% (1–10) can be enforced; the rest are watch-only.
+ok(['cw_step_1', 'cw_step_9', 'cw_step_10'].every(t => family(t) === 'cw'), 'measured CW steps 1–10 are the cw family');
+ok(family('cw_step_11') === 'other:cw_step_11' && family('cw_step_29') === 'other:cw_step_29'
+    && family('cw_trial_1') === 'other:cw_trial_1' && family('cw_final_assessment') === 'other:cw_final_assessment',
+    'unmeasured CW tasks (step 11+, trials, final assessment) are their own watch-only family');
+ok(decide({ verdict: 'incomplete', family: family('cw_trial_1'), exempt: '' }, 'enforce', ['assessment', 'cw', 'diagnostic']).block === false,
+    'an unfinished unmeasured CW task is never blocked, even with cw switched on');
 ok(family('planning') === 'other:planning' && family('foundational_quiz') === 'other:foundational_quiz', 'everything else is its own watch-only family');
 ok(JSON.stringify(G.MC_GATE_ENFORCE_FAMILIES.slice().sort()) === JSON.stringify(['assessment', 'cw', 'diagnostic']),
     'only cw · diagnostic · assessment are eligible to be enforced (the measured families)');
