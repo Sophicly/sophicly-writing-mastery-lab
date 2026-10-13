@@ -49,6 +49,10 @@ const gated = SRC.match(/if \(_showOldReviewChrome\(\)\) (protoBadges|ctxBadges)
 ok(pills.length > 0 && pills.length === gated.length, '⭐ every "Tutor view · View as student" badge (sidebar + footer) is gated', { pills: pills.length, gated: gated.length });
 ok(/if \(_showOldReviewChrome\(\)\) \{\s*const rbBar = el\('div', \{ className: 'swml-tutor-banner-bar' \}\);/.test(SRC), '⭐ the pill above the document is gated');
 ok(!/if \(state\.reviewMode\) \{\s*const rbBar/.test(SRC), 'no ungated copy of the pill is left');
+// v7.20.872: the entry box ("Tutor view · You can / You cannot") auto-opened once per lesson and covered the teal bar
+// ~5 s after load (Web Design 122, measured) — with the pill gone there was no way to reopen it, so it follows the rule.
+const entry = SRC.slice(SRC.indexOf('function maybeShowReviewEntryModal() {'), SRC.indexOf('function maybeShowReviewEntryModal() {') + 900);
+ok(/if \(!state\.reviewMode\) return;\s*(?:\/\/[^\n]*\n\s*)*if \(!_showOldReviewChrome\(\)\) return;/.test(entry), '⭐ the once-per-lesson entry box is gated too (no pop-up where the teal bar is)');
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 if (fail) { console.log('❌ review-chrome-harness FAILED'); process.exit(1); }

@@ -3914,6 +3914,10 @@
     // landing on a lesson in review mode see the context before they start reviewing.
     function maybeShowReviewEntryModal() {
         if (!state.reviewMode) return;
+        // v7.20.872 (Neil's .866 ruling, "if we just have the one across the top, I think that's visible enough"): the
+        // entry box is the last of the canvas's own review chrome — it popped on every new lesson in review mode and
+        // covered Focus's teal bar (Web Design 122 measured it, ~5 s after load), with no pill left to reopen it.
+        if (!_showOldReviewChrome()) return;
         try {
             const key = 'swml_review_entry_seen_' + (state.reviewStudentId || 0) + '_' + (WML.config?.userId || 0) + '_' + (window.location.pathname || '');
             if (sessionStorage.getItem(key)) return;
