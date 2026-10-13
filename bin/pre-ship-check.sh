@@ -181,6 +181,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/response-feedback-link-harness.js || fail=1
 fi
 
+# v7.20.858 (Neil, 13 Oct — popout-feedback-only + popout-zorder): the Feedback pad holds the feedback section only
+# (by section TYPE — .swml-collapsible is on every section since v7.20.97), every part of it opens, and the pad a person
+# presses comes to the front. Falsified at .858: the pre-fix file fails 10 of 17.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|feedback-pad-harness\.js'; then
+  node bin/feedback-pad-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document

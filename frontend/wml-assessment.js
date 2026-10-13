@@ -44454,7 +44454,15 @@
                 // Self-Assessment, Score Summary, Analytics, Overall Feedback, Action Plan),
                 // in document order. Cloned strips stay LIVE: _renderSectionStrips targets
                 // every .swml-ana-strip in the document, pad clones included.
-                const fbEls = editorEl.querySelectorAll('.swml-section-block.swml-collapsible');
+                // ⭐ v7.20.858 (Neil, 13 Oct, popout-feedback-only: "really all I want is the feedback section"): chosen
+                // by section TYPE, never by .swml-collapsible — that class meant "the feedback lane" only until v7.20.97
+                // put the chevron on every section family, after which this pad filled with the question focus, the
+                // plans and the response. The feedback family: action (Self-Assessment, Mark-Scheme Self-Assessment,
+                // Calibration, Action Plan) · feedback (each paragraph/question, Overall Feedback, Analytics) · scores
+                // (Score Summary).
+                const FB_PAD_TYPES = { action: 1, feedback: 1, scores: 1 };
+                const fbEls = Array.from(editorEl.querySelectorAll('.swml-section-block[data-section-type]'))
+                    .filter(s => FB_PAD_TYPES[s.getAttribute('data-section-type')] === 1);
                 let fbAdded = 0;
                 fbEls.forEach((f, i) => {
                     const txt = (_sectionContentOf(f).textContent || '').trim(); // v7.19.951: skip control-row chrome — an EMPTY box with a mark widget must still read as placeholder
@@ -44569,7 +44577,10 @@
                         if (!t || !body.contains(t)) return;
                         ev.preventDefault();
                         ev.stopPropagation();
-                        const sec = t.closest('.swml-section-feedback');
+                        // v7.20.858 (Neil: "I can open the feedback for the paragraphs… but I can't open the others"):
+                        // any section block, not only type 'feedback' — Self-Assessment, Mark-Scheme Self-Assessment,
+                        // Calibration, Action Plan (action) and Score Summary (scores) carry the same chevron.
+                        const sec = t.closest('.swml-section-block');
                         if (!sec) return;
                         const nowCollapsed = sec.classList.toggle('swml-fb-collapsed');
                         const lbl = sec.getAttribute('data-section-label') || '';
@@ -44820,6 +44831,7 @@
             // trapped in the embedded-mode transformed-ancestor stacking context and hid behind the
             // LD sidebar. On <body> it escapes that context so its z-index applies over everything.
             document.body.appendChild(panel);
+            _wirePadRaise(panel);   // v7.20.858 (popout-zorder): opens on top; a press brings it back to the front
             extractPanels[sourceIdx] = panel;
             extractBtn.classList.add('active');
 
@@ -45044,7 +45056,31 @@
         // v7.20.59 (Neil): drag + 8-edge/corner resize for the viewer's panels — the
         // same interaction shape as the extract pads, extracted once so the popover
         // and every prior pad share it (embedded-mode transform correction included).
+        // ⭐ v7.20.858 (Neil, 13 Oct, popout-zorder: "if I click on one, surely that should become the one that's at the
+        // highest level"): the pad you touch comes to the front. Every floating pad is a .swml-extract-panel at ONE CSS
+        // z-index (100010), so stacking was DOM order and the newest pad stayed on top for ever. A raise renumbers every
+        // open pad from that base in touch order, so the band never creeps (n pads = 100010…100010+n-1; nothing else
+        // lives between 100010 and the 2147483647 overlay). Pads are portalled to <body> — outside ProseMirror.
+        function _raisePad(panel) {
+            try {
+                const base = 100010;
+                const others = Array.from(document.querySelectorAll('.swml-extract-panel'))
+                    .filter(p => p !== panel)
+                    .sort((a, b) => (parseInt(a.style.zIndex, 10) || base) - (parseInt(b.style.zIndex, 10) || base));
+                others.forEach((p, i) => { const z = String(base + i); if (p.style.zIndex !== z) p.style.zIndex = z; });
+                const top = String(base + others.length);
+                if (panel.style.zIndex !== top) panel.style.zIndex = top;
+            } catch (_) { /* stacking is cosmetic — never block a click */ }
+        }
+        // Wired by BOTH pad shells (spawnExtractPanel's own drag code, and this shared one): a newly opened pad
+        // starts on top, and any press inside a pad — header, body, a button — raises it (capture phase, so a
+        // control that stops propagation still raises its pad).
+        function _wirePadRaise(panel) {
+            panel.addEventListener('pointerdown', () => _raisePad(panel), true);
+            _raisePad(panel);
+        }
         function _makePanelInteractive(panel) {
+            _wirePadRaise(panel);
             ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'].forEach(dir => {
                 const h = el('div', { className: `swml-extract-rh swml-extract-rh-${dir.length > 1 ? 'corner' : 'edge'} swml-extract-rh-${dir}` });
                 h.dataset.dir = dir;

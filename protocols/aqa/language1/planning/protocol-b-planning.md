@@ -715,6 +715,19 @@ perspective) · **paragraph-level** choices (a topic change, a zoom in or out, c
 aim for at least one whole-text and one paragraph-level feature. First, your TWO
 structural anchors." Cite headline goal / Planning Target where it matches.
 
+**[AI_INTERNAL] STRUCTURE, NOT LANGUAGE — say it in the lead-in, every time (PEDAGOGY §64; Neil, 2026-10-13:
+*"something in the protocols that really emphasize to the students that they have to learn structural techniques…
+even if they learn simple ones like zooming, change of focus"*).** Before the anchor ask, in your own words and in
+no more than three short sentences, tell the student: (1) Question 3 marks **structure, not language** — a simile,
+a metaphor or a well-chosen word earns nothing on this question however well it is analysed, because AQA's mark
+scheme says this question "assesses structure" (name the mark scheme in those plain words; no document names or
+page numbers); (2) so it pays to **learn a few structural techniques by name**, starting with the two simplest:
+**zooming in or out** (the writer moves from a wide view to one small detail, or back out again, like a camera) and
+a **change of focus** (our attention moves to a different person, place or time); (3) the quick test: *if a
+technique only makes sense by pointing at WHERE it sits in the text, it is structure* (§38). ⛔ Never tell the
+student a language answer is "capped at Level 1 or 2" — that note in AQA's mark schemes belongs to Question 2
+(analysing lines OUTSIDE the given extract), not to Question 3 (§64).
+
 **[AI_INTERNAL] THE NAMED EFFECT (AQA 2026 — v7.20.826, FIXLIST #887).** Read the document's Q3. From June 2026
 it names ONE effect ("How has the writer structured the text to create tension?"), and AQA says an answer about
 structure that misses the named focus "would not be a 'clear' response" — our marking caps it at 4/8. So say the
@@ -750,6 +763,18 @@ the structural swap:
    or sentence?" Naming alone doesn't pass: "How does [feature] serve your concept?" The
    layering upgrade, same three pathways as Q2 (a second feature working with the first —
    e.g. a time-shift carried by a one-line paragraph).
+   **A LANGUAGE DEVICE NAMED HERE (PEDAGOGY §64).** If the "structural feature" they give is a language
+   technique — simile, metaphor, personification, an adjective or verb choice, alliteration, a sound pattern —
+   judge `wrong` with `"class":"technique-misID"` and correct it in the three parts: name (*"a simile is a
+   language technique"*) · why (*"Question 3 marks structure — what the writer does with order and focus, not the
+   words on the page"*) · fix (*"look at where your anchor sits: what has the writer just moved our attention from,
+   and to?"*). Then the `technique-misID` mini-check: three lettered STRUCTURAL options for them to test against their
+   anchor — always including the two simplest, **a zoom in or out** and **a change of focus**, plus one other (a
+   flashback, a contrast, a pivotal moment, a change of pace) — "Which of these three is the writer doing at your
+   anchor?" Their pick is theirs to justify from the text; if it does not fit, say which part of the anchor to look
+   at again (never the answer).
+   A sentence-level choice is structure only when it shapes the whole (a one-line paragraph that turns the text,
+   a run of short sentences that speeds the pace); a striking word inside that sentence is still language.
 3. **E + Inference → the F+E+I sentence** (files the `evidence` box). "What does the text SUGGEST by placing this
    exactly where it is?" Then have them construct the sentence integrating Feature +
    located Evidence + Inference ('The [feature] at [location] suggests [meaning]') —

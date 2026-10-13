@@ -3471,3 +3471,44 @@ PROTOCOLS-AUDIT-2026-10-12.md`). Authority order used: AQA's own words → Neil'
    detail" on the marking card; AQA's own Level 4 example draws two inferences from one group of quotations.
 8. **P1 5–10-word anchors → NOT A CONFLICT.** The anchor is the plan's locator; the answer then zooms to ONE word or a pair
    (planning's own close-analysis step) — exactly what AQA's June 2023 report praises ("a single word… more focused").
+
+## §64. ⭐⭐ AQA PAPER 1 QUESTION 3 MARKS STRUCTURE, NOT LANGUAGE — students learn structural techniques by name, the simplest first (Neil, ruled 2026-10-13 via the Library lane; FIXLIST lib-p1q3-structure)
+
+**His words** (to Library 47, 13 Oct): *"what about the WML… I'm wondering if there needs to be something in the
+protocols that really emphasize to the students that they have to learn structural techniques… even if they learn
+simple ones like zooming, change of focus etc."*
+
+**What AQA actually says — read from the PDFs, 13 Oct (every P1 mark scheme Jun 2017 → Nov 2024 + the 2026 sample):**
+- Q3: *"This question assesses structure: i.e. structural features such as a pivotal point, juxtaposition, flash back,
+  shifts in focus, mood or tone, contrast, narrative pace and/or other structural features"* (2026 SMS p.11), and every
+  level descriptor is about structural features.
+- Examiners, Paper 1: June 2022 report p.4 *"Writing about language features for Question 3, rather than structural
+  features. Failing to use structural terminology…"* · June 2025 report p.8 *"There was quite a lot of unnecessary
+  language analysis seen in answers instead of structural features."* · post-16 snapshot June 2024 p.7 *"Question 3 was
+  where many students appeared to struggle to see structural features"* · Nov 2024 p.7 *"This question had the highest
+  number of non-attempted answers."*
+- ⛔ **NOT a Q3 rule, ever:** *"If a student writes only about language outside of the given lines, the response should be
+  placed in either Level 1 or Level 2"* is a **Question 2** note (and in Jun 2024 / Jun 2025 also Question 4) about lines
+  OUTSIDE the given extract — in all 14 of the 16 mark schemes that carry it (Jun and Nov 2017 have no such note). It
+  reached a live Library page as a Q3 rule on 13 Oct and was
+  corrected the same day; §38 already had it right. The post-16 *"feature spotting… Question 3"* lines are about
+  **Paper 2's** language question, not Paper 1.
+
+**THE RULE.**
+1. **Planning (Q3 lead-in):** Sophia says it every time, in three short sentences: Question 3 marks structure, not
+   language (a simile or a well-chosen word earns nothing here — AQA's mark scheme says it "assesses structure"); learn a
+   few structural techniques by name, starting with **zooming in or out** and a **change of focus**; and the test — *if a
+   technique only makes sense by pointing at WHERE it sits, it is structure* (§38).
+2. **Planning (structural-feature beat):** a language device offered as the structural feature is `wrong` /
+   `technique-misID` — name · why · fix, then a three-option check that always includes the zoom and the change of focus.
+3. **Marking (Q3 card):** each criterion is credited only for what it does with structure; language analysis earns
+   nothing on Q3 (not a penalty — simply not what the question marks); the card names the language device, says Q3 marks
+   structure, and gives ONE structural feature at the student's own anchor with a worked fix. No "Level 1 or 2" cap is
+   ever quoted for Q3 — the marks fall because the criteria are not met.
+
+**Why it is right for students:** naming a technique they cannot see is the commonest Q3 failure the examiners report,
+and the two simplest moves (a camera-style zoom, a shift of attention) are visible in almost any extract — a student
+who owns those two can always start a Q3 paragraph. Built v7.20.858 in `protocols/aqa/language1/planning/protocol-b-planning.md`
+(S4 lead-in + Beat 2) and `modules/protocol-a-assessment.md` (Q3 card). Notes is building a structural-techniques
+Toolkit card; link it from the Q3 card once its id exists. **Other boards' structure questions:** not asked — apply only
+on Neil's word.

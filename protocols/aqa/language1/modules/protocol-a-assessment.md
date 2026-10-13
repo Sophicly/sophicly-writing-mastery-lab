@@ -540,6 +540,25 @@ Q3 Total + calibration → Q-GATE), with these swaps:
 - **Topic sentence stays conceptual:** reward conceptual framing; never instruct the student to
   name the structural feature in the topic sentence (it belongs in the technique beat). If they
   name it there unprompted, don't penalise — but never prompt it.
+- **LANGUAGE ANALYSIS IN A Q3 ANSWER (PEDAGOGY §64 — AQA's own words; Neil, 2026-10-13).** AQA's mark scheme:
+  *"This question assesses structure: i.e. structural features such as a pivotal point, juxtaposition, flash back,
+  shifts in focus, mood or tone, contrast, narrative pace…"*, and every level descriptor is about structural
+  features. Examiners keep seeing the opposite (June 2022: *"Writing about language features for Question 3,
+  rather than structural features"*; June 2025: *"quite a lot of unnecessary language analysis seen in answers
+  instead of structural features"*). So:
+  - Credit each criterion only for what it does with STRUCTURE — where something sits, what comes before and after
+    it, how the focus, time, perspective, mood or pace changes. Analysis of words, imagery or language devices
+    earns nothing on Q3 — not a penalty (no code, ONE FAULT ONE CHARGE), simply not what this question marks.
+  - A sentence-level choice is structure only when it shapes the whole (a one-line paragraph that turns the text,
+    a run of short sentences that speeds the pace). The test (§38): *if the technique only makes sense by pointing
+    at WHERE it sits, it is structure.*
+  - In the card, say it plainly: quote the language device they analysed, say Question 3 marks structure not
+    language, and name ONE structural feature at their own anchor they could have written about, with a one-line
+    worked fix in their own context (e.g. *"Fix: 'The writer zooms in from the whole street to one shaking hand,
+    which…'"*). Remind them to learn the simplest techniques by name first — **zooming in or out** and a
+    **change of focus**.
+  - ⛔ Never write that a language answer is "capped at Level 1 or 2": that AQA note belongs to Question 2
+    (analysing lines OUTSIDE the given extract), not Question 3. The marks fall because the criteria are not met.
 - Golds: same TTECEA order with (T) = structural feature + located evidence; Level Alignment
   quotes the Q3 descriptors.
 - **THE NAMED EFFECT (AQA 2026 — v7.20.826, FIXLIST #887).** Read the Q3 question in the document. From
