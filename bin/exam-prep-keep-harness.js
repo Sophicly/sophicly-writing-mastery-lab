@@ -46,9 +46,10 @@ ok(count('<div data-section-type="response"><p>' + 'x'.repeat(400) + '</p></div>
 // (2) the caller keeps on that count — and the blank-template inject still follows it for an empty document
 const t0 = SRC.indexOf('const tryExamPrepTemplate = () => {'), t1 = SRC.indexOf('\n        };', t0);
 const TPL = t0 > 0 ? SRC.slice(t0, t1) : '';
-ok(/\} else if \(studentChars > 50 \|\| _docStudentFieldCount\(currentHTML\) > 0\) \{[\s\S]{0,400}localStorage\.setItem\(docVerKey, String\(currentVer\)\);[\s\S]{0,300}return;/.test(TPL),
+// v7.20.854: the keep decision goes through the ONE rule (docReplaceVerdict), fed the same two signals.
+ok(/\} else if \(docReplaceVerdict\(\{ responseChars: studentChars, personBoxes: _docStudentFieldCount\(currentHTML\), reviewMode: !!state\.reviewMode \}\) === 'preserve'\) \{[\s\S]{0,500}localStorage\.setItem\(docVerKey, String\(currentVer\)\);[\s\S]{0,300}return;/.test(TPL),
     '⭐ the upgrade KEEPS a document with work in any box (stamped, never replaced)');
-ok(TPL.indexOf('_docStudentFieldCount(currentHTML) > 0') < TPL.indexOf('canvasEditor.commands.setContent(template);'), '…and that check runs BEFORE the template is injected');
+ok(TPL.indexOf('personBoxes: _docStudentFieldCount(currentHTML)') > -1 && TPL.indexOf('personBoxes: _docStudentFieldCount(currentHTML)') < TPL.indexOf('canvasEditor.commands.setContent(template);'), '…and that check runs BEFORE the template is injected');
 
 // (3) the flush on pagehide / hidden
 ok(/window\.addEventListener\('beforeunload', _flushPendingSaves\);\s*\n(?:\s*\/\/.*\n)*\s*window\.addEventListener\('pagehide', _flushPendingSaves\);\s*\n\s*document\.addEventListener\('visibilitychange', function \(\) \{ if \(document\.visibilityState === 'hidden'\) _flushPendingSaves\(\); \}\);/.test(SRC),

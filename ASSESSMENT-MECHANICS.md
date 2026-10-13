@@ -537,6 +537,29 @@ code-owned source.
   reason); a page holding the mark but not the reason reopens the climb with `resumeReason`, rebuilt from
   the page's rows by `WML_EXAMINER_LADDER.fromRows` (or from Level 1 when the rows do not reproduce the
   mark — never a guessed level). Gates: `cw-final-sim-harness` 9b · `assess-ladder-host-harness` K.
+- ⭐⭐ **A PAGE LOAD NEVER REPLACES A PERSON'S WORK — and if anything ever does, the server kept a copy (v7.20.854,
+  FIXLIST never-again-1298; Neil: "how can we ensure that the same problem never occurs again?").** The same defect
+  shipped three times — v7.19.713 (a stale check blanked a marked essay), v7.20.779 (a version stamp wiped notes on a
+  new device), v7.20.853 (a re-worded question wiped a plan) — each fixed at one site with a private test for "work"
+  that missed one kind of it. Three layers now, all mechanical:
+  1. **ONE rule** — `docReplaceVerdict` (the `@STALE-REGEN-PURE` block): preserve when there is a filled box, more than
+     20 response words or 50 response characters, written feedback, a tutor viewing, or a reading that failed.
+     `staleRegenVerdict`, the template-version upgrade and both earlier-draft loads decide through it
+     (`_liveDocReplaceVerdict` reads it from the editor).
+  2. **A gate on every replacement** — `bin/doc-replace-lint.js` (whole repo, self-tested on 9 shapes): each
+     `setContent` / `_setContentMigrating` / `runMSUSetContent` either provably rebuilds from the live document, or
+     carries `// @DOC-REPLACE(<class>): <why>`. `guarded` and `empty` claims are checked against the code around them.
+     A new replacement cannot ship without someone deciding, in the code, why it is safe.
+  3. **The server's net** — `SWML_Canvas_Safety::guard_write` runs in `save_canvas` and `tutor_save_comments` before
+     the write: a save holding fewer filled boxes (or ≥200 characters and 30% less text) copies the stored document to
+     `wml_docbak_{md5(key)}` first (newest two + the richest ever; log line `[WML doc-safety] COPIED ASIDE`). Never
+     blocks a save. Restore with `SWML_Canvas_Safety::restore()` (wp eval) — it copies the current document aside and
+     stamps a fresh savedAt so the student's browser loads the restored copy. Gate: `bin/canvas-safety-harness.php`.
+  **Content changes.** Topic templates re-import on the first request after a deploy (`template_file_is_newer`), so
+  there is no installer to attach an impact check to — and with the three layers a wording change can no longer cost
+  work, so no such check was built. **A document keeps the question wording it was written against**; only an
+  untouched one rebuilds with the new wording. That was already the intent of the 2026 wording change (v7.20.826:
+  "Practice papers move to the 2026 wording (new documents only)") — never rewrite a worked document's question.
 - SPA boot: `__swmlBooted` single-boot guard; inline IIFEs re-run every nav (run-once guards);
   stale-template wipes and uncancelled fetches are the known killers (memories:
   `reference_wml_canvas_blank_on_refresh_stale_template_wipe`,

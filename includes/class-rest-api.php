@@ -2500,6 +2500,10 @@ class SWML_REST_API {
             }
         }
 
+        // v7.20.854 (never-again-1298): when this save holds less of the person's work than the stored document, the
+        // stored version is copied aside first (SWML_Canvas_Safety). Never blocks the save; logs when it fires.
+        if (class_exists('SWML_Canvas_Safety')) SWML_Canvas_Safety::guard_write($user_id, $meta_key, $existing_doc_raw, $html, 'save');
+
         // wp_slash prevents WordPress's internal wp_unslash from stripping backslashes in JSON
         $result = update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($doc)));
 
@@ -3538,6 +3542,8 @@ class SWML_REST_API {
                 $allowed[$tag]['style'] = true;
             }
             $doc['html'] = wp_kses($html, $allowed);
+            // v7.20.854 (never-again-1298): a tutor's page writes the whole html too — same safety net as a student save.
+            if (class_exists('SWML_Canvas_Safety')) SWML_Canvas_Safety::guard_write($student_id, $meta_key, $raw, $doc['html'], 'tutor-comment');
         }
         $doc['savedAt'] = current_time('c');
 

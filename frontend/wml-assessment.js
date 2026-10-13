@@ -3621,13 +3621,36 @@
     // chat and SAVED over the server copy). THE RULE: a stale document is rebuilt only when nothing in it was written by a
     // person — no typed box of any kind, no response words, no feedback — and never while a tutor is viewing it (a review
     // must show what is stored, and must never change it).
+    // ⭐⭐ v7.20.854 (FIXLIST never-again-1298 — Neil, 13 Oct: "how can we ensure that the same problem never occurs
+    // again?"). THE ONE RULE for every page-load path that would put other content in place of what a document holds
+    // (a template, an artifact, an older draft). The same defect shipped three times, each fixed at one site with its own
+    // private test for "work": v7.19.713 (response words), v7.20.779 (filled boxes), v7.20.853 (typed boxes). One rule
+    // now, and bin/doc-replace-lint.js fails the build on any replacement that neither decides through it nor states why
+    // it is safe. Signals, any one of which means a person's work is in the document: a filled box (personBoxes from
+    // _docStudentFieldCount, or typedBox), more than 20 response words, more than 50 response characters, a written
+    // feedback box. A tutor's view never replaces anything, and a reading that failed counts as work.
+    function docReplaceVerdict(o) {
+        if (!o || o.reviewMode || o.readFailed) return 'preserve';
+        if ((o.personBoxes || 0) > 0 || o.typedBox || (o.responseWords || 0) > 20 || (o.responseChars || 0) > 50 || o.hasFeedback) return 'preserve';
+        return 'replace';
+    }
     function staleRegenVerdict(o) {
         if (!o || !o.isStale) return 'keep';
-        if (o.reviewMode) return 'preserve';
-        if ((o.responseWords || 0) > 20 || o.hasFeedback || o.typedBox) return 'preserve';
-        return 'regen';
+        return docReplaceVerdict(o) === 'replace' ? 'regen' : 'preserve';
     }
     // @STALE-REGEN-PURE-END
+    // v7.20.854: docReplaceVerdict read from the LIVE editor — for a page-load path about to put something else (an
+    // artifact, an earlier draft) in place of what the editor holds. A reading that throws counts as work.
+    function _liveDocReplaceVerdict() {
+        try {
+            if (!canvasEditor) return 'preserve';
+            return docReplaceVerdict({
+                personBoxes: _docStudentFieldCount(canvasEditor.getHTML()),
+                responseWords: getResponseWordCount(canvasEditor),
+                reviewMode: !!state.reviewMode,
+            });
+        } catch (_) { return 'preserve'; }
+    }
     function _deterministicDocGrade() {
         // v7.19.868: the single audited grade for THIS doc wins when present (set atomically
         // from the completion reply) — the DOM sum below is only the pre-completion
@@ -15948,6 +15971,7 @@
                 console.warn('[WML poetry-CN] shape-heal: current template did not build the one-doc layout — aborted, doc untouched');
                 return;
             }
+            // @DOC-REPLACE(carry-over): the notes document is rebuilt in the one-document layout carrying every filled box (older flat notes go to General Notes); never in tutor view
             _migrationActive = true;
             try { editor.commands.setContent(template, false); }
             finally { _migrationActive = false; }
@@ -16006,6 +16030,7 @@
                 console.warn('[WML nf-CN] shape-heal: current template did not build the one-doc layout — aborted, doc untouched');
                 return;
             }
+            // @DOC-REPLACE(carry-over): the nonfiction notes document is rebuilt carrying every filled box (older flat notes go to General Notes); never in tutor view
             _migrationActive = true;
             try { editor.commands.setContent(template, false); }
             finally { _migrationActive = false; }
@@ -43804,6 +43829,7 @@
                     _outlineRevisitState.clear();
                     // Regenerate template
                     if (canvasEditor) {
+                        // @DOC-REPLACE(user): the Reset button, behind a 'Reset' confirm — the person asked for a blank document
                         canvasEditor.commands.setContent(getDefaultEssayTemplate(), false);
                         snapshotTemplateBaseline(canvasEditor);
                         // Re-run topic template injection, then rebuild dropdowns
@@ -47072,11 +47098,15 @@
                     }
 
                     // Load predecessor draft
+                    // v7.20.854 (never-again-1298): only into a document that holds no work of the student's — this
+                    // branch runs whenever no chat is saved, so a draft typed before any chat was replaced by the
+                    // earlier draft. Same rule as every page-load replacement (docReplaceVerdict).
                     const draftPredKey = WML.CW_DRAFT_PREDECESSOR[cwStepDef?.step];
-                    if (draftPredKey && projectId) {
+                    if (draftPredKey && projectId && _liveDocReplaceVerdict() === 'replace') {
                         try {
                             const predArtifact = await WML.cwProject.loadArtifact(projectId, draftPredKey);
-                            if (predArtifact?.success && predArtifact.value && canvasEditor) {
+                            if (predArtifact?.success && predArtifact.value && canvasEditor && _liveDocReplaceVerdict() === 'replace') {
+                                // @DOC-REPLACE(guarded): the earlier draft goes in only while docReplaceVerdict finds no work in this one
                                 canvasEditor.commands.setContent(predArtifact.value);
                             }
                         } catch (e) { console.log('WML CW: No predecessor draft to load'); }
@@ -47091,6 +47121,7 @@
                         try {
                             const plotArtifact = await WML.cwProject.loadArtifact(projectId, 'plot_outline');
                             if (plotArtifact?.success && plotArtifact.value && canvasEditor) {
+                                // @DOC-REPLACE(empty): the plot outline goes in only while the editor holds 50 characters or fewer (the getText test above)
                                 canvasEditor.commands.setContent(plotArtifact.value);
                             }
                         } catch (e) { console.log('WML CW: No plot outline to load'); }
@@ -47419,6 +47450,7 @@
                         _pendingGeneralNotes = res.generalNotes;
                     }
                     if (res.success && res.doc && res.doc.html) {
+                        // @DOC-REPLACE(same-doc): the server copy of the attempt being switched to — that document's own stored copy
                         _migrationActive = true;
                         try { canvasEditor.commands.setContent(res.doc.html, false); }
                         finally { _migrationActive = false; }
@@ -47427,6 +47459,7 @@
                         // No server doc — inject fresh template
                         const template = getExamPrepDocTemplate ? getExamPrepDocTemplate(state.task) : null;
                         if (template) {
+                            // @DOC-REPLACE(server-net): a new attempt starts from the template; had the server failed to return an existing attempt document, the server backs it up before this one's first save lands
                             _migrationActive = true;
                             try { canvasEditor.commands.setContent(template, false); }
                             finally { _migrationActive = false; }
@@ -47441,6 +47474,7 @@
                     console.log('WML: Document reload failed, injecting fresh template', e.message);
                     const template = getExamPrepDocTemplate ? getExamPrepDocTemplate(state.task) : null;
                     if (template) {
+                        // @DOC-REPLACE(server-net): the attempt load threw (network); the template stands in, and any populated attempt document a later save would overwrite is backed up by the server first
                         _migrationActive = true;
                         try { canvasEditor.commands.setContent(template, false); }
                         finally { _migrationActive = false; }
@@ -47524,6 +47558,7 @@
                                     const _dvServerHtml = (_dvRes && _dvRes.success && _dvRes.doc && _dvRes.doc.html) ? _dvRes.doc.html : '';
                                     const _dvHtml = _dvServerHtml || (loadCanvasContent() || '');
                                     if (canvasEditor && typeof canvasEditor.commands?.setContent === 'function') {
+                                        // @DOC-REPLACE(same-doc): the corrected attempt's own server copy (this browser's copy of it only when the server has none)
                                         canvasEditor.commands.setContent(_dvHtml, false);
                                         if (_dvServerHtml && !state.reviewMode && typeof saveCanvasContent === 'function') {
                                             saveCanvasContent(); // refresh localStorage with the authoritative doc
@@ -50211,11 +50246,13 @@
                                             const projectId = state.cwProjectId;
 
                                             // For draft steps, load predecessor draft into document
+                                            // v7.20.854: only into a document with no work in it (twin of the isCwSi branch).
                                             const draftPredKey = WML.CW_DRAFT_PREDECESSOR[cwStepDef?.step];
-                                            if (draftPredKey && projectId) {
+                                            if (draftPredKey && projectId && _liveDocReplaceVerdict() === 'replace') {
                                                 try {
                                                     const predArtifact = await WML.cwProject.loadArtifact(projectId, draftPredKey);
-                                                    if (predArtifact?.success && predArtifact.value && canvasEditor) {
+                                                    if (predArtifact?.success && predArtifact.value && canvasEditor && _liveDocReplaceVerdict() === 'replace') {
+                                                        // @DOC-REPLACE(guarded): the earlier draft goes in only while docReplaceVerdict finds no work in this one
                                                         canvasEditor.commands.setContent(predArtifact.value);
                                                         console.log('WML CW: Pre-populated document from', draftPredKey);
                                                     }
@@ -50230,6 +50267,7 @@
                                                 try {
                                                     const plotArtifact = await WML.cwProject.loadArtifact(projectId, 'plot_outline');
                                                     if (plotArtifact?.success && plotArtifact.value && canvasEditor) {
+                                                        // @DOC-REPLACE(empty): the plot outline goes in only while the editor holds 50 characters or fewer (the getText test above)
                                                         canvasEditor.commands.setContent(plotArtifact.value);
                                                         console.log('WML CW: Pre-populated plot outline for update');
                                                     }
@@ -55315,6 +55353,7 @@
             try {
                 const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, artifactKey);
                 if (artifact?.success && artifact.value) {
+                    // @DOC-REPLACE(empty): pre-population runs only when the editor holds 50 characters or fewer (the return above)
                     canvasEditor.commands.setContent(artifact.value);
                     console.log('WML CW Workbook: Pre-populated from artifact', artifactKey);
                 }
@@ -56075,6 +56114,7 @@
             // the flag the guard undo()'d the rebuild, restoring the stale structure. This
             // was the real propagation bug (memory carry already made `desired` correct).
             const _setContentMigrating = (html) => {
+                // @DOC-REPLACE(wrapper): body of _setContentMigrating — every call of it is checked by this gate
                 _migrationActive = true;
                 try { canvasEditor.commands.setContent(html, false); }
                 finally { _migrationActive = false; }
@@ -56098,6 +56138,7 @@
             // changed after the doc was already generated. Persists so it sticks next mount.
             const _rebuildPlotDoc = (slug) => {
                 const rebuilt = getCwDocTemplate(cwStepDef).replace(/<p><em>Loading your plot structure[….]*<\/em><\/p>/, buildCWPlotOutlineSection(slug));
+                // @DOC-REPLACE(guarded): _rebuildPlotDoc runs only when outlineHasStudentInput finds no student work in the outline (the check below)
                 _setContentMigrating(rebuilt);
                 snapshotTemplateBaseline(canvasEditor);
                 if (typeof saveCanvasContent === 'function') saveCanvasContent();
@@ -56150,6 +56191,7 @@
                                     structureSlug = a.key;
                                     // Rebuild entire document with new archetype
                                     const preamble = getCwDocTemplate(cwStepDef).replace(/<p><em>Loading your plot structure[\u2026.]*<\/em><\/p>/, buildCWPlotOutlineSection(a.key));
+                                    // @DOC-REPLACE(user): the disabled Change Plot Structure button — a person's explicit choice, behind its own warning
                                     canvasEditor.commands.setContent(preamble, false);
                                     snapshotTemplateBaseline(canvasEditor);
                                     // Save choice to project
@@ -56293,6 +56335,7 @@
                         localStorage.removeItem(CANVAS_SAVE_KEY());
                         localStorage.setItem(docVerKey, String(currentVer));
                     } catch(e) {}
+                    // @DOC-REPLACE(carry-over): mergeCodexFields copies every unit-* field value the student filled into the new template
                     canvasEditor.commands.setContent(merged);
                     console.log('WML Codex: template upgraded to v' + currentVer + ' (field values preserved via merge)');
                 }
@@ -56308,9 +56351,10 @@
             });
             if (isCodex && !hasCodexMarkers) {
                 console.log('WML v7.19.206: mastery_codex task-switch detected, force-injecting Codex template (canvas has no unit-* field markers).');
-            } else if (studentChars > 50 || _docStudentFieldCount(currentHTML) > 0) {
+            } else if (docReplaceVerdict({ responseChars: studentChars, personBoxes: _docStudentFieldCount(currentHTML), reviewMode: !!state.reviewMode }) === 'preserve') {
                 // Real student work — stamp version, don't replace.
                 // v7.20.779: in ANY box, not only response sections (see _docStudentFieldCount — notes documents were wiped).
+                // v7.20.854: through the ONE rule (docReplaceVerdict) — which also never replaces a document a tutor is viewing.
                 try { localStorage.setItem(docVerKey, String(currentVer)); } catch(e) {}
                 console.log('WML: Keeping student content (' + studentChars + ' response chars, ' + _docStudentFieldCount(currentHTML) + ' filled boxes), version stamped');
                 return;
@@ -56322,6 +56366,7 @@
                     localStorage.removeItem(CANVAS_SAVE_KEY());
                     localStorage.setItem(docVerKey, String(currentVer));
                 } catch(e) {}
+                // @DOC-REPLACE(guarded): reached only when docReplaceVerdict found no work (or a Codex task holds a non-Codex document)
                 canvasEditor.commands.setContent(template);
                 console.log('WML: Template upgraded to v' + currentVer + ' for', state.task);
             }
@@ -56513,6 +56558,7 @@
                 }
                 const _wasMigrating = _migrationActive;
                 try { _migrationActive = true; } catch (_) {}
+                // @DOC-REPLACE(carry-over): every line of the old notes that the new template lacks is carried into 'Your Earlier Notes'
                 try { canvasEditor.commands.setContent(html, false); }
                 finally { try { _migrationActive = _wasMigrating; } catch (_) {} }
                 try { _sectionCount = countSections(canvasEditor.state.doc); } catch (_) {}
@@ -56640,6 +56686,7 @@
                 const html = merged.html, carried = merged.carried, cur = merged.before;
 
                 const _wasMigrating = _migrationActive;
+                // @DOC-REPLACE(carry-over): _cw7MergeScaffold keeps every Step 7 row the student filled (merged.carried), verified below
                 try { _migrationActive = true; canvasEditor.commands.setContent(html, false); }
                 finally { try { _migrationActive = _wasMigrating; } catch (_) {} }
 
@@ -56693,6 +56740,7 @@
                 }
                 const html = rebuilt.slice(0, cutNew) + current.slice(cutCur);
                 const _wasMigrating = _migrationActive;
+                // @DOC-REPLACE(carry-over): the rebuilt teaching above the values divider, the student's own rows below it, verified after
                 try { _migrationActive = true; canvasEditor.commands.setContent(html, false); }
                 finally { try { _migrationActive = _wasMigrating; } catch (_) {} }
                 // Verify: the new text arrived AND the student's rows are still there.
@@ -57320,6 +57368,7 @@
                     }
                 }
                 if (!healed) healed = getCwDocTemplate(cwStepDef);
+                // @DOC-REPLACE(wrong-doc): this Step 2 key holds a Step 3 document (cw-step-3 rows); the student's Step 2 ideas come back from the story_ideas artifact first
                 _migrationActive = true;
                 try { canvasEditor.commands.setContent(healed, false); }
                 finally { _migrationActive = false; }
@@ -57404,6 +57453,7 @@
             console.error('WML: Error in document init chain — recovering:', err);
             // If the document is still blank (no sections), inject a basic fallback template
             if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
+                // @DOC-REPLACE(empty): only when the document has no sections at all after an init error
                 try { canvasEditor.commands.setContent(getDefaultEssayTemplate(), false); } catch(e2) {}
                 console.log('WML: Fallback template injected after init error');
             }
@@ -70556,6 +70606,7 @@
             if (_lmSelectingIn(root)) return;   // a selection began during the fetch — next tick (rev not advanced)
             const scroller = _swmlScrollerOf(root);
             const top = scroller ? scroller.scrollTop : window.scrollY;
+            // @DOC-REPLACE(view-only): live modelling: a viewer follows the author's document, and a viewer's page never saves
             _migrationActive = true;
             try { ed.commands.setContent(res.doc.html, false); }
             finally { _migrationActive = false; }
@@ -70707,6 +70758,7 @@
                     // v7.20.455: under _migrationActive — a student doc with fewer protected
                     // nodes than this step's template is reverted by the section guard, and
                     // the reviewer is shown the TEMPLATE instead of the work they opened.
+                    // @DOC-REPLACE(view-only): tutor review shows the student's stored document; review mode never saves
                     _migrationActive = true;
                     try { canvasEditor.commands.setContent(res.doc.html, false); }
                     finally { _migrationActive = false; }
@@ -70825,6 +70877,7 @@
                             // and leaves the TEMPLATE on screen. Silent: the load logs success.
                             // Same cure as the v7.19.445 plot-structure rebuild; the guard
                             // re-snapshots _sectionCount itself while the flag is set.
+                            // @DOC-REPLACE(same-doc): this document's own server copy, chosen over this browser's (a seed, a CW or crib document, or a newer server copy)
                             _migrationActive = true;
                             try { canvasEditor.commands.setContent(res.doc.html, false); }
                             finally { _migrationActive = false; }
@@ -71022,6 +71075,7 @@
             const url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(state.text)}${state.topicNumber ? '&topicNumber=' + state.topicNumber : ''}&suffix=${encodeURIComponent(sfx)}&attempt=${att}${cwScopeQuery()}&force_seed=1`;
             const res = await fetch(url, { headers }).then(r => r.json());
             if (res && res.success && res.doc && res.doc.html) {
+                // @DOC-REPLACE(user): Pull from previous stage: the person confirmed 'Replace this … anything written in this stage will be overwritten'
                 _migrationActive = true;
                 try { canvasEditor.commands.setContent(res.doc.html, false); }
                 finally { _migrationActive = false; }
@@ -72146,6 +72200,7 @@
         try {
             const artifact = await WML.cwProject.loadArtifact(state.cwProjectId, artifactKey);
             if (artifact?.success && artifact.value) {
+                // @DOC-REPLACE(empty): the project artifact goes in only when the editor holds 50 characters or fewer (the return above)
                 canvasEditor.commands.setContent(artifact.value);
                 console.log('WML v7.17.29: Loaded CW project artifact', artifactKey, 'into editor');
             } else {
@@ -72638,6 +72693,7 @@
             const runMSUSetContent = (html, logMsg) => {
                 _migrationActive = true;
                 try {
+                    // @DOC-REPLACE(wrapper): body of runMSUSetContent — every call of it is checked by this gate
                     canvasEditor.commands.setContent(html, false);
                 } finally {
                     _migrationActive = false;
@@ -72648,6 +72704,7 @@
             };
             if (hasEssayArtifacts && !hasNotes) {
                 // Stale essay-template doc — wipe + inject clean MSU template.
+                // @DOC-REPLACE(wrong-doc): an essay document under the Mark Scheme Unit key (essay sections, no notes boxes) is not this lesson's document
                 runMSUSetContent(getMarkSchemeUnitTemplate(), 'WML: MSU stale essay doc detected — reset to 2-section notes template');
             } else if (hasEssayArtifacts && hasNotes) {
                 // Mixed doc — strip essay sections, keep msu-* response sections + signoff + MSU dividers.
@@ -72678,6 +72735,7 @@
                 runMSUSetContent(tmp.innerHTML, 'WML: MSU mixed doc — stripped essay sections, kept notes');
             } else if (!existing.includes('data-section-type')) {
                 // Fresh doc — inject 2-section template.
+                // @DOC-REPLACE(empty): a Mark Scheme Unit document with no sections yet (the !existing.includes test above)
                 runMSUSetContent(getMarkSchemeUnitTemplate(), 'WML: Mark Scheme Unit template injected (2 sections)');
             }
             return;
@@ -72773,6 +72831,7 @@
             if (canvasEditor) {
                 _migrationActive = true;
                 try {
+                    // @DOC-REPLACE(carry-over): a pre-v14 mark-scheme document: _applyMigratedMSFFields carries its filled fields into the current template
                     canvasEditor.commands.setContent(msTemplate, false);
                 } finally {
                     _migrationActive = false;
@@ -72793,11 +72852,13 @@
                 const syntheticData = buildSyntheticTopicData(state.board, state.subject);
                 if (syntheticData) {
                     setWordTargetsFromTopic(syntheticData);
+                    // @DOC-REPLACE(empty): free practice with no document yet (under 10 characters and no sections, tested above)
                     canvasEditor.commands.setContent(getDocumentTemplate('diagnostic', syntheticData), false);
                     snapshotTemplateBaseline(canvasEditor);
                     refreshWordCountUI();
                     console.log(`WML: Free practice — board-aware template (${state.board}/${state.subject})`);
                 } else {
+                    // @DOC-REPLACE(empty): free practice with no document yet (under 10 characters and no sections, tested above)
                     canvasEditor.commands.setContent(getDefaultEssayTemplate(), false);
                 }
             }
@@ -72846,6 +72907,7 @@
             console.log('WML: Generating mark scheme study template (v7.19.14)');
             const msTemplate = getMarkSchemeTemplate(topicData);
             if (canvasEditor) {
+                // @DOC-REPLACE(carry-over): a pre-v7.19.14 mark-scheme document: its v12 fields are migrated into the template just below
                 canvasEditor.commands.setContent(msTemplate, false);
                 if (_migratedFields.length) {
                     try { _applyMigratedMSFFields(canvasEditor, _migratedFields); console.log('WML: Migrated', _migratedFields.length, 'v7.19.12 MSF field(s) → v7.19.14'); }
@@ -73006,6 +73068,7 @@
                     try { localStorage.removeItem(CANVAS_SAVE_KEY()); } catch(e) {}
                     // Clear stale content from editor so the section-type guard below allows injection
                     // Temporarily disable section deletion guard (it would block and revert the clear)
+                    // @DOC-REPLACE(guarded): the stale wipe, reached only when staleRegenVerdict (through docReplaceVerdict) found no work and no tutor view
                     _migrationActive = true;   // v7.20.751: try/finally — a throw must not leave the structure lock bypassed
                     try { canvasEditor.commands.setContent('<p></p>', false); }
                     finally { _migrationActive = false; }
@@ -73037,6 +73100,7 @@
                 console.log(`WML: No topic data — board-aware fallback (${state.board}/${state.subject}, format: ${syntheticData.question_format})`);
                 const template = getDocumentTemplate(mode, syntheticData);
                 if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
+                    // @DOC-REPLACE(empty): the topic template goes only into an editor with no sections (the test above)
                     canvasEditor.commands.setContent(template, false);
                     snapshotTemplateBaseline(canvasEditor);
                     refreshWordCountUI();
@@ -73046,6 +73110,7 @@
             } else {
                 console.log('WML: No topic data, no board defaults — generic template');
                 if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
+                    // @DOC-REPLACE(empty): the generic template goes only into an editor with no sections (the test above)
                     canvasEditor.commands.setContent(getDefaultEssayTemplate(), false);
                     // v7.15.43: offer picker even with the generic template — still a diagnostic
                     maybeShowDiagnosticTimerPicker();
@@ -73059,6 +73124,7 @@
 
         // Only inject if we still have the default template (guard against race)
         if (canvasEditor && !canvasEditor.getHTML().includes('data-section-type')) {
+            // @DOC-REPLACE(empty): the topic template goes only into an editor with no sections (the test above)
             canvasEditor.commands.setContent(template, false);
             snapshotTemplateBaseline(canvasEditor);
             refreshWordCountUI();
@@ -73161,6 +73227,7 @@
             // Fallback: prepend to document
             newHtml = block + html;
         }
+        // @DOC-REPLACE(derived): the student's own document (html) with the General Notes section spliced in
         canvasEditor.commands.setContent(newHtml, false);
         console.log('WML Migration: injected General Notes section into conceptual notes doc');
     }
@@ -73747,6 +73814,7 @@
             changed = true;
         }
         if (changed) {
+            // @DOC-REPLACE(derived): the student's own document (html) with the FEEDBACK / RESULTS dividers inserted
             canvasEditor.commands.setContent(html, false);
             console.log('WML Migration: Dividers injected into legacy document');
         }
@@ -75555,6 +75623,7 @@
             changed = true;
         });
         if (changed) {
+            // @DOC-REPLACE(derived): the live editor's own DOM, with each plan section's boxes merged into one box
             canvasEditor.commands.setContent(editorEl.innerHTML, false);
             console.log('WML v7.19.155: consolidated exam_crib plan sections to single input field each');
         }
@@ -75928,6 +75997,7 @@
         });
 
         if (!changed) return;
+        // @DOC-REPLACE(derived): tmp is the live document (getHTML) with the missing outline sections inserted
         _migrationActive = true;
         try { canvasEditor.commands.setContent(tmp.innerHTML, false); }
         finally { _migrationActive = false; }
@@ -77955,6 +78025,7 @@ ${html}
                 .then(r => r.json())
                 .then(data => {
                     if (data?.html && canvasEditor && canvasEditor.getText().trim().length < 50) {
+                        // @DOC-REPLACE(empty): the server copy loads only into an editor holding under 50 characters (tested above)
                         canvasEditor.commands.setContent(data.html, false);
                         console.log('WML Exam Prep: Loaded saved document from server');
                     }

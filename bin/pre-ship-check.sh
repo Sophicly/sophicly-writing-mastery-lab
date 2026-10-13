@@ -869,6 +869,9 @@ node bin/fossil-lint.js || fail=1
 # document to a whole class. Whole-file and instant, like fossil-lint.
 node bin/placeholder-predicate-gate.js || fail=1
 node bin/stale-regen-guard-harness.js || fail=1   # v7.20.853 (blank-plan-1298): a stale document is never wiped while a person's work is in it
+node bin/doc-replace-lint.js || fail=1             # v7.20.854 (never-again-1298): every replacement of a document decides through docReplaceVerdict or says why it is safe — whole repo
+node bin/doc-replace-lint.js --self-test >/dev/null || { echo "❌ doc-replace-lint self-test: the gate no longer fails on a defect it exists to stop"; fail=1; }
+php bin/canvas-safety-harness.php >/dev/null 2>&1 || { php bin/canvas-safety-harness.php 2>/dev/null | grep -E '✗|FAILED'; fail=1; }   # v7.20.854: a save can never destroy a document beyond recovery (server copy-aside + restore round-trip)
 
 # Essay POLISHING is an ENVIRONMENT (v7.20.609, PROTOCOL-STANDARD Part D). The router's
 # essay_polishing_env map, the chip's ladder, the retired manifest cell and the per-paper rubric are

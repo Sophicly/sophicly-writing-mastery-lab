@@ -167,6 +167,34 @@ console.log('\n8 · "N marks still available" on each marked feedback box (v7.20
     ok(/leftChip\.className = 'swml-ana-chip swml-marks-left ' \+ _left\.cls;/.test(FB2) && /leftChip\.setAttribute\('contenteditable', 'false'\);/.test(FB2),
         'the chip is the Analytics chip (one family), non-editable, in the box\'s firewalled row');
     ok(/\.swml-ana-chip\.swml-marks-left \{ font-size: 11px; white-space: nowrap; \}/.test(CSS), 'it sits on the row\'s 11px line, never wrapping mid-phrase');
+
+    // v7.20.854 (chip-colours-852b — Neil, 12 Oct: "six marks still available… looks a little bit dim… like it hasn't
+    // loaded properly"; "the white against the green… in other places we've got black against green").
+    const ruleFor = (sel) => {   // the declaration block of the rule whose selector list names `sel` exactly
+        const re = /([^{}]+)\{([^{}]*)\}/g; let m;
+        while ((m = re.exec(CSS))) {
+            const sels = m[1].replace(/\/\*[\s\S]*?\*\//g, '').split(',').map((x) => x.trim());
+            if (sels.indexOf(sel) > -1) return m[2];
+        }
+        return '';
+    };
+    const decl = (block, prop) => { const m = new RegExp('(?:^|;|\\s)' + prop + '\\s*:\\s*([^;!]+)').exec(block); return m ? m[1].trim().toLowerCase() : ''; };
+    let solidSame = true, anyWash = false; const diffs = [];
+    for (let t = 1; t <= 9; t++) {
+        const chip = ruleFor('.swml-ana-chip.swml-marks-left.swml-tier-' + t), trig = ruleFor('.swml-popover-trigger.swml-tier-' + t);
+        const cb = decl(chip, 'background'), tb = decl(trig, 'background-color');
+        if (!cb || cb !== tb) { solidSame = false; diffs.push(t + ':' + cb + '≠' + tb); }
+        if (/rgba\(/.test(cb)) anyWash = true;
+    }
+    ok(solidSame && !anyWash, '⭐ the marks chip wears the SAME solid colour as the score beside it, every tier (no translucent wash)', diffs);
+    const darkOnGreen = [
+        decl(ruleFor('.swml-popover-trigger.swml-tier-6'), 'color'),
+        decl(ruleFor('.swml-ana-chip.swml-marks-left.swml-tier-6'), 'color'),
+        decl(ruleFor('.swml-grade-text-6.swml-grade-value'), 'color'),
+        decl(ruleFor('[data-swml-theme="light"] .swml-pill.is-active.swml-tier-6'), 'color'),
+    ];
+    ok(darkOnGreen.every((c) => c === '#1a1a2e'), '⭐ green carries dark text on every mark surface — the score, its marks chip, the grade, the light-theme pill (white was 1.8:1)', darkOnGreen);
+    ok(/stroke='%231a1a2e'/.test(ruleFor('.swml-popover-trigger.swml-tier-6')), 'and the green score\'s chevron is dark too, as on yellow');
 }
 
 console.log(fail

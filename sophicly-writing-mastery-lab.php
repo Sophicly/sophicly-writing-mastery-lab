@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.853
+ * Version: 7.20.854
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.853');
+define('SWML_VERSION', '7.20.854');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -94,6 +94,7 @@ class Sophicly_Writing_Mastery_Lab {
         require_once SWML_PATH . 'includes/class-quiz-engine.php';
         require_once SWML_PATH . 'includes/class-quiz-bank.php';
         require_once SWML_PATH . 'includes/class-function-handlers.php';
+        require_once SWML_PATH . 'includes/class-canvas-safety.php';   // v7.20.854: a save can never destroy a document beyond recovery
         require_once SWML_PATH . 'includes/class-rest-api.php';
         require_once SWML_PATH . 'includes/class-feedback-unlock.php';
         require_once SWML_PATH . 'includes/class-video-admin.php';

@@ -65,5 +65,20 @@ const typed = /<div data-(?:input-field|outline-row)="true"[^>]*>[^<\s][^<]*<\/d
 ok(typed && verdict({ isStale: true, responseWords: 0, hasFeedback: false, typedBox: typed, reviewMode: false }) === 'preserve',
     '⭐ her shape is preserved — the plan she wrote is never replaced by a blank template');
 
+console.log('\nD · v7.20.854 — ONE rule for every page-load replacement (never-again-1298)');
+// eslint-disable-next-line no-new-func
+const replace = new Function(SRC.slice(b, e) + '\nreturn docReplaceVerdict;')();
+ok(replace({}) === 'replace', 'nothing in the document → it may be replaced');
+ok(replace({ personBoxes: 1 }) === 'preserve' && replace({ typedBox: true }) === 'preserve', 'one filled box → preserve');
+ok(replace({ responseWords: 21 }) === 'preserve' && replace({ responseWords: 20 }) === 'replace', 'response words: more than 20 → preserve (the stale threshold, unchanged)');
+ok(replace({ responseChars: 51 }) === 'preserve' && replace({ responseChars: 50 }) === 'replace', 'response characters: more than 50 → preserve (the template-upgrade threshold, unchanged)');
+ok(replace({ hasFeedback: true }) === 'preserve', 'a written feedback box → preserve');
+ok(replace({ reviewMode: true }) === 'preserve' && replace({ readFailed: true }) === 'preserve' && replace(null) === 'preserve', 'tutor view, a failed reading, or no reading at all → preserve, never a replacement');
+ok(/function staleRegenVerdict\(o\) \{\s*if \(!o \|\| !o\.isStale\) return 'keep';\s*return docReplaceVerdict\(o\) === 'replace' \? 'regen' : 'preserve';\s*\}/.test(SRC), 'the stale check decides through the same rule (no private copy)');
+ok(/docReplaceVerdict\(\{ responseChars: studentChars, personBoxes: _docStudentFieldCount\(currentHTML\), reviewMode: !!state\.reviewMode \}\) === 'preserve'/.test(SRC), 'the template-version upgrade decides through it too (and now never replaces a document a tutor is viewing)');
+const predSites = SRC.split('WML.CW_DRAFT_PREDECESSOR[cwStepDef?.step];').length - 1;
+const predGuarded = (SRC.match(/if \(draftPredKey && projectId && _liveDocReplaceVerdict\(\) === 'replace'\) \{/g) || []).length;
+ok(predSites === 2 && predGuarded === 2, '⭐ both earlier-draft loads go in only while the draft holds no work (they ran whenever no chat was saved)', [predSites, predGuarded]);
+
 console.log(fail ? '\n❌ stale-regen-guard-harness FAILED (' + fail + ' of ' + (pass + fail) + ')' : '\n✅ stale-regen-guard-harness passed (' + pass + ' assertions, 0 failed)');
 process.exit(fail ? 1 : 0);

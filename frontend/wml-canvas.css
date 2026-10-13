@@ -7850,6 +7850,19 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-ana-chip.swml-ana-full { color: #fff; }
 /* v7.20.852: a feedback row's "N marks still available" chip sits on the row's 11px line, on one line. */
 .swml-ana-chip.swml-marks-left { font-size: 11px; white-space: nowrap; }
+/* v7.20.854 (chip-colours-852b — Neil, 12 Oct: "six marks still available. Just looks a little bit dim… like it hasn't
+   loaded properly"). The chip sits beside the score on the feedback card, so it wears the score's SOLID colours
+   (.swml-popover-trigger.swml-tier-N), not the Analytics strip's translucent wash — on a coloured card the wash reads as
+   half-loaded. Specificity 0,3,0 also beats the light theme's dark-text rule for .swml-ana-chip. */
+.swml-ana-chip.swml-marks-left.swml-tier-9 { background: #2c003e; color: #fff; }
+.swml-ana-chip.swml-marks-left.swml-tier-8 { background: #5333ED; color: #fff; }
+.swml-ana-chip.swml-marks-left.swml-tier-7 { background: #4D76FD; color: #fff; }
+.swml-ana-chip.swml-marks-left.swml-tier-6 { background: #1CD991; color: #1a1a2e; }
+.swml-ana-chip.swml-marks-left.swml-tier-5 { background: #FFC107; color: #1a1a2e; }
+.swml-ana-chip.swml-marks-left.swml-tier-4 { background: #FF9800; color: #fff; }
+.swml-ana-chip.swml-marks-left.swml-tier-3,
+.swml-ana-chip.swml-marks-left.swml-tier-2,
+.swml-ana-chip.swml-marks-left.swml-tier-1 { background: #E53935; color: #fff; }
 /* v7.20.682 (#699/#696): Calibration's collapsed "Biggest gaps" chips wear their paragraph's colour —
    the same five hues as the paragraph rows (an EDGE + wash, not a score fill). */
 .swml-ana-chip.swml-para-chip { background: var(--swml-para-wash); box-shadow: inset 3px 0 0 var(--swml-para); padding-left: 9px; font-weight: 600; margin-right: 4px; }
@@ -10186,7 +10199,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 [data-swml-theme="light"] .swml-pill.is-active.swml-tier-9 { background: #2c003e; color: #fff; }
 [data-swml-theme="light"] .swml-pill.is-active.swml-tier-8 { background: #5333ED; color: #fff; }
 [data-swml-theme="light"] .swml-pill.is-active.swml-tier-7 { background: #4D76FD; color: #fff; }
-[data-swml-theme="light"] .swml-pill.is-active.swml-tier-6 { background: #1CD991; color: #fff; }
+[data-swml-theme="light"] .swml-pill.is-active.swml-tier-6 { background: #1CD991; color: #1a1a2e; }   /* v7.20.854: dark on green, as in the dark theme */
 [data-swml-theme="light"] .swml-pill.is-active.swml-tier-5 { background: #FFC107; color: #1a1a2e; }
 [data-swml-theme="light"] .swml-pill.is-active.swml-tier-4 { background: #FF9800; color: #fff; }
 [data-swml-theme="light"] .swml-pill.is-active.swml-tier-3,
@@ -10207,7 +10220,13 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-popover-trigger.swml-tier-9 { background-color: #2c003e !important; color: #fff !important; }
 .swml-popover-trigger.swml-tier-8 { background-color: #5333ED !important; color: #fff !important; }
 .swml-popover-trigger.swml-tier-7 { background-color: #4D76FD !important; color: #fff !important; }
-.swml-popover-trigger.swml-tier-6 { background-color: #1CD991 !important; color: #fff !important; }
+.swml-popover-trigger.swml-tier-6 {
+    /* v7.20.854 (chip-colours-852b — Neil, 12 Oct: "the white against the green… in other places, we've actually got
+       black against green"). White on this green is 1.8:1; dark is 9.2:1 — dark text and a dark chevron, as on yellow. */
+    background-color: #1CD991 !important;
+    color: #1a1a2e !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%231a1a2e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
 .swml-popover-trigger.swml-tier-5 {
     background-color: #FFC107 !important;
     color: #1a1a2e !important;
@@ -10226,7 +10245,7 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-grade-text-9.swml-grade-value { background: rgba(44, 0, 62, 0.85); color: #fff; }
 .swml-grade-text-8.swml-grade-value { background: #5333ED; color: #fff; }
 .swml-grade-text-7.swml-grade-value { background: #4D76FD; color: #fff; }
-.swml-grade-text-6.swml-grade-value { background: #1CD991; color: #fff; }
+.swml-grade-text-6.swml-grade-value { background: #1CD991; color: #1a1a2e; }   /* v7.20.854: dark on green (1.8:1 → 9.2:1) */
 .swml-grade-text-5.swml-grade-value { background: #FFC107; color: #1a1a2e; }
 .swml-grade-text-4.swml-grade-value { background: #FF9800; color: #fff; }
 .swml-grade-text-3.swml-grade-value,
