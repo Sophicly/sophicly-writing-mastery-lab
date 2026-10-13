@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.854';
+var WML_BUILD = '7.20.855';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -5997,7 +5997,10 @@ window.WML = (function() {
         S1: { dest: 'toolkit', arg: 'fix-sentence-starters', label: 'Sentence Starters & Variety' },
         H1: { dest: 'toolkit', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
         P1: { dest: 'toolkit', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
-        G1: { dest: 'toolkit', arg: 'fix-punctuation', label: 'Punctuation & Embedding' },
+        // v7.20.854 (notes 2.6.284, Notes 50 handoff 13 Oct): G1 = SPaG errors undermining clarity (grammar/spelling that
+        // changes the meaning). `fix-grammar-slips` teaches exactly those slips — agreement, tense, its/it's, look-alikes,
+        // a missing "be"; punctuation never did. Live on notes prod 2.6.284 (md5 6/6), so the chip resolves there.
+        G1: { dest: 'toolkit', arg: 'fix-grammar-slips', label: 'Grammar Slips That Cost Marks' },
         // v7.20.661 (#654a): C1 = clarity lapse ("prose is genuinely unclear"). `cohesion` is a
         // connectives list and never answered it; Notes' `final-read` (reading the answer back to
         // catch the unclear sentence) does — live on notes prod 2.6.234, verified 2026-09-29.
@@ -6130,6 +6133,7 @@ window.WML = (function() {
         'fix-authors-purpose', 'fix-context', 'fix-structure', 'fix-technical-terms',
         'fix-topic-sentence', 'fix-close-analysis', 'fix-creative-writing', 'word-budget',
         'final-read',   // v7.20.661 (#654a) — notes 2.6.234, Fix My Writing
+        'fix-grammar-slips',   // v7.20.854 — notes 2.6.284, Fix My Writing (G1)
 
         // The Analysis Engine + Essay Structure — the shapes we teach
         'ttecea', 'conceptual', 'effects', 'cohesion', 'essay', 'intro', 'body', 'conclusion',
