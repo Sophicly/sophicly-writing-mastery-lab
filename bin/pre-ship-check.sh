@@ -225,6 +225,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/msa-attempt-harness.js || fail=1
 fi
 
+# v7.20.871 (FIXLIST purple-overlays-to-blur — Neil, 13 Oct): WML's modal backdrops carry the house blurred overlay (the
+# Switch Student veil, copied exactly) and no full-screen overlay is purple again. Falsified on the pre-fix files.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-styles\.css|wml-canvas\.css|overlay-veil-harness\.js'; then
+  node bin/overlay-veil-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document

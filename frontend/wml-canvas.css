@@ -3889,8 +3889,11 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-cw-project-overlay {
     position: absolute; inset: 0;
     z-index: 200;
-    background: rgba(20,20,40,0.78);
-    backdrop-filter: blur(6px);
+    /* v7.20.871 (Neil, 13 Oct: no purple overlays): the Switch Student veil, copied exactly. Was
+       rgba(20,20,40,0.78) + blur(6px), unprefixed (Safari showed no blur at all). */
+    background: rgba(10, 6, 18, 0.58);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    backdrop-filter: blur(14px) saturate(120%);
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; overscroll-behavior: contain;
     /* v7.17.38: suppress grab-hand / drag-bleed from ProseMirror behind. */
@@ -3898,6 +3901,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     user-select: none;
     -webkit-user-select: none;
 }
+[data-swml-theme="light"] .swml-cw-project-overlay { background: rgba(24, 16, 38, 0.52); }   /* v7.20.871: Switch Student light veil */
 .swml-cw-project-overlay__frame { cursor: default; }
 .swml-cw-project-overlay__frame {
     background: linear-gradient(180deg, #2c003e 0%, #5333ed 100%);
@@ -13219,17 +13223,19 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
        sidebar (10001) and chrome at 100000/100010 rendered un-dimmed over the blurred backdrop
        (ld-customization handoff, 2026-07-27). The Mark Complete gate wears this class too. */
     z-index: 999999;
-    /* Matches the project picker's scrim rather than a pure-black one (§1 bans
-       `#000` as a surface). */
-    background: rgba(20, 20, 40, 0.72);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    /* v7.20.871 (Neil, 13 Oct: no purple overlays — "the blurred overlay instead"): the house blurred overlay =
+       the Switch Student veil (sophicly-student-switcher.css), copied exactly. Was rgba(20, 20, 40, 0.72) +
+       blur(4px). The Mark Complete gate and the comment-mode pop-up wear this class too. */
+    background: rgba(10, 6, 18, 0.58);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 24px;
     overscroll-behavior: contain;
 }
+[data-swml-theme="light"] .swml-review-modal-overlay { background: rgba(24, 16, 38, 0.52); }   /* v7.20.871: Switch Student light veil */
 .swml-review-modal {
     max-width: 440px;
     width: 100%;
