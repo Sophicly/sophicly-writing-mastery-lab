@@ -270,5 +270,19 @@ ok(/chip\.textContent = _progressChipLabel\(name\);/.test(js) && /_jumpToProgres
         'checkSectionComplete reads notes sections (field filled = done)');
 }
 
+console.log('\n9. the footer proxy never mirrors LearnDash\'s Mark INCOMPLETE button (v7.20.864)');
+{
+    // LD's Mark Incomplete button carries .learndash_mark_complete_button too; on a completed lesson it is the ONLY match.
+    // Mirrored under our "Mark Complete" label, pressing it would undo the student's completion (Learndash Custom 40).
+    const js = read('frontend/wml-assessment.js');
+    const sel = (js.match(/const LD_COMPLETE_SEL = '([^']+)';/) || [])[1] || '';
+    const parts = sel.split(',').map(x => x.trim()).filter(Boolean);
+    ok(parts.length > 0 && parts.every(x => /learndash_mark_complete_button:not\(\.learndash_mark_incomplete_button\)$/.test(x)),
+        '⭐ every part of LD_COMPLETE_SEL excludes .learndash_mark_incomplete_button', parts);
+    const ep = (js.match(/hasBtn = !!document\.querySelector\('([^']+)'\)/) || [])[1] || '';
+    ok(!!ep && ep.split(',').map(x => x.trim()).filter(x => /learndash_mark_complete_button/.test(x)).every(x => /:not\(\.learndash_mark_incomplete_button\)$/.test(x)),
+        'the walks\' closing line ("press Mark Complete") does not count the Incomplete button either', ep);
+}
+
 console.log('\n' + (failN ? '✗ ' + failN + ' failed, ' + pass + ' passed' : '✓ all ' + pass + ' checks passed'));
 process.exit(failN ? 1 : 0);

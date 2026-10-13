@@ -4309,7 +4309,8 @@
     function cwEndpointLine() {
         let hasBtn = false;
         try {
-            hasBtn = !!document.querySelector('.spl-footer .learndash_mark_complete_button, .learndash_mark_complete_button, .swml-ld-complete');
+            // v7.20.864: never LD's Mark INCOMPLETE button — it carries .learndash_mark_complete_button too (LD 40, 13 Oct).
+            hasBtn = !!document.querySelector('.spl-footer .learndash_mark_complete_button:not(.learndash_mark_incomplete_button), .learndash_mark_complete_button:not(.learndash_mark_incomplete_button), .swml-ld-complete');
         } catch (_) { hasBtn = false; }
         // v7.20.754: a weekend-story page is a LESSON — the unit numbers its own lessons and never says "step"
         // (PEDAGOGY §55). Staging lesson 9 ended "That is the whole weekend story… That’s this step done."
@@ -43911,7 +43912,11 @@
             // because they carry a `.ld-content-actions` fallback selector that matches LD's own
             // nav, so the bar still LOOKED right with a hole where Mark Complete should be.
             // Now: try, then keep watching briefly, then say plainly what happened either way.
-            const LD_COMPLETE_SEL = '.spl-footer .learndash_mark_complete_button, .learndash_mark_complete_button';
+            // ⭐ v7.20.864 (Learndash Custom 40, 13 Oct: Neil said yes to students undoing Mark Complete): LD's Mark
+            // INCOMPLETE button carries BOTH .learndash_mark_incomplete_button AND .learndash_mark_complete_button, and on a
+            // completed lesson it is the only one. Without :not() the proxy mirrored it under a "Mark Complete" label, so
+            // pressing it would UNDO the student's completion. A completed lesson keeps no proxy, as before.
+            const LD_COMPLETE_SEL = '.spl-footer .learndash_mark_complete_button:not(.learndash_mark_incomplete_button), .learndash_mark_complete_button:not(.learndash_mark_incomplete_button)';
             function buildLdCompleteProxy(ldMarkBtn) {
                 const markBtn = el('button', {
                     className: 'swml-status-btn swml-ld-complete',
