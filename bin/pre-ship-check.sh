@@ -189,6 +189,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/feedback-pad-harness.js || fail=1
 fi
 
+# v7.20.861 (rail-feedback-library-popout): the Library rail button — never on a test task, every call through apiGet
+# (X-WP-Nonce), resources ORDERED by board never filtered, a locked part never shows content, both swmlConfig sites fed
+# by the one library_config(). Falsified at .861: five injected defects, each fails it.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|sophicly-writing-mastery-lab\.php|class-rest-api\.php|library-panel-harness\.js'; then
+  node bin/library-panel-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document

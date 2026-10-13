@@ -2850,6 +2850,7 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-ss-trigger         { --swml-rail-hue: #FF9057; }  /* Story Spine — orange */
 .swml-prior-attempts-btn { --swml-rail-hue: #7CC4F8; }  /* Previous Assessments — its own sky */
 .swml-cmp-poem-btn       { --swml-rail-hue: #FF6B81; }  /* Comparison Poem — rose */
+.swml-library-btn        { --swml-rail-hue: #A99BFF; }  /* Library — brand violet (v7.20.861) */
 
 /* LIGHT theme — the dark-theme hues are tuned for a dark chip and go washy on white,
    so each drops to its darker sibling (the same colour these buttons already use in
@@ -2871,6 +2872,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-canvas-light .swml-prior-attempts-btn         { --swml-rail-hue: #1668B0; }
 [data-swml-theme="light"] .swml-cmp-poem-btn,
 .swml-canvas-light .swml-cmp-poem-btn               { --swml-rail-hue: #C2334C; }
+[data-swml-theme="light"] .swml-library-btn,
+.swml-canvas-light .swml-library-btn                { --swml-rail-hue: #5333ED; }
 
 /* Ink on the flooded chip, per theme. Dark theme floods with a BRIGHT hue, so a DEEPER shade
    of that hue reads (handled by the color-mix above). Light theme floods with a DEEP hue,
@@ -5938,6 +5941,37 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-prior-pad { width: 460px; max-height: 70vh; max-height: 70dvh; }   /* v7.20.474 (#343): dvh companion */
 .swml-prior-pad .swml-extract-panel-header .swml-pa-grade { margin-left: auto; margin-right: 8px; }
+/* v7.20.861 — the Library rail button's panel + pad (FIXLIST rail-feedback-library-popout). The panel carries
+   .swml-prior-panel and the pad .swml-prior-pad, so both inherit the Previous Assessments styles in both themes;
+   only what is new is here. The pad is a READING surface for whole Library pages, so it is wider and its text is
+   body-size, not chip-size. */
+.swml-library-panel .swml-prior-groupbody .swml-prior-groupwrap { padding-left: 10px; }
+.swml-library-pad { width: min(520px, calc(100vw - 32px)); }
+.swml-library-row { font-size: 14px; line-height: 1.65; color: rgba(255,255,255,0.85); overflow-wrap: anywhere; }
+.swml-library-row > :first-child { margin-top: 0; }
+.swml-library-row img { max-width: 100%; height: auto; border-radius: 6px; }
+.swml-library-row table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.swml-library-row th, .swml-library-row td { border: 1px solid rgba(255,255,255,0.12); padding: 6px 8px; vertical-align: top; }
+.swml-library-row a { color: #a99bff; }
+.swml-library-locked {
+    font-size: 13px; line-height: 1.55; margin: 0;
+    padding: 10px 12px; border-radius: 8px;
+    background: rgba(169,155,255,0.12); color: rgba(255,255,255,0.85);
+}
+.swml-library-lockmark {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 999px; margin-left: 6px;
+    background: rgba(169,155,255,0.16); color: #c4baff;
+}
+.swml-library-pdf { display: inline-block; font-weight: 600; color: #a99bff; }
+.swml-library-retry { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+[data-swml-theme="light"] .swml-library-row, .swml-canvas-light .swml-library-row { color: rgba(28,29,31,0.85); }
+[data-swml-theme="light"] .swml-library-row th, [data-swml-theme="light"] .swml-library-row td,
+.swml-canvas-light .swml-library-row th, .swml-canvas-light .swml-library-row td { border-color: rgba(28,29,31,0.15); }
+[data-swml-theme="light"] .swml-library-row a, .swml-canvas-light .swml-library-row a,
+[data-swml-theme="light"] .swml-library-pdf, .swml-canvas-light .swml-library-pdf { color: #5333ed; }
+[data-swml-theme="light"] .swml-library-locked, .swml-canvas-light .swml-library-locked { background: rgba(83,51,237,0.08); color: rgba(28,29,31,0.85); }
+[data-swml-theme="light"] .swml-library-lockmark, .swml-canvas-light .swml-library-lockmark { background: rgba(83,51,237,0.10); color: #4a2fd0; }
 [data-swml-theme="light"] .swml-prior-group { color: rgba(28,29,31,0.45); }
 [data-swml-theme="light"] .swml-prior-group:hover { color: rgba(28,29,31,0.7); }
 [data-swml-theme="light"] .swml-prior-group-count { background: rgba(28,29,31,0.07); color: rgba(28,29,31,0.5); }

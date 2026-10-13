@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.860
+ * Version: 7.20.861
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.860');
+define('SWML_VERSION', '7.20.861');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -255,6 +255,94 @@ class Sophicly_Writing_Mastery_Lab {
         $list = is_array($o) ? $o : array_filter(array_map('trim', explode(',', (string) $o)));
         if (!$list) return $measured;
         return array_values(array_intersect($measured, array_map('sanitize_key', $list)));
+    }
+
+    /**
+     * v7.20.861 (rail-feedback-library-popout — Neil, 13 Oct: "select resources from the library to pop out"). The
+     * Library rail button needs to know which Library text a lesson is about. KEY-MATCH TRACE (prod, 13 Oct): WML's
+     * text slugs and the Library's `sophicly_text` post names agree for only 6 of 29 texts, no lesson carries
+     * `_sophicly_text_id`, and the post IDs DIFFER between staging and prod (Macbeth: 55911 / 54607). So this maps the
+     * WML canonical slug to the Library post NAME, and library_config() resolves names to IDs on the site it runs on.
+     * A text missing here (Lord of the Flies, The Merchant of Venice: no Library text yet) still gets the button —
+     * the panel then offers the other texts. Gate: bin/library-panel-harness.js.
+     */
+    const LIBRARY_TEXT_MAP = [
+        'macbeth'                      => 'macbeth',
+        'romeo_and_juliet'             => 'romeo-and-juliet',
+        'much_ado'                     => 'much-ado-about-nothing',
+        'christmas_carol'              => 'a-christmas-carol',
+        'jekyll_and_hyde'              => 'dr-jekyll-and-mr-hyde',
+        'sign_of_the_four'             => 'sign-of-the-four',
+        'pride_and_prejudice'          => 'pride-and-prejudice',
+        'jane_eyre'                    => 'jane-eyre-charlotte-bronte',
+        'frankenstein'                 => 'frankenstein-resources',
+        'inspector_calls'              => 'an-inspector-calls',
+        'animal_farm'                  => 'animal-farm',
+        'blood_brothers_aqa'           => 'blood-brothers-by-willy-russell',
+        'blood_brothers'               => 'blood-brothers-by-willy-russell',
+        'leave_taking'                 => 'leave-taking-aqa',
+        'love_relationships_poetry'    => 'love-and-relationships-poetry',
+        'power_conflict_poetry'        => 'power-and-conflict-poetry',
+        'worlds_lives_poetry'          => 'aqa-worlds-and-lives',
+        'unseen_poetry'                => 'aqa-unseen-poetry',
+        'aqa_lang_paper_1'             => 'language-fiction-resources',
+        'edexcel_lang_paper_1'         => 'language-fiction-resources',
+        'eduqas_lang_paper_1'          => 'language-fiction-resources',
+        'aqa_lang_paper_2'             => 'non-fiction',
+        'eduqas_lang_paper_2'          => 'non-fiction',
+        'edexcel_igcse_lang_a'         => 'edexcel-igcse-anthology-spec-a',
+        'edexcel_igcse_lang_a_paper_2' => 'edexcel-igcse-anthology-spec-a',
+        'cambridge_igcse_lang_paper_1' => 'cambridge-igcse-english',
+        'cambridge_igcse_lang_paper_2' => 'cambridge-igcse-english',
+        'creative_writing'             => 'creative-writing',
+        'g9_core_skills'               => 'study-resources',
+    ];
+    /** WML board → the Library `exam_board` terms that mean the same board. Used to ORDER resources, never to hide them.
+     *  Measured 13 Oct: the Library tags its Edexcel IGCSE items `edexcel-gcse`, and its Edexcel GCSE items `edexcel`. */
+    const LIBRARY_BOARD_TERMS = [
+        'aqa'             => ['aqa'],
+        'edexcel'         => ['edexcel'],
+        'edexcel-igcse'   => ['edexcel-gcse'],
+        'eduqas'          => ['eduqas'],
+        'ocr'             => ['ocr'],
+        'cambridge-igcse' => ['cambridge-igcse'],
+        'ccea'            => ['ccea'],
+        'sqa'             => ['sqa'],
+    ];
+
+    /**
+     * swmlConfig.library — null unless the Library's resource-content route exists (Library ≥ 1.53.0). Null hides the
+     * button, so WML can reach a site before the Library does without showing a control that cannot work.
+     */
+    public static function library_config() {
+        if (!function_exists('sophicly_api_get_resource_content')) return null;
+        $posts = get_posts([
+            'post_type' => 'sophicly_text', 'post_status' => 'publish', 'posts_per_page' => -1,
+            'orderby' => 'title', 'order' => 'ASC', 'no_found_rows' => true,
+            'update_post_meta_cache' => false, 'update_post_term_cache' => false,
+        ]);
+        $texts = []; $have = [];
+        foreach ($posts as $p) {
+            $texts[] = ['id' => (int) $p->ID, 'slug' => $p->post_name, 'title' => wp_strip_all_tags($p->post_title)];
+            $have[$p->post_name] = true;
+        }
+        if (!$texts) return null;
+        $map = [];
+        foreach (self::LIBRARY_TEXT_MAP as $wml => $lib) {
+            if (isset($have[$lib])) $map[$wml] = $lib;
+        }
+        // Every alias form a lesson can send reaches the same Library text (the ONE slug registry, never a second table).
+        if (class_exists('SWML_REST_API')) {
+            foreach (SWML_REST_API::slug_aliases() as $alias => $canon) {
+                if (isset($map[$canon]) && !isset($map[$alias])) $map[$alias] = $map[$canon];
+            }
+        }
+        return [
+            'restUrl' => rest_url('sophicly/v1/'),
+            'texts'   => $texts,
+            'map'     => $map,
+            'boards'  => self::LIBRARY_BOARD_TERMS,
+        ];
     }
 
     /**
@@ -851,6 +939,7 @@ class Sophicly_Writing_Mastery_Lab {
             'feedbackUnlockedTopics' => SWML_Feedback_Unlock::get_unlocked_topics($embed_review['target_user_id'] ?: get_current_user_id()),
             'dashboardUrl'     => home_url('/my-dashboard/'),
             'libraryUrl'       => home_url('/library/'),
+            'library'          => self::library_config(),   // v7.20.861: the Library rail button (null = no button)
             'pageUrl'          => home_url('/writing-mastery-lab/'),
             'iconsUrl'         => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
             'iconBaseUrl'      => plugin_dir_url(__FILE__) . 'frontend/icons/', // v7.20.362: brand marks (phoenix) — NOT the emoji pack
@@ -1468,6 +1557,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'feedbackUnlockedTopics' => SWML_Feedback_Unlock::get_unlocked_topics($embed_review['target_user_id'] ?: get_current_user_id()),
                 'dashboardUrl'   => home_url('/my-dashboard/'),
                 'libraryUrl'     => home_url('/library/'),
+                'library'        => self::library_config(),   // v7.20.861: same helper as the standalone site — never two
                 'pageUrl'        => home_url('/writing-mastery-lab/'),
                 'iconsUrl'       => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
                 'iconBaseUrl'    => plugin_dir_url(__FILE__) . 'frontend/icons/', // v7.20.362: brand marks (phoenix) — NOT the emoji pack

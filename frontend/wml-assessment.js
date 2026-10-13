@@ -45496,6 +45496,251 @@
             }).catch(() => { /* button stays hidden */ });
         }
 
+        // ── Library rail button (v7.20.861, FIXLIST rail-feedback-library-popout — Neil, 13 Oct: "select resources
+        // from the library to pop out"). Lists the Library's own pages for the text the student is working on (their
+        // exam board first, then other boards, then every other text) and opens one in a draggable pad. Content comes
+        // from the Library's resource-content route (Library v1.53.0) through apiGet, so it carries X-WP-Nonce and the
+        // Library's own gate applies: a locked part arrives with no content, only the plan that includes it.
+        // Hidden on TEST tasks — the same predicate as Previous Assessments (a test stays a test: no model answers
+        // beside a diagnostic). Hidden when swmlConfig.library is null (no Library route on this site): never a dead control.
+        /* @LIBRARY-PURE-START — extracted and unit-tested by bin/library-panel-harness.js. PURE: arguments only. */
+        // The Library text a lesson is about: WML text slug → Library post name (server map) → this site's text entry.
+        function libTextFor(textSlug, lib) {
+            if (!lib || !textSlug) return null;
+            const name = (lib.map || {})[textSlug];
+            if (!name) return null;
+            return (lib.texts || []).find(t => t.slug === name) || null;
+        }
+        // ORDER, never filter: a resource for the student's own board, for every board, or tagged with no board comes
+        // first; resources for other boards follow. (A filter would hide untagged resources; an ordering cannot hide one.)
+        function libSplitByBoard(resources, board, lib) {
+            const terms = ((lib && lib.boards) || {})[board] || [];
+            const mine = [], other = [];
+            (resources || []).forEach(r => {
+                const slugs = (r.exam_boards || []).map(b => b && b.slug);
+                const forAll = !!r.all_boards || !slugs.length || slugs.indexOf('all-exam-boards') > -1;
+                (forAll || !terms.length || slugs.some(s => terms.indexOf(s) > -1) ? mine : other).push(r);
+            });
+            return { mine, other };
+        }
+        // What one part of a resource shows. Locked wins over everything: it carries no content by contract.
+        function libRowView(row) {
+            if (!row) return { kind: 'empty' };
+            if (row.locked) return { kind: 'locked', message: row.lockMessage || 'This is part of a paid plan.' };
+            if (row.type === 'pdf' && row.downloadUrl) return { kind: 'pdf', href: row.downloadUrl };
+            if (row.html) return { kind: 'html', html: row.html };
+            return { kind: 'empty' };
+        }
+        /* @LIBRARY-PURE-END */
+        const _lib = (config && config.library && config.library.restUrl) ? config.library : null;
+        const _libPads = {};
+        let _libPanel = null, _libBodyWrap = null, _libCtl = null;
+        const _libEsc = (s) => String(s).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+        function _libApi(path) { return apiGet(_lib.restUrl + path); }
+        // §4d: every failure leaves the student a message AND a way forward, never an empty panel.
+        function _libRetry(msg, again) {
+            const wrap = el('div', { className: 'swml-library-retry' });
+            wrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: msg }));
+            wrap.appendChild(el('button', {
+                className: 'swml-extract-tab', type: 'button', textContent: 'Try again',
+                onClick: (e) => { e.stopPropagation(); again(); }
+            }));
+            return wrap;
+        }
+        function _libGroup(title, open) {
+            const wrap = el('div', { className: 'swml-prior-groupwrap' + (open ? '' : ' swml-prior-collapsed') });
+            const head = el('button', { className: 'swml-prior-group', type: 'button' });
+            head.innerHTML = '<span class="swml-prior-group-chev"></span> ' + _libEsc(title);
+            head.addEventListener('click', () => wrap.classList.toggle('swml-prior-collapsed'));
+            const body = el('div', { className: 'swml-prior-groupbody' });
+            wrap.appendChild(head);
+            wrap.appendChild(body);
+            return { wrap, head, body };
+        }
+        function _libResourceRow(r, otherBoard) {
+            const rowEl = el('button', { className: 'swml-prior-row', type: 'button', onClick: () => spawnLibraryPad(r) });
+            const main = el('div', { className: 'swml-prior-row-main' });
+            main.appendChild(el('span', { className: 'swml-prior-row-label', textContent: r.title || 'Untitled' }));
+            rowEl.appendChild(main);
+            const boards = otherBoard ? (r.exam_boards || []).map(b => b && b.name).filter(Boolean).join(' · ') : '';
+            const meta = [r.type, boards].filter(Boolean).join(' · ');
+            if (meta) rowEl.appendChild(el('span', { className: 'swml-prior-row-date', textContent: meta }));
+            return rowEl;
+        }
+        // One text's resources, fetched when its group is first opened.
+        async function _libFillText(container, text) {
+            container.innerHTML = '';
+            container.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Loading…' }));
+            const res = await _libApi('text-resources/' + encodeURIComponent(text.id));
+            container.innerHTML = '';
+            if (!res || !Array.isArray(res.resources)) {
+                container.appendChild(_libRetry('The Library could not be reached.', () => _libFillText(container, text)));
+                return;
+            }
+            if (!res.resources.length) {
+                container.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'No Library pages for ' + text.title + ' yet.' }));
+                return;
+            }
+            const split = libSplitByBoard(res.resources, state.board, _lib);
+            split.mine.forEach(r => container.appendChild(_libResourceRow(r, false)));
+            if (split.other.length) {
+                container.appendChild(el('div', { className: 'swml-prior-padgroup', textContent: 'Other exam boards' }));
+                split.other.forEach(r => container.appendChild(_libResourceRow(r, true)));
+            }
+        }
+        function _libRender() {
+            _libBodyWrap.innerHTML = '';
+            const list = el('div', { className: 'swml-prior-list' });
+            const cur = libTextFor(state.text, _lib);
+            if (cur) {
+                const g = _libGroup(cur.title, true);
+                list.appendChild(g.wrap);
+                _libFillText(g.body, cur);
+            }
+            const others = (_lib.texts || []).filter(t => !cur || t.id !== cur.id);
+            if (others.length) {
+                const og = _libGroup(cur ? 'Other texts' : 'All texts', !cur);
+                list.appendChild(og.wrap);
+                others.forEach(t => {
+                    const tg = _libGroup(t.title, false);
+                    let filled = false;
+                    // Runs after the group's own toggle, so "open" is already true on the first opening click.
+                    tg.head.addEventListener('click', () => {
+                        if (filled || tg.wrap.classList.contains('swml-prior-collapsed')) return;
+                        filled = true;
+                        _libFillText(tg.body, t);
+                    });
+                    og.body.appendChild(tg.wrap);
+                });
+            }
+            _libBodyWrap.appendChild(list);
+        }
+        // The rail panel: the same shell as Previous Assessments (v7.20.318/.319 — one default, no second shell).
+        function _libBuildPanel(anchorBtn) {
+            const panel = el('div', { className: 'swml-outline-panel swml-resources-panel swml-prior-panel swml-library-panel' });
+            const hdr = el('div', { className: 'swml-outline-header' });
+            hdr.appendChild(el('span', { textContent: 'Library' }));
+            hdr.appendChild(el('button', {
+                className: 'swml-outline-close', innerHTML: '✕',
+                onClick: () => {
+                    panel.classList.remove('swml-resources-open');
+                    anchorBtn.classList.remove('is-active');
+                }
+            }));
+            panel.appendChild(hdr);
+            _libBodyWrap = el('div', { className: 'swml-outline-list swml-prior-body' });
+            _libBodyWrap.addEventListener('wheel', (e) => { e.stopPropagation(); }, { passive: true });
+            panel.appendChild(_libBodyWrap);
+            btnColumn.appendChild(panel);
+            _libCtl = _wireRailPanel(panel, { header: hdr, anchorTrigger: anchorBtn });
+            contentWrap.addEventListener('click', function (e) {
+                if (!panel.classList.contains('swml-resources-open')) return;
+                if (_libCtl.isFloating() || _libCtl.justResized()) return;
+                if (panel.contains(e.target) || e.target.closest('.swml-library-btn')) return;
+                if (e.target.closest('.swml-ctl-row, .swml-popover, .swml-dropdown-select')) return;
+                panel.classList.remove('swml-resources-open');
+                anchorBtn.classList.remove('is-active');
+            });
+            return panel;
+        }
+        function _libTogglePanel(anchorBtn) {
+            if (!_libPanel) { _libPanel = _libBuildPanel(anchorBtn); }
+            if (_libPanel.classList.contains('swml-resources-open')) {   // same trigger again → close
+                _libPanel.classList.remove('swml-resources-open');
+                anchorBtn.classList.remove('is-active');
+                return;
+            }
+            _closeOtherRailPanels(_libPanel);
+            _anchorRailPanel(_libPanel, anchorBtn);
+            _libPanel.classList.add('swml-resources-open');
+            anchorBtn.classList.add('is-active');
+            _libRender();
+        }
+        // One resource in a draggable pad. Its parts read as an accordion (the first open) — the Macbeth 20 is 21 parts.
+        async function _libFillPad(body, r) {
+            body.innerHTML = '';
+            body.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Loading…' }));
+            const res = await _libApi('resource-content/' + encodeURIComponent(r.id));
+            body.innerHTML = '';
+            if (!res || !Array.isArray(res.rows)) {
+                body.appendChild(_libRetry('This page could not be loaded.', () => _libFillPad(body, r)));
+                return;
+            }
+            if (!res.rows.length) {
+                // A whole locked resource names its plan in words (root §14: never a bare slug).
+                const tier = String(res.requiredTier || '');
+                const msg = res.locked
+                    ? (tier ? 'This is included with the ' + tier.charAt(0).toUpperCase() + tier.slice(1) + ' plan.' : 'This is part of a paid plan.')
+                    : 'This page has nothing in it yet.';
+                body.appendChild(el('p', { className: res.locked ? 'swml-library-locked' : 'swml-prior-empty', textContent: msg }));
+                return;
+            }
+            const single = res.rows.length === 1;
+            res.rows.forEach((row, i) => {
+                const v = libRowView(row);
+                const content = el('div', { className: 'swml-library-row' });
+                if (v.kind === 'html') {
+                    content.innerHTML = v.html;   // the Library's whitelisted renderer; belt-and-braces below
+                    content.querySelectorAll('script, style, iframe, object, embed').forEach(n => n.remove());
+                    content.querySelectorAll('*').forEach(n => {
+                        Array.from(n.attributes).forEach(a => { if (/^on/i.test(a.name)) n.removeAttribute(a.name); });
+                    });
+                    content.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+                } else if (v.kind === 'locked') {
+                    content.appendChild(el('p', { className: 'swml-library-locked', textContent: v.message }));
+                } else if (v.kind === 'pdf') {
+                    const a = document.createElement('a');
+                    a.className = 'swml-library-pdf'; a.href = v.href; a.target = '_blank'; a.rel = 'noopener';
+                    a.textContent = 'Open the PDF';
+                    content.appendChild(a);
+                } else {
+                    content.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Nothing to show here yet.' }));
+                }
+                if (single) { body.appendChild(content); return; }
+                const item = el('div', { className: 'swml-notes-item' + (i === 0 ? '' : ' swml-notes-collapsed') });
+                const head = el('button', { className: 'swml-notes-item-head', type: 'button' });
+                head.innerHTML = '<span class="swml-notes-item-chev"></span> ' + _libEsc(row.title || ('Part ' + (i + 1)))
+                    + (v.kind === 'locked' ? ' <span class="swml-library-lockmark">Locked</span>' : '');
+                head.addEventListener('click', () => item.classList.toggle('swml-notes-collapsed'));
+                const bodyWrap = el('div', { className: 'swml-notes-item-body' });
+                bodyWrap.appendChild(content);
+                item.appendChild(head);
+                item.appendChild(bodyWrap);
+                body.appendChild(item);
+            });
+        }
+        function spawnLibraryPad(r) {
+            const padKey = 'lib:' + r.id;
+            if (_libPads[padKey]) { _libPads[padKey].remove(); delete _libPads[padKey]; return; }
+            const panel = el('div', { className: 'swml-extract-panel swml-prior-pad swml-library-pad' });
+            const header = el('div', { className: 'swml-extract-panel-header' });
+            header.appendChild(el('span', { className: 'swml-prior-pad-title', textContent: r.title || 'Library' }));
+            header.appendChild(el('button', {
+                className: 'swml-extract-panel-close', textContent: '✕',
+                onClick: () => { panel.remove(); delete _libPads[padKey]; }
+            }));
+            panel.appendChild(header);
+            const body = el('div', { className: 'swml-extract-panel-body' });
+            panel.appendChild(body);
+            _makePanelInteractive(panel); // drag + 8-way resize + press-to-front (shared)
+            const openCount = Object.keys(_libPads).length + Object.keys(_priorPads).length;
+            panel.style.top = (70 + openCount * 34) + 'px';
+            panel.style.right = (24 + openCount * 34) + 'px';
+            document.body.appendChild(panel);   // portal (v7.19.772 stacking-context law)
+            _libPads[padKey] = panel;
+            _libFillPad(body, r);
+        }
+        const SVG_LIBRARY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+        const libraryBtn = el('button', {
+            className: 'swml-outline-btn swml-library-btn',
+            'data-tooltip': 'Library',
+            'data-tooltip-pos': 'right',
+            'aria-label': 'Library',
+            innerHTML: SVG_LIBRARY,
+            onClick: (e) => { e.stopPropagation(); _libTogglePanel(libraryBtn); }
+        });
+        if (_lib && !_paTestingTask) btnColumn.appendChild(libraryBtn);
+
         // ── Comparison-Poem viewer (BUILD 2, v7.20.253) — mirrors the Previous Assessments
         // popover. Opens a scroll-isolated side panel showing the chosen comparison poem's full
         // text plus a Browse-the-anthology list (the doc renders only the FOCUS poem). Universal
