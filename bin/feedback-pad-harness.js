@@ -126,6 +126,32 @@ ok(!!spawn && /document\.body\.appendChild\(panel\);\s*\n\s*_wirePadRaise\(panel
 const wire = fnBody('_wirePadRaise');
 ok(!!wire && /addEventListener\('pointerdown',[^\n]*_raisePad\(panel\)[^\n]*,\s*true\)/.test(wire), 'the raise listens on pointerdown in the capture phase (touch too; a control that stops propagation still raises its pad)');
 
+// ── 4. the pad's mark row = the document's (v7.20.863, FIXLIST pad-missing-mark-ladder) ─────────────────────────
+console.log('\n4. the pad shows the mark on its colour ladder and the marks still available');
+// Neil, 13 Oct (prod, a Macbeth "Get Your Assessment & Feedback" lesson): "it's missing some of the other information
+// from the main feedback section… the mark, the colour ladder… how many marks are available."
+ok(/'<span>Actual <strong>' \+ act \+ '<\/strong><\/span>'/.test(code), 'the readout says "Actual N" as the document row does (the pill carries "/ max")');
+ok(/className: 'swml-popover-trigger swml-pad-mark' \+ \(act == null \? '' : ' swml-tier-' \+ feedbackMarkTier\(act, maxM\)\)/.test(code),
+    '⭐ the pad appends the mark pill, coloured through feedbackMarkTier — the document pill\'s own ladder');
+ok(/const _padLeft = marksLeftChip\(act == null \? -1 : act, maxM\);/.test(code) && /'swml-ana-chip swml-marks-left ' \+ _padLeft\.cls/.test(code),
+    '⭐ the pad appends the marks-still-available chip through marksLeftChip — the document chip\'s own builder');
+const iRow = code.indexOf("const row = el('div', { className: 'swml-calib-readout swml-pad-calib' });");
+const iPill = code.indexOf('swml-pad-mark'), iChip = code.indexOf('const _padLeft'), iApp = code.indexOf('body.appendChild(row);', iRow);
+ok(iRow > -1 && iPill > iRow && iChip > iPill && iApp > iChip, 'order: Predicted · Actual · Δ, then the pill, then the chip, inside the one row', [iRow, iPill, iChip, iApp]);
+ok(/flex-wrap:wrap/.test(code.slice(iRow, iApp)), 'the row wraps on a narrow pad instead of overflowing it');
+const CSS = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-canvas.css'), 'utf8');
+ok(/\.swml-pad-calib \.swml-popover-trigger\.swml-pad-mark,\s*\.swml-pad-calib \.swml-popover-trigger\.swml-pad-mark:hover \{[^}]*background-image: none !important;[^}]*cursor: default;/.test(CSS),
+    'the pad pill is a reading surface: no chevron (beats the tier rules\' !important), no pointer');
+
+// ── 5. a section strip is rewritten only when it changed (v7.20.863) ───────────────────────────────────────────
+console.log('\n5. a section strip is rewritten only when its content changed');
+// escapeHTML writes " as &quot;; the page reads it back as " — a raw-string compare never matched a preview that quotes
+// the text, so the strip was rewritten (an editor mutation → an open Feedback pad rebuild) on every overlay refresh.
+const strips = fnBody('_renderSectionStrips') || '';
+ok(/const _stripTpl = document\.createElement\('template'\);/.test(strips) && /_stripTpl\.innerHTML = html;\s*\n\s*if \(s\.innerHTML !== _stripTpl\.innerHTML\) s\.innerHTML = html;/.test(strips),
+    'the compare uses the browser\'s own serialisation of the new html');
+ok(!/if \(s\.innerHTML !== html\)/.test(strips), 'no raw-string compare is left');
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 if (fail) { console.log('❌ feedback-pad-harness FAILED'); process.exit(1); }
 console.log('✅ feedback-pad-harness passed (the Feedback pad holds the feedback section, every part opens, the pressed pad is on top).');

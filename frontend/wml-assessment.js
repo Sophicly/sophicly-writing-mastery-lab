@@ -3608,8 +3608,13 @@
         if (!(max > 0) || !(score >= 0)) return null;
         const left = Math.round((max - score) * 100) / 100;
         if (left <= 0) return { left: 0, text: 'Full marks', cls: 'swml-ana-full' };
-        const tier = String(Math.max(1, Math.min(9, Math.round(1 + (score / max) * 8))));
-        return { left: left, text: left + (left === 1 ? ' mark' : ' marks') + ' still available', cls: 'swml-tier-' + tier };
+        return { left: left, text: left + (left === 1 ? ' mark' : ' marks') + ' still available', cls: 'swml-tier-' + feedbackMarkTier(score, max) };
+    }
+    // ⭐ v7.20.863 (FIXLIST pad-missing-mark-ladder): a feedback box's mark on the 9-step colour ladder — its RANK, an even
+    // spread with full marks at 9. ONE rule for the document's mark pill (_tierRank), the marks-still-available chip and
+    // the Feedback pad's copy of both, so the three can never disagree.
+    function feedbackMarkTier(score, max) {
+        return String(Math.max(1, Math.min(9, Math.round(1 + (max > 0 ? (score / max) : 0) * 8))));
     }
     // @RESP-FB-PURE-END
     // @STALE-REGEN-PURE-BEGIN
@@ -11230,6 +11235,11 @@
         try {
             const strips = document.querySelectorAll('.swml-ana-strip');
             if (!strips.length) return;
+            // v7.20.863: compare against the BROWSER's serialisation of the new html, never the raw string — escapeHTML
+            // writes " as &quot; and the page reads it back as ", so a preview quoting the text never compared equal and
+            // was rewritten on every overlay refresh (an editor mutation each time). Proved in Chromium + WebKit:
+            // ~/.sophicly/probe/wml-352/quot-proof-863.mjs.
+            const _stripTpl = document.createElement('template');
             const _ana = _analyticsReadoutModel();
             const chip = (a, cls) => '<span class="swml-ana-chip ' + (cls || ('swml-tier-' + a.tier)) + '">'
                 + escapeHTML(a.label) + (a.ao ? ' · ' + escapeHTML(a.ao) : '') + ' ' + a.score + '/' + a.max + '</span>';
@@ -11397,7 +11407,8 @@
                 } else {
                     try { html = BUILDERS[key] ? BUILDERS[key]() : _analyticsHtml(); } catch (_) { html = ''; }
                 }
-                if (s.innerHTML !== html) s.innerHTML = html;
+                _stripTpl.innerHTML = html;
+                if (s.innerHTML !== _stripTpl.innerHTML) s.innerHTML = html;
                 const want = html ? '' : 'none';
                 if (s.style.display !== want) s.style.display = want;
             });
@@ -44496,12 +44507,23 @@
                             }
                             const row = el('div', { className: 'swml-calib-readout swml-pad-calib' });
                             // v7.19.928: theme-owned colors (see .swml-calib-readout CSS).
-                            row.style.cssText = 'display:flex;gap:7px;align-items:center;font-size:11px;font-weight:600;margin:0 0 4px;';
+                            row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px 7px;align-items:center;font-size:11px;font-weight:600;margin:0 0 4px;';
                             row.innerHTML = (pred == null ? '<span style="' + dim + '">Predicted —</span>'
                                     : '<span>Predicted <strong>' + pred + '</strong></span>')
                                 + sep + (act == null ? '<span style="' + dim + '">Actual —</span>'
-                                    : '<span>Actual <strong>' + act + ' / ' + maxM + '</strong></span>')
+                                    : '<span>Actual <strong>' + act + '</strong></span>')
                                 + sep + dTxt;
+                            // ⭐ v7.20.863 (FIXLIST pad-missing-mark-ladder — Neil, 13 Oct: "it's missing some of the other
+                            // information from the main feedback section… the mark, the colour ladder… how many marks are
+                            // available"): the document row's mark pill on its colour ladder and its marks-still-available chip,
+                            // from the SAME primitives (feedbackMarkTier · marksLeftChip). Display-only: the mark is changed in
+                            // the document, where the pill is a control; here it is a reading surface.
+                            row.appendChild(el('span', {
+                                className: 'swml-popover-trigger swml-pad-mark' + (act == null ? '' : ' swml-tier-' + feedbackMarkTier(act, maxM)),
+                                textContent: (act == null ? '—' : act) + ' / ' + maxM,
+                            }));
+                            const _padLeft = marksLeftChip(act == null ? -1 : act, maxM);
+                            if (_padLeft) row.appendChild(el('span', { className: 'swml-ana-chip swml-marks-left ' + _padLeft.cls, textContent: _padLeft.text }));
                             body.appendChild(row);
                             // v7.20.650 (#635/#636): Previous · Best — the SAME builder as the card row.
                             const _hh = _qHistReadoutHTML(mLbl[1], act == null ? -1 : act, maxM);
@@ -59188,7 +59210,7 @@
                 // full mark → tier-9 = brand gradient) — IDENTICAL mapping to the predict pills
                 // (_markGradeStyle) so the colour means the same thing on both rows (Neil). Was
                 // getGradeFromMarks (grade-boundary %, which compressed low marks + skipped green).
-                const _tierRank = (v) => String(Math.max(1, Math.min(9, Math.round(1 + (maxMarks > 0 ? (v / maxMarks) : 0) * 8))));
+                const _tierRank = (v) => feedbackMarkTier(v, maxMarks);   // v7.20.863: the one ladder rule (pad + chip share it)
                 const feedbackTierFn = (opt) => opt.value === -1 ? null : _tierRank(opt.value);
 
                 let widget;

@@ -14605,6 +14605,17 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
 .swml-canvas-light .swml-calib-readout { color: rgba(20,22,28,0.55); }
 [data-swml-theme="light"] .swml-calib-readout strong,
 .swml-canvas-light .swml-calib-readout strong { color: rgba(20,22,28,0.82); }
+/* v7.20.863 (FIXLIST pad-missing-mark-ladder): the Feedback pad's copy of the mark pill wears the document's ladder
+   colour but is a READING surface — no dropdown chevron, no pointer. (0,3,0)+!important beats the tier rules'
+   chevron at (0,2,0)+!important. */
+.swml-pad-calib .swml-popover-trigger.swml-pad-mark,
+.swml-pad-calib .swml-popover-trigger.swml-pad-mark:hover {
+    background-image: none !important;
+    padding-right: 10px;
+    cursor: default;
+    display: inline-block;
+    box-shadow: none;
+}
 
 /* ── v7.19.947: DISPLAY-LOCK (Neil ruling 2026-07-08). Assessment + discuss-feedback
    lessons show student prose (response/plan/outline sections) READ-ONLY — it is edited

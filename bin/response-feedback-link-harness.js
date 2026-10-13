@@ -37,7 +37,7 @@ const pk = SRC.indexOf('function _paraKey(s) {');
 if (b < 0 || e < 0 || pk < 0) { console.error('❌ the @RESP-FB-PURE block or _paraKey is missing from wml-assessment.js'); process.exit(1); }
 const PARA_KEY = SRC.slice(pk, braceSliceFrom(SRC, pk, '{', '}').end);
 // eslint-disable-next-line no-new-func
-const M = new Function(SRC.slice(b, e) + '\n' + PARA_KEY + '\nreturn { feedbackLabelParts, docMarkFromLabels, responseFeedbackLink, feedbackAnswerLink, marksLeftChip, _paraKey };')();
+const M = new Function(SRC.slice(b, e) + '\n' + PARA_KEY + '\nreturn { feedbackLabelParts, docMarkFromLabels, responseFeedbackLink, feedbackAnswerLink, marksLeftChip, feedbackMarkTier, _paraKey };')();
 const { feedbackLabelParts: parts, docMarkFromLabels: docMark, responseFeedbackLink: link, feedbackAnswerLink: back, _paraKey: keyOf } = M;
 const boxesOf = (labels) => labels.map(parts).filter(Boolean);
 
@@ -161,6 +161,14 @@ console.log('\n8 · "N marks still available" on each marked feedback box (v7.20
     let same = true;
     [[0, 8], [1, 8], [3, 8], [5, 12], [9, 12], [11, 16], [30, 40], [39, 40]].forEach(([v, m]) => { if (left(v, m).cls !== 'swml-tier-' + ladder(v, m)) same = false; });
     ok(same, 'every chip wears the feedback row\'s own _tierRank colour (one ladder, two places)');
+    // v7.20.863 (FIXLIST pad-missing-mark-ladder): the ladder is ONE function — the document's mark pill, the chip and the
+    // Feedback pad's copy of both read it, so the three can never disagree.
+    let sameFn = true;
+    [[0, 8], [1, 8], [3, 8], [5, 12], [9, 12], [11, 16], [30, 40], [39, 40], [40, 40]].forEach(([v, m]) => { if (M.feedbackMarkTier(v, m) !== ladder(v, m)) sameFn = false; });
+    ok(sameFn && M.feedbackMarkTier(3, 0) === '1', '⭐ feedbackMarkTier IS the ladder (and a missing maximum reads as the bottom rung, never NaN)');
+    ok(/const _tierRank = \(v\) => feedbackMarkTier\(v, maxMarks\);/.test(SRC), 'the document row\'s _tierRank calls feedbackMarkTier — no second copy of the arithmetic');
+    const MLC = SRC.slice(SRC.indexOf('function marksLeftChip('), SRC.indexOf('function feedbackMarkTier('));
+    ok(/'swml-tier-' \+ feedbackMarkTier\(score, max\)/.test(MLC) && !/Math\.round\(1 \+/.test(MLC), 'marksLeftChip colours through feedbackMarkTier — no second copy of the arithmetic');
     const FB2 = RC.slice(RC.indexOf("feedbackSections.forEach((section) => {"), passAt);
     const iW = FB2.indexOf('row.appendChild(widget);'), iL = FB2.indexOf('const _left = marksLeftChip(currentMarks, maxMarks);'), iB = FB2.indexOf("row.appendChild(_linkBtn('Back to answer");
     ok(iW > -1 && iL > iW && iB > iL, '⭐ placement: after the score, before "Back to answer" (Neil\'s words)', [iW, iL, iB]);
