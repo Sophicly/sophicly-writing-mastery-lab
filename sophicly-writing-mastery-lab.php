@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.858
+ * Version: 7.20.859
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.858');
+define('SWML_VERSION', '7.20.859');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -1179,7 +1179,7 @@ class Sophicly_Writing_Mastery_Lab {
                     // (slug suffix / unit slug / task convention) — derive's
                     // last-resort "topic 1" must not clobber a real baked topic.
                     $t_src = $derived['topic_source'] ?? 'default';
-                    if ('default' !== $t_src || !$topic) {
+                    if (self::derived_topic_accepted($t_src, $topic, $task, $phase)) {
                         $topic = absint($derived['topic']);
                     }
                 }
@@ -1874,6 +1874,24 @@ class Sophicly_Writing_Mastery_Lab {
      * (Known sibling mismatch: category '20th_century' vs subject 'modern_text'
      * — live lessons work today via text-slug keying, deliberately untouched.)
      */
+    // @DERIVED-TOPIC-PURE-BEGIN
+    /**
+     * v7.20.859 (FIXLIST msa-sidebar-1287). Does the page take the bridge's DERIVED topic for a lesson that has no bridge
+     * entry of its own? Explicit evidence (a slug suffix, a "Topic N" unit) always wins; the bridge's last-resort guess
+     * ('default' = topic 1) is taken only when nothing was baked — EXCEPT for a preliminary Mark Scheme Final Assessment,
+     * whose "no topic" is its real value, not a gap. Measured on prod: 53 preliminary mark-scheme lessons in ~27 courses
+     * took the guess, so every course's Unit 2 "Mark Scheme Final Assessment" opened the SAME document as its Unit 4
+     * "Mark Scheme Assessment 2" (topic 1) — Neil saw a student's 18/20 from Assessment 2 on the Final Assessment page.
+     * The quiz lessons (mark_scheme_unit) keep the guess: no topic-1 lesson shares their document, and changing their
+     * topic now would hide every quiz document saved since July.
+     */
+    public static function derived_topic_accepted($topic_source, $baked_topic, $task, $phase) {
+        if ('default' !== $topic_source) return true;
+        if ($baked_topic) return false;
+        return !('mark_scheme' === $task && 'preliminary' === $phase);
+    }
+    // @DERIVED-TOPIC-PURE-END
+
     private static function subject_from_course_category($subject, $text) {
         if ($subject === 'poetry') {
             return ($text === 'unseen_poetry') ? 'unseen_poetry' : 'poetry_anthology';

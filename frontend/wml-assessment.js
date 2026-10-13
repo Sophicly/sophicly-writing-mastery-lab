@@ -45156,7 +45156,12 @@
             if (_priorPads[padKey]) { _priorPads[padKey].remove(); delete _priorPads[padKey]; _paRefreshNote(); return; }
             let docHtml = '';
             try {
-                const url = `${API.canvasLoad}?board=${encodeURIComponent(row.board)}&text=${encodeURIComponent(row.text)}${row.topic ? '&topicNumber=' + row.topic : ''}&suffix=${encodeURIComponent(row.suffix || '')}&attempt=${row.attempt || 1}`;
+                // v7.20.859 (Neil, 13 Oct: Previous Assessments was hidden whenever he viewed as a student): a reviewer
+                // reads the STUDENT's earlier document through the review loader (same {doc:{html}} shape).
+                const _paQs = `board=${encodeURIComponent(row.board)}&text=${encodeURIComponent(row.text)}${row.topic ? '&topicNumber=' + row.topic : ''}&suffix=${encodeURIComponent(row.suffix || '')}&attempt=${row.attempt || 1}`;
+                const url = (state.reviewMode && state.reviewStudentId)
+                    ? `${API.reviewCanvas}?student_id=${encodeURIComponent(state.reviewStudentId)}&${_paQs}`
+                    : `${API.canvasLoad}?${_paQs}`;
                 const res = await apiGet(url);
                 docHtml = (res && res.doc && res.doc.html) ? res.doc.html : '';
             } catch (_) { /* handled below */ }
@@ -45305,6 +45310,10 @@
             _paRefreshNote();
         }
         let _paPanel = null;
+        // v7.20.859: the attempt list to show — the reviewed student's when viewing as a student, else the viewer's own.
+        function _paAttemptsUrl() {
+            return `${config.restUrl}student/attempts-all` + ((state.reviewMode && state.reviewStudentId) ? `?student_id=${encodeURIComponent(state.reviewStudentId)}` : '');
+        }
         function _paBuildList(rows) {
             const list = el('div', { className: 'swml-prior-list' });
             const curSuffix = (typeof WML !== 'undefined' && WML.resolveCanvasSuffix) ? (WML.resolveCanvasSuffix(state.task, state.phase) || '') : '';
@@ -45438,7 +45447,7 @@
             _paBodyWrap.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Loading…' }));
             const isOpen = () => !!_paPanel && _paPanel.classList.contains('swml-resources-open');
             try {
-                const res = await apiGet(`${config.restUrl}student/attempts-all`);
+                const res = await apiGet(_paAttemptsUrl());
                 if (!isOpen()) return; // closed while loading
                 _paBodyWrap.innerHTML = '';
                 _paBodyWrap.appendChild(_paBuildList((res && res.attempts) || []));
@@ -45469,8 +45478,10 @@
         const _paTestingTask = state.task === '' || state.task === 'diagnostic'
             || state.task === 'foundational_quiz' || state.task === 'mark_scheme_unit'
             || state.task === 'mark_scheme';
-        if (!state.reviewMode && !_paTestingTask) {
-            apiGet(`${config.restUrl}student/attempts-all`).then(res => {
+        // v7.20.859: shown in review mode too — the list is the STUDENT's (the server lets staff read it with
+        // student_id; anyone else gets a 403 and the button simply stays hidden).
+        if (!_paTestingTask) {
+            apiGet(_paAttemptsUrl()).then(res => {
                 const rows = (res && res.attempts) || [];
                 const curSuffix = (typeof WML !== 'undefined' && WML.resolveCanvasSuffix) ? (WML.resolveCanvasSuffix(state.task, state.phase) || '') : '';
                 const any = rows.some(r => {

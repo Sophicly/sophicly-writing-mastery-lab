@@ -195,6 +195,15 @@ console.log('\n8 · "N marks still available" on each marked feedback box (v7.20
     ];
     ok(darkOnGreen.every((c) => c === '#1a1a2e'), '⭐ green carries dark text on every mark surface — the score, its marks chip, the grade, the light-theme pill (white was 1.8:1)', darkOnGreen);
     ok(/stroke='%231a1a2e'/.test(ruleFor('.swml-popover-trigger.swml-tier-6')), 'and the green score\'s chevron is dark too, as on yellow');
+    // v7.20.859 (orange-dark-859, Neil: "wwad"): orange is the same case — white on #FF9800 is 2.2:1, dark is 7.9:1.
+    const darkOnOrange = [
+        decl(ruleFor('.swml-popover-trigger.swml-tier-4'), 'color'),
+        decl(ruleFor('.swml-ana-chip.swml-marks-left.swml-tier-4'), 'color'),
+        decl(ruleFor('.swml-grade-text-4.swml-grade-value'), 'color'),
+        decl(ruleFor('[data-swml-theme="light"] .swml-pill.is-active.swml-tier-4'), 'color'),
+    ];
+    ok(darkOnOrange.every((c) => c === '#1a1a2e'), '⭐ orange carries dark text on every mark surface too (white was 2.2:1)', darkOnOrange);
+    ok(/stroke='%231a1a2e'/.test(ruleFor('.swml-popover-trigger.swml-tier-4')), 'and the orange score\'s chevron is dark');
 }
 
 console.log(fail
