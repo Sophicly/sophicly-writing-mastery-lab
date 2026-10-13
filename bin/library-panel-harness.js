@@ -100,6 +100,9 @@ ok(/_makePanelInteractive\(panel\)/.test(BLK) && /document\.body\.appendChild\(p
 ok(/querySelectorAll\('script, style, iframe, object, embed'\)/.test(BLK) && /\/\^on\/i\.test\(a\.name\)/.test(BLK),
     'Library html is stripped of script/style/iframe and on* handlers before it is shown');
 ok(/_closeOtherRailPanels\(_libPanel\)/.test(BLK) && /_anchorRailPanel\(_libPanel, anchorBtn\)/.test(BLK), 'opening it closes the other rail panels and anchors to the button');
+// v7.20.862: a whole resource above the reader's plan arrives as locked + requiredTier + rows [] (staging, 13 Oct).
+ok(/res\.locked\s*\?\s*\(res\.lockMessage \|\| \(tier \?/.test(BLK) && /'This is included with the ' \+ tier\.charAt\(0\)\.toUpperCase\(\)/.test(BLK),
+    "a wholly locked resource says which plan includes it (the Library's wording first, else the tier in words)");
 
 // ── 3. the server half ──────────────────────────────────────────────────────────────────────────────────────────
 console.log('\n3. server half');

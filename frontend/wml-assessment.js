@@ -45667,10 +45667,11 @@
                 return;
             }
             if (!res.rows.length) {
-                // A whole locked resource names its plan in words (root §14: never a bare slug).
+                // A whole locked resource names its plan in words (root §14: never a bare slug). The Library's own
+                // wording wins when it sends one (staging 13 Oct sent none at resource level: locked, requiredTier, rows []).
                 const tier = String(res.requiredTier || '');
                 const msg = res.locked
-                    ? (tier ? 'This is included with the ' + tier.charAt(0).toUpperCase() + tier.slice(1) + ' plan.' : 'This is part of a paid plan.')
+                    ? (res.lockMessage || (tier ? 'This is included with the ' + tier.charAt(0).toUpperCase() + tier.slice(1) + ' plan.' : 'This is part of a paid plan.'))
                     : 'This page has nothing in it yet.';
                 body.appendChild(el('p', { className: res.locked ? 'swml-library-locked' : 'swml-prior-empty', textContent: msg }));
                 return;
