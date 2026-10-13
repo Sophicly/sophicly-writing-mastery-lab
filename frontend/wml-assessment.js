@@ -3631,6 +3631,29 @@
         return String(Math.max(1, Math.min(9, Math.round(1 + (max > 0 ? (score / max) : 0) * 8))));
     }
     // @RESP-FB-PURE-END
+    // @SIGNOFF-PURE-BEGIN
+    // ⭐ v7.20.868 (FIXLIST signoff-enter-all-marks — Neil, 13 Oct, reviewing Reeham's Lang P1 "4. Polish Your Writing":
+    // "can you see it says enter all marks before signing off? What does that mean? Why is it saying that?"). Sign-off
+    // stays locked while a feedback box reads "(— / N)". Two defects, one rule:
+    //   1. A PLANNING / OUTLINING / POLISHING document carries the assessment's feedback boxes forward as context — no
+    //      mark is entered in those lessons, so an unmarked box there (Reeham's diagnostic Q4/Q5) locked sign-off for
+    //      ever. Marks gate the lessons that MARK, never the drafting stages.
+    //   2. The warning never said which boxes. It names them now.
+    function signoffUnmarked(labels, task) {
+        if (/^(planning|outlining|polishing)$/.test(String(task || ''))) return [];
+        const out = [];
+        (labels || []).forEach((label) => {
+            const m = String(label || '').match(/^(.*?)\s*\((\S+)\s*\/\s*(\d+(?:\.\d+)?)\)$/);
+            if (m && m[2] === '\u2014') out.push(m[1].replace(/\bFeedback:\s*/, '').replace(/\s+/g, ' ').trim() || m[1].trim());
+        });
+        return out;
+    }
+    function signoffMarksHint(names) {
+        if (!names || !names.length) return '';
+        const list = names.length === 1 ? names[0] : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+        return '\u26A0 No mark yet for ' + list + '. Set ' + (names.length === 1 ? 'it' : 'each one') + ' in its Feedback box before signing off.';
+    }
+    // @SIGNOFF-PURE-END
     // @STALE-REGEN-PURE-BEGIN
     // ⭐ v7.20.853 (FIXLIST blank-plan-1298 — Neil, 12 Oct: "she definitely had work up to I think around question three,
     // but it looks like her document is blank"). MEASURED: the 12 Oct go re-worded AQA Paper 2 Topic 1's Question 1 (2026
@@ -59853,7 +59876,9 @@
                 signBtn.style.cursor = 'not-allowed';
 
                 const _refreshSignBtnState = () => {
-                    const marksReady = _marksReadyForSignoff(editor);
+                    const _unmarked = _signoffUnmarked(editor);
+                    const marksReady = _unmarked.length === 0;
+                    if (_unmarked.length) marksHint.textContent = signoffMarksHint(_unmarked);
                     const ready = checkbox.checked && marksReady;
                     signBtn.disabled = !ready;
                     signBtn.style.opacity = ready ? '' : '0.5';
@@ -60184,15 +60209,15 @@
         // to mark (Codex / Conceptual Notes / CW) OR every feedback section has a mark.
         // Sign-off stamps Date Completed, so it must not fire on a part-marked assessment.
         function _marksReadyForSignoff(editor) {
-            if (!editor) return true;
-            const fb = editor.querySelectorAll('[data-section-type="feedback"]');
-            if (fb.length === 0) return true; // nothing to mark — tutor judges completion
-            for (const section of fb) {
-                const label = section.getAttribute('data-section-label') || '';
-                const m = label.match(/\((\S+)\s*\/\s*(\d+)\)$/);
-                if (m && m[1] === '—') return false; // a mark is still unset
-            }
-            return true;
+            return _signoffUnmarked(editor).length === 0;
+        }
+        // v7.20.868: the feedback boxes still waiting for a mark, by name ("Q4", "Body Paragraph 2") — read by the gate
+        // AND by the warning, so the warning can say WHICH (Neil, 13 Oct: "Enter all marks before signing off. What
+        // does that mean?").
+        function _signoffUnmarked(editor) {
+            if (!editor) return [];
+            const labels = Array.from(editor.querySelectorAll('[data-section-type="feedback"]')).map(s => s.getAttribute('data-section-label') || '');
+            return signoffUnmarked(labels, state.task);
         }
 
         // v7.19.756: PROGRAMMATIC, embedded-safe commit of the essay-assessment

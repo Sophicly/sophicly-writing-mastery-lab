@@ -431,8 +431,11 @@
             state.topicLabel = state.topicNumber ? `Topic ${state.topicNumber}` : '';
             if (!state.textName) state.textName = getTextLabel(state.text, state.subject) || state.text;
             if (!state.draftType) {
-                if (state.topicNumber === 1) state.draftType = 'diagnostic';
-                else if (state.topicNumber >= 3) state.draftType = 'development';
+                // v7.20.868: honour the lesson's phase, as the student path does (below, ~L460). Review mode called every
+                // topic-1 lesson 'diagnostic', so a tutor reviewing a REDRAFT lesson read "Essay plan is not required for
+                // the first diagnostic" on its sign-off (Neil, 13 Oct, Reeham's "4. Polish Your Writing").
+                if (state.topicNumber === 1) state.draftType = state.isRedraft ? 'diagnostic_redraft' : 'diagnostic';
+                else if (state.topicNumber >= 3) state.draftType = state.isRedraft ? 'development_redraft' : 'development';
             }
             state.canvasTimer = 0;
             state.step = 0;
