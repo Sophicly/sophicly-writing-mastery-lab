@@ -153,7 +153,10 @@ function runSetup(initialState, opts) {
 {
     const pinAt = setupSrc.indexOf('_pinCwIdentity()');
     T(pinAt !== -1, 'renderSetup calls _pinCwIdentity()');
-    const before = setupSrc.slice(0, pinAt);
+    // v7.20.856: the no-root guard (`if (!$('#swml-root')) return;`) may also precede it — with no
+    // root there is no Lab on the page to render, and a later SPA nav re-runs renderSetup. Only that
+    // exact line is exempted, so any other early return still counts.
+    const before = setupSrc.slice(0, pinAt).replace(/if \(!\$\('#swml-root'\)\) return;/, '');
     const returnsBefore = (before.match(/\breturn\b/g) || []).length;
     // Exactly one legitimate early return precedes it: the tier gate (!hasWMLAccess), which never
     // reaches a canvas at all.

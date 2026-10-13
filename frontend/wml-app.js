@@ -400,6 +400,10 @@
     }
 
     function renderSetup() {
+        // v7.20.856: no #swml-root = no Lab on this page (boot runs on every page the script
+        // loads on). Every branch below writes into the root, so bail before any of them —
+        // a no-access visitor here used to get a TypeError from transitionSetup instead.
+        if (!$('#swml-root')) return;
         // Tier gate: Free and Guest cannot use WML at all
         if (!hasWMLAccess) {
             renderUpgradePrompt();
