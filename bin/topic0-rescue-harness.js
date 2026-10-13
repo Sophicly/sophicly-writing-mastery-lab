@@ -32,6 +32,12 @@ const B = SRC.match(/if \(empty\(\$raw\) && \(\$topic_number === null \|\| \$top
 ok(A.length === 2 && A.every(l => /!self::topic0_is_own_document\(\$suffix\)/.test(l)), '⭐ Direction A (borrow + WRITE FORWARD the topic-0 doc) — student and review loaders', A);
 ok(B.length === 2 && B.every(l => /!self::topic0_is_own_document\(\$suffix\)/.test(l)), '⭐ Direction B (borrow a _tN doc for an empty topic 0) — student and review loaders', B);
 
+console.log('\n3. the "already recorded?" read (v7.20.869) — topic 0 is exact, never a wildcard');
+const QE = fs.readFileSync(path.join(__dirname, '..', 'includes', 'class-quiz-engine.php'), 'utf8');
+const gpr = QE.slice(QE.indexOf('public function get_persisted_result('), QE.indexOf('public function get_persisted_result(') + 4000);
+ok(/AND \( \( %d = 0 AND \( topic_number IS NULL OR topic_number = 0 \) \) OR topic_number = %d \)/.test(gpr), '⭐ topic 0 matches only topic-0 rows (NULL or 0); topic N > 0 stays exact');
+ok(!/AND \( %d = 0 OR topic_number = %d \)/.test(gpr), 'the wildcard form is gone');
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 if (fail) { console.log('❌ topic0-rescue-harness FAILED'); process.exit(1); }
 console.log('✅ topic0-rescue-harness passed (a Final Assessment never borrows Assessment 2, nor lends to it).');

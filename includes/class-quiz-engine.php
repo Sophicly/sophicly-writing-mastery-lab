@@ -447,11 +447,18 @@ class SWML_Quiz_Engine {
              WHERE user_id = %d AND board = %s AND text_slug = %s
                AND task = %s
                AND total_score IS NOT NULL AND total_score <> ''
-               AND ( %d = 0 OR topic_number = %d )
+               AND ( ( %d = 0 AND ( topic_number IS NULL OR topic_number = 0 ) ) OR topic_number = %d )
              ORDER BY updated_at DESC, id DESC LIMIT 1",
             absint($user_id), sanitize_key($board), sanitize_text_field($text),
             $ms_task, (int) $topic, (int) $topic
         ), ARRAY_A);
+        // ⭐ v7.20.869 (FIXLIST grades-wrong-anam-reeham — Neil, 13 Oct: "I want the correct grade in the correct place"):
+        // topic 0 used to be a WILDCARD here (`%d = 0 OR …`), so a topic-0 page — the Final Assessment (since v7.20.859)
+        // and Spot the Difference — read Assessment 2's / the Quiz's result as its own. Measured on prod: Reeham's A
+        // Christmas Carol Final Assessment counted as "already recorded" from her Assessment 2 row (16/20 · Grade 7),
+        // which also stops the controller starting a real Final Assessment. Topic 0 now matches topic-0 rows only
+        // (stored as NULL by the student-data listener, or 0); a topic N > 0 was already exact and is unchanged.
+        // Gate: bin/topic0-rescue-harness.js.
         if (!$row || $row['total_score'] === null || $row['total_score'] === '') return null;
         $parts = explode('/', (string) $row['total_score']);
         $score = isset($parts[0]) ? (float) $parts[0] : 0;
