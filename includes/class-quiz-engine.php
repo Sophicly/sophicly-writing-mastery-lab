@@ -179,10 +179,43 @@ class SWML_Quiz_Engine {
             $accumulator['attempt_number'] = $seq;
         }
 
+        // v7.20.870 (FIXLIST msa-attempt-reuse-overwrites-grade): the MSA's frontend attempt # restarts at 1 every
+        // fresh sitting (msaAttempts.length + 1), so a re-sit on another day re-emitted …:_msa:a1 and the student-data
+        // listener UPDATEd that row — prod 13 Oct: Anam's code-scored 20/20 · G9 (7 Sep) became 12/20 · G5. The
+        // server now takes the next number AFTER every attempt already on record for this document (the listener's
+        // own session_id: canvas:{board}:{text}:t{topic}:_msa:aN). Assigned once here, so a re-finalize stays idempotent.
+        if ($accumulator['quiz_type'] === 'mark_scheme_assessment') {
+            global $wpdb;
+            $prefix = sprintf('canvas:%s:%s:t%d:_msa:a', sanitize_text_field($accumulator['board']),
+                sanitize_text_field($accumulator['text']), absint($accumulator['topic_number']));
+            $on_record = $wpdb->get_col($wpdb->prepare(
+                "SELECT session_id FROM {$wpdb->prefix}sophicly_session_records WHERE user_id = %d AND session_id LIKE %s",
+                absint($user_id), $wpdb->esc_like($prefix) . '%'
+            ));
+            $accumulator['attempt_number'] = self::next_msa_attempt($accumulator['attempt_number'], (array) $on_record, $prefix);
+        }
+
         $this->save_accumulator($user_id, $accumulator, $scope);
         error_log("[WML Quiz Engine] start uid={$user_id} type={$accumulator['quiz_type']} total={$accumulator['total_questions']} board={$accumulator['board']} text={$accumulator['text']} attempt={$accumulator['attempt_number']} scope={$scope}");
         return $accumulator;
     }
+
+    /**
+     * v7.20.870: the MSA attempt # for a new round — never one already on record for this document, never below the
+     * client's own count. $on_record = session_ids starting with $prefix ('canvas:…:_msa:a').
+     */
+    // @MSA-ATTEMPT-PURE-BEGIN
+    public static function next_msa_attempt($client_attempt, array $on_record, $prefix) {
+        $max = 0;
+        foreach ($on_record as $sid) {
+            $sid = (string) $sid;
+            if (strpos($sid, $prefix) !== 0) continue;
+            $n = substr($sid, strlen($prefix));
+            if (ctype_digit($n)) $max = max($max, (int) $n);
+        }
+        return max(1, (int) $client_attempt, $max + 1);
+    }
+    // @MSA-ATTEMPT-PURE-END
 
     /**
      * Record a single question's result. Updates running totals.

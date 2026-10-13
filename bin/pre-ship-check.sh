@@ -218,6 +218,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/signoff-gate-harness.js || fail=1
 fi
 
+# v7.20.870 (FIXLIST msa-attempt-reuse-overwrites-grade): a fresh Mark Scheme Assessment sitting re-used attempt a1 and
+# the listener overwrote an earlier grade (Anam's code-scored G9, prod 13 Oct). Falsified on the pre-fix file.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'class-quiz-engine\.php|msa-attempt-harness\.js'; then
+  node bin/msa-attempt-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document
