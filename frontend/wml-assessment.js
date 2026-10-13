@@ -19018,7 +19018,9 @@
     // finished document was MEASURED reaching 100% in a real browser (prod, 13 Oct 2026: 1389 steps 1–9,
     // 1352 + 1332 steps 6/8/10). No student has finished a later step, a trial or the final assessment,
     // so those stay watch-only (their own `other:` family) until one is measured — widen this then.
-    const MC_GATE_CW_MEASURED = /^cw_step_(?:[1-9]|10)$/;
+    // v7.20.860 (Neil, Actions round t, 13 Oct: "go, but not Steps 6 and 8"): Steps 6 and 8 are left out
+    // too — watch-only like the unmeasured steps, although finished copies of both did reach 100%.
+    const MC_GATE_CW_MEASURED = /^cw_step_(?:[1-57]|9|10)$/;
     function mcGateFamily(task) {
         const t = String(task || '');
         if (t === '' || t === 'diagnostic') return 'diagnostic';

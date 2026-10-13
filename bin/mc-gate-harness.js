@@ -67,7 +67,13 @@ ok(family('') === 'diagnostic' && family('diagnostic') === 'diagnostic', "'' and
 ok(family('assessment') === 'assessment' && family('redraft_assessment') === 'assessment', 'assessment + redraft_assessment are the assessment family');
 ok(family('cw_step_3') === 'cw', 'a CW step is the cw family');
 // v7.20.857: only the CW steps measured at 100% (1–10) can be enforced; the rest are watch-only.
-ok(['cw_step_1', 'cw_step_9', 'cw_step_10'].every(t => family(t) === 'cw'), 'measured CW steps 1–10 are the cw family');
+ok(['cw_step_1', 'cw_step_5', 'cw_step_7', 'cw_step_9', 'cw_step_10'].every(t => family(t) === 'cw'), 'CW steps 1–5, 7, 9 and 10 are the cw family');
+// v7.20.860 (Neil, Actions round t: "go, but not Steps 6 and 8"): Steps 6 and 8 are watch-only.
+ok(family('cw_step_6') === 'other:cw_step_6' && family('cw_step_8') === 'other:cw_step_8', 'CW Steps 6 and 8 are left out (watch-only)');
+ok(decide({ verdict: 'incomplete', family: family('cw_step_6'), exempt: '' }, 'enforce', ['assessment', 'cw', 'diagnostic']).block === false
+    && decide({ verdict: 'incomplete', family: family('cw_step_8'), exempt: '' }, 'enforce', ['assessment', 'cw', 'diagnostic']).block === false,
+    'an unfinished Step 6 or Step 8 is never blocked, even with cw switched on');
+ok(family('cw_step_16') === 'other:cw_step_16' && family('cw_step_60') === 'other:cw_step_60', 'a two-digit step that merely starts with 1 or 6 is not caught by the class');
 ok(family('cw_step_11') === 'other:cw_step_11' && family('cw_step_29') === 'other:cw_step_29'
     && family('cw_trial_1') === 'other:cw_trial_1' && family('cw_final_assessment') === 'other:cw_final_assessment',
     'unmeasured CW tasks (step 11+, trials, final assessment) are their own watch-only family');
