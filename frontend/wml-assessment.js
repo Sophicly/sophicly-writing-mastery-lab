@@ -552,6 +552,20 @@
     // is viewing a student's work. Click opens a modal with full review context.
     // Previous versions used a wide text pill (v7.15.54) and a chat-pane overlay
     // (v7.15.53) — both too intrusive.
+    // ⭐ v7.20.866 (Neil, 13 Oct, via Dashboard 124 — reviewing 1287: "we've still got the old reviewing as student
+    // bar… I don't think we need that old one anymore. Neither in the sidebar, in the protocol progress sidebar. Nor
+    // above the document, nor below it… if we just have the one across the top, I think that's visible enough").
+    // Focus now renders ONE teal review bar (.spl-review-bar: Reviewing X · Switch student · Set a target · Exit review)
+    // on every review-mode page. The canvas's own review chrome — the pill above the document and the "Tutor view ·
+    // View as student" badges in the sidebar and footer — shows ONLY where that bar is absent, so a viewer is never
+    // left with no "you are reviewing" and no way out: a page outside Focus, and LIVE MODELLING (a student watching
+    // an author — not Focus review mode, so no teal bar; the canvas line is the only thing that says what it is).
+    // Cost, stated: "View as student" (the comment pop-up preview) lived only in this chrome, so it goes with it.
+    function _showOldReviewChrome() {
+        if (!state.reviewMode) return false;
+        if (state.reviewRole === 'live_modelling') return true;
+        return !document.querySelector('.spl-review-bar');
+    }
     function buildTutorViewPill() {
         const isParent = state.viewerMode === 'readonly' || state.reviewRole === 'parent';
         const viewLabel = state.reviewRole === 'live_modelling' ? 'Live modelling' : (isParent ? 'Parent view' : 'Tutor view');
@@ -19833,7 +19847,7 @@
 
         // Badges
         const protoBadges = el('div', { className: 'swml-sidebar-badges' });
-        if (state.reviewMode) protoBadges.appendChild(buildTutorViewPill()); // v7.15.55
+        if (_showOldReviewChrome()) protoBadges.appendChild(buildTutorViewPill()); // v7.15.55
         /* ⭐⭐ v7.20.459 — THE IDENTITY BADGES ARE DELETED HERE TOO (Neil, ruled 2026-08-07; §4d-ii).
            Deleting them only from the canvas header would have been half a change: the header and
            this strip are ALTERNATES selected by environment (`useTrainingEnv`, :28561 → the
@@ -40876,7 +40890,7 @@
         // Context badges (left)
         // v7.13.42: CW exercises — check BOTH state.task and state.mode for robust detection
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
-        if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
+        if (_showOldReviewChrome()) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
 
         /* ⭐⭐ v7.20.459 — THE IDENTITY BADGES ARE GONE (Neil, ruled 2026-08-07; spec §4d-ii).
            The task/diagnostic badge, the phase badge, board/subject/text, Topic N, Step N and
@@ -41533,7 +41547,8 @@
         // so it tracks the column on sidebar-collapse / chat-resize for free — exactly
         // like the ToC island. Replaces the focus-template floating banner, which lived
         // outside the embed and could never see the collapsible sidebar / resizable chat.
-        if (state.reviewMode) {
+        // v7.20.866: only where Focus's teal review bar is absent (see _showOldReviewChrome).
+        if (_showOldReviewChrome()) {
             const rbBar = el('div', { className: 'swml-tutor-banner-bar' });
             const rb = el('div', { className: 'swml-tutor-banner' });
             const _eye = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -48521,7 +48536,7 @@
 
                         // Badges — v7.13.52: CW exercises show single "Creative Writing" badge instead of board/subject/text
                         const protoBadges = el('div', { className: 'swml-sidebar-badges' });
-                        if (state.reviewMode) protoBadges.appendChild(buildTutorViewPill()); // v7.15.55
+                        if (_showOldReviewChrome()) protoBadges.appendChild(buildTutorViewPill()); // v7.15.55
                         if (isCwTask) {
                             protoBadges.appendChild(el('span', { className: 'swml-sidebar-badge', textContent: 'Creative Writing Masterclass' }));
                             // v7.13.58: Show project name in sidebar (synchronous from state)
@@ -77358,7 +77373,7 @@ ${html}
         const headerRow = el('div', { className: 'swml-canvas-header swml-feedback-header' });
 
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
-        if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
+        if (_showOldReviewChrome()) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
         /* v7.20.459: identity badges deleted here too — board · subject · text · Topic N · the task
            badge. `feedback_discussion` is a `free`-environment task, so this header WAS its only
            badge strip; that is exactly why the deletion had to be justified by the breadcrumb
@@ -77977,7 +77992,7 @@ ${html}
         // ── Header Row ──
         const headerRow = el('div', { className: 'swml-canvas-header' });
         const ctxBadges = el('div', { className: 'swml-canvas-ctx' });
-        if (state.reviewMode) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
+        if (_showOldReviewChrome()) ctxBadges.appendChild(buildTutorViewPill()); // v7.15.54
         /* v7.20.459: identity badges deleted here too (third and last ctxBadges builder) — board ·
            subject · text · the task label. Same ruling, same reason as the other two: the lesson
            is called "2. EXAM PREP: Generate an Exam-Style Question" inside a named course, which

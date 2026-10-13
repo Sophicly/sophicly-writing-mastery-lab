@@ -197,6 +197,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/library-panel-harness.js || fail=1
 fi
 
+# v7.20.866 (FIXLIST remove-old-review-chrome — Neil, 13 Oct): the canvas's own review chrome shows only where Focus's
+# teal .spl-review-bar is absent (and always for live modelling). Falsified at .866 on the pre-fix file.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|review-chrome-harness\.js'; then
+  node bin/review-chrome-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document
