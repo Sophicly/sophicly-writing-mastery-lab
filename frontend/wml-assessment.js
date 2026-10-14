@@ -1341,6 +1341,19 @@
         const plural = facts.untrained.length > 1;
         return `(${_planListJoin(facts.untrained)} ${plural ? 'are' : 'is a'} quick comprehension question${plural ? 's' : ''} — you'll answer ${plural ? 'them' : 'it'} directly in the exam by reading the source and picking out the answers. No training needed, no plan.)`;
     }
+    // v7.20.891 (Neil, Actions round ac: "Yes, the first message of each redraft planning lesson"). His approved words, ONE
+    // source for all three producers of a planning lesson's first message: the Language pre-chain greeting, the poetry
+    // greeting, and Sophia's first reply on every other planning lesson. Static words, so a durable turn may carry them.
+    const PLAN_TRUST_MD = '**Trust the process:** we plan each paragraph together now, then outline it, then polish it. That order is what lifts your grade.';
+    const PLAN_TRUST_HTML = '<p><strong>Trust the process:</strong> we plan each paragraph together now, then outline it, then polish it. That order is what lifts your grade.</p>';
+    // Sophia's FIRST reply on a fresh planning session (no assistant turn yet) leads with the line; '' otherwise. Both
+    // pipelines add it to what is SHOWN and STORED, never to res.reply: detectPlanningStep matches reply words against the
+    // next step's label ("plan", "paragraph"), and a step jump from exactly that is the v7.20.706 bug class.
+    function _planTrustLeadFor(history) {
+        if (state.task !== 'planning' || state.reviewMode) return '';
+        if ((history || []).some(m => m && m.role === 'assistant')) return '';
+        return PLAN_TRUST_MD + '\n\n';
+    }
     // Question text per stage — ONE source for both pipelines. The detection regexes in
     // _planPreChainStageFor are byte-paired with these strings: change one, change both.
     function _planChainQuestionText(stage, firstName) {
@@ -1362,8 +1375,8 @@
             const predCount = _planCountWord(_predN);
             // v7.20.692: a writing-only topic has no source, so no predictions step to announce.
             const predStep = _predN === 1 ? 'make one quick prediction, ' : _predN ? `make ${predCount} quick predictions, ` : '';
-            plain = `Hi ${fn}! Welcome to your planning session for ${paperName}. Here's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
-            html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>${paperName}</strong>.</p></div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
+            plain = `Hi ${fn}! Welcome to your planning session for ${paperName}.\n\n${PLAN_TRUST_MD}\n\nHere's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.${unNote ? ' ' + unNote : ''}\n\nYou're not planning from memory alone — the **Mastery Toolkit**, the **Table of Techniques** and the **Library** are open to you the whole session (buttons below). Strong writers absorb from everywhere.\n\nFirst: **what grade are you aiming for?**`;
+            html = `<div style="margin-bottom:12px"><p>Hi <strong>${fn}</strong>! Welcome to your planning session for <strong>${paperName}</strong>.</p></div><div style="margin-bottom:12px">${PLAN_TRUST_HTML}</div><div style="margin-bottom:12px"><p>Here's what's coming: we'll set your goals, ${predStep}then ${plannedPhrase.replace(/—\s*(.+?)\s*—/, '— <strong>$1</strong> —')} one element at a time, built entirely from your own ideas. Everything you plan is filed straight into your document, and next lesson you'll write from it.</p>${unNote ? `<p style="margin-top:8px;font-size:12.5px;opacity:0.8">${unNote}</p>` : ''}</div><div style="margin-bottom:12px"><p>You're not planning from memory alone — the <strong>Mastery Toolkit</strong>, the <strong>Table of Techniques</strong> and the <strong>Library</strong> are open to you the whole session (buttons below). Strong writers absorb from everywhere.</p></div><p>First: <strong>what grade are you aiming for?</strong></p>`;
         } else if (stage === 'reflect') {
             // v7.20.56: ask-then-reveal, beat 1 (the ASK — no AI turn, free-typed reply).
             // Research-locked framing (Kluger & DeNisi 1996): TASK-level recall only —
@@ -1587,8 +1600,9 @@
             } else {
                 const poetBit = info.focusPoet ? ' by ' + escapeHTML(info.focusPoet) : '';
                 const qBit = info.question ? ' for: <em>' + escapeHTML(info.question) + '</em>' : '';
-                plain = 'We\'re planning your comparison of ' + (info.focusTitle || 'your focus poem') + (info.question ? ' for: ' + info.question : '') + '. Choose the poem to compare it with:';
-                html = '<p>We\'re <strong>planning your comparison of ' + escapeHTML(info.focusTitle || 'your focus poem') + '</strong>' + poetBit + qBit + '.</p><p style="margin-top:8px">Choose the anthology poem you\'ll compare it with:</p>';
+                // v7.20.891: the trust line is this lesson's first message too (PLAN_TRUST_*, one source).
+                plain = 'We\'re planning your comparison of ' + (info.focusTitle || 'your focus poem') + (info.question ? ' for: ' + info.question : '') + '.\n\n' + PLAN_TRUST_MD + '\n\nChoose the poem to compare it with:';
+                html = '<p>We\'re <strong>planning your comparison of ' + escapeHTML(info.focusTitle || 'your focus poem') + '</strong>' + poetBit + qBit + '.</p><div style="margin-top:8px">' + PLAN_TRUST_HTML + '</div><p style="margin-top:8px">Choose the anthology poem you\'ll compare it with:</p>';
             }
             if (bc) bc.innerHTML = html;
             if (!already) {
@@ -22949,8 +22963,10 @@
                         console.log('WML poetry-seq: playing "' + _seqPlay + '" (code-served, no AI turn)');
                     } else {
                         // v7.20.252 (Fable F4): a marker-only reply strips to empty — never a blank bubble.
-                        if (cleanReply && cleanReply.trim()) addChatMessage(formatted, 'ai', cleanReply);
-                        WML.recordTurn(canvasChatHistory, _walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply }, { durable: true, why: 'the model actually said it' });
+                        // v7.20.891: a planning lesson's FIRST reply leads with the trust line — shown and stored; res.reply and cleanReply untouched (_planTrustLeadFor).
+                        const _trustLead = (cleanReply && cleanReply.trim()) ? _planTrustLeadFor(canvasChatHistory) : '';
+                        if (cleanReply && cleanReply.trim()) addChatMessage(_trustLead ? (_walkBeat ? _beatChipBlock(_walkBeat) : '') + formatAI(_trustLead + cleanReply) : formatted, 'ai', _trustLead + cleanReply);
+                        WML.recordTurn(canvasChatHistory, _walkBeat ? { role: 'assistant', content: _trustLead + res.reply, beat: _walkBeat } : { role: 'assistant', content: _trustLead + res.reply }, { durable: true, why: 'the model actually said it, led on a planning first reply by the static trust line' });
                         if (_poetryPlanActive()) _poetryPostReplyCodeTurn(res.reply, {
                             addChatMessage: addChatMessage, chatMessages: chatMessages,
                             history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,
@@ -50625,8 +50641,10 @@
                                         console.log('WML poetry-seq: playing "' + _seqPlay + '" (code-served, no AI turn)');
                                     } else {
                                         // v7.20.252 (Fable F4): marker-only reply strips to empty — never a blank bubble.
-                                        if (cleanReply && cleanReply.trim()) addChatMessage(formatted, 'ai', cleanReply);
-                                        WML.recordTurn(canvasChatHistory, _walkBeat ? { role: 'assistant', content: res.reply, beat: _walkBeat } : { role: 'assistant', content: res.reply }, { durable: true, why: 'the model actually said it' });
+                                        // v7.20.891: twin of pipeline 1 — a planning lesson's FIRST reply leads with the trust line.
+                                        const _trustLead = (cleanReply && cleanReply.trim()) ? _planTrustLeadFor(canvasChatHistory) : '';
+                                        if (cleanReply && cleanReply.trim()) addChatMessage(_trustLead ? (_walkBeat ? _beatChipBlock(_walkBeat) : '') + formatAI(_trustLead + cleanReply) : formatted, 'ai', _trustLead + cleanReply);
+                                        WML.recordTurn(canvasChatHistory, _walkBeat ? { role: 'assistant', content: _trustLead + res.reply, beat: _walkBeat } : { role: 'assistant', content: _trustLead + res.reply }, { durable: true, why: 'the model actually said it, led on a planning first reply by the static trust line' });
                                         if (_poetryPlanActive()) _poetryPostReplyCodeTurn(res.reply, {
                                             addChatMessage: addChatMessage, chatMessages: chatMessages,
                                             history: canvasChatHistory, chatId: canvasChatId, chatTextarea: chatTextarea,

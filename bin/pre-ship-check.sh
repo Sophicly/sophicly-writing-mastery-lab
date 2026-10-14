@@ -260,6 +260,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/path-box-harness.js || fail=1
 fi
 
+# v7.20.891 (round ac): "Trust the process" leads the first message of every planning lesson — the Language greeting,
+# the poetry greeting, and Sophia's first reply in both pipelines (never res.reply: detectPlanningStep reads it). 4 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|trust-line-harness\.js'; then
+  node bin/trust-line-harness.js || fail=1
+fi
+
 # v7.20.882 (FIXLIST p&c-1397-lock-device): the display-lock guard — a student change to the writing of an assessment /
 # discuss lesson is refused at the transaction, by any route, and recorded; code, marks and migrations pass. 4 mutations.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
