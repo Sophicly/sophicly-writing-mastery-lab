@@ -17673,7 +17673,7 @@
             // explanation only on the FIRST render (opts.intro); the loop / change-poem / resume
             // re-renders stay short so the rationale isn't repeated every poem.
             var fn = '';
-            try { fn = (config.userName || '').split(' ')[0] || ''; } catch (_) {}
+            try { fn = _greetingFirstName(''); } catch (_) {}
             var welcomeHTML, welcomePlain;
             if (allDone) {
                 welcomePlain = 'You’ve built Conceptual Notes for every poem here. Pick any poem to revisit and refine its notes.';
@@ -20132,7 +20132,18 @@
         } catch (e) { console.warn('WML silent-send failed —', e && e.message); return false; }
     }
 
+    // v7.20.894 (FIXLIST review-greeting-uses-viewer-name, measured on staging 15 Oct): the name a greeting addresses is the
+    // STUDENT's — in review, the student being viewed, never the viewer. A tutor opening a student's greeting-only assessment
+    // chat saw it rebuilt as "Hi <tutor>!". ONE helper for every greeting builder.
+    function _greetingFirstName(fallback) {
+        const n = state.reviewMode ? (state.reviewStudentName || '') : (config.userName || '');
+        return String(n).trim().split(/\s+/)[0] || (fallback === undefined ? 'there' : fallback);
+    }
     function saveCanvasChat(history, chatId) {
+        // v7.20.894: a reviewer's page NEVER saves chat. The save writes the VIEWER's own record (localStorage + the server's
+        // get_current_user_id) under the student's lesson identity, and review loads deliberately never read it back — so a
+        // save in review only ever polluted the tutor's own data (measured: the greeting rebuild above POSTed /canvas/chat-save).
+        if (state.reviewMode) return;
         // 1. Instant localStorage write (include step + task for resume and stale detection)
         const _chatKeyNow = CHAT_SAVE_KEY(), _chatTsNow = Date.now();   // v7.20.639 (#598)
         try {
@@ -21270,7 +21281,7 @@
                         if (state.task !== 'mark_scheme_unit') state.step = 1;
                         if (assessCompleteBtnRef.value) assessCompleteBtnRef.value.classList.remove('swml-assess-ready');
                         updateProgress(1);
-                        const fn = (config.userName || '').split(' ')[0] || 'there';
+                        const fn = _greetingFirstName();
 
                         if (_fqDeterministic()) {
                             // v7.19.579: banked FQ restart — deterministic controller, fresh
@@ -22107,7 +22118,7 @@
                 plain = `Good — noted. Now your **headline goal**: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan. Please choose the option that best describes your focus:\n\n${optsPlain}`;
                 html = `<p>Good — noted. Now your <strong>headline goal</strong>: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan.</p><p style="margin-top:8px">Choose the option that best describes your focus, or type your own:</p>`;
             } else {
-                const t = _planChainQuestionText(stage, (config.userName || '').split(' ')[0]);
+                const t = _planChainQuestionText(stage, _greetingFirstName());
                 plain = t.plain; html = t.html;
             }
             // v7.20.56: the reflect REVEAL (grade + priority target, code-owned) rides
@@ -47894,7 +47905,7 @@
                             });
                             const _wc0 = getResponseWordCount(canvasEditor);
                             if (_wc0 > 0) {
-                                const _firstName0 = (config.userName || '').split(' ')[0] || 'there';
+                                const _firstName0 = _greetingFirstName();
                                 const _textName0 = state.textName || state.text || 'your text';
                                 const _isLangPaper0 = _isAnyLanguagePaper(); // v7.19.828: normalised, covers Eduqas c1/c2 + CCEA u1/u4 — never exact-match state.subject (827 slug-drift rule)
                                 const _workLabel0 = _isLangPaper0 ? 'response' : 'essay';
@@ -48089,7 +48100,7 @@
                         // the GRADE greeting (not redirect — redirect copy is static).
                         if (_isGradeGreeting && !_isRedirect && canvasEditor) {
                             try {
-                                const _firstName = (config.userName || '').split(' ')[0] || 'there';
+                                const _firstName = _greetingFirstName();
                                 const _assessTextName = state.textName || state.text || 'your text';
                                 const _assessWc = getResponseWordCount(canvasEditor);
                                 const _questionText = extractEssayQuestion(canvasEditor);
@@ -48176,7 +48187,7 @@
                 } else if (isCwSi) {
                     // CW SI greeting — same as transition handler
                     setTimeout(async () => {
-                    const firstName = (config.userName || '').split(' ')[0] || 'there';
+                    const firstName = _greetingFirstName();
                     const stepLabel = WML.cwStepLabel(cwStepDef) || 'this step';
                     const stepNum = cwStepDef?.step || cwStepDef?.trial || '';
                     const projectId = state.cwProjectId;
@@ -48447,7 +48458,7 @@
                     const assessWc = getResponseWordCount(canvasEditor);
                     const questionText = extractEssayQuestion(canvasEditor);
                     if (questionText) state.question = questionText;
-                    const firstName = (config.userName || '').split(' ')[0] || 'there';
+                    const firstName = _greetingFirstName();
 
                     // v7.15.50: Empty response → redirect to the writing exercise instead
                     // of offering to mark a blank document. Greeting is a hardcoded JS
@@ -49559,7 +49570,7 @@
                                         if (assessCompleteBtn) assessCompleteBtn.classList.remove('swml-assess-ready');
                                         // Reset protocol progress sidebar to step 1
                                         updateProgress(1);
-                                        const fn = (config.userName || '').split(' ')[0] || 'there';
+                                        const fn = _greetingFirstName();
 
                                         // v7.13.42: CW exercises get CW-specific greeting on chat clear
                                         // v7.20.495 (#204): Step 9 owns chat-clear on THIS pipeline too
@@ -50297,7 +50308,7 @@
                                 plain = `Good — noted. Now your **headline goal**: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan. Please choose the option that best describes your focus:\n\n${optsPlain}`;
                                 html = `<p>Good — noted. Now your <strong>headline goal</strong>: the ONE main thing you want this paper's plan to strengthen. You'll see it threaded through every question we plan.</p><p style="margin-top:8px">Choose the option that best describes your focus, or type your own:</p>`;
                             } else {
-                                const t = _planChainQuestionText(stage, (config.userName || '').split(' ')[0]);
+                                const t = _planChainQuestionText(stage, _greetingFirstName());
                                 plain = t.plain; html = t.html;
                             }
                             // v7.20.56: reflect reveal rides the next question (twin).
@@ -51436,7 +51447,7 @@
                                                 window.__swmlCwTrial1Ctl.forceStart();
                                                 return;
                                             }
-                                            const firstName = (config.userName || '').split(' ')[0] || 'there';
+                                            const firstName = _greetingFirstName();
                                             const stepLabel = WML.cwStepLabel(cwStepDef) || 'this step';
                                             const stepNum = cwStepDef?.step || cwStepDef?.trial || '';
                                             const projectId = state.cwProjectId;
@@ -51573,7 +51584,7 @@
                                             const _workLabel4 = _isAnyLanguagePaper() ? 'response' : 'essay'; // v7.19.828: this twin missed the v7.15.116 response/essay split
                                             const questionSnippet = questionText ? `\n\nYour ${_workLabel4} question: **${questionText}**` : '';
                                             const questionHTML = questionText ? `<div class="swml-chat-qblock"><p class="swml-chat-qblock-label">Your ${_workLabel4} question:</p><p style="font-size:13px;font-style:italic">${questionText}</p></div>` : '';
-                                            const firstName = (config.userName || '').split(' ')[0] || 'there';
+                                            const firstName = _greetingFirstName();
                                             // v7.14.43: Context-aware greeting — exam practice has no "diagnostic"
                                             const assessEssayLabel = (state.mode === 'exam_prep') ? `${assessTextName} ${_workLabel4}` : (state.phase === 'redraft') ? `${assessTextName} redraft ${_workLabel4}` : `${assessTextName} diagnostic ${_workLabel4}`;
                                             const _capN5 = _essayCapGreetingNote(assessWc); // v7.19.944: cap in the opening, before the grade goal

@@ -20,7 +20,9 @@
  *   C. every tp.<walk>.tryResume() in the file sits inside the review-mode guard, and every automatic "Let's begin!"
  *      fresh-entry send is closed in review (v7.20.887: planning sent it to Sophia as the TUTOR — staging, POST /chat ×2);
  *   D. both load URLs carry the quiz identity from ONE builder;
- *   E. six mutations of the real source each make A–D fail.
+ *   E. eight mutations of the real source each make A–F fail;
+ *   F. v7.20.894 — a reviewer's page never saves chat (saveCanvasChat refuses in review), and every greeting takes its
+ *      name from _greetingFirstName: the student's, never the viewer's (measured on staging: "Hi <tutor>!" + a chat-save).
  */
 'use strict';
 const fs = require('fs');
@@ -108,6 +110,24 @@ function check(JS, REST, verbose) {
     ok(/\$\{_cwReviewProjectQS\(\)\}\$\{_quizIdentQS\(\)\}(?:\$\{_focusQS\(\)\})?`;/.test(ru), 'the review URL sends it');   // v7.20.893: the focus course rides after it
     ok(/const _quizIdent = _quizIdentQS\(\);/.test(JS) && /\$\{_stageSeed\}\$\{_quizIdent\}(?:\$\{_focusQS\(\)\})?`;/.test(JS), 'the student URL sends it from the same builder');
 
+    // v7.20.894 (FIXLIST review-greeting-uses-viewer-name, measured on staging 15 Oct): a tutor opening a student's
+    // greeting-only assessment chat saw "Hi <tutor>!" and the page POSTed /canvas/chat-save — the VIEWER's own record.
+    if (verbose) console.log('\nF · a reviewer\'s page never saves chat, and greetings address the student');
+    const sc = JS.slice(JS.indexOf('function saveCanvasChat(history, chatId) {'), JS.indexOf('function saveCanvasChat(history, chatId) {') + 900);
+    ok(/function saveCanvasChat\(history, chatId\) \{[\s\S]{0,700}?\n        if \(state\.reviewMode\) return;\n        \/\/ 1\. Instant localStorage write/.test(sc), 'saveCanvasChat refuses in review, before the localStorage write');
+    const uses = (JS.match(/config\.userName/g) || []).length;
+    ok(uses === 2 && /const n = state\.reviewMode \? \(state\.reviewStudentName \|\| ''\) : \(config\.userName \|\| ''\);/.test(JS) && /const commentAuthor = config\.userName \|\| 'Tutor';/.test(JS),
+        'every greeting takes its name from _greetingFirstName (config.userName left only there and in the comment author) — found ' + uses);
+    const gf = /    function _greetingFirstName\(fallback\) \{[\s\S]*?\n    \}\n/.exec(JS);
+    if (!gf) ok(false, '_greetingFirstName found');
+    else {
+        const run = (st, cfg, fb) => new Function('state', 'config', 'fb', gf[0] + '\nreturn _greetingFirstName(fb);')(st, cfg, fb);
+        ok(run({ reviewMode: true, reviewStudentName: 'Zayan Ahmed' }, { userName: 'Test Tutor' }) === 'Zayan', 'in review: the student\'s first name');
+        ok(run({ reviewMode: false }, { userName: 'Mira Khan' }) === 'Mira', 'not in review: the signed-in student\'s first name');
+        ok(run({ reviewMode: true, reviewStudentName: '' }, { userName: 'Test Tutor' }) === 'there' && run({ reviewMode: true }, { userName: 'Test Tutor' }, '') === '',
+            'no student name → "there" (or the caller\'s fallback), never the viewer\'s');
+    }
+
     return { pass, fail };
 }
 
@@ -127,6 +147,8 @@ const MUT = [
         '                    }   // end !state.reviewMode (v7.20.886)\n                    if (tp.quizCtl) tp.quizCtl.tryResume();\n'],
     ['planning greets Sophia as the tutor again', 'js', "} else if (state.task === 'planning' && !state.reviewMode) {", "} else if (state.task === 'planning') {"],
     ['review URL forgets the quiz identity', 'js', '${_cwReviewProjectQS()}${_quizIdentQS()}${_focusQS()}`;', '${_cwReviewProjectQS()}${_focusQS()}`;'],
+    ['a reviewer saves chat again (v7.20.894)', 'js', '        if (state.reviewMode) return;\n        // 1. Instant localStorage write', '        // 1. Instant localStorage write'],
+    ['the greeting regen uses the viewer\'s name again (v7.20.894)', 'js', 'const _firstName = _greetingFirstName();', "const _firstName = (config.userName || '').split(' ')[0] || 'there';"],
 ];
 const results = [];
 MUT.forEach(([name, which, from, to]) => {
