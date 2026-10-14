@@ -105,8 +105,8 @@ function check(JS, REST, verbose) {
     if (verbose) console.log('\nD · the quiz identity reaches both loads');
     ok(JS.split('function _quizIdentQS() {').length === 2, '_quizIdentQS() is defined exactly once');
     const ru = JS.slice(JS.indexOf('function _reviewCanvasUrl() {'), JS.indexOf('function _quizIdentQS() {'));
-    ok(/\$\{_cwReviewProjectQS\(\)\}\$\{_quizIdentQS\(\)\}`;/.test(ru), 'the review URL sends it');
-    ok(/const _quizIdent = _quizIdentQS\(\);/.test(JS) && /\$\{_stageSeed\}\$\{_quizIdent\}`;/.test(JS), 'the student URL sends it from the same builder');
+    ok(/\$\{_cwReviewProjectQS\(\)\}\$\{_quizIdentQS\(\)\}(?:\$\{_focusQS\(\)\})?`;/.test(ru), 'the review URL sends it');   // v7.20.893: the focus course rides after it
+    ok(/const _quizIdent = _quizIdentQS\(\);/.test(JS) && /\$\{_stageSeed\}\$\{_quizIdent\}(?:\$\{_focusQS\(\)\})?`;/.test(JS), 'the student URL sends it from the same builder');
 
     return { pass, fail };
 }
@@ -126,7 +126,7 @@ const MUT = [
     ['a resume added after the guard closes', 'js', '                    }   // end !state.reviewMode (v7.20.886)\n',
         '                    }   // end !state.reviewMode (v7.20.886)\n                    if (tp.quizCtl) tp.quizCtl.tryResume();\n'],
     ['planning greets Sophia as the tutor again', 'js', "} else if (state.task === 'planning' && !state.reviewMode) {", "} else if (state.task === 'planning') {"],
-    ['review URL forgets the quiz identity', 'js', '${_cwReviewProjectQS()}${_quizIdentQS()}`;', '${_cwReviewProjectQS()}`;'],
+    ['review URL forgets the quiz identity', 'js', '${_cwReviewProjectQS()}${_quizIdentQS()}${_focusQS()}`;', '${_cwReviewProjectQS()}${_focusQS()}`;'],
 ];
 const results = [];
 MUT.forEach(([name, which, from, to]) => {

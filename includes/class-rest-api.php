@@ -2741,6 +2741,50 @@ class SWML_REST_API {
     }
 
     /**
+     * v7.20.893 (dashboard #698; Neil 14 Oct: "if it's something assessed by Sophia … should that be reflected in the
+     * feedback?"). The student's target FOCUS for the course this marked document belongs to, for the "Where you are"
+     * box. The attendance tracker owns both answers — which target the work belongs to (Sophicly_Att_Targets::focus_for)
+     * and which breakdown rows tell how that item went (Sophicly_Att_Focus::describe()['wml']); WML only reads them.
+     * Sophia never sees it: the box is drawn by code after the marking is filed, outside the text she is sent, so the
+     * mark cannot move. 'ao:AOn' keys are resolved HERE from the paper spec (the client never holds an AO map): a question
+     * that assesses only that AO → 'question:Qn'; a question that splits two AOs → 'aosplit:Qn:AOn'.
+     * Marked documents only; anything missing (no course, no tracker, no focus, no row that can tell) → null.
+     */
+    private function target_focus_for_doc($request, $user_id, $board, $suffix) {
+        if (!in_array((string) $suffix, ['_assessment', '_reassessment', '_fbdiscuss'], true)) return null;
+        $course_id = absint($request->get_param('focus_course') ?? 0);
+        if (!$course_id || !class_exists('Sophicly_Att_Targets') || !method_exists('Sophicly_Att_Targets', 'focus_for')
+            || !class_exists('Sophicly_Att_Focus')) return null;
+        $t = Sophicly_Att_Targets::focus_for((int) $user_id, $course_id);
+        $focus = is_array($t) ? (string) ($t['focus'] ?? '') : '';
+        $d = $focus !== '' ? Sophicly_Att_Focus::describe($focus) : null;
+        if (!is_array($d) || empty($d['label']) || empty($d['wml'])) return null;
+        $keys = [];
+        $spec = null;
+        foreach ((array) $d['wml'] as $k) {
+            $k = (string) $k;
+            if (preg_match('/^(skill|element|question):[A-Za-z0-9_.]{1,40}$/', $k)) { $keys[] = $k; continue; }
+            if (!preg_match('/^ao:(AO\d)$/', $k, $m)) continue;
+            if ($spec === null) {
+                $subject = sanitize_text_field($request->get_param('focus_subject') ?? '');
+                $r = ($subject !== '' && class_exists('SWML_Protocol_Router')) ? SWML_Protocol_Router::get_paper_spec($board, $subject) : null;
+                $spec = (is_array($r) && ($r['kind'] ?? '') !== 'lit') ? (array) ($r['spec'] ?? []) : [];
+            }
+            foreach ((array) ($spec['sections'] ?? []) as $sec) {
+                foreach ((array) ($sec['questions'] ?? []) as $q) {
+                    $id  = (string) ($q['id'] ?? '');
+                    $aos = array_values((array) ($q['aos'] ?? []));
+                    if ($id === '' || !in_array($m[1], $aos, true)) continue;
+                    $keys[] = count($aos) === 1 ? 'question:' . $id : 'aosplit:' . $id . ':' . $m[1];
+                }
+            }
+        }
+        $keys = array_values(array_unique($keys));
+        if (!$keys) return null;
+        return ['label' => (string) $d['label'], 'keys' => $keys];
+    }
+
+    /**
      * POST /display-lock/log — v7.20.882 (FIXLIST p&c-1397-lock-device). The page refused a student change to their writing
      * in an assessment / redraft-assessment / discuss-feedback lesson (the display lock, PEDAGOGY §6). Every route we could
      * reproduce is already stopped by the input handlers, yet Shayaan 1397's assessment copy changed — so each refusal is
@@ -3099,6 +3143,7 @@ class SWML_REST_API {
                     'is_seed'      => true,
                     'markSchemeSummary' => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),   // v7.20.879
                     'topicProgress' => $this->topic_progress_for_doc($user_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
+                    'targetFocus' => $this->target_focus_for_doc($request, $user_id, $board, $suffix),   // v7.20.893 (dashboard #698)
                 ]);
             }
             // No upstream content — fall through and return this stage's stored doc.
@@ -3165,6 +3210,7 @@ class SWML_REST_API {
                         'is_seed'      => true,
                         'markSchemeSummary' => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),   // v7.20.879
                         'topicProgress' => $this->topic_progress_for_doc($user_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
+                        'targetFocus' => $this->target_focus_for_doc($request, $user_id, $board, $suffix),   // v7.20.893 (dashboard #698)
                     ]);
                 }
             }
@@ -3304,6 +3350,7 @@ class SWML_REST_API {
             // box's criteria signals. Assessment documents only; null elsewhere.
             'markSchemeSummary'   => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),
             'topicProgress'   => $this->topic_progress_for_doc($user_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
+            'targetFocus'   => $this->target_focus_for_doc($request, $user_id, $board, $suffix),   // v7.20.893 (dashboard #698)
         ]);
     }
 
@@ -3556,7 +3603,8 @@ class SWML_REST_API {
                     return rest_ensure_response(array_merge(
                         ['success' => true, 'doc' => ['html' => $seed_html], 'attempt' => $attempt, 'is_seed' => true,
                          'markSchemeSummary' => $this->mark_scheme_summary_for($student_id, $board, $text, $suffix),
-                         'topicProgress' => $this->topic_progress_for_doc($student_id, $board, $text, $topic_number, $suffix)],
+                         'topicProgress' => $this->topic_progress_for_doc($student_id, $board, $text, $topic_number, $suffix),
+                         'targetFocus' => $this->target_focus_for_doc($request, $student_id, $board, $suffix)],   // v7.20.893
                         $this->quiz_state_for($student_id, $board, $text, $topic_number, $attempt, $suffix, $request)
                     ));
                 }
@@ -3603,6 +3651,7 @@ class SWML_REST_API {
             // v7.20.879 (§32b): the tutor sees the student's "Where you are" box with the same evidence.
             'markSchemeSummary' => $this->mark_scheme_summary_for($student_id, $board, $text, $suffix),
             'topicProgress' => $this->topic_progress_for_doc($student_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
+            'targetFocus' => $this->target_focus_for_doc($request, $student_id, $board, $suffix),   // v7.20.893 (dashboard #698)
             'doc' => $doc, 'attempt' => $attempt, 'rev' => $rev]));
     }
 

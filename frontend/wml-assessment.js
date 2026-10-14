@@ -10752,6 +10752,9 @@
             // The Mark Scheme Assessment still says something worth seeing, even when the essay does not.
             crit.filter((c) => c.msa).forEach((c) => { bullets.push(c.text); facts.push(c.text); });
         }
+        // v7.20.893 (dashboard #698): the student's target focus (pathFocusLine) — a bullet, NEVER a fact: facts are what
+        // Sophia is told at the closing turn, and she is never told the focus, so it cannot move a mark.
+        if (inp.focusLine) bullets.push(inp.focusLine);
         const howLine = _pathHowLine(first, inp.how, inp.grade);
         if (howLine) bullets.push(howLine);
         return { first: first, second: second, bullets: bullets, facts: facts, priority1: priority1, how: howLine };
@@ -10826,6 +10829,69 @@
             });
         });
         return { element: element, skill: order.map((k) => ({ key: k, label: acc[k].label, earned: r2(acc[k].earned), available: r2(acc[k].available) })) };
+    }
+    // v7.20.893 (dashboard #698; Neil 14 Oct: "Maybe Sophia should even take that into account?" — agreed answer: she never
+    // sees it). The "Where you are" box's line for the student's target FOCUS: how the thing their target names did in THIS
+    // piece, and where to start. focus = { label, keys } from the server — the attendance tracker's map, with 'ao:' keys
+    // already resolved to 'question:Qn' / 'aosplit:Qn:AOn' from the paper spec. The rows come from the breakdown's own
+    // readers (breakdownPartsModel + _docQuestionMarks), so the box and the dashboard can never disagree. No row → ''
+    // (never a 0). It is a bullet only, never a fact: facts are what Sophia is told at the closing turn.
+    // A criterion as the student reads it inside a sentence: "your building sentences", "your author's purpose".
+    function _pathFocusPart(name) { return 'your ' + String(name || '').toLowerCase(); }
+    function pathFocusLine(focus, answers, qmarks) {
+        if (!focus || !focus.label || !Array.isArray(focus.keys) || !focus.keys.length) return '';
+        const ans = answers || [];
+        const parts = breakdownPartsModel(ans);
+        const qs = (qmarks && qmarks.question) || [], splits = (qmarks && qmarks.ao_holistic) || [];
+        let e = 0, a = 0, hit = false;
+        const starts = [];   // where to start: { name, e, a }
+        const unitKey = (an, u) => { const pk = _breakdownParaKey(u.part || u.label); return pk ? (an.lit ? pk : String(an.label || '').toLowerCase() + '.' + pk) : null; };
+        focus.keys.forEach((key) => {
+            const m = /^(skill|element|question|aosplit):(.+)$/.exec(String(key));
+            if (!m) return;
+            if (m[1] === 'skill') {
+                const r = parts.skill.filter((x) => x.key === m[2])[0];
+                if (!r) return;
+                hit = true; e += r.earned; a += r.available;
+                ans.forEach((an) => ((an && an.units) || []).forEach((u) => {
+                    let ue = 0, ua = 0;
+                    ((u && u.rows) || []).forEach((row) => { const sk = _gapSkillFor(u.group, row.criterion); if (sk && BREAKDOWN_SKILL_KEYS[sk] === m[2]) { ue += row.score; ua += row.worth; } });
+                    if (ua > 0) starts.push({ name: an.lit ? _pathPlace(u) : u.label, e: ue, a: ua });
+                }));
+            } else if (m[1] === 'element') {
+                const r = parts.element.filter((x) => x.key === m[2])[0];
+                if (!r) return;
+                hit = true; e += r.earned; a += r.available;
+                ans.forEach((an) => ((an && an.units) || []).forEach((u) => {
+                    if (!u || !(u.rows || []).length || unitKey(an, u) !== m[2]) return;
+                    const by = {}, order = [];
+                    u.rows.forEach((row) => {
+                        const n = _pathPartName(u.group, row.criterion);
+                        if (!by[n]) { by[n] = { name: _pathFocusPart(n), e: 0, a: 0 }; order.push(n); }
+                        by[n].e += row.score; by[n].a += row.worth;
+                    });
+                    order.forEach((n) => starts.push(by[n]));
+                }));
+            } else if (m[1] === 'question') {
+                const r = qs.filter((x) => x.key === m[2])[0];
+                if (!r) return;
+                hit = true; e += r.earned; a += r.available;
+                starts.push({ name: 'Question ' + m[2].replace(/^Q/i, ''), e: r.earned, a: r.available });
+            } else {
+                const p = /^(Q\d+):(AO\d)$/i.exec(m[2]);
+                const r = p ? splits.filter((x) => x.question === p[1] && x.key === p[2])[0] : null;
+                if (!r) return;
+                hit = true; e += r.earned; a += r.available;
+            }
+        });
+        if (!hit || !(a > 0)) return '';
+        let line = '**Your target focus: ' + focus.label + '.** This time it earned ' + _pathNum(e) + ' of ' + _pathNum(a) + ' marks.';
+        const open = starts.filter((s) => s.a > 0 && s.e < s.a - 1e-9);
+        if (starts.length > 1 && open.length) {
+            open.sort((p, q) => (p.e / p.a - q.e / q.a) || ((q.a - q.e) - (p.a - p.e)));
+            line += ' Start with ' + open[0].name + ' (' + _pathNum(open[0].e) + ' of ' + _pathNum(open[0].a) + ').';
+        }
+        return line;
     }
     // @BREAKDOWN-PARTS-PURE-END
 
@@ -12021,7 +12087,13 @@
             msa: state.markSchemeSummary || null,
             // v7.20.884 (§65): which HOW line — the lesson's phase, and the diagnostic's grade from the server (topicProgress).
             how: { phase: String(state.phase || ''), diagnosticGrade: (state.topicProgress && state.topicProgress.diagnosticGrade) || null },
+            // v7.20.893 (dashboard #698): the target-focus line — state.targetFocus comes with the marked document's load.
+            focusLine: _pathFocusLineFor(answers),
         });
+    }
+    function _pathFocusLineFor(answers) {
+        if (!state.targetFocus) return '';
+        try { return pathFocusLine(state.targetFocus, answers, _docQuestionMarks()); } catch (e) { return ''; }
     }
     // v7.20.892: the document's marked answers, paragraph by paragraph, each with its mark-table rows — ONE reader for the
     // "Where you are" box and the analytics breakdown (breakdownPartsModel), so the two can never read a card differently.
@@ -12065,6 +12137,61 @@
         }
         return answers;
     }
+    // v7.20.893: the marked QUESTIONS as the document's feedback boxes state them ("Feedback: Q2 (4.5 / 8)"), plus any audited
+    // two-AO split line — ONE reader for the analytics breakdown (_breakdownFromDoc, whose notes explain the label and the
+    // audit) and the box's target-focus line (pathFocusLine). Moved here unchanged from _breakdownFromDoc. Unmarked boxes
+    // ("—") are omitted, never 0.
+    // v7.20.723 (#754): any two AOs — Edexcel IGCSE Section B splits AO4 + AO5 ("Q6 Total: AO4 10/27 + AO5
+    // 7/18 = 17/45"); the AQA-only AO5+AO6 shape silently dropped it from the dashboard breakdown.
+    const _AO_SPLIT_RE = /AO([1-9])\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*\+\s*AO([1-9])\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*=\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)/i;
+    function _docQuestionMarks() {
+        const question = [];
+        const ao_holistic = [];
+        const editor = document.getElementById('swml-tiptap-editor');
+        if (!editor) return { question: question, ao_holistic: ao_holistic };
+        editor.querySelectorAll('[data-section-type="feedback"]').forEach(section => {
+            const label = section.getAttribute('data-section-label') || '';
+            const m = label.match(/\((\S+)\s*\/\s*(\d+)\)$/);   // === recalculateScoreSummary
+            if (!m || m[1] === '—') return;                      // unset → omit, never 0
+            const qm = label.match(/feedback\s*[:\-]?\s*q\s*(\d+)/i); // === _buildLangSidebarModel
+            if (!qm) return;                                     // element box (lit) → not a question dimension
+            const earned = parseFloat(m[1]);
+            const available = parseInt(m[2], 10);
+            if (!isFinite(earned) || !(available > 0)) return;
+            const key = 'Q' + qm[1];
+            question.push({ key: key, earned: earned, available: available });
+
+            const sp = _AO_SPLIT_RE.exec(String(section.textContent || ''));
+            if (!sp) return;
+            const aoA = 'AO' + sp[1], aoB = 'AO' + sp[4];
+            const a5e = parseFloat(sp[2]), a5a = parseInt(sp[3], 10);
+            const a6e = parseFloat(sp[5]), a6a = parseInt(sp[6], 10);
+            const z   = parseFloat(sp[7]), zm  = parseInt(sp[8], 10);
+            const sum = a5e + a6e;
+            // AUDIT — every one of these must hold or the split is not trustworthy.
+            const ok = isFinite(a5e) && isFinite(a6e) && isFinite(z)
+                && zm === available            // the line's max agrees with the box
+                && a5a + a6a === zm            // the AO maxima partition the question
+                && Math.abs(z - earned) < 0.01 // the line's total IS the ledger's mark
+                && sum >= z - 0.01;            // marks can be CAPPED (never invented)
+            if (!ok) {
+                console.warn('WML breakdown: ' + key + ' AO split failed audit — omitted.',
+                    { ao5: a5e + '/' + a5a, ao6: a6e + '/' + a6a, line: z + '/' + zm, box: earned + '/' + available });
+                return;
+            }
+            // Word-count CEILING (Neil, settled): Q5 Total = MIN(AO5+AO6, C) — the AO
+            // marks stay as AWARDED and the TOTAL is capped. So when a cap bites,
+            // AO5+AO6 legitimately exceeds the question total. We emit the awarded
+            // marks and flag the cap rather than apportion it (that would be a guess).
+            if (sum > z + 0.01) {
+                question[question.length - 1].capped_from = sum;
+                console.log('WML breakdown: ' + key + ' word-count ceiling applied — AO5+AO6 ' + sum + ' capped to ' + z);
+            }
+            ao_holistic.push({ question: key, key: aoA, earned: a5e, available: a5a });
+            ao_holistic.push({ question: key, key: aoB, earned: a6e, available: a6a });
+        });
+        return { question: question, ao_holistic: ao_holistic };
+    }
     // The box itself — a derived, firewalled strip at the top of the Action Plan (wml-section-block.js), never a
     // node: it re-derives on every pass, so it is never a stored fossil (§4c.7) and needs no migration.
     function _renderPathBox() {
@@ -12079,7 +12206,7 @@
                 if (m && m.bullets.length) {
                     const md = (s) => escapeHTML(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
                     html = '<div class="swml-path-box-head">Where you are</div><ul class="swml-path-box-list">'
-                        + m.bullets.map((b) => '<li' + (/^(Your first step|Behind it|Grade \d)/.test(b) ? ' class="swml-path-step"' : '') + '>' + md(b) + '</li>').join('')
+                        + m.bullets.map((b) => '<li' + (/^(Your first step|Behind it|Grade \d|\*\*Your target focus)/.test(b) ? ' class="swml-path-step"' : '') + '>' + md(b) + '</li>').join('')
                         + '</ul>';
                 }
             }
@@ -60950,56 +61077,15 @@
         // of one 40 (foundation-lang1.md L86) — code cannot derive them, only a marker awards
         // them. So we read them, then AUDIT them against the ledger box; anything that fails
         // the audit is dropped with a warning rather than shipped.
-        // v7.20.723 (#754): any two AOs — Edexcel IGCSE Section B splits AO4 + AO5 ("Q6 Total: AO4 10/27 + AO5
-        // 7/18 = 17/45"); the AQA-only AO5+AO6 shape silently dropped it from the dashboard breakdown.
-        const _AO_SPLIT_RE = /AO([1-9])\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*\+\s*AO([1-9])\s*:?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)\s*=\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)/i;
+        // v7.20.893: that parse now lives at module scope (_docQuestionMarks) — one reader for this breakdown AND the
+        // "Where you are" box's target-focus line, byte-identical to what ran here.
         function _breakdownFromDoc(finalMarks, maxTotal) {
             try {
                 const editor = document.getElementById('swml-tiptap-editor');
                 if (!editor || !(maxTotal > 0)) return null;
-                const question = [];
-                const ao_holistic = [];
-                editor.querySelectorAll('[data-section-type="feedback"]').forEach(section => {
-                    const label = section.getAttribute('data-section-label') || '';
-                    const m = label.match(/\((\S+)\s*\/\s*(\d+)\)$/);   // === recalculateScoreSummary
-                    if (!m || m[1] === '—') return;                      // unset → omit, never 0
-                    const qm = label.match(/feedback\s*[:\-]?\s*q\s*(\d+)/i); // === _buildLangSidebarModel
-                    if (!qm) return;                                     // element box (lit) → not a question dimension
-                    const earned = parseFloat(m[1]);
-                    const available = parseInt(m[2], 10);
-                    if (!isFinite(earned) || !(available > 0)) return;
-                    const key = 'Q' + qm[1];
-                    question.push({ key: key, earned: earned, available: available });
-
-                    const sp = _AO_SPLIT_RE.exec(String(section.textContent || ''));
-                    if (!sp) return;
-                    const aoA = 'AO' + sp[1], aoB = 'AO' + sp[4];
-                    const a5e = parseFloat(sp[2]), a5a = parseInt(sp[3], 10);
-                    const a6e = parseFloat(sp[5]), a6a = parseInt(sp[6], 10);
-                    const z   = parseFloat(sp[7]), zm  = parseInt(sp[8], 10);
-                    const sum = a5e + a6e;
-                    // AUDIT — every one of these must hold or the split is not trustworthy.
-                    const ok = isFinite(a5e) && isFinite(a6e) && isFinite(z)
-                        && zm === available            // the line's max agrees with the box
-                        && a5a + a6a === zm            // the AO maxima partition the question
-                        && Math.abs(z - earned) < 0.01 // the line's total IS the ledger's mark
-                        && sum >= z - 0.01;            // marks can be CAPPED (never invented)
-                    if (!ok) {
-                        console.warn('WML breakdown: ' + key + ' AO split failed audit — omitted.',
-                            { ao5: a5e + '/' + a5a, ao6: a6e + '/' + a6a, line: z + '/' + zm, box: earned + '/' + available });
-                        return;
-                    }
-                    // Word-count CEILING (Neil, settled): Q5 Total = MIN(AO5+AO6, C) — the AO
-                    // marks stay as AWARDED and the TOTAL is capped. So when a cap bites,
-                    // AO5+AO6 legitimately exceeds the question total. We emit the awarded
-                    // marks and flag the cap rather than apportion it (that would be a guess).
-                    if (sum > z + 0.01) {
-                        question[question.length - 1].capped_from = sum;
-                        console.log('WML breakdown: ' + key + ' word-count ceiling applied — AO5+AO6 ' + sum + ' capped to ' + z);
-                    }
-                    ao_holistic.push({ question: key, key: aoA, earned: a5e, available: a5a });
-                    ao_holistic.push({ question: key, key: aoB, earned: a6e, available: a6a });
-                });
+                const _qm = _docQuestionMarks();
+                const question = _qm.question;
+                const ao_holistic = _qm.ao_holistic;
                 // v7.20.892: the paragraph + criterion rows (breakdownPartsModel). A Literature essay has no "Qn" box, so
                 // before .892 it sent no breakdown at all — its paragraphs are what it has.
                 let parts = { element: [], skill: [] };
@@ -71669,7 +71755,13 @@
         const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
         const _docScope = WML.canvasDocScope();
         const att = _canvasAttempt();
-        return `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${_cwReviewProjectQS()}${_quizIdentQS()}`;
+        return `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${_cwReviewProjectQS()}${_quizIdentQS()}${_focusQS()}`;
+    }
+    // v7.20.893 (dashboard #698): which course's target focus a marked document's box may show, and the paper (subject)
+    // that resolves an AO focus — the server's target_focus_for_doc reads both. ONE builder for the student and tutor loads.
+    function _focusQS() {
+        const cid = (window.swmlConfig && window.swmlConfig.courseId) || 0;
+        return cid ? `&focus_course=${encodeURIComponent(cid)}&focus_subject=${encodeURIComponent(state.subject || '')}` : '';
     }
     // v7.19.955: FQ doc loads under the CN identity, but its persisted Quiz Result is keyed by the QUIZ identity
     // (course text + lesson topic) — pass it separately so the in-doc result card still surfaces.
@@ -71766,7 +71858,7 @@
             if (state.reviewMode && state.reviewStudentId) {
                 url = _reviewCanvasUrl();
             } else {
-                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}${_quizIdent}`;
+                url = `${API.canvasLoad}?board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${cwScopeQuery()}${_stageSeed}${_quizIdent}${_focusQS()}`;
             }
             // v7.19.136 instrumentation — record the URL we're about to fetch
             try { console.log('[WML load-debug v7.19.136] tryServerLoad fetch', { url: url, task: state.task, phase: state.phase, attempt: state.attempt, suffix: suffix }); } catch (_) {}
@@ -71829,6 +71921,9 @@
             // v7.20.884 (PEDAGOGY §65): this topic's diagnostic + redraft grades (server, WML's own grade records) — the box's
             // HOW line. Absent → no grade claim.
             state.topicProgress = (res && res.topicProgress && typeof res.topicProgress === 'object') ? res.topicProgress : null;
+            // v7.20.893 (dashboard #698): the student's target focus for this course ({ label, keys }) — the box's focus
+            // line. Absent (no focus, not a marked document, attendance tracker missing) → no line.
+            state.targetFocus = (res && res.targetFocus && res.targetFocus.label && Array.isArray(res.targetFocus.keys)) ? res.targetFocus : null;
             setTimeout(_updateWcRecheckBtn, 1500); // after the editor mounts the loaded doc
             if (res.success && res.doc && res.doc.html) {
                 // v7.19.247: capture the real first-edit start date for the Score Summary.
