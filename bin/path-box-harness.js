@@ -261,6 +261,7 @@ ok(/if \(bs && _path && _path\.first\) \{/.test(JS) && /Name it inside the prior
     'closing turn: the blind spot moves inside its priority only when there is a step');
 ok(/_facts \+= _gapCheckFact\(\);[^\n]*\n\s*_facts \+= _pathFactText\(_path\);/.test(JS), 'the step fact rides the closing turn that already happens (no extra call)');
 ok(/\.swml-path-box \{/.test(CSS) && /\.swml-section-block\.swml-fb-collapsed > \.swml-path-box \{ display: none !important; \}/.test(CSS), 'styled, and hidden when the Action Plan is collapsed');
+ok(/\.swml-path-box-list > li \{ list-style: disc outside; \}/.test(CSS), 'the bullets carry their own marker (the theme\'s ul[class] reset strips an inherited one — measured, staging)');
 const defs = REST.split('private function mark_scheme_summary_for(').length - 1, calls = REST.split('$this->mark_scheme_summary_for(').length - 1;
 ok(defs === 1 && calls === 4, 'server: one reader, four returns (load main · seed · reseed · tutor review) — got ' + defs + '/' + calls);
 const fnS = REST.slice(REST.indexOf('private function mark_scheme_summary_for('), REST.indexOf('Tutor review: load a student'));
