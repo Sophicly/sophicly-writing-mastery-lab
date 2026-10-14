@@ -17,9 +17,10 @@
  * What it proves, from the SHIPPED source:
  *   A. every call of seed_from_sibling_stage() passes the stage ($suffix) — a five-argument call cannot come back;
  *   B. ONE quiz-state helper, read by both loaders on every return that carries a document;
- *   C. every tp.<walk>.tryResume() in the file sits inside the review-mode guard;
+ *   C. every tp.<walk>.tryResume() in the file sits inside the review-mode guard, and every automatic "Let's begin!"
+ *      fresh-entry send is closed in review (v7.20.887: planning sent it to Sophia as the TUTOR — staging, POST /chat ×2);
  *   D. both load URLs carry the quiz identity from ONE builder;
- *   E. five mutations of the real source each make A–D fail.
+ *   E. six mutations of the real source each make A–D fail.
  */
 'use strict';
 const fs = require('fs');
@@ -89,6 +90,17 @@ function check(JS, REST, verbose) {
     ok(outside.length === 0, outside.length === 0 ? 'every one sits inside the review guard'
         : outside.length + ' resume call(s) outside the review guard, first at line ' + JS.slice(0, outside[0]).split('\n').length);
     ok(/tp\.quizCtl\.tryResume\(\{ quizType: 'mark_scheme_assessment' \}\)/.test(JS.slice(open, close)), 'the Mark Scheme Assessment resume (the one Neil saw) is among them');
+    // The fresh-entry auto-starts: every branch that sends a silent "Let's begin!" on a timer (no tap) is closed in review.
+    // (The fresh-entry form is `if (tp.chatTextarea) { … }` inside a timer; the clear-chat re-greet is a TAP and uses `if (tp)`.)
+    const autoSends = [];
+    const SEND = 'if (tp.chatTextarea) { canvasSilentSend = true; tp.chatTextarea.value = "Let\'s begin!"; tp.sendCanvasMessage(); }';
+    for (let at = JS.indexOf(SEND); at !== -1; at = JS.indexOf(SEND, at + 1)) {
+        const before = JS.slice(0, at);
+        const heads = [...before.matchAll(/\n {16}\} else if \(([^\n]*)\) \{\n/g)];
+        autoSends.push(heads.length ? heads[heads.length - 1][1] : '(no branch found)');
+    }
+    ok(autoSends.length >= 1, autoSends.length + ' automatic "Let\'s begin!" branch(es) found');
+    autoSends.forEach((cond) => ok(/!state\.reviewMode/.test(cond), 'auto-start closed in review: else if (' + cond.slice(0, 60) + ')'));
 
     if (verbose) console.log('\nD · the quiz identity reaches both loads');
     ok(JS.split('function _quizIdentQS() {').length === 2, '_quizIdentQS() is defined exactly once');
@@ -113,6 +125,7 @@ const MUT = [
         "// student's review would read. The fresh-entry starts are already guarded by !state.reviewMode.\n                    {\n"],
     ['a resume added after the guard closes', 'js', '                    }   // end !state.reviewMode (v7.20.886)\n',
         '                    }   // end !state.reviewMode (v7.20.886)\n                    if (tp.quizCtl) tp.quizCtl.tryResume();\n'],
+    ['planning greets Sophia as the tutor again', 'js', "} else if (state.task === 'planning' && !state.reviewMode) {", "} else if (state.task === 'planning') {"],
     ['review URL forgets the quiz identity', 'js', '${_cwReviewProjectQS()}${_quizIdentQS()}`;', '${_cwReviewProjectQS()}`;'],
 ];
 const results = [];

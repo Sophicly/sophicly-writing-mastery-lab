@@ -48095,11 +48095,14 @@
                         }
                     }, 50);
                     }, 400);
-                } else if (state.task === 'planning') {
+                } else if (state.task === 'planning' && !state.reviewMode) {
                     // v7.14.68 / v7.19.250: Planning silent auto-sends "Let's begin!" to fire
                     // Sophia's greeting once the doc has loaded. Polishing used to share this
                     // branch but migrated to the inline-coaching env (v7.19.250) — it's now a
                     // selection-driven coaching surface with no auto-greet, like exam_crib.
+                    // v7.20.886: NOT in review — the only auto-start in this chain without the guard its
+                    // siblings carry. A tutor opening a student's unstarted planning lesson sent "Let's begin!"
+                    // to Sophia as the TUTOR (a real API call; measured on staging: POST /chat ×2).
                     const _waitAndSend = (attempt) => {
                         const docText = canvasEditor ? getDocumentText(canvasEditor) : '';
                         if (docText.length > 100 || attempt >= 15) {
