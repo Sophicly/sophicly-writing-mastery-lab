@@ -2710,6 +2710,10 @@ class SWML_REST_API {
         $user_id = absint($user_id);
         $tb = self::resolve_course_to_text_board(absint($course_id));
         if (!$user_id || !$tb) return null;
+        // v7.20.885 (root §5d, measured 14 Oct): the course map spells a board with underscores ('edexcel_igcse'), WML's
+        // grade keys with hyphens ('swml_phase_edexcel-igcse_…', the page's board — SWML_Protocol_Router::normalize_board).
+        // The LIKE below escapes '_' (esc_like), so without this every Edexcel IGCSE student would read as "no redraft".
+        $tb['board'] = str_replace('_', '-', (string) $tb['board']);
         global $wpdb;
         $prefix = 'swml_phase_' . $tb['board'] . '_' . self::canonical_slug($tb['text']) . '_t';
         $rows = $wpdb->get_results($wpdb->prepare(

@@ -299,6 +299,8 @@ ok(/\$diag = \$best\('initial'\);/.test(tgp) && /\$red  = \$best\('redraft'\);/.
     'the server rule: at least one grade up; null when either grade is missing');
 ok(/self::canonical_slug\(\$tb\['text'\]\)/.test(tpc) && tpc.indexOf("_redraft(?:__a\\d+)?$/") !== -1 && /return \$p \? array_merge\(\['board' => \$tb\['board'\], 'text' => \$tb\['text'\], 'topic' => \$topic\], \$p\) : null;/.test(tpc),
     'the chooser read: the latest completed redraft in the course\'s text (canonical slug, re-marks included)');
+ok(/\$tb\['board'\] = str_replace\('_', '-', \(string\) \$tb\['board'\]\);/.test(tpc) && tpc.indexOf("$tb['board'] = str_replace") < tpc.indexOf("$prefix = 'swml_phase_'"),
+    'key-match: the course map\'s underscored board (edexcel_igcse) is hyphenated BEFORE the grade keys are built (measured: grade keys say edexcel-igcse)');
 ok(REST.split("'topicProgress'").length - 1 === 4 && /in_array\(\(string\) \$suffix, \['_assessment', '_reassessment', '_fbdiscuss'\], true\)/.test(REST),
     'topicProgress rides the four marked-document returns (load · seed · reseed · tutor review)');
 ok(/state\.topicProgress = \(res && res\.topicProgress && typeof res\.topicProgress === 'object'\) \? res\.topicProgress : null;/.test(JS)
