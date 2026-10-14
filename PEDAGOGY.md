@@ -140,6 +140,11 @@ completed cycle. That is simpler and un-gameable; worth confirming it is also ri
   (`feedback_marking_stricter_than_examiners_ericsson`, `feedback_diagnostic_t1_mark_whats_there`).
   §1 governs how much we DEMAND and HELP — never how honestly we MEASURE. A lenient mark would
   falsify the baseline the whole programme is calibrated against.
+  **✅ RE-EXAMINED 14 Oct 2026 AND KEPT (Neil, WML Actions round aa: "Keep it as it is").** The case: Shayaan 1397's first
+  AQA Power and Conflict essay, 4.75/30 — the top of AQA's Level 1 ("simple, explicit comments", 1–5 marks; June 2024
+  mark scheme, Section B) — mainly because the poetry protocol asks for both poems in every part and he wrote no
+  conclusion. Making the student AWARE of the problem is the job of the "where you are" box (§32b), not of a gentler mark.
+  Do not re-open this from a single low first essay.
 - **Every attempt is saved and counts** (`feedback_grade_aggregation_hierarchy_max_then_avg`). §1
   does not license discarding a weak first attempt.
 
