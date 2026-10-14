@@ -1985,10 +1985,22 @@ The assessment plugin's `SIX_STEPS` (v1.6.3) carries this order. ⚠️ On 14 Oc
   - The body marks are low because every part discusses one poem. That is the criteria step, not the structure step.
   - His own chat asked *"i thought there was no marks on comparison"*.
   - He did the structure exercise (lesson 47245) ten times in five minutes, all Grade 1, before writing.
-- **Proposed use** (WML Actions round y, 14 Oct, cards 1–3, NOT yet ruled): a short "where you are" box at the top of
-  every marked assessment's Action Plan. Structure is rated by two counts that code takes from the marks already given:
-  paragraphs written against the shape needed, and parts earning marks per paragraph. Sophia's three priorities follow
-  macro → micro. Record his answers here when he taps them.
+- **RULED (WML Actions round y, 14 Oct, pasted):** *"Should every marked assessment tell the student which step they are
+  stuck on? → Yes, build it | Note: Maybe do it in bullet point form for easy legibility"* · *"How should we rate
+  structure? → Use these two counts | Note: OK, but also remember the student have a self-assessment; how will this
+  correlate with that?"*
+  1. **A short "where you are" box at the top of every marked assessment's Action Plan, in BULLET POINTS**: Literature
+     and Language, every board.
+  2. **Structure is rated by two counts that code takes from the marks already given:** paragraphs written against the
+     shape needed, and parts earning marks in each paragraph. The box says "parts earning marks", never "parts present".
+  3. **The self-assessment decides which step it is (his note, answered).** The box reuses §48's own rating-vs-mark
+     comparison (`@GAP-CHECK-PURE`); it never builds a second one.
+     - A part rated high that earned nothing → the student thought it was there → **Understand the criteria**.
+     - A part rated low that is missing → the student knew → **Practise the structure**.
+     - Shayaan rated Controlling Concept and Universal Message 4/5 with no conclusion written, and rated Context 4/5
+       with context at 0 in every paragraph.
+  4. **OPEN (round z card 1):** whether Sophia's "3 Priorities" in the Action Plan follow the same order. Without it, the
+     box and the first priority can name two different first jobs on the same screen.
 
 ## §33. ⭐⭐ THE CW TRIALS + EXAMINER-LADDER SELF-ASSESSMENT — the rulings the build stands on (Neil, ruled 2026-08-21; placements delegated and settled 2026-08-22)
 
