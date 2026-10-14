@@ -54561,6 +54561,8 @@
                 { label: 'SPaG', text: 'Spelling, punctuation, and grammar errors here — please proofread carefully.', link: _qcTk('final-read', 'The Final Read') },
                 { label: 'Plan your essay', text: 'Plan your essay before writing — a clear plan leads to a stronger structure.', link: _qcTk('essay') },
                 { label: 'Outline', text: 'Create a proper outline for this section before drafting.', link: _qcTk('ttecea', 'TTECEA + C') },
+                // v7.20.890 (Actions round ac, Neil picked "P4 Follow TTECEA" — his own comment, 3 times on prod). Words as approved.
+                { label: 'Follow TTECEA', text: 'This paragraph doesn’t follow the TTECEA structure yet.', link: _qcTk('ttecea', 'TTECEA + C') },
                 { label: 'Polish', text: 'This needs polishing — refine the expression and tighten the language.', link: _qcTk('polishing', 'Polishing Your Answer') },   // v7.20.799 (#851): the Toolkit's own polishing page (notes 2.6.274), Neil's macro→micro order
                 { label: 'Reassess', text: 'Reassess this section — the analysis doesn\'t align with the mark scheme criteria.', link: _qcTk('examiners', 'Examiners\' Requirements') },
                 { label: 'More detail', text: 'More detail needed — develop this point further.', link: _qcTk('whathowwhy', 'What · How · Why · So What · What Next') },

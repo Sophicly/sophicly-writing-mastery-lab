@@ -81,6 +81,10 @@ ok(techs.length >= 14 && badTech.length === 0, 'every Table link (' + techs.leng
 ok(/label: 'Polish'[^\n]*_qcTk\('polishing', 'Polishing Your Answer'\)/.test(qBlock), '"Polish" links to Polishing Your Answer (the page Neil asked the notes lane for)');
 ok(/label: 'Too descriptive'[^\n]*_qcTk\('fix-topic-sentence'\)/.test(qBlock) && /label: 'Not conceptual enough'[^\n]*_qcTk\('conceptual'\)/.test(qBlock)
     && /label: 'Not perceptive enough'[^\n]*_qcTk\('interpretation-ladder'\)/.test(qBlock), 'the three new comments link to Topic Sentences · Conceptual Thinking · The Interpretation Ladder');
+// v7.20.890 (round ac, Neil picked P4): his own words, the approved card's text exactly, linking to TTECEA + C.
+ok((JS.match(/\{ label: 'Follow TTECEA', text: /g) || []).length === 1
+    && /label: 'Follow TTECEA', text: 'This paragraph doesn’t follow the TTECEA structure yet\.', link: _qcTk\('ttecea', 'TTECEA \+ C'\)/.test(common),
+    '"Follow TTECEA" is a Common Issues chip, in the approved words, linking to TTECEA + C');
 const praise = qBlock.slice(qBlock.indexOf("category: 'Praise'"), qBlock.indexOf("category: 'TTECEA Breakdown'"));
 ok(!/link:/.test(praise), 'praise carries no link (nothing to fix)');
 
