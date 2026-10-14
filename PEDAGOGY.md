@@ -1952,6 +1952,44 @@ with seven rungs, humanity first, and the three shapes named — TTECEA+C (analy
 and `protocols/ocr/` holds only `literature` and `poetry` — **no OCR Language protocols exist.** That
 is a hole in the port roadmap (§4.8 of the START-HERE, "24 unported cells"), not an error of his.
 
+### §32b. ⭐⭐ AMENDMENTS 1 OCT + 14 OCT 2026 — eight steps, and BELOW GRADE 7 THE PRIORITY IS STRUCTURE
+
+**1 October (the forms-assessment lane's FA-070 + FA-071; recorded here 14 Oct because they never reached this
+register).** The table above is now EIGHT steps:
+1. the subject (humanity)
+2. **the routine moves up to step 2:** *"we do that right at the beginning… pretty much straight after getting the students to think about"* the subject. Grade 9 Core Skills runs it at Unit 2.
+3. criteria
+4. structure
+5. strengths and weaknesses
+6. redraft
+7. portfolio
+8. **exam practice, added after the portfolio:** *"we need to add a further step after build a portfolio, which will be exam practice."*
+
+The assessment plugin's `SIX_STEPS` (v1.6.3) carries this order. ⚠️ On 14 Oct prod still ran v1.6.0, with 7 steps and the routine last; the handoff is `wml-to-forms-assessment-2026-10-14-…`.
+
+**14 October — his rule for what comes first after marking (Neil, voice, WML 356 A, verbatim):**
+> *"what I always tell the students is, if you're under a grade 7, that means that your priority is especially going
+> to be structure. Under a grade seven. Once you get to grade seven plus, it becomes about the details. That's usually
+> how I say it. But obviously, they need to know the criteria and all that kind of stuff as well."*
+
+- **Below Grade 7 → structure first**, macro → micro (§32a): the whole answer, then each paragraph's parts. **Grade 7 and
+  above → the details.** The criteria (step 3) sit underneath both, and are never skipped.
+- ⚠️ **The grade sets the ORDER of the check. The evidence decides the verdict.** A Grade 5 essay can have every
+  paragraph and every part in place. Telling that student "structure" would be wrong. So any surface built on this
+  rule checks structure first below 7, and moves on to the details when the structure is complete. It never names
+  structure from the grade alone.
+- **Measured on the case that prompted it (Shayaan 1397, AQA Power and Conflict Topic 1, marked 13 Oct, 4.75/30):**
+  - 4 of 5 paragraphs: there is no conclusion.
+  - The introduction has 1 of its 4 parts (only the thesis).
+  - The body paragraphs earn marks on 4, 7 and 8 of their 9 parts. So the TTECEA+C shape is mostly there.
+  - The body marks are low because every part discusses one poem. That is the criteria step, not the structure step.
+  - His own chat asked *"i thought there was no marks on comparison"*.
+  - He did the structure exercise (lesson 47245) ten times in five minutes, all Grade 1, before writing.
+- **Proposed use** (WML Actions round y, 14 Oct, cards 1–3, NOT yet ruled): a short "where you are" box at the top of
+  every marked assessment's Action Plan. Structure is rated by two counts that code takes from the marks already given:
+  paragraphs written against the shape needed, and parts earning marks per paragraph. Sophia's three priorities follow
+  macro → micro. Record his answers here when he taps them.
+
 ## §33. ⭐⭐ THE CW TRIALS + EXAMINER-LADDER SELF-ASSESSMENT — the rulings the build stands on (Neil, ruled 2026-08-21; placements delegated and settled 2026-08-22)
 
 Full feature plan: `CW-TRIALS-AND-SELF-ASSESSMENT-PLAN-2026-08-21.md` (plugin root). The rulings,
