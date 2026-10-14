@@ -260,6 +260,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/path-box-harness.js || fail=1
 fi
 
+# v7.20.882 (FIXLIST p&c-1397-lock-device): the display-lock guard — a student change to the writing of an assessment /
+# discuss lesson is refused at the transaction, by any route, and recorded; code, marks and migrations pass. 4 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-core\.js|class-rest-api\.php|display-guard-harness\.js'; then
+  node bin/display-guard-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document

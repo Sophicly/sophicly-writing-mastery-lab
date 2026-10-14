@@ -272,6 +272,11 @@ class SWML_REST_API {
             'methods' => 'POST', 'callback' => [$this, 'mc_gate_log'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
+        // v7.20.882 (FIXLIST p&c-1397-lock-device): the display-lock guard's record of each refused change — names the route.
+        register_rest_route($namespace, '/display-lock/log', [
+            'methods' => 'POST', 'callback' => [$this, 'display_lock_log'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
         register_rest_route($namespace, '/mc-gate/first-diagnostic', [
             'methods' => 'GET', 'callback' => [$this, 'mc_gate_first_diagnostic'],
             'permission_callback' => [$this, 'check_auth'],
@@ -2653,6 +2658,42 @@ class SWML_REST_API {
             'error'            => mb_substr(sanitize_text_field($p['error'] ?? ''), 0, 200),
             'version'          => defined('SWML_VERSION') ? SWML_VERSION : '',
         ]);
+        return rest_ensure_response(['success' => true]);
+    }
+
+    /**
+     * POST /display-lock/log — v7.20.882 (FIXLIST p&c-1397-lock-device). The page refused a student change to their writing
+     * in an assessment / redraft-assessment / discuss-feedback lesson (the display lock, PEDAGOGY §6). Every route we could
+     * reproduce is already stopped by the input handlers, yet Shayaan 1397's assessment copy changed — so each refusal is
+     * kept with what the browser said the student was doing. User meta swml_display_lock_log, newest 50; one error_log line.
+     */
+    public function display_lock_log($request) {
+        $user_id = get_current_user_id();
+        $p = $request->get_json_params();
+        if (!is_array($p)) $p = [];
+        $entry = [
+            'at'             => current_time('c'),
+            'post_id'        => absint($p['post_id'] ?? 0),
+            'task'           => sanitize_key($p['task'] ?? ''),
+            'event'          => sanitize_key($p['event'] ?? ''),
+            'input_type'     => mb_substr(sanitize_text_field((string) ($p['input_type'] ?? '')), 0, 60),
+            'ui_event'       => sanitize_key($p['ui_event'] ?? ''),
+            'composition'    => !empty($p['composition']),
+            'history'        => !empty($p['history']),
+            'steps'          => absint($p['steps'] ?? 0),
+            'ms_since_event' => absint($p['ms_since_event'] ?? 0),
+            'ua'             => mb_substr(sanitize_text_field((string) ($p['ua'] ?? '')), 0, 200),
+            'version'        => defined('SWML_VERSION') ? SWML_VERSION : '',
+        ];
+        $log = get_user_meta($user_id, 'swml_display_lock_log', true);
+        $log = is_string($log) ? json_decode($log, true) : $log;
+        if (!is_array($log)) $log = [];
+        $log[] = $entry;
+        if (count($log) > 50) $log = array_slice($log, -50);
+        update_user_meta($user_id, 'swml_display_lock_log', wp_slash(wp_json_encode($log)));
+        error_log(sprintf('[WML display-lock] user=%d post=%d task=%s event=%s input=%s ui=%s comp=%d ua=%s',
+            $user_id, $entry['post_id'], $entry['task'], $entry['event'], $entry['input_type'], $entry['ui_event'],
+            $entry['composition'] ? 1 : 0, $entry['ua']));
         return rest_ensure_response(['success' => true]);
     }
 

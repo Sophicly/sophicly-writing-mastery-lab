@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.881';
+var WML_BUILD = '7.20.882';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -246,6 +246,7 @@ window.WML = (function() {
         savedQuestions: config.restUrl + 'saved-questions',
         canvasSave:    config.restUrl + 'canvas/save',
         mcGateLog:     config.restUrl + 'mc-gate/log', // v7.20.634 (#585–#588): Mark Complete gate record
+        displayLockLog: config.restUrl + 'display-lock/log', // v7.20.882: each refused change to the writing in a display lesson
         mcGateFirstDiagnostic: config.restUrl + 'mc-gate/first-diagnostic', // v7.20.634: PEDAGOGY §1 first-ever
         tutorComment:  config.restUrl + 'canvas/tutor-comment', // v7.19.538: was API.base (undefined) → 404
         studentComment: config.restUrl + 'canvas/student-comment', // v7.19.559: student persists feedback responses to own doc

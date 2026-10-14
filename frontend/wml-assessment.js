@@ -40474,6 +40474,70 @@
             from: before.n, to: after.n };
     }
     // @STRUCTURE-LOCK-PURE-END
+    // ⭐ v7.20.882 (FIXLIST p&c-1397-lock-device) — THE DISPLAY-LOCK GUARD. PEDAGOGY §6 / v7.19.947: in an assessment,
+    // redraft-assessment or discuss-feedback lesson the student's writing (response · plan · outline) is a read-only
+    // carry-over. The input handlers refuse every keyboard / paste / drop route — and every route measured in WML 356 A
+    // (Chromium + WebKit: keys, insertText, execCommand, IME composition, DOM mutation, replacement text) was refused.
+    // Yet Shayaan 1397's P&C assessment copy gained a third body paragraph that the diagnostic never had (prod, 13 Oct),
+    // so SOME route reaches the document past the handlers, on a device nobody can name. This closes the choke point
+    // every route must pass — the transaction — without needing to know the route, and records each refusal with what
+    // the browser said it was doing, so the next attempt names it.
+    // ONE decision per transaction: only a STUDENT change (the structure lock's own test), only text (a replace step —
+    // comment marks and attribute steps stay live), only inside a locked section, never a migration, never a
+    // whole-document load (setContent is code, never a keystroke).
+    // @DISPLAY-GUARD-PURE-BEGIN — pure; driven by bin/display-guard-harness.js
+    // t = { docChanged, locked, migrating, fromStudent, steps: [{ kind: 'replace'|'other', wholeDoc, touchesLocked }] }
+    function _swmlDisplayGuardVerdict(t) {
+        if (!t || !t.docChanged || !t.locked || t.migrating || !t.fromStudent) return { refuse: false };
+        const reps = (t.steps || []).filter((s) => s && s.kind === 'replace');
+        if (!reps.length) return { refuse: false };
+        if (reps.some((s) => s.wholeDoc)) return { refuse: false };
+        return { refuse: reps.some((s) => s.touchesLocked) };
+    }
+    // Does [from, to] of `doc` sit in — or cross — a section whose type is one of `types`? The innermost section wins.
+    function _swmlRangeInSectionTypes(doc, from, to, types) {
+        const size = doc.content.size;
+        const inType = (pos) => {
+            const $p = doc.resolve(Math.max(0, Math.min(pos, size)));
+            for (let d = $p.depth; d > 0; d--) {
+                const n = $p.node(d);
+                if (n.type.name === 'sectionBlock') return types.indexOf(String((n.attrs && n.attrs.sectionType) || '')) !== -1;
+            }
+            return false;
+        };
+        if (inType(from) || inType(to)) return true;
+        let hit = false;
+        if (to > from) {
+            doc.nodesBetween(Math.max(0, from), Math.min(to, size), (n) => {
+                if (hit) return false;
+                if (n.type.name === 'sectionBlock' && types.indexOf(String((n.attrs && n.attrs.sectionType) || '')) !== -1) { hit = true; return false; }
+                return true;
+            });
+        }
+        return hit;
+    }
+    // @DISPLAY-GUARD-PURE-END
+    function _displayLockTypesNow() {
+        return state.task === 'feedback_discussion' ? DISPLAY_LOCK_SECTION_TYPES.concat(DISCUSS_ONLY_LOCK_SECTION_TYPES) : DISPLAY_LOCK_SECTION_TYPES;
+    }
+    let _swmlGuardToldAt = 0, _swmlGuardLogAt = 0, _swmlGuardLogN = 0;
+    function _swmlDisplayGuardRecord(info) {
+        try {
+            console.warn('WML display lock: refused a change to the student’s writing in a ' + state.task + ' lesson — route: ' + JSON.stringify(info));
+            // §4d: the student pressed something and nothing happened — say why, once per burst, in plain words.
+            if (Date.now() - _swmlGuardToldAt > 2500) {
+                _swmlGuardToldAt = Date.now();
+                try { showToast('You can’t change your writing in this lesson. This is the copy that is marked.', 5000, true); } catch (_) {}
+            }
+            // Durable record (the route is what we do not know): at most one every 5 s, ten per page.
+            if (API.displayLockLog && _swmlGuardLogN < 10 && Date.now() - _swmlGuardLogAt > 5000) {
+                _swmlGuardLogAt = Date.now(); _swmlGuardLogN++;
+                const body = Object.assign({ task: state.task || '', post_id: (window.swmlEmbedConfig && window.swmlEmbedConfig.postId) || 0,
+                    ua: String((navigator && navigator.userAgent) || '').slice(0, 200) }, info);
+                fetch(API.displayLockLog, { method: 'POST', headers, body: JSON.stringify(body), keepalive: true }).catch(function () {});
+            }
+        } catch (_) { /* recording must never block anything */ }
+    }
     let _swmlLockToldAt = 0;
     // Installed on every new canvas editor, straight after construction. `swmlLockHist` marks OUR
     // addToHistory:false, so the edit-time stamp collector (which reads a CODE-set addToHistory:false
@@ -40485,23 +40549,45 @@
             const Plugin = st && st.plugins.length ? st.plugins[0].constructor : null;
             if (!Plugin) { console.warn('WML structure lock: no ProseMirror Plugin constructor — only the Section Guard protects this document.'); return false; }
             const hist = st.plugins.find(pl => typeof pl.key === 'string' && pl.key.indexOf('history$') === 0) || null;
-            let userAt = 0;
-            const touched = () => { userAt = Date.now(); return false; };
+            let userAt = 0, lastEv = { type: '', inputType: '' };
+            // v7.20.882: also remember WHAT the browser said the student did — the display-lock guard's record names the route.
+            const touched = (view, ev) => { userAt = Date.now(); lastEv = { type: (ev && ev.type) || '', inputType: (ev && ev.inputType) || '' }; return false; };
             const handleDOMEvents = {};
             SWML_LOCK_USER_EVENTS.forEach(ev => { handleDOMEvents[ev] = touched; });
             editor.registerPlugin(new Plugin({
                 props: { handleDOMEvents },
                 filterTransaction(tr, state) {
+                    const fromStudent = !!tr.getMeta('uiEvent') || (Date.now() - userAt) < SWML_LOCK_USER_WINDOW_MS;
                     const v = _swmlStructureLockVerdict({
                         docChanged: tr.docChanged,
                         isHistory: !!(hist && tr.getMeta(hist)),
-                        fromStudent: !!tr.getMeta('uiEvent') || (Date.now() - userAt) < SWML_LOCK_USER_WINDOW_MS,
+                        fromStudent: fromStudent,
                         migrating: _migrationActive,
                         histMeta: tr.getMeta('addToHistory'),
                         shapeBefore: () => _swmlBoxShape(state.doc, types),
                         shapeAfter: () => _swmlBoxShape(tr.doc, types),
                     });
                     if (v.markNotUndoable) { tr.setMeta('addToHistory', false); tr.setMeta('swmlLockHist', true); }
+                    // v7.20.882: the display-lock guard — a student change to the writing in a display lesson, by any route.
+                    if (v.allow && tr.docChanged && fromStudent && !_migrationActive && _docDisplayLocked()) {
+                        const lockedTypes = _displayLockTypesNow();
+                        const g = _swmlDisplayGuardVerdict({
+                            docChanged: true, locked: true, migrating: false, fromStudent: true,
+                            steps: tr.steps.map((s, i) => {
+                                const st = (s.toJSON() || {}).stepType;
+                                if (st !== 'replace' && st !== 'replaceAround') return { kind: 'other' };
+                                const d = tr.docs[i];
+                                return { kind: 'replace', wholeDoc: s.from <= 0 && s.to >= d.content.size,
+                                    touchesLocked: _swmlRangeInSectionTypes(d, s.from, s.to, lockedTypes) };
+                            }),
+                        });
+                        if (g.refuse) {
+                            _swmlDisplayGuardRecord({ event: lastEv.type, input_type: lastEv.inputType, ui_event: String(tr.getMeta('uiEvent') || ''),
+                                composition: !!tr.getMeta('composition'), history: !!(hist && tr.getMeta(hist)), steps: tr.steps.length,
+                                ms_since_event: Date.now() - userAt });
+                            return false;
+                        }
+                    }
                     if (v.allow) return true;
                     console.warn('WML structure lock: refused a ' + v.refused + ' change to the document’s boxes (' + v.from + ' → ' + v.to + ').');
                     // §4d: the student's key did nothing — say why, once per burst, in plain words.
