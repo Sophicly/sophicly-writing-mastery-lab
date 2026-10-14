@@ -41,6 +41,10 @@ const B = JS.indexOf('    // @GAP-CHECK-PURE-BEGIN'), E = JS.indexOf('    // @GA
 ok(B > 0 && E > B, 'the pure core sits between its two sentinels');
 const ctx = { console };
 vm.createContext(ctx);
+// v7.20.879: _gapRowsFrom reads the score cell through _cardScoreCell (one reader with MarkAudit) — slice it in too.
+const CB = JS.indexOf('    // @CARD-SCORE-PURE-BEGIN'), CE = JS.indexOf('    // @CARD-SCORE-PURE-END');
+ok(CB > 0 && CE > CB, 'the shared score-cell reader sits between its sentinels');
+vm.runInContext(JS.slice(CB, CE), ctx);
 vm.runInContext(JS.slice(B, E) + '\nthis.X = { GAP_SECTIONS, GAP_TOL, _gapSectionFor, _gapSkillFor, _gapCardOf, _gapRowsFrom, _gapCompare, _gapQuestionText, _gapFiledLine, _gapRevealText, _gapPastLine, _gapFactText, _gapTotalOf, _gapRatingMark };', ctx);
 const X = ctx.X;
 

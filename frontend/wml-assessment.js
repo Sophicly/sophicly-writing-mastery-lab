@@ -10347,8 +10347,13 @@
             if (t.charAt(0) !== '|') return;
             const cells = t.split('|').slice(1, -1).map((c) => _gapUnent(c.trim()));
             if (cells.length < 3) return;
-            if (!/^\d+(\.\d+)?$/.test(cells[1]) || !/^\+?\d+(\.\d+)?$/.test(cells[2])) return;
-            const worth = parseFloat(cells[1]), score = parseFloat(cells[2].replace('+', ''));
+            if (!/^\d+(\.\d+)?$/.test(cells[1])) return;
+            // v7.20.879: ONE reader of the score cell with MarkAudit (_cardScoreCell, v7.20.877). A card that writes its
+            // scores as "0/0.5" (score/worth — Shayaan 1397's P&C cards, 13 Oct) gave this check ZERO rows, so the
+            // paragraph comparison silently found nothing to compare.
+            const sc = _cardScoreCell(cells[1], cells[2]);
+            if (sc === null) return;
+            const worth = parseFloat(cells[1]), score = sc;
             if (!(worth > 0) || isNaN(score)) return;
             rows.push({ criterion: cells[0].replace(/\*\*/g, '').trim(), worth: worth,
                 score: Math.max(0, Math.min(score, worth)), why: String(cells[3] || '').replace(/\*\*/g, '').trim() });
@@ -10501,6 +10506,246 @@
             + '. Use it: in the Overall Feedback, ONE sentence on the part they misjudged most and what it actually rewards; where they rated a part HIGHER than it scored, name that part inside the FIRST Action-Plan priority as the first thing to check in the redraft. Do NOT add a priority, change any mark, or re-list these rows.';
     }
     // @GAP-CHECK-PURE-END
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // ⭐⭐ v7.20.879 (PEDAGOGY §32b — Neil, 14 Oct, WML Actions rounds y + z) — "WHERE YOU ARE".
+    //
+    // His words: "he's identified strengths and weaknesses, but you can see clearly that one of the things he
+    // needs to do is work on the structure. Not just the five paragraphs, but the actual structure of each
+    // paragraph as well … he needs to be aware that that's his issue." And the order: "if you're under a grade
+    // 7 … your priority is especially going to be structure … once you get to grade seven plus, it becomes
+    // about the details … but obviously, they need to know the criteria … as well."
+    //
+    // A short box of bullets at the top of the Action Plan naming the FIRST step of the teaching order that
+    // needs work (§32: the criteria → the structure → strengths and weaknesses), from evidence already in the
+    // document — ALL CODE, zero API calls (his cost ask, round z):
+    //   · STRUCTURE — two counts (his tap, round y): paragraphs written against the paragraphs the question
+    //     needs (the plan boxes), and the parts of each paragraph that earned marks (the card's mark table).
+    //   · CRITERIA — the student misreads what the mark scheme rewards: a skill they rated Good or better
+    //     that earned half its marks or less (the blind-spot thresholds, v7.19.896), their own mark for the
+    //     whole answer above Sophia's by more than the tolerance (the Calibration), and the categories they
+    //     got wrong in their latest Mark Scheme Assessment (server, no API).
+    //   · Below Grade 7 the box checks structure first; from Grade 7 the details. The GRADE sets the ORDER;
+    //     the EVIDENCE decides — a complete structure is never named as the problem.
+    // Pure core between the sentinels — driven by bin/path-box-harness.js. Uses _gapSkillFor (the §48 map,
+    // one naming of the parts) and GAP_WORDS.
+    // @PATH-BOX-PURE-BEGIN
+    const PATH_STEPS = { criteria: 'Understand the criteria', structure: 'Practise the structure', details: 'The details' };
+    const PATH_SELF_MIN = 0.7, PATH_ACT_MAX = 0.5, PATH_GAP_MIN = 0.2;   // === _blindSpotData's conservative rule
+    function _pathPartName(group, criterion) {
+        const sk = _gapSkillFor(group, criterion);
+        if (sk) return sk;
+        return String(criterion || '').replace(/\*\*/g, '').replace(/\s*\((?:AO\d[^)]*)\)\s*$/i, '').trim();
+    }
+    // "A, B and C" — unique, first-seen order; more than `max` → "A, B and 2 more".
+    function _pathList(names, max) {
+        const u = [];
+        (names || []).forEach((n) => { if (n && u.indexOf(n) === -1) u.push(n); });
+        const lim = max || 3;
+        if (u.length > lim) return u.slice(0, lim).join(', ') + ' and ' + (u.length - lim) + ' more';
+        if (u.length <= 1) return u.join('');
+        return u.slice(0, -1).join(', ') + ' and ' + u[u.length - 1];
+    }
+    // A paragraph's name inside its answer: "the introduction" / "the conclusion"; "Body 1", "Paragraph 2" keep theirs.
+    function _pathPlace(u) {
+        const p = String((u && (u.part || u.label)) || '');
+        return /^(Introduction|Conclusion)$/i.test(p) ? 'the ' + p.toLowerCase() : p;
+    }
+    function _pathPct(x) { return Math.round(x * 100) + '%'; }
+    function _pathNum(x) { return String(Math.round(x * 100) / 100); }
+    // One mark-table row of a card as the document shows it: "Criterion — 0.5 · 0/0.5 · why". The score cell goes
+    // through _cardScoreCell (one reader with MarkAudit and the §48 check).
+    function _pathRowOf(line) {
+        const m = /^(.+?)\s+—\s+(\d+(?:\.\d+)?)\s+·\s+(\+?\d+(?:\.\d+)?(?:\s*\/\s*\d+(?:\.\d+)?)?)\s+·/.exec(String(line || ''));
+        if (!m) return null;
+        const score = _cardScoreCell(m[2], m[3]);
+        const worth = parseFloat(m[2]);
+        if (score === null || !(worth > 0)) return null;
+        return { criterion: m[1].trim(), worth: worth, score: Math.max(0, Math.min(score, worth)) };
+    }
+    // Sophia's own words for a paragraph the student did not write ("Introduction — not submitted." — measured on a
+    // staging AQA Lang P1 Q4 card and Zayan 1109's prod Literature card). Read only when the block has NO mark table.
+    const PATH_NOT_SUBMITTED = /\bnot\s+(?:submitted|attempted|written)\b/i;
+    // One paragraph's card lines → its rows, and whether the card says it was never written.
+    function _pathBlockOf(lines) {
+        const rows = (lines || []).map(_pathRowOf).filter(Boolean);
+        return { rows: rows, notSubmitted: !rows.length && (lines || []).some((l) => PATH_NOT_SUBMITTED.test(l)) };
+    }
+    // A language question's card, block by block. The card's headings ARE the paragraphs the protocol marks the
+    // question for — every one, written or not: "Q2 — Paragraph 1", "Q4 — Introduction", "Q4 — Body Paragraph 2",
+    // "Q4 — Conclusion" (measured, staging AQA Lang P1, 14 Oct). "Q1 — Retrieval", "Q5 — Creative Writing" and
+    // "Q4 — Question Total" are not paragraphs; they end the block before them.
+    function _pathCardUnits(lines, q) {
+        const units = [];
+        let cur = null, curLines = [];
+        const head = new RegExp('^' + q + '\\s*[\\u2014\\u2013-]\\s*(.+?)\\s*$', 'i');
+        const close = () => { if (cur) { const b = _pathBlockOf(curLines); cur.rows = b.rows; cur.notSubmitted = b.notSubmitted; } cur = null; curLines = []; };
+        (lines || []).forEach((line) => {
+            const h = head.exec(String(line || ''));
+            if (h) {
+                close();
+                const part = h[1].replace(/\s+/g, ' ');
+                if (!/^(?:introduction|conclusion|(?:body\s+)?paragraph\s*\d+)$/i.test(part)) return;
+                const group = /^intro/i.test(part) ? 'Introduction' : /^conclu/i.test(part) ? 'Conclusion' : 'Body Paragraphs';
+                cur = { label: q + ' · ' + part, part: part, group: group, rows: [], notSubmitted: false };
+                units.push(cur);
+                return;
+            }
+            if (cur) curLines.push(line);
+        });
+        close();
+        return units;
+    }
+    // input = {
+    //   grade: whole grade 1–9 (the document's deterministic grade),
+    //   answers: [{ label: 'Your essay' | 'Q2', lit: bool, needed: n | 0, written: n,
+    //               units: [{ label: 'Introduction' | 'Q4 · Body Paragraph 1', part: 'Body Paragraph 1' (its name inside
+    //                         the answer), group: 'Introduction'|'Body Paragraphs'|'Conclusion',
+    //                         rows: [{ criterion, worth, score }], notSubmitted: bool (the card says so, and has no table) }] }],
+    //   ratings: [{ group, skill, value }],                       (the Self-Assessment walk)
+    //   calib: [{ label, mine, sophia, max, tol }],                (the Calibration — their mark vs Sophia's)
+    //   msa: { score, max, categories: ['AO3', …] } | null        (the latest Mark Scheme Assessment)
+    // }
+    // → null (nothing marked yet — the box stays hidden) | { first, second, bullets, facts, priority1 }
+    function pathBoxModel(input) {
+        const inp = input || {};
+        const answers = (inp.answers || []).filter((a) => a && Array.isArray(a.units));
+        const marked = answers.some((a) => a.units.some((u) => u && (u.rows || []).length));
+        if (!marked || !(inp.grade >= 1)) return null;
+
+        // ── STRUCTURE: the whole answer, then each paragraph's parts (macro → micro, §32a) ──
+        const macro = [], micro = [], missingUnits = [];
+        answers.forEach((a) => {
+            const units = a.units.filter((u) => u && (u.rows || []).length);
+            if (a.needed > 0 && a.written < a.needed) {
+                // Name the missing paragraph only when the marking agrees: exactly as many paragraphs are "not
+                // submitted" on the card, or earned nothing at all, as there are paragraphs missing.
+                const empty = a.units.filter((u) => u && (u.notSubmitted || ((u.rows || []).length && u.rows.every((r) => !(r.score > 0)))));
+                const short = a.needed - a.written;
+                const named = empty.length === short ? empty : [];
+                named.forEach((u) => missingUnits.push(u));
+                const whose = a.lit ? 'Your essay has ' : a.label + ': you wrote ';
+                macro.push({
+                    text: whose + a.written + ' of its ' + a.needed + ' paragraphs'
+                        + (named.length ? ': ' + _pathList(named.map(_pathPlace)) + (named.length === 1 ? ' is' : ' are') + ' missing.' : '.'),
+                    fix: named.length ? 'write ' + _pathList(named.map(_pathPlace)) + (a.lit ? '' : ' in ' + a.label) : 'write all ' + a.needed + ' paragraphs of ' + (a.lit ? 'the essay' : a.label),
+                    lost: named.reduce((s, u) => s + (u.rows || []).reduce((t, r) => t + r.worth, 0), 0),
+                });
+            }
+            units.forEach((u) => {
+                if (missingUnits.indexOf(u) !== -1 || u.rows.length < 3) return;
+                const earning = u.rows.filter((r) => r.score > 0);
+                if (earning.length * 2 >= u.rows.length) return;   // at least half its parts work
+                const notYet = u.rows.filter((r) => !(r.score > 0)).map((r) => _pathPartName(u.group, r.criterion));
+                micro.push({
+                    text: u.label + ': ' + earning.length + ' of ' + u.rows.length + ' parts earning marks. Not yet working: ' + _pathList(notYet) + '.',
+                    fix: 'build ' + _pathList(notYet, 2) + ' into ' + (a.lit ? _pathPlace(u) : u.label),
+                    lost: u.rows.reduce((s, r) => s + (r.worth - r.score), 0),
+                });
+            });
+        });
+        const structureGap = macro.length > 0 || micro.length > 0;
+
+        // ── CRITERIA: they misread what the mark scheme rewards ──
+        const crit = [];
+        (inp.calib || []).filter((c) => c && c.max > 0 && c.mine != null && c.sophia != null && c.mine - c.sophia > (c.tol || 0) + 1e-9)
+            .sort((p, q) => (q.mine - q.sophia) / q.max - (p.mine - p.sophia) / p.max).slice(0, 2)
+            .forEach((c) => {
+                crit.push({ text: 'You gave ' + (c.label || 'your answer') + ' ' + _pathNum(c.mine) + ' out of ' + _pathNum(c.max) + '. It earned ' + _pathNum(c.sophia) + '.',
+                    fix: 'compare your own marking with the mark scheme', weight: c.mine - c.sophia });
+            });
+        const agg = {};
+        answers.forEach((a) => a.units.forEach((u) => {
+            if (!u || missingUnits.indexOf(u) !== -1) return;
+            (u.rows || []).forEach((r) => {
+                const sk = _gapSkillFor(u.group, r.criterion);
+                if (!sk || !(r.worth > 0)) return;
+                const k = u.group + '|' + sk;
+                if (!agg[k]) agg[k] = { score: 0, worth: 0 };
+                agg[k].score += r.score; agg[k].worth += r.worth;
+            });
+        }));
+        const over = [];
+        (inp.ratings || []).forEach((x) => {
+            if (!x || !(x.value >= 1 && x.value <= 5)) return;
+            const a = agg[x.group + '|' + x.skill];
+            if (!a || !(a.worth > 0)) return;
+            const self = x.value / 5, act = a.score / a.worth;
+            if (self >= PATH_SELF_MIN - 1e-9 && act <= PATH_ACT_MAX + 1e-9 && self - act >= PATH_GAP_MIN - 1e-9) {
+                over.push({ skill: x.skill, rating: x.value, act: act, gap: self - act });
+            }
+        });
+        over.sort((p, q) => (q.gap - p.gap) || (p.act - q.act));
+        over.slice(0, 2).forEach((o) => {
+            crit.push({ text: 'You rated your ' + o.skill + ' ' + GAP_WORDS[o.rating - 1] + ' (' + o.rating + ' of 5). It earned ' + _pathPct(o.act) + ' of its marks.',
+                fix: 'check what the mark scheme rewards for ' + o.skill, weight: o.gap * 10 });
+        });
+        const msa = inp.msa;
+        if (msa && msa.max > 0 && Array.isArray(msa.categories) && msa.categories.length && msa.score < msa.max) {
+            crit.push({ text: 'In your Mark Scheme Assessment (' + _pathNum(msa.score) + ' out of ' + _pathNum(msa.max) + '), the questions you got wrong were about ' + _pathList(msa.categories, 4) + '.',
+                fix: 'go back over ' + _pathList(msa.categories, 4) + ' in the mark scheme', weight: 0, msa: true });
+        }
+        // The Mark Scheme Assessment alone never names the step — it is a quiz; the essay must show it too.
+        const criteriaGap = crit.some((c) => !c.msa);
+
+        // ── DETAILS: where the marks left are, part by part ──
+        const details = [];
+        answers.forEach((a) => a.units.forEach((u) => {
+            if (!u || missingUnits.indexOf(u) !== -1) return;
+            (u.rows || []).forEach((r) => {
+                const lost = r.worth - r.score;
+                if (lost > 1e-9) details.push({ name: _pathPartName(u.group, r.criterion), where: u.label, lost: lost });
+            });
+        }));
+        details.sort((p, q) => q.lost - p.lost);
+
+        // ── THE ORDER: below Grade 7 structure first; from Grade 7 the details. Evidence decides. ──
+        let first, second = null;
+        if (structureGap) { first = 'structure'; if (criteriaGap) second = 'criteria'; }
+        else if (inp.grade >= 7) { first = 'details'; if (criteriaGap) second = 'criteria'; }
+        else if (criteriaGap) first = 'criteria';
+        else first = 'details';
+
+        const bullets = [];
+        const facts = [];
+        let priority1 = '';
+        const stepLine = (k, lead) => lead + '**' + PATH_STEPS[k] + '**.';
+        bullets.push(stepLine(first, first === 'details' && inp.grade >= 7 ? 'Grade ' + inp.grade + ': your first step is ' : 'Your first step: '));
+        if (first === 'structure') {
+            macro.concat(micro).forEach((m) => { bullets.push(m.text); facts.push(m.text); });
+            const top = macro.length ? macro.slice().sort((p, q) => q.lost - p.lost)[0] : micro.slice().sort((p, q) => q.lost - p.lost)[0];
+            priority1 = top ? top.fix : '';
+        } else if (first === 'criteria') {
+            crit.forEach((c) => { bullets.push(c.text); facts.push(c.text); });
+            const top = crit.filter((c) => !c.msa).sort((p, q) => q.weight - p.weight)[0];
+            priority1 = top ? top.fix : '';
+        } else {
+            const top = details.slice(0, 2);
+            if (top.length) {
+                const line = (first === 'details' && !structureGap ? 'Your structure is complete. ' : '') + 'The most marks left are in your '
+                    + _pathList(top.map((d) => d.name + ' (' + d.where + ')')) + '.';
+                bullets.push(line); facts.push(line);
+                priority1 = 'improve the ' + top[0].name + ' in ' + top[0].where;
+            }
+        }
+        if (second === 'criteria') {
+            bullets.push('Behind it: **' + PATH_STEPS.criteria + '**.');
+            crit.forEach((c) => { bullets.push(c.text); facts.push(c.text); });
+        } else if (first !== 'criteria') {
+            // The Mark Scheme Assessment still says something worth seeing, even when the essay does not.
+            crit.filter((c) => c.msa).forEach((c) => { bullets.push(c.text); facts.push(c.text); });
+        }
+        return { first: first, second: second, bullets: bullets, facts: facts, priority1: priority1 };
+    }
+    // The closing-turn fact: Sophia orders her 3 Priorities by the same step (round z — no extra call; it rides
+    // the closing turn that already happens, as the §48 fact does).
+    function _pathFactText(m) {
+        if (!m || !m.first) return '';
+        return ' CODE-DERIVED WHERE YOU ARE (authoritative — the teaching order, Neil\'s ruling; do not recompute): the student\'s first step is "'
+            + PATH_STEPS[m.first] + '"' + (m.second ? ', and behind it "' + PATH_STEPS[m.second] + '"' : '') + '. Facts: ' + m.facts.join(' ')
+            + ' ORDER the 3 Priorities by this step: the FIRST priority MUST be to ' + (m.priority1 || 'fix that step') + '; after it, each paragraph\'s parts, then sentences and vocabulary. Within a step, the biggest mark loss comes first. Do NOT change any mark, grade or the number of priorities, and do not repeat these bullets — the student sees them above the Action Plan.';
+    }
+    // @PATH-BOX-PURE-END
 
     function _gapFids(key) { return { gap: 'calib-gap-' + key, why: 'calib-gap-' + key + '-why' }; }
     // ⭐ v7.20.682 (#702 — Neil, 3 Oct: "what we had before was actual versus predicted. But… the students
@@ -11664,6 +11909,95 @@
         } catch (e) { /* derived display — never blocks the document */ }
     }
     try { window.WML.renderGapFooters = _renderGapFooters; } catch (_) {}
+    // ⭐⭐ v7.20.879 (PEDAGOGY §32b) — the "Where you are" box's INPUTS, read from the document (pathBoxModel is
+    // the rule). Every source already exists: the Feedback cards' mark tables, the student's paragraphs (THE
+    // paragraph reader, so the prompt line never counts), the plan boxes (how many paragraphs the question
+    // needs — the same document-derived count the planning chain uses), the Self-Assessment ratings, the
+    // Calibration, and the latest Mark Scheme Assessment (state.markSchemeSummary, from the canvas load).
+    // Plain text that keeps the card's line breaks — textContent welds blocks.
+    function _pathPlainLines(node) {
+        if (!node) return [];
+        const d = document.createElement('div');
+        d.innerHTML = String(node.innerHTML || '').replace(/<br\s*\/?>|<\/(p|h[1-6]|li|div|tr)>/gi, '\n').replace(/<[^>]+>/g, ' ');
+        return String(d.textContent || '').replace(/ /g, ' ').split('\n').map((s) => s.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
+    }
+    function _pathBoxData() {
+        const ed = document.getElementById('swml-tiptap-editor');
+        if (!ed) return null;
+        const responses = Array.from(ed.querySelectorAll('.swml-section-block[data-section-type="response"]'));
+        if (!responses.length) return null;
+        const plans = Array.from(ed.querySelectorAll('.swml-section-block[data-section-type="plan"]')).map((p) => p.getAttribute('data-section-label') || '');
+        const cards = Array.from(ed.querySelectorAll('.swml-section-block[data-section-type="feedback"]'))
+            .filter((s) => /^Feedback\s*:/i.test(s.getAttribute('data-section-label') || ''));
+        const answers = [];
+        if (responses.length === 1) {
+            // ONE answer: an essay. Its paragraphs = the plan boxes ("Plan: Introduction" … "Plan: Conclusion").
+            const units = [];
+            cards.forEach((c) => {
+                const sec = _gapSectionFor(c.getAttribute('data-section-label') || '');
+                if (!sec) return;
+                const b = _pathBlockOf(_pathPlainLines(_sectionContentOf(c)));
+                units.push({ label: sec.label, part: sec.label, group: sec.group, rows: b.rows, notSubmitted: b.notSubmitted });
+            });
+            const needed = plans.filter((l) => /^Plan\s*:/i.test(l)).length || (_isLitEssay() ? LIT_ESSAY_BODY_COUNT + 2 : 0);
+            answers.push({ label: 'Your essay', lit: true, needed: needed, written: _responseParagraphs('').length, units: units });
+        } else {
+            // A paper: one answer per question. A language plan is ONE box per question ("Plan — Q2", one field —
+            // measured on staging), so it cannot say how many paragraphs the question needs. The question's card can:
+            // its headings are the paragraphs the protocol marks it for, and an unwritten one is "not submitted"
+            // (_pathCardUnits). A question whose card has no paragraph blocks — retrieval (PEDAGOGY §3) or a
+            // whole-piece writing task — has no paragraph structure to count. If Sophia ever leaves a missing
+            // paragraph out of the card altogether, this stays SILENT rather than guessing a count from the marks.
+            responses.forEach((r) => {
+                const q = (/^(Q\d+)/.exec(r.getAttribute('data-section-label') || '') || [])[1];
+                if (!q) return;
+                const card = cards.filter((c) => new RegExp('^Feedback\\s*:\\s*' + q + '\\b', 'i').test(c.getAttribute('data-section-label') || ''))[0];
+                if (!card) return;
+                const units = _pathCardUnits(_pathPlainLines(_sectionContentOf(card)), q);
+                if (!units.length) return;
+                const missing = units.filter((u) => u.notSubmitted).length;
+                answers.push({ label: q, lit: false, needed: units.length, written: units.length - missing, units: units });
+            });
+        }
+        let calib = [];
+        try {
+            calib = _calibGroups().filter((x) => x && x.mineNum !== null && x.actual).map((x) => ({
+                label: _ladderIsLit() ? 'your essay' : 'your ' + (x.q || 'answer') + (x.q ? ' answer' : ''),
+                mine: x.mineNum, sophia: x.actual.mark, max: x.max, tol: _toleranceFor(x.max),
+            }));
+        } catch (_) { calib = []; }
+        return pathBoxModel({
+            grade: _deterministicDocGrade(),
+            answers: answers,
+            ratings: _saWalkRows().filter((r) => r && r.value != null),
+            calib: calib,
+            msa: state.markSchemeSummary || null,
+        });
+    }
+    // The box itself — a derived, firewalled strip at the top of the Action Plan (wml-section-block.js), never a
+    // node: it re-derives on every pass, so it is never a stored fossil (§4c.7) and needs no migration.
+    function _renderPathBox() {
+        try {
+            const ed = document.getElementById('swml-tiptap-editor');
+            if (!ed) return;
+            const box = ed.querySelector('.swml-section-block[data-section-label="Action Plan"] > .swml-path-box');
+            if (!box) return;
+            let html = '';
+            if (WML.hasAssessmentSections && WML.hasAssessmentSections(state.task)) {
+                const m = _pathBoxData();
+                if (m && m.bullets.length) {
+                    const md = (s) => escapeHTML(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                    html = '<div class="swml-path-box-head">Where you are</div><ul class="swml-path-box-list">'
+                        + m.bullets.map((b) => '<li' + (/^(Your first step|Behind it|Grade \d)/.test(b) ? ' class="swml-path-step"' : '') + '>' + md(b) + '</li>').join('')
+                        + '</ul>';
+                }
+            }
+            if (box.innerHTML !== html) box.innerHTML = html;
+            const want = html ? '' : 'none';
+            if (box.style.display !== want) box.style.display = want;
+        } catch (e) { /* derived display — never blocks the document */ }
+    }
+    try { window.WML.renderPathBox = _renderPathBox; window.WML.pathBox = () => { try { return _pathBoxData(); } catch (e) { return null; } }; } catch (_) {}
     // ── v7.19.949 (Neil): Fix→Learn chips IN CONTEXT — at the end of the penalty line ───
     // (Replaces v948's box-bottom rows: Neil live test — a pooled row reads as detached from
     // the penalties it belongs to.) The chip is a REAL inline atom node (learnChip, the
@@ -11963,6 +12297,11 @@
         // Analytics that names the strongest/weakest + calibration — deterministic inputs,
         // not the model's own re-ranking (mark arithmetic is code-owned; so is this).
         let _facts = '';
+        // v7.20.879 (PEDAGOGY §32b, round z): the "where you are" step orders the 3 Priorities. Two rulings met here
+        // and are kept together, not averaged: the STEP decides which kind of fix comes first (Neil, 14 Oct), and
+        // within the step the biggest mark loss leads (v7.19.890, "where the most marks bleed").
+        let _path = null;
+        try { _path = _pathBoxData(); } catch (_) { _path = null; }
         try {
             const rank = _rankMarkedAreas();
             if (rank) {
@@ -11986,7 +12325,10 @@
                     .join('; ');
                 _facts += ' CODE-DERIVED RANKING (authoritative — do not recompute): key strength = '
                     + _aoName(rank.strongest) + ' (' + rank.strongest.score + '/' + rank.strongest.max + ').';
-                if (topMissed) {
+                if (topMissed && _path && _path.first) {
+                    _facts += ' Biggest mark losses, in order (area, mark, marks lost): ' + topMissed
+                        + '. The Analytics "Top Missed Areas" MUST list these in this exact order, naming the area and marks lost. The Action-Plan priorities follow the WHERE YOU ARE step given below; within a step, these losses decide the order. Present the key strength as the strength.';
+                } else if (topMissed) {
                     _facts += ' Biggest mark losses, in order (area, mark, marks lost): ' + topMissed
                         + '. The Analytics "Top Missed Areas" MUST list these in this exact order, naming the area and marks lost. The FIRST Action-Plan Priority Target MUST be the biggest loss (' + _aoName(losses[0]) + '); the next two priorities draw from the remaining losses in order. Present the key strength as the strength.';
                 } else {
@@ -12000,11 +12342,16 @@
         // the reason it matters. Code-derived; the AI renders, never recomputes; no mark changes.
         try {
             const bs = _blindSpotData();
-            if (bs) {
+            if (bs && _path && _path.first) {
+                // v7.20.879: with a WHERE YOU ARE step, the first priority belongs to that step — the blind spot is named
+                // inside the priority that fixes that part instead of being forced into the first one.
+                _facts += ' CODE-DERIVED BLIND SPOT (authoritative — the student rated themselves high here yet scored low): ' + bs.label + (bs.ao ? ' (' + bs.ao + ')' : '') + ' — rated ' + bs.selfPct + '%, scored ' + bs.actualPct + '%. Name it inside the priority that fixes that part, and in the Overall Feedback / Analytics as a calibration insight to self-monitor. Do NOT change any mark, grade, or the number of priorities.';
+            } else if (bs) {
                 _facts += ' CODE-DERIVED BLIND SPOT (authoritative — the student rated themselves high here yet scored low): ' + bs.label + (bs.ao ? ' (' + bs.ao + ')' : '') + ' — rated ' + bs.selfPct + '%, scored ' + bs.actualPct + '%. BLEND this into the FIRST Action-Plan Priority Target together with the biggest mark loss (do NOT add a fourth priority — the first priority names BOTH the biggest-loss area AND this blind spot as why it matters most), and name this blind spot in the Overall Feedback / Analytics as a calibration insight to self-monitor. Do NOT change any mark, grade, or the number of priorities.';
             }
         } catch (_) {}
         _facts += _gapCheckFact();   // v7.20.674 (#686): the paragraph-by-paragraph gaps, in the student's own words
+        _facts += _pathFactText(_path);   // v7.20.879 (§32b): the step the 3 Priorities follow
         // v7.19.921 (Neil Run 8): CODE-TALLIED penalty trend. The filed "Trend: Repeated
         // Errors" said F1 ×5 while the ledgers actually deducted F1 ×8 — the model recalled
         // instead of counting. Counts + instances now come from _penLedgerCards (the SAME
@@ -18192,6 +18539,7 @@
                 if (r !== null) sec.setAttribute('data-section-complete', r ? 'true' : 'false');
             });
             _updateProgressSummary(); // v7.19.496: refresh CW progress card after completion recompute
+            _renderPathBox();         // v7.20.879 (§32b): the Action Plan's "Where you are" re-derives with the document
             // v7.19.771: self-heal Date Completed on LOAD for an already-complete doc. The
             // optimistic stamp in recalc can run BEFORE the ticks are computed; here they're
             // fresh. If the student finished every required section but docCompletedAt was never
@@ -71175,6 +71523,9 @@
             // word-count regime (ceiling vs halt + re-check button). Absent (old
             // response shape / error) → LENIENT, matching pre-854 behaviour.
             if (res && typeof res.familyFirst !== 'undefined') state.familyFirst = res.familyFirst !== false;
+            // v7.20.879 (§32b): the latest Mark Scheme Assessment for this text (score + the categories got wrong) —
+            // one of the "Where you are" box's criteria signals. Server read, no API call. Absent → no MSA line.
+            state.markSchemeSummary = (res && res.markSchemeSummary && res.markSchemeSummary.max > 0) ? res.markSchemeSummary : null;
             setTimeout(_updateWcRecheckBtn, 1500); // after the editor mounts the loaded doc
             if (res.success && res.doc && res.doc.html) {
                 // v7.19.247: capture the real first-edit start date for the Score Summary.

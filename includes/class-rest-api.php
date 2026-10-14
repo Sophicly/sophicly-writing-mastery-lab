@@ -2975,6 +2975,7 @@ class SWML_REST_API {
                     'attempt'      => $attempt,
                     'generalNotes' => $general_notes,
                     'is_seed'      => true,
+                    'markSchemeSummary' => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),   // v7.20.879
                 ]);
             }
             // No upstream content — fall through and return this stage's stored doc.
@@ -3039,6 +3040,7 @@ class SWML_REST_API {
                         'attempt'      => $attempt,
                         'generalNotes' => $general_notes,
                         'is_seed'      => true,
+                        'markSchemeSummary' => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),   // v7.20.879
                     ]);
                 }
             }
@@ -3211,7 +3213,47 @@ class SWML_REST_API {
                 $user_id,
                 (strpos($text, 'lang') !== false || strpos($text, 'language') !== false) ? 'lang' : 'lit'
             ),
+            // v7.20.879 (PEDAGOGY §32b): the latest Mark Scheme Assessment for this text — one of the "Where you are"
+            // box's criteria signals. Assessment documents only; null elsewhere.
+            'markSchemeSummary'   => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),
         ]);
+    }
+
+    /**
+     * v7.20.879 (PEDAGOGY §32b — Neil, 14 Oct, round z: "take into account the students understanding of the mark
+     * scheme … the [mark scheme] assessment up to that point … can we do it via code"). The student's LATEST Mark
+     * Scheme Assessment for this text (any topic — the Final Assessment and Assessment 2 are both one), as the
+     * "Where you are" box reads it: the score and the categories they got wrong (the quiz engine's own sidecar,
+     * swml_qcats_mark_scheme_assessment_{board}_{text}_{topic} — persist_weak_categories). A database read; no API.
+     * Only for the documents that are marked (_assessment, _reassessment); null for everything else, and null when
+     * the student has no recorded sitting.
+     */
+    private function mark_scheme_summary_for($user_id, $board, $text, $suffix) {
+        if (!in_array((string) $suffix, ['_assessment', '_reassessment'], true)) return null;
+        global $wpdb;
+        $table = $wpdb->prefix . 'sophicly_session_records';
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT total_score, grade, topic_number FROM {$table}
+             WHERE user_id = %d AND board = %s AND text_slug = %s AND task = 'mark_scheme'
+               AND total_score IS NOT NULL AND total_score <> ''
+             ORDER BY updated_at DESC, id DESC LIMIT 1",
+            absint($user_id), sanitize_key($board), sanitize_text_field($text)
+        ), ARRAY_A);
+        if (!$row) return null;
+        $parts = explode('/', (string) $row['total_score']);
+        $score = isset($parts[0]) ? (float) $parts[0] : 0;
+        $max   = isset($parts[1]) ? (float) $parts[1] : 0;
+        if ($max <= 0) return null;
+        $topic = (int) ($row['topic_number'] ?? 0);
+        $ck    = 'swml_qcats_mark_scheme_assessment_' . sanitize_key($board) . '_' . sanitize_key($text) . '_' . $topic;
+        $craw  = get_user_meta($user_id, $ck, true);
+        $cats  = [];
+        if (!empty($craw)) {
+            $c = is_array($craw) ? $craw : json_decode($craw, true);
+            if (!is_array($c)) $c = json_decode(wp_unslash($craw), true);
+            if (is_array($c)) $cats = array_values(array_filter(array_map('sanitize_text_field', array_map('strval', $c))));
+        }
+        return ['score' => $score, 'max' => $max, 'grade' => (int) $row['grade'], 'categories' => $cats];
     }
 
     /**
@@ -3410,7 +3452,10 @@ class SWML_REST_API {
                 $doc['html'] = self::strip_responses_for_planning($doc['html']);
             }
         }
-        return rest_ensure_response(['success' => true, 'doc' => $doc, 'attempt' => $attempt, 'rev' => $rev]);
+        return rest_ensure_response(['success' => true,
+            // v7.20.879 (§32b): the tutor sees the student's "Where you are" box with the same evidence.
+            'markSchemeSummary' => $this->mark_scheme_summary_for($student_id, $board, $text, $suffix),
+            'doc' => $doc, 'attempt' => $attempt, 'rev' => $rev]);
     }
 
     /**

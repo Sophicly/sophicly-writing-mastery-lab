@@ -487,6 +487,19 @@
                 ctlRow.style.display = 'none';
                 dom.insertBefore(ctlRow, contentDOM);
 
+                // v7.20.879 (PEDAGOGY §32b — Neil: "he needs to be aware that that's his issue"): "Where you are" —
+                // bullets naming the first step of the teaching order to work on, at the top of the Action Plan.
+                // Derived display (the gap-footer technique): an empty firewalled slot filled by WML.renderPathBox,
+                // never a node — so it re-derives on every pass and needs no migration.
+                let pathBox = null;
+                if (type === 'action' && _cvLabel === 'Action Plan') {
+                    pathBox = document.createElement('div');
+                    pathBox.className = 'swml-path-box';
+                    pathBox.setAttribute('contenteditable', 'false');
+                    pathBox.style.display = 'none';
+                    dom.insertBefore(pathBox, contentDOM);
+                }
+
                 // v7.19.992: read-along POEM CARD — per-poem groups only. Derived display
                 // (the anaStrip/progress-card technique): an empty firewalled slot here,
                 // filled by wml-assessment's WML.renderPoemCards from GET /poems (poem
@@ -585,6 +598,9 @@
                         }
                         if (gapFoot && window.WML && typeof window.WML.renderGapFooters === 'function') {
                             window.WML.renderGapFooters();
+                        }
+                        if (pathBox && window.WML && typeof window.WML.renderPathBox === 'function') {
+                            window.WML.renderPathBox();
                         }
                     } catch (_) { /* ignore */ }
                 };
@@ -698,6 +714,8 @@
                         if (poemCard && (poemCard === mutation.target || poemCard.contains(mutation.target))) return true;
                         // v7.20.684 (#692): the paragraph-check footer is derived display — firewall it.
                         if (gapFoot && (gapFoot === mutation.target || gapFoot.contains(mutation.target))) return true;
+                        // v7.20.879 (§32b): the "Where you are" box is derived display — firewall its fills.
+                        if (pathBox && (pathBox === mutation.target || pathBox.contains(mutation.target))) return true;
                         // v7.20.778 (#816b): the form card's technique row is chrome — firewall it like the poem card.
                         if (techRow && (techRow === mutation.target || techRow.contains(mutation.target))) return true;
                         // v7.20.786 (#833): the Codex lesson-link bar is derived display — firewall its fills.

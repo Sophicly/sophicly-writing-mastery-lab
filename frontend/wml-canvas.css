@@ -9450,6 +9450,22 @@ div.swml-cw-resource-btn:active { transform: translateY(0); }
 .swml-gap-foot-row { display: grid; grid-template-columns: minmax(110px, 30%) 1fr; gap: 10px; padding: 3px 0; font-size: 14px; line-height: 1.5; }
 .swml-gap-foot-lbl { font-size: 12px; opacity: .7; }
 .swml-section-block.swml-fb-collapsed > .swml-gap-foot { display: none !important; }
+/* v7.20.879 (PEDAGOGY §32b — Neil: "maybe do it in bullet point form for easy legibility"). "Where you are" at the
+   top of the Action Plan: the first step of the teaching order to work on, in bullets. A POSITION, so it wears the
+   progress colour (blue-teal, BRAND §1) — purple is spent on attainment. Same strip shape as .swml-gap-foot. */
+.swml-path-box {
+    --swml-path: #51dacf; --swml-path-wash: rgba(81, 218, 207, 0.08);
+    margin: 4px 0 14px; padding: 12px 16px; border-radius: 6px;
+    background: var(--swml-path-wash);
+    box-shadow: inset 3px 0 0 var(--swml-path);
+}
+[data-swml-theme="light"] .swml-path-box { --swml-path: #0b6e68; --swml-path-wash: rgba(11, 110, 104, 0.06); }
+.swml-path-box-head { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--swml-path); margin-bottom: 6px; }
+.swml-path-box-list { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; font-size: 14px; line-height: 1.5; }
+.swml-path-box-list li.swml-path-step { list-style: none; margin-left: -1.1em; margin-top: 4px; }
+.swml-path-box-list li.swml-path-step:first-child { margin-top: 0; }
+.swml-path-box-list strong { color: var(--swml-path); font-weight: 600; }
+.swml-section-block.swml-fb-collapsed > .swml-path-box { display: none !important; }
 @media (max-width: 560px) { .swml-gap-foot-row { grid-template-columns: 1fr; gap: 2px; } }
 
 /* ══════════════════════════════════════════
