@@ -6,8 +6,10 @@
  * WML.config still pointed at the first page's object, so every grade commit forwarded the OLD lesson_url and the
  * listener filed the grade on the wrong lesson (Reeham 1352, row 1978).
  *  1. THE RULE — _syncSpaConfig is EXTRACTED from the shipped file and driven.
- *  2. THE WIRING — the SPA re-init syncs BEFORE it reads cfg into state (so nothing in the new lesson reads the old
- *     values) and re-points window.swmlConfig at the synced object.
+ *  2. THE WIRING — ORDER-PROOF, because it was measured both ways: WML's 1s poller can re-init BEFORE the theme
+ *     re-runs swmlConfig, and then skips focusSpaNavigated as "already done". So (a) the lesson url rides the
+ *     lesson's OWN embed config (in the HTML) and is applied at re-init; (b) a separate focusSpaNavigated listener,
+ *     registered before the re-init one, syncs everything else (the theme fires it after its scripts).
  */
 'use strict';
 const fs = require('fs');
@@ -38,6 +40,12 @@ const iSync = re.indexOf('_syncSpaConfig(WML.config, window.swmlConfig)');
 ok(iSync > 0, '_doSpaReinit syncs WML.config from window.swmlConfig');
 ok(iSync > 0 && iSync < re.indexOf('window.swmlEmbedConfig = cfg') && iSync < re.indexOf("state.task        = cfg.task"), '…before it reads the new lesson into state');
 ok(/if \(WML\.config\) window\.swmlConfig = WML\.config;/.test(re), 'window.swmlConfig is re-pointed at the synced object');
+ok(/if \(WML\.config && cfg\.lessonUrl\) WML\.config\.lessonUrl = cfg\.lessonUrl;/.test(re), 're-init applies the url from the lesson\'s own embed config (order-proof)');
+const PHP = fs.readFileSync(path.join(__dirname, '..', 'sophicly-writing-mastery-lab.php'), 'utf8');
+const emb = PHP.slice(PHP.indexOf("'postId'      => $post_id,"), PHP.indexOf("'postId'      => $post_id,") + 600);
+ok(/'lessonUrl'\s*=> get_queried_object_id\(\) \? get_permalink\(get_queried_object_id\(\)\) : ''/.test(emb), 'the embed config carries lessonUrl, same expression as swmlConfig');
+const L1 = SRC.indexOf("document.addEventListener('focusSpaNavigated', function () {\n        _syncSpaConfig(WML.config, window.swmlConfig);");
+ok(L1 > 0 && L1 < R1, 'a focusSpaNavigated listener syncs the settings, registered BEFORE the re-init listener');
 const commit = (fs.readFileSync(path.join(__dirname, '..', 'frontend', 'wml-assessment.js'), 'utf8').match(/lesson_url: \(WML\.config && WML\.config\.lessonUrl\) \|\| ''/g) || []).length;
 ok(commit >= 4, 'grade commits still forward WML.config.lessonUrl (the field this keeps current)', commit);
 

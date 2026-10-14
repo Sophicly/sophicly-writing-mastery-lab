@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.874
+ * Version: 7.20.875
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.874');
+define('SWML_VERSION', '7.20.875');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -1370,6 +1370,9 @@ class Sophicly_Writing_Mastery_Lab {
             'focusMode'   => $in_focus_mode,
             'isLdTopic'   => $is_ld_topic,
             'postId'      => $post_id,
+            // v7.20.874: the lesson's own url rides the embed config (it lives in the HTML), so a Focus SPA
+            // re-init has it even when it runs before the theme re-runs swmlConfig. Same expression as swmlConfig.
+            'lessonUrl'   => get_queried_object_id() ? get_permalink(get_queried_object_id()) : '',
             'task'        => $task,
             'phase'       => $phase,
             'topic'       => $topic,

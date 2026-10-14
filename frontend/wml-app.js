@@ -7960,8 +7960,12 @@ Before marking the introduction, ask the student to confirm their essay structur
             // `config`, also held by wml-pull-overlay) still points at the first page's object. Measured on
             // staging: Polish → Get Your Assessment left WML.config.lessonUrl on Polish, and every grade
             // commit forwards that url, so the listener filed Reeham's redraft grade on Polish (row 1978).
+            // ⚠️ ORDER IS NOT GUARANTEED HERE (measured both ways): the 1s poller can see the new HTML before
+            // the theme re-runs swmlConfig. So the url is taken from the lesson's OWN embed config (always
+            // present), and the rest syncs again on focusSpaNavigated, which the theme fires after its scripts.
             _syncSpaConfig(WML.config, window.swmlConfig);
             if (WML.config) window.swmlConfig = WML.config;
+            if (WML.config && cfg.lessonUrl) WML.config.lessonUrl = cfg.lessonUrl;
 
             // Update config and state.
             // v7.15.100: unconditional assignment — falsy cfg values must
@@ -8037,6 +8041,11 @@ Before marking the introduction, ask the student to confirm their essay structur
     }
     // v7.17.78: event-based bridge — fires on every Focus SPA navigation,
     // including non-WML → WML transitions that the pollster never starts for.
+    // v7.20.874: registered BEFORE the re-init listener — the theme fires this after re-running swmlConfig.
+    document.addEventListener('focusSpaNavigated', function () {
+        _syncSpaConfig(WML.config, window.swmlConfig);
+        if (WML.config) window.swmlConfig = WML.config;
+    });
     document.addEventListener('focusSpaNavigated', _doSpaReinit);
 
     // ── LD Theme Toggle Sync — REMOVED v7.14.21 ──
