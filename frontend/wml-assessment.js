@@ -40392,16 +40392,8 @@
                 if ($p.node(d).type.name === 'sectionBlock') { secDepth = d; break; }
             }
             if (secDepth < 0) return false; // not in a section (the doc-root guard owns that case)
-            const sec = $p.node(secDepth);
-            let hasField = false, hasFreeProse = false;
-            sec.descendants(n => {
-                if (FIELD_SELECT_ALL_TYPES.includes(n.type.name)) { hasField = true; return false; } // don't descend into the field
-                if (n.type.name === 'paragraph'
-                    && !(n.attrs && (n.attrs.locked === true || n.attrs.locked === 'true'))
-                    && (n.textContent || '').trim()) hasFreeProse = true;
-                return true;
-            });
-            return hasField && !hasFreeProse;
+            // v7.20.888: ONE rule, shared with the structure lock's body guard (@STRUCTURE-ADD-PURE).
+            return _swmlIsFieldOnly($p.node(secDepth), FIELD_SELECT_ALL_TYPES);
         } catch (_) { return false; }
     }
     // ⭐ v7.20.400 (FIXLIST #169 — Neil, prod .399: "I can type in, but I tried to paste in the rest
@@ -40495,6 +40487,85 @@
             from: before.n, to: after.n };
     }
     // @STRUCTURE-LOCK-PURE-END
+    // ⭐ v7.20.888 (FIXLIST 1412-codex-text-outside-boxes) — NOTHING IS ADDED TO A BOX BUT WRITING. The lock above
+    // stops a box being REMOVED; nothing stopped one being ADDED. Ibrahim 1412's Mastery Codex (prod, 13 Oct 16:47 and
+    // 18:05 UTC): his Unit 3 box gained ~60 paragraphs reproducing the page (the progress and sign-off cards, every unit
+    // heading) OUTSIDE its fields, and his Unit 5 box gained EIGHTEEN empty copies of the boxes that follow it, both
+    // cards, and the same text again. Pupil 1361's Lang P2 Q2 Response holds copies of the Q2 Response, the Q3 question
+    // and the Q3 plan (May). A sweep of all 684 stored documents found exactly those two — so neither shape is ever
+    // legitimate. The route is NOT known: today's paste cannot make either shape (transformPasted strips pasted
+    // sections; a paste into a field lands inline inside it; a paste into a field-only body is refused — measured on
+    // staging, Codex + planning, 0 nested boxes), so like the display guard this closes the transaction itself, by any
+    // route, and records what the browser was doing so the next attempt names the route. Two invariants:
+    //   nest — no box ever sits inside a student's box (plan / response / outline): any transaction that adds one is
+    //          refused (student or code), except a migration or a whole-document load (an existing document must open).
+    //   body — a field-only section's body holds no writing outside its fields (the SAME rule the input handlers use):
+    //          a student transaction that gives one writing outside its fields is refused.
+    // @STRUCTURE-ADD-PURE-BEGIN — pure; driven by bin/structure-add-harness.js
+    const SWML_STUDENT_BOX_TYPES = ['plan', 'response', 'outline'];
+    // A section is field-only when it holds a field and no unlocked writing outside its fields.
+    function _swmlIsFieldOnly(sec, fieldTypes) {
+        let hasField = false, hasFreeProse = false;
+        sec.descendants(n => {
+            if (fieldTypes.indexOf(n.type.name) !== -1) { hasField = true; return false; } // don't descend into the field
+            if (n.type.name === 'paragraph'
+                && !(n.attrs && (n.attrs.locked === true || n.attrs.locked === 'true'))
+                && (n.textContent || '').trim()) hasFreeProse = true;
+            return true;
+        });
+        return hasField && !hasFreeProse;
+    }
+    // Boxes inside a student's box, and field-only sections — one walk, never into a textblock.
+    function _swmlAddShape(doc, fieldTypes) {
+        let nested = 0, fieldOnly = 0;
+        (function walk(node, inBox) {
+            node.forEach(child => {
+                if (child.isTextblock || child.isText || fieldTypes.indexOf(child.type.name) !== -1) return;
+                if (child.type.name === 'sectionBlock') {
+                    if (inBox) nested++;
+                    if (_swmlIsFieldOnly(child, fieldTypes)) fieldOnly++;
+                    walk(child, inBox || SWML_STUDENT_BOX_TYPES.indexOf(String((child.attrs && child.attrs.sectionType) || '')) !== -1);
+                } else walk(child, inBox);
+            });
+        })(doc, false);
+        return { nested, fieldOnly };
+    }
+    // t = { docChanged, migrating, wholeDoc, fromStudent, before(), after() } — shapes are read only when needed.
+    function _swmlStructureAddVerdict(t) {
+        if (!t || !t.docChanged || t.migrating || t.wholeDoc) return { refuse: false };
+        const a = t.before(), b = t.after();
+        if (b.nested > a.nested) return { refuse: true, kind: 'nest', from: a.nested, to: b.nested };
+        if (t.fromStudent && b.fieldOnly < a.fieldOnly) return { refuse: true, kind: 'body', from: a.fieldOnly, to: b.fieldOnly };
+        return { refuse: false };
+    }
+    // @STRUCTURE-ADD-PURE-END
+    let _swmlAddToldAt = 0, _swmlAddLogAt = 0, _swmlAddLogN = 0;
+    function _swmlStructureAddRecord(v, info) {
+        try {
+            console.warn('WML structure lock: refused a change that adds ' + (v.kind === 'nest' ? 'a box inside a box' : 'writing outside the boxes')
+                + ' (' + v.from + ' → ' + v.to + ') — route: ' + JSON.stringify(info));
+            // §4d: say why, once per burst, in plain words.
+            if (Date.now() - _swmlAddToldAt > 2500) {
+                _swmlAddToldAt = Date.now();
+                try { showToast('You can only write inside the boxes. That change wasn’t kept.', 5000, true); } catch (_) {}
+            }
+            // Durable record — the route is what we do not know. Same route and limits as the display guard's.
+            if (API.displayLockLog && _swmlAddLogN < 10 && Date.now() - _swmlAddLogAt > 5000) {
+                _swmlAddLogAt = Date.now(); _swmlAddLogN++;
+                const body = Object.assign({ guard: 'structure_' + v.kind, task: state.task || '',
+                    post_id: (window.swmlEmbedConfig && window.swmlEmbedConfig.postId) || 0,
+                    ua: String((navigator && navigator.userAgent) || '').slice(0, 200) }, info);
+                fetch(API.displayLockLog, { method: 'POST', headers, body: JSON.stringify(body), keepalive: true }).catch(function () {});
+            }
+        } catch (_) { /* recording must never block anything */ }
+    }
+    // A transaction that replaces the whole document (a load, a template upgrade) — code, never a keystroke.
+    function _swmlTrWholeDoc(tr) {
+        return tr.steps.some((s, i) => {
+            const st = (s.toJSON() || {}).stepType;
+            return (st === 'replace' || st === 'replaceAround') && s.from <= 0 && s.to >= tr.docs[i].content.size;
+        });
+    }
     // ⭐ v7.20.882 (FIXLIST p&c-1397-lock-device) — THE DISPLAY-LOCK GUARD. PEDAGOGY §6 / v7.19.947: in an assessment,
     // redraft-assessment or discuss-feedback lesson the student's writing (response · plan · outline) is a read-only
     // carry-over. The input handlers refuse every keyboard / paste / drop route — and every route measured in WML 356 A
@@ -40583,12 +40654,23 @@
                         shapeAfter: () => _swmlBoxShape(tr.doc, types),
                     });
                     if (v.markNotUndoable) { tr.setMeta('addToHistory', false); tr.setMeta('swmlLockHist', true); }
+                    // v7.20.888: nothing is added to a box but writing — by any route (@STRUCTURE-ADD-PURE).
+                    if (v.allow && tr.docChanged && !_migrationActive) {
+                        const a = _swmlStructureAddVerdict({
+                            docChanged: true, migrating: false, wholeDoc: _swmlTrWholeDoc(tr), fromStudent: fromStudent,
+                            before: () => _swmlAddShape(state.doc, FIELD_SELECT_ALL_TYPES),
+                            after: () => _swmlAddShape(tr.doc, FIELD_SELECT_ALL_TYPES),
+                        });
+                        if (a.refuse) {
+                            _swmlStructureAddRecord(a, { event: lastEv.type, input_type: lastEv.inputType, ui_event: String(tr.getMeta('uiEvent') || ''),
+                                composition: !!tr.getMeta('composition'), history: !!(hist && tr.getMeta(hist)), steps: tr.steps.length,
+                                ms_since_event: Date.now() - userAt });
+                            return false;
+                        }
+                    }
                     // v7.20.882: the display-lock guard — a student change to the writing in a display lesson, by any route.
                     if (v.allow && tr.docChanged && fromStudent && !_migrationActive && _docDisplayLocked()) {
-                        const wholeDoc = tr.steps.some((s, i) => {
-                            const st = (s.toJSON() || {}).stepType;
-                            return (st === 'replace' || st === 'replaceAround') && s.from <= 0 && s.to >= tr.docs[i].content.size;
-                        });
+                        const wholeDoc = _swmlTrWholeDoc(tr);
                         const g = _swmlDisplayGuardVerdict({
                             docChanged: true, locked: true, migrating: false, fromStudent: true, wholeDoc: wholeDoc,
                             lockedTextChanged: !wholeDoc && _swmlLockedTextChanged(state.doc, tr.doc, _displayLockTypesNow()),

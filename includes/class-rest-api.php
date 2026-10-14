@@ -2752,6 +2752,8 @@ class SWML_REST_API {
         if (!is_array($p)) $p = [];
         $entry = [
             'at'             => current_time('c'),
+            // v7.20.888: which guard refused — 'display' (v7.20.882) · 'structure_nest' · 'structure_body'.
+            'guard'          => sanitize_key($p['guard'] ?? 'display'),
             'post_id'        => absint($p['post_id'] ?? 0),
             'task'           => sanitize_key($p['task'] ?? ''),
             'event'          => sanitize_key($p['event'] ?? ''),
@@ -2770,8 +2772,8 @@ class SWML_REST_API {
         $log[] = $entry;
         if (count($log) > 50) $log = array_slice($log, -50);
         update_user_meta($user_id, 'swml_display_lock_log', wp_slash(wp_json_encode($log)));
-        error_log(sprintf('[WML display-lock] user=%d post=%d task=%s event=%s input=%s ui=%s comp=%d ua=%s',
-            $user_id, $entry['post_id'], $entry['task'], $entry['event'], $entry['input_type'], $entry['ui_event'],
+        error_log(sprintf('[WML display-lock] guard=%s user=%d post=%d task=%s event=%s input=%s ui=%s comp=%d ua=%s',
+            $entry['guard'], $user_id, $entry['post_id'], $entry['task'], $entry['event'], $entry['input_type'], $entry['ui_event'],
             $entry['composition'] ? 1 : 0, $entry['ua']));
         return rest_ensure_response(['success' => true]);
     }

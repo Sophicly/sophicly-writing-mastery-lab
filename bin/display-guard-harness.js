@@ -98,8 +98,9 @@ ok(/const fromStudent = !!tr\.getMeta\('uiEvent'\) \|\| \(Date\.now\(\) - userAt
     'ONE student test, shared with the structure lock');
 ok(/if \(v\.allow && tr\.docChanged && fromStudent && !_migrationActive && _docDisplayLocked\(\)\) \{/.test(lockSrc), 'the guard runs inside the same filter, only in a display lesson, only for the student');
 ok(/lockedTextChanged: !wholeDoc && _swmlLockedTextChanged\(state\.doc, tr\.doc, _displayLockTypesNow\(\)\)/.test(lockSrc)
-    && /\(st === 'replace' \|\| st === 'replaceAround'\) && s\.from <= 0 && s\.to >= tr\.docs\[i\]\.content\.size/.test(lockSrc),
-    'the writing is compared before → after the transaction; a whole-document load is recognised per step');
+    && /const wholeDoc = _swmlTrWholeDoc\(tr\);/.test(lockSrc)
+    && /function _swmlTrWholeDoc\(tr\) \{[\s\S]{0,120}\(st === 'replace' \|\| st === 'replaceAround'\) && s\.from <= 0 && s\.to >= tr\.docs\[i\]\.content\.size/.test(JS),
+    'the writing is compared before → after the transaction; a whole-document load is recognised per step (v7.20.888: the ONE helper both guards use)');
 ok(/if \(g\.refuse\) \{\s*_swmlDisplayGuardRecord\(\{/.test(lockSrc) && /return false;\s*\}\s*\}\s*if \(v\.allow\) return true;/.test(lockSrc), 'a refusal records, then returns false — before the structure verdict can allow it');
 ok(/const touched = \(view, ev\) => \{ userAt = Date\.now\(\); lastEv = \{ type: \(ev && ev\.type\) \|\| '', inputType: \(ev && ev\.inputType\) \|\| '' \}; return false; \};/.test(lockSrc),
     'the record carries what the browser said the student did (event + inputType)');

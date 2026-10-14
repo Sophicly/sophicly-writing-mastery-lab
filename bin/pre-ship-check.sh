@@ -275,6 +275,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/review-parity-harness.js || fail=1
 fi
 
+# v7.20.888 (FIXLIST 1412-codex-text-outside-boxes): nothing is added to a box but writing — a box inside a student's box
+# is refused from anyone, writing outside a field-only box's fields is refused from the student; loads + migrations pass.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|class-rest-api\.php|structure-add-harness\.js'; then
+  node bin/structure-add-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document
