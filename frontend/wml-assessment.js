@@ -60737,8 +60737,9 @@
             canvasZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, newZoom));
             // Snap to 100% when close
             if (Math.abs(canvasZoom - 1) < ZOOM_SNAP) canvasZoom = 1;
-            // Reset horizontal pan when zooming back to fit (v7.12.41)
-            if (canvasZoom <= 1) panOffsetX = 0;
+            // Reset horizontal pan when zooming back to fit (v7.12.41); v7.20.873: clamp to the new zoom's range,
+            // which is 0 whenever the document fits the pane.
+            panOffsetX = clampPanX(panOffsetX);
             // v7.19.828: preserve the scroll anchor across the zoom change. scale()
             // (origin top) moves every rendered point proportionally while scrollTop
             // stays numerically fixed, so the resize-driven auto-fit (98%→100% chip)
@@ -60852,6 +60853,21 @@
         // ── Canvas Panning — two-finger + click-drag (v7.12.43) ──
         // Direct deltaX application with momentum deceleration after gesture ends.
         // High deadzone prevents drift during vertical-only scroll.
+        // @CANVAS-PAN-PURE-BEGIN — pure; driven by bin/canvas-pan-harness.js
+        // v7.20.873 (FIXLIST canvas-doc-drag, Neil 14 Oct: "Only when zoomed in"): how far the document may slide
+        // sideways. 0 whenever the scaled document fits the pane, so at normal size it never moves (a student slid
+        // it off by accident and could not get it back). Zoomed in, it slides just far enough to show each edge
+        // plus a 16px margin, and no further, so it can never leave the screen.
+        function canvasPanLimit(docW, zoom, paneW) {
+            if (!(docW > 0) || !(zoom > 0) || !(paneW > 0)) return 0;
+            const over = docW * zoom - paneW;
+            return over > 0 ? over / 2 + 16 : 0;
+        }
+        // @CANVAS-PAN-PURE-END
+        function clampPanX(x) {
+            const L = canvasPanLimit(DOC_NATURAL_WIDTH, canvasZoom, contentWrap.clientWidth);
+            return Math.max(-L, Math.min(L, x));
+        }
         let panGestureActive = false;
         let panTargetX = 0; // kept in sync for other handlers
         let panAnimFrame = 0;
@@ -60867,14 +60883,19 @@
                 panAnimFrame = 0;
                 return;
             }
-            panOffsetX += panVelocity;
+            const _next = clampPanX(panOffsetX + panVelocity);
+            const _atEdge = _next !== panOffsetX + panVelocity;
+            panOffsetX = _next;
             panTargetX = panOffsetX;
             updateDocTransform();
+            if (_atEdge) { panVelocity = 0; panAnimFrame = 0; return; }
             panAnimFrame = requestAnimationFrame(panMomentumStep);
         }
 
         contentWrap.addEventListener('wheel', (e) => {
             if (e.ctrlKey || e.metaKey) return; // zoom handler handles pinch
+            // v7.20.873: the document fits the pane → it stays put (the accidental sideways swipe).
+            if (canvasPanLimit(DOC_NATURAL_WIDTH, canvasZoom, contentWrap.clientWidth) <= 0) { panGestureActive = false; return; }
             const ax = Math.abs(e.deltaX), ay = Math.abs(e.deltaY);
 
             // Reset gesture if clearly vertical (ay dominant, ax negligible)
@@ -60889,7 +60910,7 @@
             if (panGestureActive && ax > 2) {
                 // Stop any momentum animation — user is actively gesturing
                 if (panAnimFrame) { cancelAnimationFrame(panAnimFrame); panAnimFrame = 0; }
-                panOffsetX -= e.deltaX;
+                panOffsetX = clampPanX(panOffsetX - e.deltaX);
                 panTargetX = panOffsetX;
                 panVelocity = -e.deltaX * 0.4; // track velocity for momentum
                 updateDocTransform();
@@ -60913,6 +60934,8 @@
         contentWrap.addEventListener('mousedown', (e) => {
             if (e.button !== 0 && e.button !== 1) return;
             if (e.target.closest('.swml-canvas-doc, .swml-outline-panel, .swml-outline-btn, .swml-dropdown-select, button')) return;
+            // v7.20.873: no grab at all while the document fits the pane.
+            if (canvasPanLimit(DOC_NATURAL_WIDTH, canvasZoom, contentWrap.clientWidth) <= 0) return;
             isPanning = true;
             panStartX = e.clientX;
             panStartY = e.clientY;
@@ -60924,7 +60947,7 @@
 
         document.addEventListener('mousemove', (e) => {
             if (!isPanning) return;
-            panOffsetX = panStartOffsetX + (e.clientX - panStartX);
+            panOffsetX = clampPanX(panStartOffsetX + (e.clientX - panStartX));
             panTargetX = panOffsetX; // sync smooth target
             contentWrap.scrollTop = panScrollStartY - (e.clientY - panStartY);
             updateDocTransform();

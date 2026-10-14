@@ -232,6 +232,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/overlay-veil-harness.js || fail=1
 fi
 
+# v7.20.873 (FIXLIST canvas-doc-drag — Neil, 14 Oct: "Only when zoomed in"): the document moves sideways only while the
+# scaled document is wider than the pane, and never off screen. Falsified on the pre-fix file + 5 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|canvas-pan-harness\.js'; then
+  node bin/canvas-pan-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document
