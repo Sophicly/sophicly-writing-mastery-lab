@@ -60410,6 +60410,9 @@
                     target_2: getVal(p.target_2),
                     attempt_number: (state.attempt || 1),     // on_phase_complete keys the row by this → additive, never overwrites a prior attempt
                     lesson_url: (WML.config && WML.config.lessonUrl) || '',
+                    // v7.20.878 (FIXLIST progress-report-word-count): the words in the piece Sophia marked (Response
+                    // sections only, the "Write your essay here" prompt excluded) — the graded row carried 0 before.
+                    word_count: getResponseWordCount(canvasEditor) || 0,
                 };
                 // v7.20.113: granular analytics capture. Additive — a null breakdown leaves the
                 // commit exactly as it was, so this can never regress the grade write.

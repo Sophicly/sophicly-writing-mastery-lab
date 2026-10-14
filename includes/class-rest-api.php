@@ -5654,6 +5654,8 @@ class SWML_REST_API {
             'strength_1'   => sanitize_text_field($params['strength_1'] ?? ''),
             'target_1'     => sanitize_text_field($params['target_1'] ?? ''),
             'target_2'     => sanitize_text_field($params['target_2'] ?? ''),
+            // v7.20.878: words in the marked piece (Response only) — student-data stores it on the graded row.
+            'word_count'   => absint($params['word_count'] ?? 0),
             'attempt'      => $attempt,
             'completed_at' => current_time('mysql'),
         ];

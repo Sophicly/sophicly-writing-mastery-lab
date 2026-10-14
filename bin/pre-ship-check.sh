@@ -246,6 +246,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/canvas-pan-harness.js || fail=1
 fi
 
+# v7.20.878 (FIXLIST progress-report-word-count): the grade commit sends the marked piece's word count and complete_phase
+# passes it to the listener — every graded row on prod carried 0 before. Falsified on HEAD + 3 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|class-rest-api\.php|phase-wordcount-harness\.js'; then
+  node bin/phase-wordcount-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document
