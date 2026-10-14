@@ -297,6 +297,16 @@ console.log('\n10. a completed WML lesson shows the theme\'s undo (v7.20.865 —
     ok(/ldUndoBtn\.value \|\| ldUndoBtn\.textContent/.test(fn) && /ldUndoBtn\.click\(\)/.test(fn), 'it wears the theme\'s own label and forwards the click to LearnDash\'s form (LD\'s nonce + handler)');
     ok(!/_mcGateCheckBeforeComplete/.test(fn), 'undoing never goes through the Mark Complete gate');
     ok(/\.swml-ld-undo \{[^}]*text-decoration: underline;/.test(css), 'it has its own look (the theme\'s underlined muted text), not the Mark Complete pill');
+    // v7.20.876 (Web Design 122, 14 Oct): the tutor's review button (`--staff`) only OPENS the theme's confirm, so a copy that
+    // disabled itself on click stayed dead after Cancel/Esc. Staff copy: forward + return BEFORE any self-disable, and mirror the
+    // theme button's own `disabled`. Student copy: keeps the disable-on-click double-submit guard (LD's form reloads the page).
+    ok(/const isStaff = ldUndoBtn\.classList\.contains\('spl-undo-complete--staff'\);/.test(fn), 'the tutor\'s review button is recognised by the theme\'s --staff class');
+    const click = (fn.match(/onClick: \(\) => \{[\s\S]*?\n                    \},/) || [''])[0];
+    const iStaff = click.search(/if \(isStaff\) \{\s*try \{ ldUndoBtn\.click\(\); \}[^\n]*\n\s*return;\s*\}/), iDis = click.indexOf('undoBtn.disabled = true');
+    ok(iStaff >= 0 && iDis > iStaff, '⭐ a staff click forwards and RETURNS before the self-disable (Cancel/Esc leaves the copy usable)');
+    ok(/if \(isStaff\) \{\s*const syncDisabled = \(\) => \{ undoBtn\.disabled = !!ldUndoBtn\.disabled; \};\s*syncDisabled\(\);\s*if \(typeof MutationObserver !== 'undefined'\) new MutationObserver\(syncDisabled\)\.observe\(ldUndoBtn, \{ attributes: true, attributeFilter: \['disabled'\] \}\);/.test(fn),
+        'the staff copy mirrors the theme button\'s own disabled state (in-flight only)');
+    ok(iDis > 0 && /undoBtn\.textContent = label \+ '\\u2026';/.test(click), 'the student\'s undo keeps its disable-on-click guard');
 }
 
 console.log('\n' + (failN ? '✗ ' + failN + ' failed, ' + pass + ' passed' : '✓ all ' + pass + ' checks passed'));

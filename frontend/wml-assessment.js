@@ -44042,17 +44042,32 @@
             function mountLdUndoProxy(ldUndoBtn) {
                 if (ldNav.querySelector('.swml-ld-undo')) return;
                 const label = (ldUndoBtn.value || ldUndoBtn.textContent || '').trim() || 'Mark as not finished';
+                // v7.20.876 (Web Design 122, 14 Oct): the TUTOR's button in review (`--staff`) only OPENS the theme's
+                // confirm, so disabling this copy on click left it dead after Cancel/Esc — and focus returned to a
+                // disabled button. The staff copy never disables itself: it mirrors the theme button's own `disabled`,
+                // which the theme sets only while its request is in flight. The student's undo submits LearnDash's
+                // form and reloads, so it keeps the disable-on-click guard against a double submit.
+                const isStaff = ldUndoBtn.classList.contains('spl-undo-complete--staff');
                 const undoBtn = el('button', {
                     className: 'swml-ld-undo',
                     textContent: label,
-                    title: 'Mark this lesson as not finished in LearnDash',
+                    title: isStaff ? 'Mark this lesson as not finished for this student' : 'Mark this lesson as not finished in LearnDash',
                     onClick: () => {
+                        if (isStaff) {
+                            try { ldUndoBtn.click(); } catch (e) { console.warn('WML: staff undo click failed', e); }
+                            return;
+                        }
                         undoBtn.disabled = true;
                         undoBtn.textContent = label + '\u2026';
                         try { ldUndoBtn.click(); }
                         catch (e) { console.warn('WML: LearnDash undo click failed', e); undoBtn.disabled = false; undoBtn.textContent = label; }
                     },
                 });
+                if (isStaff) {
+                    const syncDisabled = () => { undoBtn.disabled = !!ldUndoBtn.disabled; };
+                    syncDisabled();
+                    if (typeof MutationObserver !== 'undefined') new MutationObserver(syncDisabled).observe(ldUndoBtn, { attributes: true, attributeFilter: ['disabled'] });
+                }
                 const nextBtn = ldNav.querySelector('.swml-ld-next');
                 if (nextBtn) ldNav.insertBefore(undoBtn, nextBtn);
                 else ldNav.appendChild(undoBtn);
