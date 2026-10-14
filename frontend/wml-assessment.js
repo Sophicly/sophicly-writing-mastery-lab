@@ -12360,6 +12360,21 @@
         return (String(secText || '').match(new RegExp('\\bQ' + qk + '\\s*[\\u2014\\u2013-]\\s*(?:Paragraph|Part)\\s*\\d+', 'g')) || []).length;
     }
     // @MARK-CORRECT-PURE-END
+    // @CARD-SCORE-PURE-BEGIN — pure; driven by bin/mark-correct-harness.js
+    // v7.20.877: the "Your Score" cell of a marking-card row, as a number — or null when it is not a score.
+    // Sophia sometimes writes the score as "0.75/1.5" (score/worth). MarkAudit accepted only a bare number, so every row of such
+    // a card was skipped, the card fell to "unauditable", and its stated total stood unchecked — measured on prod 14 Oct: a P&C
+    // poetry essay whose Body 1 card said 0.25/7 where its own table adds to 1.25, and Body 2 1.25 where it adds to 2.25.
+    // "score/worth" is read only when that worth matches the Worth cell; any other denominator is not trusted.
+    function _cardScoreCell(worthCell, scoreCell) {
+        const w = String(worthCell == null ? '' : worthCell).trim(), s = String(scoreCell == null ? '' : scoreCell).trim();
+        if (!/^\+?\d+(\.\d+)?$/.test(w)) return null;
+        const m = s.match(/^\+?(\d+(?:\.\d+)?)(?:\s*\/\s*\+?(\d+(?:\.\d+)?))?$/);
+        if (!m) return null;
+        if (m[2] !== undefined && Math.abs(parseFloat(m[2]) - parseFloat(w)) > 0.001) return null;
+        return parseFloat(m[1]);
+    }
+    // @CARD-SCORE-PURE-END
     // Each MARKED Literature section's own percentage, from its filed label ("Feedback: Body 1 (3.75 / 8)").
     function _labelSectionPcts() {
         try {
@@ -13016,12 +13031,14 @@
                     // v7.19.851: BONUS rows write the awarded score with a leading '+' too
                     // ("+0.3") — Run 6 Q2 ¶1: the score regex rejected it, the row was skipped,
                     // and the auditor "corrected" 2.95 down to 2.65, deleting an earned bonus.
-                    if (!/^\+?\d+(\.\d+)?$/.test(cells[1]) || !/^\+?\d+(\.\d+)?$/.test(cells[2])) return;
+                    // v7.20.877: a "score/worth" cell ("0.75/1.5") is a score too — see _cardScoreCell.
+                    const _cellScore = _cardScoreCell(cells[1], cells[2]);
+                    if (_cellScore === null) return;
                     // v7.19.901 (Neil): snap each element score to the 0.25 best-fit grid — code-owned.
                     // 0.05-level marker noise (0.65 vs 0.7) is false precision no mark scheme can
                     // justify; snapping makes the numeric progress signal trustworthy (mark-to-train).
                     // Rewrite the visible cell so display == counted; feedback words untouched.
-                    const rawNum = parseFloat(cells[2]);
+                    const rawNum = _cellScore;
                     const worthNum = parseFloat(cells[1]);
                     let snapped = Math.round(rawNum * 4) / 4;
                     if (worthNum > 0) snapped = Math.min(worthNum, Math.max(0, snapped));
@@ -13089,6 +13106,8 @@
                     return whole;
                 }
                 if (!tm || scoredRows < 3) {
+                    // v7.20.877: say so — an unchecked card total is exactly how two 1-mark adding slips reached a grade.
+                    if (tm) console.warn('WML MarkAudit: card UNAUDITABLE — only ' + scoredRows + ' readable score row(s), so its stated total stands unchecked:', qKey, (meta && meta.para) || '', tm[2] + '/' + tm[3]);
                     _fbAudit.failed[qKey] = true;   // card unauditable — never "correct" its Qn Total
                     return whole;
                 }

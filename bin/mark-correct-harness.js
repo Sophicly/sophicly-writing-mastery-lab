@@ -98,5 +98,27 @@ ok(/FEWER PARAGRAPHS THAN TAUGHT \(\$\{paras\.length\} of \$\{taught\}\): before
     ok(/\*\*ONE PARAGRAPH, SEVERAL POINTS \(PEDAGOGY §54\.5/.test(t) && /never call a part\n  "Paragraph 2"/.test(t) && /ONE point \(one technique or inference and its\n  quotation, however long the analysis\) is never split/.test(t) && /exactly as above — 0, teaching, one optimal gold/.test(t), f + ': one paragraph, several points → parts; one point → never split, the missing paragraph scores 0 (#773)');
 });
 ok(/is \\"Part 2 of your paragraph\\" — never \\"Paragraph 2\\"/.test(ROUTER) && /a paragraph with ONE point is never split, and the missing paragraph scores 0/.test(ROUTER), 'the router\'s Q2 bucket map uses Parts for a single paragraph and keeps the 0 for a genuinely missing one');
+// v7.20.877 — a "score/worth" Your-Score cell ("0.75/1.5") is a score. MarkAudit used to accept only a bare number, so EVERY
+// row of such a card was skipped, the card fell to "unauditable" and its stated total stood unchecked — measured on prod
+// 14 Oct (P&C poetry, two cards each 1 mark low by their own tables). Synthetic card below, same numbers, no student text.
+{
+    const c1 = SRC.indexOf('// @CARD-SCORE-PURE-BEGIN'), c2 = SRC.indexOf('// @CARD-SCORE-PURE-END');
+    ok(c1 !== -1 && c2 > c1, 'the card-score cell reader exists (sentinels)');
+    if (c1 !== -1 && c2 > c1) {
+        const cell = new Function(SRC.slice(c1, c2) + '\nreturn _cardScoreCell;')();
+        ok(cell('0.5', '0') === 0 && cell('1.5', '0.75') === 0.75 && cell('+0.5', '+0.25') === 0.25, 'bare numbers still read (incl. a +bonus)');
+        ok(cell('0.5', '0/0.5') === 0 && cell('1.5', '0.75/1.5') === 0.75 && cell('1.0', '0.25/1.0') === 0.25 && cell('+0.5', '+0.25/0.5') === 0.25, '⭐ "score/worth" cells read as the score');
+        ok(cell('1.5', '0.75/2') === null, 'a denominator that disagrees with the Worth cell is not trusted');
+        ok(cell('0.5', 'lots') === null && cell('Worth', '0.5') === null && cell('0.5', '') === null && cell('0.5', '0.5/') === null, 'anything else is not a score');
+        const rows = [['0.5', '0/0.5'], ['0.5', '0/0.5'], ['0.5', '0/0.5'], ['0.5', '0.5/0.5'], ['1.5', '0.75/1.5'], ['1.0', '0.25/1.0'], ['0.5', '0/0.5'], ['1.0', '0.25/1.0'], ['1.0', '0/1.0']];
+        const read = rows.map(r => cell(r[0], r[1]));
+        const sum = read.reduce((a, v) => a + v, 0);
+        ok(read.every(v => v !== null) && read.length >= 3 && Math.abs(sum - 1.75) < 1e-9 && Math.abs((sum - 0.5) - 1.25) < 1e-9, '⭐ the measured card (stated 0.25/7, −0.5 penalty) is now readable: 9 rows, 1.75 − 0.5 = 1.25', { read, sum });
+    }
+    const pass1 = SRC.slice(SRC.indexOf('// ---- Pass 1: each card'), SRC.indexOf('// ---- Pass 1b'));
+    ok(/const _cellScore = _cardScoreCell\(cells\[1\], cells\[2\]\);\s*\n\s*if \(_cellScore === null\) return;/.test(pass1) && /const rawNum = _cellScore;/.test(pass1), 'Pass 1 reads every score cell through _cardScoreCell');
+    ok(!/!\/\^\\\+\?\\d\+\(\\\.\\d\+\)\?\$\/\.test\(cells\[2\]\)/.test(pass1), 'the bare-number-only score gate is gone from Pass 1');
+    ok(/if \(!tm \|\| scoredRows < 3\) \{\s*\n[^\n]*\n\s*if \(tm\) console\.warn\('WML MarkAudit: card UNAUDITABLE/.test(pass1), 'an unauditable card with a total now says so in the console (fail loud)');
+}
 ok(/### A MARK YOU ALREADY FILED — CORRECT IT THROUGH THE RECORD/.test(ROUTER) && /never tell the student to trust the chat over their document/.test(ROUTER), 'the router tells Sophia how to correct a filed mark — and never to set the chat against the document');
 done();
