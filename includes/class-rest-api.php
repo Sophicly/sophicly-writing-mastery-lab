@@ -2662,6 +2662,81 @@ class SWML_REST_API {
     }
 
     /**
+     * v7.20.884 (PEDAGOGY §65 — Neil, WML Actions round ab, 14 Oct): did the redraft move the student up AT LEAST ONE GRADE
+     * from its own diagnostic? Read from WML's own grade records — complete_phase writes
+     * swml_phase_{board}_{text}_t{topic}_{initial|redraft} through SWML_Session_Manager::phase_meta_key(), and a re-mark
+     * forks to __aN (every attempt is kept). The best grade of each phase counts, as the sidebar's lesson-best does.
+     * ONE rule for every reader: the "where you are" box (load_canvas → topicProgress) and the components "What's next?"
+     * chooser (topic_progress_for_course). gradeUp is null when either grade is missing, and a caller must then behave as if
+     * the rule did not exist — a student is never held back by missing data (§18).
+     */
+    public static function topic_grade_progress($user_id, $board, $text, $topic) {
+        $user_id = absint($user_id);
+        $topic   = (int) $topic;
+        if (!$user_id || $board === '' || $text === '' || $topic < 1) return null;
+        global $wpdb;
+        $best = function ($phase) use ($wpdb, $user_id, $board, $text, $topic) {
+            $base = SWML_Session_Manager::phase_meta_key($board, $text, $topic, $phase, 1);
+            $vals = $wpdb->get_col($wpdb->prepare(
+                "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND (meta_key = %s OR meta_key LIKE %s)",
+                $user_id, $base, $wpdb->esc_like($base . '__a') . '%'
+            ));
+            $g = 0;
+            foreach ((array) $vals as $v) {
+                $d = json_decode((string) $v, true);
+                if (!is_array($d)) $d = json_decode(wp_unslash((string) $v), true);
+                if (!is_array($d) || ($d['status'] ?? '') !== 'complete') continue;
+                if (preg_match('/\d+/', (string) ($d['grade'] ?? ''), $m) && (int) $m[0] >= 1 && (int) $m[0] <= 9) $g = max($g, (int) $m[0]);
+            }
+            return $g;
+        };
+        $diag = $best('initial');
+        $red  = $best('redraft');
+        return [
+            'diagnosticGrade' => $diag ?: null,
+            'redraftGrade'    => $red ?: null,
+            'gradeUp'         => ($diag && $red) ? ($red >= $diag + 1) : null,
+        ];
+    }
+
+    /**
+     * v7.20.884 (PEDAGOGY §65) — for the components "What's next?" chooser ([sophicly_next_step set="after_topic"], lesson
+     * 61812): the progress of the topic the student most recently finished a redraft for in this course's text. The chooser
+     * sits straight after a topic's redraft, so the latest completed redraft IS that topic. Null when the course has no WML
+     * text or no redraft has been marked. Callers guard with method_exists() — WML must reach an environment first.
+     * Returns ['board','text','topic','diagnosticGrade','redraftGrade','gradeUp'].
+     */
+    public static function topic_progress_for_course($user_id, $course_id) {
+        $user_id = absint($user_id);
+        $tb = self::resolve_course_to_text_board(absint($course_id));
+        if (!$user_id || !$tb) return null;
+        global $wpdb;
+        $prefix = 'swml_phase_' . $tb['board'] . '_' . self::canonical_slug($tb['text']) . '_t';
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s",
+            $user_id, $wpdb->esc_like($prefix) . '%'
+        ), ARRAY_A);
+        $topic = 0; $latest = '';
+        foreach ((array) $rows as $r) {
+            if (!preg_match('/^' . preg_quote($prefix, '/') . '(\d+)_redraft(?:__a\d+)?$/', (string) $r['meta_key'], $m)) continue;
+            $d = json_decode((string) $r['meta_value'], true);
+            if (!is_array($d)) $d = json_decode(wp_unslash((string) $r['meta_value']), true);
+            if (!is_array($d) || ($d['status'] ?? '') !== 'complete') continue;
+            $at = (string) ($d['completed_at'] ?? '');
+            if ($topic === 0 || strcmp($at, $latest) > 0) { $topic = (int) $m[1]; $latest = $at; }
+        }
+        if ($topic < 1) return null;
+        $p = self::topic_grade_progress($user_id, $tb['board'], $tb['text'], $topic);
+        return $p ? array_merge(['board' => $tb['board'], 'text' => $tb['text'], 'topic' => $topic], $p) : null;
+    }
+
+    /** v7.20.884: the progress a marked document's "where you are" box reads (its HOW line). Marked documents only. */
+    private function topic_progress_for_doc($user_id, $board, $text, $topic, $suffix) {
+        if (!in_array((string) $suffix, ['_assessment', '_reassessment', '_fbdiscuss'], true)) return null;
+        return self::topic_grade_progress($user_id, $board, $text, $topic);
+    }
+
+    /**
      * POST /display-lock/log — v7.20.882 (FIXLIST p&c-1397-lock-device). The page refused a student change to their writing
      * in an assessment / redraft-assessment / discuss-feedback lesson (the display lock, PEDAGOGY §6). Every route we could
      * reproduce is already stopped by the input handlers, yet Shayaan 1397's assessment copy changed — so each refusal is
@@ -3017,6 +3092,7 @@ class SWML_REST_API {
                     'generalNotes' => $general_notes,
                     'is_seed'      => true,
                     'markSchemeSummary' => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),   // v7.20.879
+                    'topicProgress' => $this->topic_progress_for_doc($user_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
                 ]);
             }
             // No upstream content — fall through and return this stage's stored doc.
@@ -3082,6 +3158,7 @@ class SWML_REST_API {
                         'generalNotes' => $general_notes,
                         'is_seed'      => true,
                         'markSchemeSummary' => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),   // v7.20.879
+                        'topicProgress' => $this->topic_progress_for_doc($user_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
                     ]);
                 }
             }
@@ -3257,6 +3334,7 @@ class SWML_REST_API {
             // v7.20.879 (PEDAGOGY §32b): the latest Mark Scheme Assessment for this text — one of the "Where you are"
             // box's criteria signals. Assessment documents only; null elsewhere.
             'markSchemeSummary'   => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),
+            'topicProgress'   => $this->topic_progress_for_doc($user_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
         ]);
     }
 
@@ -3496,6 +3574,7 @@ class SWML_REST_API {
         return rest_ensure_response(['success' => true,
             // v7.20.879 (§32b): the tutor sees the student's "Where you are" box with the same evidence.
             'markSchemeSummary' => $this->mark_scheme_summary_for($student_id, $board, $text, $suffix),
+            'topicProgress' => $this->topic_progress_for_doc($student_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
             'doc' => $doc, 'attempt' => $attempt, 'rev' => $rev]);
     }
 
@@ -4063,8 +4142,9 @@ class SWML_REST_API {
         return $total;
     }
 
-    /** Reverse the student-data course map: course_id → ['text'=>slug,'board'=>board] or null. */
-    private function resolve_course_to_text_board($course_id) {
+    /** Reverse the student-data course map: course_id → ['text'=>slug,'board'=>board] or null. (static since v7.20.884 —
+     *  topic_progress_for_course() reads it; it never used $this.) */
+    private static function resolve_course_to_text_board($course_id) {
         if (!function_exists('sophicly_get_course_map')) return null;
         $map = sophicly_get_course_map();
         if (!is_array($map)) return null;

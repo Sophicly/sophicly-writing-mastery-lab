@@ -10607,6 +10607,7 @@
     //   ratings: [{ group, skill, value }],                       (the Self-Assessment walk)
     //   calib: [{ label, mine, sophia, max, tol }],                (the Calibration — their mark vs Sophia's)
     //   msa: { score, max, categories: ['AO3', …] } | null        (the latest Mark Scheme Assessment)
+    //   how: { phase: 'initial'|'redraft', diagnosticGrade: n | null } | undefined   (the HOW line, v7.20.884)
     // }
     // → null (nothing marked yet — the box stays hidden) | { first, second, bullets, facts, priority1 }
     function pathBoxModel(input) {
@@ -10737,7 +10738,25 @@
             // The Mark Scheme Assessment still says something worth seeing, even when the essay does not.
             crit.filter((c) => c.msa).forEach((c) => { bullets.push(c.text); facts.push(c.text); });
         }
-        return { first: first, second: second, bullets: bullets, facts: facts, priority1: priority1 };
+        const howLine = _pathHowLine(first, inp.how, inp.grade);
+        if (howLine) bullets.push(howLine);
+        return { first: first, second: second, bullets: bullets, facts: facts, priority1: priority1, how: howLine };
+    }
+    // ⭐ v7.20.884 (PEDAGOGY §65 — Neil, rounds aa + ab): the box ends by saying HOW. *"we tell the students how they can do
+    // these things … the redraft will basically naturally show them how to do it"* and *"essentially trusting the process
+    // will solve all the problems so I think we need to mention that"*. After the redraft, his ruling decides the next step:
+    // at least one grade up → the next text; otherwise another essay on this text. Grades unknown → no grade claim (§18).
+    // Says what the lessons DO — never promises an outcome (§49.5).
+    const PATH_HOW_OBJ = { structure: 'your structure', criteria: 'what the mark scheme rewards', details: 'the details' };
+    function _pathHowLine(first, how, grade) {
+        const obj = PATH_HOW_OBJ[first] || 'this step';
+        if (!how || how.phase !== 'redraft') {
+            return 'How: trust the process. Your redraft lessons (planning, outlining, then polishing) take you through ' + obj + ', step by step.';
+        }
+        const d = how.diagnosticGrade, r = grade;
+        if (!(d >= 1 && d <= 9) || !(r >= 1 && r <= 9)) return 'Trust the process: keep working on ' + obj + ' in your next essay.';
+        if (r >= d + 1) return 'You moved up from Grade ' + d + ' to Grade ' + r + '. Trust the process: keep working on ' + obj + ' in your next text.';
+        return 'Not a grade up yet: Grade ' + d + ' in your first essay, Grade ' + r + ' in your redraft. Next: another essay on this text, working on ' + obj + '. Trust the process.';
     }
     // The closing-turn fact: Sophia orders her 3 Priorities by the same step (round z — no extra call; it rides
     // the closing turn that already happens, as the §48 fact does).
@@ -11974,6 +11993,8 @@
             ratings: _saWalkRows().filter((r) => r && r.value != null),
             calib: calib,
             msa: state.markSchemeSummary || null,
+            // v7.20.884 (§65): which HOW line — the lesson's phase, and the diagnostic's grade from the server (topicProgress).
+            how: { phase: String(state.phase || ''), diagnosticGrade: (state.topicProgress && state.topicProgress.diagnosticGrade) || null },
         });
     }
     // The box itself — a derived, firewalled strip at the top of the Action Plan (wml-section-block.js), never a
@@ -71605,6 +71626,9 @@
             // v7.20.879 (§32b): the latest Mark Scheme Assessment for this text (score + the categories got wrong) —
             // one of the "Where you are" box's criteria signals. Server read, no API call. Absent → no MSA line.
             state.markSchemeSummary = (res && res.markSchemeSummary && res.markSchemeSummary.max > 0) ? res.markSchemeSummary : null;
+            // v7.20.884 (PEDAGOGY §65): this topic's diagnostic + redraft grades (server, WML's own grade records) — the box's
+            // HOW line. Absent → no grade claim.
+            state.topicProgress = (res && res.topicProgress && typeof res.topicProgress === 'object') ? res.topicProgress : null;
             setTimeout(_updateWcRecheckBtn, 1500); // after the editor mounts the loaded doc
             if (res.success && res.doc && res.doc.html) {
                 // v7.19.247: capture the real first-edit start date for the Score Summary.

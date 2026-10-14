@@ -51,7 +51,7 @@ function load(src) {
     vm.runInContext(slice('CARD-SCORE-PURE-BEGIN', 'CARD-SCORE-PURE-END'), ctx);
     vm.runInContext(slice('GAP-CHECK-PURE-BEGIN', 'GAP-CHECK-PURE-END'), ctx);
     vm.runInContext(slice('PATH-BOX-PURE-BEGIN', 'PATH-BOX-PURE-END')
-        + '\nthis.P = { pathBoxModel, _pathFactText, _pathRowOf, _pathBlockOf, _pathCardUnits, PATH_STEPS, PATH_SELF_MIN, PATH_ACT_MAX, PATH_GAP_MIN, _gapSkillFor };', ctx);
+        + '\nthis.P = { pathBoxModel, _pathFactText, _pathRowOf, _pathBlockOf, _pathCardUnits, PATH_STEPS, PATH_SELF_MIN, PATH_ACT_MAX, PATH_GAP_MIN, _gapSkillFor, _pathHowLine };', ctx);
     return ctx.P;
 }
 
@@ -147,9 +147,10 @@ function run(P, verbose) {
         'You rated your Context Good (4 of 5). It earned 17% of its marks.',
         'You rated your Evidence Good (4 of 5). It earned 50% of its marks.',
         'In your Mark Scheme Assessment (14 out of 20), the questions you got wrong were about AO3 and AO1.',
+        'How: trust the process. Your redraft lessons (planning, outlining, then polishing) take you through your structure, step by step.',
     ];
     ok(!!sh && sh.first === 'structure' && sh.second === 'criteria', 'first step = structure, behind it = criteria');
-    ok(!!sh && JSON.stringify(sh.bullets) === JSON.stringify(SH_WANT), 'the eight bullets, exactly' + (sh && JSON.stringify(sh.bullets) !== JSON.stringify(SH_WANT) ? ' — got ' + JSON.stringify(sh.bullets) : ''));
+    ok(!!sh && JSON.stringify(sh.bullets) === JSON.stringify(SH_WANT), 'the nine bullets, exactly (the last is the HOW line)' + (sh && JSON.stringify(sh.bullets) !== JSON.stringify(SH_WANT) ? ' — got ' + JSON.stringify(sh.bullets) : ''));
     ok(!!sh && sh.priority1 === 'write the conclusion', 'priority 1 = write the conclusion (the biggest structural loss)');
     ok(!!sh && !sh.bullets.some((b) => /Controlling Concept|Universal Message/.test(b)), 'ratings for the MISSING conclusion are not compared (nothing was written to compare)');
     ok(!!sh && sh.facts.length === 6 && !sh.facts.some((f) => /\*\*/.test(f)), 'the closing-turn facts are the six evidence lines (no step headings)');
@@ -208,7 +209,7 @@ function run(P, verbose) {
     const under = P.pathBoxModel(essay(fullUnits(), 5, { grade: 4, ratings: [], calib: [{ label: 'your essay', mine: 8, sophia: 15, max: 30, tol: 3 }], msa: null }));
     ok(!!under && under.first === 'details', 'marking yourself LOWER than Sophia is not a misreading of what the scheme rewards');
     const msaOnly = P.pathBoxModel(essay(fullUnits(), 5, { grade: 4, ratings: [], calib: [], msa: { score: 12, max: 20, categories: ['AO2'] } }));
-    ok(!!msaOnly && msaOnly.first === 'details' && msaOnly.bullets[msaOnly.bullets.length - 1] === 'In your Mark Scheme Assessment (12 out of 20), the questions you got wrong were about AO2.',
+    ok(!!msaOnly && msaOnly.first === 'details' && msaOnly.bullets.indexOf('In your Mark Scheme Assessment (12 out of 20), the questions you got wrong were about AO2.') !== -1,
         'the Mark Scheme Assessment alone never names the step — its line is still shown');
     const msaFull = P.pathBoxModel(essay(fullUnits(), 5, { grade: 4, ratings: [], calib: [], msa: { score: 20, max: 20, categories: [] } }));
     ok(!!msaFull && !msaFull.bullets.some((b) => /Mark Scheme Assessment/.test(b)), 'full marks in the Mark Scheme Assessment → no line');
@@ -229,6 +230,23 @@ function run(P, verbose) {
     ok(/the FIRST priority MUST be to write the conclusion;/.test(ft) && /Do NOT change any mark, grade or the number of priorities/.test(ft), 'the fact fixes priority 1 and forbids changing marks');
     ok(ft.indexOf(SH_WANT[1]) > 0 && ft.indexOf('**') === -1, 'the evidence lines ride along, without step headings');
     ok(P._pathFactText(null) === '' && P._pathFactText({}) === '', 'no step → no fact (the closing turn is unchanged)');
+
+    // ── H · THE HOW LINE (v7.20.884, PEDAGOGY §65) ──────────────────────────────────────────
+    say('\nH · the HOW line — trust the process; after the redraft, the one-grade rule');
+    const shH = (how, grade) => P.pathBoxModel(essay(shUnits, 4, { grade: grade, ratings: SH_RATINGS, calib: [], msa: null, how: how }));
+    const up = shH({ phase: 'redraft', diagnosticGrade: 2 }, 3), flat = shH({ phase: 'redraft', diagnosticGrade: 3 }, 3), down = shH({ phase: 'redraft', diagnosticGrade: 4 }, 3);
+    const unknown = shH({ phase: 'redraft', diagnosticGrade: null }, 3), first = shH({ phase: 'initial', diagnosticGrade: null }, 2);
+    ok(!!first && first.how === 'How: trust the process. Your redraft lessons (planning, outlining, then polishing) take you through your structure, step by step.', 'first essay marked → the redraft lessons take you through it');
+    ok(!!up && up.how === 'You moved up from Grade 2 to Grade 3. Trust the process: keep working on your structure in your next text.', 'redraft one grade up → the next text');
+    ok(!!flat && flat.how === 'Not a grade up yet: Grade 3 in your first essay, Grade 3 in your redraft. Next: another essay on this text, working on your structure. Trust the process.',
+        'redraft the SAME grade → another essay on this text (Neil, round ab)');
+    ok(!!down && /^Not a grade up yet: Grade 4 in your first essay, Grade 3 in your redraft\./.test(down.how), 'redraft LOWER → another essay on this text, the numbers as they are');
+    ok(!!unknown && unknown.how === 'Trust the process: keep working on your structure in your next essay.', 'diagnostic grade unknown → no grade claim (§18)');
+    ok(!!up && up.bullets[up.bullets.length - 1] === up.how && up.facts.indexOf(up.how) === -1 && P._pathFactText(up).indexOf('Trust the process') === -1,
+        'the HOW line is the last bullet, and never part of what Sophia is told');
+    ok(P._pathHowLine('criteria', { phase: 'redraft', diagnosticGrade: 5 }, 6) === 'You moved up from Grade 5 to Grade 6. Trust the process: keep working on what the mark scheme rewards in your next text.'
+        && /take you through the details, step by step\.$/.test(P._pathHowLine('details', { phase: 'initial' }, 8)), 'each step names its own work (criteria · details)');
+    ok(!!first && !!up && !/will (solve|fix)|guarantee/i.test([first, up, flat, unknown].map((m) => (m && m.how) || '').join(' ')), 'never promises an outcome (§49.5)');
 
     return { pass, fail };
 }
@@ -271,6 +289,21 @@ const wr = /\$ck = 'swml_qcats_' \. sanitize_key\(\$accumulator\['quiz_type'\]\)
 const msaType = /\$ms_task = \(\$quiz_type === 'mark_scheme_assessment'\) \? 'mark_scheme' : 'mark_scheme_unit';/.test(QE);
 const rd = /\$ck\s*= 'swml_qcats_mark_scheme_assessment_' \. sanitize_key\(\$board\) \. '_' \. sanitize_key\(\$text\) \. '_' \. \$topic;/.test(fnS);
 ok(wr && msaType && rd, 'key-match: swml_qcats_{mark_scheme_assessment}_{board}_{text}_{topic} — writer (persist_weak_categories) == reader');
+// v7.20.884 — the HOW line's grades: WML's own grade records, one reader for the box and the components chooser.
+const SM = fs.readFileSync(path.join(ROOT, 'includes', 'class-session-manager.php'), 'utf8');
+const tgp = REST.slice(REST.indexOf('public static function topic_grade_progress('), REST.indexOf('public static function topic_progress_for_course('));
+const tpc = REST.slice(REST.indexOf('public static function topic_progress_for_course('), REST.indexOf('private function topic_progress_for_doc('));
+ok(/if \(\$attempt > 1\) \$key \.= '__a' \. \(int\) \$attempt;/.test(SM) && /\$base = SWML_Session_Manager::phase_meta_key\(\$board, \$text, \$topic, \$phase, 1\);/.test(tgp)
+    && /\$wpdb->esc_like\(\$base \. '__a'\) \. '%'/.test(tgp), 'key-match: the grade read uses THE phase key builder, re-marks (__aN) included — the same keys complete_phase writes');
+ok(/\$diag = \$best\('initial'\);/.test(tgp) && /\$red  = \$best\('redraft'\);/.test(tgp) && /'gradeUp'         => \(\$diag && \$red\) \? \(\$red >= \$diag \+ 1\) : null,/.test(tgp),
+    'the server rule: at least one grade up; null when either grade is missing');
+ok(/self::canonical_slug\(\$tb\['text'\]\)/.test(tpc) && tpc.indexOf("_redraft(?:__a\\d+)?$/") !== -1 && /return \$p \? array_merge\(\['board' => \$tb\['board'\], 'text' => \$tb\['text'\], 'topic' => \$topic\], \$p\) : null;/.test(tpc),
+    'the chooser read: the latest completed redraft in the course\'s text (canonical slug, re-marks included)');
+ok(REST.split("'topicProgress'").length - 1 === 4 && /in_array\(\(string\) \$suffix, \['_assessment', '_reassessment', '_fbdiscuss'\], true\)/.test(REST),
+    'topicProgress rides the four marked-document returns (load · seed · reseed · tutor review)');
+ok(/state\.topicProgress = \(res && res\.topicProgress && typeof res\.topicProgress === 'object'\) \? res\.topicProgress : null;/.test(JS)
+    && /how: \{ phase: String\(state\.phase \|\| ''\), diagnosticGrade: \(state\.topicProgress && state\.topicProgress\.diagnosticGrade\) \|\| null \},/.test(JS),
+    'the page stores the grades on load and the box reads the lesson\'s phase');
 
 // ── G · FALSIFY ─────────────────────────────────────────────────────────────────────────────
 console.log('\nG · each mutation of the real source is caught');
@@ -280,6 +313,7 @@ const MUT = [
     ['read scores without the score/worth form', '(\\+?\\d+(?:\\.\\d+)?(?:\\s*\\/\\s*\\d+(?:\\.\\d+)?)?)\\s+·/.exec', '(\\+?\\d+(?:\\.\\d+)?)\\s+·/.exec'],
     ['drop "not submitted"', 'u && (u.notSubmitted || (', 'u && (false || ('],
     ['let "quotes" file close analysis under Evidence', "[/quot|evidence/i, 'Evidence', /close\\s*analysis/i],", "[/quot|evidence/i, 'Evidence'],"],
+    ['accept the same grade as progress (off by one)', "if (r >= d + 1) return 'You moved up from Grade '", "if (r >= d) return 'You moved up from Grade '"],
     ['drop the intro/conclusion headings',"if (!/^(?:introduction|conclusion|(?:body\\s+)?paragraph\\s*\\d+)$/i.test(part)) return;", "if (!/^(?:(?:body\\s+)?paragraph\\s*\\d+)$/i.test(part)) return;"],
 ];
 MUT.forEach(([name, from, to]) => {

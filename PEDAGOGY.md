@@ -3567,3 +3567,37 @@ who owns those two can always start a Q3 paragraph. Built v7.20.858 in `protocol
 (S4 lead-in + Beat 2) and `modules/protocol-a-assessment.md` (Q3 card). Notes is building a structural-techniques
 Toolkit card; link it from the Q3 card once its id exists. **Other boards' structure questions:** not asked — apply only
 on Neil's word.
+
+---
+
+## §65. ⭐⭐ A REDRAFT MUST BE AT LEAST ONE GRADE UP — if it is not, the student writes ANOTHER ESSAY ON THE SAME TEXT, never a second redraft (Neil, ruled 2026-10-14, WML Actions round ab; FIXLIST round-ab / path-box-how)
+
+**THE RULE, recorded here for the first time** (it lived only in memory `feedback_grade_progression_rules_ipsative`): grades
+are measured against the student's OWN baseline. A redraft must score **at least one grade higher than its own diagnostic**
+(same text, same topic). Then the student may move on to another text.
+
+**IF IT IS NOT A GRADE UP (Neil's ruling, round ab: "Another topic on the same text"):** the student writes another essay on
+the same text — the next topic of that course — with the step the "where you are" box named as their focus. **Not a second
+redraft of the same essay.** Why, as put to him:
+1. §8: a writing cycle is done once and the student moves on; re-running it is "going round and round in circles".
+2. The redraft's feedback already carries a gold-standard rewrite of every paragraph of that essay — a second redraft of the
+   same question would mostly measure how well they copy it.
+3. The next topic starts with an essay written ALONE — the honest measure of what they learned (§49: learning shows in the
+   next unaided attempt) — and they keep everything they know about the text. A new topic is a new document: nothing saved
+   is overwritten.
+
+**"TRUST THE PROCESS" (Neil, round ab note on the box's how line):** *"essentially trusting the process will solve all the
+problems so I think we need to mention that maybe we need to think about that in other places as well"*. The "where you
+are" box ends with one HOW line that says it, by where the student is (v7.20.884):
+- after the first essay is marked → the redraft lessons (planning, outlining, polishing) take them through the step;
+- after the redraft, one grade up or more → "You moved up from Grade X to Grade Y" + keep working on the step in the next text;
+- after the redraft, not a grade up → another essay on this text, working on the step;
+- grades unknown → never a grade claim; keep working on the step in the next essay.
+⛔ Never promise an outcome ("will solve all your problems") in student copy — the line says what the lessons DO (§49.5).
+
+**HOW THE GRADES ARE READ — ONE rule, one place:** `SWML_REST_API::topic_grade_progress()` reads WML's own grade records
+(`swml_phase_{board}_{text}_t{topic}_{initial|redraft}`, re-marks at `__aN` — the best of each phase counts, like the sidebar's
+lesson-best). The box and the components "What's next?" chooser (`[sophicly_next_step set="after_topic"]`, lesson 61812 —
+Neil: *"the final lesson for a topic in the redraft is about selecting the next topic so that might need to be adjusted"*)
+both read it; the chooser via `SWML_REST_API::topic_progress_for_course()`. A missing grade gives `gradeUp: null`, and every
+reader then behaves as if the rule did not exist — a student is never held back by missing data (§18).
