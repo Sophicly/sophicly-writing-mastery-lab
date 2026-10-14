@@ -10289,7 +10289,9 @@
         'Body Paragraphs': [
             [/topic\s*sentence/i, 'Topic Sentence', /analys|coheren|flow/i],
             [/terminolog|technical\s*term|technique\s*(?:\+|&|,|and)\s*(?:the\s+)?(?:anchor|quot|evidence)/i, 'Technical Terms'],
-            [/quot|evidence/i, 'Evidence'],
+            // v7.20.879: "Comparative close analysis of BOTH quotes on form" (a P&C card, staging 1938) is close
+            // analysis — the word "quotes" in it must not file its marks under Evidence.
+            [/quot|evidence/i, 'Evidence', /close\s*analysis/i],
             [/close\s*analysis|interplay/i, 'Close Analysis'],
             [/reader|effect/i, 'Effects on Reader'],
             [/purpose/i, "Author's Purpose"],

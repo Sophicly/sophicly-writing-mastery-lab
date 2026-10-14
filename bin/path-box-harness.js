@@ -51,7 +51,7 @@ function load(src) {
     vm.runInContext(slice('CARD-SCORE-PURE-BEGIN', 'CARD-SCORE-PURE-END'), ctx);
     vm.runInContext(slice('GAP-CHECK-PURE-BEGIN', 'GAP-CHECK-PURE-END'), ctx);
     vm.runInContext(slice('PATH-BOX-PURE-BEGIN', 'PATH-BOX-PURE-END')
-        + '\nthis.P = { pathBoxModel, _pathFactText, _pathRowOf, _pathBlockOf, _pathCardUnits, PATH_STEPS, PATH_SELF_MIN, PATH_ACT_MAX, PATH_GAP_MIN };', ctx);
+        + '\nthis.P = { pathBoxModel, _pathFactText, _pathRowOf, _pathBlockOf, _pathCardUnits, PATH_STEPS, PATH_SELF_MIN, PATH_ACT_MAX, PATH_GAP_MIN, _gapSkillFor };', ctx);
     return ctx.P;
 }
 
@@ -213,6 +213,14 @@ function run(P, verbose) {
     const msaFull = P.pathBoxModel(essay(fullUnits(), 5, { grade: 4, ratings: [], calib: [], msa: { score: 20, max: 20, categories: [] } }));
     ok(!!msaFull && !msaFull.bullets.some((b) => /Mark Scheme Assessment/.test(b)), 'full marks in the Mark Scheme Assessment → no line');
     ok(P.PATH_SELF_MIN === 0.7 && P.PATH_ACT_MAX === 0.5 && P.PATH_GAP_MIN === 0.2, 'the thresholds are the blind-spot rule\'s (70 / 50 / 20)');
+    // The P&C card wording measured on staging (1938, 14 Oct): a close-analysis row that mentions "quotes".
+    ok(P._gapSkillFor('Body Paragraphs', 'Comparative close analysis of BOTH quotes on form') === 'Close Analysis'
+        && P._gapSkillFor('Body Paragraphs', 'Integrated comparative quotes, BOTH poems smoothly embedded') === 'Evidence'
+        && P._gapSkillFor('Body Paragraphs', 'Strategic comparative evidence from BOTH poems') === 'Evidence',
+        'a close-analysis row that mentions "quotes" is Close Analysis, never Evidence');
+    const pc = P.pathBoxModel(essay(fullUnits().map((u) => u.group !== 'Body Paragraphs' ? u
+        : Object.assign({}, u, { rows: u.rows.concat([{ criterion: 'Comparative close analysis of BOTH quotes on form', worth: 1.5, score: 0 }]) })), 5, { grade: 3, ratings: [], calib: [], msa: null }));
+    ok(!!pc && /The most marks left are in your Close Analysis \(Body 1\)/.test(pc.bullets[1] || ''), 'the details bullet names that loss Close Analysis');
 
     // ── E · WORDS ───────────────────────────────────────────────────────────────────────────
     say('\nE · what Sophia is told');
@@ -270,7 +278,8 @@ const MUT = [
     ['flip the grade rule', "else if (inp.grade >= 7) { first = 'details';", "else if (inp.grade >= 70) { first = 'details';"],
     ['read scores without the score/worth form', '(\\+?\\d+(?:\\.\\d+)?(?:\\s*\\/\\s*\\d+(?:\\.\\d+)?)?)\\s+·/.exec', '(\\+?\\d+(?:\\.\\d+)?)\\s+·/.exec'],
     ['drop "not submitted"', 'u && (u.notSubmitted || (', 'u && (false || ('],
-    ['drop the intro/conclusion headings', "if (!/^(?:introduction|conclusion|(?:body\\s+)?paragraph\\s*\\d+)$/i.test(part)) return;", "if (!/^(?:(?:body\\s+)?paragraph\\s*\\d+)$/i.test(part)) return;"],
+    ['let "quotes" file close analysis under Evidence', "[/quot|evidence/i, 'Evidence', /close\\s*analysis/i],", "[/quot|evidence/i, 'Evidence'],"],
+    ['drop the intro/conclusion headings',"if (!/^(?:introduction|conclusion|(?:body\\s+)?paragraph\\s*\\d+)$/i.test(part)) return;", "if (!/^(?:(?:body\\s+)?paragraph\\s*\\d+)$/i.test(part)) return;"],
 ];
 MUT.forEach(([name, from, to]) => {
     if (JS.split(from).length !== 2) { ok(false, name + ' — mutation anchor not found exactly once (the harness is stale)'); return; }
