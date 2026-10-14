@@ -7889,6 +7889,15 @@ Before marking the introduction, ask the student to confirm their essay structur
     const _spaPathPost = {};
     if (_lastEmbedPost) _spaPathPost[location.pathname] = _lastEmbedPost;
     let _spaStaleTicks = 0;
+    // @SPA-CONFIG-PURE-BEGIN — pure; driven by bin/spa-config-harness.js
+    // Copy the fresh page's settings INTO the object every reader already holds (never re-point a reference
+    // nobody else will see). Keys the code added at runtime survive; server keys take the new lesson's values.
+    function _syncSpaConfig(target, fresh) {
+        if (!target || !fresh || target === fresh || typeof fresh !== 'object') return false;
+        Object.keys(fresh).forEach(function (k) { target[k] = fresh[k]; });
+        return true;
+    }
+    // @SPA-CONFIG-PURE-END
     function _doSpaReinit() {
         const embedRoot = document.getElementById('swml-embedded-root');
         if (!embedRoot) {
@@ -7945,6 +7954,14 @@ Before marking the introduction, ask the student to confirm their essay structur
             const oldOverlay = document.getElementById('swml-canvas-overlay');
             if (oldOverlay) oldOverlay.remove();
             document.body.style.overflow = '';
+
+            // v7.20.874 (FIXLIST spa-stale-lesson-url): the Focus SPA re-runs wp_localize_script, so
+            // window.swmlConfig is a NEW object holding THIS lesson's values — but WML.config (core's
+            // `config`, also held by wml-pull-overlay) still points at the first page's object. Measured on
+            // staging: Polish → Get Your Assessment left WML.config.lessonUrl on Polish, and every grade
+            // commit forwards that url, so the listener filed Reeham's redraft grade on Polish (row 1978).
+            _syncSpaConfig(WML.config, window.swmlConfig);
+            if (WML.config) window.swmlConfig = WML.config;
 
             // Update config and state.
             // v7.15.100: unconditional assignment — falsy cfg values must

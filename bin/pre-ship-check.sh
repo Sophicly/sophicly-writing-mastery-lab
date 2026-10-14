@@ -232,6 +232,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/overlay-veil-harness.js || fail=1
 fi
 
+# v7.20.874 (FIXLIST spa-stale-lesson-url — measured on staging 14 Oct): after a Focus SPA navigation WML.config kept the
+# first page's lessonUrl, so grade commits filed on the wrong lesson (Reeham row 1978). Falsified on HEAD + 3 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-app\.js|wml-assessment\.js|spa-config-harness\.js'; then
+  node bin/spa-config-harness.js || fail=1
+fi
+
 # v7.20.873 (FIXLIST canvas-doc-drag — Neil, 14 Oct: "Only when zoomed in"): the document moves sideways only while the
 # scaled document is wider than the pane, and never off screen. Falsified on the pre-fix file + 5 mutations.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
