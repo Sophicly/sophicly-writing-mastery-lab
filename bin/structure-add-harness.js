@@ -17,7 +17,10 @@
  *   C · the wiring — ONE field-only rule (the input handlers call it too), ONE whole-document test (both guards), the
  *       filter consults it before the display guard, the record (toast + the durable log, guard named), the server keeps
  *       the guard's name
- *   D · five mutations of the real source — each must fail A or B
+ *   D · v7.20.889, THE MEASURED ROUTE (whole-page select-all → copy → paste into a box): the field paste path keeps only
+ *       inline formatting — every block element is unwrapped, what is never text is dropped (static: node has no DOM; the
+ *       browser proof is ~/.sophicly/probe/wml-358/route888.mjs)
+ *   E · seven mutations of the real source — each must fail A, B or D
  */
 'use strict';
 const fs = require('fs');
@@ -139,7 +142,23 @@ ok(/guard: 'structure_' \+ v\.kind/.test(rec) && /_swmlAddLogN < 10 && Date\.now
     'the durable record names the guard, rate-limited like the display guard\'s (one per 5 s, ten per page)');
 ok(/'guard'\s*=> sanitize_key\(\$p\['guard'\] \?\? 'display'\),/.test(REST) && /\[WML display-lock\] guard=%s/.test(REST), 'server: the log keeps which guard refused (old records read as "display")');
 
-console.log('\nD · each mutation of the real source is caught');
+console.log('\nD · the paste path puts only inline content in a field (v7.20.889 — the measured route)');
+const inl = JS.slice(JS.indexOf('    const SWML_PASTE_INLINE_TAGS = ['), JS.indexOf('    let _swmlPasteToldAt = 0;'));
+const allow = (inl.match(/const SWML_PASTE_INLINE_TAGS = \[([^\]]*)\]/) || [, ''])[1].split(',').map((s) => s.trim().replace(/'/g, '')).filter(Boolean);
+const BLOCKS = ['DIV', 'P', 'SECTION', 'ARTICLE', 'NAV', 'HEADER', 'FOOTER', 'MAIN', 'ASIDE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'PRE', 'BLOCKQUOTE',
+    'UL', 'OL', 'LI', 'TABLE', 'TR', 'TD', 'FIGURE', 'IMG', 'FORM', 'LABEL', 'DETAILS'];
+ok(allow.length >= 10 && allow.every((t) => /^[A-Z0-9]+$/.test(t)) && !allow.some((t) => BLOCKS.includes(t)) && allow.includes('BR') && allow.includes('STRONG') && allow.includes('EM'),
+    'the allow-list is inline formatting only (' + allow.length + ' tags, no block element; line breaks, bold and italic kept)');
+const drop = (inl.match(/const SWML_PASTE_DROP_SELECTOR = '([^']*)'/) || [, ''])[1].split(',').map((s) => s.trim());
+ok(['script', 'style', 'svg', 'button', 'img', 'input', 'select', 'textarea', 'iframe', 'video'].every((t) => drop.includes(t)), 'what is never text is dropped (script, style, svg, button, img, form controls, media)');
+ok(/t\.querySelectorAll\(SWML_PASTE_DROP_SELECTOR\)\.forEach\(el => el\.remove\(\)\);/.test(inl) && /\.reverse\(\)\.forEach\(el => \{\s*if \(SWML_PASTE_INLINE_TAGS\.indexOf\(el\.tagName\) !== -1\) return;/.test(inl)
+    && /while \(el\.firstChild\) f\.appendChild\(el\.firstChild\);\s*el\.replaceWith\(f\);/.test(inl), 'everything else is UNWRAPPED, deepest first — its text stays');
+const hp = JS.slice(JS.indexOf('                handlePaste(view, event) {'), JS.indexOf('                handleTextInput(view, from, to) {'));
+ok(/try \{ inlineHtml = _swmlInlineOnlyHtml\(inlineHtml\); \} catch \(_\) \{ inlineHtml = ''; \}/.test(hp), 'the field paste path runs it; if it throws, nothing HTML is inserted (the plain-text path takes over)');
+ok(hp.indexOf('_swmlInlineOnlyHtml(inlineHtml)') > hp.indexOf("_tmp.querySelectorAll('table, tbody") && hp.indexOf('_swmlInlineOnlyHtml(inlineHtml)') < hp.indexOf('canvasEditor.chain().focus().insertContent(inlineHtml)'),
+    'it runs after the old unwraps and BEFORE the insert');
+
+console.log('\nE · each mutation of the real source is caught');
 const MUT = [
     ['code may nest boxes (student-only nest test)', "if (b.nested > a.nested) return { refuse: true, kind: 'nest'", "if (t.fromStudent && b.nested > a.nested) return { refuse: true, kind: 'nest'"],
     ['a whole-document load refused (existing documents stop opening)', 'if (!t || !t.docChanged || t.migrating || t.wholeDoc) return { refuse: false };', 'if (!t || !t.docChanged || t.migrating) return { refuse: false };'],
@@ -152,6 +171,18 @@ MUT.forEach(([name, from, to]) => {
     let r;
     try { r = run(load(JS.replace(from, to)), false); } catch (e) { r = { fail: 1 }; }
     ok(r.fail > 0, name + ' → ' + r.fail + ' check(s) fail');
+});
+// The paste path is checked statically (no DOM in node) — its mutations re-run section E's source checks.
+const pasteChecks = (src) => {
+    const i = src.slice(src.indexOf('    const SWML_PASTE_INLINE_TAGS = ['), src.indexOf('    let _swmlPasteToldAt = 0;'));
+    const a = (i.match(/const SWML_PASTE_INLINE_TAGS = \[([^\]]*)\]/) || [, ''])[1].split(',').map((s) => s.trim().replace(/'/g, '')).filter(Boolean);
+    const h = src.slice(src.indexOf('                handlePaste(view, event) {'), src.indexOf('                handleTextInput(view, from, to) {'));
+    return !a.some((t) => BLOCKS.includes(t)) && /try \{ inlineHtml = _swmlInlineOnlyHtml\(inlineHtml\); \} catch \(_\) \{ inlineHtml = ''; \}/.test(h);
+};
+[['a block element allowed into a field', "const SWML_PASTE_INLINE_TAGS = ['A', 'ABBR',", "const SWML_PASTE_INLINE_TAGS = ['A', 'DIV', 'ABBR',"],
+ ['the field paste path skips the sanitiser', "try { inlineHtml = _swmlInlineOnlyHtml(inlineHtml); } catch (_) { inlineHtml = ''; }", '']].forEach(([name, from, to]) => {
+    if (JS.split(from).length !== 2) { ok(false, name + ' — mutation anchor not found exactly once (the harness is stale)'); return; }
+    ok(!pasteChecks(JS.replace(from, to)), name + ' → caught');
 });
 
 console.log('\n' + (total.fail ? '❌' : '✅') + ' structure-add-harness: ' + total.pass + ' passed, ' + total.fail + ' failed');

@@ -40423,6 +40423,28 @@
             .map(function (l) { return l.replace(/</g, '&lt;').replace(/>/g, '&gt;'); })
             .join('<br>');
     }
+    // ⭐ v7.20.889 (FIXLIST 1412-codex-text-outside-boxes) — A FIELD TAKES INLINE CONTENT ONLY. The ROUTE, measured on
+    // staging (Chromium, real keys): select the whole PAGE (focus outside the editor) → copy → click into a box → paste.
+    // The clipboard is ~525K of the page's HTML; the rewrite in handlePaste strips p/div/li/h*/table wrappers but leaves
+    // every other element (section, nav, header, hr, pre, img, button, svg…), and anything ProseMirror parses as a BLOCK
+    // cannot live in a field (content: inline*), so the insert split the field and put the page in the box's body —
+    // Ibrahim 1412's Unit 3 box (13 Oct): the word-count widget, the toolbar's "B I U S", the rail, the video timer.
+    // Keep inline formatting, unwrap everything else (its text stays), drop what is never text.
+    const SWML_PASTE_INLINE_TAGS = ['A', 'ABBR', 'B', 'BR', 'CODE', 'DEL', 'EM', 'I', 'INS', 'MARK', 'S', 'SMALL', 'SPAN', 'STRONG', 'SUB', 'SUP', 'U'];
+    const SWML_PASTE_DROP_SELECTOR = 'script, style, svg, button, input, select, textarea, noscript, template, iframe, video, audio, canvas, img, object, embed, link, meta, title, head';
+    function _swmlInlineOnlyHtml(html) {
+        const t = document.createElement('div');
+        t.innerHTML = html;
+        t.querySelectorAll(SWML_PASTE_DROP_SELECTOR).forEach(el => el.remove());
+        // Deepest first, so a wrapper is unwrapped after everything inside it.
+        Array.prototype.slice.call(t.querySelectorAll('*')).reverse().forEach(el => {
+            if (SWML_PASTE_INLINE_TAGS.indexOf(el.tagName) !== -1) return;
+            const f = document.createDocumentFragment();
+            while (el.firstChild) f.appendChild(el.firstChild);
+            el.replaceWith(f);
+        });
+        return t.innerHTML;
+    }
     let _swmlPasteToldAt = 0;
     function _swmlRefusePaste(reason, detail) {
         console.warn('[WML paste #169] refused — ' + reason + (detail ? ' — ' + detail : ''));
@@ -55859,6 +55881,8 @@
                             });
                             inlineHtml = _tmp.innerHTML;
                         } catch (_) { /* if DOM unwrap fails, fall through with regex-only result */ }
+                        // v7.20.889: and nothing a field cannot hold — a block here split the field (FIXLIST 1412).
+                        try { inlineHtml = _swmlInlineOnlyHtml(inlineHtml); } catch (_) { inlineHtml = ''; }   // '' → the plain-text path below
                     } else if (text) {
                         inlineHtml = _swmlPlainToInline(text);
                     } else {
