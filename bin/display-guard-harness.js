@@ -8,11 +8,12 @@
  * by the input handlers. The guard closes the transaction choke point without needing the route, and records it.
  *
  * What it proves, from the SHIPPED code (the pure core is sliced between its sentinels):
- *   A. VERDICT — refuses ONLY a student text change inside a locked section of a display lesson; lets through code,
- *                migrations, comment marks / attribute steps, whole-document loads, unlocked sections, other lessons.
- *   B. RANGE   — a ProseMirror-shaped document (real node sizes): a position inside the response / plan / outline is
- *                locked; Self-Assessment, Calibration and the gaps between sections are not; a range crossing into a
- *                locked section is locked; in a discuss-feedback lesson the feedback family is locked too.
+ *   A. VERDICT — refuses ONLY a student change to the TEXT of a locked section in a display lesson; lets through code,
+ *                migrations, whole-document loads and every other lesson.
+ *   B. TEXT    — on ProseMirror-shaped documents: typing in the response / plan / outline changes the locked writing;
+ *                typing in Self-Assessment does not; an edit-time stamp (setNodeMarkup — _flushEditTsStamps, measured on
+ *                staging firing a few ms after the keystroke) and a comment mark change no word; in a discuss-feedback
+ *                lesson the feedback family is protected too.
  *   C. WIRING  — one filter (inside the structure lock), the SAME locked-type constants the input handlers use, the
  *                student test shared with the structure lock, the record (toast + rate-limited durable log), the route.
  *   D. FALSIFY — four mutations of the real source each make A or B fail.
@@ -31,52 +32,27 @@ function load(src) {
     if (!(B > 0 && E > B)) throw new Error('sentinels missing');
     const ctx = {};
     vm.createContext(ctx);
-    vm.runInContext(src.slice(B, E) + '\nthis.G = { _swmlDisplayGuardVerdict, _swmlRangeInSectionTypes };', ctx);
+    vm.runInContext(src.slice(B, E) + '\nthis.G = { _swmlDisplayGuardVerdict, _swmlLockedTexts, _swmlLockedTextChanged };', ctx);
     return ctx.G;
 }
 
-// ── a ProseMirror-shaped document: nodeSize = text length | 2 + content; resolve() + nodesBetween() by position ──
+// ── ProseMirror-shaped nodes: descendants() honours "return false = skip the children"; textContent concatenates ──
 function node(name, attrs, children, text) {
-    const n = { type: { name }, attrs: attrs || {}, children: children || [], text: text || null };
-    n.nodeSize = text != null ? text.length : 2 + n.children.reduce((s, c) => s + c.nodeSize, 0);
+    const n = { type: { name }, attrs: attrs || {}, children: children || [], text: text == null ? null : text, marks: [] };
+    n.isTextblock = name === 'paragraph';
+    Object.defineProperty(n, 'textContent', { get() { return n.text != null ? n.text : n.children.map((c) => c.textContent).join(''); } });
     return n;
 }
-const sec = (type, kids) => node('sectionBlock', { sectionType: type }, kids);
+const sec = (type, kids, extra) => node('sectionBlock', Object.assign({ sectionType: type }, extra || {}), kids);
 const para = (t) => node('paragraph', {}, [node('text', {}, [], t)]);
-function makeDoc(children) {
+function doc(children) {
     const d = node('doc', {}, children);
-    d.content = { size: d.nodeSize - 2 };
-    d.resolve = (pos) => {
-        const path = [d];
-        let n = d, start = 0;   // `start` = the position where n's content begins
-        for (;;) {
-            let off = start, next = null, nextStart = 0;
-            for (const c of n.children) {
-                const end = off + c.nodeSize;
-                if (c.text == null && pos > off && pos < end) { next = c; nextStart = off + 1; break; }
-                off = end;
-            }
-            if (!next) break;
-            path.push(next); n = next; start = nextStart;
-        }
-        return { depth: path.length - 1, node: (k) => path[k] };
-    };
-    d.nodesBetween = (from, to, cb) => {
-        (function walk(n, start) {
-            let off = start;
-            for (const c of n.children) {
-                const end = off + c.nodeSize;
-                if (end > from && off < to && c.text == null) { if (cb(c, off) !== false) walk(c, off + 1); }
-                off = end;
-            }
-        })(d, 0);
-    };
+    d.descendants = (cb) => { (function walk(n) { for (const c of n.children) { if (cb(c) !== false) walk(c); } })(d); };
     return d;
 }
-// [plan "Plan — Q2"] [response] [action Self-Assessment] [feedback] — positions computed, never typed by hand.
-const DOC = makeDoc([sec('plan', [para('plan text')]), sec('response', [para('my essay paragraph')]), sec('action', [para('rating 4')]), sec('feedback', [para('feedback')])]);
-const at = (i) => { let p = 0; for (let k = 0; k < i; k++) p += DOC.children[k].nodeSize; return { start: p, end: p + DOC.children[i].nodeSize }; };
-const inside = (i) => at(i).start + 3;   // section open + paragraph open + 1 char into the text
+const build = (o) => doc([sec('plan', [para(o.plan || 'my plan')]), sec('response', [para(o.resp || 'my essay paragraph')], o.respAttrs),
+    sec('action', [para(o.sa || 'Hook: 3 / 5')]), sec('feedback', [para(o.fb || 'feedback text')]),
+    node('sectionBlock', { sectionType: 'group' }, [sec('outline', [para(o.out || 'outline row')])])]);
 const LOCKED = ['response', 'plan', 'outline'];
 const DISCUSS = LOCKED.concat(['feedback', 'scores', 'analytics', 'action', 'improvement']);
 
@@ -84,31 +60,29 @@ function run(G, verbose) {
     let pass = 0, fail = 0;
     const ok = (c, m) => { if (c) { pass++; if (verbose) console.log('  ✓ ' + m); } else { fail++; if (verbose) console.log('  ✗ ' + m); } };
     const say = (s) => { if (verbose) console.log(s); };
-    const V = (o) => G._swmlDisplayGuardVerdict(Object.assign({ docChanged: true, locked: true, migrating: false, fromStudent: true,
-        steps: [{ kind: 'replace', wholeDoc: false, touchesLocked: true }] }, o)).refuse;
+    const V = (o) => G._swmlDisplayGuardVerdict(Object.assign({ docChanged: true, locked: true, migrating: false, fromStudent: true, wholeDoc: false, lockedTextChanged: true }, o)).refuse;
+    const C = (a, b, types) => G._swmlLockedTextChanged(build(a), build(b), types || LOCKED);
 
     say('\nA · the verdict');
-    ok(V({}) === true, 'a student text change inside the locked writing of a display lesson → refused');
-    ok(V({ fromStudent: false }) === false, 'the same change from CODE (Sophia\'s fills, heals) → allowed');
+    ok(V({}) === true, 'a student change to the locked writing of a display lesson → refused');
+    ok(V({ fromStudent: false }) === false, 'the same change from CODE (Sophia\'s fills, heals, stamps) → allowed');
     ok(V({ migrating: true }) === false, 'a migration → allowed (it owns the document)');
     ok(V({ locked: false }) === false, 'any other lesson (diagnostic, planning, polishing) → allowed');
     ok(V({ docChanged: false }) === false, 'a selection-only transaction → allowed');
-    ok(V({ steps: [{ kind: 'other', touchesLocked: true }] }) === false, 'a comment mark ON the locked essay (mark / attribute steps only) → allowed — tutor and student comments stay live');
-    ok(V({ steps: [{ kind: 'replace', wholeDoc: true, touchesLocked: true }] }) === false, 'a whole-document load (setContent) → allowed — code, never a keystroke');
-    ok(V({ steps: [{ kind: 'replace', wholeDoc: false, touchesLocked: false }] }) === false, 'typing in an unlocked section (Self-Assessment, Calibration) → allowed');
-    ok(V({ steps: [{ kind: 'other' }, { kind: 'replace', touchesLocked: false }, { kind: 'replace', touchesLocked: true }] }) === true, 'one locked step among several → refused');
+    ok(V({ wholeDoc: true }) === false, 'a whole-document load (setContent) → allowed — code, never a keystroke');
+    ok(V({ lockedTextChanged: false }) === false, 'a student change that leaves every locked word as it was → allowed');
 
-    say('\nB · the range, on real ProseMirror positions');
-    const R = (a, b, types) => G._swmlRangeInSectionTypes(DOC, a, b, types || LOCKED);
-    ok(R(inside(1), inside(1)) === true, 'a caret inside the response → locked');
-    ok(R(inside(0), inside(0)) === true, 'a caret inside the plan → locked');
-    ok(R(inside(2), inside(2)) === false && R(inside(3), inside(3)) === false, 'Self-Assessment and Feedback → not locked in an assessment lesson');
-    ok(R(at(2).start, at(2).start) === false, 'the gap between two sections → not locked');
-    ok(R(inside(2), inside(3)) === false, 'a range across Self-Assessment and Feedback → not locked');
-    ok(R(inside(2) - 6, inside(2)) === true, 'a range that starts inside the response and ends in Self-Assessment → locked');
-    ok(R(at(0).start, at(2).end) === true, 'a range that swallows a whole locked section → locked (nodesBetween)');
-    ok(R(inside(3), inside(3), DISCUSS) === true && R(inside(2), inside(2), DISCUSS) === true, 'discuss-feedback lesson: the feedback family is locked too');
-    ok(DOC.content.size === DOC.children.reduce((s, c) => s + c.nodeSize, 0) && DOC.resolve(inside(1)).depth === 2, 'the document model has real sizes and depths');
+    say('\nB · what counts as changing the writing');
+    ok(C({}, { resp: 'my essay paragraph QQ' }) === true, 'a word typed into the response → changed');
+    ok(C({}, { plan: 'my plan!' }) === true && C({}, { out: 'outline row x' }) === true, 'the plan, and an outline row inside a group → changed');
+    ok(C({}, { resp: 'my essay' }) === true, 'words deleted from the response → changed');
+    ok(C({}, { sa: 'Hook: 4 / 5' }) === false, 'a rating in Self-Assessment → not the locked writing');
+    ok(C({}, { fb: 'feedback text edited' }) === false, 'Feedback in an assessment lesson → not locked');
+    ok(C({}, { fb: 'feedback text edited' }, DISCUSS) === true, 'Feedback in a discuss-feedback lesson → locked');
+    ok(C({}, { respAttrs: { editTs: '1791999084900' } }) === false, 'an edit-time stamp on the response (setNodeMarkup, measured: _flushEditTsStamps) → no word changed → allowed');
+    const marked = build({}); marked.children[1].children[0].children[0].marks = [{ type: { name: 'highlight' } }];
+    ok(G._swmlLockedTextChanged(build({}), marked, LOCKED) === false, 'a comment mark on the essay → no word changed → allowed');
+    ok(G._swmlLockedTexts(build({}), LOCKED).length === 3, 'three locked sections found (plan, response, the outline inside a group)');
     return { pass, fail };
 }
 
@@ -123,8 +97,9 @@ const lockSrc = JS.slice(JS.indexOf('    function _installStructureLock(editor, 
 ok(/const fromStudent = !!tr\.getMeta\('uiEvent'\) \|\| \(Date\.now\(\) - userAt\) < SWML_LOCK_USER_WINDOW_MS;/.test(lockSrc) && /fromStudent: fromStudent,/.test(lockSrc),
     'ONE student test, shared with the structure lock');
 ok(/if \(v\.allow && tr\.docChanged && fromStudent && !_migrationActive && _docDisplayLocked\(\)\) \{/.test(lockSrc), 'the guard runs inside the same filter, only in a display lesson, only for the student');
-ok(/if \(st !== 'replace' && st !== 'replaceAround'\) return \{ kind: 'other' \};/.test(lockSrc) && /wholeDoc: s\.from <= 0 && s\.to >= d\.content\.size/.test(lockSrc)
-    && /touchesLocked: _swmlRangeInSectionTypes\(d, s\.from, s\.to, lockedTypes\)/.test(lockSrc), 'each step is judged against the document it applies to (tr.docs[i])');
+ok(/lockedTextChanged: !wholeDoc && _swmlLockedTextChanged\(state\.doc, tr\.doc, _displayLockTypesNow\(\)\)/.test(lockSrc)
+    && /\(st === 'replace' \|\| st === 'replaceAround'\) && s\.from <= 0 && s\.to >= tr\.docs\[i\]\.content\.size/.test(lockSrc),
+    'the writing is compared before → after the transaction; a whole-document load is recognised per step');
 ok(/if \(g\.refuse\) \{\s*_swmlDisplayGuardRecord\(\{/.test(lockSrc) && /return false;\s*\}\s*\}\s*if \(v\.allow\) return true;/.test(lockSrc), 'a refusal records, then returns false — before the structure verdict can allow it');
 ok(/const touched = \(view, ev\) => \{ userAt = Date\.now\(\); lastEv = \{ type: \(ev && ev\.type\) \|\| '', inputType: \(ev && ev\.inputType\) \|\| '' \}; return false; \};/.test(lockSrc),
     'the record carries what the browser said the student did (event + inputType)');
@@ -142,9 +117,9 @@ ok(/register_rest_route\(\$namespace, '\/display-lock\/log', \[\s*'methods' => '
 console.log('\nD · each mutation of the real source is caught');
 const MUT = [
     ['refuse code too', "if (!t || !t.docChanged || !t.locked || t.migrating || !t.fromStudent) return { refuse: false };", "if (!t || !t.docChanged || !t.locked || t.migrating) return { refuse: false };"],
-    ['refuse whole-document loads', "if (reps.some((s) => s.wholeDoc)) return { refuse: false };", ''],
-    ['treat marks as text', "const reps = (t.steps || []).filter((s) => s && s.kind === 'replace');", "const reps = (t.steps || []).filter((s) => s);"],
-    ['miss a range that crosses into a locked section', 'if (inType(from) || inType(to)) return true;', 'if (inType(from)) return true; return false;'],
+    ['refuse whole-document loads', "if (t.wholeDoc) return { refuse: false };", ''],
+    ['protect every section, not just the locked ones', "if (n.type.name === 'sectionBlock' && types.indexOf(String((n.attrs && n.attrs.sectionType) || '')) !== -1) { out.push(n.textContent); return false; }", "if (n.type.name === 'sectionBlock') { out.push(n.textContent); return false; }"],
+    ['judge attributes as writing (the edit-stamp regression)', 'out.push(n.textContent); return false; }', 'out.push(n.textContent + JSON.stringify(n.attrs)); return false; }'],
 ];
 MUT.forEach(([name, from, to]) => {
     if (JS.split(from).length !== 2) { ok(false, name + ' — mutation anchor not found exactly once (the harness is stale)'); return; }

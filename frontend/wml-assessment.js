@@ -40482,39 +40482,33 @@
     // so SOME route reaches the document past the handlers, on a device nobody can name. This closes the choke point
     // every route must pass — the transaction — without needing to know the route, and records each refusal with what
     // the browser said it was doing, so the next attempt names it.
-    // ONE decision per transaction: only a STUDENT change (the structure lock's own test), only text (a replace step —
-    // comment marks and attribute steps stay live), only inside a locked section, never a migration, never a
-    // whole-document load (setContent is code, never a keystroke).
+    // ONE decision per transaction: only a STUDENT change (the structure lock's own test) that changes the TEXT of a locked
+    // section — never a migration, never a whole-document load (setContent is code, never a keystroke). It compares the
+    // writing itself, not the step type: _flushEditTsStamps stamps a just-edited section with setNodeMarkup (a
+    // replace-around step, a few ms after the keystroke — measured on staging, 14 Oct) and comments are marks; neither
+    // changes a word, so both pass.
     // @DISPLAY-GUARD-PURE-BEGIN — pure; driven by bin/display-guard-harness.js
-    // t = { docChanged, locked, migrating, fromStudent, steps: [{ kind: 'replace'|'other', wholeDoc, touchesLocked }] }
+    // t = { docChanged, locked, migrating, fromStudent, wholeDoc, lockedTextChanged }
     function _swmlDisplayGuardVerdict(t) {
         if (!t || !t.docChanged || !t.locked || t.migrating || !t.fromStudent) return { refuse: false };
-        const reps = (t.steps || []).filter((s) => s && s.kind === 'replace');
-        if (!reps.length) return { refuse: false };
-        if (reps.some((s) => s.wholeDoc)) return { refuse: false };
-        return { refuse: reps.some((s) => s.touchesLocked) };
+        if (t.wholeDoc) return { refuse: false };
+        return { refuse: !!t.lockedTextChanged };
     }
-    // Does [from, to] of `doc` sit in — or cross — a section whose type is one of `types`? The innermost section wins.
-    function _swmlRangeInSectionTypes(doc, from, to, types) {
-        const size = doc.content.size;
-        const inType = (pos) => {
-            const $p = doc.resolve(Math.max(0, Math.min(pos, size)));
-            for (let d = $p.depth; d > 0; d--) {
-                const n = $p.node(d);
-                if (n.type.name === 'sectionBlock') return types.indexOf(String((n.attrs && n.attrs.sectionType) || '')) !== -1;
-            }
-            return false;
-        };
-        if (inType(from) || inType(to)) return true;
-        let hit = false;
-        if (to > from) {
-            doc.nodesBetween(Math.max(0, from), Math.min(to, size), (n) => {
-                if (hit) return false;
-                if (n.type.name === 'sectionBlock' && types.indexOf(String((n.attrs && n.attrs.sectionType) || '')) !== -1) { hit = true; return false; }
-                return true;
-            });
-        }
-        return hit;
+    // The writing the lock protects: each locked section's text, in document order (a locked section is not searched
+    // inside — it is one unit).
+    function _swmlLockedTexts(doc, types) {
+        const out = [];
+        doc.descendants((n) => {
+            if (n.type.name === 'sectionBlock' && types.indexOf(String((n.attrs && n.attrs.sectionType) || '')) !== -1) { out.push(n.textContent); return false; }
+            return !n.isTextblock;
+        });
+        return out;
+    }
+    function _swmlLockedTextChanged(before, after, types) {
+        const a = _swmlLockedTexts(before, types), b = _swmlLockedTexts(after, types);
+        if (a.length !== b.length) return true;
+        for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return true;
+        return false;
     }
     // @DISPLAY-GUARD-PURE-END
     function _displayLockTypesNow() {
@@ -40570,16 +40564,13 @@
                     if (v.markNotUndoable) { tr.setMeta('addToHistory', false); tr.setMeta('swmlLockHist', true); }
                     // v7.20.882: the display-lock guard — a student change to the writing in a display lesson, by any route.
                     if (v.allow && tr.docChanged && fromStudent && !_migrationActive && _docDisplayLocked()) {
-                        const lockedTypes = _displayLockTypesNow();
+                        const wholeDoc = tr.steps.some((s, i) => {
+                            const st = (s.toJSON() || {}).stepType;
+                            return (st === 'replace' || st === 'replaceAround') && s.from <= 0 && s.to >= tr.docs[i].content.size;
+                        });
                         const g = _swmlDisplayGuardVerdict({
-                            docChanged: true, locked: true, migrating: false, fromStudent: true,
-                            steps: tr.steps.map((s, i) => {
-                                const st = (s.toJSON() || {}).stepType;
-                                if (st !== 'replace' && st !== 'replaceAround') return { kind: 'other' };
-                                const d = tr.docs[i];
-                                return { kind: 'replace', wholeDoc: s.from <= 0 && s.to >= d.content.size,
-                                    touchesLocked: _swmlRangeInSectionTypes(d, s.from, s.to, lockedTypes) };
-                            }),
+                            docChanged: true, locked: true, migrating: false, fromStudent: true, wholeDoc: wholeDoc,
+                            lockedTextChanged: !wholeDoc && _swmlLockedTextChanged(state.doc, tr.doc, _displayLockTypesNow()),
                         });
                         if (g.refuse) {
                             _swmlDisplayGuardRecord({ event: lastEv.type, input_type: lastEv.inputType, ui_event: String(tr.getMeta('uiEvent') || ''),
