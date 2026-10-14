@@ -10781,6 +10781,53 @@
             + ' ORDER the 3 Priorities by this step: the FIRST priority MUST be to ' + (m.priority1 || 'fix that step') + '; after it, each paragraph\'s parts, then sentences and vocabulary. Within a step, the biggest mark loss comes first. Do NOT change any mark, grade or the number of priorities, and do not repeat these bullets — the student sees them above the Action Plan.';
     }
     // @PATH-BOX-PURE-END
+    // @BREAKDOWN-PARTS-PURE-BEGIN
+    // v7.20.892 (dashboard #697; Neil 14 Oct: a target should show whether the thing it names improved). The analytics
+    // breakdown's two finer dimensions, read off the SAME paragraph rows as the "Where you are" box (_pathAnswersFromDoc):
+    //   element — one row per marked paragraph: 'intro' · 'body1'… · 'conclusion'; a language answer prefixes its question
+    //             ('q4.intro', 'q2.body1');
+    //   skill   — one row per criterion family across the whole piece, named through _gapSkillFor (the walk's skill names).
+    // Keys are WML's own and stable; the dashboard maps its focus items onto them. Marks are the tables' criterion marks as
+    // awarded, before penalties and bonuses, so they need not add up to the overall mark. A paragraph with no mark table
+    // (not submitted) and a row no skill rule names are left out — never given a number.
+    const BREAKDOWN_SKILL_KEYS = {
+        'Hook': 'hook', 'Building Sentences': 'building_sentences', 'Thesis': 'thesis',
+        'Topic Sentence': 'topic_sentence', 'Technical Terms': 'technical_terms', 'Evidence': 'evidence',
+        'Close Analysis': 'close_analysis', 'Effects on Reader': 'effects', "Author's Purpose": 'purpose', 'Context': 'context',
+        'Restated Thesis': 'restated_thesis', 'Controlling Concept': 'controlling_concept',
+        'Central Purpose': 'central_purpose', 'Universal Message': 'universal_message',
+    };
+    function _breakdownParaKey(part) {
+        const p = String(part || '').toLowerCase();
+        if (/^intro/.test(p)) return 'intro';
+        if (/^conclu/.test(p)) return 'conclusion';
+        const m = /(?:body|paragraph)\s*(?:paragraph\s*)?(\d+)/.exec(p);
+        return m ? 'body' + m[1] : null;
+    }
+    function breakdownPartsModel(answers) {
+        const element = [], seen = {}, acc = {}, order = [];
+        const r2 = (x) => Math.round(x * 100) / 100;
+        (answers || []).forEach((a) => {
+            ((a && a.units) || []).forEach((u) => {
+                const rows = (u && u.rows) || [];
+                const pk = rows.length ? _breakdownParaKey(u.part || u.label) : null;
+                if (!pk) return;
+                const key = a.lit ? pk : String(a.label || '').toLowerCase() + '.' + pk;
+                if (seen[key]) return;   // one row per paragraph: the first card for it wins
+                seen[key] = true;
+                element.push({ key: key, label: u.label, earned: r2(rows.reduce((s, r) => s + r.score, 0)), available: r2(rows.reduce((s, r) => s + r.worth, 0)) });
+                rows.forEach((r) => {
+                    const sk = _gapSkillFor(u.group, r.criterion);
+                    const k = sk && BREAKDOWN_SKILL_KEYS[sk];
+                    if (!k) return;
+                    if (!acc[k]) { acc[k] = { key: k, label: sk, earned: 0, available: 0 }; order.push(k); }
+                    acc[k].earned += r.score; acc[k].available += r.worth;
+                });
+            });
+        });
+        return { element: element, skill: order.map((k) => ({ key: k, label: acc[k].label, earned: r2(acc[k].earned), available: r2(acc[k].available) })) };
+    }
+    // @BREAKDOWN-PARTS-PURE-END
 
     function _gapFids(key) { return { gap: 'calib-gap-' + key, why: 'calib-gap-' + key + '-why' }; }
     // ⭐ v7.20.682 (#702 — Neil, 3 Oct: "what we had before was actual versus predicted. But… the students
@@ -11957,6 +12004,28 @@
         return String(d.textContent || '').replace(/ /g, ' ').split('\n').map((s) => s.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
     }
     function _pathBoxData() {
+        const answers = _pathAnswersFromDoc();
+        if (!answers) return null;
+        let calib = [];
+        try {
+            calib = _calibGroups().filter((x) => x && x.mineNum !== null && x.actual).map((x) => ({
+                label: _ladderIsLit() ? 'your essay' : 'your ' + (x.q || 'answer') + (x.q ? ' answer' : ''),
+                mine: x.mineNum, sophia: x.actual.mark, max: x.max, tol: _toleranceFor(x.max),
+            }));
+        } catch (_) { calib = []; }
+        return pathBoxModel({
+            grade: _deterministicDocGrade(),
+            answers: answers,
+            ratings: _saWalkRows().filter((r) => r && r.value != null),
+            calib: calib,
+            msa: state.markSchemeSummary || null,
+            // v7.20.884 (§65): which HOW line — the lesson's phase, and the diagnostic's grade from the server (topicProgress).
+            how: { phase: String(state.phase || ''), diagnosticGrade: (state.topicProgress && state.topicProgress.diagnosticGrade) || null },
+        });
+    }
+    // v7.20.892: the document's marked answers, paragraph by paragraph, each with its mark-table rows — ONE reader for the
+    // "Where you are" box and the analytics breakdown (breakdownPartsModel), so the two can never read a card differently.
+    function _pathAnswersFromDoc() {
         const ed = document.getElementById('swml-tiptap-editor');
         if (!ed) return null;
         const responses = Array.from(ed.querySelectorAll('.swml-section-block[data-section-type="response"]'));
@@ -11994,22 +12063,7 @@
                 answers.push({ label: q, lit: false, needed: units.length, written: units.length - missing, units: units });
             });
         }
-        let calib = [];
-        try {
-            calib = _calibGroups().filter((x) => x && x.mineNum !== null && x.actual).map((x) => ({
-                label: _ladderIsLit() ? 'your essay' : 'your ' + (x.q || 'answer') + (x.q ? ' answer' : ''),
-                mine: x.mineNum, sophia: x.actual.mark, max: x.max, tol: _toleranceFor(x.max),
-            }));
-        } catch (_) { calib = []; }
-        return pathBoxModel({
-            grade: _deterministicDocGrade(),
-            answers: answers,
-            ratings: _saWalkRows().filter((r) => r && r.value != null),
-            calib: calib,
-            msa: state.markSchemeSummary || null,
-            // v7.20.884 (§65): which HOW line — the lesson's phase, and the diagnostic's grade from the server (topicProgress).
-            how: { phase: String(state.phase || ''), diagnosticGrade: (state.topicProgress && state.topicProgress.diagnosticGrade) || null },
-        });
+        return answers;
     }
     // The box itself — a derived, firewalled strip at the top of the Action Plan (wml-section-block.js), never a
     // node: it re-derives on every pass, so it is never a stored fossil (§4c.7) and needs no migration.
@@ -12035,6 +12089,8 @@
         } catch (e) { /* derived display — never blocks the document */ }
     }
     try { window.WML.renderPathBox = _renderPathBox; window.WML.pathBox = () => { try { return _pathBoxData(); } catch (e) { return null; } }; } catch (_) {}
+    // v7.20.892: what the next marking commit will send as element/skill rows (read-only; the probe reads it).
+    try { window.WML.breakdownParts = () => { try { return breakdownPartsModel(_pathAnswersFromDoc() || []); } catch (e) { return null; } }; } catch (_) {}
     // ── v7.19.949 (Neil): Fix→Learn chips IN CONTEXT — at the end of the penalty line ───
     // (Replaces v948's box-bottom rows: Neil live test — a pooled row reads as detached from
     // the penalties it belongs to.) The chip is a REAL inline atom node (learnChip, the
@@ -60944,11 +61000,15 @@
                     ao_holistic.push({ question: key, key: aoA, earned: a5e, available: a5a });
                     ao_holistic.push({ question: key, key: aoB, earned: a6e, available: a6a });
                 });
-                if (!question.length) return null;
-                const out = {
-                    overall: { earned: finalMarks, available: maxTotal },
-                    question: question,
-                };
+                // v7.20.892: the paragraph + criterion rows (breakdownPartsModel). A Literature essay has no "Qn" box, so
+                // before .892 it sent no breakdown at all — its paragraphs are what it has.
+                let parts = { element: [], skill: [] };
+                try { parts = breakdownPartsModel(_pathAnswersFromDoc() || []); } catch (e) { console.warn('WML breakdown: parts failed —', e && e.message); }
+                if (!question.length && !parts.element.length) return null;
+                const out = { overall: { earned: finalMarks, available: maxTotal } };
+                if (question.length) out.question = question;
+                if (parts.element.length) out.element = parts.element;
+                if (parts.skill.length) out.skill = parts.skill;
                 // The caller hands us the RAW box sum (same value it puts in total_score), while
                 // the committed GRADE derives from MIN(sum, max − wcPenalty). So when a ceiling
                 // is live, earned alone cannot reproduce the grade. Emit the ceiling rather than

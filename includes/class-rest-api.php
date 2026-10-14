@@ -5465,6 +5465,14 @@ class SWML_REST_API {
             $out['overall']['ceiling'] = (float) $c_overall['ceiling'] + 0;
         }
 
+        // v7.20.892 (dashboard #697): the paragraph (`element`) and criterion-family (`skill`) rows the client read off the
+        // document's mark tables. They do not depend on the paper spec, so they ride every branch below.
+        $parts = self::breakdown_parts($client);
+        if ($parts) {
+            $out += $parts;
+            $notes[] = 'parts_are_criterion_marks_before_penalties_and_bonuses';
+        }
+
         $resolved = class_exists('SWML_Protocol_Router')
             ? SWML_Protocol_Router::get_paper_spec($board, $subject)
             : null;
@@ -5610,6 +5618,35 @@ class SWML_REST_API {
         $s = trim((string) $s);
         if (function_exists('mb_strlen') ? mb_strlen($s) <= 180 : strlen($s) <= 180) return $s;
         return (function_exists('mb_substr') ? mb_substr($s, 0, 179) : substr($s, 0, 179)) . '…';
+    }
+
+    /**
+     * v7.20.892: the client's `element` / `skill` rows (breakdownPartsModel in wml-assessment.js), checked before they
+     * ride the hook: a WML key (a-z 0-9 _ .), numbers, available > 0, 0 ≤ earned ≤ available. A malformed row is DROPPED,
+     * never repaired — student-data stores what it is given and there is no backfill.
+     */
+    private static function breakdown_parts($client) {
+        $out = [];
+        foreach (['element', 'skill'] as $dim) {
+            $rows = [];
+            foreach ((array) ($client[$dim] ?? []) as $r) {
+                if (!is_array($r)) continue;
+                $k = (string) ($r['key'] ?? '');
+                if (!preg_match('/^[a-z0-9_.]{1,40}$/', $k)) continue;
+                if (!isset($r['earned'], $r['available']) || !is_numeric($r['earned']) || !is_numeric($r['available'])) continue;
+                $e = (float) $r['earned'];
+                $a = (float) $r['available'];
+                if (!($a > 0) || $e < 0 || $e > $a + 0.001) continue;
+                $rows[] = [
+                    'key'       => $k,
+                    'label'     => self::breakdown_label((string) ($r['label'] ?? $k)),
+                    'earned'    => round($e, 2) + 0,
+                    'available' => round($a, 2) + 0,
+                ];
+            }
+            if ($rows) $out[$dim] = $rows;
+        }
+        return $out;
     }
 
     /**
