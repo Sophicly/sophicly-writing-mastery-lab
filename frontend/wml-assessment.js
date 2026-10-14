@@ -47644,110 +47644,118 @@
                     // on staging, 338-turn IGCSE P1 plan, empty localStorage).
                     if (_planDerivedSidebar()) setTimeout(_refreshPlanningSidebar, 0);
 
-                    // v7.19.323: resuming a mark-scheme quiz mid-flow — rehydrate the
-                    // deterministic controller from its localStorage sidecar so the
-                    // student's next typed reply scores against the right question.
-                    // Bubbles are already replayed above; this only restores position.
-                    if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme_unit'
-                        && (state.step === 1 || state.bridgeStep === 1) && tp.quizCtl) {
-                        tp.quizCtl.tryResume();
-                    }
-                    // v7.19.579: FQ (banked text) resumes its deterministic round the same way.
-                    if (_fqDeterministic() && tp.quizCtl) {
-                        tp.quizCtl.tryResume({ quizType: 'foundational' });
-                    }
-                    // v7.19.739: MSA Final (mark_scheme) resumes its deterministic round the same way.
-                    if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme' && tp.quizCtl) {
-                        tp.quizCtl.tryResume({ quizType: 'mark_scheme_assessment' });
-                    }
-                    // v7.19.660: CW Step 1 deterministic walk resumes the same way — bubbles
-                    // already replayed above; restore position only (no re-render). If the
-                    // sidecar is gone (walk finished → synthesis/review), this no-ops and the
-                    // student's reply falls through to the AI review path.
-                    if (state.task === 'cw_step_1' && tp.cwProfileCtl) {
-                        tp.cwProfileCtl.tryResume();
-                    }
-                    // v7.20.265: CW Steps 2-4 resume the same way. Bubbles are already replayed
-                    // above; these restore position only — plus the DOM-only chip bars, which
-                    // never survive a reload and left the student with a menu and no buttons.
-                    if (state.task === 'cw_step_2' && tp.cwIdeasCtl) tp.cwIdeasCtl.tryResume();
-                    if (state.task === 'cw_step_3' && tp.cwLoglineCtl) tp.cwLoglineCtl.tryResume();
-                    if (state.task === 'cw_step_4' && tp.cwSpineCtl) tp.cwSpineCtl.tryResume();
-                    if (state.task === 'cw_step_5' && tp.cwStructureCtl) tp.cwStructureCtl.tryResume();
-                    if (state.task === 'cw_step_6' && tp.cwOutlineCtl) {
-                        // v7.20.403 (#165): AWAITED, and BEFORE the resume — the walk re-serves the
-                        // ask right after, so the question is never left above this line (§4d).
-                        await _cwStep6EntryLine(tp);
-                        tp.cwOutlineCtl.tryResume();
-                    }
-                    // v7.20.419: CW Step 7 resumes the same way. Its chips (the trait multi-select
-                    // and the balance/excess/deficit picks) are DOM-only like every other walk's,
-                    // so without this a reload mid-station leaves a question with no buttons.
-                    if (state.task === 'cw_step_7' && tp.cwValuesCtl) tp.cwValuesCtl.tryResume();
-                    // v7.20.491: CW Step 8 resumes the same way — its chips (the stage/beat
-                    // multi-selects and keep-as-is) are DOM-only, so a reload mid-walk must
-                    // re-serve the current ask or the student is left with no buttons.
-                    if (state.task === 'cw_step_8' && tp.cwPlotValuesCtl) tp.cwPlotValuesCtl.tryResume();
-                    // v7.20.547: the ladder is host-agnostic, so boot resume asks IT, not the
-                    // task — its sidecar carries the host config that opened it.
-                    if (tp.examinerLadderCtl) tp.examinerLadderCtl.tryResume();
-                    // v7.20.551: Trial 1's chips are DOM-only like every other walk's, so a reload
-                    // mid-trial must re-serve the element the student was on — not the top of the
-                    // seven (§4c.8b).
-                    if (state.task === 'cw_trial_1' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();
-                    if (state.task === 'cw_trial_2' && tp.cwTrial2Ctl) tp.cwTrial2Ctl.tryResume();   // v7.20.824 (#884-①)
-                    if (state.task === 'cw_trial_3' && tp.cwTrial3Ctl) tp.cwTrial3Ctl.tryResume();   // v7.20.831 (#884-②)
-                    if (state.task === 'cw_trial_4' && tp.cwTrial4Ctl) tp.cwTrial4Ctl.tryResume();   // v7.20.835 (#884-③)
-                    if (state.task === 'cw_trial_5' && tp.cwTrial5Ctl) tp.cwTrial5Ctl.tryResume();   // v7.20.837 (#884-④)
-                    if (state.task === 'cw_trial_6' && tp.cwTrial6Ctl) tp.cwTrial6Ctl.tryResume();   // v7.20.841 (#884-⑤)
-                    if (WML.isCwFinalTask(state.task) && tp.cwFinalCtl) tp.cwFinalCtl.tryResume();   // v7.20.844 (#884-⑦)
-                    if (state.task === 'cw_step_91' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();   // v7.20.776 (weekend lesson 11)
-                    if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
-                    if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
-                    if (state.task === 'cw_step_92' && tp.cwEmpathyCtl) tp.cwEmpathyCtl.tryResume();         // v7.20.777 (weekend bonus)
-                    if (state.task === 'cw_step_90' && tp.cwAdaptCtl) tp.cwAdaptCtl.tryResume();               // v7.20.753 (weekend lesson 9)
-                    if (state.task === 'cw_step_27' && tp.cwStructCtl && WML.cwInUnit && WML.cwInUnit()) tp.cwStructCtl.tryResume();   // v7.20.761 (weekend lesson 6)
-                    // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
-                    // (student types on); only re-surface the programmatic picker when NO poem is
-                    // active (last poem finished, or none picked yet). The picker bubble is DOM-only
-                    // (never saved), so it must be re-rendered on resume.
-                    if (_poetryCnPickerActive() && !_poetryCnActivePoemId(tp.canvasChatHistory)) {
-                        setTimeout(() => { _renderPoetryCnPicker(tp); }, 400);
-                    } else if (_poetryCnPickerActive()) {
-                        // v7.19.995: active poem resumed mid-element — if its opener was never
-                        // answered (refresh before submit), re-render it (DOM-only, never saved).
-                        setTimeout(() => { _maybePoetryCnOpener(tp, tp.canvasChatHistory); }, 400);
-                    } else if (_litCnActive()) {
-                        // v7.20.23: lit CN resume — re-emit the DOM-only re-entry card (Continue at
-                        // next unfilled / gap boxes / Revisit). Never saved to history, so re-render.
-                        setTimeout(() => { _litCnReentryCard(tp); }, 400);
-                    }
-                    // v7.20.52: plan-chain quick-actions are DOM-only — re-append the pending
-                    // capture's buttons after replay (registered inside the pipeline closure;
-                    // same never-saved pattern as the poetry opener / lit-CN card above).
-                    if (_planPreChainActive()) {
-                        setTimeout(() => { try { if (window.__swmlPlanChainResume) window.__swmlPlanChainResume(); } catch (_) {} }, 400);
-                    }
-                    // v7.20.646 (#630): assessment setup resume (after any ladder sidecar has restored).
-                    if (state.task === 'assessment') {
-                        setTimeout(() => { try { if (window.__swmlAssessChainResume) window.__swmlAssessChainResume(); } catch (_) {} }, 900);
-                    }
-                    // Piece 2 (v7.20.250): poetry teaching-sequence resume — chips are DOM-only
-                    // (never saved), so re-offer the current beat after replay. No-ops off poetry
-                    // / when no sequence is mid-play (guarded inside the hook).
-                    if (_poetryPlanActive()) {
-                        setTimeout(() => { try { if (window.__swmlPoetrySeqResume) window.__swmlPoetrySeqResume(); } catch (_) {} }, 400);
-                    }
-                    // v7.20.494 (#204): the step-9 scene chip is DOM-only — re-offer after the
-                    // replay so a reload never lands on teaching text with no way forward (§4d).
-                    // Via the exported handle: the controller lives in the training-panels
-                    // closure, not this one (the v7.19.898 out-of-scope class).
-                    if (state.task === 'cw_step_9' && tp.cw9SceneCtl) {
-                        setTimeout(() => { try { tp.cw9SceneCtl.tryResume(); } catch (_) {} }, 400);
-                    }
-                    if (state.task === 'cw_step_13' && tp.cw13SceneCtl) {   // v7.20.568 (#440)
-                        setTimeout(() => { try { tp.cw13SceneCtl.tryResume(); } catch (_) {} }, 400);
-                    }
+                    // v7.20.886: REVIEW MODE RESUMES NOTHING. Every resume below reads or re-serves the STUDENT's live
+                    // walk from state held in THIS browser (localStorage sidecars with no user id: swml_msa_{board}_…).
+                    // In review that browser is the tutor's, so it resumed the tutor's own round under the student's
+                    // real chat — "Before we begin — what grade are you aiming for?" under Zayan 1109's finished Mark
+                    // Scheme Assessment 2 (Neil, 14 Oct) — and wrote one student's position into a sidecar the next
+                    // student's review would read. The fresh-entry starts are already guarded by !state.reviewMode.
+                    if (!state.reviewMode) {
+                        // v7.19.323: resuming a mark-scheme quiz mid-flow — rehydrate the
+                        // deterministic controller from its localStorage sidecar so the
+                        // student's next typed reply scores against the right question.
+                        // Bubbles are already replayed above; this only restores position.
+                        if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme_unit'
+                            && (state.step === 1 || state.bridgeStep === 1) && tp.quizCtl) {
+                            tp.quizCtl.tryResume();
+                        }
+                        // v7.19.579: FQ (banked text) resumes its deterministic round the same way.
+                        if (_fqDeterministic() && tp.quizCtl) {
+                            tp.quizCtl.tryResume({ quizType: 'foundational' });
+                        }
+                        // v7.19.739: MSA Final (mark_scheme) resumes its deterministic round the same way.
+                        if (QUIZ_CONTROLLER_ON && state.task === 'mark_scheme' && tp.quizCtl) {
+                            tp.quizCtl.tryResume({ quizType: 'mark_scheme_assessment' });
+                        }
+                        // v7.19.660: CW Step 1 deterministic walk resumes the same way — bubbles
+                        // already replayed above; restore position only (no re-render). If the
+                        // sidecar is gone (walk finished → synthesis/review), this no-ops and the
+                        // student's reply falls through to the AI review path.
+                        if (state.task === 'cw_step_1' && tp.cwProfileCtl) {
+                            tp.cwProfileCtl.tryResume();
+                        }
+                        // v7.20.265: CW Steps 2-4 resume the same way. Bubbles are already replayed
+                        // above; these restore position only — plus the DOM-only chip bars, which
+                        // never survive a reload and left the student with a menu and no buttons.
+                        if (state.task === 'cw_step_2' && tp.cwIdeasCtl) tp.cwIdeasCtl.tryResume();
+                        if (state.task === 'cw_step_3' && tp.cwLoglineCtl) tp.cwLoglineCtl.tryResume();
+                        if (state.task === 'cw_step_4' && tp.cwSpineCtl) tp.cwSpineCtl.tryResume();
+                        if (state.task === 'cw_step_5' && tp.cwStructureCtl) tp.cwStructureCtl.tryResume();
+                        if (state.task === 'cw_step_6' && tp.cwOutlineCtl) {
+                            // v7.20.403 (#165): AWAITED, and BEFORE the resume — the walk re-serves the
+                            // ask right after, so the question is never left above this line (§4d).
+                            await _cwStep6EntryLine(tp);
+                            tp.cwOutlineCtl.tryResume();
+                        }
+                        // v7.20.419: CW Step 7 resumes the same way. Its chips (the trait multi-select
+                        // and the balance/excess/deficit picks) are DOM-only like every other walk's,
+                        // so without this a reload mid-station leaves a question with no buttons.
+                        if (state.task === 'cw_step_7' && tp.cwValuesCtl) tp.cwValuesCtl.tryResume();
+                        // v7.20.491: CW Step 8 resumes the same way — its chips (the stage/beat
+                        // multi-selects and keep-as-is) are DOM-only, so a reload mid-walk must
+                        // re-serve the current ask or the student is left with no buttons.
+                        if (state.task === 'cw_step_8' && tp.cwPlotValuesCtl) tp.cwPlotValuesCtl.tryResume();
+                        // v7.20.547: the ladder is host-agnostic, so boot resume asks IT, not the
+                        // task — its sidecar carries the host config that opened it.
+                        if (tp.examinerLadderCtl) tp.examinerLadderCtl.tryResume();
+                        // v7.20.551: Trial 1's chips are DOM-only like every other walk's, so a reload
+                        // mid-trial must re-serve the element the student was on — not the top of the
+                        // seven (§4c.8b).
+                        if (state.task === 'cw_trial_1' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();
+                        if (state.task === 'cw_trial_2' && tp.cwTrial2Ctl) tp.cwTrial2Ctl.tryResume();   // v7.20.824 (#884-①)
+                        if (state.task === 'cw_trial_3' && tp.cwTrial3Ctl) tp.cwTrial3Ctl.tryResume();   // v7.20.831 (#884-②)
+                        if (state.task === 'cw_trial_4' && tp.cwTrial4Ctl) tp.cwTrial4Ctl.tryResume();   // v7.20.835 (#884-③)
+                        if (state.task === 'cw_trial_5' && tp.cwTrial5Ctl) tp.cwTrial5Ctl.tryResume();   // v7.20.837 (#884-④)
+                        if (state.task === 'cw_trial_6' && tp.cwTrial6Ctl) tp.cwTrial6Ctl.tryResume();   // v7.20.841 (#884-⑤)
+                        if (WML.isCwFinalTask(state.task) && tp.cwFinalCtl) tp.cwFinalCtl.tryResume();   // v7.20.844 (#884-⑦)
+                        if (state.task === 'cw_step_91' && tp.cwTrial1Ctl) tp.cwTrial1Ctl.tryResume();   // v7.20.776 (weekend lesson 11)
+                        if (state.task === 'cw_step_11' && tp.cwCharProfileCtl) tp.cwCharProfileCtl.tryResume();   // v7.20.563 (#428)
+                        if (state.task === 'cw_step_12' && tp.cwGoalsPlotCtl) tp.cwGoalsPlotCtl.tryResume();       // v7.20.567 (#440)
+                        if (state.task === 'cw_step_92' && tp.cwEmpathyCtl) tp.cwEmpathyCtl.tryResume();         // v7.20.777 (weekend bonus)
+                        if (state.task === 'cw_step_90' && tp.cwAdaptCtl) tp.cwAdaptCtl.tryResume();               // v7.20.753 (weekend lesson 9)
+                        if (state.task === 'cw_step_27' && tp.cwStructCtl && WML.cwInUnit && WML.cwInUnit()) tp.cwStructCtl.tryResume();   // v7.20.761 (weekend lesson 6)
+                        // v7.19.983: poetry-CN resume — an in-progress poem just replays + continues
+                        // (student types on); only re-surface the programmatic picker when NO poem is
+                        // active (last poem finished, or none picked yet). The picker bubble is DOM-only
+                        // (never saved), so it must be re-rendered on resume.
+                        if (_poetryCnPickerActive() && !_poetryCnActivePoemId(tp.canvasChatHistory)) {
+                            setTimeout(() => { _renderPoetryCnPicker(tp); }, 400);
+                        } else if (_poetryCnPickerActive()) {
+                            // v7.19.995: active poem resumed mid-element — if its opener was never
+                            // answered (refresh before submit), re-render it (DOM-only, never saved).
+                            setTimeout(() => { _maybePoetryCnOpener(tp, tp.canvasChatHistory); }, 400);
+                        } else if (_litCnActive()) {
+                            // v7.20.23: lit CN resume — re-emit the DOM-only re-entry card (Continue at
+                            // next unfilled / gap boxes / Revisit). Never saved to history, so re-render.
+                            setTimeout(() => { _litCnReentryCard(tp); }, 400);
+                        }
+                        // v7.20.52: plan-chain quick-actions are DOM-only — re-append the pending
+                        // capture's buttons after replay (registered inside the pipeline closure;
+                        // same never-saved pattern as the poetry opener / lit-CN card above).
+                        if (_planPreChainActive()) {
+                            setTimeout(() => { try { if (window.__swmlPlanChainResume) window.__swmlPlanChainResume(); } catch (_) {} }, 400);
+                        }
+                        // v7.20.646 (#630): assessment setup resume (after any ladder sidecar has restored).
+                        if (state.task === 'assessment') {
+                            setTimeout(() => { try { if (window.__swmlAssessChainResume) window.__swmlAssessChainResume(); } catch (_) {} }, 900);
+                        }
+                        // Piece 2 (v7.20.250): poetry teaching-sequence resume — chips are DOM-only
+                        // (never saved), so re-offer the current beat after replay. No-ops off poetry
+                        // / when no sequence is mid-play (guarded inside the hook).
+                        if (_poetryPlanActive()) {
+                            setTimeout(() => { try { if (window.__swmlPoetrySeqResume) window.__swmlPoetrySeqResume(); } catch (_) {} }, 400);
+                        }
+                        // v7.20.494 (#204): the step-9 scene chip is DOM-only — re-offer after the
+                        // replay so a reload never lands on teaching text with no way forward (§4d).
+                        // Via the exported handle: the controller lives in the training-panels
+                        // closure, not this one (the v7.19.898 out-of-scope class).
+                        if (state.task === 'cw_step_9' && tp.cw9SceneCtl) {
+                            setTimeout(() => { try { tp.cw9SceneCtl.tryResume(); } catch (_) {} }, 400);
+                        }
+                        if (state.task === 'cw_step_13' && tp.cw13SceneCtl) {   // v7.20.568 (#440)
+                            setTimeout(() => { try { tp.cw13SceneCtl.tryResume(); } catch (_) {} }, 400);
+                        }
+                    }   // end !state.reviewMode (v7.20.886)
 
                     // v7.17.59: Hoisted greeting regen + grade buttons UP — was
                     // post-await (3-5s gap during which the un-styled bubble was
@@ -71472,7 +71480,15 @@
         const suffix = WML.resolveCanvasSuffix(state.task, state.phase) || '';
         const _docScope = WML.canvasDocScope();
         const att = _canvasAttempt();
-        return `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${_cwReviewProjectQS()}`;
+        return `${API.reviewCanvas}?student_id=${state.reviewStudentId}&board=${encodeURIComponent(state.board)}&text=${encodeURIComponent(_docScope.text)}${_docScope.topic ? '&topicNumber=' + _docScope.topic : ''}&suffix=${encodeURIComponent(suffix)}&attempt=${att}${_cwReviewProjectQS()}${_quizIdentQS()}`;
+    }
+    // v7.19.955: FQ doc loads under the CN identity, but its persisted Quiz Result is keyed by the QUIZ identity
+    // (course text + lesson topic) — pass it separately so the in-doc result card still surfaces.
+    // v7.20.886: ONE builder for the student load AND the tutor review load (the review URL never sent it).
+    function _quizIdentQS() {
+        return (state.task === 'foundational_quiz')
+            ? `&quiz=foundational&quiz_text=${encodeURIComponent(state.text)}&quiz_topic=${state.topicNumber || 0}`
+            : '';
     }
     // v7.20.792 (#842, Neil: "Should students' screens update by themselves while you type? → Yes"): a student
     // watching a live-modelling lesson sees the author's writing arrive without refreshing. The read-only view re-reads
@@ -71557,12 +71573,7 @@
                 ['planning', 'outlining', 'polishing', 'assessment', 'redraft_assessment', 'feedback_discussion'].includes(state.task)
                 || (state.task && state.task.startsWith('cw_'))
             ) ? '&seedFromSiblings=1' : '';
-            // v7.19.955: FQ doc loads under the CN identity, but its persisted Quiz
-            // Result is keyed by the QUIZ identity (course text + lesson topic) —
-            // pass it separately so the in-doc result card still surfaces.
-            const _quizIdent = (state.task === 'foundational_quiz')
-                ? `&quiz=foundational&quiz_text=${encodeURIComponent(state.text)}&quiz_topic=${state.topicNumber || 0}`
-                : '';
+            const _quizIdent = _quizIdentQS();
             if (state.reviewMode && state.reviewStudentId) {
                 url = _reviewCanvasUrl();
             } else {

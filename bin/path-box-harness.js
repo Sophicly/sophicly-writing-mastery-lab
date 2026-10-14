@@ -281,7 +281,7 @@ ok(/_facts \+= _gapCheckFact\(\);[^\n]*\n\s*_facts \+= _pathFactText\(_path\);/.
 ok(/\.swml-path-box \{/.test(CSS) && /\.swml-section-block\.swml-fb-collapsed > \.swml-path-box \{ display: none !important; \}/.test(CSS), 'styled, and hidden when the Action Plan is collapsed');
 ok(/\.swml-path-box-list > li \{ list-style: disc outside; \}/.test(CSS), 'the bullets carry their own marker (the theme\'s ul[class] reset strips an inherited one — measured, staging)');
 const defs = REST.split('private function mark_scheme_summary_for(').length - 1, calls = REST.split('$this->mark_scheme_summary_for(').length - 1;
-ok(defs === 1 && calls === 4, 'server: one reader, four returns (load main · seed · reseed · tutor review) — got ' + defs + '/' + calls);
+ok(defs === 1 && calls === 5, 'server: one reader, five returns (load main · seed · reseed · tutor review · tutor seed preview, v7.20.886) — got ' + defs + '/' + calls);
 const fnS = REST.slice(REST.indexOf('private function mark_scheme_summary_for('), REST.indexOf('Tutor review: load a student'));
 ok(/in_array\(\(string\) \$suffix, \['_assessment', '_reassessment'\], true\)/.test(fnS) && /task = 'mark_scheme'/.test(fnS), 'server: marked documents only; the Mark Scheme Assessment rows only');
 // KEY-MATCH (root §5d): the categories key the reader builds must be the one the quiz engine writes.
@@ -301,8 +301,8 @@ ok(/self::canonical_slug\(\$tb\['text'\]\)/.test(tpc) && tpc.indexOf("_redraft(?
     'the chooser read: the latest completed redraft in the course\'s text (canonical slug, re-marks included)');
 ok(/\$tb\['board'\] = str_replace\('_', '-', \(string\) \$tb\['board'\]\);/.test(tpc) && tpc.indexOf("$tb['board'] = str_replace") < tpc.indexOf("$prefix = 'swml_phase_'"),
     'key-match: the course map\'s underscored board (edexcel_igcse) is hyphenated BEFORE the grade keys are built (measured: grade keys say edexcel-igcse)');
-ok(REST.split("'topicProgress'").length - 1 === 4 && /in_array\(\(string\) \$suffix, \['_assessment', '_reassessment', '_fbdiscuss'\], true\)/.test(REST),
-    'topicProgress rides the four marked-document returns (load · seed · reseed · tutor review)');
+ok(REST.split("'topicProgress'").length - 1 === 5 && /in_array\(\(string\) \$suffix, \['_assessment', '_reassessment', '_fbdiscuss'\], true\)/.test(REST),
+    'topicProgress rides the five marked-document returns (load · seed · reseed · tutor review · tutor seed preview, v7.20.886)');
 ok(/state\.topicProgress = \(res && res\.topicProgress && typeof res\.topicProgress === 'object'\) \? res\.topicProgress : null;/.test(JS)
     && /how: \{ phase: String\(state\.phase \|\| ''\), diagnosticGrade: \(state\.topicProgress && state\.topicProgress\.diagnosticGrade\) \|\| null \},/.test(JS),
     'the page stores the grades on load and the box reads the lesson\'s phase');

@@ -3278,17 +3278,48 @@ class SWML_REST_API {
             }
         }
 
-        // v7.19.321: surface the latest persisted Quiz Result so the frontend
-        // renders the in-doc Quiz Result card on (re)load. v7.19.323: also the
-        // Foundational quiz (_fq doc, reads its user_meta source).
-        // v7.19.955: FQ docs now load under the Conceptual-Notes identity
-        // (suffix _cn, bank text, Topic 2) — the quiz result stays keyed by the
-        // QUIZ identity (course text + lesson topic), which the client passes
-        // as quiz=foundational + quiz_text/quiz_topic on FQ loads.
-        $quiz_result  = null;
+        $quiz_state = $this->quiz_state_for($user_id, $board, $text, $topic_number, $attempt, $suffix, $request);
+
+        return rest_ensure_response([
+            'success'             => true,
+            'doc'                 => $doc,
+            'attempt'             => $attempt,
+            'generalNotes'        => $general_notes,
+            // v7.19.992: scattered-siblings merge sidecar (poetry-CN family; [] otherwise).
+            'mergeFields'         => $merge_fields,
+            'quizResult'          => $quiz_state['quizResult'],
+            'quizRecorded'        => $quiz_state['quizRecorded'],
+            'quizResults'         => $quiz_state['quizResults'], // v7.19.997: per-stage FQ array (null elsewhere)
+            // v7.19.263: drives the header "previous stage updated" dot.
+            'pullUpdateAvailable' => $this->pull_update_available($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id),
+            // v7.19.854: family-first leniency flag (Neil) — frontend keys the WC
+            // ceiling-vs-halt regime + re-check button on it. Family from the slug.
+            'familyFirst'         => self::family_first_assessment(
+                $user_id,
+                (strpos($text, 'lang') !== false || strpos($text, 'language') !== false) ? 'lang' : 'lit'
+            ),
+            // v7.20.879 (PEDAGOGY §32b): the latest Mark Scheme Assessment for this text — one of the "Where you are"
+            // box's criteria signals. Assessment documents only; null elsewhere.
+            'markSchemeSummary'   => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),
+            'topicProgress'   => $this->topic_progress_for_doc($user_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
+        ]);
+    }
+
+    /**
+     * v7.20.886: the student's recorded quiz state for a canvas load — ONE copy, read by the student loader
+     * (load_canvas) AND the tutor review loader (tutor_load_canvas). The review loader never returned it, so a
+     * tutor saw a recorded quiz without its result card or grade (Zayan 1109's Mark Scheme Assessment 2, 14 Oct).
+     *
+     * v7.19.321: surface the latest persisted Quiz Result so the frontend renders the in-doc Quiz Result card on
+     * (re)load. v7.19.323: also the Foundational quiz (_fq doc, reads its user_meta source). v7.19.955: FQ docs load
+     * under the Conceptual-Notes identity (suffix _cn, bank text, Topic 2) — the quiz result stays keyed by the QUIZ
+     * identity (course text + lesson topic), which the client passes as quiz=foundational + quiz_text/quiz_topic.
+     */
+    private function quiz_state_for($user_id, $board, $text, $topic_number, $attempt, $suffix, $request) {
+        $quiz_result   = null;
         $quiz_recorded = null;  // v7.20.636: MSA-only "a result exists" flag
-        $quiz_results = null; // v7.19.997: per-stage FQ results (one card per stage)
-        $quiz_hint    = sanitize_text_field($request->get_param('quiz') ?? '');
+        $quiz_results  = null;  // v7.19.997: per-stage FQ results (one card per stage)
+        $quiz_hint     = sanitize_text_field($request->get_param('quiz') ?? '');
         if (class_exists('SWML_Quiz_Engine')) {
             if ($suffix === '_msu' || $suffix === '_fq') {
                 $quiz_result = SWML_Quiz_Engine::instance()->get_persisted_result(
@@ -3316,30 +3347,11 @@ class SWML_REST_API {
                 }
             }
         }
-
-        return rest_ensure_response([
-            'success'             => true,
-            'doc'                 => $doc,
-            'attempt'             => $attempt,
-            'generalNotes'        => $general_notes,
-            // v7.19.992: scattered-siblings merge sidecar (poetry-CN family; [] otherwise).
-            'mergeFields'         => $merge_fields,
-            'quizResult'          => $quiz_result,
-            'quizRecorded'        => ($quiz_recorded === null) ? !empty($quiz_result) : $quiz_recorded,
-            'quizResults'         => $quiz_results, // v7.19.997: per-stage FQ array (null elsewhere)
-            // v7.19.263: drives the header "previous stage updated" dot.
-            'pullUpdateAvailable' => $this->pull_update_available($user_id, $board, $text, $topic_number, $suffix, $attempt, $cw_project_id),
-            // v7.19.854: family-first leniency flag (Neil) — frontend keys the WC
-            // ceiling-vs-halt regime + re-check button on it. Family from the slug.
-            'familyFirst'         => self::family_first_assessment(
-                $user_id,
-                (strpos($text, 'lang') !== false || strpos($text, 'language') !== false) ? 'lang' : 'lit'
-            ),
-            // v7.20.879 (PEDAGOGY §32b): the latest Mark Scheme Assessment for this text — one of the "Where you are"
-            // box's criteria signals. Assessment documents only; null elsewhere.
-            'markSchemeSummary'   => $this->mark_scheme_summary_for($user_id, $board, $text, $suffix),
-            'topicProgress'   => $this->topic_progress_for_doc($user_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
-        ]);
+        return [
+            'quizResult'   => $quiz_result,
+            'quizRecorded' => ($quiz_recorded === null) ? !empty($quiz_result) : $quiz_recorded,
+            'quizResults'  => $quiz_results,
+        ];
     }
 
     /**
@@ -3531,15 +3543,24 @@ class SWML_REST_API {
             // hasn't been independently saved yet still sees the student's seeded work, not a blank.
             if (in_array($suffix, self::phase2_stage_order(), true)
                 || in_array($suffix, ['_assessment', '_fbdiscuss'], true)) {
-                $seed_html = $this->seed_from_sibling_stage($student_id, $board, $text, $topic_number, $meta_key);
+                // v7.20.886: pass the STAGE. Since v7.19.855 the seeder walks the stage chain from $suffix, and this
+                // call still sent five arguments — so it always seeded nothing and the tutor's preview of a discuss
+                // lesson the student had not opened yet was blank (Neil, 14 Oct). Same arguments as load_canvas.
+                $seed_html = $this->seed_from_sibling_stage($student_id, $board, $text, $topic_number, $meta_key, $suffix, $attempt, $cw_project_id);
                 if (!empty($seed_html)) {
                     if (strpos($text, 'lang_paper') !== false) {
                         $seed_html = self::strip_stale_cw_outline_sections($seed_html);
                     }
-                    return rest_ensure_response(['success' => true, 'doc' => ['html' => $seed_html], 'attempt' => $attempt, 'is_seed' => true]);
+                    return rest_ensure_response(array_merge(
+                        ['success' => true, 'doc' => ['html' => $seed_html], 'attempt' => $attempt, 'is_seed' => true,
+                         'markSchemeSummary' => $this->mark_scheme_summary_for($student_id, $board, $text, $suffix),
+                         'topicProgress' => $this->topic_progress_for_doc($student_id, $board, $text, $topic_number, $suffix)],
+                        $this->quiz_state_for($student_id, $board, $text, $topic_number, $attempt, $suffix, $request)
+                    ));
                 }
             }
-            return rest_ensure_response(['success' => true, 'doc' => null, 'attempt' => $attempt]);
+            return rest_ensure_response(array_merge(['success' => true, 'doc' => null, 'attempt' => $attempt],
+                $this->quiz_state_for($student_id, $board, $text, $topic_number, $attempt, $suffix, $request)));   // v7.20.886
         }
         $doc = is_array($raw) ? $raw : self::decode_canvas_json($raw);
         // v7.20.792 (#842): a live-modelling viewer re-reads this every few seconds to follow the author. A revision of the
@@ -3575,11 +3596,12 @@ class SWML_REST_API {
                 $doc['html'] = self::strip_responses_for_planning($doc['html']);
             }
         }
-        return rest_ensure_response(['success' => true,
+        // v7.20.886: the student's quiz state too, from the same helper as load_canvas.
+        return rest_ensure_response(array_merge($this->quiz_state_for($student_id, $board, $text, $topic_number, $attempt, $suffix, $request), ['success' => true,
             // v7.20.879 (§32b): the tutor sees the student's "Where you are" box with the same evidence.
             'markSchemeSummary' => $this->mark_scheme_summary_for($student_id, $board, $text, $suffix),
             'topicProgress' => $this->topic_progress_for_doc($student_id, $board, $text, $topic_number, $suffix),   // v7.20.884 (§65)
-            'doc' => $doc, 'attempt' => $attempt, 'rev' => $rev]);
+            'doc' => $doc, 'attempt' => $attempt, 'rev' => $rev]));
     }
 
     /**

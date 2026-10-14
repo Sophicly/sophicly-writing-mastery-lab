@@ -267,6 +267,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/display-guard-harness.js || fail=1
 fi
 
+# v7.20.886: tutor review parity — the review loader seeds a not-yet-opened stage with the stage it needs (the discuss
+# preview was blank since v7.19.855), returns the student's quiz state from ONE helper, and review mode resumes no walk or
+# quiz from the tutor's own browser (Zayan 1109's MSA 2 showed the tutor's "Before we begin"). 5 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|class-rest-api\.php|review-parity-harness\.js'; then
+  node bin/review-parity-harness.js || fail=1
+fi
+
 # v7.20.779 (WML 338 A — PROVEN on staging): the exam-prep template upgrade wiped Conceptual Notes on any browser without
 # its local version stamp (new device / cleared storage) and saved the blank over the server copy — it counted student
 # work in RESPONSE sections only. The counter is extracted from the shipped file and run on the REAL blank notes document
