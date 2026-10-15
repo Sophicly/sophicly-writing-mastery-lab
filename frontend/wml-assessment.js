@@ -7346,19 +7346,22 @@
             fields.forEach(fid => {
                 // v7.20.762 (#805h-4): this reply's own approval already put the refined line in this box.
                 if (_planFanoutRefined.reply === aiReply && _planFanoutRefined.ids.has(fid)) { refined++; console.log('[WML FieldFill]', fid, 'refined by this reply\'s approval — raw answer not appended'); return; }
-                // v7.20.905: an accumulate element files its whole push cycle — minus any answer already in the box.
+                // v7.20.905: an accumulate element files its whole push cycle — minus any answer already in the box. Each
+                // answer is written by the ONE writer, so the second lands on its own line (the box's append style) —
+                // the student's words, verbatim, with no punctuation invented between them (staging walk: a space-join
+                // read "…sounds harsh the sh sound hisses…").
                 const earlier = _pushCycleEarlierFor(history, fid, aiReply);
-                let text = verbatim;
+                let parts = [verbatim];
                 if (earlier.length) {
                     const flat = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '');
                     const inBox = flat(_outlineBoxText(fid));
                     const fresh = earlier.filter(t => inBox.indexOf(flat(t)) === -1);
                     if (fresh.length) {
-                        text = fresh.concat([verbatim]).join(' ');
+                        parts = fresh.concat([verbatim]);
                         console.log('[WML FieldFill]', fid, 'push cycle — filing', fresh.length, 'earlier answer(s) with this one');
                     }
                 }
-                if (_writeOutlineRowField(fid, text)) wrote = true;
+                parts.forEach(t => { if (_writeOutlineRowField(fid, t)) wrote = true; });
             });
             // v7.20.209: SILENT-SKIP guard (task-scoping rule 4) — markers present but zero
             // writes is the "saved fine but nothing shows up" class; name the fields loudly.

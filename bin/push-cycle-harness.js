@@ -139,6 +139,8 @@ ok(!/applyFieldCommits\(res\.reply, msg\);/.test(JS0), 'no call site still drops
 const fc = JS0.slice(JS0.indexOf('    function applyFieldCommits('), JS0.indexOf('    function cwMarkdownToDocHtml('));
 ok(/const earlier = _pushCycleEarlierFor\(history, fid, aiReply\);/.test(fc), 'applyFieldCommits asks for the push cycle of each committed field');
 ok(/inBox\.indexOf\(flat\(t\)\) === -1/.test(fc), 'an answer already in the box is not filed again');
+ok(/parts\.forEach\(t => \{ if \(_writeOutlineRowField\(fid, t\)\) wrote = true; \}\);/.test(fc) && !/\.join\(' '\)/.test(fc),
+    'each answer goes through the ONE writer, so the next lands on its own line — never space-joined into a run-on (v7.20.906, staging walk)');
 const pf = JS0.slice(JS0.indexOf('    function _pushCycleEarlierFor('), JS0.indexOf('    function _outlineBoxText('));
 ok(/history\[at\]\.content\.slice\(-aiReply\.length\) === aiReply/.test(pf), 'the walk anchors on the reply being applied (a later code turn cannot shift it)');
 ok(/entry\.resolveBy !== fid\) return \[\]/.test(pf), 'only the element that files into THIS box contributes');
