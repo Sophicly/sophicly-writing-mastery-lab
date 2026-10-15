@@ -1785,7 +1785,7 @@
     }
     // Two-step chip flow: pick Level → pick skill focus → file element_type='goal' + hand off.
     function _appendPoetryGoalChips(bc, ctx) {
-        const bar = el('div', { className: 'swml-quick-actions' });
+        const bar = el('div', { className: 'swml-quick-actions swml-pgoal-bar' });   // v7.20.896: the class the resume re-offer checks
         const commit = function (level, skill) {
             bar.remove();
             const goalStr = level + ' — ' + skill;
@@ -2201,7 +2201,45 @@
         const r = _poetrySeqResumeFor(ctx.history);
         if (r) { _playSequence(r.seq, ctx, r.i, true); return true; }
         if (_poetryFeedbackAckPending(ctx.history)) { _appendFeedbackAck(ctx); return true; }
+        // v7.20.896: the two opening picks are code turns too (bin/poetry-opening-resume-harness.js).
+        const pick = _poetryOpeningReofferFor(ctx.history);
+        if (pick === 'pgreet') {
+            // The greeting is already saved, so this re-appends only the picker (its designed resume branch).
+            if (!ctx.chatMessages.querySelector('.swml-cmp-chip-bar')) _renderPoetryPlanQuestion('pgreet', ctx);
+            return true;
+        }
+        if (pick === 'pgoal') {
+            if (!ctx.chatMessages.querySelector('.swml-pgoal-bar')) _reofferPoetryGoalChips(ctx);
+            return true;
+        }
         return false;
+    }
+    // ⭐ v7.20.896 (WML 360 A; Neil 15 Oct: "make sure that's actually working" — Shayaan 1397, AQA Power and Conflict).
+    // MEASURED on staging in Shayaan's exact prod state (his saved chat = the greeting ending "Choose the poem to compare
+    // it with:", 10 Oct): a reload replayed that question with NO buttons — no poem picker, no "Browse all 14 poems" —
+    // because the picks' buttons live only on the screen (never saved) and this resume re-offered teaching sequences and
+    // feedback acks only. The level pick that follows the poem pick had the same gap. Returns the pick to re-offer, or
+    // null. Only once its question is already in history: on a fresh lesson the boot send renders the question itself.
+    function _poetryOpeningReofferFor(history) {
+        const st = _poetryPlanStageFor(history);
+        if (st !== 'pgreet' && st !== 'pgoal') return null;
+        const re = st === 'pgreet' ? /planning your comparison of/i : /what aqa level are you aiming for/i;
+        const asked = (history || []).some(function (m) { return m && m.role === 'assistant' && re.test(_planChainNorm(m.content || '')); });
+        return asked ? st : null;
+    }
+    // The level pick's buttons, re-attached to the replayed question (screen only — nothing is saved, so no turn can go
+    // stale). If that bubble cannot be found, the question is asked again on screen only, with its buttons.
+    function _reofferPoetryGoalChips(ctx) {
+        const bubbles = Array.from((ctx.chatMessages && ctx.chatMessages.children) || []);
+        for (let i = bubbles.length - 1; i >= 0; i--) {
+            if (/what aqa level are you aiming for/i.test(bubbles[i].textContent || '')) {
+                _appendPoetryGoalChips(bubbles[i].querySelector('.swml-bubble-content') || bubbles[i], ctx);
+                return;
+            }
+        }
+        ctx.addChatMessage('<p>What <strong>AQA Level</strong> are you aiming for?</p>', 'ai', 'What AQA Level are you aiming for?', { suppressActions: true });
+        const b = ctx.chatMessages.lastElementChild;
+        if (b) _appendPoetryGoalChips(b.querySelector('.swml-bubble-content') || b, ctx);
     }
 
     // v7.20.56: ask-then-reveal, beat 2 (the REVEAL) — prepended to whatever chain
