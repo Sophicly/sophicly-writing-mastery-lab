@@ -54844,6 +54844,8 @@
             { category: 'Common Issues', tier: 'default', icon: SVG_QC_ISSUE, items: [
                 { label: 'Redo', text: 'This section needs to be rewritten — it doesn\'t meet the required standard.', link: _qcTk('fix-diagnose', 'Fix My Writing') },
                 { label: 'SPaG', text: 'Spelling, punctuation, and grammar errors here — please proofread carefully.', link: _qcTk('final-read', 'The Final Read') },
+                // v7.20.899 (Actions round ac, Neil 15 Oct: "All 15") — his own comments, the approved words exactly.
+                { label: 'Full sentences', text: 'Write in full sentences, with a capital letter at the start and a full stop at the end.', link: _qcTk('final-read', 'The Final Read') },
                 { label: 'Plan your essay', text: 'Plan your essay before writing — a clear plan leads to a stronger structure.', link: _qcTk('essay') },
                 { label: 'Outline', text: 'Create a proper outline for this section before drafting.', link: _qcTk('ttecea', 'TTECEA + C') },
                 // v7.20.890 (Actions round ac, Neil picked "P4 Follow TTECEA" — his own comment, 3 times on prod). Words as approved.
@@ -54852,6 +54854,7 @@
                 { label: 'Reassess', text: 'Reassess this section — the analysis doesn\'t align with the mark scheme criteria.', link: _qcTk('examiners', 'Examiners\' Requirements') },
                 { label: 'More detail', text: 'More detail needed — develop this point further.', link: _qcTk('whathowwhy', 'What · How · Why · So What · What Next') },
                 { label: 'Be specific', text: 'Be more specific — avoid vague or general statements.', link: _qcTk('fix-what-how', 'What & How: Black-Hole Words') },
+                { label: 'Richer quote', text: 'Choose a quotation with more in it, so you can explore the writer’s ideas in depth.', link: _qcTk('fix-evidence') },   // v7.20.899
                 // v7.20.797 (#847, Neil: "too descriptive for a topic sentence · not conceptual enough · not perceptive enough").
                 // 'Too descriptive' moved up from the TTECEA tier (same words). The other two follow the sections they link to:
                 // Conceptual Thinking ("A surface reading reports what happens") and the Interpretation Ladder (rung 3 "is perceptive").
@@ -54861,7 +54864,14 @@
                 { label: 'Five paragraphs', text: 'Remember the five paragraph essay structure — introduction, three body paragraphs, conclusion.', link: _qcTk('essay') },
                 { label: 'Discourse markers', text: 'Use discourse markers and transitional phrases to connect your ideas and improve flow.', link: _qcTk('sentence-transitions') },
             ]},
+            // v7.20.899 (round ac, "All 15"): two of Neil's notes that point at no one section — Common Issues requires a
+            // deep link on every chip (#849), so they sit in their own small group, shown by default.
+            { category: 'Quick notes', tier: 'default', icon: SVG_QC_PEN, items: [
+                { label: 'Incomplete', text: 'This isn’t complete yet.' },
+                { label: 'Unclear', text: 'This isn’t clear yet. Say exactly what you mean, so the reader understands it first time.' },
+            ]},
             { category: 'Praise', tier: 'default', icon: SVG_QC_PRAISE, items: [
+                { label: 'Strong inference', text: 'Strong inference.' },   // v7.20.899
                 { label: 'Good detail', text: 'Good detail here — well-developed point.' },
                 { label: 'Perceptive', text: 'Perceptive response — this shows real insight.' },
                 { label: 'Excellent analysis', text: 'Excellent close analysis — strong engagement with language.' },
@@ -54884,6 +54894,9 @@
                 { label: 'Needs context', text: 'Context needed — connect this point to the historical, social, or literary context.', link: _qcTk('fix-context') },
             ]},
             { category: 'Creative Writing', tier: 'expanded', icon: SVG_QC_STAR, items: [
+                // v7.20.899 (round ac, "All 15"): Neil's two story-project comments, the approved words.
+                { label: 'Meet the beat', text: 'Follow the criteria in this beat. Your idea has to meet them.' },
+                { label: 'Show it in an action', text: 'Show this through an action that represents the change, instead of telling us about it.', link: _qcTech("Show, Don't Tell") },
                 { label: 'Dynamic verbs & nouns', text: 'Use dynamic verbs and concrete nouns for vivid imagery.' },
                 { label: 'Replace with metaphor', text: 'Consider replacing this with a metaphor for stronger impact.', link: _qcTech('Metaphor') },
                 { label: 'Replace with simile', text: 'Consider using a simile here to create a vivid comparison.', link: _qcTech('Simile') },

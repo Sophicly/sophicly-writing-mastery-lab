@@ -50,7 +50,10 @@ const qBlock = JS.slice(qStart, JS.indexOf('\n        ];\n', qStart));
 // v7.20.798 (#849): _qcTk(arg) takes its label from ELEMENT_TOOLKIT_MAP; _qcTk(arg, 'Label') passes the section's own title.
 const tkCalls = [...qBlock.matchAll(/_qcTk\('([^']+)'(?:, '((?:[^'\\]|\\.)*)')?\)/g)].map(m => ({ arg: m[1], label: m[2] ? m[2].replace(/\\'/g, "'") : null }));
 const tkArgs = tkCalls.map(c => c.arg);
-const techs = [...qBlock.matchAll(/_qcTech\('([^']+)'\)/g)].map(m => m[1]);
+// v7.20.899: both quote styles — "Show, Don't Tell" carries an apostrophe, so it is written double-quoted; the old
+// single-quote-only parse skipped such a call silently. Every _qcTech( call must parse (checked below).
+const techs = [...qBlock.matchAll(/_qcTech\((?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\)/g)].map(m => (m[1] !== undefined ? m[1] : m[2]).replace(/\\(.)/g, '$1'));
+const techCalls = (qBlock.match(/_qcTech\(/g) || []).length;
 const mapStart = CORE.indexOf('    const ELEMENT_TOOLKIT_MAP = {');
 const analytical = CORE.slice(CORE.indexOf('analytical: [', mapStart), CORE.indexOf('\n        ],', CORE.indexOf('analytical: [', mapStart)));
 const mapArgs = new Set([...analytical.matchAll(/arg: '([^']+)'/g)].map(m => m[1]));
@@ -70,7 +73,9 @@ else {
     ok(wrong.length === 0, 'every own-label matches the section title in the built Toolkit' + (wrong.length ? ' — WRONG: ' + wrong.map(c => c.arg + ' "' + c.label + '" vs "' + titles.get(c.arg) + '"').join('; ') : ''));
 }
 // #849, Neil: "do we have a deep link for every single one of those?" — every Common Issues chip links.
-const common = qBlock.slice(qBlock.indexOf("category: 'Common Issues'"), qBlock.indexOf("category: 'Praise'"));
+// v7.20.899: Common Issues ends at the NEXT category (a 'Quick notes' group now sits before Praise).
+const _ciStart = qBlock.indexOf("category: 'Common Issues'");
+const common = qBlock.slice(_ciStart, qBlock.indexOf('category:', _ciStart + 10));
 const commonItems = [...common.matchAll(/\{ label: '((?:[^'\\]|\\.)*)'[^\n]*/g)];
 const commonNoLink = commonItems.filter(m => !/link: _qc(Tk|Tech)\(/.test(m[0])).map(m => m[1]);
 ok(commonItems.length >= 13 && commonNoLink.length === 0, 'every Common Issues chip (' + commonItems.length + ') has a deep link' + (commonNoLink.length ? ' — NO LINK: ' + commonNoLink.join(', ') : ''));
@@ -85,6 +90,23 @@ ok(/label: 'Too descriptive'[^\n]*_qcTk\('fix-topic-sentence'\)/.test(qBlock) &&
 ok((JS.match(/\{ label: 'Follow TTECEA', text: /g) || []).length === 1
     && /label: 'Follow TTECEA', text: 'This paragraph doesn’t follow the TTECEA structure yet\.', link: _qcTk\('ttecea', 'TTECEA \+ C'\)/.test(common),
     '"Follow TTECEA" is a Common Issues chip, in the approved words, linking to TTECEA + C');
+ok(techCalls === techs.length, 'every _qcTech( link parses (' + techs.length + '/' + techCalls + ') — none skipped silently');
+// v7.20.899 (Actions round ac, Neil 15 Oct "All 15"): the seven passage chips, his approved words exactly, in the right group.
+const _grp = (cat) => { const a = qBlock.indexOf("category: '" + cat + "'"); return a < 0 ? '' : qBlock.slice(a, qBlock.indexOf('category:', a + 10) > 0 ? qBlock.indexOf('category:', a + 10) : undefined); };
+const NEW_CHIPS = [
+    ['Common Issues', "{ label: 'Full sentences', text: 'Write in full sentences, with a capital letter at the start and a full stop at the end.', link: _qcTk('final-read', 'The Final Read') }"],
+    ['Common Issues', "{ label: 'Richer quote', text: 'Choose a quotation with more in it, so you can explore the writer’s ideas in depth.', link: _qcTk('fix-evidence') }"],
+    ['Quick notes', "{ label: 'Incomplete', text: 'This isn’t complete yet.' }"],
+    ['Quick notes', "{ label: 'Unclear', text: 'This isn’t clear yet. Say exactly what you mean, so the reader understands it first time.' }"],
+    ['Praise', "{ label: 'Strong inference', text: 'Strong inference.' }"],
+    ['Creative Writing', "{ label: 'Meet the beat', text: 'Follow the criteria in this beat. Your idea has to meet them.' }"],
+    ['Creative Writing', "{ label: 'Show it in an action', text: 'Show this through an action that represents the change, instead of telling us about it.', link: _qcTech(\"Show, Don't Tell\") }"],
+];
+for (const [cat, chip] of NEW_CHIPS) {
+    const lab = /label: '([^']+)'/.exec(chip)[1];
+    ok(_grp(cat).indexOf(chip) !== -1 && (JS.match(new RegExp("\\{ label: '" + lab + "', text: ", 'g')) || []).length === 1, '"' + lab + '" is a ' + cat + ' chip, in the approved words, once');
+}
+ok(/\{ category: 'Quick notes', tier: 'default'/.test(qBlock) && qBlock.indexOf("category: 'Quick notes'") < qBlock.indexOf("category: 'Praise'"), 'Quick notes is shown by default, before Praise');
 const praise = qBlock.slice(qBlock.indexOf("category: 'Praise'"), qBlock.indexOf("category: 'TTECEA Breakdown'"));
 ok(!/link:/.test(praise), 'praise carries no link (nothing to fix)');
 
