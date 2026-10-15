@@ -318,6 +318,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/tutorcomment-chips-harness.js || fail=1
 fi
 
+# v7.20.904 (Actions round ah): PLANNING ONLY may run on a cheaper model via wp option swml_planning_model (off by
+# default; can be staged to named users); marking never moves; the universal voice rules forbid "your mum" about people
+# in the text. Runs the real route function. 3 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'class-protocol-router\.php|planning-model-harness\.php'; then
+  /usr/bin/env php bin/planning-model-harness.php || fail=1
+fi
+
 # v7.20.902 (Actions round ae card 6, "they have to finish all the planning first"): a lesson's Document Progress counts
 # only the sections that lesson AUTHORS (PEDAGOGY §6) — planning = plan + notes, never the Q1 answers measured on prod.
 # Runs the real _computeAssessmentProgress on the measured section lists. 4 mutations.

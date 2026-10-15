@@ -616,6 +616,10 @@ class SWML_Protocol_Router {
         // fires for both streaming (http_api_curl runs AFTER http_request_args) and
         // non-streaming chat. Scoped to Anthropic's /v1/messages endpoint only.
         add_filter('http_request_args', [$this, 'extend_anthropic_cache_ttl'], 10, 2);
+        // v7.20.904 (Neil, Actions round ah: "Yes: fix the wording, check on Shakespeare, then move planning to Haiku"):
+        // PLANNING ONLY may run on a cheaper model, switched by the wp option swml_planning_model — no deploy to turn it
+        // on or off. Marking never moves (ruled 15 Oct: "Not good enough: keep Sonnet"). See route_planning_model().
+        add_filter('http_request_args', [$this, 'route_planning_model'], 20, 2);
 
         // v7.20.622 (COST): record what Anthropic actually billed. AI Engine never reads the
         // cache token fields, so without this the ~68k-token cached prefix we send every turn
@@ -624,6 +628,54 @@ class SWML_Protocol_Router {
         // v7.20.684 (Neil switched Sophia to Sonnet 5.5, 4 Oct): a declined reply is re-sent once on
         // Sonnet 5 before anything else sees it. Runs BEFORE the usage recorder. See retry_anthropic_refusal().
         add_filter('http_response', [$this, 'retry_anthropic_refusal'], 5, 3);
+    }
+
+    /**
+     * v7.20.904 — which model a request should use, decided ONCE (pure; bin/planning-model-harness.php runs it).
+     * $opt = the swml_planning_model option: '' / missing = off; a model id string = every planning request;
+     * or ['model' => id, 'effort' => 'high', 'users' => [ids]] — with 'users' it applies to those users only (a staged
+     * check before switching everyone). Only task 'planning' ever moves — marking stays on the bot's model (ruled).
+     * Returns ['model' => id, 'effort' => level] or null (leave the request alone).
+     */
+    // @PLANNING-MODEL-PURE-BEGIN
+    public static function planning_model_route($task, $opt, $uid) {
+        if ((string) $task !== 'planning') return null;
+        if (is_string($opt)) $opt = ['model' => $opt];
+        if (!is_array($opt)) return null;
+        $model = trim((string) ($opt['model'] ?? ''));
+        if ($model === '' || strpos($model, 'claude-') !== 0) return null;
+        if (isset($opt['users']) && is_array($opt['users']) && $opt['users']
+            && !in_array((int) $uid, array_map('intval', $opt['users']), true)) return null;
+        $effort = (string) ($opt['effort'] ?? 'high');
+        if (!in_array($effort, ['low', 'medium', 'high', 'xhigh', 'max'], true)) $effort = 'high';
+        return ['model' => $model, 'effort' => $effort];
+    }
+    // @PLANNING-MODEL-PURE-END
+
+    public function route_planning_model($args, $url) {
+        if (!$this->is_wml_outbound) return $args;
+        if (!is_string($url) || strpos($url, 'api.anthropic.com') === false || strpos($url, '/v1/messages') === false) return $args;
+        if (empty($args['body']) || !is_string($args['body'])) return $args;
+        global $swml_request_context;
+        $route = self::planning_model_route($swml_request_context['task'] ?? '', get_option('swml_planning_model', ''), get_current_user_id());
+        if (!$route) return $args;
+        $payload = json_decode($args['body'], true);
+        if (!is_array($payload) || strpos((string) ($payload['model'] ?? ''), 'claude-') !== 0) return $args;
+        $payload['model'] = $route['model'];
+        // Haiku 5.5 rejects non-default sampling parameters (Anthropic error table) — never send them on a routed request.
+        unset($payload['temperature'], $payload['top_p'], $payload['top_k']);
+        $oc = (isset($payload['output_config']) && is_array($payload['output_config'])) ? $payload['output_config'] : [];
+        $oc['effort'] = $route['effort'];
+        $payload['output_config'] = $oc;
+        $body = wp_json_encode($payload);
+        if (!is_string($body) || $body === '') return $args;
+        $args['body'] = $body;
+        if (isset($args['headers']) && is_array($args['headers'])) {
+            foreach (array_keys($args['headers']) as $hk) {
+                if (strcasecmp($hk, 'content-length') === 0) $args['headers'][$hk] = strlen($body);
+            }
+        }
+        return $args;
     }
 
     /**
@@ -8708,6 +8760,11 @@ TEMPLATE;
         $block .= "- \"patriarchy\" / \"patriarchal\"\n";
         $block .= "Reframe using: \"honour culture\" / \"dynastic marriage\" / \"paternal authority\" / \"Elizabethan social order\" / \"family honour\" / \"social hierarchy\". The critique of arranged marriage, family honour, and dynastic obligation stays — only the loaded vocabulary changes. Hard rule across ALL Sophicly content.\n";
         $block .= "Also avoid \"shows\" as an analytical verb — substitute precise verbs (illustrates / portrays / demonstrates / emphasises / highlights / reveals / exposes / presents / conveys / enacts / signals / mirrors).\n";
+
+        // v7.20.904 (Neil, Actions round ah — measured on the 15 Oct planning test: "shrinks your mum to almost
+        // nothing" ×3, about Alex Cold's mother in City of the Beasts). A person in the text is never the student's.
+        $block .= "\n### NAME THE PEOPLE IN THE TEXT — NEVER \"YOUR\"\n";
+        $block .= "When you talk about anyone in the text being studied (a character, a speaker, a narrator, their family), name them or tie them to their owner: \"Alex's mother\", \"Lady Macbeth\", \"the speaker's father\". NEVER write \"your mum\", \"your father\", \"your family\" about them — the student's own family is not in the text. \"Your\" is only for the student's own work: your plan, your quotation, your paragraph, your idea.\n";
 
         // v7.19.435 (CACHE): Authoritative word-count surface REMOVED from here.
         // It used to inject "Student's response: **{N} words**" into this block,
