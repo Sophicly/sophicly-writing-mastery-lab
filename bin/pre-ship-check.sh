@@ -281,6 +281,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/target-focus-harness.js || fail=1
 fi
 
+# v7.20.895 (WML 360 A, measured): a marked assessment's grade is committed when its marked boxes cover the paper's own
+# total — a two-question paper (Edexcel IGCSE / Cambridge IGCSE Language Paper 2) never committed under "5 feedback
+# sections". The measured shapes executed, the older documents still commit, the wiring read. 4 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|grade-commit-harness\.js'; then
+  node bin/grade-commit-harness.js || fail=1
+fi
+
 # v7.20.882 (FIXLIST p&c-1397-lock-device): the display-lock guard — a student change to the writing of an assessment /
 # discuss lesson is refused at the transaction, by any route, and recorded; code, marks and migrations pass. 4 mutations.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \

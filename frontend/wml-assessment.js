@@ -10894,6 +10894,31 @@
         return line;
     }
     // @BREAKDOWN-PARTS-PURE-END
+    // @GRADE-COMMIT-PURE-BEGIN
+    // ⭐ v7.20.895 (WML 360 A, measured on staging 15 Oct) — WHEN a marked assessment's grade is committed: the phase record,
+    // the dashboard row and the grade every report reads. Driven by bin/grade-commit-harness.js.
+    // Before .895 the "whole paper is marked" half of this test was `_fbCount >= 5` — a Literature essay's Introduction +
+    // 3 Body + Conclusion — and it counted the two feedback sections that carry no mark (Overall Feedback, Analytics).
+    // Edexcel IGCSE Language A Paper 2 has two marked questions (Q1 + Q2), so its document holds FOUR feedback sections: a
+    // fully marked paper (test student 1938, 33/60) never committed a grade, and nothing said so. Cambridge IGCSE Paper 2
+    // has the same two-question shape. No real student had reached either yet (prod sweep: every assessment document
+    // there has five or more marked boxes).
+    // The paper's OWN test is now the primary one: the marked boxes cover the total the document's Score Summary was built
+    // for ("Grade Boundaries (/60)"). The five-section rule stays as a second way through, so no document that commits
+    // today stops committing — the same sweep found older documents whose box total disagrees with that heading.
+    function gradeCommitReady(d) {
+        if (!d || !d.isEssay) return { ready: false, why: 'not-assessment' };
+        if (d.reviewMode) return { ready: false, why: 'review' };   // a viewer's commit would write under THEIR account
+        if (!d.attemptSettled) return { ready: false, why: 'attempt-unsettled' };
+        if (d.committed || d.committing) return { ready: false, why: 'done' };
+        if (!(d.marked > 0) || !(d.boxMax > 0)) return { ready: false, why: 'no-marks' };
+        if (!d.allSet) return { ready: false, why: 'part-marked' };
+        if (!d.markedHere) return { ready: false, why: 'not-marked-in-this-chat' };
+        const coversPaper = d.paperMax > 0 && d.boxMax >= d.paperMax;
+        if (coversPaper || d.fbCount >= 5) return { ready: true, why: coversPaper ? 'covers-paper' : 'five-sections' };
+        return { ready: false, why: 'short-of-paper', held: true };   // every box is marked, yet they fall short of the paper
+    }
+    // @GRADE-COMMIT-PURE-END
 
     function _gapFids(key) { return { gap: 'calib-gap-' + key, why: 'calib-gap-' + key + '-why' }; }
     // ⭐ v7.20.682 (#702 — Neil, 3 Oct: "what we had before was actual versus predicted. But… the students
@@ -61201,11 +61226,12 @@
         function recalculateScoreSummary() {
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor) return;
-            let totalMarks = 0, maxTotal = 0, allSet = true;
+            let totalMarks = 0, maxTotal = 0, allSet = true, markedBoxes = 0;
             editor.querySelectorAll('[data-section-type="feedback"]').forEach(section => {
                 const label = section.getAttribute('data-section-label') || '';
                 const match = label.match(/\((\S+)\s*\/\s*(\d+)\)$/);
                 if (!match) return;
+                markedBoxes++;   // v7.20.895: a mark-bearing box (gradeCommitReady)
                 maxTotal += parseInt(match[2]);
                 if (match[1] === '—') {
                     allSet = false; // Not yet set
@@ -61214,6 +61240,7 @@
                 }
             });
             if (maxTotal === 0) return;
+            const boxMax = maxTotal;   // v7.20.895: the boxes' own total, before any audited override below
             // v7.19.816: ONE source of truth (PROTOCOL-STANDARD A6) + Neil's SETTLED
             // semantics: the WC penalty is a CEILING, never a deduction. Under-length
             // essays already lose marks organically — the ceiling only bites when the
@@ -61351,10 +61378,10 @@
             // v7.19.756: programmatic grade commit (see _autoCommitAssessment).
             // Fire when EVERY section is marked (allSet) — the deterministic doc
             // grade is then final. Embedded-safe, no student action; runs on load
-            // too → heals a completed-but-uncommitted attempt. The fbCount >= 5
-            // gate (intro + 3 body + conclusion) prevents a premature commit on a
-            // part-marked essay. (Language papers differ in section count — verify
-            // that gate when propagating this beyond Literature.)
+            // too → heals a completed-but-uncommitted attempt.
+            // v7.20.895: the decision is gradeCommitReady (module scope, bin/grade-commit-harness.js). The old
+            // inline "fbCount >= 5" whole-paper test was Literature's shape and never fired for a two-question
+            // paper (Edexcel IGCSE / Cambridge IGCSE Language Paper 2) — the grade was simply never recorded.
             try {
                 const _isEssay = (state.task === 'assessment' || state.task === 'redraft_assessment');
                 const _fbCount = editor.querySelectorAll('[data-section-type="feedback"]').length;
@@ -61377,9 +61404,26 @@
                     const c = String(m.content || '');
                     return c.indexOf('@FB_BEGIN') !== -1 || /Total[^\n]{0,30}\d+(?:\.\d+)?\s*\/\s*\d+/.test(c);
                 });
-                if (_isEssay && !state.reviewMode && state._attemptSettled && allSet && _fbCount >= 5 && maxTotal > 0
-                    && _markedHere && !state._phaseCommitted && !state._phaseCommitting) {
+                // The paper's own total, as the document's Score Summary was built for it ("Grade Boundaries (/60)").
+                const _pm = /Grade Boundaries \(\/(\d+)\)/.exec(scoreSection.textContent || '');
+                const _paperMax = _pm ? parseInt(_pm[1], 10) : 0;
+                const _gc = gradeCommitReady({
+                    isEssay: _isEssay, reviewMode: !!state.reviewMode, attemptSettled: !!state._attemptSettled,
+                    committed: !!state._phaseCommitted, committing: !!state._phaseCommitting,
+                    marked: markedBoxes, boxMax: boxMax, paperMax: _paperMax, allSet: allSet,
+                    markedHere: _markedHere, fbCount: _fbCount,
+                });
+                if (_gc.ready && maxTotal > 0) {
+                    // Fail loud on a document whose boxes disagree with its own paper total — it still commits (as it
+                    // always has), but the mismatch is a template defect worth seeing.
+                    if (_paperMax > 0 && boxMax !== _paperMax && !state._gradeCommitDriftWarned) {
+                        state._gradeCommitDriftWarned = true;
+                        console.warn('WML grade commit: the marked boxes add up to ' + boxMax + ' but this paper is out of ' + _paperMax + ' (' + _gc.why + ') — committing; check the template for ' + (state.text || '?'));
+                    }
                     _autoCommitAssessment(totalMarks, maxTotal, (grade === 'U' ? '1' : String(grade)));
+                } else if (_gc.held && !state._gradeCommitHeldWarned) {
+                    state._gradeCommitHeldWarned = true;
+                    console.warn('WML grade commit HELD — every box is marked, but they add up to ' + boxMax + ' of this paper\'s ' + (_paperMax || '?') + ' and fewer than five feedback sections exist (' + _fbCount + '). No grade is recorded until the paper is complete.');
                 }
             } catch (_) {}
         }
