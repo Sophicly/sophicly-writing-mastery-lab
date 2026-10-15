@@ -97,7 +97,7 @@ fs.rmSync(tmp, { recursive: true, force: true });
 const ja = JS.indexOf('// @CODEX-SCOPE-PURE-BEGIN'), jb = JS.indexOf('// @CODEX-SCOPE-PURE-END');
 ok(ja > 0 && jb > ja, 'JS: the scope functions sit between their sentinels');
 // eslint-disable-next-line no-new-func
-const F = new Function(JS.slice(ja, jb) + '\nreturn { codexScopeModel, codexFieldState, codexFieldLockedIn, codexScopeCss, codexFirstOwned, codexClipField, codexFollowAllowed, codexRefusalText, codexSectionBar, codexLessonHref, codexLessonProgress };')();
+const F = new Function(JS.slice(ja, jb) + '\nreturn { codexScopeModel, codexFieldState, codexFieldLockedIn, codexScopeCss, codexFirstOwned, codexClipField, codexFollowAllowed, codexRefusalText, codexSectionBar, codexLessonHref, codexLessonProgress, codexFirstUnanswered };')();
 // The JS side is fed the shape the server sends; built here from the contract directly.
 const scopeFor = (i) => {
     const own = CONTRACT.lessons[i].fields;
@@ -231,6 +231,9 @@ ok(/'mastery_codex': 21,/.test(JS), 'template: Codex document version bumped to 
     p = F.codexLessonProgress(secs5, m5, new Set(own5), labels5);
     ok(p && p.done === p.total && p.pct === 100 && !p.incomplete.length, 'Codex lesson: its own questions answered, the rest empty → 100%');
     if (own5.length > 1) { p = F.codexLessonProgress(secs5, m5, new Set(own5.slice(1)), labels5); ok(p && p.pct < 100 && p.incomplete[0] === labels5[i5], 'Codex lesson: one own question empty → below 100%, named by its section'); }
+    ok(F.codexFirstUnanswered(secs5, m5, allOther) === own5[0], 'Codex pop-up: "Take me there" → this lesson\'s FIRST empty question, not another lesson\'s');
+    if (own5.length > 1) ok(F.codexFirstUnanswered(secs5, m5, new Set([own5[0]])) === own5[1], 'Codex pop-up: the first answered → goes to the second');
+    ok(F.codexFirstUnanswered(secs5, m5, new Set(own5)) === null && F.codexFirstUnanswered(secs5, null, new Set()) === null, 'Codex pop-up: all answered / no scope → nowhere to go (null)');
     ok(F.codexLessonProgress(secs5, null, new Set(), labels5) === null, 'Codex lesson: no scope (staff / review / no map row) → null → the gate reads "unknown" (fail-open)');
     ok(/const fn = task === 'mastery_codex' \? _computeCodexLessonProgress : _progressComputeFor\(task\);/.test(JS), 'Codex lesson: the gate reading uses the lesson\'s own questions');
     ok(/const cx = snap\.task === 'mastery_codex' \? _computeCodexLessonProgress\(\) : null;/.test(JS), 'Codex lesson: the saved verdict (swml_docprog_*) records the lesson\'s own questions');

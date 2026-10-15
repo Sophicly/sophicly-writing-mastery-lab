@@ -79,9 +79,21 @@ ok(family('cw_step_11') === 'other:cw_step_11' && family('cw_step_29') === 'othe
     'unmeasured CW tasks (step 11+, trials, final assessment) are their own watch-only family');
 ok(decide({ verdict: 'incomplete', family: family('cw_trial_1'), exempt: '' }, 'enforce', ['assessment', 'cw', 'diagnostic']).block === false,
     'an unfinished unmeasured CW task is never blocked, even with cw switched on');
+ok(family('mastery_codex') === 'codex', 'v7.20.909: the Mastery Codex is the codex family');
+{
+    const PROD = ['assessment', 'diagnostic', 'cw'];
+    let c = decide({ verdict: 'incomplete', family: 'codex', exempt: '' }, 'enforce', PROD);
+    ok(c.block === false && c.record === 'would_block', 'codex: prod option without codex → an empty lesson is only RECORDED (would-block), nobody stopped', JSON.stringify(c));
+    c = decide({ verdict: 'incomplete', family: 'codex', exempt: '' }, 'enforce', PROD.concat('codex'));
+    ok(c.block === true, 'codex: once Neil adds codex to the option → an unanswered lesson is stopped', JSON.stringify(c));
+    c = decide({ verdict: 'complete', family: 'codex', exempt: '' }, 'enforce', PROD.concat('codex'));
+    ok(c.block === false, 'codex: a lesson with its own questions answered completes', JSON.stringify(c));
+    c = decide({ verdict: 'unknown', family: 'codex', exempt: '' }, 'enforce', PROD.concat('codex'));
+    ok(c.block === false, 'codex: no scope / no map row / nothing trackable → unknown → completes (fail-open)', JSON.stringify(c));
+}
 ok(family('planning') === 'other:planning' && family('foundational_quiz') === 'other:foundational_quiz', 'everything else is its own watch-only family');
-ok(JSON.stringify(G.MC_GATE_ENFORCE_FAMILIES.slice().sort()) === JSON.stringify(['assessment', 'cw', 'diagnostic']),
-    'only cw · diagnostic · assessment are eligible to be enforced (the measured families)');
+ok(JSON.stringify(G.MC_GATE_ENFORCE_FAMILIES.slice().sort()) === JSON.stringify(['assessment', 'codex', 'cw', 'diagnostic']),
+    'only cw · diagnostic · assessment · codex (v7.20.909) are eligible to be enforced (the measured families)');
 
 console.log('\n2. the student who did NOT finish is stopped (enforce)');
 const annaya = { verdict: 'incomplete', family: 'assessment', exempt: '', sessionFinished: false, unmarked: ['Feedback: Q3', 'Feedback: Q4', 'Feedback: Q5'] };
@@ -231,7 +243,15 @@ ok(/\$this->canvas_meta_key\(\$board, \$text, \$topic, '', 1, ''\)/.test(rest), 
 ok(/const verdict = mcGateDecide\(facts, 'enforce'\);\s*return \{ docProgress: \{[\s\S]{0,500}block: !!verdict\.block/.test(js), 'the saved verdict comes from the same mcGateDecide the click uses');
 
 console.log('\n8. the exceptions and the pop-up’s dependencies');
-ok(/mastery_codex:\s*\{[\s\S]{0,400}markCompleteGate: false/.test(core), 'Grade 9 Core Skills (mastery_codex) opts out by capability flag');
+ok(!/mastery_codex:\s*\{[\s\S]{0,700}markCompleteGate: false/.test(core), 'v7.20.909: the Mastery Codex is no longer exempt — each lesson reads its own questions (family codex)');
+ok(/isCodex\s*\?\s*'Answer every question for this lesson/.test(js) && /if \(isCodex\) \{ _codexGoToFirstUnanswered\(\); return; \}/.test(js),
+    'v7.20.909: the Codex pop-up names THIS lesson\'s questions and "Take me there" goes to its first empty one (never a section-label jump)');
+{
+    const php9 = fs.readFileSync(path.join(__dirname, '..', 'sophicly-writing-mastery-lab.php'), 'utf8');
+    const pm = php9.match(/\$measured = \[([^\]]*)\];/); const jm = js.match(/const MC_GATE_ENFORCE_FAMILIES = \[([^\]]*)\];/);
+    const norm = x => x ? x[1].replace(/\s/g, '').split(',').sort().join(',') : '?';
+    ok(norm(pm) === norm(jm), 'the server\'s measured families equal the page\'s MC_GATE_ENFORCE_FAMILIES (' + norm(jm) + ')');
+}
 ok(/family === 'diagnostic' && _isFirstDiagnostic\(\) && \(_canvasAttempt\(\) \|\| 1\) <= 1/.test(js), 'the first-diagnostic exemption is attempt 1 of the first diagnostic');
 ok(/if \(state\.mcFirstEverDiagnostic === false\) return false;/.test(js), '_isFirstDiagnostic honours the server’s first-EVER answer (PEDAGOGY §1)');
 ok(/\.swml-review-modal-overlay \{[\s\S]{0,400}z-index: 999999;/.test(css), 'the shared modal overlay sits on WML’s documented 999999 tier');

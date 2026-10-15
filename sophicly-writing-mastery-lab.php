@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.908
+ * Version: 7.20.909
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.908');
+define('SWML_VERSION', '7.20.909');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -264,11 +264,12 @@ class Sophicly_Writing_Mastery_Lab {
     /**
      * v7.20.714 (Neil, 2026-10-05, Actions card 14: "Assessments now, writing lessons after item 13") — the document
      * families the site ENFORCES today. wp option swml_mc_gate_families (comma list or array); it can only NARROW the
-     * measured set (cw · diagnostic · assessment, wml-assessment.js MC_GATE_ENFORCE_FAMILIES). Unset = all three.
+     * measured set (cw · diagnostic · assessment · codex, wml-assessment.js MC_GATE_ENFORCE_FAMILIES). Unset = all of them.
      * Switch with WP-CLI, no deploy: `wp option update swml_mc_gate_families assessment`.
+     * v7.20.909: 'codex' (Core Skills Mastery Codex, per lesson) joins the measured set; prod enforces it only once named.
      */
     public static function mc_gate_families() {
-        $measured = ['cw', 'diagnostic', 'assessment'];
+        $measured = ['cw', 'diagnostic', 'assessment', 'codex'];
         $o = get_option('swml_mc_gate_families', '');
         $list = is_array($o) ? $o : array_filter(array_map('trim', explode(',', (string) $o)));
         if (!$list) return $measured;

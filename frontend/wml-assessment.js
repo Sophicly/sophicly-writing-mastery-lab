@@ -19846,7 +19846,12 @@
     // ═════════════════════════════════════════════════════════════════════════════════════════
     /* @MC-GATE-PURE-START — extracted and unit-tested by bin/mc-gate-harness.js.
        PURE: no DOM, no globals beyond the arguments. */
-    const MC_GATE_ENFORCE_FAMILIES = ['cw', 'diagnostic', 'assessment'];
+    // v7.20.909 (Dashboard 129 for Neil — Gelila 1414 ticked six Core Skills Codex lessons before writing a word): 'codex'
+    // is eligible. MEASURED on prod 15 Oct: Tyler 1408's two answered Codex lessons read 5/5 and 4/4 = 100%, his open one
+    // 0/1; all 16 real Codex documents hold all 138 fields the lesson map assigns (no lesson can be stuck below 100%).
+    // A lesson reads only the questions it owns (v7.20.903); an unscoped Codex reads "unknown" and completes (fail-open).
+    // Enforced only once Neil adds 'codex' to wp option swml_mc_gate_families (his typed go).
+    const MC_GATE_ENFORCE_FAMILIES = ['cw', 'diagnostic', 'assessment', 'codex'];
     // v7.20.857 (§40 "watch-only until MEASURED", applied per CW step): the CW steps where a properly
     // finished document was MEASURED reaching 100% in a real browser (prod, 13 Oct 2026: 1389 steps 1–9,
     // 1352 + 1332 steps 6/8/10). No student has finished a later step, a trial or the final assessment,
@@ -19859,6 +19864,7 @@
         if (t === '' || t === 'diagnostic') return 'diagnostic';
         if (t === 'assessment' || t === 'redraft_assessment') return 'assessment';
         if (t.indexOf('cw_') === 0) return MC_GATE_CW_MEASURED.test(t) ? 'cw' : 'other:' + t;
+        if (t === 'mastery_codex') return 'codex';
         return 'other:' + t;
     }
     // r = { verdict: 'complete'|'incomplete'|'unknown', family, exempt, sessionFinished, unmarked[] }
@@ -20046,6 +20052,7 @@
             const prior = document.querySelector('.swml-mc-gate-overlay');
             if (prior && typeof prior.__swmlClose === 'function') prior.__swmlClose('stay');
             const isAssess = reading.family === 'assessment';
+            const isCodex = reading.family === 'codex';
             const overlay = el('div', { className: 'swml-review-modal-overlay swml-mc-gate-overlay' });
             const modal = el('div', { className: 'swml-review-modal swml-mc-gate' });
             modal.setAttribute('role', 'dialog');
@@ -20061,12 +20068,21 @@
               +     '<div class="swml-review-modal-sub">'
               +       (isAssess
                           ? 'Sophia fills in these parts as your assessment goes on. Carry on from where you stopped, then mark the lesson complete.'
-                          : 'Mark Complete works once your document reaches <strong>100%</strong>.')
+                          : isCodex
+                            ? 'Answer every question for this lesson in your Mastery Codex, then mark the lesson complete.'
+                            : 'Mark Complete works once your document reaches <strong>100%</strong>.')
               +     '</div>'
               +   '</div>'
               + '</div>';
             const card = el('div', { className: 'swml-progress-card' });
-            try { if (editorEl) _renderProgressCardBody(card, editorEl, _progressComputeFor(state.task)); } catch (_) {}
+            if (isCodex) {
+                // v7.20.909: the Codex card counts per UNIT; this lesson is judged on its OWN questions, so say those.
+                const still = (reading.missing || []).slice(0, 6);
+                card.appendChild(el('div', { textContent: 'You have answered ' + (reading.done || 0) + ' of ' + (reading.total || 0) + ' questions for this lesson.' }));
+                if (still.length) card.appendChild(el('div', { textContent: 'Still to answer: ' + still.join(', ') + '.' }));
+            } else {
+                try { if (editorEl) _renderProgressCardBody(card, editorEl, _progressComputeFor(state.task)); } catch (_) {}
+            }
             modal.appendChild(card);
             const actions = el('div', { className: 'swml-review-modal-actions swml-mc-gate-actions' });
             const quiet = el('button', { className: 'swml-mc-gate-quiet', textContent: 'Not now' });
@@ -20113,6 +20129,7 @@
             main.addEventListener('click', () => {
                 if (isAssess) { close('sophia'); _mcGateCarryOnWithSophia(); return; }
                 close('goto');
+                if (isCodex) { _codexGoToFirstUnanswered(); return; }
                 const first = (reading.missing || [])[0];
                 if (first && editorEl) _jumpToProgressSection(editorEl, first);
             });
@@ -40466,6 +40483,13 @@
         for (const fids of (sections || [])) for (const f of (fids || [])) if (model.owned.has(f)) return f;
         return null;
     }
+    // v7.20.909: the first question THIS lesson owns that is still empty — where the Mark Complete pop-up's
+    // "Take me there" goes. Never a section label: every unit has an "Exit Ticket (3-2-1)", so a label jump lands in Unit 1.
+    function codexFirstUnanswered(sections, model, answered) {
+        if (!model) return null;
+        for (const fids of (sections || [])) for (const f of (fids || [])) if (model.owned.has(f) && !(answered && answered.has(f))) return f;
+        return null;
+    }
     // A clip-started event → the owned field to follow, or null. Another playlist on the page never moves the Codex.
     function codexClipField(model, detail) {
         if (!model || !detail) return null;
@@ -40559,6 +40583,18 @@
             if (!canvasEditor || !canvasEditor.state) return null;
             return codexLessonProgress(_codexDocSections(canvasEditor), _codexModel(), _codexAnsweredSet(canvasEditor), _codexDocSectionLabels(canvasEditor));
         } catch (_) { return null; }
+    }
+    // v7.20.909: the Mark Complete pop-up's "Take me there" — this lesson's first empty question, highlighted.
+    function _codexGoToFirstUnanswered() {
+        try {
+            const m = _codexModel();
+            if (!m || !canvasEditor || !canvasEditor.state) return;
+            const fid = codexFirstUnanswered(_codexDocSections(canvasEditor), m, _codexAnsweredSet(canvasEditor));
+            const target = fid ? _codexFieldEl(fid) : null;
+            if (!target) return;
+            _codexScrollTo(target, !m.bento);
+            _codexFlash(fid);
+        } catch (_) {}
     }
     // v7.20.785 (#832): the field ids that already hold an answer (typed text, or a chosen option).
     function _codexAnsweredSet(editor) {

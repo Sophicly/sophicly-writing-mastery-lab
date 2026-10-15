@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.908';
+var WML_BUILD = '7.20.909';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -2833,8 +2833,9 @@ window.WML = (function() {
             label: 'Mastery Codex',
             // v7.20.634: Neil's first named exception to the Mark Complete gate (2026-08-07) —
             // "It's one whole document. So they do the same document from start to finish."
-            // One document spans every lesson, so a per-lesson 100% means nothing here.
-            markCompleteGate: false,
+            // One document spans every lesson, so a per-lesson 100% meant nothing here.
+            // v7.20.909: no longer exempt — since v7.20.780/.903 each lesson owns its own questions and reads only
+            // those (gate family 'codex', wml-assessment.js mcGateFamily). Off until 'codex' is in swml_mc_gate_families.
             environment: 'free',
             panels: { sidebar: false, chat: false, guidance: false, document: true },
             steps: null,
