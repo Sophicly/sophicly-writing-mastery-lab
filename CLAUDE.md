@@ -497,6 +497,9 @@ on the live canvas editor, installed straight after it is built:
    back — that cascade is what emptied documents. Refuse it in `filterTransaction` instead.
 4. **Set `_migrationActive` only inside try/finally** — a throw that leaves it `true` bypasses the lock for the
    whole session. The harness fails on a bare set.
+5b. **A load-time heal that renames or removes a box MUST run as a migration** (v7.20.905): every `_migrateStep` already does via
+   `_asMigration` (re-entrant); a heal called from anywhere else wraps itself. Outside the flag the lock refuses it SILENTLY — measured:
+   `_healDiagnosticPlanScaffold` was refused on every seeded redraft planning doc from .751 to .905. The warning now names the caller.
 5. **A second editor needs the lock too.** `renderExamPrepCanvas` builds one but nothing calls it today; the
    harness fails the day something does.
 Gate: `bin/structure-lock-harness.js` (pre-ship). Real-browser proof (staging, test student 1938):
