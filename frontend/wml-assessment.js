@@ -7233,7 +7233,95 @@
         } catch (e) { console.warn('WML CW: context priming threw (non-fatal) —', e && e.message); }
     }
 
-    function applyFieldCommits(aiReply, studentMsg) {
+    // @PUSH-CYCLE-PURE-BEGIN
+    // ⭐ v7.20.905 (FIXLIST push-cycle-loses-first-answer; found 15 Oct on the Haiku planning test, but the mechanism is
+    // code, so Sonnet students had it too). When Sophia pushes on an element ("what in the words makes you feel that?"),
+    // the student answers twice and the reply that accepts files with @FIELD_COMMIT — which filed only the message IT
+    // answered. The first answer, the half the push asked them to build on, never reached the box. Measured in that
+    // lesson's 106 captured turns: 13 push cycles; in 9 the follow-up ADDED the missing detail and the first answer was
+    // lost (Q4 BP1 Effect 1 kept the "why" and lost "I feel a mix of amusement and sadness"); in 3 the student rewrote the
+    // same sentence. WML CLAUDE.md §4c.6 — every ask declares how its push cycle banks:
+    //   accumulate — the push asks for a MISSING DETAIL: every answer of the cycle is filed, in order;
+    //   rewrite    — the element is ONE self-contained sentence (topic sentence, thesis, hook): the latest answer wins
+    //                (two topic sentences stitched into one box is the .289 logline bug).
+    // Declared per element TYPE; bin/push-cycle-harness.js fails on a filing type with no entry here.
+    const PUSH_CYCLE_BY_TYPE = {
+        topic: 'rewrite', 'difference-topic': 'rewrite', thesis: 'rewrite', conclusion: 'rewrite', hook: 'rewrite',
+        building: 'rewrite', perspectives: 'rewrite', 'concept-synthesis': 'rewrite', 'universal-message': 'rewrite',
+        evidence: 'accumulate', analysis: 'accumulate', effect: 'accumulate', purpose: 'accumulate', context: 'accumulate',
+        'central-purpose': 'accumulate', image: 'accumulate', point: 'accumulate', objection: 'accumulate',
+    };
+    const _PUSH_STOP = new Set(('the and that this with for are was were but his her its they them their because like into from '
+        + 'about which what when then than there here has have had not also just very really so it is in on of to as at by an be').split(' '));
+    function _pushWords(s) {
+        return String(s || '').toLowerCase().replace(/[’']/g, '').split(/[^a-z0-9]+/).filter(w => w.length >= 3 && !_PUSH_STOP.has(w));
+    }
+    // The earlier answers of `el`'s push cycle that belong in its box BEFORE the current answer. `history` ends with the
+    // student's current message and the reply that accepted it. Walks back through the replies stamped for this same
+    // element and keeps an answer only when Sophia JUDGED it partly right (an LLM 'weak' — the push itself): never a
+    // wrong / "I don't know" / unjudged turn, never a lettered option pick ("A) reveal"), never a hidden send, and never
+    // an answer the student went on to restate (60%+ of its words reappear later — the restated one is what they meant).
+    function pushCycleEarlierAnswers(history, el, kind) {
+        if (kind !== 'accumulate' || !Array.isArray(history) || !el) return [];
+        const n = history.length;
+        const cur = history[n - 1], curUser = history[n - 2];
+        if (!cur || cur.role !== 'assistant' || !cur.ladder || cur.ladder.el !== el) return [];
+        if (!curUser || curUser.role !== 'user' || typeof curUser.content !== 'string') return [];
+        const picked = [];
+        for (let j = n - 3; j >= 1; j -= 2) {
+            const a = history[j], u = history[j - 1];
+            if (!a || a.role !== 'assistant' || !a.ladder || a.ladder.el !== el) break;   // the cycle starts after the reply that asked
+            if (!u || u.role !== 'user') break;
+            const t = typeof u.content === 'string' ? u.content.trim() : '';
+            if (u.hidden || a.ladder.verdict !== 'weak' || a.ladder.source !== 'llm') continue;
+            if (!t || /^[A-H]\)\s/.test(t) || _pushWords(t).length < 3) continue;
+            picked.unshift(t);
+        }
+        const later = picked.concat([curUser.content.trim()]);
+        return picked.filter((t, i) => {
+            const w = _pushWords(t);
+            const flat = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '');
+            for (let k = i + 1; k < later.length; k++) {
+                if (flat(later[k]).indexOf(flat(t)) !== -1) return false;
+                const lw = new Set(_pushWords(later[k]));
+                if (w.filter(x => lw.has(x)).length / w.length >= 0.6) return false;
+            }
+            return true;
+        });
+    }
+    // @PUSH-CYCLE-PURE-END
+    // The earlier answers to file with `fid` — [] whenever this reply's ladder stamp is not the element that files there.
+    function _pushCycleEarlierFor(history, fid, aiReply) {
+        try {
+            if (!Array.isArray(history) || !history.length || !_ladderActive()) return [];
+            // The reply being applied — a code turn pushed after it must not shift the walk off it.
+            let at = history.length - 1;
+            while (at >= 0 && !(history[at] && history[at].role === 'assistant' && typeof history[at].content === 'string'
+                && aiReply && history[at].content.slice(-aiReply.length) === aiReply)) at--;
+            if (at < 1) return [];
+            history = history.slice(0, at + 1);
+            const last = history[at];
+            const el = last.ladder && last.ladder.el;
+            if (!el) return [];
+            let entry = null;
+            (_ladderQuestionOrder() || []).some(q => _ladderRegistry(q).some(e => (e.el === el ? (entry = e, true) : false)));
+            if (!entry || entry.resolveBy !== fid) return [];
+            const kind = PUSH_CYCLE_BY_TYPE[entry.type];
+            if (!kind) { console.warn('[WML FieldFill] no push-cycle kind declared for element type', entry.type, '— filing the latest answer only'); return []; }
+            return pushCycleEarlierAnswers(history, el, kind);
+        } catch (e) { console.warn('[WML FieldFill] push-cycle read failed (latest answer only)', e && e.message); return []; }
+    }
+    function _outlineBoxText(fid) {
+        let t = null;
+        if (canvasEditor) canvasEditor.state.doc.descendants(n => {
+            if (t !== null) return false;
+            if ((n.type.name === 'outlineRow' || n.type.name === 'inputField') && n.attrs && n.attrs.fieldId === fid) { t = n.textContent || ''; return false; }
+            return true;
+        });
+        return t || '';
+    }
+
+    function applyFieldCommits(aiReply, studentMsg, history) {
         try {
             if (!aiReply || !canvasEditor) return;
             const verbatim = (studentMsg || '').trim();
@@ -7258,7 +7346,19 @@
             fields.forEach(fid => {
                 // v7.20.762 (#805h-4): this reply's own approval already put the refined line in this box.
                 if (_planFanoutRefined.reply === aiReply && _planFanoutRefined.ids.has(fid)) { refined++; console.log('[WML FieldFill]', fid, 'refined by this reply\'s approval — raw answer not appended'); return; }
-                if (_writeOutlineRowField(fid, verbatim)) wrote = true;
+                // v7.20.905: an accumulate element files its whole push cycle — minus any answer already in the box.
+                const earlier = _pushCycleEarlierFor(history, fid, aiReply);
+                let text = verbatim;
+                if (earlier.length) {
+                    const flat = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '');
+                    const inBox = flat(_outlineBoxText(fid));
+                    const fresh = earlier.filter(t => inBox.indexOf(flat(t)) === -1);
+                    if (fresh.length) {
+                        text = fresh.concat([verbatim]).join(' ');
+                        console.log('[WML FieldFill]', fid, 'push cycle — filing', fresh.length, 'earlier answer(s) with this one');
+                    }
+                }
+                if (_writeOutlineRowField(fid, text)) wrote = true;
             });
             // v7.20.209: SILENT-SKIP guard (task-scoping rule 4) — markers present but zero
             // writes is the "saved fine but nothing shows up" class; name the fields loudly.
@@ -20197,6 +20297,20 @@
     let _currentUpdateCommentGutter = null; // v7.15.30: Module-level ref
     let _currentResetCanvasChat = null; // v7.17.38: CW project switch chat flush
     let _migrationActive = false; // v7.15.21: allows migrations to remove sections (module-scope for guard access)
+    // ⭐ v7.20.905 (FIXLIST structure-lock-refused-heal — MEASURED on staging, test student 1938, a Lang P1 planning doc
+    // seeded fresh from its diagnostic): the structure lock refused `_healDiagnosticPlanScaffold`'s rebuild ("refused a
+    // code change to the document's boxes (109 → 127)" — 4 plan sections + 4 boxes became 10 + 16, and the one-per-question
+    // ids went away). So every freshly seeded redraft planning doc kept ONE plan box per question, and Sophia's per-paragraph
+    // plan fills (plan-Q2-para-1 …) had nowhere to land. Since .751 every load-time migration that renames a box has been
+    // refused the same way, silently. The load chain now runs EACH step as a migration — the .751 law, "loads and
+    // migrations pass" — re-entrantly: the flag is restored to what it was, so a heal that sets and clears it itself inside
+    // a step cannot end an outer migration early. JS is single-threaded, so no keystroke can land while the flag is held.
+    function _asMigration(fn) {
+        const was = _migrationActive;
+        _migrationActive = true;
+        try { return fn(); }
+        finally { _migrationActive = was; }
+    }
     // v7.19.854: ACTIVE CHAT-SHELL REGISTRY. chatTextarea/sendCanvasMessage/addChatMessage/
     // canvasChatHistory are LOCALS of each chat-shell builder (buildTrainingPanels + the canvas
     // pipeline) — module-scope helpers (AP-FILE repair, WC re-check, CW step-1 repair, closing
@@ -23646,7 +23760,7 @@
                         // no-op without markers) — it lived inside the cw_ guard below, so the
                         // C-LADDER planning filings (P1 AND P2) silently no-opped: 26 markers in
                         // Neil's live P1 drive, zero fields written (CANVAS TASK-SCOPING rule 1).
-                        applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
+                        applyFieldCommits(res.reply, msg, canvasChatHistory); // v7.19.429: chat→canvas verbatim field-fill (v7.20.905: + the push cycle)
                         _planLadderFocusScroll(); // v7.20.214: scroll doc to the question now in focus
                         // v7.20.261: a code-owned walk that handed this turn to the API for a
                         // judgment resumes here and serves its next (free) code turn. No-op when
@@ -41042,7 +41156,13 @@
                         }
                     }
                     if (v.allow) return true;
-                    console.warn('WML structure lock: refused a ' + v.refused + ' change to the document’s boxes (' + v.from + ' → ' + v.to + ').');
+                    // v7.20.905: a refused CODE change is a heal or fill that silently did not happen — name the caller.
+                    let _by = '';
+                    if (v.refused === 'code') try {
+                        _by = (String(new Error().stack || '').split('\n').map(l => (l.match(/at ([\w$]+) \(/) || [])[1]).filter(Boolean)
+                            .find(n => !/^(?:filterTransaction|applyTransaction|dispatchTransaction|dispatch|setContent|insertContentAt|run|command)$/.test(n))) || '';
+                    } catch (_) {}
+                    console.warn('WML structure lock: refused a ' + v.refused + ' change to the document’s boxes (' + v.from + ' → ' + v.to + ')' + (_by ? ' — by ' + _by : '') + '.');
                     // §4d: the student's key did nothing — say why, once per burst, in plain words.
                     if (v.refused === 'student' && Date.now() - _swmlLockToldAt > 2500) {
                         _swmlLockToldAt = Date.now();
@@ -51031,7 +51151,7 @@
 
                                         // v7.20.209: unconditional — was inside the cw_ guard; see
                                         // main-pipeline note (CANVAS TASK-SCOPING rule 1).
-                                        applyFieldCommits(res.reply, msg); // v7.19.429: chat→canvas verbatim field-fill
+                                        applyFieldCommits(res.reply, msg, canvasChatHistory); // v7.19.429: chat→canvas verbatim field-fill (v7.20.905: + the push cycle)
                                         _planLadderFocusScroll(); // v7.20.214 (twin)
                                         _fireWalkResume(res.reply); // v7.20.261 (twin) — resume a code-owned walk
                                         _cwWalkReplyHook(res.reply); // v7.20.262 (twin) — CW code-turn takeover
@@ -58836,10 +58956,11 @@
             // the admin gate made this run for the exact users who test (root of the "slow only
             // in my browser" report). Heals (fn()) run identically either way.
             const _MIGRATE_DEBUG = SWML_DEBUG;
+            // v7.20.905: each step runs as a migration (_asMigration) — the structure lock refused a reshaping heal before.
             const _migrateStep = function (label, fn) {
-                if (!_MIGRATE_DEBUG) { try { fn(); } catch (_) {} return; }
+                if (!_MIGRATE_DEBUG) { try { _asMigration(fn); } catch (_) {} return; }
                 let _before = 0; try { _before = canvasEditor.getHTML().length; } catch (_) {}
-                try { fn(); } catch (e) { try { console.warn('[WML load-debug v7.19.136] migrate step threw', label, e && e.message); } catch (_) {} }
+                try { _asMigration(fn); } catch (e) { try { console.warn('[WML load-debug v7.19.136] migrate step threw', label, e && e.message); } catch (_) {} }
                 let _after = 0; try { _after = canvasEditor.getHTML().length; } catch (_) {}
                 try { console.log('[WML load-debug v7.19.136] migrate step', { step: label, before: _before, after: _after, delta: _after - _before }); } catch (_) {}
             };
@@ -58878,7 +58999,8 @@
             // the wrong attempt's doc. The pass is IDEMPOTENT (presence + same-value
             // guards), so fire it once more after state settles. Universal law: any
             // state-gated canvas mutation must have a settled-state second pass.
-            _migrateStep('prewriteSettledPass', () => setTimeout(() => {
+            // v7.20.905: the deferred pass runs outside _migrateStep's flag (setTimeout), so it takes its own.
+            _migrateStep('prewriteSettledPass', () => setTimeout(() => _asMigration(() => {
                 try { _ensurePredictionsSection(true); } catch (_) {}
                 try { _healPhase1PrewriteCarry(); } catch (_) {}
                 // v7.20.673: the scheme keys read state.subject/state.text — settled-state second pass.
@@ -58888,7 +59010,7 @@
                 try { healDuplicateInputFields(); } catch (_) {}   // v7.20.713 (#730)
                 try { healCalibGoal(); } catch (_) {}   // v7.20.682 (#701)
                 try { healCmpPlanPrompts(); } catch (_) {}   // v7.20.850: state.board/subject settled
-            }, 1800));
+            }), 1800));
             // v7.20.56: prior-attempt reflection — prefetch the Phase-1 record, then
             // inject the Reflection section once it resolves (record-gated; the filing
             // path re-heals if this races the fetch).

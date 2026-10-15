@@ -1252,6 +1252,12 @@ node bin/grade-ladder-harness.js >/dev/null || { node bin/grade-ladder-harness.j
 node bin/mark-correct-harness.js >/dev/null || { node bin/mark-correct-harness.js; fail=1; }
 # A CARD IS THE RECORD, A QUESTION IS THE CONVERSATION — the Calibration ask stays in the chat (v7.20.731, #768).
 node bin/card-ask-harness.js >/dev/null || { node bin/card-ask-harness.js; fail=1; }
+# A PUSHED ELEMENT FILES ITS WHOLE ANSWER (v7.20.905, push-cycle-loses-first-answer): when Sophia pushes and then accepts,
+# the first answer is filed with the follow-up on an add-the-detail element; a rewrite element keeps the latest only.
+node bin/push-cycle-harness.js >/dev/null || { node bin/push-cycle-harness.js; fail=1; }
+# THE MINIFIED BUILD IS SERVED ONLY WHEN CURRENT (v7.20.905, wml-cold-load): swml_js_src executed in PHP (stale / missing /
+# SCRIPT_DEBUG / ?swml_src / option off → source), both enqueue paths use it, both deploys build after the gate.
+node bin/min-build-harness.js >/dev/null || { node bin/min-build-harness.js; fail=1; }
 
 
 if [ "$fail" -ne 0 ]; then

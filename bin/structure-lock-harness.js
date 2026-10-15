@@ -152,5 +152,26 @@ SRC.split('\n').forEach((ln, i, all) => {
 });
 ok(bare.length === 0, 'every _migrationActive = true is released in a finally (a throw cannot leave the lock bypassed)' + (bare.length ? ' — bare at ' + bare.join(', ') : ''));
 
+// E · v7.20.905 (structure-lock-refused-heal, MEASURED on staging 15 Oct): the lock refused _healDiagnosticPlanScaffold's
+//     rebuild (109 → 127) on every freshly seeded Lang P1 planning doc, so the per-paragraph plan boxes never appeared.
+//     Every step of the load chain now runs as a migration, re-entrantly.
+console.log('E · the load chain runs as a migration');
+const am = SRC.match(/    function _asMigration\(fn\) \{[\s\S]*?\n    \}\n/);
+ok(!!am, '_asMigration exists');
+if (am) {
+    // eslint-disable-next-line no-new-func
+    const mk = new Function('let _migrationActive = false;\n' + am[0] + '\nreturn { run: _asMigration, get: () => _migrationActive, set: (v) => { _migrationActive = v; } };');
+    const t = mk();
+    let inside = null; t.run(() => { inside = t.get(); });
+    ok(inside === true && t.get() === false, 'it holds the flag for the step and releases it after');
+    t.set(true); t.run(() => {}); ok(t.get() === true, 'it is re-entrant: an outer migration is still active after an inner one');
+    t.set(false); try { t.run(() => { throw new Error('x'); }); } catch (_) {} ok(t.get() === false, 'a throw inside a step cannot leave the lock bypassed');
+}
+const ms = SRC.slice(SRC.indexOf('            const _migrateStep = function (label, fn) {'), SRC.indexOf("            // Migrate old documents — inject missing sections"));
+ok(ms.length > 100 && (ms.match(/_asMigration\(fn\)/g) || []).length === 2 && !/try \{ fn\(\); \}/.test(ms), '_migrateStep runs every step through _asMigration (debug and normal paths)');
+ok(/_migrateStep\('healDiagnosticPlanScaffold', _healDiagnosticPlanScaffold\);/.test(SRC), 'the measured heal is a chain step (so it is covered)');
+ok(/_migrateStep\('prewriteSettledPass', \(\) => setTimeout\(\(\) => _asMigration\(\(\) => \{/.test(SRC), 'the deferred settled pass takes the flag itself (a setTimeout is outside the step)');
+ok(/v\.refused === 'code'\) try \{[\s\S]{0,900}' — by ' \+ _by/.test(SRC), 'a refused CODE change names its caller in the warning');
+
 console.log('\n' + (fail ? '✗ structure-lock-harness: ' + fail + ' failed, ' + pass + ' passed' : '✅ structure-lock-harness passed (' + pass + ' assertions)'));
 process.exit(fail ? 1 : 0);

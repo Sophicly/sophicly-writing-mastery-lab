@@ -22,7 +22,9 @@ ok(B > 0 && E > B, 'the display-marker block sits between its sentinels');
 function load(src) {
     const ctx = { Set, String };
     vm.createContext(ctx);
-    vm.runInContext(src + '\nthis.sweep = sweepMachineLines; this.names = Array.from(DISPLAY_MARKERS);', ctx);
+    vm.runInContext(src + '\nthis.sweep = sweepMachineLines; this.names = Array.from(DISPLAY_MARKERS);'
+        + ' this.jsweep = (typeof sweepJsonMarkers === "function") ? sweepJsonMarkers : null;'
+        + ' this.kept = (typeof JSON_MARKERS_KEPT !== "undefined") ? Array.from(JSON_MARKERS_KEPT) : [];', ctx);
     return ctx;
 }
 const block = SRC.slice(B, E);
@@ -52,9 +54,45 @@ const sBody = SRC.slice(sStart, SRC.indexOf('\n    function ', sStart + 20));
 ok(/sweepMachineLines\(text\)/.test(sBody), 'D7a: stripAIInternals calls sweepMachineLines');
 ok(!/text\.replace\(\/\^\[ \\t\]\*@\[A-Z\]\[A-Z0-9_\]\{2,\}/.test(sBody), 'D7b: no unguarded whole-line @NAME sweep remains in stripAIInternals');
 
+// J — v7.20.905 (goal-setup-marker-leaks-inline): a JSON-payload marker is removed wherever it sits; the three read
+// AFTER stripAIInternals stay for their consumers. The inline case is the measured leak (Haiku R&J check, 15 Oct).
+const J = load(block);
+ok(typeof J.jsweep === 'function', 'J0: sweepJsonMarkers sits inside the display-marker block');
+if (J.jsweep) {
+    const INL = 'Grade 7 it is. @GOAL_SETUP{"goal":"Grade 7","skill":"close analysis"} Now let us look at your first body paragraph.';
+    ok(J.jsweep(INL) === 'Grade 7 it is. Now let us look at your first body paragraph.', 'J1: the inline @GOAL_SETUP{…} is removed and the prose either side is kept', J.jsweep(INL));
+    ok(J.jsweep('Here is your plan.\n@GOAL_SETUP{"goal":"Grade 7"}\nReady?') === 'Here is your plan.\n\nReady?', 'J2: the same marker alone on its line is removed (the line sweep never matched braces)', J.jsweep('Here is your plan.\n@GOAL_SETUP{"goal":"Grade 7"}\nReady?'));
+    ok(J.jsweep('x @ELEMENT_STANCE{"poem":"ozy","el":"tone","stance":{"id":"a"}} y') === 'x y', 'J3: a payload with one nested object is removed whole');
+    ['RESOURCE_LINK{"dest":"toolkit","arg":"ttecea","label":"TTECEA"}', 'REFLECT_GATE{"q":"Q2","para":"1"}', 'FB_BEGIN{ "q":"Q2", "para":"1", "title":"Paragraph 1" }']
+        .forEach(mk => ok(J.jsweep('See this: @' + mk + ' ok') === 'See this: @' + mk + ' ok', 'J4: @' + mk.split('{')[0] + ' is kept for the code that reads it after the strip'));
+    ok(J.kept.length === 3, 'J5: exactly three JSON markers are kept (' + J.kept.join(', ') + ')');
+    ok(J.jsweep('Use {curly} braces, and @Sophia {said hi}.') === 'Use {curly} braces, and @Sophia {said hi}.', 'J6: prose braces and a non-marker @name are untouched');
+    ok(J.jsweep('Note @TODO {no json here} stays') === 'Note @TODO {no json here} stays', 'J7: braces that do not open with a JSON key are untouched');
+}
+// J8 — the strip runs in stripAIInternals AFTER the paired @SECTION_BEGIN…@SECTION_END block strip (a header removed
+// first would leave the block's body visible in the chat).
+const iSec = sBody.indexOf("text = text.replace(/@SECTION_BEGIN\\s*\\{[^}]*\\}[\\s\\S]*?@SECTION_END/g, '').trim();");
+const iJ = sBody.indexOf('text = sweepJsonMarkers(text);');
+ok(iSec > 0 && iJ > iSec, 'J8: stripAIInternals calls sweepJsonMarkers after the paired-block strip (' + iSec + ' < ' + iJ + ')');
+// J9 — the whole stripAIInternals, run: a filed section block vanishes body and all; the inline leak is gone.
+{
+    const ctx2 = { Set, String };
+    vm.createContext(ctx2);
+    vm.runInContext(block + '\n' + sBody + '\nthis.strip = stripAIInternals;', ctx2);
+    const REP = 'Lovely. @GOAL_SETUP{"goal":"Grade 8"} Here is your plan.\n@COMPARISON_POEM{"id":"ozymandias"}\nTap a link: @RESOURCE_LINK{"dest":"toolkit","arg":"ttecea","label":"TTECEA"}\n@REFLECT_GATE{"q":"Q2","para":"1"}';
+    const got = ctx2.strip(REP);
+    ok(!/@GOAL_SETUP|@COMPARISON_POEM/.test(got) && /Lovely\. Here is your plan\./.test(got) && /@RESOURCE_LINK\{/.test(got) && /@REFLECT_GATE\{/.test(got),
+        'J9: stripAIInternals end to end — inline and own-line markers gone, the link and the reflection gate kept', got);
+}
+
 // Mutation — the gate must catch the defect it was built for.
 const mutated = load(block.replace("new Set(['DEVICE_MENU'])", 'new Set([])'));
 ok(!/@DEVICE_MENU/.test(mutated.sweep(LEADIN)), 'M1: with DEVICE_MENU removed from the set, D1 would fail (mutation detected)');
+
+const mutJ = load(block.replace("new Set(['RESOURCE_LINK', 'REFLECT_GATE', 'FB_BEGIN'])", "new Set(['RESOURCE_LINK', 'FB_BEGIN'])"));
+ok(mutJ.jsweep && mutJ.jsweep('a @REFLECT_GATE{"q":"Q2"} b') === 'a b', 'M2: with REFLECT_GATE removed from the kept set, J4 would fail (mutation detected)');
+const mutK = load(block.replace('(JSON_MARKERS_KEPT.has(name) ? whole : \'\')', 'whole'));
+ok(mutK.jsweep && /@GOAL_SETUP/.test(mutK.jsweep('a @GOAL_SETUP{"goal":"x"} b')), 'M3: a sweep that keeps everything would fail J1 (mutation detected)');
 
 console.log((fail ? '❌' : '✅') + ' display-marker-harness: ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

@@ -30,3 +30,9 @@ island/node_modules/
 island/package-lock.json
 protocols/_marks/.pdftext-cache/
 node_modules/
+
+# v7.20.905: minified copies are BUILT at deploy (bin/build-min.sh) from the source — never edited, never committed
+frontend/wml-assessment.min.js
+frontend/wml-assessment.min.js.map
+frontend/wml-core.min.js
+frontend/wml-core.min.js.map

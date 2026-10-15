@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.904';
+var WML_BUILD = '7.20.905';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -4712,6 +4712,17 @@ window.WML = (function() {
         return text.replace(/^[ \t]*@([A-Z][A-Z0-9_]{2,})(?:[ \t]*:[^\n]*)?[ \t]*$/gm,
             (line, name) => (DISPLAY_MARKERS.has(name) ? line : ''));
     }
+    // v7.20.905 (FIXLIST goal-setup-marker-leaks-inline): a marker carrying a JSON payload is machine syntax wherever it
+    // sits — `@GOAL_SETUP{"goal":…}` written mid-paragraph reached a student's screen (Haiku planning check, staging,
+    // 15 Oct). The line sweep above takes only a marker alone on its line with no braces, so it saw this one neither
+    // inline nor alone. KEPT: the three JSON markers read AFTER stripAIInternals — formatAI renders @RESOURCE_LINK as a
+    // chip, and the canvas chat parses @REFLECT_GATE (the reflection panel) and @FB_BEGIN (the feedback card) from the
+    // formatted reply, then strips them itself. A payload must open with a JSON key ("…"), so prose braces are untouched.
+    const JSON_MARKERS_KEPT = new Set(['RESOURCE_LINK', 'REFLECT_GATE', 'FB_BEGIN']);
+    function sweepJsonMarkers(text) {
+        return text.replace(/[ \t]*@([A-Z][A-Z0-9_]{2,})\s*\{\s*"(?:[^{}]|\{[^{}]*\})*\}/g,
+            (whole, name) => (JSON_MARKERS_KEPT.has(name) ? whole : ''));
+    }
     // @DISPLAY-MARKERS-PURE-END
 
     // Strip AI internal content (JSON, function calls, protocol markers) — shared by both chat systems
@@ -4830,6 +4841,9 @@ window.WML = (function() {
         text = text.replace(/@SEQ_ACK(?:\s*\{[^}]*\})?/gi, '').trim();
         text = text.replace(/@SEQ_DONE(?:\s*\{[^}]*\})?/gi, '').trim();
         text = text.replace(/@PMODE(?:\s*\{[^}]*\})?/gi, '').trim();
+        // v7.20.905: any other @NAME{…} — inline or alone on its line (see sweepJsonMarkers). Runs AFTER the paired
+        // @SECTION_BEGIN…@SECTION_END strip above, so a block's header can never be removed while its body stays.
+        text = sweepJsonMarkers(text);
         // v7.19.839: collapse the blank-line stack the stripped marker lines leave behind —
         // the auto-file turn emits 12+ markers on their own lines, which stripped into a huge
         // empty gap in the bubble (Neil's screenshot).

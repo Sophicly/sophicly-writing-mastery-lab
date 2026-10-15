@@ -95,14 +95,15 @@ function engine(doc) {
     const hasRecord = SRC.indexOf('let _planFanoutRefined') !== -1;
     const body = (hasRecord ? 'let _planFanoutRefined = { reply: null, ids: new Set() };' : '')
         + ['_fsNorm', '_planFieldSegments', '_planLinesContent', '_planRowExists', '_planOutlineTargets', '_planLabelElement',
-           '_planFanoutToOutline', 'applyFieldSets', '_writeOutlineRowField', 'applyFieldCommits'].map(slice).join('\n')
+           '_planFanoutToOutline', 'applyFieldSets', '_writeOutlineRowField', '_pushCycleEarlierFor', '_outlineBoxText', 'applyFieldCommits'].map(slice).join('\n')
         + 'function _applyFieldValueSets(sets, opts) { const _live = !(opts && opts.replay); sets.forEach(s => { const isPlan = /^plan-/.test(s.field); if (isPlan) _planFanoutToOutline(s.field, s.value, _live); }); }'
         + 'return { applyFieldSets, applyFieldCommits };';
     const mem = new Map();
+    // v7.20.905: applyFieldCommits asks _pushCycleEarlierFor for a push cycle — off the ladder (stubbed here) it is [].
     return new Function('canvasEditor', 'state', 'console', 'saveCanvasContent', '_refreshPlanningSidebar', '_scrollToFilledField',
-        '_autoFillHash', '_autoFillRecall', '_autoFillRemember', body)(
+        '_autoFillHash', '_autoFillRecall', '_autoFillRemember', '_ladderActive', body)(
         doc.editor, { task: 'planning' }, quiet, () => {}, () => {}, () => {},
-        (s) => String(s), (k) => mem.get(k), (k, v) => mem.set(k, v));
+        (s) => String(s), (k) => mem.get(k), (k, v) => mem.set(k, v), () => false);
 }
 const runTurn = (eng, reply, msg) => { eng.applyFieldSets(reply); eng.applyFieldCommits(reply, msg); };
 {

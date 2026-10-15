@@ -2,17 +2,35 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.904
+ * Version: 7.20.905
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.904');
+define('SWML_VERSION', '7.20.905');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
+
+/**
+ * v7.20.905 (FIXLIST wml-cold-load, measured by Web Design 123 on prod): a student's FIRST visit to a WML lesson took
+ * 14–16 s, and wml-assessment.js was 1.1 MB of it after compression. bin/build-min.sh builds a minified copy of each
+ * large script at deploy (452 KB). Serve the .min copy only when it is at least as new as its source — so a deploy that
+ * skipped the build serves the source, never a stale copy — and fall back to the source on SCRIPT_DEBUG, ?swml_src=1
+ * (a tutor or developer reading the real code) or `wp option update swml_minified_js off` (instant, no deploy).
+ */
+function swml_js_src($name) {
+    $src = 'frontend/' . $name . '.js';
+    $min = 'frontend/' . $name . '.min.js';
+    $source_only = (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) || isset($_GET['swml_src'])
+        || get_option('swml_minified_js', 'on') === 'off';
+    if (!$source_only && is_readable(SWML_PATH . $min) && @filemtime(SWML_PATH . $min) >= @filemtime(SWML_PATH . $src)) {
+        return SWML_URL . $min;
+    }
+    return SWML_URL . $src;
+}
 define('SWML_PROTOCOLS_PATH', SWML_PATH . 'protocols/');
 
 if ( ! function_exists( 'sophicly_review_target_id' ) ) {
@@ -739,9 +757,10 @@ class Sophicly_Writing_Mastery_Lab {
         );
 
         // Core module: shared namespace, state, constants, utilities (window.WML)
+        // v7.20.905: swml_js_src serves the minified build when it is current (see the function).
         wp_enqueue_script(
             'swml-core',
-            SWML_URL . 'frontend/wml-core.js',
+            swml_js_src('wml-core'),
             [],
             SWML_VERSION,
             true
@@ -804,9 +823,10 @@ class Sophicly_Writing_Mastery_Lab {
         wp_enqueue_script('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.min.js', [], SWML_VERSION, true);
 
         // Assessment module: canvas workspace, document building, TipTap editor
+        // v7.20.905: swml_js_src serves the minified build when it is current (see the function).
         wp_enqueue_script(
             'swml-assessment',
-            SWML_URL . 'frontend/wml-assessment.js',
+            swml_js_src('wml-assessment'),
             ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-cw6-concepts', 'swml-examiner-ladder', 'swml-tiptap'],
             SWML_VERSION,
             true
@@ -1485,7 +1505,7 @@ class Sophicly_Writing_Mastery_Lab {
         // Scripts
                 // v7.20.527: shader retired (see enqueue_assets above for the full note + the dependency landmine).
         wp_enqueue_script('swml-tiptap', SWML_URL . 'frontend/wml-tiptap.min.js', [], SWML_VERSION, true);
-        wp_enqueue_script('swml-core', SWML_URL . 'frontend/wml-core.js', [], SWML_VERSION, true);
+        wp_enqueue_script('swml-core', swml_js_src('wml-core'), [], SWML_VERSION, true);
         // v7.19.78: shared SectionBlock NodeView factory — load before wml-assessment.
         wp_enqueue_script('swml-section-block', SWML_URL . 'frontend/wml-section-block.js', ['swml-core'], SWML_VERSION, true);
         // ⭐⭐ v7.20.445 — FOUR MODULES WERE MISSING FROM THIS PATH, and this is the path every
@@ -1513,7 +1533,7 @@ class Sophicly_Writing_Mastery_Lab {
         // v7.20.494 (#204): Step 9 Scene Selection island (see the standard-path twin for the law).
         wp_enqueue_style('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.css', [], SWML_VERSION);
         wp_enqueue_script('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.min.js', [], SWML_VERSION, true);
-        wp_enqueue_script('swml-assessment', SWML_URL . 'frontend/wml-assessment.js', ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-cw6-concepts', 'swml-examiner-ladder', 'swml-tiptap'], SWML_VERSION, true);
+        wp_enqueue_script('swml-assessment', swml_js_src('wml-assessment'), ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-cw6-concepts', 'swml-examiner-ladder', 'swml-tiptap'], SWML_VERSION, true);
         wp_enqueue_script('swml-selection-chip', SWML_URL . 'frontend/wml-selection-chip.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
         wp_enqueue_script('swml-pull-overlay', SWML_URL . 'frontend/wml-pull-overlay.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
         wp_enqueue_script('swml-app', SWML_URL . 'frontend/wml-app.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
