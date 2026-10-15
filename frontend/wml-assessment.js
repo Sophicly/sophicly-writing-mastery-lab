@@ -19095,6 +19095,14 @@
     // Essay Plan drops out on the very first diagnostic (T1P1 — the same _isFirstDiagnostic
     // the Date Completed stamp uses). Derived from live attrs, so multi-question Language
     // docs (N feedback boxes) count correctly with no per-paper wiring.
+    // v7.20.902: PEDAGOGY §6 — the section types each LESSON ROLE authors, for the lessons whose card would otherwise
+    // count someone else's sections. Planning authors the plan + the thinking notes (keywords, predictions, reflection);
+    // the answers belong to the diagnostic and to Outlining/Polishing. A task not listed counts as before.
+    const LESSON_AUTHORS = { planning: ['plan', 'notes'] };
+    function _lessonAuthorsSection(type) {
+        const own = LESSON_AUTHORS[String((WML.state && WML.state.task) || '')];
+        return !own || own.indexOf(type) !== -1;
+    }
     function _computeAssessmentProgress(editor) {
         const firstDiag = _isFirstDiagnostic();
         const secs = editor.querySelectorAll('.swml-section-block[data-section-complete]');
@@ -19123,6 +19131,12 @@
             // so they drop out by construction on every board and paper, and no future doc kind
             // can inherit the wrong rule by accident.
             if (type === 'response' && s.classList.contains('swml-task-locked')) return;
+            // v7.20.902 (Neil, Actions round ae card 6: "they have to finish all the planning first" → "Yes, build it
+            // that way"): a lesson counts only the sections it AUTHORS (PEDAGOGY §6 table). Measured on prod 15 Oct
+            // (9 real planning docs, read-only): the planning card counted "Q1 Response" / "Q1 Statements" — answers
+            // written in the diagnostic and in Outlining/Polishing, never in Planning — so a student who planned
+            // every box could still read below 100%.
+            if (!_lessonAuthorsSection(type)) return;
             // Essay Plan is exempt on the first diagnostic (Neil 2026-06-30, reaffirmed
             // 2026-07-15: the plan is optional on a testing baseline, so counting it would
             // wedge a student who legitimately didn't plan below 100%).

@@ -318,6 +318,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/tutorcomment-chips-harness.js || fail=1
 fi
 
+# v7.20.902 (Actions round ae card 6, "they have to finish all the planning first"): a lesson's Document Progress counts
+# only the sections that lesson AUTHORS (PEDAGOGY §6) — planning = plan + notes, never the Q1 answers measured on prod.
+# Runs the real _computeAssessmentProgress on the measured section lists. 4 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|planning-progress-harness\.js'; then
+  node bin/planning-progress-harness.js || fail=1
+fi
+
 # v7.20.901 (Neil's tag 15 Oct + PEDAGOGY §66): an introduction is hook · ONE building sentence · thesis — planned, marked
 # and modelled the same way. No literature protocol may ask for 2–3 building sentences; AQA poetry marks 3-sentence gold
 # introductions with one sentence carrying both building rows. Whole protocols/ tree. 5 mutations.
