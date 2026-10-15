@@ -8620,15 +8620,25 @@
     // from the picker at ~6627 or typed), read from the canvas chat history. The action-plan
     // grade goal is a RECONFIRMATION of this — the student's choice must win over the model's
     // re-guess (Neil picked Grade 9, the model filed Grade 8). Last stated aim wins.
+    // ⭐ v7.20.898 (WML 360 A, measured on prod 15 Oct): a LANGUAGE paper's kickoff reply is the bare chip — "Grade 8",
+    // never "I'm aiming for Grade 8" (_gradeKickoffValue sends the bare grade for language on purpose) — so this reader
+    // never matched a language assessment and the model's re-guess always won: 6 of 8 language docs on prod carried a
+    // grade goal the student did not choose, every one LOWER (Mishel 1237 chose 9 → "Grade 4"). The reply to the grade
+    // question now counts too — only the reply directly after it, so a "Grade N" said elsewhere is never read as the aim.
+    // Driven by bin/aim-grade-harness.js.
     function _studentAimGrade() {
         try {
             const h = (_chatShell && _chatShell.history) || [];
-            let found = '';
+            let found = '', asked = false;
             h.forEach(msg => {
-                if (msg && msg.role === 'user') {
-                    const mm = String(msg.content || '').match(/aiming for\s+\**\s*Grade\s*(\d)/i);
-                    if (mm) found = 'Grade ' + mm[1];
-                }
+                if (!msg) return;
+                if (msg.role === 'assistant') { asked = /what grade are you aiming for/i.test(_planChainNorm(msg.content || '')); return; }
+                if (msg.role !== 'user') return;
+                const c = String(msg.content || '');
+                let mm = c.match(/aiming for\s+\**\s*Grade\s*(\d)/i);
+                if (!mm && asked) mm = c.match(/^\s*\**\s*Grade\s*(\d)\b/i) || c.match(/^\s*(\d)\s*\.?\s*$/);
+                if (mm) found = 'Grade ' + mm[1];
+                asked = false;
             });
             return found;
         } catch (_) { return ''; }

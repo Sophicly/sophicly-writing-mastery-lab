@@ -304,6 +304,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/runaway-reply-harness.js || fail=1
 fi
 
+# v7.20.898 (WML 360 A, measured on prod: 6 of 8 language docs): the student's kickoff aim wins the Action Plan grade goal
+# on LANGUAGE papers too — their kickoff reply is the bare chip "Grade 8", which the reader never read. 3 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|aim-grade-harness\.js'; then
+  node bin/aim-grade-harness.js || fail=1
+fi
+
 # v7.20.882 (FIXLIST p&c-1397-lock-device): the display-lock guard — a student change to the writing of an assessment /
 # discuss lesson is refused at the transaction, by any route, and recorded; code, marks and migrations pass. 4 mutations.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
