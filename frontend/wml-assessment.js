@@ -20078,7 +20078,8 @@
             if (isCodex) {
                 // v7.20.909: the Codex card counts per UNIT; this lesson is judged on its OWN questions, so say those.
                 const still = (reading.missing || []).slice(0, 6);
-                card.appendChild(el('div', { textContent: 'You have answered ' + (reading.done || 0) + ' of ' + (reading.total || 0) + ' questions for this lesson.' }));
+                const tot = reading.total || 0;
+                card.appendChild(el('div', { textContent: 'You have answered ' + (reading.done || 0) + ' of ' + tot + (tot === 1 ? ' question' : ' questions') + ' for this lesson.' }));
                 if (still.length) card.appendChild(el('div', { textContent: 'Still to answer: ' + still.join(', ') + '.' }));
             } else {
                 try { if (editorEl) _renderProgressCardBody(card, editorEl, _progressComputeFor(state.task)); } catch (_) {}
