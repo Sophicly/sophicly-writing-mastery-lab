@@ -84,6 +84,14 @@ const CASES = [
         [ASK('outline-body-1-effects-q2'), U('B) Thought: what the reader comes to believe or realise'), A('outline-body-1-effects2-q2', 'weak'),
          U('The reader realises the storm isn\'t just weather - it\'s showing us the chaos inside Alex\'s head that he can\'t switch off.'), A('outline-body-1-effects2-q2', 'resolved')],
         'outline-body-1-effects2-q2', 'accumulate', []],
+    ['a two-word feeling (staging walk .906: "I feel tense", then the cause) — BOTH filed',
+        [ASK('outline-body-1-analysis-q2'), U('I feel tense'), A('outline-body-1-effects-q2', 'weak'),
+         U('I\'m tense that the storm will break into the house, because the list of three makes the attacks keep coming closer'), A('outline-body-1-effects-q2', 'resolved')],
+        'outline-body-1-effects-q2', 'accumulate', ['I feel tense']],
+    ['an acknowledgement ("yes please") is never filed, even when Sophia judges it',
+        [ASK('outline-body-1-analysis'), U('yes please'), A(E1, 'weak'),
+         U('I pity the dad because the understatement shows he is failing at cooking.'), A(E1, 'resolved')],
+        E1, 'accumulate', []],
     ['a hidden (code-sent) message is never filed',
         [ASK('outline-body-1-analysis'), U('Continue with the next part of the paragraph', true), A(E1, 'weak'),
          U('I pity the dad because the understatement shows he is failing at cooking.'), A(E1, 'resolved')],
@@ -154,6 +162,8 @@ const MUT = [
     ['rewrite treated as accumulate', (s) => s.replace("if (kind !== 'accumulate' || ", 'if (')],
     ['no cycle boundary', (s) => s.replace("if (!a || a.role !== 'assistant' || !a.ladder || a.ladder.el !== el) break;", "if (!a || a.role !== 'assistant' || !a.ladder) break;")],
     ['option picks filed', (s) => s.replace("|| /^[A-H]\\)\\s/.test(t) ", '')],
+    ['the old 3-word floor', (s) => s.replace('_pushWords(t).length < 2) continue;', '_pushWords(t).length < 3) continue;')],
+    ['acknowledgements counted as words', (s) => s.replace(" + 'yes yeah yep okay sure thanks thank please continue next done'", '')],
 ];
 for (const [label, mut] of MUT) {
     const src = mut(JS0);

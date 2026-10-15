@@ -7252,7 +7252,9 @@
         'central-purpose': 'accumulate', image: 'accumulate', point: 'accumulate', objection: 'accumulate',
     };
     const _PUSH_STOP = new Set(('the and that this with for are was were but his her its they them their because like into from '
-        + 'about which what when then than there here has have had not also just very really so it is in on of to as at by an be').split(' '));
+        + 'about which what when then than there here has have had not also just very really so it is in on of to as at by an be '
+        // v7.20.907: acknowledgements are never an answer ("yes please", "ok thanks")
+        + 'yes yeah yep okay sure thanks thank please continue next done').split(' '));
     function _pushWords(s) {
         return String(s || '').toLowerCase().replace(/[’']/g, '').split(/[^a-z0-9]+/).filter(w => w.length >= 3 && !_PUSH_STOP.has(w));
     }
@@ -7274,7 +7276,8 @@
             if (!u || u.role !== 'user') break;
             const t = typeof u.content === 'string' ? u.content.trim() : '';
             if (u.hidden || a.ladder.verdict !== 'weak' || a.ladder.source !== 'llm') continue;
-            if (!t || /^[A-H]\)\s/.test(t) || _pushWords(t).length < 3) continue;
+            // v7.20.907 (staging walk): two content words is an answer — "I feel tense" was the first half of an Effect 1.
+            if (!t || /^[A-H]\)\s/.test(t) || _pushWords(t).length < 2) continue;
             picked.unshift(t);
         }
         const later = picked.concat([curUser.content.trim()]);
