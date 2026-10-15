@@ -33,7 +33,8 @@ Think about: what theme/concept/aspect is specified · how it applies to BOTH po
 
 The Comparative Focus Confirmation is played ENTIRELY by the CLIENT, which triggers it automatically
 the moment you SAVE the keywords (your `@FIELD_SET{"field":"kw-focus"}` turn) — you send NO signal.
-So after you present **Step 2** (Command Word & Approach framing), STOP. Do NOT write the "sustained
+So after you present **Step 2** (Command Word & Approach framing), your message ENDS: the last sentence
+of the framing paragraph is the last thing you write. Do NOT write the "sustained
 throughout" teaching, the A/B options, or any `@PLAY_SEQ` marker. When the student returns saying it
 makes sense, RESUME at the **Transition** below (check for previous feedback → B.3). The Step 3
 teaching text lives in the non-loaded `_seq-source.md` sidecar; you never receive it and cannot narrate it.

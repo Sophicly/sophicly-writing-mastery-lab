@@ -296,6 +296,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/poetry-opening-resume-harness.js || fail=1
 fi
 
+# v7.20.897 (WML 360 A, measured): a runaway reply (Sophia filled her output budget with "<br>" ×10,580 at the P&C
+# planning framing step) never reaches the student — collapsed server-side in handle_chat, logged. PHP executed on the
+# real-size runaway (a one-big-regex version blanks it: JIT stack). 5 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'class-rest-api\.php|b2-goals-keywords\.md|runaway-reply-harness\.js'; then
+  node bin/runaway-reply-harness.js || fail=1
+fi
+
 # v7.20.882 (FIXLIST p&c-1397-lock-device): the display-lock guard — a student change to the writing of an assessment /
 # discuss lesson is refused at the transaction, by any route, and recorded; code, marks and migrations pass. 4 mutations.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \

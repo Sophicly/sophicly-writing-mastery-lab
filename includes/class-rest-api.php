@@ -1566,6 +1566,51 @@ class SWML_REST_API {
         return rest_ensure_response(['done' => true, 'status' => (int) ($cur['status'] ?? 200), 'payload' => $cur['payload']]);
     }
 
+    /**
+     * ⭐ v7.20.897 (WML 360 A, measured on staging): a RUNAWAY reply never reaches the student.
+     * At the AQA poetry planning framing step (b2-goals-keywords.md Step 2, "…then STOP") Sophia finished the framing and
+     * filled the rest of her output budget with a literal "<br>" ×10,580 — 74,684 characters, one chat bubble 440,489px
+     * tall, saved into the chat. Never seen on prod (126 chats; longest reply there 10,953 characters), but no P&C plan had
+     * reached that step there yet. A model loop cannot be ruled out by instruction alone, so the reply is scrubbed here,
+     * the one place every /chat reply passes: a run of empty lines (nothing on them but <br> tags and spaces) that is three
+     * lines or longer, or holds three or more <br> tags, collapses to one paragraph break. A line with words on it is never
+     * touched, so one or two <br> inside a line (a poem line, a deliberate gap) stay. Logged when it fires.
+     * ⛔ A LINEAR line pass on purpose, not one big regex: measured on the real-size runaway, a repeated-group pattern fails
+     * with "JIT stack limit exhausted" and returns null — the very input this exists for would have come back blank.
+     * Driven by bin/runaway-reply-harness.js.
+     */
+    public static function collapse_runaway_breaks($reply, $task = '') {
+        if (!is_string($reply) || $reply === '') return $reply;
+        $lines = preg_split('/\r?\n/', $reply);
+        if (!is_array($lines)) return $reply;   // a split failure must never blank the reply
+        $out = [];
+        $run = [];
+        $run_brs = 0;
+        $collapsed = 0;
+        $flush = function () use (&$out, &$run, &$run_brs, &$collapsed) {
+            if (count($run) >= 3 || $run_brs >= 3) { $out[] = ''; $collapsed += $run_brs + count($run); }
+            else { foreach ($run as $l) $out[] = $l; }
+            $run = [];
+            $run_brs = 0;
+        };
+        foreach ($lines as $line) {
+            $bare = preg_replace('/<br\s*\/?>/i', '', $line);
+            if ($bare !== null && trim($bare) === '') {   // an empty line, or one holding only <br> tags
+                $run[] = $line;
+                $run_brs += substr_count(strtolower($line), '<br');
+                continue;
+            }
+            $flush();
+            $out[] = $line;
+        }
+        $flush();
+        $result = rtrim(implode("\n", $out));
+        if ($collapsed >= 20 || strlen($reply) - strlen($result) > 1000) {
+            error_log(sprintf('WML runaway reply collapsed: task=%s, %d → %d characters', $task, strlen($reply), strlen($result)));
+        }
+        return $result;
+    }
+
     public function handle_chat($request) {
         // v7.20.670 (#679): submit-then-poll when the client asks for it (see start_chat_job).
         if (!empty($request->get_param('async')) && empty($GLOBALS['swml_chat_job'])) {
@@ -1990,6 +2035,8 @@ class SWML_REST_API {
             // Scrub every reply; idempotent for quiz tasks.
             $reply = preg_replace('/[ \t]*\[\[QUIZ[^\]]*\]\][ \t]*\r?\n?/i', '', $reply);
             $reply = preg_replace('/\[QUIZ_COMPLETE[^\]\n]*\][^\n<]*/i', '', $reply);
+            // v7.20.897: a degenerate run of empty line breaks never reaches the student (collapse_runaway_breaks).
+            $reply = self::collapse_runaway_breaks($reply, $swml_request_context['task'] ?? '');
 
             $response_payload = [
                 'success' => true,
