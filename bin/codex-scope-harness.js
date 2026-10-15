@@ -97,7 +97,7 @@ fs.rmSync(tmp, { recursive: true, force: true });
 const ja = JS.indexOf('// @CODEX-SCOPE-PURE-BEGIN'), jb = JS.indexOf('// @CODEX-SCOPE-PURE-END');
 ok(ja > 0 && jb > ja, 'JS: the scope functions sit between their sentinels');
 // eslint-disable-next-line no-new-func
-const F = new Function(JS.slice(ja, jb) + '\nreturn { codexScopeModel, codexFieldState, codexFieldLockedIn, codexScopeCss, codexFirstOwned, codexClipField, codexFollowAllowed, codexRefusalText, codexSectionBar, codexLessonHref };')();
+const F = new Function(JS.slice(ja, jb) + '\nreturn { codexScopeModel, codexFieldState, codexFieldLockedIn, codexScopeCss, codexFirstOwned, codexClipField, codexFollowAllowed, codexRefusalText, codexSectionBar, codexLessonHref, codexLessonProgress };')();
 // The JS side is fed the shape the server sends; built here from the contract directly.
 const scopeFor = (i) => {
     const own = CONTRACT.lessons[i].fields;
@@ -219,6 +219,22 @@ ok(/sophicly_review_target_id\(\)\) return \['state' => 'review'\]/.test(PHP) &&
 const tpl = fnBody(JS, 'function buildMasteryCodexTemplate()');
 ok(tpl.indexOf("'IUMVCC Draft (6 Beats)'") > 0 && tpl.indexOf("'IUMVCC Draft (6 Beats)'") < tpl.indexOf("'Story-Spine Draft (6 Beats)'"), 'template: IUMVCC (lesson 16) sits above Story-Spine (lesson 18)');
 ok(/'mastery_codex': 21,/.test(JS), 'template: Codex document version bumped to 21 (answers carried by mergeCodexFields)');
+
+// ── (5) v7.20.903 — a Codex lesson's own Mark Complete reading (Neil, Actions round ae card 6) ──────────────────────
+{
+    const secs5 = CONTRACT.lessons.map(r => r.fields.slice()), labels5 = CONTRACT.lessons.map(r => 'Unit ' + r.unit + ' · ' + r.title);
+    const own5 = CONTRACT.lessons[i5].fields;
+    const allOther = new Set([].concat(...CONTRACT.lessons.filter((r, j) => j !== i5).map(r => r.fields)));
+    let p = F.codexLessonProgress(secs5, m5, allOther, labels5);
+    ok(p && p.total === own5.length && p.done === 0 && p.pct === 0 && p.incomplete.length === 1, 'Codex lesson: every OTHER lesson answered, this one empty → 0% (only its own questions count) — ' + (p && p.done) + '/' + (p && p.total));
+    p = F.codexLessonProgress(secs5, m5, new Set(own5), labels5);
+    ok(p && p.done === p.total && p.pct === 100 && !p.incomplete.length, 'Codex lesson: its own questions answered, the rest empty → 100%');
+    if (own5.length > 1) { p = F.codexLessonProgress(secs5, m5, new Set(own5.slice(1)), labels5); ok(p && p.pct < 100 && p.incomplete[0] === labels5[i5], 'Codex lesson: one own question empty → below 100%, named by its section'); }
+    ok(F.codexLessonProgress(secs5, null, new Set(), labels5) === null, 'Codex lesson: no scope (staff / review / no map row) → null → the gate reads "unknown" (fail-open)');
+    ok(/const fn = task === 'mastery_codex' \? _computeCodexLessonProgress : _progressComputeFor\(task\);/.test(JS), 'Codex lesson: the gate reading uses the lesson\'s own questions');
+    ok(/const cx = snap\.task === 'mastery_codex' \? _computeCodexLessonProgress\(\) : null;/.test(JS), 'Codex lesson: the saved verdict (swml_docprog_*) records the lesson\'s own questions');
+    ok(/if \(t === '' \|\| t === 'diagnostic'\) return 'diagnostic';[\s\S]{0,400}return 'other:' \+ t;/.test(JS) && !/MC_GATE_ENFORCE_FAMILIES = \[[^\]]*mastery_codex/.test(JS), 'Codex lesson: still WATCH-ONLY (not an enforced family) until a finished lesson is measured + Neil types go');
+}
 
 console.log('\n' + (fail ? '❌ FAIL' : '✅ PASS') + ' — ' + n + ' checks');
 process.exit(fail);

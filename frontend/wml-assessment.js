@@ -19858,7 +19858,8 @@
         try {
             out.exempt = _mcGateExempt(family);
             const editorEl = canvasEditor && canvasEditor.options && canvasEditor.options.element;
-            const fn = _progressComputeFor(task);
+            // v7.20.903: a Codex lesson reads its OWN questions (the per-unit card has no per-lesson figure).
+            const fn = task === 'mastery_codex' ? _computeCodexLessonProgress : _progressComputeFor(task);
             if (!editorEl || !fn) return out;
             try { _recomputeAllCompletion(); } catch (_) {}   // fresh ticks, not the last debounce
             const p = fn(editorEl);
@@ -40358,6 +40359,24 @@
         const q = quietMs == null ? 5000 : quietMs;
         return (now - (lastKeyAt || 0)) >= q && (now - (lastUserScrollAt || 0)) >= q;
     }
+    // v7.20.903 (Neil, Actions round ae card 6 — the Codex gets "the same three steps" as planning): a scoped Codex
+    // lesson is FINISHED when every question it OWNS holds an answer. Earlier and later lessons' questions never count
+    // (they belong to their own lessons, PEDAGOGY §6). null = no scope (staff / review / no map row) → the gate reads
+    // "unknown" and lets the lesson complete (fail-open). labels[i] = the section label of sections[i].
+    function codexLessonProgress(sections, model, answered, labels) {
+        if (!model) return null;
+        let total = 0, done = 0; const incomplete = [];
+        (sections || []).forEach((fids, i) => {
+            (fids || []).forEach(f => {
+                if (!model.owned.has(f)) return;
+                total++;
+                if (answered && answered.has(f)) { done++; return; }
+                const l = (labels && labels[i]) || 'Question';
+                if (incomplete.indexOf(l) === -1) incomplete.push(l);
+            });
+        });
+        return { total, done, incomplete, pct: total ? Math.round(done / total * 100) : 0 };
+    }
     // @CODEX-SCOPE-PURE-END
     let _codexScopeCache = { key: null, model: null };
     function _codexModel() {
@@ -40390,6 +40409,27 @@
             });
         } catch (_) {}
         return out;
+    }
+    // v7.20.903: the section labels, in the SAME order and with the same skips as _codexDocSections (sections with no field).
+    function _codexDocSectionLabels(editor) {
+        const out = [];
+        try {
+            editor.state.doc.descendants(node => {
+                if (node.type.name !== 'sectionBlock') return true;
+                let has = false;
+                node.descendants(n => { if ((n.type.name === 'inputField' || n.type.name === 'selectField') && n.attrs && n.attrs.fieldId) has = true; return !has; });
+                if (has) out.push(String((node.attrs && node.attrs.label) || 'Question'));
+                return false;
+            });
+        } catch (_) {}
+        return out;
+    }
+    // v7.20.903: this Codex lesson's reading for the Mark Complete gate + the saved verdict (watch-only family).
+    function _computeCodexLessonProgress() {
+        try {
+            if (!canvasEditor || !canvasEditor.state) return null;
+            return codexLessonProgress(_codexDocSections(canvasEditor), _codexModel(), _codexAnsweredSet(canvasEditor), _codexDocSectionLabels(canvasEditor));
+        } catch (_) { return null; }
     }
     // v7.20.785 (#832): the field ids that already hold an answer (typed text, or a chosen option).
     function _codexAnsweredSet(editor) {
@@ -71514,8 +71554,10 @@
             // dashboard reads the same record to find "complete but unfinished" lessons.
             ...(function () {
                 try {
-                    const r = _mcLastCardReading;
                     const pid = (window.swmlEmbedConfig && window.swmlEmbedConfig.postId) || 0;
+                    // v7.20.903: the Codex has no per-lesson card reading — record THIS lesson's own questions (watch-only).
+                    const cx = snap.task === 'mastery_codex' ? _computeCodexLessonProgress() : null;
+                    const r = cx ? { total: cx.total, done: cx.done, pct: cx.pct, incomplete: cx.incomplete, task: 'mastery_codex', postId: pid } : _mcLastCardReading;
                     if (!r || !pid || r.postId !== pid || r.task !== (snap.task || '') || !r.total) return {};
                     const family = mcGateFamily(snap.task);
                     const facts = {
