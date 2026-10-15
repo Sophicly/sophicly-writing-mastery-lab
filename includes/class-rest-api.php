@@ -5013,10 +5013,32 @@ class SWML_REST_API {
             'display_name' => $tutor->display_name,
             'timestamp'    => current_time('c'),
         ];
+        // v7.20.900: a one-tap comment's deep link (shape-checked; the student's card validates it again through
+        // WML.learnChipHtml, which draws nothing for an unknown section).
+        $link = self::sanitize_comment_link($params['link'] ?? null);
+        if ($link) $entry['link'] = $link;
         $thread[] = $entry;
         update_user_meta($student_id, $note_key, wp_slash(wp_json_encode($thread)));
 
         return rest_ensure_response(['success' => true, 'thread' => $thread, 'entry' => $entry]);
+    }
+
+    /**
+     * v7.20.900: the deep link a tutor's one-tap end-of-document comment carries — { dest, arg, label } — kept only when it
+     * has the shape the student's learn chip can use: dest toolkit|table; a toolkit arg is a section id (lowercase,
+     * digits, hyphens); a table arg is a technique name (plain text, no colon — the learn-chip token is colon-delimited).
+     * Anything else is dropped, never stored half-formed. Driven by bin/tutorcomment-chips-harness.js.
+     */
+    public static function sanitize_comment_link($raw) {
+        if (!is_array($raw)) return null;
+        $dest = (string) ($raw['dest'] ?? '');
+        if ($dest !== 'toolkit' && $dest !== 'table') return null;
+        $arg   = trim(sanitize_text_field((string) ($raw['arg'] ?? '')));
+        $label = trim(sanitize_text_field((string) ($raw['label'] ?? '')));
+        if ($arg === '' || strlen($arg) > 80 || strlen($label) > 120) return null;
+        if ($dest === 'toolkit' && !preg_match('/^[a-z0-9-]+$/', $arg)) return null;
+        if (strpos($arg, ':') !== false) return null;
+        return ['dest' => $dest, 'arg' => $arg, 'label' => $label !== '' ? $label : $arg];
     }
 
     /**

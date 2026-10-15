@@ -54919,6 +54919,18 @@
                 { label: 'Try literary device', text: 'Try a literary device here to strengthen the effect — choose whatever technique fits best.' },
             ]},
         ];
+        // v7.20.900 (Actions round ac, Neil 15 Oct: "All 15") — one-tap comments for the END-OF-DOCUMENT tutor box
+        // (renderTutorCommentInline), from his own end-of-document comments on prod. The approved words exactly; a link
+        // only where a Toolkit section teaches the point (same _qcTk validation as the passage chips).
+        const TUTOR_NOTE_CHIPS = [
+            { label: 'Not 100% yet', text: 'This isn’t finished yet. Complete every box to 100% before you mark the lesson complete.' },
+            { label: 'More detail', text: 'Good start. Now give each answer a little more detail: a full sentence or two, not a few words.', link: _qcTk('whathowwhy', 'What · How · Why · So What · What Next') },
+            { label: 'Use TTECEA', text: 'Remember to use the TTECEA structure we have practised, in every paragraph.', link: _qcTk('ttecea', 'TTECEA + C') },
+            { label: 'Finish today', text: 'Please finish this today.' },
+            { label: 'Follow the videos', text: 'Work alongside the videos: do the exercise I am doing in the video, and don’t go ahead of it.' },
+            { label: 'Ask me', text: 'If you’re not sure what to do, bring your question to the strategy session, or ask me in the chat.' },
+            { label: 'Well done', text: 'Well done. This is complete, and it shows real effort.' },
+        ];
 
         function addComment(selFrom, selTo) {
             // v7.15.40: parents view read-only — cannot create comments.
@@ -60911,6 +60923,7 @@
         // heavy doc — a remount rebuilds the box from the (empty) server thread and destroys any
         // in-progress text. Stash the draft OUTSIDE the rebuildable DOM so a rebuild restores it.
         let _tutorCommentDraft = '';
+        let _tutorCommentDraftLink = null;   // v7.20.900: the picked chip's deep link — survives a remount like the draft
         function renderTutorCommentInline(refetch) {
             const editor = document.getElementById('swml-tiptap-editor');
             if (!editor || !canvasEditor) return;
@@ -60958,6 +60971,12 @@
                     body.className = 'swml-tutorcomment-readonly';
                     body.textContent = String(entry.text || '');
                     card.appendChild(body);
+                    // v7.20.900: a one-tap comment's deep link — ONE producer (WML.learnChipHtml, the passage comments'
+                    // validation), so an unknown section or a page without the Toolkit/Table draws nothing, never a dead chip.
+                    if (entry.link) {
+                        const lh = WML.learnChipHtml ? WML.learnChipHtml(entry.link) : '';
+                        if (lh) { const lw = document.createElement('div'); lw.className = 'swml-tutorcomment-learn'; lw.innerHTML = lh; card.appendChild(lw); }
+                    }
                     const badgeParts = [];
                     if (entry.display_name) badgeParts.push(entry.display_name);
                     const dt = _fmtDate(entry.timestamp);
@@ -61001,7 +61020,58 @@
                     // v7.20.201: capture the draft on every keystroke + restore it if a remount
                     // just rebuilt this box — so in-progress text survives NodeView remounts.
                     ta.addEventListener('input', () => { _tutorCommentDraft = ta.value; });
-                    if (_tutorCommentDraft) { ta.value = _tutorCommentDraft; }
+                    if (_tutorCommentDraft) { ta.value = _tutorCommentDraft; } else { _tutorCommentDraftLink = null; }
+                    // v7.20.900 (round ac, "All 15"): one-tap comments above the box. A tap fills the box (still editable); a
+                    // chip's link is kept while the words are edited, cleared when the box is emptied, another chip is picked
+                    // or "Remove link" is pressed, and rides the save. Same look and wording as the passage comment modal.
+                    const chipRow = document.createElement('div');
+                    chipRow.className = 'swml-cm-chips swml-tutorcomment-chips';
+                    chipRow.setAttribute('contenteditable', 'false');
+                    const linkLine = document.createElement('div');
+                    linkLine.className = 'swml-cm-link swml-tutorcomment-linkline';
+                    linkLine.setAttribute('contenteditable', 'false');
+                    const paintLink = () => {
+                        linkLine.textContent = '';
+                        linkLine.hidden = !_tutorCommentDraftLink;
+                        if (!_tutorCommentDraftLink) return;
+                        linkLine.appendChild(document.createTextNode('Adds a link to '));
+                        const strong = document.createElement('strong');
+                        strong.textContent = _tutorCommentDraftLink.label;
+                        linkLine.appendChild(strong);
+                        linkLine.appendChild(document.createTextNode(' in the ' + (_tutorCommentDraftLink.dest === 'table' ? 'Table of Techniques' : 'Mastery Toolkit') + '. '));
+                        const rm = document.createElement('button');
+                        rm.type = 'button';
+                        rm.className = 'swml-cm-link-remove';
+                        rm.textContent = 'Remove link';
+                        rm.addEventListener('click', () => { _tutorCommentDraftLink = null; paintLink(); ta.focus(); });
+                        linkLine.appendChild(rm);
+                    };
+                    const pressChip = (on) => chipRow.querySelectorAll('.swml-cm-chip').forEach(b => b.setAttribute('aria-pressed', b === on ? 'true' : 'false'));
+                    TUTOR_NOTE_CHIPS.forEach(item => {
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        chip.className = 'swml-cm-chip';
+                        chip.title = item.text;
+                        chip.textContent = item.label;
+                        chip.setAttribute('aria-pressed', ta.value === item.text ? 'true' : 'false');
+                        chip.addEventListener('click', () => {
+                            ta.value = item.text;
+                            _tutorCommentDraft = item.text;
+                            _tutorCommentDraftLink = item.link || null;
+                            pressChip(chip);
+                            paintLink();
+                            _grow();
+                            ta.focus();
+                        });
+                        chipRow.appendChild(chip);
+                    });
+                    ta.addEventListener('input', () => {
+                        if (ta.value.trim()) return;
+                        _tutorCommentDraftLink = null;
+                        pressChip(null);
+                        paintLink();
+                    });
+                    paintLink();
                     const row = document.createElement('div');
                     row.className = 'swml-tutorcomment-composerow';
                     const status = document.createElement('span');
@@ -61018,11 +61088,13 @@
                         const val = ta.value.trim();
                         if (!val) return;
                         addBtn.disabled = true; status.textContent = 'Saving…';
+                        const _body = Object.assign({}, _scope(), { studentId: _targetStudent(), text_note: val });
+                        if (_tutorCommentDraftLink) _body.link = { dest: _tutorCommentDraftLink.dest, arg: _tutorCommentDraftLink.arg, label: _tutorCommentDraftLink.label };   // v7.20.900
                         fetch(config.restUrl + 'canvas/tutorcomment', {
                             method: 'POST', headers,
-                            body: JSON.stringify(Object.assign({}, _scope(), { studentId: _targetStudent(), text_note: val }))
+                            body: JSON.stringify(_body)
                         }).then(r => r.json()).then(res => {
-                            if (res && res.success) { _tutorCommentDraft = ''; _tutorCommentLoadPromise = Promise.resolve({ success: true, thread: res.thread }); _render(res.thread || []); }
+                            if (res && res.success) { _tutorCommentDraft = ''; _tutorCommentDraftLink = null; _tutorCommentLoadPromise = Promise.resolve({ success: true, thread: res.thread }); _render(res.thread || []); }
                             else { status.textContent = 'Save failed'; addBtn.disabled = false; }
                         }).catch(() => { status.textContent = 'Save failed'; addBtn.disabled = false; });
                     };
@@ -61034,7 +61106,9 @@
                     });
                     row.appendChild(status);
                     row.appendChild(addBtn);
+                    wrap.appendChild(chipRow);
                     wrap.appendChild(ta);
+                    wrap.appendChild(linkLine);
                     wrap.appendChild(row);
                     ui.appendChild(wrap);
                     requestAnimationFrame(_grow);

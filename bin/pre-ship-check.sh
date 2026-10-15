@@ -311,6 +311,13 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/aim-grade-harness.js || fail=1
 fi
 
+# v7.20.900 (Actions round ac, "All 15"): seven one-tap END-OF-DOCUMENT tutor comments — Neil's words, two Toolkit links
+# riding the save, shape-checked on the server, drawn on the student's card by WML.learnChipHtml. PHP executed. 4 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|class-rest-api\.php|wml-canvas\.css|tutorcomment-chips-harness\.js'; then
+  node bin/tutorcomment-chips-harness.js || fail=1
+fi
+
 # v7.20.882 (FIXLIST p&c-1397-lock-device): the display-lock guard — a student change to the writing of an assessment /
 # discuss lesson is refused at the transaction, by any route, and recorded; code, marks and migrations pass. 4 mutations.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \

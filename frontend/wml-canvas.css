@@ -6375,6 +6375,10 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-tutorcomment-del:disabled { opacity: 0.2; cursor: default; }
 /* Compose box for a NEW comment. */
 .swml-tutorcomment-compose { margin-top: 4px; }
+/* v7.20.900 (round ac, "All 15"): one-tap comments above the box, and a chosen link's learn chip on the card. */
+.swml-tutorcomment-chips { margin-bottom: 8px; }
+.swml-tutorcomment-linkline { margin: 6px 0 0; }
+.swml-tutorcomment-learn { margin-top: 8px; }
 .swml-tutorcomment-input {
     width: 100%; box-sizing: border-box; min-height: 64px; resize: vertical;
     padding: 11px 13px; border-radius: 12px; border: none;
@@ -13141,7 +13145,8 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
 .swml-phase-coach,
 .swml-weight-card,
 .swml-review-modal,
-.swml-comment-popover {   /* v7.20.798 (#850) joins the family */
+.swml-comment-popover,   /* v7.20.798 (#850) joins the family */
+.swml-tutorcomment-ui {   /* v7.20.900: the end-of-document comment chips use the .swml-cm-* family styles */
     --swml-coach-surface: #1c1d1f;
     --swml-coach-radius: 12px;
     --swml-coach-shadow: 0 12px 36px rgba(44, 0, 62, 0.5);
@@ -13158,6 +13163,8 @@ body[data-swml-theme="light"] .swml-timer-picker-none-btn:hover { color: rgba(20
 [data-swml-theme="light"] .swml-review-modal,
 .swml-canvas-light .swml-comment-popover,
 [data-swml-theme="light"] .swml-comment-popover,
+.swml-canvas-light .swml-tutorcomment-ui,
+[data-swml-theme="light"] .swml-tutorcomment-ui,
 .swml-phase-coach--light {
     --swml-coach-surface: #ffffff;
     --swml-coach-shadow: 0 18px 44px -12px rgba(44, 0, 62, 0.20), 0 2px 8px rgba(44, 0, 62, 0.08);
