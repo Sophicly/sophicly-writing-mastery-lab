@@ -202,6 +202,19 @@ const CASES = [{
   protocols: mdIn('protocols/edexcel-igcse/language1/planning'),
   render: () => renderPaperOutlineIds('edexcel-igcse', 'language_p1'),
   allow: [],
+}, {
+  // v7.20.898 (WML 360 A — Shayaan 1397 is the first student to reach this plan on prod). KNOWN_UNCOVERED said poetry
+  // "renders through the poem-specific builder"; it does not. The redraft dispatch calls buildOutlineSection(topicData.aos,
+  // null, marks, null, { focus: 'comparativePoetry' }) when the poetry ladder is active (wml-assessment.js "Poetry
+  // comparison (ladder-active)"). AQA poetry anthology = AO1, AO2, AO3 · 30 marks (literature-paper-specs.json).
+  name: 'AQA Poetry comparison (anthology ladder)',
+  protocols: mdIn('protocols/aqa/poetry/planning'),
+  render: () => {
+    sandbox._specSubjectKey = () => 'poetry_anthology';
+    sandbox.state.subject = 'poetry_anthology';
+    return renderIds(() => sandbox.buildOutlineSection('AO1,AO2,AO3', null, 30, null, { focus: 'comparativePoetry' }));
+  },
+  allow: [],
 }];
 
 let failed = 0;
@@ -282,8 +295,6 @@ for (const [name, board, subject] of [['AQA Lang P1', 'aqa', 'language_p1'], ['A
 // reason. A new uncovered protocol fails the build. ⛔ Adding a line here is a deliberate act —
 // never do it to silence a port you are actively building (that is the whole point of the gate).
 const KNOWN_UNCOVERED = {
-  'protocols/aqa/poetry/planning':
-    'poetry renders through the poem-specific builder, not buildOutlineSection — needs its own case (QUEUE).',
   'protocols/aqa/unseen/planning':
     'unseen poetry: two-poem comparison dispatch, own builder — needs its own case (QUEUE).',
   'protocols/eduqas/literature/planning':
