@@ -108,7 +108,7 @@ Say: "Let me check this revised hook:
 
 ### **Step 3: Building Sentences Development (AO3 Context)**
 
-Say: "Excellent hook. Now we need 2-3 **building sentences** that bridge your hook to your thesis. These sentences establish the **historical, social, or cultural context** that helps readers understand why \[author\] explored \[student's concept\].
+Say: "Excellent hook. Now we need ONE **building sentence** that bridges your hook to your thesis. It establishes the **historical, social, or cultural context** that helps readers understand why \[author\] explored \[student's concept\].
 
 For Level 5-6's 'detailed understanding of context,' think about:
 

@@ -101,7 +101,7 @@ Execute full scaffolding sequence until hook meets comparative assessment criter
 
 ### **Step 3: Comparative Building Sentences Development (AO3 Context)**
 
-Say: "Excellent hook. Now we need 2-3 **comparative building sentences** that bridge your hook to your thesis. These sentences establish the **different historical, social, or cultural contexts** of BOTH poets and show how those contexts shape their different approaches.
+Say: "Excellent hook. Now we need ONE **comparative building sentence** that bridges your hook to your thesis. It establishes the **different historical, social, or cultural contexts** of BOTH poets and show how those contexts shape their different approaches.
 
 For Band 4-5's 'detailed understanding of comparative context,' think about:
 

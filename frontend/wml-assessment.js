@@ -54854,7 +54854,7 @@
                 { label: 'Reassess', text: 'Reassess this section — the analysis doesn\'t align with the mark scheme criteria.', link: _qcTk('examiners', 'Examiners\' Requirements') },
                 { label: 'More detail', text: 'More detail needed — develop this point further.', link: _qcTk('whathowwhy', 'What · How · Why · So What · What Next') },
                 { label: 'Be specific', text: 'Be more specific — avoid vague or general statements.', link: _qcTk('fix-what-how', 'What & How: Black-Hole Words') },
-                { label: 'Richer quote', text: 'Choose a quotation with more in it, so you can explore the writer’s ideas in depth.', link: _qcTk('fix-evidence') },   // v7.20.899
+                { label: 'Richer quote', text: 'Choose a quotation that gives you enough for every part of TTECEA + C: a sophisticated technique to analyse, interesting vocabulary, interesting ideas behind it, effects on the reader or audience, the writer’s purpose, and context where it applies.', link: _qcTk('fix-evidence') },   // v7.20.899; v7.20.901 Neil's TTECEA + C test (Actions round ae)
                 // v7.20.797 (#847, Neil: "too descriptive for a topic sentence · not conceptual enough · not perceptive enough").
                 // 'Too descriptive' moved up from the TTECEA tier (same words). The other two follow the sections they link to:
                 // Conceptual Thinking ("A surface reading reports what happens") and the Interpretation Ladder (rung 3 "is perceptive").

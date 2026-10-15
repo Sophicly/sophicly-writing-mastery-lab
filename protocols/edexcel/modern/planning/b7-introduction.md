@@ -43,7 +43,7 @@ Which technique suits your argument best? Type 1, 2, 3, or 4."
 
 ### **Step 3: Building Sentences Development (AO3 Context)**
 
-Say: "Excellent hook. Now we need 2-3 **building sentences** that bridge your hook to your thesis. These sentences establish the **historical, social, or cultural context** that helps readers understand why \[author\] explored \[student's concept\].
+Say: "Excellent hook. Now we need ONE **building sentence** that bridges your hook to your thesis. It establishes the **historical, social, or cultural context** that helps readers understand why \[author\] explored \[student's concept\].
 
 For Level 4-5 content standard (20-32 marks for AO1+AO3)'s 'detailed understanding of context,' think about:
 

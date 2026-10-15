@@ -120,7 +120,7 @@ Say: "Let me check this revised hook:
 
 **IF question\_type \= "Q1a\_EXTRACT" \[STYLISTIC APPROACH FOCUS \- AO2\]:**
 
-Say: "Excellent hook. Now we need 2-3 building sentences that establish **the writer's primary stylistic approach** in this extract—the main technique(s) they use to present \[character/setting/moment\].
+Say: "Excellent hook. Now we need ONE building sentence that establishes **the writer's primary stylistic approach** in this extract—the main technique(s) they use to present \[character/setting/moment\].
 
 For Level 4-5 analysis, your building sentences should:
 
@@ -159,7 +159,7 @@ Say: "Let me check these building sentences meet the assessment criteria:
 
 **IF question\_type \= "Q1b\_WHOLE\_TEXT" \[CONCEPTUAL FRAMEWORK FOCUS \- AO1\]:**
 
-Say: "Excellent hook. Now we need 2-3 building sentences that establish the **conceptual framework** for your argument. These sentences articulate the core ideas and concepts that underpin your thesis.
+Say: "Excellent hook. Now we need ONE building sentence that establishes the **conceptual framework** for your argument. It articulates the core ideas and concepts that underpin your thesis.
 
 You've already analyzed three body paragraphs, so you understand the text deeply. For Level 4-5's 'detailed exploration,' your building sentences should:
 

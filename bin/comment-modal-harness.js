@@ -95,7 +95,7 @@ ok(techCalls === techs.length, 'every _qcTech( link parses (' + techs.length + '
 const _grp = (cat) => { const a = qBlock.indexOf("category: '" + cat + "'"); return a < 0 ? '' : qBlock.slice(a, qBlock.indexOf('category:', a + 10) > 0 ? qBlock.indexOf('category:', a + 10) : undefined); };
 const NEW_CHIPS = [
     ['Common Issues', "{ label: 'Full sentences', text: 'Write in full sentences, with a capital letter at the start and a full stop at the end.', link: _qcTk('final-read', 'The Final Read') }"],
-    ['Common Issues', "{ label: 'Richer quote', text: 'Choose a quotation with more in it, so you can explore the writer’s ideas in depth.', link: _qcTk('fix-evidence') }"],
+    ['Common Issues', "{ label: 'Richer quote', text: 'Choose a quotation that gives you enough for every part of TTECEA + C: a sophisticated technique to analyse, interesting vocabulary, interesting ideas behind it, effects on the reader or audience, the writer’s purpose, and context where it applies.', link: _qcTk('fix-evidence') }"],
     ['Quick notes', "{ label: 'Incomplete', text: 'This isn’t complete yet.' }"],
     ['Quick notes', "{ label: 'Unclear', text: 'This isn’t clear yet. Say exactly what you mean, so the reader understands it first time.' }"],
     ['Praise', "{ label: 'Strong inference', text: 'Strong inference.' }"],

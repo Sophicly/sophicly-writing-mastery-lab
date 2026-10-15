@@ -318,6 +318,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/tutorcomment-chips-harness.js || fail=1
 fi
 
+# v7.20.901 (Neil's tag 15 Oct + PEDAGOGY §66): an introduction is hook · ONE building sentence · thesis — planned, marked
+# and modelled the same way. No literature protocol may ask for 2–3 building sentences; AQA poetry marks 3-sentence gold
+# introductions with one sentence carrying both building rows. Whole protocols/ tree. 5 mutations.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'protocols/.*\.md|intro-shape-gate\.js'; then
+  node bin/intro-shape-gate.js || fail=1
+fi
+
 # v7.20.882 (FIXLIST p&c-1397-lock-device): the display-lock guard — a student change to the writing of an assessment /
 # discuss lesson is refused at the transaction, by any route, and recorded; code, marks and migrations pass. 4 mutations.
 if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \

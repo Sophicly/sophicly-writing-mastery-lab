@@ -211,7 +211,7 @@ as fully human — Lee issues her moral challenge to every reader
 
 ### **Introduction Criteria:**
 - Compelling hook establishing an intriguing contextual factor/claim (NOT "In the novel, [author] explores...")
-- 2–3 building sentences establishing pertinent historical/social context (AO4)
+- ONE building sentence establishing pertinent historical/social context (AO4)
 - Building sentences evaluate how context shapes author's purpose/choices (AO4 — causal language)
 - Clear, precise thesis with powerful argument (AO1)
 - 4–5 sentences total; complex sentences of 2–3 lines

@@ -108,7 +108,7 @@ Say: "Let me check this revised hook:
 
 **Step 3: Building Sentences Development (Concept → Methods Bridge)**
 
-Say: "Excellent hook. Now we need 2-3 **building sentences** that bridge your hook to your thesis. These sentences establish the **conceptual focus** (AO1 — what the writer presents) and the **literary methods** the writer uses to present it (AO2 — how they present it).
+Say: "Excellent hook. Now we need ONE **building sentence** that bridges your hook to your thesis. It establishes the **conceptual focus** (AO1 — what the writer presents) and the **literary methods** the writer uses to present it (AO2 — how they present it).
 
 **For Band 4-5, think about:**
 

@@ -18,13 +18,13 @@ Ask: "Now a **comparative hook** — it must intrigue AND establish that you're 
 3. **Intriguing comparative quote** (a line about the thematic territory BOTH poets explore)
 4. **Counter-intuitive comparative claim** ('The most traditional and the most revolutionary form can capture the same truth — by opposite means')
 Type 1, 2, 3 or 4."
-**\[Wait.\]** Then: "Craft your hook in that technique — one powerful sentence that makes the reader curious about the comparison."
-**\[Wait.\]** *WEAK-push (stock/one-poem/generic hook that is still THEIRS):* "Your thesis compares \[Poet A\]'s approach with \[Poet B\]'s to \[theme\] — how could your \[chosen technique\] establish THAT comparative dimension and make a reader curious why comparing these two matters?" Then accept. Quality gate: surprises/intrigues · connects to the comparative thesis · establishes BOTH poets · specific · one sentence.
+**\[Wait.\]** Then: "Craft your hook in that technique — one powerful sentence, rooted in the poets' historical context, that makes the reader curious about the comparison."
+**\[Wait.\]** *WEAK-push (stock/one-poem/generic hook that is still THEIRS):* "Your thesis compares \[Poet A\]'s approach with \[Poet B\]'s to \[theme\] — how could your \[chosen technique\] establish THAT comparative dimension and make a reader curious why comparing these two matters?" Then accept. Quality gate: surprises/intrigues · rooted in historical context · connects to the comparative thesis · establishes BOTH poets · specific · one sentence.
 → once the gate passes, emit on its own line:
 @FIELD_COMMIT{"field":"outline-intro-hook"}
 
 ### **Step 3: Comparative Building Sentences (AO3 Context)**
-Say: "Now 2–3 **comparative building sentences** bridging hook to thesis — establishing the DIFFERENT contexts of BOTH poets and how those contexts drove their different approaches. Causal, not background: what was happening in each poet's world, and how did it DRIVE each to approach \[theme\] differently? Introduce both poems and poets naturally."
+Say: "Now ONE **comparative building sentence** bridging hook to thesis — establishing the DIFFERENT contexts of BOTH poets and how those contexts drove their different approaches. Causal, not background: what was happening in each poet's world, and how did it DRIVE each to approach \[theme\] differently? Introduce both poems and poets naturally — all in ONE sentence (hook · one building sentence · thesis, Neil 15 Oct 2026)."
 **\[Wait.\]** *WEAK-push:* "In your body plans you mentioned \[reference their contexts\] — expand: how did \[Poet A\]'s context drive their approach while \[Poet B\]'s different context drove the contrasting one?" A dated context-bank fact may be handed ONE at a time (wallet-governed, `@INSIGHT_SPENT`), kept clear of live quotations — the student builds the causal bridge. Run `CONTEXT_DRIVE_CHECK()`.
 → once accepted, emit on its own line:
 @FIELD_COMMIT{"field":"outline-intro-building"}

@@ -3601,3 +3601,33 @@ lesson-best). The box and the components "What's next?" chooser (`[sophicly_next
 Neil: *"the final lesson for a topic in the redraft is about selecting the next topic so that might need to be adjusted"*)
 both read it; the chooser via `SWML_REST_API::topic_progress_for_course()`. A missing grade gives `gradeUp: null`, and every
 reader then behaves as if the rule did not exist — a student is never held back by missing data (§18).
+
+---
+
+## §66. ⭐⭐ THE INTRODUCTION IS THREE SENTENCES EVERYWHERE, AND AQA'S AO4 STAYS INSIDE OUR CONTENT MARKS (Neil, ruled 2026-10-15; FIXLIST intro-one-building-sentence, actions-round-ae-answers)
+
+**1. Hook · ONE building sentence · thesis, planned AND marked AND modelled (tag 074424, relayed by LearnDash 41).**
+Verbatim: *"check the protocols for how the essays should be structured check the poetry protocols especially so it should
+be hook based on historical context one sentence one sentence of one building sentence based on historical context and then
+thesis statement one sentence ideally"*. This is §54.1's introduction (7 Oct), carried to the two places it had not
+reached: every Literature PLANNING step still asked for "2-3 building sentences" (19 lines in 17 files, every board), and
+AQA poetry's marking still asked for 4–5-sentence gold introductions. A student was planned at 2–3, marked on 2 rows and
+modelled on 1. Now ONE building sentence everywhere; the marking keeps both building-sentence ROWS (0.5 + 0.5) and the one
+sentence carries both, exactly as §54.1 says. The hook is rooted in the historical context. Where a board's building
+sentence carries something other than context (Edexcel Shakespeare / 19th-century extract: the writer's stylistic approach;
+Eduqas Shakespeare / Modern, CCEA: conceptual focus — boards whose question does not assess context), only the COUNT
+changed, never the content. Unported marking tables (Edexcel, Eduqas, CCEA, SQA — still "4-5 sentences" for gold
+introductions) take it with their §54 port. **Enforced:** `bin/intro-shape-gate.js` (whole protocols/ tree, 5 mutations).
+
+**2. AQA Literature AO4 stays as content marks (Actions round ae, card 5).** Verbatim: *"if we give it as if we could give it
+the way AQA does then our penalties become redundant don't they I think we should keep it the way it is"*. So Shakespeare
+and Modern are out of 34 with the 4 AO4 marks folded into the grid's content rows, and SPaG is handled by penalties
+(protocol-a-assessment.md). ⚠️ **What this knowingly gives up, recorded once (root §0: warn, never substitute):** an AQA
+examiner awards AO4 as one holistic 0–4 judgement of spelling, punctuation, grammar and vocabulary; our total can therefore
+differ from an examiner's by up to 4 marks on those two texts. Neil weighed it and kept the grid. **How 19th-century is
+told apart (his question, answered from code):** an AQA-only, code-owned override (`class-protocol-router.php:3238`,
+subject `19th_century` + task `assessment` + board `aqa`) takes the same 4 marks back out of the same rows — each body
+paragraph 8 → 7 (purpose 1.0 → 0.5, close analysis 1.25 → 1.0, context 1.0 → 0.75), the conclusion 7 → 6 (purpose
+2.0 → 1.0), introduction unchanged — so the essay is out of 30. `modules/ao4-assessment.md` and `knowledge-ao4.md`, which
+describe AQA's holistic method, are loaded by no manifest and no router path; they are dead and contradict this ruling (§7
+of root CLAUDE.md: flagged for cleanup, not deleted here).

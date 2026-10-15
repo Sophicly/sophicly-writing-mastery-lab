@@ -35,7 +35,7 @@ Wait. Store hook.
 
 **Step 3 — Building Sentences Development (AO4):**
 
-"Now 2–3 **building sentences** bridging your hook to your thesis. These establish the historical, social, or cultural context that explains WHY [author] explored [your concept].
+"Now ONE **building sentence** bridging your hook to your thesis. It establishes the historical, social, or cultural context that explains WHY [author] explored [your concept].
 
 For Level 4–5 'detailed awareness of context,' think about:
 
