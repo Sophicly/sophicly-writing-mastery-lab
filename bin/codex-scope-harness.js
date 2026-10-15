@@ -214,8 +214,9 @@ ok(/const cw = inCanvas \? _swmlScrollerOf\(target\) : null;/.test(toTop) && /if
     'wiring: the one jump helper finds the real scroller and never scrollIntoView()s inside the canvas (that would shift the overflow:hidden boxes)');
 ok(/'codexScope'\] = \$codex_scope/.test(PHP) && /codex_scope_for_lesson\(\(int\) \$post_id\)/.test(PHP), 'wiring: the server sends codexScope for mastery_codex');
 ok(/get_option\('swml_codex_lesson_map', null\);\s*\n\s*if \(\$raw === null \|\| \$raw === false \|\| \$raw === ''\) return null;/.test(PHP), 'wiring: no option → null → the Codex behaves exactly as before (LD\'s on-switch rule)');
-ok(/sophicly_review_target_id\(\)\) return \['state' => 'review'\]/.test(PHP) && /return \['state' => 'staff'\]/.test(PHP) && /isset\(\$_GET\['codex_scope'\]\)/.test(PHP),
-    'wiring: reviewers and staff see the whole Codex; ?codex_scope=1 previews the student view');
+ok(/sophicly_review_target_id\(\)\) \$review = true;/.test(PHP) && /if \(\$review\) \{\s*if \(\(\$scope\['state'\] \?\? ''\) !== 'scoped'\) return \['state' => 'review'\];\s*\$scope\['view'\] = 'review';/.test(PHP)
+    && /return \['state' => 'staff'\]/.test(PHP) && /isset\(\$_GET\['codex_scope'\]\)/.test(PHP),
+    'wiring: a reviewer gets the scope marked view:review (land, no locks; unscoped stays state:review); staff see the whole Codex; ?codex_scope=1 previews the student view');
 const tpl = fnBody(JS, 'function buildMasteryCodexTemplate()');
 ok(tpl.indexOf("'IUMVCC Draft (6 Beats)'") > 0 && tpl.indexOf("'IUMVCC Draft (6 Beats)'") < tpl.indexOf("'Story-Spine Draft (6 Beats)'"), 'template: IUMVCC (lesson 16) sits above Story-Spine (lesson 18)');
 ok(/'mastery_codex': 21,/.test(JS), 'template: Codex document version bumped to 21 (answers carried by mergeCodexFields)');
@@ -234,6 +235,31 @@ ok(/'mastery_codex': 21,/.test(JS), 'template: Codex document version bumped to 
     ok(/const fn = task === 'mastery_codex' \? _computeCodexLessonProgress : _progressComputeFor\(task\);/.test(JS), 'Codex lesson: the gate reading uses the lesson\'s own questions');
     ok(/const cx = snap\.task === 'mastery_codex' \? _computeCodexLessonProgress\(\) : null;/.test(JS), 'Codex lesson: the saved verdict (swml_docprog_*) records the lesson\'s own questions');
     ok(/if \(t === '' \|\| t === 'diagnostic'\) return 'diagnostic';[\s\S]{0,400}return 'other:' \+ t;/.test(JS) && !/MC_GATE_ENFORCE_FAMILIES = \[[^\]]*mastery_codex/.test(JS), 'Codex lesson: still WATCH-ONLY (not an enforced family) until a finished lesson is measured + Neil types go');
+}
+
+// v7.20.908 (LD 43 for Neil): a REVIEWER lands on the lesson's exercise and follows the clip too; the locks stay student-only.
+console.log('R. review mode — land + clip-follow, never the student locks');
+{
+    const grab = (name) => { const i = JS.indexOf('    function ' + name + '('); const j = JS.indexOf('\n    }\n', i); return i < 0 ? '' : JS.slice(i, j + 6); };
+    const src = grab('_codexModel') + grab('_codexMapModel');
+    ok(/function _codexMapModel\(/.test(src) && /return \(state\.reviewMode \|\| \(sc && sc\.view === 'review'\)\) \? null : _codexMapModel\(\);/.test(src), '_codexModel = the map model, null in review (client flag OR the server\'s view:review)');
+    // eslint-disable-next-line no-new-func
+    const mk = (review) => new Function('state', 'window', 'codexScopeModel', 'console',
+        'let _codexScopeCache = { key: null, model: null };\n' + src + '\nreturn { student: _codexModel(), map: _codexMapModel() };')(
+        { task: 'mastery_codex', reviewMode: review }, { swmlEmbedConfig: { postId: 46620, codexScope: { state: 'ok', lesson: 46620 } } }, () => ({ owned: new Set(['unit-3.exit-ticket.three']) }), { warn() {} });
+    const rv = mk(true), sv = mk(false);
+    // the server's review flag alone (a review page whose client state missed it) still means no locks
+    const fv = new Function('state', 'window', 'codexScopeModel', 'console',
+        'let _codexScopeCache = { key: null, model: null };\n' + src + '\nreturn { student: _codexModel(), map: _codexMapModel() };')(
+        { task: 'mastery_codex', reviewMode: false }, { swmlEmbedConfig: { postId: 46620, codexScope: { state: 'scoped', view: 'review' } } }, () => ({ owned: new Set(['a']) }), { warn() {} });
+    ok(fv.student === null && fv.map, 'server view:review alone → no student model, map model kept');
+    ok(rv.student === null && rv.map && rv.map.owned.has('unit-3.exit-ticket.three'), 'review: no student model (no locks), but the map model is there to land on');
+    ok(sv.student && sv.map, 'student: both, as before');
+    const ap = JS.slice(JS.indexOf('    function _codexScopeApply('), JS.indexOf('    function _codexWantedField('));
+    ok(/const landModel = _codexMapModel\(\);/.test(ap) && /codexFirstOwned\(sections, landModel\)/.test(ap) && /const m = _codexMapModel\(\);/.test(ap), '_codexScopeApply lands from the map model (review included)');
+    ok(/if \(model\) \{\s*const answered = _codexAnsweredSet\(editor\);[\s\S]{0,400}_renderCodexBars\(model, answered\);/.test(ap), 'scope styling + lock bars only with the STUDENT model');
+    ok(/const model = _codexMapModel\(\);   \/\/ v7\.20\.908: a reviewer follows the clip too/.test(JS), 'the clip-follow reads the map model');
+    ok(/function _codexFieldLocked\(fid\) \{ return codexFieldLockedIn\(_codexModel\(\), fid\); \}/.test(JS) && /if \(!_codexModel\(\)\) return;\s*const \$p = st\.doc\.resolve/.test(JS), 'locks and the refusal toast stay on the student model');
 }
 
 console.log('\n' + (fail ? '❌ FAIL' : '✅ PASS') + ' — ' + n + ' checks');

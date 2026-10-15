@@ -40499,9 +40499,18 @@
     }
     // @CODEX-SCOPE-PURE-END
     let _codexScopeCache = { key: null, model: null };
+    // The STUDENT's model: scope styling, lock bars, locks, refusals and the progress reading. Never in review mode.
     function _codexModel() {
+        let sc = null;
+        try { sc = (window.swmlEmbedConfig || {}).codexScope || null; } catch (_) {}
+        return (state.reviewMode || (sc && sc.view === 'review')) ? null : _codexMapModel();
+    }
+    // ⭐ v7.20.908 (LD 43 for Neil, 15 Oct — reviewing Tyler 1408 on prod 46620 the Codex opened at its Table of Contents): the
+    // map row alone, for the two things a reviewer needs too — the landing on this lesson's first answer, and the clip-follow.
+    // _codexModel() returned null in review, so a tutor never landed. Locks stay student-only: a reviewer sees every answer.
+    function _codexMapModel() {
         try {
-            if (state.task !== 'mastery_codex' || state.reviewMode) return null;
+            if (state.task !== 'mastery_codex') return null;
             const cfg = window.swmlEmbedConfig || {};
             const sc = cfg.codexScope || null;
             const key = String(cfg.postId || '') + '|' + (sc ? sc.state + ':' + (sc.lesson || '') : 'none');
@@ -40568,23 +40577,27 @@
     // Idempotent: called on every Codex paint. Writes ONE <style> in <head> (outside the editor — no NodeView DOM
     // is touched, §PM NodeView law), lands the student once, and wires the clip-follow once per page.
     function _codexScopeApply(editor) {
-        const model = _codexModel();
+        const model = _codexModel();       // student only
+        const landModel = _codexMapModel(); // v7.20.908: the landing and the clip-follow, in review mode too
         let st = document.getElementById('swml-codex-scope');
-        if (!model || !editor || !editor.state) { if (st) st.textContent = ''; _renderCodexBars(null, null); return; }
+        if (!landModel || !editor || !editor.state) { if (st) st.textContent = ''; _renderCodexBars(null, null); return; }
         const sections = _codexDocSections(editor);
         if (!sections.length) return;
-        const answered = _codexAnsweredSet(editor);
-        const css = codexScopeCss(sections, model, answered);
-        if (!st) { st = document.createElement('style'); st.id = 'swml-codex-scope'; document.head.appendChild(st); }
-        if (st.textContent !== css) st.textContent = css;
-        _renderCodexBars(model, answered);
-        if (!_codexWarnedOpen) {
+        if (!model) { if (st) st.textContent = ''; _renderCodexBars(null, null); }
+        if (model) {
+            const answered = _codexAnsweredSet(editor);
+            const css = codexScopeCss(sections, model, answered);
+            if (!st) { st = document.createElement('style'); st.id = 'swml-codex-scope'; document.head.appendChild(st); }
+            if (st.textContent !== css) st.textContent = css;
+            _renderCodexBars(model, answered);
+        }
+        if (model && !_codexWarnedOpen) {
             const open = [].concat(...sections).filter(f => codexFieldState(model, f) === 'open');
             if (open.length) { _codexWarnedOpen = true; console.warn('WML Codex scope: ' + open.length + ' field(s) belong to no lesson in the map — left answerable:', open.slice(0, 8).join(', ')); }
         }
         _codexWireOnce();
         const landKey = _codexScopeCache.key;
-        if (_codexLanded !== landKey && codexFirstOwned(sections, model)) {
+        if (_codexLanded !== landKey && codexFirstOwned(sections, landModel)) {
             _codexLanded = landKey;
             // v7.20.788 (#836): a Focus SPA move keeps this script alive, so typing or scrolling in the lesson the student
             // just LEFT would still count as "busy" and hold the landing back (measured: 1.5 s land skipped, 4 s one landed).
@@ -40595,7 +40608,7 @@
             const land = () => {
                 if (_codexScopeCache.key !== landKey) return;
                 if (!codexFollowAllowed(Date.now(), _codexLastKeyAt, _codexLastUserScrollAt, 5000)) return;
-                const m = _codexModel();
+                const m = _codexMapModel();
                 // v7.20.786 (#833): arriving from a "Go to that lesson" link lands on THAT answer, highlighted.
                 const want = _codexWantedField();
                 const first = m ? ((want && m.owned.has(want)) ? want : codexFirstOwned(_codexDocSections(canvasEditor || editor), m)) : null;
@@ -40741,7 +40754,7 @@
         // The playlist player announces the clip that started (Components, LD's ask 9 Oct): follow it to its question.
         document.addEventListener('sophicly:media-item', (e) => {
             try {
-                const model = _codexModel();
+                const model = _codexMapModel();   // v7.20.908: a reviewer follows the clip too
                 const fid = codexClipField(model, e && e.detail);
                 if (!fid) return;
                 if (!codexFollowAllowed(Date.now(), _codexLastKeyAt, _codexLastUserScrollAt, 5000)) return;

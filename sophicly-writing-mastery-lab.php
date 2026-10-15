@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.907
+ * Version: 7.20.908
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.907');
+define('SWML_VERSION', '7.20.908');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -376,8 +376,12 @@ class Sophicly_Writing_Mastery_Lab {
         if ($raw === null || $raw === false || $raw === '') return null;
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display preference only, grants nothing.
         $preview = isset($_GET['codex_scope']);
-        if (!$preview) {
-            if (function_exists('sophicly_review_target_id') && sophicly_review_target_id()) return ['state' => 'review'];
+        // v7.20.908 (LD 43 for Neil, 15 Oct): a reviewer gets the lesson's scope too, marked view:'review', so the page lands on
+        // the lesson's exercise and follows the clip — the client applies no student locks to it (_codexModel). Anything not
+        // scoped stays ['state' => 'review'], exactly as before.
+        $review = false;
+        if (!$preview && function_exists('sophicly_review_target_id') && sophicly_review_target_id()) $review = true;
+        if (!$preview && !$review) {
             $uid = get_current_user_id();
             $att = (string) get_user_meta($uid, 'sophicly_att_role', true);
             $sr  = (string) get_user_meta($uid, 'sophicly_role', true);
@@ -409,6 +413,10 @@ class Sophicly_Writing_Mastery_Lab {
                 if ($u) $urls[(string) $lid] = (string) $u;
             }
             $scope['urls'] = (object) $urls;
+        }
+        if ($review) {
+            if (($scope['state'] ?? '') !== 'scoped') return ['state' => 'review'];
+            $scope['view'] = 'review';
         }
         return $scope;
     }
