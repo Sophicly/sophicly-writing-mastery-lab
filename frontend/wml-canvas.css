@@ -6016,7 +6016,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-lib-search::placeholder { color: #9da5b4; opacity: 1; }
 .swml-lib-search:focus { background: #3c3d3f; }
-.swml-lib-search:focus-visible, .swml-lib-tools-btn:focus-visible, .swml-lib-toc-item:focus-visible { outline: 2px solid rgba(81,218,207,0.7); outline-offset: 2px; }
+.swml-lib-search:focus, .swml-lib-search:focus-visible { outline: none; }   /* a text box shows focus by its fill + caret — a ring here reads as the stroke Neil ruled out */
+.swml-lib-tools-btn:focus-visible, .swml-lib-toc-item:focus-visible { outline: 2px solid rgba(81,218,207,0.7); outline-offset: 2px; }
 .swml-lib-count { flex-shrink: 0; font-size: 11px; color: #9da5b4; min-width: 0; white-space: nowrap; }
 .swml-library-row mark.swml-lib-hit { background: rgba(81,218,207,0.25); }
 .swml-library-row mark.swml-lib-hit.is-current { background: rgba(81,218,207,0.65); color: #0b1f1d; }
@@ -6069,9 +6070,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 [data-swml-theme="light"] .swml-lib-tools-btn:disabled:hover { background: #f7f7f8; color: #636363; }
 [data-swml-theme="light"] .swml-lib-search { background: #f7f7f8; color: #555555; }
 [data-swml-theme="light"] .swml-lib-search::placeholder { color: #8f8f8f; }
-[data-swml-theme="light"] .swml-lib-search:focus { background: #efefef; }
-[data-swml-theme="light"] .swml-lib-search:focus-visible, [data-swml-theme="light"] .swml-lib-tools-btn:focus-visible,
-[data-swml-theme="light"] .swml-lib-toc-item:focus-visible { outline-color: rgba(77,118,253,0.7); }
+[data-swml-theme="light"] .swml-lib-search:focus { background: #ECF3FF; }
+[data-swml-theme="light"] .swml-lib-tools-btn:focus-visible, [data-swml-theme="light"] .swml-lib-toc-item:focus-visible { outline-color: rgba(77,118,253,0.7); }
 [data-swml-theme="light"] .swml-lib-count { color: #8f8f8f; }
 [data-swml-theme="light"] .swml-lib-toc { background: #f7f7f8; box-shadow: 0 16px 40px rgba(28,29,31,0.14), 0 2px 8px rgba(28,29,31,0.08); }
 [data-swml-theme="light"] .swml-lib-toc-item { color: #636363; }
