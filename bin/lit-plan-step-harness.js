@@ -97,6 +97,7 @@ console.log('\n1c. ONE list decides which sections a student completes (the Mark
 ok(/_tracked = \(window\.WML && typeof window\.WML\.isTrackedSectionType === 'function'\)/.test(sb) && /if \(!_secRO && _tracked\) \{/.test(sb), 'reader 1 (render-time nodeView) asks the one list');
 ok(/if \(!WML\.isTrackedSectionType\(type\)\) return;/.test(js), 'reader 2 (checkSectionComplete) asks the one list');
 ok(/if \(!_isRO && WML\.isTrackedSectionType\(s\.type\)\) \{/.test(js), 'reader 3 (getSectionIndicator — updateOutline stamps its answer LAST) asks the one list');
+ok(/if \(node\.attrs\.multi\) dom\.setAttribute\('data-multi', 'true'\);/.test(js), 'the SelectField nodeView writes data-multi — the DOM check reads it (MEASURED .917: an all-N/A Repeated Errors read not-done)');
 ok(/plainSel -= _multi\.length/.test(sb) && /plainSel -= emptyMulti/.test(js), 'the N/A waiver lives in both twins (nodeView + DOM check)');
 
 console.log('\n2. the server says which papers file the doc (from the protocol files)');

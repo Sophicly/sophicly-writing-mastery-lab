@@ -53328,6 +53328,9 @@
                     if (node.attrs.prompt) dom.setAttribute('data-prompt', node.attrs.prompt);
                     if (node.attrs.value) dom.setAttribute('data-value', node.attrs.value);
                     if (node.attrs.correct) dom.setAttribute('data-correct', node.attrs.correct);
+                    // v7.20.918: checkSectionComplete reads data-multi off the DOM to waive an N/A section's empty AO
+                    // pick — without it a Mark Scheme "Repeated Errors"/"Improvements" box all N/A read not-done (MEASURED).
+                    if (node.attrs.multi) dom.setAttribute('data-multi', 'true');
                     dom.setAttribute('contenteditable', 'false');
 
                     if (node.attrs.prompt) {
