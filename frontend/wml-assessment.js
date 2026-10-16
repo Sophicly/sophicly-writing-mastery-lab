@@ -1207,6 +1207,27 @@
         }
         return stageIdx <= 0 ? 1 : stepOf(stageIdx);
     }
+    // v7.20.917 (Neil, reviewing Huzaifa 1411's Mark Scheme Final Assessment: "the sidebar is not showing what's been
+    // complete. At least in the review mode"). The quiz controller moves the 14-step sidebar live (Setup 1 · Q1–Q10 2–11 ·
+    // Results & Grade 12 · Feedback 13 · Action Plan 14) but a reviewer never resumes the controller (.886) and the
+    // reload restore only knew the 5-question quiz, so it sat on Setup. The controller's own code-written lines are in
+    // the saved chat; this reads them back. Measured on prod: 1411's chat holds "Question 1…10 of 10", "Assessment
+    // review — 7/10 correct", "📋 Feedback", "🎯 Action Plan".
+    function msaStepFromHistory(history) {
+        let s = 1;
+        const h = Array.isArray(history) ? history : [];
+        let from = 0;   // a re-sit starts a fresh set of 10: read only from its last "Question 1 of 10"
+        h.forEach((m, i) => { if (m && m.role === 'assistant' && /Question\s+1\s+of\s+10\b/.test(String(m.content || ''))) from = i; });
+        h.slice(from).forEach(m => {
+            if (!m || m.role !== 'assistant') return;
+            const c = String(m.content || '');
+            const q = /Question\s+(\d+)\s+of\s+10\b/.exec(c);
+            if (q) s = Math.max(s, Math.min(11, parseInt(q[1], 10) + 1));
+            if (/Assessment review\b[^\n]{0,8}\d+\s*\/\s*10 correct/.test(c)) s = Math.max(s, 12);
+            if (/🎯\s*\**\s*Action Plan/.test(c)) s = Math.max(s, 14);
+        });
+        return s;
+    }
     // @LIT-PLAN-STEP-PURE-END
     // The fields filed in THIS run's transcript (one reader for the sidebar rows and the router step).
     function _planFiledFields(history) {
@@ -19945,7 +19966,12 @@
     // 0/1; all 16 real Codex documents hold all 138 fields the lesson map assigns (no lesson can be stuck below 100%).
     // A lesson reads only the questions it owns (v7.20.903); an unscoped Codex reads "unknown" and completes (fail-open).
     // Enforced only once Neil adds 'codex' to wp option swml_mc_gate_families (his typed go).
-    const MC_GATE_ENFORCE_FAMILIES = ['cw', 'diagnostic', 'assessment', 'codex'];
+    // v7.20.917 (Neil, 16 Oct, Huzaifa 1411: "The student finishes their mark scheme assessment, um, but they don't actually
+    // complete the document… we need some sort of guard"): 'mark_scheme' (the Mark Scheme Final Assessment) is eligible.
+    // MEASURED on prod: all 15 real students' documents read 0 of 9 (the gate logged 1411's click as would_block, family
+    // watch-only); all nine boxes are the student's own ("put N/A if first attempt"), and a finished copy reached 9/9 on
+    // staging in a real browser. Enforced only once Neil adds 'mark_scheme' to wp option swml_mc_gate_families.
+    const MC_GATE_ENFORCE_FAMILIES = ['cw', 'diagnostic', 'assessment', 'codex', 'mark_scheme'];
     // v7.20.857 (§40 "watch-only until MEASURED", applied per CW step): the CW steps where a properly
     // finished document was MEASURED reaching 100% in a real browser (prod, 13 Oct 2026: 1389 steps 1–9,
     // 1352 + 1332 steps 6/8/10). No student has finished a later step, a trial or the final assessment,
@@ -19959,6 +19985,7 @@
         if (t === 'assessment' || t === 'redraft_assessment') return 'assessment';
         if (t.indexOf('cw_') === 0) return MC_GATE_CW_MEASURED.test(t) ? 'cw' : 'other:' + t;
         if (t === 'mastery_codex') return 'codex';
+        if (t === 'mark_scheme') return 'mark_scheme';   // v7.20.917: the Mark Scheme Final Assessment's own document
         return 'other:' + t;
     }
     // r = { verdict: 'complete'|'incomplete'|'unknown', family, exempt, sessionFinished, unmarked[] }
@@ -48437,6 +48464,8 @@
                             const _ss = parseInt(savedChat.step, 10) || 0;
                             if (_ss > markerStep) markerStep = _ss;
                         }
+                        // v7.20.917: a Mark Scheme Final Assessment's sidebar comes back from its controller's own lines.
+                        if (state.task === 'mark_scheme') markerStep = Math.max(markerStep, msaStepFromHistory(tp.canvasChatHistory));
                         // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step pinned to bridge dispatch).
                         const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
                         if (markerStep > _curStep) {
@@ -51831,6 +51860,7 @@
                                                     const _ss = parseInt(savedChat.step, 10) || 0;
                                                     if (_ss > markerStep) markerStep = _ss;
                                                 }
+                                                if (state.task === 'mark_scheme') markerStep = Math.max(markerStep, msaStepFromHistory(canvasChatHistory));   // v7.20.917 twin
                                                 // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step pinned to bridge dispatch).
                                                 const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
                                                 if (markerStep > _curStep) {

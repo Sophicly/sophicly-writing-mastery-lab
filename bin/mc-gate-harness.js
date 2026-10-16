@@ -91,9 +91,22 @@ ok(family('mastery_codex') === 'codex', 'v7.20.909: the Mastery Codex is the cod
     c = decide({ verdict: 'unknown', family: 'codex', exempt: '' }, 'enforce', PROD.concat('codex'));
     ok(c.block === false, 'codex: no scope / no map row / nothing trackable → unknown → completes (fail-open)', JSON.stringify(c));
 }
-ok(family('planning') === 'other:planning' && family('foundational_quiz') === 'other:foundational_quiz', 'everything else is its own watch-only family');
-ok(JSON.stringify(G.MC_GATE_ENFORCE_FAMILIES.slice().sort()) === JSON.stringify(['assessment', 'codex', 'cw', 'diagnostic']),
-    'only cw · diagnostic · assessment · codex (v7.20.909) are eligible to be enforced (the measured families)');
+ok(family('planning') === 'other:planning' && family('foundational_quiz') === 'other:foundational_quiz' && family('mark_scheme_unit') === 'other:mark_scheme_unit', 'everything else is its own watch-only family (the Mark Scheme QUIZ lessons included)');
+ok(JSON.stringify(G.MC_GATE_ENFORCE_FAMILIES.slice().sort()) === JSON.stringify(['assessment', 'codex', 'cw', 'diagnostic', 'mark_scheme']),
+    'only cw · diagnostic · assessment · codex · mark_scheme (v7.20.917) are eligible to be enforced (the measured families)');
+ok(family('mark_scheme') === 'mark_scheme', 'v7.20.917: the Mark Scheme Final Assessment is the mark_scheme family');
+{   // v7.20.917 (Neil, Huzaifa 1411: "they don't actually complete the document… we need some sort of guard")
+    const PROD = ['assessment', 'diagnostic', 'cw', 'codex'];
+    let c = decide({ verdict: 'incomplete', family: 'mark_scheme', exempt: '' }, 'enforce', PROD);
+    ok(c.block === false && c.record === 'would_block', 'mark_scheme: prod option without it → an empty document is only RECORDED, nobody stopped', JSON.stringify(c));
+    c = decide({ verdict: 'incomplete', family: 'mark_scheme', exempt: '' }, 'enforce', PROD.concat('mark_scheme'));
+    ok(c.block === true, 'mark_scheme: once Neil adds it → an unfilled reflection is stopped (the pop-up)', JSON.stringify(c));
+    c = decide({ verdict: 'complete', family: 'mark_scheme', exempt: '' }, 'enforce', PROD.concat('mark_scheme'));
+    ok(c.block === false, 'mark_scheme: all nine boxes filled → completes', JSON.stringify(c));
+    c = decide({ verdict: 'unknown', family: 'mark_scheme', exempt: '' }, 'enforce', PROD.concat('mark_scheme'));
+    ok(c.block === false, 'mark_scheme: an unknown reading completes (fail-open)', JSON.stringify(c));
+}
+ok(/\$measured = \['cw', 'diagnostic', 'assessment', 'codex', 'mark_scheme'\];/.test(php), 'the server half knows the same measured set');
 
 console.log('\n2. the student who did NOT finish is stopped (enforce)');
 const annaya = { verdict: 'incomplete', family: 'assessment', exempt: '', sessionFinished: false, unmarked: ['Feedback: Q3', 'Feedback: Q4', 'Feedback: Q5'] };

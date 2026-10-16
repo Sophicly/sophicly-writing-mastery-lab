@@ -285,7 +285,7 @@ class Sophicly_Writing_Mastery_Lab {
      * v7.20.909: 'codex' (Core Skills Mastery Codex, per lesson) joins the measured set; prod enforces it only once named.
      */
     public static function mc_gate_families() {
-        $measured = ['cw', 'diagnostic', 'assessment', 'codex'];
+        $measured = ['cw', 'diagnostic', 'assessment', 'codex', 'mark_scheme'];   // v7.20.917: + the Mark Scheme Final Assessment
         $o = get_option('swml_mc_gate_families', '');
         $list = is_array($o) ? $o : array_filter(array_map('trim', explode(',', (string) $o)));
         if (!$list) return $measured;

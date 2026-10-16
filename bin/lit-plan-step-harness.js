@@ -42,7 +42,7 @@ console.log('\n1. the rule (extracted from the shipped file)');
 const a = js.indexOf('// @LIT-PLAN-STEP-PURE-BEGIN'), b = js.indexOf('// @LIT-PLAN-STEP-PURE-END');
 ok(a > -1 && b > a, 'the pure block is marked in wml-assessment.js');
 // eslint-disable-next-line no-new-func
-const R = new Function(js.slice(a, b) + '\nreturn { LIT_PLAN_STAGES, litPlanStageIndex, litPlanStepFor };')();
+const R = new Function(js.slice(a, b) + '\nreturn { LIT_PLAN_STAGES, litPlanStageIndex, litPlanStepFor, msaStepFromHistory };')();
 const AQA = ['Setup, Goals & Diagnostic', 'Keyword Identification', 'Anchor Quote Selection', 'Body Paragraph 1',
     'Body Paragraph 2', 'Body Paragraph 3', 'Thesis & Introduction', 'Conclusion & Review'].map((l, i) => ({ step: i + 1, label: l }));
 const UNSEEN = ['Setup & Goals', 'Diagnostic & Anchor Quotes', 'Body Paragraph 1', 'Body Paragraph 2', 'Body Paragraph 3',
@@ -73,6 +73,17 @@ ok(step(F('plan-conclusion'), [], UNSEEN) === 8, 'AQA Unseen: conclusion approve
 ok(step(F('outline-body-3-topic'), ['📌 Planning > Body 3 (Ending) > Step 3 of 7: Evidence'], UNSEEN) === 5, 'the "Body 3 (Ending)" pin format → Body 3');
 { const si = R.litPlanStageIndex(mehrish, mehrishPins);
   ok(R.litPlanStepFor(si, []) === 1 && R.litPlanStepFor(si, null) === 1 && R.litPlanStageIndex(null, null) === 0, 'no manifest list / no transcript → step 1, never a throw'); }
+
+console.log('\n1b. a Mark Scheme Final Assessment sidebar comes back from the controller\'s own lines (Huzaifa 1411, review)');
+const A = (t) => ({ role: 'assistant', content: t }), U = (t) => ({ role: 'user', content: t });
+const qs = (n) => Array.from({ length: n }, (_, i) => [A('**Question ' + (i + 1) + ' of 10** …'), U('B')]).flat();
+const h1411 = qs(10).concat([A('**Before I show your marks — predict your score.**'), A('You predicted **14/20**.'), A('**Assessment review — 7/10 correct** …'), A('**📋 Feedback** …'), A('**🎯 Action Plan** …'), A('**Now capture it in the document on the left (once).**')]);
+ok(R.msaStepFromHistory(h1411) === 14, "Huzaifa's finished chat → Action Plan (14): every earlier step ticks", R.msaStepFromHistory(h1411));
+ok(R.msaStepFromHistory(qs(4)) === 5, 'mid-quiz on Question 4 → step 5');
+ok(R.msaStepFromHistory(qs(10).concat([A('**Assessment review — 9/10 correct**')])) === 12, 'results shown, no feedback yet → Results & Grade (12)');
+ok(R.msaStepFromHistory(h1411.concat(qs(3))) === 4, 'a RE-SIT reads from its own Question 1 — never the old attempt\'s Action Plan');
+ok(R.msaStepFromHistory([]) === 1 && R.msaStepFromHistory(null) === 1, 'an empty chat → Setup (1), never a throw');
+ok((js.match(/if \(state\.task === 'mark_scheme'\) markerStep = Math\.max\(markerStep, msaStepFromHistory\(/g) || []).length === 2, 'BOTH pipelines restore it (dual pipeline)');
 
 console.log('\n2. the server says which papers file the doc (from the protocol files)');
 let php = '';
