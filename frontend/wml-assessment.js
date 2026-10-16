@@ -18702,7 +18702,7 @@
             const type = sectionEl.getAttribute('data-section-type') || '';
             // v7.20.96 (Neil): 'notes' joins — keyword/Question-Focus sections tick when
             // their field is filled (byte-consistent with the nodeView gate, wml-section-block.js ~100).
-            if (type !== 'plan' && type !== 'response' && type !== 'outline' && type !== 'improvement' && type !== 'notes') return;
+            if (!WML.isTrackedSectionType(type)) return;   // v7.20.917: the ONE list (wml-core) — + mark_scheme_response
             // v7.20.139 (Neil): Q1 true/false statements (MSQ retrieval) render as checklistItems —
             // no inputField, no outlineRow, no <p> — so this reader never ticked the section (its
             // whole shape was invisible to the input/select/prose branches below). ROOT: give the
@@ -18728,14 +18728,16 @@
             const inputs = sectionEl.querySelectorAll('.swml-input-field');
             const selects = sectionEl.querySelectorAll('.swml-select-field');
             if (inputs.length + selects.length > 0) {
-                let inputsFilled = 0, gradable = 0, gradableOk = 0, plainSel = 0, plainSelFilled = 0;
+                let inputsFilled = 0, gradable = 0, gradableOk = 0, plainSel = 0, plainSelFilled = 0, emptyMulti = 0;
                 inputs.forEach(f => { if ((f.textContent || '').trim().length > 0) inputsFilled++; });
                 selects.forEach(s => {
                     const v = (s.getAttribute('data-value') || '').trim();
                     const cor = (s.getAttribute('data-correct') || '').trim();
                     if (cor) { gradable++; if (v && v === cor) gradableOk++; }
-                    else { plainSel++; if (v) plainSelFilled++; }
+                    else { plainSel++; if (v) plainSelFilled++; else if (s.getAttribute('data-multi') === 'true') emptyMulti++; }
                 });
+                // v7.20.917: twin of the nodeView — an N/A section's empty AO multi-pick is not required.
+                if (emptyMulti && WML.sectionTextSaysNA(Array.from(inputs).map(f => f.textContent || ''))) plainSel -= emptyMulti;
                 const fComplete = (gradable === 0 || gradableOk === gradable)
                     && inputsFilled === inputs.length && plainSelFilled === plainSel;
                 sectionEl.setAttribute('data-section-complete', fComplete ? 'true' : 'false');
@@ -19044,7 +19046,9 @@
             // notes here, a filled Predictions / Keywords box read "Still to do" after every reload (measured, staging:
             // 1938's two filled Predictions boxes both data-section-complete="false"), so enforcing writing lessons would
             // have stopped a student who had done the work. checkSectionComplete already reads notes (v7.20.96).
-            editorEl.querySelectorAll('.swml-section-block[data-section-type="outline"], .swml-section-block[data-section-type="plan"], .swml-section-block[data-section-type="response"], .swml-section-block[data-section-type="improvement"], .swml-section-block[data-section-type="notes"]').forEach(sec => checkSectionComplete(sec));
+            // v7.20.917: the selector is BUILT from the one list (WML.TRACKED_SECTION_TYPES) — Mark Scheme sections were
+            // missing here too, so a reload re-ticked them nowhere.
+            editorEl.querySelectorAll(WML.TRACKED_SECTION_TYPES.map(t => '.swml-section-block[data-section-type="' + t + '"]').join(', ')).forEach(sec => checkSectionComplete(sec));
             // v7.19.759: recompute the three student-filled assessment sections too — they
             // are feedback/action-type (skipped above), so without this their saved tick
             // went stale on reload (empty Analytics showed a green tick). Single source.
@@ -44554,7 +44558,7 @@
                 // badge and the outline-panel check agree, on every call path (top-level or
                 // child — the caller only set it for top-level sections before).
                 const _isRO = domSection.getAttribute('data-readonly') === 'true' || domSection.getAttribute('data-editable') === 'false';
-                if (!_isRO && (s.type === 'plan' || s.type === 'response' || s.type === 'outline' || s.type === 'improvement')) {
+                if (!_isRO && WML.isTrackedSectionType(s.type)) {   // v7.20.917: the ONE list — this reader stamped "not done" over Mark Scheme sections
                     // v7.19.492/495: single source of truth — checkSectionComplete (pick-group
                     // aware, rows AND free-prose) sets data-section-complete; the outline check
                     // reads it so the panel + main-doc tick always agree. Falls through to the

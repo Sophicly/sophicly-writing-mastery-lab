@@ -6151,6 +6151,19 @@ window.WML = (function() {
     const SCROLL_TO_MS = 1500;
     const easePower2InOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
     const _scrollAnims = new WeakMap();
+    // ⭐ v7.20.917 — WHICH SECTIONS A STUDENT COMPLETES: ONE LIST. Three readers decide a section's tick (the render-time
+    // nodeView, wml-section-block.js; checkSectionComplete; getSectionIndicator, whose answer updateOutline stamps LAST)
+    // and each held its own list. v7.20.89 added Mark Scheme sections to the nodeView only, so updateOutline overwrote its
+    // correct "done" with "not done" on every pass — MEASURED on staging (16 Oct): a fully filled Mark Scheme Final
+    // Assessment read 0 of 9, and all 15 real students' copies on prod read 0. Every reader asks THIS now.
+    const TRACKED_SECTION_TYPES = ['plan', 'response', 'outline', 'improvement', 'mark_scheme_response', 'notes'];
+    function isTrackedSectionType(type) { return TRACKED_SECTION_TYPES.indexOf(String(type || '')) !== -1; }
+    // The Mark Scheme trend sections say "put N/A if first attempt" — a section whose text boxes all say N/A has nothing
+    // for its AO multi-pick to describe, so that pick is not required (single picks and quiz answers always are).
+    function sectionTextSaysNA(texts) {
+        return Array.isArray(texts) && texts.length > 0 && texts.every(t => /^\s*n\s*\/?\s*a\b/i.test(String(t || '')));
+    }
+
     function smoothScrollTo(el, top) {
         return new Promise(resolve => {
             const target = el || document.scrollingElement || document.documentElement;
@@ -7055,6 +7068,7 @@ window.WML = (function() {
         ELEMENT_TOOLKIT_MAP, elementToolkitLines, RESOURCE_TOOLKIT_IDS,
         ensureAsset,     // v7.20.912: load-on-use files (swmlConfig.lazyAssets)
         smoothScrollTo, easePower2InOut, SCROLL_TO_MS,   // v7.20.915: THE house scroll-to (landing page floating nav)
+        TRACKED_SECTION_TYPES, isTrackedSectionType, sectionTextSaysNA,   // v7.20.917: one list for every section-tick reader
         learnChipHtml,   // v7.20.797 (#847): a quick comment's stored link → the house learn chip
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
         caps, cap, isMarkingFlow, steppedHistory, hasAssessmentSections, isLiveModelling,

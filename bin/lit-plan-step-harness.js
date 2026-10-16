@@ -31,6 +31,8 @@ const js = read('frontend/wml-assessment.js');
 const css = read('frontend/wml-canvas.css');
 const rest = read('includes/class-rest-api.php');
 const router = read('includes/class-protocol-router.php');
+const core = read('frontend/wml-core.js');
+const sb = read('frontend/wml-section-block.js');
 
 let pass = 0, failN = 0;
 function ok(cond, label, detail) {
@@ -84,6 +86,18 @@ ok(R.msaStepFromHistory(qs(10).concat([A('**Assessment review — 9/10 correct**
 ok(R.msaStepFromHistory(h1411.concat(qs(3))) === 4, 'a RE-SIT reads from its own Question 1 — never the old attempt\'s Action Plan');
 ok(R.msaStepFromHistory([]) === 1 && R.msaStepFromHistory(null) === 1, 'an empty chat → Setup (1), never a throw');
 ok((js.match(/if \(state\.task === 'mark_scheme'\) markerStep = Math\.max\(markerStep, msaStepFromHistory\(/g) || []).length === 2, 'BOTH pipelines restore it (dual pipeline)');
+
+console.log('\n1c. ONE list decides which sections a student completes (the Mark Scheme 0-of-9 root, measured)');
+{ const ca = core.indexOf('const TRACKED_SECTION_TYPES'), cb = core.indexOf('function smoothScrollTo(el, top)');
+  // eslint-disable-next-line no-new-func
+  const C = new Function(core.slice(ca, cb) + '\nreturn { TRACKED_SECTION_TYPES, isTrackedSectionType, sectionTextSaysNA };')();
+  ok(C.isTrackedSectionType('mark_scheme_response') && C.isTrackedSectionType('notes') && C.isTrackedSectionType('plan') && !C.isTrackedSectionType('feedback') && !C.isTrackedSectionType('question'), 'the list: plan · response · outline · improvement · mark_scheme_response · notes');
+  ok(C.sectionTextSaysNA(['N/A']) && C.sectionTextSaysNA(['n/a — first attempt']) && C.sectionTextSaysNA(['NA']) && !C.sectionTextSaysNA(['Not sure yet']) && !C.sectionTextSaysNA([]) && !C.sectionTextSaysNA(['N/A', 'my real answer']), '"N/A" (any case, with or without the slash) waives the AO multi-pick; anything else does not');
+}
+ok(/_tracked = \(window\.WML && typeof window\.WML\.isTrackedSectionType === 'function'\)/.test(sb) && /if \(!_secRO && _tracked\) \{/.test(sb), 'reader 1 (render-time nodeView) asks the one list');
+ok(/if \(!WML\.isTrackedSectionType\(type\)\) return;/.test(js), 'reader 2 (checkSectionComplete) asks the one list');
+ok(/if \(!_isRO && WML\.isTrackedSectionType\(s\.type\)\) \{/.test(js), 'reader 3 (getSectionIndicator — updateOutline stamps its answer LAST) asks the one list');
+ok(/plainSel -= _multi\.length/.test(sb) && /plainSel -= emptyMulti/.test(js), 'the N/A waiver lives in both twins (nodeView + DOM check)');
 
 console.log('\n2. the server says which papers file the doc (from the protocol files)');
 let php = '';

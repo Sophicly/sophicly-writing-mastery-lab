@@ -97,9 +97,12 @@
                 // tripping the free-prose branch into data-section-complete="true".
                 const _secRO = node.attrs && (node.attrs.editable === false || node.attrs.editable === 'false'
                     || node.attrs.readonly === 'true' || node.attrs.readonly === true);
-                if (!_secRO && (type === 'plan' || type === 'response' || type === 'outline' || type === 'improvement'
-                    || type === 'mark_scheme_response' /* v7.20.89 (Neil B6/B7): MSA sections tick + feed the progress card */
-                    || type === 'notes' /* v7.20.96 (Neil): keyword/Question-Focus sections tick like everything else (field-filled = done) */)) {
+                // v7.20.917: the ONE list (WML.isTrackedSectionType, wml-core) — Mark Scheme sections (v7.20.89) and Notes
+                // (v7.20.96) were added here only, and the other two readers overwrote this tick. Fallback = the same list.
+                const _tracked = (window.WML && typeof window.WML.isTrackedSectionType === 'function')
+                    ? window.WML.isTrackedSectionType(type)
+                    : ['plan', 'response', 'outline', 'improvement', 'mark_scheme_response', 'notes'].indexOf(type) !== -1;
+                if (!_secRO && _tracked) {
                     let rowCount = 0, filled = 0, pickGroup = false, anyChecked = false;
                     node.forEach((child) => {
                         if (!child.type || child.type.name !== 'outlineRow') return;
@@ -153,17 +156,21 @@
                         // value; for QUIZ sections (selects carrying a `correct` answer) every
                         // gradable select must be CORRECT (100%) — not merely answered (Neil).
                         let inputs = 0, inputsFilled = 0, gradable = 0, gradableOk = 0, plainSel = 0, plainSelFilled = 0;
+                        const _texts = [], _multi = [];
                         node.descendants((c) => {
                             if (!c.type) return;
                             if (c.type.name === 'inputField') {
                                 inputs++; if ((c.textContent || '').trim().length > 0) inputsFilled++;
+                                _texts.push(c.textContent || '');
                             } else if (c.type.name === 'selectField') {
                                 const v = ((c.attrs && c.attrs.value) || '').trim();
                                 const cor = ((c.attrs && c.attrs.correct) || '').trim();
                                 if (cor) { gradable++; if (v && v === cor) gradableOk++; }
-                                else { plainSel++; if (v) plainSelFilled++; }
+                                else { plainSel++; if (v) plainSelFilled++; else if (c.attrs && (c.attrs.multi === true || c.attrs.multi === 'true')) _multi.push(1); }
                             }
                         });
+                        // v7.20.917: "put N/A if first attempt" — an N/A section's empty AO multi-pick is not required.
+                        if (_multi.length && window.WML && window.WML.sectionTextSaysNA && window.WML.sectionTextSaysNA(_texts)) plainSel -= _multi.length;
                         if (inputs + gradable + plainSel > 0) {
                             const fComplete = (gradable === 0 || gradableOk === gradable)
                                 && inputsFilled === inputs && plainSelFilled === plainSel;

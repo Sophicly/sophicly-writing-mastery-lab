@@ -294,13 +294,17 @@ ok(/chip\.textContent = _progressChipLabel\(name\);/.test(js) && /_jumpToProgres
 // data-section-complete="false" — the reload re-tick pass skipped 'notes', so the gate would have stopped a student
 // who had done the work. The pass that re-ticks sections after the saved content lands must include notes.
 {
+    // v7.20.917: the four section-tick readers share ONE list (WML.TRACKED_SECTION_TYPES, wml-core) — Mark Scheme
+    // sections were missing from three of them, so a filled Final Assessment read 0 of 9 (measured on staging).
     const fn = js.match(/function _recomputeAllCompletion\(\)\s*\{([\s\S]*?)\n    \}/);
-    const sel = fn && (fn[1].match(/editorEl\.querySelectorAll\('([^']*)'\)\.forEach\(sec => checkSectionComplete\(sec\)\)/) || [])[1];
-    ok(!!sel, '_recomputeAllCompletion re-ticks sections through checkSectionComplete');
-    ['outline', 'plan', 'response', 'improvement', 'notes'].forEach(t => ok(!!sel && sel.indexOf('[data-section-type="' + t + '"]') !== -1,
+    ok(!!fn && /querySelectorAll\(WML\.TRACKED_SECTION_TYPES\.map\(t => '\.swml-section-block\[data-section-type="' \+ t \+ '"\]'\)\.join\(', '\)\)\.forEach\(sec => checkSectionComplete\(sec\)\)/.test(fn[1]),
+        '_recomputeAllCompletion re-ticks every tracked section through checkSectionComplete (selector built from the one list)');
+    const listM = core.match(/const TRACKED_SECTION_TYPES = (\[[^\]]*\]);/);
+    const list = listM ? JSON.parse(listM[1].replace(/'/g, '"')) : [];
+    ['outline', 'plan', 'response', 'improvement', 'notes', 'mark_scheme_response'].forEach(t => ok(list.indexOf(t) !== -1,
         'the reload re-tick pass covers ' + t + ' sections'));
-    ok(/type !== 'plan' && type !== 'response' && type !== 'outline' && type !== 'improvement' && type !== 'notes'\) return;/.test(js),
-        'checkSectionComplete reads notes sections (field filled = done)');
+    ok(/if \(!WML\.isTrackedSectionType\(type\)\) return;/.test(js),
+        'checkSectionComplete reads every tracked section (notes, mark_scheme_response…) through the one list');
 }
 
 console.log('\n9. the footer proxy never mirrors LearnDash\'s Mark INCOMPLETE button (v7.20.864)');
