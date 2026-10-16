@@ -19900,6 +19900,19 @@
     }
     /* @MC-GATE-PURE-END */
 
+    /* v7.20.914 (Neil, 16 Oct — "do we actually need that button? It might be a bit too destructive… it's probably just going
+       to increase our costs… if the student gets it wrong, they'll just have to finish the essay, get their feedback, and do
+       another one." Agreed, with two exceptions he approved): Clear Chat is shown only to STAFF (admin · tutor · specialist ·
+       SSS = swmlConfig.canSignOff, the one staff flag the page already has — they test and reset lessons) and on the BANKED
+       quizzes (a restart costs no Sophia call, and clearing there records the attempt, so it cannot farm a score).
+       Measured: on planning it also wiped every plan box; clears are logged nowhere. ONE predicate, every Clear Chat site. */
+    function clearChatAllowed(task, cfg) {
+        const c = cfg || {};
+        if (c.isAdmin || c.canSignOff) return true;
+        return task === 'foundational_quiz' || task === 'mark_scheme_unit' || task === 'mark_scheme';
+    }
+    const _clearChatAllowed = () => clearChatAllowed(state.task, window.swmlConfig);
+
     function _mcGateCfg() {
         const c = window.swmlEmbedConfig && window.swmlEmbedConfig.mcGate;
         return (c && typeof c === 'object') ? c : {};
@@ -22041,7 +22054,7 @@
            `.swml-rail-permanent`, so it folds behind the `+` with the other rare tools — which
            is the ruling — and it stays on the default `order: 2`, so #338's Download
            (`.swml-rail-last`, order 3) is still pinned below it. */
-        try {
+        if (_clearChatAllowed()) try {   // v7.20.914: staff + banked quizzes only
             const _rail = railColumn || document.querySelector('#swml-canvas-overlay .swml-outline-btn-column');
             if (_rail) {
                 clearChatBtn.classList.remove('swml-clear-chat-btn');
@@ -40234,7 +40247,7 @@
                 );
             }
         });
-        header.appendChild(clearCoachBtn);
+        if (_clearChatAllowed()) header.appendChild(clearCoachBtn);   // v7.20.914: staff + banked quizzes only
         sophiaPanel.appendChild(header);
 
         // Messages area — reuse the same class so bubbles + scrolling +
@@ -50110,7 +50123,7 @@
                                 );
                             }
                         });
-                        chatHeader.appendChild(clearChatBtn);
+                        if (_clearChatAllowed()) chatHeader.appendChild(clearChatBtn);   // v7.20.914: staff + banked quizzes only
                         chatPanel.appendChild(chatHeader);
 
                         // Messages area

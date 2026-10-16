@@ -196,6 +196,11 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
      | grep -qE 'wml-assessment\.js|sophicly-writing-mastery-lab\.php|class-rest-api\.php|library-panel-harness\.js'; then
   node bin/library-panel-harness.js || fail=1
 fi
+# v7.20.914 (Neil, 16 Oct): Clear Chat only for staff + on the banked quizzes — the rule executed, every button guarded.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|clear-chat-harness\.js'; then
+  node bin/clear-chat-harness.js || fail=1
+fi
 
 # v7.20.866 (FIXLIST remove-old-review-chrome — Neil, 13 Oct): the canvas's own review chrome shows only where Focus's
 # teal .spl-review-bar is absent (and always for live modelling). Falsified at .866 on the pre-fix file.
