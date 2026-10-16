@@ -3660,4 +3660,17 @@ course lets a student walk past an unfinished lesson without ever pressing its M
 
 **SCOPE, RULED THE SAME DAY — Creative Writing included:** *"I think, yes, I think we should do them in all in order, including creative writing. Because now we've got the um, the weekend creative writing course."* This SUPERSEDES the earlier CW line *"teach, never force (no forced linear progression; extreme cases may legitimately skip lessons)"* (2026-08-06): the CW Story Steps and the Weekend Story are done in order too. Staff keep the escape hatch §40 already gives them (a reviewer is never locked out), which is where a genuine "extreme case" is handled.
 
+**BUILT 16 Oct (v7.20.921, WML 365 A) — and two measured corrections:**
+- **The order lock:** a Writing Mastery lesson opens once every earlier Writing Mastery lesson IN ITS UNIT is marked
+  complete; otherwise the page shows *"Finish “…” first"* + *Take me there*, its Mark Complete is not drawn, and a direct
+  form POST is refused. Never locked: staff, a reviewer, a live-modelling lesson. A tutor lesson ("Discuss … feedback …
+  tutor") never holds a student back. A lesson already complete always opens (legacy ticks never cost a student work).
+  Off switch: wp option `swml_order_lock off`. Gate: `bin/order-lock-harness.php`.
+- **Planning protocols that fill the plan: 8, not 7** — Edexcel IGCSE Language Paper 2 files `plan-body-N` too (since
+  v7.20.717). The page reads it from the server (`mcGate.planFills`), decided from the manifest's own files.
+- **MEASURED on prod before switching on:** 33 real students have STARTED 128 lessons that the lock would close until an
+  earlier lesson is ticked. Every one of the 19 blocking lessons has a working Mark Complete (no LearnDash video, timer,
+  quiz or assignment holding it). Biggest: Plan Your Redraft (26), Write Your Diagnostic Assessment (25), Generate an
+  Exam-Style Question (20), Mark Scheme Quiz (17).
+
 **MEASURED for the Weekend Story (16 Oct, before its first real use):** lessons 2, 3 and 5 already send a student back ("go back to Lesson 1 and complete it first"); lesson 4 does not check lesson 3. Write Draft 1 reaches 100% (gate 0/1 → 1/1); lesson 5's weekend walk is the one guarded lesson not yet measured at 100% in weekend mode.

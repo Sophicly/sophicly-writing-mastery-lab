@@ -19975,7 +19975,11 @@
     // MEASURED on prod: all 15 real students' documents read 0 of 9 (the gate logged 1411's click as would_block, family
     // watch-only); all nine boxes are the student's own ("put N/A if first attempt"), and a finished copy reached 9/9 on
     // staging in a real browser. Enforced only once Neil adds 'mark_scheme' to wp option swml_mc_gate_families.
-    const MC_GATE_ENFORCE_FAMILIES = ['cw', 'diagnostic', 'assessment', 'codex', 'mark_scheme'];
+    // v7.20.921 (PEDAGOGY §67 — Neil, 16 Oct: "she shouldn't be able to mark the planning complete"): 'planning' is eligible
+    // ONLY where the protocol fills the plan boxes (server: mcGate.planFills, read from the manifest's files — 8 papers on
+    // 16 Oct); everywhere else planning stays 'other:planning' (watch-only). MEASURED on staging: AQA P2 planning, every box
+    // the student fills typed → 0/19 incomplete → 19/19 complete. Enforced only once Neil adds 'planning' to the option.
+    const MC_GATE_ENFORCE_FAMILIES = ['cw', 'diagnostic', 'assessment', 'codex', 'mark_scheme', 'planning'];
     // v7.20.857 (§40 "watch-only until MEASURED", applied per CW step): the CW steps where a properly
     // finished document was MEASURED reaching 100% in a real browser (prod, 13 Oct 2026: 1389 steps 1–9,
     // 1352 + 1332 steps 6/8/10). No student has finished a later step, a trial or the final assessment,
@@ -19983,8 +19987,9 @@
     // v7.20.860 (Neil, Actions round t, 13 Oct: "go, but not Steps 6 and 8"): Steps 6 and 8 are left out
     // too — watch-only like the unmeasured steps, although finished copies of both did reach 100%.
     const MC_GATE_CW_MEASURED = /^cw_step_(?:[1-57]|9|10)$/;
-    function mcGateFamily(task) {
+    function mcGateFamily(task, opts) {
         const t = String(task || '');
+        if (t === 'planning') return (opts && opts.planFills === true) ? 'planning' : 'other:planning';
         if (t === '' || t === 'diagnostic') return 'diagnostic';
         if (t === 'assessment' || t === 'redraft_assessment') return 'assessment';
         if (t.indexOf('cw_') === 0) return MC_GATE_CW_MEASURED.test(t) ? 'cw' : 'other:' + t;
@@ -20099,9 +20104,13 @@
         });
         return out;
     }
+    // v7.20.921: does THIS lesson's planning protocol fill the plan boxes? Server-decided at render (mcGate.planFills).
+    function _mcGatePlanFills() {
+        try { const c = window.swmlEmbedConfig && window.swmlEmbedConfig.mcGate; return !!(c && c.planFills === true); } catch (_) { return false; }
+    }
     function _mcGateReading() {
         const task = state.task || '';
-        const family = mcGateFamily(task);
+        const family = mcGateFamily(task, { planFills: _mcGatePlanFills() });
         const out = {
             verdict: 'unknown', family: family, task: task, total: 0, done: 0, pct: 0,
             missing: [], unmarked: [], sessionFinished: false, exempt: '',
@@ -72133,7 +72142,7 @@
                     const cx = snap.task === 'mastery_codex' ? _computeCodexLessonProgress() : null;
                     const r = cx ? { total: cx.total, done: cx.done, pct: cx.pct, incomplete: cx.incomplete, task: 'mastery_codex', postId: pid } : _mcLastCardReading;
                     if (!r || !pid || r.postId !== pid || r.task !== (snap.task || '') || !r.total) return {};
-                    const family = mcGateFamily(snap.task);
+                    const family = mcGateFamily(snap.task, { planFills: _mcGatePlanFills() });
                     const facts = {
                         verdict: r.done >= r.total ? 'complete' : 'incomplete', family: family,
                         exempt: _mcGateExempt(family),

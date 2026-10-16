@@ -3809,7 +3809,10 @@ TEMPLATE;
             }
         }
 
-        if (!$manifest || empty($manifest[$task]['steps'])) return ['steps' => [], 'groups' => null, 'doc_filed' => false];
+        // v7.20.921 (PEDAGOGY §67): read BEFORE the early return — Language planning is fed whole (`steps: {}`), and it fills.
+        $plan_fills = $manifest && $task === 'planning' && !empty($manifest[$task])
+            && self::manifest_fills_plan_boxes($manifest[$task], $manifest_dir);
+        if (!$manifest || empty($manifest[$task]['steps'])) return ['steps' => [], 'groups' => null, 'doc_filed' => false, 'plan_fills' => $plan_fills];
 
         $steps = [];
         foreach ($manifest[$task]['steps'] as $num => $step_data) {
@@ -3819,7 +3822,29 @@ TEMPLATE;
         // v7.15.1: Return manifest-defined groups for accordion sidebar display
         $groups = $manifest[$task]['groups'] ?? null;
 
-        return ['steps' => $steps, 'groups' => $groups, 'doc_filed' => $task === 'planning' && self::manifest_files_body_elements($manifest[$task], $manifest_dir)];
+        return ['steps' => $steps, 'groups' => $groups, 'doc_filed' => $task === 'planning' && self::manifest_files_body_elements($manifest[$task], $manifest_dir),
+                // v7.20.921 (PEDAGOGY §67): the Mark Complete gate holds a planning lesson only where its protocol fills the plan.
+                'plan_fills' => $plan_fills];
+    }
+
+    /**
+     * v7.20.921 (PEDAGOGY §67 — Neil, 16 Oct: "she shouldn't be able to mark the planning complete"). Does THIS paper's
+     * planning protocol fill the student's plan boxes (@FIELD_SET into a plan-* field at paragraph approval)? Only there
+     * can a student who follows the process reach 100%, so only there may the gate hold a planning lesson (§40: "if they
+     * follow the process properly, they should be able to mark the lesson complete without fail"). Read from the files the
+     * manifest loads, never a hand-kept board list. Measured 16 Oct: 7 planning protocols fill; every other board's = 0.
+     */
+    public static function manifest_fills_plan_boxes($task_cfg, $manifest_dir) {
+        if (!is_array($task_cfg) || $manifest_dir === '') return false;
+        $files = (array) ($task_cfg['always'] ?? []);
+        foreach ((array) ($task_cfg['steps'] ?? []) as $sd) $files = array_merge($files, (array) ($sd['files'] ?? []));
+        foreach (array_unique($files) as $f) {
+            $p = $manifest_dir . '/' . $f;
+            if (!is_string($f) || !file_exists($p)) continue;
+            $c = str_replace('\\', '', (string) file_get_contents($p));
+            if (strpos($c, '@FIELD_SET') !== false && preg_match('/"field"\s*:\s*"plan-/', $c)) return true;
+        }
+        return false;
     }
 
     /**

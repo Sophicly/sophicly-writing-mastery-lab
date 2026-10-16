@@ -92,8 +92,29 @@ ok(family('mastery_codex') === 'codex', 'v7.20.909: the Mastery Codex is the cod
     ok(c.block === false, 'codex: no scope / no map row / nothing trackable → unknown → completes (fail-open)', JSON.stringify(c));
 }
 ok(family('planning') === 'other:planning' && family('foundational_quiz') === 'other:foundational_quiz' && family('mark_scheme_unit') === 'other:mark_scheme_unit', 'everything else is its own watch-only family (the Mark Scheme QUIZ lessons included)');
-ok(JSON.stringify(G.MC_GATE_ENFORCE_FAMILIES.slice().sort()) === JSON.stringify(['assessment', 'codex', 'cw', 'diagnostic', 'mark_scheme']),
-    'only cw · diagnostic · assessment · codex · mark_scheme (v7.20.917) are eligible to be enforced (the measured families)');
+ok(JSON.stringify(G.MC_GATE_ENFORCE_FAMILIES.slice().sort()) === JSON.stringify(['assessment', 'codex', 'cw', 'diagnostic', 'mark_scheme', 'planning']),
+    'only cw · diagnostic · assessment · codex · mark_scheme (v7.20.917) · planning (v7.20.921) are eligible to be enforced (the measured families)');
+{   // v7.20.921 (PEDAGOGY §67 — Neil, 16 Oct: "she shouldn't be able to mark the planning complete")
+    ok(G.mcGateFamily('planning', { planFills: true }) === 'planning', 'v7.20.921: a planning lesson whose protocol fills the plan boxes is the planning family');
+    ok(G.mcGateFamily('planning', { planFills: false }) === 'other:planning' && G.mcGateFamily('planning', {}) === 'other:planning' && G.mcGateFamily('planning', { planFills: 'yes' }) === 'other:planning',
+        '⭐ a planning protocol that does NOT fill the plan (or an unknown answer) stays watch-only — a student following the process could never reach 100% there');
+    const ON = ['assessment', 'diagnostic', 'cw', 'codex', 'mark_scheme'];
+    let c = decide({ verdict: 'incomplete', family: 'planning', exempt: '' }, 'enforce', ON);
+    ok(c.block === false && c.record === 'would_block', 'planning: until Neil adds planning to the option → only RECORDED, nobody stopped', JSON.stringify(c));
+    c = decide({ verdict: 'incomplete', family: 'planning', exempt: '' }, 'enforce', ON.concat('planning'));
+    ok(c.block === true, 'planning: once switched on → an unfinished plan (Mishel 1237, 4 of 14) is stopped', JSON.stringify(c));
+    c = decide({ verdict: 'complete', family: 'planning', exempt: '' }, 'enforce', ON.concat('planning'));
+    ok(c.block === false, 'planning: a finished plan completes', JSON.stringify(c));
+    c = decide({ verdict: 'incomplete', family: 'other:planning', exempt: '' }, 'enforce', ON.concat('planning'));
+    ok(c.block === false, 'planning: a non-filling protocol is never stopped, even with planning switched on', JSON.stringify(c));
+}
+{   // the wiring: both readers pass the server's answer; the server decides it from the manifest files
+    const php9 = read('sophicly-writing-mastery-lab.php');
+    ok((js.match(/mcGateFamily\((?:task|snap\.task), \{ planFills: _mcGatePlanFills\(\) \}\)/g) || []).length === 2, 'both the live reading and the saved verdict pass planFills');
+    ok(/c\.planFills === true/.test(js), 'planFills is read from swmlEmbedConfig.mcGate (strict true)');
+    ok(/'planFills' => \$task === 'planning' && \(function \(\) use \(\$board, \$subject\)/.test(php9) && /catch \(\\Throwable \$e\)[\s\S]{0,160}planning stays watch-only/.test(php9),
+        'the server decides planFills at render from the page\'s own board/subject, and an error leaves planning watch-only');
+}
 ok(family('mark_scheme') === 'mark_scheme', 'v7.20.917: the Mark Scheme Final Assessment is the mark_scheme family');
 {   // v7.20.917 (Neil, Huzaifa 1411: "they don't actually complete the document… we need some sort of guard")
     const PROD = ['assessment', 'diagnostic', 'cw', 'codex'];
@@ -106,7 +127,7 @@ ok(family('mark_scheme') === 'mark_scheme', 'v7.20.917: the Mark Scheme Final As
     c = decide({ verdict: 'unknown', family: 'mark_scheme', exempt: '' }, 'enforce', PROD.concat('mark_scheme'));
     ok(c.block === false, 'mark_scheme: an unknown reading completes (fail-open)', JSON.stringify(c));
 }
-ok(/\$measured = \['cw', 'diagnostic', 'assessment', 'codex', 'mark_scheme'\];/.test(php), 'the server half knows the same measured set');
+ok(/\$measured = \['cw', 'diagnostic', 'assessment', 'codex', 'mark_scheme', 'planning'\];/.test(php), 'the server half knows the same measured set');
 
 console.log('\n2. the student who did NOT finish is stopped (enforce)');
 const annaya = { verdict: 'incomplete', family: 'assessment', exempt: '', sessionFinished: false, unmarked: ['Feedback: Q3', 'Feedback: Q4', 'Feedback: Q5'] };
@@ -134,7 +155,7 @@ ok(d.block === false, 'Grade 9 Core Skills (one document for the course) → exe
 d = decide({ verdict: 'unknown', family: 'cw', exempt: '' }, 'enforce');
 ok(d.block === false && d.record === 'unknown', 'an UNKNOWN reading (still mounting, error) → THROUGH and recorded — only certainty stops anyone', JSON.stringify(d));
 d = decide({ verdict: 'incomplete', family: 'other:planning', exempt: '' }, 'enforce');
-ok(d.block === false && d.record === 'would_block', 'an unmeasured family (planning) under 100% → through, recorded as would-block', JSON.stringify(d));
+ok(d.block === false && d.record === 'would_block', 'an unmeasured family (planning where the protocol does not fill the plan) under 100% → through, recorded as would-block', JSON.stringify(d));
 d = decide(null, 'enforce');
 ok(d.block === false, 'no reading at all → through');
 

@@ -1464,6 +1464,9 @@ body.swml-page {
    gradient? With the following blues"). An alpha tint in dark was rejected as "washed" (the grey panel drains its
    chroma), and solid purples clashed with the quick-action chips (A) or read as high level (C).
    ⚠ MEASURED: white text is 3.9:1 on #4D76FD and 2.8:1 on #42A1EC — under 4.5:1. Told Neil; his call.
+   v7.20.921 (Neil, 16 Oct, FIXLIST bubble-dark-one-shade): *"not enough contrast… between the lighter blue and the white
+   text… maybe one shade rather than a gradient?"* — DARK is now the darker blue alone, #4D76FD (3.94:1; #3B63E8, the
+   quick-chip hover shade, would be 5.08:1 — offered to him).
    HEIGHT (measured, staging): a one-line bubble was 87px for 21px of text — an empty header row holding only the
    hover-only copy button (23px) + the host theme's <p> margin (19.5px). The copy button now sits OUTSIDE the bubble,
    to its left, and the paragraph carries no margin → 39px. */
@@ -1474,7 +1477,7 @@ body.swml-page {
     background: rgba(83, 51, 237, 0.10); color: var(--swml-text);
 }
 [data-swml-theme="dark"] .swml-bubble.user .swml-bubble-content {
-    background: linear-gradient(135deg, #4D76FD, #42A1EC); color: #fff;
+    background: #4D76FD; color: #fff;
 }
 .swml-bubble.user .swml-bubble-content > .swml-bubble-header,
 .swml-bubble.user .swml-bubble-content > .swml-user-copy {   /* the selection-chip pad appends it loose, no header */

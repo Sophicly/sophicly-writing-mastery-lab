@@ -1069,6 +1069,7 @@ node bin/doc-replace-lint.js || fail=1             # v7.20.854 (never-again-1298
 node bin/doc-replace-lint.js --self-test >/dev/null || { echo "❌ doc-replace-lint self-test: the gate no longer fails on a defect it exists to stop"; fail=1; }
 php bin/canvas-safety-harness.php >/dev/null 2>&1 || { php bin/canvas-safety-harness.php 2>/dev/null | grep -E '✗|FAILED'; fail=1; }   # v7.20.854: a save can never destroy a document beyond recovery (server copy-aside + restore round-trip)
 php bin/derived-topic-harness.php >/dev/null 2>&1 || { php bin/derived-topic-harness.php 2>/dev/null | grep -E '✗|FAILED'; fail=1; }   # v7.20.859 (msa-sidebar-1287): a preliminary Mark Scheme Final Assessment keeps its own document (topic 0), never Assessment 2's
+php bin/order-lock-harness.php >/dev/null 2>&1 || { php bin/order-lock-harness.php 2>/dev/null | grep -E '✗|FAILED'; fail=1; }   # v7.20.921 (PEDAGOGY §67): lessons are done in order — a WML lesson opens once the WML lessons before it in its unit are complete; staff/review/live/tutor lessons never locked; fail-open
 
 # Essay POLISHING is an ENVIRONMENT (v7.20.609, PROTOCOL-STANDARD Part D). The router's
 # essay_polishing_env map, the chip's ladder, the retired manifest cell and the per-paper rubric are

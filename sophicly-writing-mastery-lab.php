@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.920
+ * Version: 7.20.921
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.920');
+define('SWML_VERSION', '7.20.921');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -95,6 +95,32 @@ if ( ! function_exists( 'sophicly_review_target_id' ) ) {
 if ( ! defined( 'SWML_REVIEW_PARAMS' ) ) {
     define( 'SWML_REVIEW_PARAMS', 'view_as,student_id' );
 }
+
+/**
+ * v7.20.921 (PEDAGOGY §67 — Neil, 16 Oct: "They need to do all of them in order", Creative Writing included) —
+ * THE ORDER LOCK's rule, once. $chain = the unit's lessons in course order, each
+ * ['id'=>int, 'wml'=>bool, 'tutor'=>bool, 'complete'=>bool]. Returns the id of the first EARLIER Writing Mastery
+ * lesson that is not complete, or 0 = open. Open when: the current lesson is not in the chain (fail-open), is not a
+ * Writing Mastery lesson, or is itself complete (a finished lesson always opens). A tutor lesson never holds anyone
+ * back ("Bring this to your next live session. You can move on now."). Driven by bin/order-lock-harness.php.
+ */
+// @ORDER-LOCK-PURE-START
+function swml_order_lock_pick(array $chain, $current_id) {
+    $chain = array_values($chain);
+    $current_id = (int) $current_id;
+    $pos = -1;
+    foreach ($chain as $i => $row) {
+        if ((int) ($row['id'] ?? 0) === $current_id) { $pos = $i; break; }
+    }
+    if ($pos < 0) return 0;
+    if (empty($chain[$pos]['wml']) || !empty($chain[$pos]['complete'])) return 0;
+    for ($i = 0; $i < $pos; $i++) {
+        $r = $chain[$i];
+        if (!empty($r['wml']) && empty($r['tutor']) && empty($r['complete'])) return (int) ($r['id'] ?? 0);
+    }
+    return 0;
+}
+// @ORDER-LOCK-PURE-END
 
 /**
  * Main plugin class
@@ -192,6 +218,12 @@ class Sophicly_Writing_Mastery_Lab {
         // for a completion that did not come through the footer button. See mc_gate_filter().
         add_filter('learndash_process_mark_complete', [$this, 'mc_gate_filter'], 20, 3);
 
+        // v7.20.921 (PEDAGOGY §67): THE ORDER LOCK — a Writing Mastery lesson opens once the Writing Mastery lessons
+        // before it in its unit are complete. The page shows a card instead (render_embedded_wml); these two hold the
+        // same line for the Mark Complete button and for a direct form POST. See order_lock_blocker().
+        add_filter('learndash_process_mark_complete', [$this, 'order_lock_filter'], 19, 3);
+        add_filter('learndash_mark_complete', [$this, 'order_lock_hide_button'], 20, 2);
+
         // v7.20.696 (#723): a permitted reviewer (tutor · specialist · admin · connected parent) on a ?view_as=
         // link may OPEN the student's lesson even when not enrolled in that course. See review_access_filter().
         add_filter('sfwd_lms_has_access', [$this, 'review_access_filter'], 20, 3);
@@ -285,7 +317,7 @@ class Sophicly_Writing_Mastery_Lab {
      * v7.20.909: 'codex' (Core Skills Mastery Codex, per lesson) joins the measured set; prod enforces it only once named.
      */
     public static function mc_gate_families() {
-        $measured = ['cw', 'diagnostic', 'assessment', 'codex', 'mark_scheme'];   // v7.20.917: + the Mark Scheme Final Assessment
+        $measured = ['cw', 'diagnostic', 'assessment', 'codex', 'mark_scheme', 'planning'];   // v7.20.917: + Mark Scheme Final · v7.20.921: + planning (where the protocol fills the plan)
         $o = get_option('swml_mc_gate_families', '');
         $list = is_array($o) ? $o : array_filter(array_map('trim', explode(',', (string) $o)));
         if (!$list) return $measured;
@@ -605,6 +637,162 @@ class Sophicly_Writing_Mastery_Lab {
             return false;
         } catch (\Throwable $e) {
             error_log('[WML mc-gate] server check failed — completing anyway: ' . $e->getMessage());
+            return $process;
+        }
+    }
+
+    /** Admin · tutor · specialist (either form) — the people the order lock never stops. */
+    public static function is_staff_user($uid) {
+        $uid = (int) $uid;
+        if ($uid < 1) return false;
+        if (user_can($uid, 'manage_options')) return true;
+        $att_role = get_user_meta($uid, 'sophicly_att_role', true);
+        $s_role   = get_user_meta($uid, 'sophicly_role', true);
+        return $att_role === 'tutor' || $att_role === 'specialist' || $s_role === 'sss';
+    }
+
+    /**
+     * A lesson that never holds a student back: "Discuss … feedback … tutor" (the ONE title rule the Deadline Engine and
+     * the theme's sidebar note use) or a feedback_discussion task, and a live-modelling lesson (a session they watch).
+     */
+    private static function order_lock_passes_through(WP_Post $p, $course_id) {
+        if (class_exists('Sophicly_Deadline_Engine') && method_exists('Sophicly_Deadline_Engine', 'is_tutor_lesson')
+            && Sophicly_Deadline_Engine::is_tutor_lesson($p->post_title)) return true;
+        if (preg_match('/task\s*=\s*["\']?feedback_discussion/i', (string) $p->post_content)) return true;
+        $bridge = $course_id ? get_option('sophicly_ld_bridge_' . (int) $course_id, []) : [];
+        $entry  = is_array($bridge) ? ($bridge[(string) $p->ID] ?? []) : [];
+        if (!empty($entry['wml_task']) && $entry['wml_task'] === 'feedback_discussion') return true;
+        $author = !empty($entry['wml_author']) ? absint($entry['wml_author']) : 0;
+        if (!$author && preg_match('/\[writing_mastery_lab[^\]]*\bauthor\s*=\s*["\']?(\d+)/i', (string) $p->post_content, $m)) {
+            $author = absint($m[1]);
+        }
+        return $author && self::is_live_modelling_author($author);
+    }
+
+    /**
+     * v7.20.921 (PEDAGOGY §67) — the earlier Writing Mastery lesson in this unit that must be finished first, as
+     * ['id','title','url'], or null = open. wp option swml_order_lock ('on' default · 'off' = instant rollback, no
+     * deploy). Lessons only (sfwd-topic), within their unit, in the course's own order. Any error → null (open).
+     */
+    public static function order_lock_blocker($uid, $post_id, $course_id) {
+        try {
+            $uid = (int) $uid; $post_id = (int) $post_id; $course_id = (int) $course_id;
+            if (get_option('swml_order_lock', 'on') === 'off') return null;
+            if ($uid < 1 || $post_id < 1 || $course_id < 1) return null;
+            if (get_post_type($post_id) !== 'sfwd-topic') return null;
+            if (!function_exists('learndash_course_get_single_parent_step')
+                || !function_exists('learndash_course_get_children_of_step')
+                || !function_exists('learndash_is_item_complete')) return null;
+            $unit = (int) learndash_course_get_single_parent_step($course_id, $post_id, 'sfwd-lessons');
+            if ($unit < 1) return null;
+            $chain = [];
+            foreach ((array) learndash_course_get_children_of_step($course_id, $unit, 'sfwd-topic') as $tid) {
+                $p = get_post((int) $tid);
+                if (!($p instanceof WP_Post)) continue;
+                $wml = $p->post_status === 'publish' && has_shortcode($p->post_content, 'writing_mastery_lab');
+                $chain[] = [
+                    'id'       => (int) $p->ID,
+                    'wml'      => $wml,
+                    'tutor'    => $wml && self::order_lock_passes_through($p, $course_id),
+                    'complete' => $wml && learndash_is_item_complete((int) $p->ID, $uid, $course_id),
+                ];
+                if ((int) $p->ID === $post_id) break;   // nothing after the current lesson matters
+            }
+            // A live-modelling / tutor lesson is never locked itself either.
+            $last = end($chain);
+            if ($last && (int) $last['id'] === $post_id && !empty($last['tutor'])) return null;
+            $bid = swml_order_lock_pick($chain, $post_id);
+            if (!$bid) return null;
+            return [
+                'id'    => $bid,
+                'title' => html_entity_decode(get_the_title($bid), ENT_QUOTES, 'UTF-8'),
+                'url'   => function_exists('learndash_get_step_permalink') ? learndash_get_step_permalink($bid, $course_id) : get_permalink($bid),
+            ];
+        } catch (\Throwable $e) {
+            error_log('[WML order-lock] check failed — lesson left open: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /** The card a locked lesson shows instead of the Writing Mastery Lab. Plain words (root §WRITE FOR A SECOND-LANGUAGE READER). */
+    private static function order_lock_card(array $b) {
+        $t = esc_html($b['title']);
+        // The house button (.swml-btn-main, wml-canvas.css) — reused, never re-made (root §14c Gate 0). Its light skin
+        // keys on .swml-canvas-light, which WML's own script sets; it does not run on a locked lesson, so the site's
+        // <html data-theme> picks the same tokens below.
+        wp_enqueue_style('swml-styles', swml_css_src('wml-styles'), [], SWML_VERSION);
+        wp_enqueue_style('swml-canvas', swml_css_src('wml-canvas'), ['swml-styles'], SWML_VERSION);
+        ob_start(); ?>
+<div class="swml-order-lock" role="region" aria-label="Lesson locked">
+<style>
+.swml-order-lock{--ol-bg:#fff;--ol-ink:#1d1b26;--ol-muted:#55526a;--ol-edge:rgba(83,51,237,.14);max-width:560px;margin:48px auto;padding:32px 28px;border-radius:20px;background:var(--ol-bg);color:var(--ol-ink);box-shadow:0 1px 2px rgba(20,10,60,.06),0 12px 32px rgba(20,10,60,.08);border:1px solid var(--ol-edge);text-align:center;font-family:inherit;box-sizing:border-box}
+html[data-theme="dark"] .swml-order-lock{--ol-bg:#24222e;--ol-ink:#f3f1fa;--ol-muted:#b9b5cc;--ol-edge:rgba(255,255,255,.08);box-shadow:0 12px 32px rgba(0,0,0,.35)}
+.swml-order-lock h2{margin:0 0 12px;font-size:1.35rem;line-height:1.3;color:var(--ol-ink)}
+.swml-order-lock p{margin:0 0 24px;font-size:1rem;line-height:1.55;color:var(--ol-muted)}
+.swml-order-lock a.swml-btn-main{display:inline-flex;text-decoration:none}
+html:not([data-theme="dark"]) .swml-order-lock .swml-btn-main{--swml-bm-face:#1C1D1F;--swml-bm-ink:#ffffff;--swml-bm-flood:#51dacf;--swml-bm-flood-ink:#0f2b2a;--swml-bm-first-ink:#0f2b2a;--swml-bm-stroke:rgba(26,26,30,0.20)}
+@media (max-width:600px){.swml-order-lock{margin:24px 16px;padding:24px 20px}}
+</style>
+<h2>Finish “<?php echo $t; ?>” first</h2>
+<p>Lessons are done in order. This lesson opens when “<?php echo $t; ?>” is finished and marked complete.</p>
+<a class="swml-btn-main swml-order-lock-go" href="<?php echo esc_url($b['url']); ?>"><span class="btn-main__outer"><span class="btn-main__inner"><span class="btn-main__text">Take me there</span></span><span class="btn-main__hover"><span class="btn-main__text" data-text="Take me there"></span></span></span></a>
+</div>
+<?php
+        return ob_get_clean();
+    }
+
+    /** Is the current request one the order lock may stop? A signed-in student on their OWN lesson. */
+    private function order_lock_applies_to_request() {
+        $uid = get_current_user_id();
+        if ($uid < 1 || self::is_staff_user($uid)) return 0;
+        $target = sophicly_review_target_id();
+        if ($target && $target !== $uid) return 0;
+        return $uid;
+    }
+
+    /** LearnDash's Mark Complete button is not drawn on a locked lesson (the footer proxy then has nothing to mirror). */
+    public function order_lock_hide_button($return, $post = null) {
+        try {
+            if ($return === '' || !($post instanceof WP_Post) || $post->post_type !== 'sfwd-topic') return $return;
+            $uid = $this->order_lock_applies_to_request();
+            if (!$uid) return $return;
+            $cid = $this->resolve_current_course_id($post->ID);
+            if (!$cid && function_exists('learndash_get_course_id')) $cid = (int) learndash_get_course_id($post->ID);
+            return self::order_lock_blocker($uid, $post->ID, $cid) ? '' : $return;
+        } catch (\Throwable $e) {
+            error_log('[WML order-lock] button check failed — button kept: ' . $e->getMessage());
+            return $return;
+        }
+    }
+
+    /**
+     * The server half: the student's own Mark Complete press on a locked lesson is refused. Programmatic completions
+     * (student-data's bridge recording finished work) do not carry the form fields and pass, as in mc_gate_filter().
+     */
+    public function order_lock_filter($process, $post, $current_user) {
+        try {
+            if (!$process || !($post instanceof WP_Post) || $post->post_type !== 'sfwd-topic') return $process;
+            if (empty($_POST['sfwd_mark_complete']) || (int) ($_POST['post'] ?? 0) !== (int) $post->ID) return $process;
+            $uid = ($current_user instanceof WP_User) ? (int) $current_user->ID : 0;
+            if ($uid < 1 || get_current_user_id() !== $uid || self::is_staff_user($uid)) return $process;
+            $cid = (int) ($_POST['course_id'] ?? 0);
+            if (!$cid && function_exists('learndash_get_course_id')) $cid = (int) learndash_get_course_id($post->ID);
+            $b = self::order_lock_blocker($uid, $post->ID, $cid);
+            if (!$b) return $process;
+            if (class_exists('SWML_REST_API')) {
+                SWML_REST_API::mc_gate_append_log($uid, [
+                    'at'      => current_time('c'),
+                    'kind'    => 'order_blocked',
+                    'where'   => 'server',
+                    'mode'    => 'order_lock',
+                    'post_id' => (int) $post->ID,
+                    'why'     => 'earlier lesson not complete: ' . (int) $b['id'],
+                    'version' => SWML_VERSION,
+                ]);
+            }
+            return false;
+        } catch (\Throwable $e) {
+            error_log('[WML order-lock] server check failed — completing anyway: ' . $e->getMessage());
             return $process;
         }
     }
@@ -1442,6 +1630,20 @@ class Sophicly_Writing_Mastery_Lab {
         }
         $this->embed_author_id = $author_id;
 
+        // v7.20.921 (PEDAGOGY §67): THE ORDER LOCK. Returns before any asset or boot — no session, no document, no
+        // Sophia. Never for staff, a reviewer, a live-modelling lesson or a lesson outside a course. Signed-in pages are
+        // privately cached by LiteSpeed, so a locked render is never cached (the card must go once the lesson opens).
+        if (!$author_id && $is_ld_topic && $course_id) {
+            $lock_uid = $this->order_lock_applies_to_request();
+            if ($lock_uid && empty($this->resolve_review_context()['review_mode'])) {
+                $lock = self::order_lock_blocker($lock_uid, $post_id, $course_id);
+                if ($lock) {
+                    do_action('litespeed_control_set_nocache', 'WML order lock');
+                    return self::order_lock_card($lock);
+                }
+            }
+        }
+
         $this->enqueue_embed_assets();
 
         // v7.19.968 (Neil C — sidebar correct from FIRST PAINT): compute the FQ round size
@@ -1516,6 +1718,18 @@ class Sophicly_Writing_Mastery_Lab {
             'families' => self::mc_gate_families(),   // v7.20.714: the families enforced today
             'refused' => $mc_refused,
             'nonce'   => ($mc_uid && $post_id) ? wp_create_nonce('swml_mc_gate_' . $mc_uid . '_' . $post_id) : '',
+            // v7.20.921 (PEDAGOGY §67): a planning lesson is held only where its protocol fills the plan boxes. Decided
+            // HERE, from the board/subject the page boots with — Language planning's manifest has no steps, so the
+            // client's /protocol-steps reply never reaches its handler there. Error → false = watch-only = open.
+            'planFills' => $task === 'planning' && (function () use ($board, $subject) {
+                try {
+                    return class_exists('SWML_Protocol_Router')
+                        && !empty(SWML_Protocol_Router::instance()->get_manifest_steps($board, $subject, 'planning')['plan_fills']);
+                } catch (\Throwable $e) {
+                    error_log('[WML mc-gate] plan_fills check failed — planning stays watch-only: ' . $e->getMessage());
+                    return false;
+                }
+            })(),
         ];
         // v7.20.780 (#824): the Mastery Codex's per-lesson scope. Absent (null) = today's whole Codex.
         if ($task === 'mastery_codex') {

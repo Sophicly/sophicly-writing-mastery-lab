@@ -2315,6 +2315,7 @@ class SWML_REST_API {
             'steps'   => $result['steps'] ?? [],
             'groups'  => $result['groups'] ?? null,
             'doc_filed' => !empty($result['doc_filed']),   // v7.20.917: planning files each body element into the doc → doc-derived sidebar + step
+            'plan_fills' => !empty($result['plan_fills']), // v7.20.921: planning fills the plan boxes (the page reads it from mcGate.planFills)
         ]);
     }
 
