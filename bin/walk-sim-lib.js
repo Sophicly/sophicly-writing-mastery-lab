@@ -166,7 +166,10 @@ function attachWmlDeps(deps) {
         return real.recordTurn(history, entry, opts);
     };
 
-    deps.WML = Object.assign({}, deps.WML || {}, real, { recordTurn: guarded });
+    // v7.20.912: WML.ensureAsset (wml-core) with nothing configured — exactly what a rig is: resolves false, so an island
+    // opener takes its own "didn't load" path (a message + a chip — the liveness check still applies).
+    const ensureAsset = function () { return Promise.resolve(false); };
+    deps.WML = Object.assign({ ensureAsset: ensureAsset }, deps.WML || {}, real, { recordTurn: guarded });
     return deps.WML;
 }
 

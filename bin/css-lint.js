@@ -30,7 +30,7 @@ const ROOT = path.resolve(__dirname, '..');
 let files = process.argv.slice(2);
 if (!files.length) {
     const dir = path.join(ROOT, 'frontend');
-    files = fs.readdirSync(dir).filter(f => f.endsWith('.css')).map(f => path.join(dir, f));
+    files = fs.readdirSync(dir).filter(f => f.endsWith('.css') && !f.endsWith('.min.css')).map(f => path.join(dir, f));
 }
 
 const problems = [];

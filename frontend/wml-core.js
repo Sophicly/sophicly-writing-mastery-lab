@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.911';
+var WML_BUILD = '7.20.912';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -6142,6 +6142,38 @@ window.WML = (function() {
     // first. They are left alone (changing a live chip's arg is a needless risk), but every id added
     // from here on is the REAL section id, so it resolves on the first attempt and survives any
     // change to that prefix fallback.
+    // v7.20.912 (Neil, 16 Oct: "things don't load unless they need to"): fetch a file the first time a feature needs it,
+    // from swmlConfig.lazyAssets (the server's lazy_assets()). Never enqueue-by-task instead: a Focus SPA move keeps the
+    // first page's scripts, so a file left off one lesson would be missing on the next. Resolves true once loaded, false on
+    // failure or a 20 s stall (it never rejects) — the caller keeps its own "didn't load" message, and a failed load is
+    // forgotten so the next tap tries again.
+    const _assetLoads = {};
+    function ensureAsset(key) {
+        if (_assetLoads[key]) return _assetLoads[key];
+        let spec = null;
+        try { spec = ((window.swmlConfig || {}).lazyAssets || {})[key] || null; } catch (_) {}
+        if (!spec) { try { console.warn('[WML] ensureAsset: no lazy asset named "' + key + '" in swmlConfig.lazyAssets'); } catch (_) {} return Promise.resolve(false); }
+        const one = (tag, attrs) => new Promise(resolve => {
+            const n = document.createElement(tag);
+            Object.keys(attrs).forEach(k => n.setAttribute(k, attrs[k]));
+            n.setAttribute('data-swml-asset', key);
+            const t = setTimeout(() => resolve(false), 20000);
+            n.onload = () => { clearTimeout(t); resolve(true); };
+            n.onerror = () => { clearTimeout(t); resolve(false); };
+            (document.head || document.documentElement).appendChild(n);
+        });
+        const loads = [];
+        if (spec.css) loads.push(one('link', { rel: 'stylesheet', href: spec.css }));
+        if (spec.js) loads.push(one('script', { src: spec.js, async: '' }));
+        const p = Promise.all(loads).then(r => {
+            const ok = r.every(Boolean);
+            if (!ok) { delete _assetLoads[key]; document.querySelectorAll('[data-swml-asset="' + key + '"]').forEach(n => n.remove()); }
+            return ok;
+        });
+        _assetLoads[key] = p;
+        return p;
+    }
+
     const RESOURCE_TOOLKIT_IDS = [
         'wb-verbs', 'evaluative-keywords', 'topic-sentence', 'close-analysis', 'finegrained',
         // Fix My Writing — the sections that answer a polishing finding directly
@@ -6987,6 +7019,7 @@ window.WML = (function() {
         writingQuestionIds, isWritingQuestion,
         // v7.20.615: the element → reference map, and the ONE producer of the link line.
         ELEMENT_TOOLKIT_MAP, elementToolkitLines, RESOURCE_TOOLKIT_IDS,
+        ensureAsset,     // v7.20.912: load-on-use files (swmlConfig.lazyAssets)
         learnChipHtml,   // v7.20.797 (#847): a quick comment's stored link → the house learn chip
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
         caps, cap, isMarkingFlow, steppedHistory, hasAssessmentSections, isLiveModelling,

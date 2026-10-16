@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.911
+ * Version: 7.20.912
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.911');
+define('SWML_VERSION', '7.20.912');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -24,6 +24,22 @@ define('SWML_URL', plugin_dir_url(__FILE__));
 function swml_js_src($name) {
     $src = 'frontend/' . $name . '.js';
     $min = 'frontend/' . $name . '.min.js';
+    $source_only = (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) || isset($_GET['swml_src'])
+        || get_option('swml_minified_js', 'on') === 'off';
+    if (!$source_only && is_readable(SWML_PATH . $min) && @filemtime(SWML_PATH . $min) >= @filemtime(SWML_PATH . $src)) {
+        return SWML_URL . $min;
+    }
+    return SWML_URL . $src;
+}
+/**
+ * v7.20.912 (Neil, 16 Oct: "things don't load unless they need to"): the stylesheets get the same treatment as the
+ * scripts — bin/build-min.sh writes frontend/{name}.min.css (csso, restructure off: whitespace + comments only, the
+ * cascade untouched) and this serves it only when it is at least as new as its source. Same fall-backs, same switch:
+ * SCRIPT_DEBUG, ?swml_src=1, or `wp option update swml_minified_js off`.
+ */
+function swml_css_src($name) {
+    $src = 'frontend/' . $name . '.css';
+    $min = 'frontend/' . $name . '.min.css';
     $source_only = (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) || isset($_GET['swml_src'])
         || get_option('swml_minified_js', 'on') === 'off';
     if (!$source_only && is_readable(SWML_PATH . $min) && @filemtime(SWML_PATH . $min) >= @filemtime(SWML_PATH . $src)) {
@@ -333,6 +349,20 @@ class Sophicly_Writing_Mastery_Lab {
      * swmlConfig.library — null unless the Library's resource-content route exists (Library ≥ 1.53.0). Null hides the
      * button, so WML can reach a site before the Library does without showing a control that cannot work.
      */
+    /**
+     * v7.20.912: files a lesson fetches only when a feature first needs them (WML.ensureAsset in wml-core.js).
+     * ?ver= is the cache key, exactly as an enqueue would add it.
+     */
+    public static function lazy_assets() {
+        $v = '?ver=' . rawurlencode(SWML_VERSION);
+        return [
+            'sceneIsland' => [
+                'js'  => SWML_URL . 'frontend/wml-scene-island.min.js' . $v,
+                'css' => SWML_URL . 'frontend/wml-scene-island.css' . $v,
+            ],
+        ];
+    }
+
     public static function library_config() {
         if (!function_exists('sophicly_api_get_resource_content')) return null;
         $posts = get_posts([
@@ -720,7 +750,7 @@ class Sophicly_Writing_Mastery_Lab {
 
         wp_enqueue_style(
             'swml-styles',
-            SWML_URL . 'frontend/wml-styles.css',
+            swml_css_src('wml-styles'),
             [],
             SWML_VERSION
         );
@@ -760,7 +790,7 @@ class Sophicly_Writing_Mastery_Lab {
         // Canvas workspace styles
         wp_enqueue_style(
             'swml-canvas',
-            SWML_URL . 'frontend/wml-canvas.css',
+            swml_css_src('wml-canvas'),
             ['swml-styles'],
             SWML_VERSION
         );
@@ -784,7 +814,7 @@ class Sophicly_Writing_Mastery_Lab {
         // Must load BEFORE wml-assessment, whose row nodeView renders the picker from it.
         wp_enqueue_script(
             'swml-techniques-index',
-            SWML_URL . 'frontend/wml-techniques-index.js',
+            swml_js_src('wml-techniques-index'),
             [],
             SWML_VERSION,
             true
@@ -798,7 +828,7 @@ class Sophicly_Writing_Mastery_Lab {
         // bin/cw6-outline-harness.js. Must load BEFORE wml-assessment, whose _cwOutlineCtl reads it.
         wp_enqueue_script(
             'swml-cw6-concepts',
-            SWML_URL . 'frontend/wml-cw6-concepts.js',
+            swml_js_src('wml-cw6-concepts'),
             [],
             SWML_VERSION,
             true
@@ -810,15 +840,15 @@ class Sophicly_Writing_Mastery_Lab {
         // pure engine (the bottom-up climb + the mark arithmetic) that the self-assessment walk in
         // wml-assessment.js drives, so BOTH must load before it. Without them the walk fails loud
         // to the student rather than guessing at a mark scheme.
-        wp_enqueue_script('swml-markscheme-data', SWML_URL . 'frontend/wml-markscheme-data.js', [], SWML_VERSION, true);
-        wp_enqueue_script('swml-examiner-ladder', SWML_URL . 'frontend/wml-examiner-ladder.js', ['swml-markscheme-data'], SWML_VERSION, true);
+        wp_enqueue_script('swml-markscheme-data', swml_js_src('wml-markscheme-data'), [], SWML_VERSION, true);
+        wp_enqueue_script('swml-examiner-ladder', swml_js_src('wml-examiner-ladder'), ['swml-markscheme-data'], SWML_VERSION, true);
 
         // v7.19.78: Shared SectionBlock NodeView factory — must load BEFORE wml-assessment
         // so window.WML.SectionBlock.createNodeView exists when both SectionBlock Node
         // definitions in wml-assessment.js call it via addNodeView().
         wp_enqueue_script(
             'swml-section-block',
-            SWML_URL . 'frontend/wml-section-block.js',
+            swml_js_src('wml-section-block'),
             ['swml-core'],
             SWML_VERSION,
             true
@@ -828,8 +858,9 @@ class Sophicly_Writing_Mastery_Lab {
         // island/ by `npm run build`, committed like wml-tiptap.min.js; the server never builds).
         // Standalone IIFE exposing window.WMLSceneIsland; no deps — _cw9SceneCtl (wml-assessment)
         // is the only caller and fails loud if the global is absent.
-        wp_enqueue_style('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.css', [], SWML_VERSION);
-        wp_enqueue_script('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.min.js', [], SWML_VERSION, true);
+        // v7.20.912 (Neil, 16 Oct: "things don't load unless they need to"): NOT enqueued any more — 247 KB that only Creative
+        // Writing Steps 8, 9 and 12 use. Loaded on first use by WML.ensureAsset('sceneIsland') from swmlConfig.lazyAssets
+        // (self::lazy_assets()). Load-on-use, never enqueue-by-task: a Focus SPA move keeps the first page's scripts.
 
         // Assessment module: canvas workspace, document building, TipTap editor
         // v7.20.905: swml_js_src serves the minified build when it is current (see the function).
@@ -846,7 +877,7 @@ class Sophicly_Writing_Mastery_Lab {
         // polish env redesign). Self-registers as window.WML.SelectionChip.
         wp_enqueue_script(
             'swml-selection-chip',
-            SWML_URL . 'frontend/wml-selection-chip.js',
+            swml_js_src('wml-selection-chip'),
             ['swml-core', 'swml-assessment'],
             SWML_VERSION,
             true
@@ -857,7 +888,7 @@ class Sophicly_Writing_Mastery_Lab {
         // wml-section-block.js. Self-registers as window.WML.PullOverlay.
         wp_enqueue_script(
             'swml-pull-overlay',
-            SWML_URL . 'frontend/wml-pull-overlay.js',
+            swml_js_src('wml-pull-overlay'),
             ['swml-core', 'swml-assessment'],
             SWML_VERSION,
             true
@@ -866,7 +897,7 @@ class Sophicly_Writing_Mastery_Lab {
         // App module: navigation, planning, chat, boot (loads LAST — contains boot sequence)
         wp_enqueue_script(
             'swml-app',
-            SWML_URL . 'frontend/wml-app.js',
+            swml_js_src('wml-app'),
             ['swml-core', 'swml-assessment'],
             SWML_VERSION,
             true
@@ -888,7 +919,7 @@ class Sophicly_Writing_Mastery_Lab {
         );
         wp_enqueue_script(
             'swml-video-player',
-            SWML_URL . 'frontend/wml-video-player.js',
+            swml_js_src('wml-video-player'),
             ['hls-js'],
             SWML_VERSION,
             true
@@ -969,6 +1000,7 @@ class Sophicly_Writing_Mastery_Lab {
             'dashboardUrl'     => home_url('/my-dashboard/'),
             'libraryUrl'       => home_url('/library/'),
             'library'          => self::library_config(),   // v7.20.861: the Library rail button (null = no button)
+            'lazyAssets'       => self::lazy_assets(),      // v7.20.912: fetched on first use (WML.ensureAsset)
             'pageUrl'          => home_url('/writing-mastery-lab/'),
             'iconsUrl'         => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
             'iconBaseUrl'      => plugin_dir_url(__FILE__) . 'frontend/icons/', // v7.20.362: brand marks (phoenix) — NOT the emoji pack
@@ -1507,16 +1539,16 @@ class Sophicly_Writing_Mastery_Lab {
      */
     private function enqueue_embed_assets() {
         // Styles
-        wp_enqueue_style('swml-styles', SWML_URL . 'frontend/wml-styles.css', [], SWML_VERSION);
+        wp_enqueue_style('swml-styles', swml_css_src('wml-styles'), [], SWML_VERSION);
         wp_enqueue_style('swml-theme-toggle', SWML_URL . 'frontend/wml-theme-toggle.css', [], SWML_VERSION);
-        wp_enqueue_style('swml-canvas', SWML_URL . 'frontend/wml-canvas.css', ['swml-styles'], SWML_VERSION);
+        wp_enqueue_style('swml-canvas', swml_css_src('wml-canvas'), ['swml-styles'], SWML_VERSION);
 
         // Scripts
                 // v7.20.527: shader retired (see enqueue_assets above for the full note + the dependency landmine).
         wp_enqueue_script('swml-tiptap', SWML_URL . 'frontend/wml-tiptap.min.js', [], SWML_VERSION, true);
         wp_enqueue_script('swml-core', swml_js_src('wml-core'), [], SWML_VERSION, true);
         // v7.19.78: shared SectionBlock NodeView factory — load before wml-assessment.
-        wp_enqueue_script('swml-section-block', SWML_URL . 'frontend/wml-section-block.js', ['swml-core'], SWML_VERSION, true);
+        wp_enqueue_script('swml-section-block', swml_js_src('wml-section-block'), ['swml-core'], SWML_VERSION, true);
         // ⭐⭐ v7.20.445 — FOUR MODULES WERE MISSING FROM THIS PATH, and this is the path every
         // CW lesson actually loads through (the shortcode renders embedded mode). Reported by the
         // dashboard lane from a PROD console line — `WML CW6: window.WML_CW6_CONCEPTS missing` —
@@ -1535,22 +1567,23 @@ class Sophicly_Writing_Mastery_Lab {
         // left the globals undefined. Both halves — the enqueues AND the deps — are needed.
         // Kept in sync by bin/enqueue-parity-lint.js, because "two lists that must agree" is the
         // defect, not the omission (BRAND §4 / root CLAUDE.md §7).
-        wp_enqueue_script('swml-techniques-index', SWML_URL . 'frontend/wml-techniques-index.js', [], SWML_VERSION, true);
-        wp_enqueue_script('swml-cw6-concepts', SWML_URL . 'frontend/wml-cw6-concepts.js', [], SWML_VERSION, true);
-        wp_enqueue_script('swml-markscheme-data', SWML_URL . 'frontend/wml-markscheme-data.js', [], SWML_VERSION, true);
-        wp_enqueue_script('swml-examiner-ladder', SWML_URL . 'frontend/wml-examiner-ladder.js', ['swml-markscheme-data'], SWML_VERSION, true);
+        wp_enqueue_script('swml-techniques-index', swml_js_src('wml-techniques-index'), [], SWML_VERSION, true);
+        wp_enqueue_script('swml-cw6-concepts', swml_js_src('wml-cw6-concepts'), [], SWML_VERSION, true);
+        wp_enqueue_script('swml-markscheme-data', swml_js_src('wml-markscheme-data'), [], SWML_VERSION, true);
+        wp_enqueue_script('swml-examiner-ladder', swml_js_src('wml-examiner-ladder'), ['swml-markscheme-data'], SWML_VERSION, true);
         // v7.20.494 (#204): Step 9 Scene Selection island (see the standard-path twin for the law).
-        wp_enqueue_style('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.css', [], SWML_VERSION);
-        wp_enqueue_script('swml-scene-island', SWML_URL . 'frontend/wml-scene-island.min.js', [], SWML_VERSION, true);
+        // v7.20.912 (Neil, 16 Oct: "things don't load unless they need to"): NOT enqueued any more — 247 KB that only Creative
+        // Writing Steps 8, 9 and 12 use. Loaded on first use by WML.ensureAsset('sceneIsland') from swmlConfig.lazyAssets
+        // (self::lazy_assets()). Load-on-use, never enqueue-by-task: a Focus SPA move keeps the first page's scripts.
         wp_enqueue_script('swml-assessment', swml_js_src('wml-assessment'), ['swml-core', 'swml-section-block', 'swml-techniques-index', 'swml-cw6-concepts', 'swml-examiner-ladder', 'swml-tiptap'], SWML_VERSION, true);
-        wp_enqueue_script('swml-selection-chip', SWML_URL . 'frontend/wml-selection-chip.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
-        wp_enqueue_script('swml-pull-overlay', SWML_URL . 'frontend/wml-pull-overlay.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
-        wp_enqueue_script('swml-app', SWML_URL . 'frontend/wml-app.js', ['swml-core', 'swml-assessment'], SWML_VERSION, true);
+        wp_enqueue_script('swml-selection-chip', swml_js_src('wml-selection-chip'), ['swml-core', 'swml-assessment'], SWML_VERSION, true);
+        wp_enqueue_script('swml-pull-overlay', swml_js_src('wml-pull-overlay'), ['swml-core', 'swml-assessment'], SWML_VERSION, true);
+        wp_enqueue_script('swml-app', swml_js_src('wml-app'), ['swml-core', 'swml-assessment'], SWML_VERSION, true);
 
         // Video player
         wp_enqueue_script('hls-js', 'https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js', [], null, true);
         wp_enqueue_style('swml-video-player', SWML_URL . 'frontend/wml-video-player.css', [], SWML_VERSION);
-        wp_enqueue_script('swml-video-player', SWML_URL . 'frontend/wml-video-player.js', ['hls-js'], SWML_VERSION, true);
+        wp_enqueue_script('swml-video-player', swml_js_src('wml-video-player'), ['hls-js'], SWML_VERSION, true);
 
         // User tier
         $user_tier = function_exists('sophicly_get_user_tier') ? sophicly_get_user_tier() : 'free';
@@ -1590,6 +1623,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'dashboardUrl'   => home_url('/my-dashboard/'),
                 'libraryUrl'     => home_url('/library/'),
                 'library'        => self::library_config(),   // v7.20.861: same helper as the standalone site — never two
+                'lazyAssets'     => self::lazy_assets(),      // v7.20.912: same helper on both paths
                 'pageUrl'        => home_url('/writing-mastery-lab/'),
                 'iconsUrl'       => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
                 'iconBaseUrl'    => plugin_dir_url(__FILE__) . 'frontend/icons/', // v7.20.362: brand marks (phoenix) — NOT the emoji pack

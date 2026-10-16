@@ -47,7 +47,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const SHEETS = fs.readdirSync(path.join(ROOT, 'frontend'))
-    .filter(f => f.endsWith('.css'))
+    .filter(f => f.endsWith('.css') && !f.endsWith('.min.css'))   // v7.20.912: a .min.css is generated from a linted source (comments, incl. exemptions, stripped)
     .map(f => path.join('frontend', f));
 
 let failures = [];

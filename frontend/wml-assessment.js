@@ -32924,10 +32924,12 @@
 
             async function openIsland() {
                 if (islandOpen) return;
+                // v7.20.912: fetched on first use (prefetched when a CW lesson mounts) — already here = open at once, as before
+                if (!window.WMLPlotIsland) { await WML.ensureAsset('sceneIsland'); if (islandOpen) return; }
                 if (!window.WMLPlotIsland) {
                     noteBubble('The beat picker didn’t load on this page. Refresh and try again — if it keeps happening, tell your tutor.');
                     ensureChip();
-                    console.error('WML CW8: window.WMLPlotIsland missing — is wml-scene-island.min.js enqueued?');
+                    console.error('WML CW8: window.WMLPlotIsland missing — wml-scene-island.min.js did not load (WML.ensureAsset sceneIsland)');
                     return;
                 }
                 // EVERY open re-reads the LIVE document — Step-6 edits made since appear at once,
@@ -34057,10 +34059,12 @@
 
             async function open() {
                 if (opened) return;
+                // v7.20.912: fetched on first use (prefetched when a CW lesson mounts) — already here = open at once, as before
+                if (!window.WMLSceneIsland) { await WML.ensureAsset('sceneIsland'); if (opened) return; }
                 if (!window.WMLSceneIsland) {
                     noteBubble('The scene picker didn’t load on this page. Refresh and try again — if it keeps happening, tell your tutor.');
                     ensureChip();   // liveness: the way forward stays on screen
-                    console.error('WML CW9: window.WMLSceneIsland missing — is wml-scene-island.min.js enqueued?');
+                    console.error('WML CW9: window.WMLSceneIsland missing — wml-scene-island.min.js did not load (WML.ensureAsset sceneIsland)');
                     return;
                 }
                 const pid = state.cwProjectId;
@@ -39622,10 +39626,12 @@
             // ── PASS A: the profile → beats (the Step-8 placer, goals lens) ────────────────
             async function openGoalsIsland() {
                 if (islandOpen) return;
+                // v7.20.912: fetched on first use (prefetched when a CW lesson mounts) — already here = open at once, as before
+                if (!window.WMLPlotIsland) { await WML.ensureAsset('sceneIsland'); if (islandOpen) return; }
                 if (!window.WMLPlotIsland) {
                     noteBubble('The beat picker didn’t load on this page. Refresh and try again — if it keeps happening, tell your tutor.');
                     ensureChip();
-                    console.error('WML CW12: window.WMLPlotIsland missing — is wml-scene-island.min.js enqueued?');
+                    console.error('WML CW12: window.WMLPlotIsland missing — wml-scene-island.min.js did not load (WML.ensureAsset sceneIsland)');
                     return;
                 }
                 world = _cw8EnumerateBeats(canvasEditor);   // EVERY open re-reads the LIVE document
@@ -39706,10 +39712,12 @@
             // ── PASS B: Draft 1 → beats (the draft map) ────────────────────────────────────
             async function openDraftIsland() {
                 if (islandOpen) return;
+                // v7.20.912: fetched on first use (prefetched when a CW lesson mounts) — already here = open at once, as before
+                if (!window.WMLDraftMapIsland) { await WML.ensureAsset('sceneIsland'); if (islandOpen) return; }
                 if (!window.WMLDraftMapIsland) {
                     noteBubble('The draft picker didn’t load on this page. Refresh and try again — if it keeps happening, tell your tutor.');
                     ensureChip();
-                    console.error('WML CW12: window.WMLDraftMapIsland missing — is wml-scene-island.min.js enqueued?');
+                    console.error('WML CW12: window.WMLDraftMapIsland missing — wml-scene-island.min.js did not load (WML.ensureAsset sceneIsland)');
                     return;
                 }
                 world = _cw8EnumerateBeats(canvasEditor);
@@ -41320,6 +41328,9 @@
 
         // v7.15.56: first-load review entry modal
         setTimeout(maybeShowReviewEntryModal, 400);
+        // v7.20.912: a Creative Writing lesson fetches the scene island (Steps 8, 9, 12) once the page has settled, so the
+        // student's tap rarely waits. Every other lesson never downloads it. Keyed on the CW family, not a step list.
+        if (String(state.task || '').indexOf('cw_') === 0) setTimeout(() => { try { WML.ensureAsset('sceneIsland'); } catch (_) {} }, 2500);
 
         const { Editor, StarterKit, Placeholder, TextAlign, Highlight, CharacterCount, TextStyle, Color, Node, Mark, Extension, PaginationPlus, PAGE_SIZES } = window.TipTap || {};
         if (!Editor) {

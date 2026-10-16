@@ -36,3 +36,24 @@ frontend/wml-assessment.min.js
 frontend/wml-assessment.min.js.map
 frontend/wml-core.min.js
 frontend/wml-core.min.js.map
+# v7.20.912: every WML script and the two big stylesheets are minified at deploy (bin/build-min.sh)
+frontend/wml-app.min.js
+frontend/wml-app.min.js.map
+frontend/wml-selection-chip.min.js
+frontend/wml-selection-chip.min.js.map
+frontend/wml-section-block.min.js
+frontend/wml-section-block.min.js.map
+frontend/wml-pull-overlay.min.js
+frontend/wml-pull-overlay.min.js.map
+frontend/wml-video-player.min.js
+frontend/wml-video-player.min.js.map
+frontend/wml-examiner-ladder.min.js
+frontend/wml-examiner-ladder.min.js.map
+frontend/wml-cw6-concepts.min.js
+frontend/wml-cw6-concepts.min.js.map
+frontend/wml-markscheme-data.min.js
+frontend/wml-markscheme-data.min.js.map
+frontend/wml-techniques-index.min.js
+frontend/wml-techniques-index.min.js.map
+frontend/wml-canvas.min.css
+frontend/wml-styles.min.css
