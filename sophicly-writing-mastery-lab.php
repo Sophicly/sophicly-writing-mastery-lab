@@ -729,7 +729,7 @@ class Sophicly_Writing_Mastery_Lab {
 html[data-theme="dark"] .swml-order-lock{--ol-bg:#24222e;--ol-ink:#f3f1fa;--ol-muted:#b9b5cc;--ol-edge:rgba(255,255,255,.08);box-shadow:0 12px 32px rgba(0,0,0,.35)}
 .swml-order-lock h2{margin:0 0 12px;font-size:1.35rem;line-height:1.3;color:var(--ol-ink)}
 .swml-order-lock p{margin:0 0 24px;font-size:1rem;line-height:1.55;color:var(--ol-muted)}
-.swml-order-lock a.swml-btn-main{display:inline-flex;text-decoration:none}
+.swml-order-lock a.swml-btn-main{display:inline-flex;text-decoration:none;color:var(--swml-bm-ink)}
 html:not([data-theme="dark"]) .swml-order-lock .swml-btn-main{--swml-bm-face:#1C1D1F;--swml-bm-ink:#ffffff;--swml-bm-flood:#51dacf;--swml-bm-flood-ink:#0f2b2a;--swml-bm-first-ink:#0f2b2a;--swml-bm-stroke:rgba(26,26,30,0.20)}
 @media (max-width:600px){.swml-order-lock{margin:24px 16px;padding:24px 20px}}
 </style>
