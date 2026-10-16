@@ -3658,7 +3658,6 @@ course lets a student walk past an unfinished lesson without ever pressing its M
   reach 100%, so a planning gate there would break §40's own condition — *"if they follow the process properly, they
   should be able to mark the lesson complete without fail."* Gate only where the protocol files.
 
-**TENSION, recorded rather than averaged (root CLAUDE.md §7):** the Creative Writing walk carries an earlier ruling —
-*"teach, never force (Neil, same day: no forced linear progression; extreme cases may legitimately skip lessons)"*
-(§ amalgamation, 2026-08-06). Whether "all of them in order" reaches the CW Story Steps too was ASKED 16 Oct; until he
-answers, this rule binds the redraft chain (Plan → Outline → Polish → Assessment → Discuss), and the CW soft gate stands.
+**SCOPE, RULED THE SAME DAY — Creative Writing included:** *"I think, yes, I think we should do them in all in order, including creative writing. Because now we've got the um, the weekend creative writing course."* This SUPERSEDES the earlier CW line *"teach, never force (no forced linear progression; extreme cases may legitimately skip lessons)"* (2026-08-06): the CW Story Steps and the Weekend Story are done in order too. Staff keep the escape hatch §40 already gives them (a reviewer is never locked out), which is where a genuine "extreme case" is handled.
+
+**MEASURED for the Weekend Story (16 Oct, before its first real use):** lessons 2, 3 and 5 already send a student back ("go back to Lesson 1 and complete it first"); lesson 4 does not check lesson 3. Write Draft 1 reaches 100% (gate 0/1 → 1/1); lesson 5's weekend walk is the one guarded lesson not yet measured at 100% in weekend mode.
