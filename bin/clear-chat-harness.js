@@ -24,6 +24,7 @@ if (m) {
         .forEach(t => ok(f(t, {}) === false, 'a STUDENT on "' + (t || 'diagnostic') + '" gets no Clear Chat'));
     ['foundational_quiz', 'mark_scheme_unit', 'mark_scheme'].forEach(t => ok(f(t, {}) === true, 'a student on the banked quiz "' + t + '" keeps it'));
     ok(f('planning', { canClearChat: true }) === true, 'the named account (canClearChat — Neil) keeps it everywhere');
+    ok(f('planning', { canClearChat: '1' }) === true && f('planning', { canClearChat: '' }) === false, 'the flag as wp_localize_script really sends it ("1" / "") — the live page\'s yes and no');
     ok(f('planning', { canSignOff: true }) === false && f('planning', { isAdmin: true }) === false, 'tutors, specialists and other admins do NOT (Neil: "me only")');
     {
         const PHP = fs.readFileSync(path.join(__dirname, '..', 'sophicly-writing-mastery-lab.php'), 'utf8');

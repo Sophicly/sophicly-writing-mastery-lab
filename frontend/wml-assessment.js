@@ -19909,7 +19909,8 @@
        Measured: on planning it also wiped every plan box; clears are logged nowhere. ONE predicate, every Clear Chat site. */
     function clearChatAllowed(task, cfg) {
         const c = cfg || {};
-        if (c.canClearChat === true) return true;
+        // wp_localize_script sends booleans as STRINGS: true → "1", false → "" — so "1" is the real "yes" on a live page.
+        if (c.canClearChat === true || c.canClearChat === '1' || c.canClearChat === 1) return true;
         return task === 'foundational_quiz' || task === 'mark_scheme_unit' || task === 'mark_scheme';
     }
     const _clearChatAllowed = () => clearChatAllowed(state.task, window.swmlConfig);
