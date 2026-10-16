@@ -3631,3 +3631,34 @@ paragraph 8 → 7 (purpose 1.0 → 0.5, close analysis 1.25 → 1.0, context 1.0
 2.0 → 1.0), introduction unchanged — so the essay is out of 30. `modules/ao4-assessment.md` and `knowledge-ao4.md`, which
 describe AQA's holistic method, are loaded by no manifest and no router path; they are dead and contradict this ruling (§7
 of root CLAUDE.md: flagged for cleanup, not deleted here).
+
+---
+
+## §67. ⭐⭐ THE LESSONS ARE DONE IN ORDER — a lesson is finished before the next one opens (Neil, ruled 2026-10-16; FIXLIST redraft-lessons-in-order)
+
+**His words** (voice, reviewing Mishel 1237's AQA Language Paper 1 Topic 1 Redraft): *"she didn't finish her planning and
+then she went to the outline. And then she did some work there. Right? But she shouldn't be able to mark the planning
+complete. We need to force her to go back and finish the planning. How can we do that? And that should be a rule as well.
+They need to do all of them in order."*
+
+**THE RULE:** two halves, and both are needed. (1) A lesson cannot be marked complete until its document is finished —
+§40, which already says so for every lesson with a document; planning was simply never switched on. (2) The next lesson
+in the chain does not open until the one before it is complete. Half (1) without half (2) is what Mishel did: a free-form
+course lets a student walk past an unfinished lesson without ever pressing its Mark Complete.
+
+**MEASURED the day it was ruled (16 Oct, WML 364 A):**
+- Both AQA Language courses (42205, 43073) are LearnDash **free form** — nothing enforces order today.
+- Mishel's "Plan Your Redraft" was ticked on **29 Jan 2026**, long before the gate; her planning document reads 4 of 14.
+- 25 planning lessons are ticked with an unfinished plan (23 have no planning document at all); no real student has
+  a fully filled plan yet.
+- A planning lesson CAN reach 100%: staging, AQA Lang P2, every box a student fills typed → the gate's own reading went
+  0/19 incomplete → 19/19 complete.
+- ⚠️ Only **7** planning protocols fill the plan boxes for the student (AQA Language P1/P2, AQA Literature, AQA Poetry,
+  AQA Unseen, Eduqas Literature, Edexcel IGCSE Language P1). Everywhere else a student who follows the process can never
+  reach 100%, so a planning gate there would break §40's own condition — *"if they follow the process properly, they
+  should be able to mark the lesson complete without fail."* Gate only where the protocol files.
+
+**TENSION, recorded rather than averaged (root CLAUDE.md §7):** the Creative Writing walk carries an earlier ruling —
+*"teach, never force (Neil, same day: no forced linear progression; extreme cases may legitimately skip lessons)"*
+(§ amalgamation, 2026-08-06). Whether "all of them in order" reaches the CW Story Steps too was ASKED 16 Oct; until he
+answers, this rule binds the redraft chain (Plan → Outline → Polish → Assessment → Discuss), and the CW soft gate stands.
