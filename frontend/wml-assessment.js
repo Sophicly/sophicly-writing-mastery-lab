@@ -61866,7 +61866,10 @@
                 first = first.replace(/^\s*(?:1[.)]\s*|[-•]\s*)/, '');
                 const second = first.search(/\s2[.)]\s/);
                 if (second > 20) first = first.slice(0, second).trim();
-                return first.length > 180 ? first.slice(0, 177).trimEnd() + '…' : first;
+                // v7.20.922 (Dashboard 132, FIXLIST target-1-truncated): the WHOLE first priority, never cut. A 177-char
+                // cap + "…" sent 857's target as "…and the area you…" — a half sentence quoted to the student here and shown
+                // as "Your next move" in the dashboard. The split above already narrows it to one priority.
+                return first;
             } catch (_) { return ''; }
         }
         // v7.20.113: ANALYTICS BREAKDOWN (client half) — the LEDGER facts only this side

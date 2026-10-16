@@ -33,5 +33,14 @@ check("complete_phase stores 'word_count' => absint(\$params['word_count'] ...) 
 check('swml_phase_complete receives that same $data',
     /do_action\('swml_phase_complete',\s*\$user_id,\s*\$board,\s*\$text,\s*\$topic,\s*\$phase,\s*\$data\)/.test(cp));
 
+// v7.20.922 (Dashboard 132, FIXLIST target-1-truncated): target_1 is sent whole — no length cap, no "…".
+{
+    const jsAll = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'wml-assessment.js'), 'utf8');
+    const fs0 = jsAll.indexOf('function _firstActionPriorityFromDoc()');
+    const fn = fs0 >= 0 ? jsAll.slice(fs0, jsAll.indexOf('\n        }\n', fs0) + 10).replace(/\/\/[^\n]*/g, '') : '';   // code only, not comments
+    check('the first Action-Plan priority (target_1) is found', fn.length > 0 && /fieldId === 'action-priorities'/.test(fn));
+    check('target_1 is never shortened ("…" or a length cap)', fn.length > 0 && !/…|\\u2026|\.length\s*>\s*\d{2,}/.test(fn));
+}
+
 if (failed) { console.error(`phase-wordcount-harness: ${failed} FAILED`); process.exit(1); }
 console.log('phase-wordcount-harness: all passed');
