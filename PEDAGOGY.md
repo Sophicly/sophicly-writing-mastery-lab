@@ -3668,9 +3668,13 @@ course lets a student walk past an unfinished lesson without ever pressing its M
   Off switch: wp option `swml_order_lock off`. Gate: `bin/order-lock-harness.php`.
 - **Planning protocols that fill the plan: 8, not 7** — Edexcel IGCSE Language Paper 2 files `plan-body-N` too (since
   v7.20.717). The page reads it from the server (`mcGate.planFills`), decided from the manifest's own files.
-- **MEASURED on prod before switching on:** 33 real students have STARTED 128 lessons that the lock would close until an
-  earlier lesson is ticked. Every one of the 19 blocking lessons has a working Mark Complete (no LearnDash video, timer,
-  quiz or assignment holding it). Biggest: Plan Your Redraft (26), Write Your Diagnostic Assessment (25), Generate an
-  Exam-Style Question (20), Mark Scheme Quiz (17).
+- **MEASURED on prod before switching on:** 32 real students have STARTED 92 lessons that the lock would close until an
+  earlier lesson is ticked (tutor lessons and staff excluded, as the code does). Every blocking lesson has a working Mark
+  Complete (no LearnDash video, timer, quiz or assignment holding it). Biggest: Generate an Exam-Style Question (20), Mark
+  Scheme Quiz (15), Plan Your Redraft (14), Write Your Diagnostic Assessment (12).
+- **PROVEN on staging (real browser, test student 1938):** weekend lesson 2 and the redraft Outline show the card, no Mark
+  Complete, Writing Mastery never boots; lesson 1 and Plan open; a real-nonce Mark Complete POST on lesson 2 is refused and
+  logged `order_blocked`; ticking lesson 1 opens lesson 2 at once (no cached card) and lesson 3 then names lesson 2; an
+  in-page (Focus SPA) move Plan → Outline shows the card with no error; a tutor on `?view_as=1938` is never locked.
 
 **MEASURED for the Weekend Story (16 Oct, before its first real use):** lessons 2, 3 and 5 already send a student back ("go back to Lesson 1 and complete it first"); lesson 4 does not check lesson 3. Write Draft 1 reaches 100% (gate 0/1 → 1/1); lesson 5's weekend walk is the one guarded lesson not yet measured at 100% in weekend mode.
