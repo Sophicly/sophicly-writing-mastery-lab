@@ -46728,6 +46728,16 @@
             if (row.html) return { kind: 'html', html: row.html };
             return { kind: 'empty' };
         }
+        // v7.20.911: a link into the Mastery Toolkit → the section to open ('' = its front page), or null for any other link.
+        // The Library writes them as /library/resources/sophicly-gcse-english-mastery-toolkit/?sn_toolkit=<section id>.
+        function libToolkitTarget(href) {
+            let u;
+            try { u = new URL(String(href || ''), 'https://www.sophicly.com/'); } catch (_) { return null; }
+            if (!/(^|\.)sophicly\.com$|temp-site\.link$/.test(u.hostname)) return null;
+            const sec = u.searchParams.get('sn_toolkit');
+            if (sec !== null) return /^[a-z0-9-]+$/i.test(sec) ? sec : '';
+            return /\/sophicly-gcse-english-mastery-toolkit\/?$/.test(u.pathname) ? '' : null;
+        }
         /* @LIBRARY-PURE-END */
         const _lib = (config && config.library && config.library.restUrl) ? config.library : null;
         const _libPads = {};
@@ -46883,7 +46893,18 @@
                     content.querySelectorAll('*').forEach(n => {
                         Array.from(n.attributes).forEach(a => { if (/^on/i.test(a.name)) n.removeAttribute(a.name); });
                     });
-                    content.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+                    content.querySelectorAll('a').forEach(a => {
+                        a.target = '_blank'; a.rel = 'noopener';
+                        // v7.20.911 (Neil, 16 Oct: a deep link into the Mastery Toolkit "should open it there and then and not
+                        // open a separate window"): the Toolkit is already on the lesson page — open it in place at that section.
+                        const tk = libToolkitTarget(a.getAttribute('href'));
+                        if (tk === null) return;
+                        a.addEventListener('click', (e) => {
+                            if (!(window.SophiclyToolkit && window.SophiclyToolkit.open)) return;   // no Toolkit here → the new tab, as before
+                            e.preventDefault();
+                            window.SophiclyToolkit.open(tk);
+                        });
+                    });
                 } else if (v.kind === 'locked') {
                     content.appendChild(el('p', { className: 'swml-library-locked', textContent: v.message }));
                 } else if (v.kind === 'pdf') {

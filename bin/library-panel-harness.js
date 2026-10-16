@@ -45,7 +45,7 @@ if (a === -1 || b === -1 || b < a) {
 }
 let P;
 try {
-    P = new Function(JS.slice(a, b) + '\nreturn { libTextFor, libSplitByBoard, libRowView };')();
+    P = new Function(JS.slice(a, b) + '\nreturn { libTextFor, libSplitByBoard, libRowView, libToolkitTarget };')();
 } catch (e) {
     console.log('  ✗ the @LIBRARY-PURE block does not run on its own: ' + e.message);
     process.exit(1);
@@ -82,6 +82,17 @@ ok(P.libRowView({ type: 'tiptap', html: '<p>x</p>' }).kind === 'html', 'a text p
 ok(P.libRowView({ type: 'tiptap', html: '' }).kind === 'empty' && P.libRowView(null).kind === 'empty', 'an empty part is said to be empty');
 
 // ── 2. the wiring in the shipped file ───────────────────────────────────────────────────────────────────────────
+// v7.20.911 (Neil 16 Oct): a Library link into the Mastery Toolkit opens it in place, at that section.
+{
+    const T = P.libToolkitTarget, K = 'https://www.sophicly.com/library/resources/sophicly-gcse-english-mastery-toolkit/';
+    ok(T(K + '?sn_toolkit=inference-every-element') === 'inference-every-element', 'a Toolkit deep link → its section id');
+    ok(T(K) === '' && T('/library/resources/sophicly-gcse-english-mastery-toolkit/') === '', 'the Toolkit page itself (absolute or relative) → its front page');
+    ok(T('https://sophiclymain-staging.kjjabv7qty-yjr3ozq9r41m.p.temp-site.link/library/resources/sophicly-gcse-english-mastery-toolkit/?sn_toolkit=ttecea') === 'ttecea', 'staging links count too');
+    ok(T(K + '?sn_toolkit=<script>') === '', 'a malformed section id opens the front page, never passes through');
+    ok(T('https://www.sophicly.com/library/resources/macbeth-model-answers/') === null && T('https://www.aqa.org.uk/x?sn_toolkit=ttecea') === null && T('') === null && T('mailto:a@b.c') === null,
+        'every other link (another Library page, another site, empty, mailto) keeps its new tab');
+}
+
 console.log('\n2. wiring');
 const blkStart = JS.indexOf('/* @LIBRARY-PURE-END */');
 const blkEnd = JS.indexOf('// ── Comparison-Poem viewer', blkStart);
@@ -134,6 +145,7 @@ console.log('\n4. reading + navigation (v7.20.910 — Neil 16 Oct: spacing, cont
     const tools = BLK.slice(BLK.indexOf('function _libPadTools'), BLK.indexOf('function spawnLibraryPad'));
     ok(/if \(items\.length < 2 && heads\.length < 3\) return;/.test(tools), 'a short page gets no tools (2+ parts or 3+ headings only)');
     ok(/querySelectorAll\('\.swml-library-row'\)\.forEach\(row =>/.test(tools) && !/createTreeWalker\(body/.test(tools), 'search reads the Library text only — never the part headers (a mark in a header would break its toggle)');
+    ok(/const tk = libToolkitTarget\(a\.getAttribute\('href'\)\);[\s\S]{0,300}if \(!\(window\.SophiclyToolkit && window\.SophiclyToolkit\.open\)\) return;[\s\S]{0,80}e\.preventDefault\(\);\s*window\.SophiclyToolkit\.open\(tk\);/.test(BLK), 'a Toolkit link opens in place ONLY when the Toolkit is on the page — otherwise the new tab, as before');
     ok(/hits\.length < 500/.test(tools), 'search caps its highlights (a one-letter page cannot freeze the pad)');
     ok(/\['mousedown', 'pointerdown', 'keydown'\]\.forEach\(t => search\.addEventListener/.test(tools), 'typing in the search box never drags the pad or reaches the document');
 }
