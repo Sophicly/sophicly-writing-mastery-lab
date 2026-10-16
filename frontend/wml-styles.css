@@ -1457,10 +1457,30 @@ body.swml-page {
     border-radius: 4px 18px 18px 18px;
     background: var(--swml-bubble-ai-bg); color: var(--swml-bubble-ai-text);
 }
+/* ⭐ v7.20.919 (Neil, 16 Oct — FIXLIST chat-student-bubble-colour): the student's bubble is no longer the purple
+   gradient. *"purple gradient basically means mastered"* — BRAND §Colour semantics reserves it for attainment, and a
+   chat message is not an attainment. LIGHT = a quiet brand tint with the page's own text colour (his words: "the light
+   theme color's quite nice"); DARK = the blue gradient HE NAMED, #4D76FD → #42A1EC ("shouldn't we just do like our blue
+   gradient? With the following blues"). An alpha tint in dark was rejected as "washed" (the grey panel drains its
+   chroma), and solid purples clashed with the quick-action chips (A) or read as high level (C).
+   ⚠ MEASURED: white text is 3.9:1 on #4D76FD and 2.8:1 on #42A1EC — under 4.5:1. Told Neil; his call.
+   HEIGHT (measured, staging): a one-line bubble was 87px for 21px of text — an empty header row holding only the
+   hover-only copy button (23px) + the host theme's <p> margin (19.5px). The copy button now sits OUTSIDE the bubble,
+   to its left, and the paragraph carries no margin → 39px. */
 .swml-bubble.user .swml-bubble-content {
+    position: relative;
     border-radius: 20px 6px 20px 20px;
-    background: var(--swml-gradient); color: #fff;
+    padding: 9px 14px;
+    background: rgba(83, 51, 237, 0.10); color: var(--swml-text);
 }
+[data-swml-theme="dark"] .swml-bubble.user .swml-bubble-content {
+    background: linear-gradient(135deg, #4D76FD, #42A1EC); color: #fff;
+}
+.swml-bubble.user .swml-bubble-content > .swml-bubble-header,
+.swml-bubble.user .swml-bubble-content > .swml-user-copy {   /* the selection-chip pad appends it loose, no header */
+    position: absolute; right: calc(100% + 4px); top: 50%; transform: translateY(-50%); margin: 0;
+}
+.swml-bubble.user .swml-bubble-content > p { margin: 0; }
 /* ⭐ v7.20.420 (Neil, FIXLIST #241) — THE CHAT OWNS ITS OWN ITALIC.
    *"where it says Mr Birling in An Inspector Calls… why is it calling a Nectar font? I don't want
    anything using Nectar."*
@@ -1636,6 +1656,9 @@ body.swml-page {
     background: rgba(83,51,237,0.25); color: var(--swml-dark);
 }
 .swml-bubble.user .swml-bubble-content ::selection {
+    background: rgba(83,51,237,0.25); color: var(--swml-text);
+}
+[data-swml-theme="dark"] .swml-bubble.user .swml-bubble-content ::selection {
     background: rgba(255,255,255,0.4); color: #fff;
 }
 /* Also cover the question area at the top */
@@ -1874,11 +1897,11 @@ body.swml-page {
 /* User message copy button */
 .swml-user-copy {
     display: block; margin-top: 2px; margin-left: auto;
-    font-size: 11px; color: rgba(255,255,255,0.5);
+    font-size: 11px; color: var(--swml-text-muted);   /* v7.20.919: it now sits on the panel, beside the bubble */
     opacity: 0; transition: opacity 0.2s;
     padding: 1px 4px; line-height: 1;
 }
-.swml-user-copy:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.15) !important; }
+.swml-user-copy:hover { color: var(--swml-text); background: var(--swml-bg-alt) !important; }
 .swml-bubble.user .swml-bubble-content:hover .swml-user-copy { opacity: 0.6; }
 
 /* Quick Action Buttons */
