@@ -5963,12 +5963,66 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
    body-size, not chip-size. */
 .swml-library-panel .swml-prior-groupbody .swml-prior-groupwrap { padding-left: 10px; }
 .swml-library-pad { width: min(520px, calc(100vw - 32px)); }
-.swml-library-row { font-size: 14px; line-height: 1.65; color: rgba(255,255,255,0.85); overflow-wrap: anywhere; }
+/* v7.20.910 (Neil, 16 Oct: "a brand pass for spacing… it's all a bit squashed together"): the pad reads exactly like the
+   Library's own reader — slib-tiptap.css "ProseMirror Typography" ported 1:1 (all 17 dark rules + the light twins below),
+   EXCEPT the paragraph gap: 12px, the value that actually WINS on the live Library page (Etch's resources-accordion rule,
+   documented in slib-tiptap.css at the annotated-editions note), not the file's 8px default. */
+.swml-library-row { font-family: 'Proxima Soft Complete', -apple-system, sans-serif; font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.9); overflow-wrap: anywhere; }
 .swml-library-row > :first-child { margin-top: 0; }
-.swml-library-row img { max-width: 100%; height: auto; border-radius: 6px; }
-.swml-library-row table { border-collapse: collapse; width: 100%; font-size: 13px; }
-.swml-library-row th, .swml-library-row td { border: 1px solid rgba(255,255,255,0.12); padding: 6px 8px; vertical-align: top; }
-.swml-library-row a { color: #a99bff; }
+.swml-library-row p { margin: 0 0 12px; }
+.swml-library-row h1, .swml-library-row h2, .swml-library-row h3 { color: #fff; font-weight: 700; margin: 18px 0 6px; }
+.swml-library-row h1 { font-size: 20px; }
+.swml-library-row h2 { font-size: 16px; }
+.swml-library-row h3 { font-size: 14px; }
+.swml-library-row strong { font-weight: 600; }
+.swml-library-row blockquote {
+    border-left: 3px solid rgba(81,218,207,0.4); padding-left: 14px; color: rgba(255,255,255,0.6); margin: 10px 0;
+    font-family: "Playfair Display Complete", "Playfair Display", Georgia, serif; font-style: italic;
+}
+.swml-library-row hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0; }
+.swml-library-row mark { background: rgba(81,218,207,0.25); color: inherit; border-radius: 2px; padding: 1px 2px; }
+.swml-library-row ul, .swml-library-row ol { padding-left: 22px; margin: 6px 0; }
+.swml-library-row li { margin: 3px 0; }
+.swml-library-row a { color: #51dacf; text-decoration: underline; text-decoration-color: rgba(81,218,207,0.3); text-underline-offset: 2px; }
+.swml-library-row a:hover { color: #7DF9E9; text-decoration-color: #7DF9E9; }
+.swml-library-row img { max-width: 100%; height: auto; border-radius: 6px; margin: 10px 0; }
+.swml-library-row table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 12px; }
+.swml-library-row th, .swml-library-row td { border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; text-align: left; }
+.swml-library-row th { background: rgba(255,255,255,0.05); font-weight: 600; }
+.swml-library-row code { background: rgba(255,255,255,0.08); border-radius: 3px; padding: 1px 5px; font-size: 12px; font-family: 'SF Mono', Monaco, monospace; }
+/* v7.20.910 (Neil: "for longer documents, it's quite hard to navigate… table of contents… on the side, and even like a
+   search bar"): a tools row under the pad header, built only when a LONG page opens (2+ parts or 3+ headings). Contents
+   is the Library reader's own Outline idea — a panel docked at the side, its items styled like .slib-outline-item. */
+.swml-lib-tools { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+.swml-lib-tools-btn {
+    flex-shrink: 0; background: rgba(255,255,255,0.07); border: none; color: rgba(255,255,255,0.75);
+    font: inherit; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 6px; cursor: pointer; line-height: 1.2;
+}
+.swml-lib-tools-btn:hover, .swml-lib-tools-btn.is-active { background: rgba(83,51,237,0.25); color: #fff; }
+.swml-lib-tools-btn:disabled { opacity: 0.35; cursor: default; }
+.swml-lib-search {
+    flex: 1; min-width: 0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px;
+    color: #fff; font: inherit; font-size: 13px; padding: 5px 10px; outline: none;
+}
+.swml-lib-search:focus { border-color: rgba(83,51,237,0.6); }
+.swml-lib-count { flex-shrink: 0; font-size: 11px; color: rgba(255,255,255,0.5); min-width: 0; white-space: nowrap; }
+.swml-library-row mark.swml-lib-hit { background: rgba(81,218,207,0.25); }
+.swml-library-row mark.swml-lib-hit.is-current { background: rgba(81,218,207,0.65); color: #0b1f1d; }
+.swml-lib-toc {
+    position: absolute; left: 8px; top: 92px; width: min(260px, calc(100% - 16px)); max-height: calc(100% - 104px);
+    overflow-y: auto; overscroll-behavior: contain; z-index: 2; padding: 6px 0;
+    border-radius: 10px; background: rgba(35, 36, 39, 0.97); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    /* the Library reader's outline uses #28292b — WML retired that surface (.386, palette-lint), so the pad's own panel surface */
+}
+.swml-lib-toc[hidden] { display: none; }
+.swml-lib-toc-item {
+    display: block; width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.6);
+    font: inherit; font-size: 12px; padding: 5px 12px 5px 12px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.swml-lib-toc-item:hover { background: rgba(83,51,237,0.12); color: #fff; }
+.swml-lib-toc-item--part { color: rgba(255,255,255,0.85); font-weight: 700; }
+.swml-lib-toc-item--h2 { padding-left: 22px; }
+.swml-lib-toc-item--h3 { padding-left: 32px; font-size: 11px; color: rgba(255,255,255,0.45); }
 .swml-library-locked {
     font-size: 13px; line-height: 1.55; margin: 0;
     padding: 10px 12px; border-radius: 8px;
@@ -5981,11 +6035,30 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 }
 .swml-library-pdf { display: inline-block; font-weight: 600; color: #a99bff; }
 .swml-library-retry { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-[data-swml-theme="light"] .swml-library-row, .swml-canvas-light .swml-library-row { color: rgba(28,29,31,0.85); }
+[data-swml-theme="light"] .swml-library-row, .swml-canvas-light .swml-library-row { color: #1a1a2e; }
+[data-swml-theme="light"] .swml-library-row :is(h1, h2, h3), .swml-canvas-light .swml-library-row :is(h1, h2, h3) { color: #2c003e; }
+[data-swml-theme="light"] .swml-library-row blockquote, .swml-canvas-light .swml-library-row blockquote { border-left-color: rgba(83,51,237,0.3); color: rgba(0,0,0,0.5); }
+[data-swml-theme="light"] .swml-library-row hr, .swml-canvas-light .swml-library-row hr { border-top-color: rgba(0,0,0,0.1); }
+[data-swml-theme="light"] .swml-library-row mark, .swml-canvas-light .swml-library-row mark { background: rgba(83,51,237,0.12); }
 [data-swml-theme="light"] .swml-library-row th, [data-swml-theme="light"] .swml-library-row td,
-.swml-canvas-light .swml-library-row th, .swml-canvas-light .swml-library-row td { border-color: rgba(28,29,31,0.15); }
-[data-swml-theme="light"] .swml-library-row a, .swml-canvas-light .swml-library-row a,
+.swml-canvas-light .swml-library-row th, .swml-canvas-light .swml-library-row td { border-color: #e0e0e0; }
+[data-swml-theme="light"] .swml-library-row th, .swml-canvas-light .swml-library-row th { background: #f8f7ff; color: #2c003e; }
+[data-swml-theme="light"] .swml-library-row code, .swml-canvas-light .swml-library-row code { background: #f5f2ff; color: #5333ed; }
+[data-swml-theme="light"] .swml-library-row a, .swml-canvas-light .swml-library-row a { color: #5333ed; text-decoration-color: rgba(83,51,237,0.3); }
+[data-swml-theme="light"] .swml-library-row a:hover, .swml-canvas-light .swml-library-row a:hover { color: #4422cc; }
 [data-swml-theme="light"] .swml-library-pdf, .swml-canvas-light .swml-library-pdf { color: #5333ed; }
+[data-swml-theme="light"] .swml-library-row mark.swml-lib-hit { background: rgba(83,51,237,0.14); }
+[data-swml-theme="light"] .swml-library-row mark.swml-lib-hit.is-current { background: rgba(83,51,237,0.45); color: #fff; }
+[data-swml-theme="light"] .swml-lib-tools { border-bottom-color: rgba(0,0,0,0.06); }
+[data-swml-theme="light"] .swml-lib-tools-btn { background: rgba(0,0,0,0.05); color: rgba(28,29,31,0.75); }
+[data-swml-theme="light"] .swml-lib-tools-btn:hover, [data-swml-theme="light"] .swml-lib-tools-btn.is-active { background: rgba(77,118,253,0.1); color: #4D76FD; }
+[data-swml-theme="light"] .swml-lib-search { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: #1a1a2e; }
+[data-swml-theme="light"] .swml-lib-count { color: rgba(28,29,31,0.5); }
+[data-swml-theme="light"] .swml-lib-toc { background: #fff; border-color: rgba(0,0,0,0.08); box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
+[data-swml-theme="light"] .swml-lib-toc-item { color: rgba(0,0,0,0.55); }
+[data-swml-theme="light"] .swml-lib-toc-item:hover { background: rgba(77,118,253,0.08); color: #4D76FD; }
+[data-swml-theme="light"] .swml-lib-toc-item--part { color: rgba(0,0,0,0.8); }
+[data-swml-theme="light"] .swml-lib-toc-item--h3 { color: rgba(0,0,0,0.4); }
 [data-swml-theme="light"] .swml-library-locked, .swml-canvas-light .swml-library-locked { background: rgba(83,51,237,0.08); color: rgba(28,29,31,0.85); }
 [data-swml-theme="light"] .swml-library-lockmark, .swml-canvas-light .swml-library-lockmark { background: rgba(83,51,237,0.10); color: #4a2fd0; }
 [data-swml-theme="light"] .swml-prior-group { color: rgba(28,29,31,0.45); }

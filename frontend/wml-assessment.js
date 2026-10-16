@@ -46906,6 +46906,116 @@
                 item.appendChild(bodyWrap);
                 body.appendChild(item);
             });
+            _libPadTools(body);
+        }
+        // v7.20.910 (Neil, 16 Oct: "for longer documents, it's quite hard to navigate… some sort of table of contents… on the
+        // side, and even like a search bar… to search key elements within it… load dynamically"). Built only here, once a LONG
+        // page has arrived (2+ parts or 3+ headings) — nothing exists until a student opens one. Contents = the parts and their
+        // headings, docked at the side like the Library reader's Outline; Search = highlight every match, step with ↑ ↓ / Enter.
+        function _libPadTools(body) {
+            const panel = body.parentElement;
+            if (!panel) return;
+            panel.querySelectorAll(':scope > .swml-lib-tools, :scope > .swml-lib-toc').forEach(n => n.remove());
+            const items = Array.from(body.querySelectorAll(':scope > .swml-notes-item'));
+            const heads = Array.from(body.querySelectorAll('.swml-library-row h1, .swml-library-row h2, .swml-library-row h3'));
+            if (items.length < 2 && heads.length < 3) return;
+            const openPart = (n) => { const it = n.closest('.swml-notes-item'); if (it) it.classList.remove('swml-notes-collapsed'); };
+            const reveal = (n) => {
+                openPart(n);
+                body.scrollTop += n.getBoundingClientRect().top - body.getBoundingClientRect().top - 12;
+            };
+            const tools = el('div', { className: 'swml-lib-tools' });
+            const tocBtn = el('button', { className: 'swml-lib-tools-btn', type: 'button', textContent: 'Contents' });
+            const search = el('input', { className: 'swml-lib-search', type: 'search', placeholder: 'Search this page' });
+            search.setAttribute('aria-label', 'Search this page');
+            const count = el('span', { className: 'swml-lib-count' });
+            const prev = el('button', { className: 'swml-lib-tools-btn', type: 'button', textContent: '↑', disabled: true });
+            const next = el('button', { className: 'swml-lib-tools-btn', type: 'button', textContent: '↓', disabled: true });
+            prev.setAttribute('aria-label', 'Previous match'); next.setAttribute('aria-label', 'Next match');
+            [tocBtn, search, count, prev, next].forEach(n => tools.appendChild(n));
+            panel.insertBefore(tools, body);
+
+            // Contents — every part, and the headings inside it.
+            const toc = el('div', { className: 'swml-lib-toc' });
+            toc.hidden = true;
+            const addEntry = (label, cls, target) => {
+                const b = el('button', { className: 'swml-lib-toc-item ' + cls, type: 'button', textContent: label });
+                b.title = label;
+                b.addEventListener('click', () => { toc.hidden = true; tocBtn.classList.remove('is-active'); reveal(target); });
+                toc.appendChild(b);
+            };
+            const headsIn = (root) => Array.from(root.querySelectorAll('.swml-library-row h1, .swml-library-row h2, .swml-library-row h3'));
+            const headCls = (h) => h.tagName === 'H3' ? 'swml-lib-toc-item--h3' : 'swml-lib-toc-item--h2';
+            if (items.length) {
+                items.forEach(it => {
+                    const hd = it.querySelector(':scope > .swml-notes-item-head');
+                    const lbl = hd ? Array.from(hd.childNodes).filter(n => n.nodeType === 3).map(n => n.nodeValue).join('').trim() : '';
+                    addEntry(lbl || 'Part', 'swml-lib-toc-item--part', it);
+                    headsIn(it).forEach(h => { if (h.textContent.trim()) addEntry(h.textContent.trim(), headCls(h), h); });
+                });
+            } else {
+                heads.forEach(h => { if (h.textContent.trim()) addEntry(h.textContent.trim(), headCls(h), h); });
+            }
+            panel.appendChild(toc);
+            toc.addEventListener('wheel', (e) => { e.stopPropagation(); }, { passive: true });
+            tocBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toc.style.top = (tools.offsetTop + tools.offsetHeight + 4) + 'px';
+                toc.hidden = !toc.hidden;
+                tocBtn.classList.toggle('is-active', !toc.hidden);
+            });
+            body.addEventListener('click', () => { if (!toc.hidden) { toc.hidden = true; tocBtn.classList.remove('is-active'); } });
+
+            // Search — the Library's text only (never the part headers), highlighted in place, one current match.
+            let hits = [], cur = -1, timer = null;
+            const clear = () => {
+                body.querySelectorAll('mark.swml-lib-hit').forEach(m => m.replaceWith(document.createTextNode(m.textContent)));
+                body.querySelectorAll('.swml-library-row').forEach(r => r.normalize());
+                hits = []; cur = -1;
+            };
+            const go = (i) => {
+                if (!hits.length) return;
+                if (cur > -1 && hits[cur]) hits[cur].classList.remove('is-current');
+                cur = (i + hits.length) % hits.length;
+                hits[cur].classList.add('is-current');
+                reveal(hits[cur]);
+                count.textContent = (cur + 1) + ' of ' + hits.length;
+            };
+            const run = () => {
+                clear();
+                const q = search.value.trim().toLowerCase();
+                prev.disabled = next.disabled = true;
+                if (q.length < 2) { count.textContent = ''; return; }
+                const nodes = [];
+                body.querySelectorAll('.swml-library-row').forEach(row => {
+                    const w = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
+                    while (w.nextNode()) if (w.currentNode.nodeValue.toLowerCase().indexOf(q) > -1) nodes.push(w.currentNode);
+                });
+                nodes.forEach(n => {
+                    let node = n, i;
+                    while (node && hits.length < 500 && (i = node.nodeValue.toLowerCase().indexOf(q)) > -1) {
+                        const hit = node.splitText(i);
+                        node = hit.splitText(q.length);
+                        const m = document.createElement('mark');
+                        m.className = 'swml-lib-hit';
+                        m.textContent = hit.nodeValue;
+                        hit.replaceWith(m);
+                        hits.push(m);
+                    }
+                });
+                if (!hits.length) { count.textContent = 'No matches'; return; }
+                prev.disabled = next.disabled = hits.length < 2;
+                go(0);
+            };
+            search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 200); });
+            search.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); clearTimeout(timer); if (!hits.length) run(); else go(cur + (e.shiftKey ? -1 : 1)); }
+                else if (e.key === 'Escape') { e.stopPropagation(); search.value = ''; clearTimeout(timer); run(); }
+            });
+            // The pad is draggable — typing in the box must never start a drag or reach the document's shortcuts.
+            ['mousedown', 'pointerdown', 'keydown'].forEach(t => search.addEventListener(t, (e) => e.stopPropagation()));
+            prev.addEventListener('click', () => go(cur - 1));
+            next.addEventListener('click', () => go(cur + 1));
         }
         function spawnLibraryPad(r) {
             const padKey = 'lib:' + r.id;

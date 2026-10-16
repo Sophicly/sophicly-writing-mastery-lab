@@ -124,5 +124,19 @@ const aliasKeyed = mapKeys.filter(k => aliasKeys.includes(k));
 ok(aliasKeys.length > 5 && !aliasKeyed.length, 'the map is keyed on CANONICAL slugs only (aliases are expanded, never listed)', aliasKeyed);
 ok(/'edexcel-igcse'\s*=>\s*\['edexcel-gcse'\]/.test(PHP), "Edexcel IGCSE → the Library's 'edexcel-gcse' term (measured 13 Oct)");
 
+console.log('\n4. reading + navigation (v7.20.910 — Neil 16 Oct: spacing, contents, search, load only when needed)');
+{
+    const CSS = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-canvas.css'), 'utf8');
+    ok(/\.swml-library-row p \{ margin: 0 0 12px; \}/.test(CSS), 'paragraphs carry the live Library page gap (12px)');
+    ok(/\.swml-library-row h1 \{ font-size: 20px; \}/.test(CSS) && /\.swml-library-row h2 \{ font-size: 16px; \}/.test(CSS), 'headings take the Library reader sizes, never the theme’s');
+    const fill = BLK.slice(BLK.indexOf('async function _libFillPad'), BLK.indexOf('function _libPadTools'));
+    ok(/_libPadTools\(body\);\s*\}\s*$/.test(fill.trim() + '\n}') || /_libPadTools\(body\);/.test(fill), 'the tools are built inside _libFillPad, after the content arrived (nothing exists before a pad opens)');
+    const tools = BLK.slice(BLK.indexOf('function _libPadTools'), BLK.indexOf('function spawnLibraryPad'));
+    ok(/if \(items\.length < 2 && heads\.length < 3\) return;/.test(tools), 'a short page gets no tools (2+ parts or 3+ headings only)');
+    ok(/querySelectorAll\('\.swml-library-row'\)\.forEach\(row =>/.test(tools) && !/createTreeWalker\(body/.test(tools), 'search reads the Library text only — never the part headers (a mark in a header would break its toggle)');
+    ok(/hits\.length < 500/.test(tools), 'search caps its highlights (a one-letter page cannot freeze the pad)');
+    ok(/\['mousedown', 'pointerdown', 'keydown'\]\.forEach\(t => search\.addEventListener/.test(tools), 'typing in the search box never drags the pad or reaches the document');
+}
+
 console.log(`\n${fail ? '✗' : '✓'} library-panel-harness: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
