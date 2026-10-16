@@ -2314,6 +2314,7 @@ class SWML_REST_API {
             'success' => true,
             'steps'   => $result['steps'] ?? [],
             'groups'  => $result['groups'] ?? null,
+            'doc_filed' => !empty($result['doc_filed']),   // v7.20.917: planning files each body element into the doc → doc-derived sidebar + step
         ]);
     }
 
@@ -7428,6 +7429,9 @@ class SWML_REST_API {
             'savedAt'  => current_time('c'),
             'count'    => count($history),
         ];
+        // v7.20.917: a planning chat carries the step its router was sent, so a reload on any device resumes there.
+        $plan_step = absint($params['step'] ?? 0);
+        if ($plan_step > 0) $data['step'] = $plan_step;
 
         $result = update_user_meta($user_id, $meta_key, wp_slash(wp_json_encode($data)));
 

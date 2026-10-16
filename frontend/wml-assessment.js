@@ -410,9 +410,10 @@
 
     function _hideGuideSelMenu() { if (_guideSelMenu) { _guideSelMenu.remove(); _guideSelMenu = null; } }
 
-    function _setupGuideSelectionMenu(article) {
-        _teardownGuideSelectionMenu();
-        const onUp = () => {
+    // v7.20.917: the menu builder is shared — the Library pad uses the same one (Neil, 16 Oct: "highlight it and get the
+    // contextual toolbar just for the notes just to add it to notes"). One menu, one sendToNotes, never a second copy.
+    function _notesSelUpHandler(article) {
+        return () => {
             setTimeout(() => {
                 const sel = window.getSelection();
                 if (!sel || sel.isCollapsed) { _hideGuideSelMenu(); return; }
@@ -441,6 +442,10 @@
                 _guideSelMenu = menu;
             }, 10);
         };
+    }
+    function _setupGuideSelectionMenu(article) {
+        _teardownGuideSelectionMenu();
+        const onUp = _notesSelUpHandler(article);
         const onDown = (e) => { if (_guideSelMenu && !_guideSelMenu.contains(e.target)) _hideGuideSelMenu(); };
         article.addEventListener('mouseup', onUp);
         article.addEventListener('touchend', onUp);
@@ -1137,7 +1142,90 @@
     // exposure. So for these lessons the step SENT is the highest [PROGRESS: N] in this session's transcript: resume-safe,
     // and no sidebar paint can move it. Monoliths (AQA P1/P2, manifest steps {}) ignore the value either way.
     function _planDerivedSidebar() {
-        return state.task === 'planning' && (_planPreChainActive() || _poetryPlanActive());
+        return state.task === 'planning' && (_planPreChainActive() || _poetryPlanActive() || _litPlanDocFiled());
+    }
+    // v7.20.917 (Neil, 16 Oct, reviewing Mehrish 1287's Macbeth planning). A sliced Literature planning lesson whose protocol
+    // files each body element into the document (server: /protocol-steps doc_filed — AQA Literature, AQA Unseen, Eduqas
+    // Literature). MEASURED before this: Sophia never writes [PROGRESS: N] there (the router only asks Language papers to),
+    // the step moved only by reply words matching the next label and was never saved, so after a reload the router sent
+    // step 1 — the Setup slice under "Execute ONLY the part belonging to the current step" — while she planned Body 1.
+    function _litPlanDocFiled() {
+        return state.task === 'planning' && state.planDocFiled === true && !_planPreChainActive() && !_poetryPlanActive();
+    }
+    // @LIT-PLAN-STEP-PURE-BEGIN — pure; driven by bin/lit-plan-step-harness.js
+    // The furthest stage this run has reached, from two signals already in the transcript: the boxes Sophia has filed
+    // (@FIELD_COMMIT / @FIELD_SET — `fields`) and her own 📌 stage pins (`pins`). Walk order = the protocol's: setup →
+    // anchors → bodies → introduction → conclusion. A stage whose plan box is filed (approval) is finished, so the next
+    // stage is current. Mapped onto THIS manifest's numbering by its own labels; never below 1, never backwards.
+    const LIT_PLAN_STAGES = [
+        { id: 'setup', re: null },
+        { id: 'anchors', re: /anchor|quote/i },
+        { id: 'body1', re: /\bbody(?: paragraph)? 1\b/i },
+        { id: 'body2', re: /\bbody(?: paragraph)? 2\b/i },
+        { id: 'body3', re: /\bbody(?: paragraph)? 3\b/i },
+        { id: 'intro', re: /introduction|thesis/i },
+        { id: 'conclusion', re: /conclusion/i },
+    ];
+    function litPlanStageIndex(fields, pins) {
+        const f = fields || {};
+        const has = (k) => !!f[k];
+        const anyPre = (p) => Object.keys(f).some(k => k.indexOf(p) === 0);
+        const ev = [true, anyPre('anchor_quote_'),
+            anyPre('outline-body-1-') || has('plan-body-1'), anyPre('outline-body-2-') || has('plan-body-2'),
+            anyPre('outline-body-3-') || has('plan-body-3'), anyPre('outline-intro-') || has('plan-intro'),
+            anyPre('outline-conclusion-') || has('plan-conclusion')];
+        const done = [false, has('anchor_quote_end'), has('plan-body-1'), has('plan-body-2'), has('plan-body-3'), has('plan-intro'), has('plan-conclusion')];
+        let s = 0;
+        ev.forEach((e, i) => { if (e) s = i; });
+        (pins || []).forEach((p) => {
+            const t = String(p || '');
+            let i = -1;
+            const b = /Part\s+B\.(\d+)/i.exec(t);
+            const para = /Paragraph\s+(\d)|\bBody\s+(\d)/i.exec(t);
+            if (para) i = 1 + Math.min(3, parseInt(para[1] || para[2], 10));
+            else if (b) { const n = parseInt(b[1], 10); i = n <= 3 ? 0 : n === 4 ? 1 : (n === 6 || n === 7) ? 5 : n === 8 ? 6 : -1; }
+            if (i > s) s = i;
+        });
+        return done[s] ? s + 1 : s;   // LIT_PLAN_STAGES.length = every stage finished
+    }
+    function litPlanStepFor(stageIdx, steps) {
+        const list = (steps || []).filter(x => x && x.step > 0);
+        if (!list.length) return 1;
+        const stepOf = (i) => {
+            for (let k = i; k >= 1; k--) {
+                const hit = list.find(x => LIT_PLAN_STAGES[k].re.test(x.label));
+                if (hit) return hit.step;
+            }
+            return 1;
+        };
+        if (stageIdx >= LIT_PLAN_STAGES.length) {   // all stages done: the step after the conclusion's (e.g. Unseen Q27.2), else stay
+            const c = stepOf(LIT_PLAN_STAGES.length - 1);
+            return list.some(x => x.step === c + 1) ? c + 1 : c;
+        }
+        return stageIdx <= 0 ? 1 : stepOf(stageIdx);
+    }
+    // @LIT-PLAN-STEP-PURE-END
+    // The fields filed in THIS run's transcript (one reader for the sidebar rows and the router step).
+    function _planFiledFields(history) {
+        const out = {};
+        (history || []).forEach(m => {
+            if (!m || m.role !== 'assistant') return;
+            const cre = /@FIELD_(?:COMMIT|SET)\s*(\{[^}]*\})/g; let mm;
+            const c = String(m.content || '').replace(/(@[A-Z][A-Z0-9]+)\\_/g, '$1_').replace(/\\_/g, '_');
+            while ((mm = cre.exec(c)) !== null) {
+                try { const p = JSON.parse(mm[1]); if (p && p.field) out[String(p.field).trim()] = true; } catch (_) { /* skip */ }
+            }
+        });
+        return out;
+    }
+    function _planPins(history) {
+        const out = [];
+        (history || []).forEach(m => {
+            if (!m || m.role !== 'assistant') return;
+            const re = /📌[^\n]*/g; let x;
+            while ((x = re.exec(String(m.content || '')))) out.push(x[0].replace(/&gt;/g, '>'));
+        });
+        return out;
     }
     function _planRouterStep(history) {
         if (!_planDerivedSidebar()) return state.step || 1;
@@ -1147,6 +1235,9 @@
             const re = /\[PROGRESS:\s*(\d+)\]/g; let x;
             while ((x = re.exec(String(m.content || '')))) max = Math.max(max, parseInt(x[1], 10) || 1);
         });
+        if (_litPlanDocFiled()) {
+            max = Math.max(max, litPlanStepFor(litPlanStageIndex(_planFiledFields(history), _planPins(history)), state.planManifestSteps));
+        }
         return max;
     }
     // v7.20.704: does THIS paper's chain ask source predictions? Neil's rulings v7.20.66/.67: predictions anticipate UNSEEN
@@ -20387,15 +20478,18 @@
         if (state.reviewMode) return;
         // 1. Instant localStorage write (include step + task for resume and stale detection)
         const _chatKeyNow = CHAT_SAVE_KEY(), _chatTsNow = Date.now();   // v7.20.639 (#598)
+        // v7.20.917: a planning chat saves the step the ROUTER is sent (manifest-numbered), on the server too — a sliced
+        // Literature plan's step lived only in memory, so every reload sent the router step 1 (measured, Mehrish 1287).
+        const _saveStep = state.task === 'planning' ? _planRouterStep(history) : (state.step || 1);
         try {
-            localStorage.setItem(_chatKeyNow, JSON.stringify({ history, chatId, step: state.step || 1, task: state.task, exerciseId: state.exerciseId || '', savedAt: new Date().toISOString(), count: history.length }));
+            localStorage.setItem(_chatKeyNow, JSON.stringify({ history, chatId, step: _saveStep, task: state.task, exerciseId: state.exerciseId || '', savedAt: new Date().toISOString(), count: history.length }));
             localStorage.setItem(_chatKeyNow + '__ts', String(_chatTsNow));
         } catch (e) { /* storage full */ }
         // 2. Debounced server write (every 8s — less frequent than doc save)
         clearTimeout(chatSaveTimer);
         // v7.17.39: stash the body so beforeunload can sendBeacon if the tab closes
         // before the 8s timer fires (Writer Profile text-loss parity for chat).
-        _pendingChatSaveBody = Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _chatStorageSuffix(), attempt: _canvasAttempt(), history, chatId }, cwScopeBody());
+        _pendingChatSaveBody = Object.assign({ board: state.board, text: state.text, topicNumber: state.topicNumber || null, suffix: _chatStorageSuffix(), attempt: _canvasAttempt(), history, chatId }, state.task === 'planning' ? { step: _saveStep } : {}, cwScopeBody());
         chatSaveTimer = setTimeout(() => {
             const body = _pendingChatSaveBody;
             _pendingChatSaveBody = null;
@@ -42337,8 +42431,11 @@
         // task='assessment' + phase='redraft' = the collapsed reassessment; resolve to
         // 'reassessment' for the stage class so it's distinct from Phase 1 assessment.
         const _stageTask = (state.task === 'assessment' && state.phase === 'redraft') ? 'reassessment' : state.task;
+        // v7.20.917 (Neil, reviewing Mehrish 1287: "I can't see anything in her document"): a planning lesson files each
+        // element into its OUTLINE box and fills the plan box only at the paragraph's approval, so a reviewer saw empty plan
+        // boxes over 30 turns of filed work. In review only, the outline shows (the canvas is read-only there anyway).
         const _stageCls = (_stageTask && ['planning','outlining','polishing','reassessment'].includes(_stageTask))
-            ? ' swml-stage-' + _stageTask
+            ? ' swml-stage-' + _stageTask + (_stageTask === 'planning' && state.reviewMode ? ' swml-review-outline' : '')
             : '';
         const docWrap = el('div', { className: 'swml-canvas-doc' + (_isCodexDoc ? ' swml-codex-doc' : '') + _stageCls });
         const editorEl = el('div', { id: 'swml-tiptap-editor' });
@@ -45301,6 +45398,8 @@
         // Uses manifest-defined groups if available, falls back to Q-prefix regex parsing.
         if (!canvasSidebarSteps && (state.task === 'planning' || state.task === 'polishing') && state.board) {
             const stepsUrl = `${config.restUrl}protocol-steps?board=${encodeURIComponent(state.board)}&subject=${encodeURIComponent(state.subject || '')}&task=${encodeURIComponent(state.task)}`;
+            state.planDocFiled = false;      // v7.20.917: per lesson — set again only by THIS lesson's manifest reply
+            state.planManifestSteps = null;
             fetch(stepsUrl, { headers }).then(r => r.json()).then(data => {
                 if (data.success && data.steps && data.steps.length > 0) {
                     // v7.20.257: a de-stitched planning task's sidebar is CANVAS-DERIVED
@@ -45308,6 +45407,15 @@
                     // the granular model applied would stomp it back to the manifest list
                     // (the generic→granular→generic flash class). Skip entirely.
                     if (_planPreChainActive() || _poetryPlanActive()) return;
+                    // v7.20.917 (Neil, reviewing Mehrish 1287: "is it not meant to be a little bit more granular?"): a Literature
+                    // planning protocol that files each body element into the document (server-detected, doc_filed) gets the
+                    // document-derived sidebar and router step — the manifest list never paints for it.
+                    state.planManifestSteps = data.steps.map(s => ({ step: parseInt(s.step, 10) || 0, label: String(s.label || '') }));
+                    if (state.task === 'planning' && data.doc_filed === true) {
+                        state.planDocFiled = true;
+                        _refreshPlanningSidebar();
+                        return;
+                    }
                     const container = document.getElementById('swml-progress-steps');
                     if (!container) return;
                     container.innerHTML = '';
@@ -47144,6 +47252,15 @@
             panel.appendChild(header);
             const body = el('div', { className: 'swml-extract-panel-body' });
             panel.appendChild(body);
+            // v7.20.917 (Neil, 16 Oct): highlight a passage in the pad → "Add to notes" — the guide's own menu. Not in review
+            // (the notes written would be the reviewer's, as with the heart).
+            if (!state.reviewMode) {
+                const _up = _notesSelUpHandler(body);
+                body.addEventListener('mouseup', _up);
+                body.addEventListener('touchend', _up);
+                body.addEventListener('mousedown', (e) => { if (_guideSelMenu && !_guideSelMenu.contains(e.target)) _hideGuideSelMenu(); });
+                panel.addEventListener('scroll', _hideGuideSelMenu, true);
+            }
             _makePanelInteractive(panel); // drag + 8-way resize + press-to-front (shared)
             const openCount = Object.keys(_libPads).length + Object.keys(_priorPads).length;
             panel.style.top = (70 + openCount * 34) + 'px';
@@ -48306,6 +48423,13 @@
                                 console.log('WML v7.19.18: capping markerStep ' + markerStep + ' → 2 (MSQ stale prior-attempt chat — last AI msg has [QUIZ_COMPLETE:] but we are remounting at step=1)');
                                 markerStep = 2;
                             }
+                        }
+                        // v7.20.917: a sliced planning lesson whose model writes no [PROGRESS: N] resumes at the step its chat
+                        // was saved on (saveCanvasChat stores the router's step) — before, a reload sent the router step 1.
+                        // Derived-sidebar lessons (Language chain, poetry) number their rows differently: they never read it.
+                        if (state.task === 'planning' && !_planPreChainActive() && !_poetryPlanActive() && savedChat) {
+                            const _ss = parseInt(savedChat.step, 10) || 0;
+                            if (_ss > markerStep) markerStep = _ss;
                         }
                         // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step pinned to bridge dispatch).
                         const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
@@ -51696,6 +51820,11 @@
                                                         if (n > markerStep) markerStep = n;
                                                     }
                                                 });
+                                                // v7.20.917: twin of the primary pipeline — a sliced planning chat resumes at its saved router step.
+                                                if (state.task === 'planning' && !_planPreChainActive() && !_poetryPlanActive() && savedChat) {
+                                                    const _ss = parseInt(savedChat.step, 10) || 0;
+                                                    if (_ss > markerStep) markerStep = _ss;
+                                                }
                                                 // v7.18.23: mark_scheme_unit reads state.sidebarStep (state.step pinned to bridge dispatch).
                                                 const _curStep = state.task === 'mark_scheme_unit' ? (state.sidebarStep || 0) : (state.step || 0);
                                                 if (markerStep > _curStep) {
@@ -77005,7 +77134,7 @@
         // widen the predicate as they de-stitch. v7.20.256: + poetry (its programmatic
         // chain de-stitched at .246–.255 but the predicate was never widened, so poetry
         // fell to the generic essay list — the exact canvas-rule-5 miss).
-        if (!(_planPreChainActive() || _poetryPlanActive()) || !canvasEditor) return null;
+        if (!(_planPreChainActive() || _poetryPlanActive() || _litPlanDocFiled()) || !canvasEditor) return null;   // v7.20.917: + Literature that files the doc
         const host = canvasEditor.options && canvasEditor.options.element;
         if (!host) return null;
         const fieldText = (fid) => {
@@ -77119,6 +77248,20 @@
             add('Grade goal', 'Setup', !!_poetryGoalFromHistory(phh));
             add('Question key words', 'Setup', kwDone);
         }
+        // v7.20.917: Literature Setup rows — each done when its filing is in this run's transcript (goal · kw-focus · the
+        // last anchor quote), or once the walk has moved past it (a filed body/intro/conclusion box means Setup is behind
+        // her). No transcript yet → only the key-words box's own text, never a guess.
+        if (_litPlanDocFiled()) {
+            let lh = null;
+            try { lh = window.__swmlCanvasChatHistory ? window.__swmlCanvasChatHistory() : null; } catch (_) { /* rows stay pending */ }
+            const lf = lh ? _planFiledFields(lh) : {};
+            const past = Object.keys(lf).some(k => /^(outline-|plan-)/.test(k));
+            const anchorsDone = !!lf.anchor_quote_end || past;
+            const kwDone2 = !!lf['kw-focus'] || anchorsDone || (!lh && !!fieldText('kw-focus'));
+            add('Grade goal', 'Setup', !!lf.goal || kwDone2);
+            add('Question key words', 'Setup', kwDone2);
+            add('Anchor quotes', 'Setup', anchorsDone);
+        }
         // v7.20.209: plan-row done-ness — the chat HISTORY (this run's @FIELD_COMMITs) is
         // the ONE truth when available, exactly as v7.20.53 ruled for the Setup rows above.
         // Raw field text survives chat clears / abandoned runs (Neil's live P1 repro: junk
@@ -77152,7 +77295,7 @@
         // the same content at paragraph grain — element rows replace them, no duplicates.
         // No-history done-ness stays FALSE (never falsely ticked; the retry ladder repaints
         // once the accessor mounts). Docs without outline sections fall to the plan-row loop.
-        const _poetryOutSecs = _poetryPlanActive()
+        const _poetryOutSecs = (_poetryPlanActive() || _litPlanDocFiled())   // v7.20.917: Literature files the same element rows
             ? Array.from(host.querySelectorAll('[data-section-type="outline"]')) : [];
         if (_poetryOutSecs.length) {
             const rank = (lbl) => /body/i.test(lbl) ? 0 : /intro/i.test(lbl) ? 1 : 2;
@@ -77227,7 +77370,7 @@
             if (isRetry !== true) _planSidebarTries = 0;
             const model = _buildPlanningSidebarModel();
             if (model && typeof _applyServerSidebar === 'function') { _planSidebarTries = 0; _applyServerSidebar(model); return; }
-            if (_planPreChainActive() || _poetryPlanActive()) { // v7.20.256: poetry rides the same retry ladder
+            if (_planPreChainActive() || _poetryPlanActive() || _litPlanDocFiled()) { // v7.20.256: poetry rides the same retry ladder; v7.20.917: + Literature
                 if (_planSidebarTries < 12) {
                     _planSidebarTries++;
                     setTimeout(() => _refreshPlanningSidebar(true), 350);

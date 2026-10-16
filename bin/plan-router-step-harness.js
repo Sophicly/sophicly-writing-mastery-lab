@@ -22,6 +22,7 @@ for (const [re, n] of [
   [/function _isLangPaper1\(\) \{[\s\S]*?\n    \}/, '_isLangPaper1'],
   [/function _planPreChainActive\(\) \{[\s\S]*?\n    \}/, '_planPreChainActive'],
   [/function _poetryPlanActive\(\) \{[\s\S]*?\n    \}/, '_poetryPlanActive'],
+  [/function _litPlanDocFiled\(\) \{[\s\S]*?\n    \}/, '_litPlanDocFiled'],   // v7.20.917 (false here: no doc_filed flag)
   [/function _planDerivedSidebar\(\) \{[\s\S]*?\n    \}/, '_planDerivedSidebar'],
   [/function _planRouterStep\(history\) \{[\s\S]*?\n    \}/, '_planRouterStep'],
 ]) vm.runInContext(slice(re, n), sb);

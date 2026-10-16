@@ -173,6 +173,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/mc-gate-harness.js || fail=1
 fi
 
+# v7.20.917 (Neil, 16 Oct, reviewing Mehrish 1287): a Literature plan's step comes from the plan (filed boxes + Sophia's
+# 📌 pins), never from reply words, and survives a reload; doc-filing papers get one sidebar row per element; a reviewer
+# sees the outline; the Library pad highlight → Add to notes; the per-request cost ledger. Mutation-proven at .917.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|wml-canvas\.css|class-rest-api\.php|class-protocol-router\.php|manifest\.json|lit-plan-step-harness\.js'; then
+  node bin/lit-plan-step-harness.js || fail=1
+fi
+
 # v7.20.839 (FIXLIST #899 — Neil, 12 Oct): from each ANSWER in the feedback lessons — its mark while collapsed,
 # "Pop out feedback ↗" and "Go to feedback ↓". The answer↔box pairing is a key match (§5d): a drifted key points an
 # answer at the wrong question's feedback. Mutation-proven at .839 (9 injected defects, all caught).

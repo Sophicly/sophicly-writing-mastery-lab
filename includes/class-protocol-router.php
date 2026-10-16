@@ -929,6 +929,7 @@ class SWML_Protocol_Router {
         $model = '';
         $u = ['input' => 0, 'output' => 0, 'cache_read' => 0, 'cache_write' => 0];
         $seen = false;
+        $cc = [];   // v7.20.917: usage.cache_creation — the write split by TTL (ephemeral_5m / ephemeral_1h)
 
         if ($body !== '') {
             $j = json_decode($body, true);
@@ -936,6 +937,7 @@ class SWML_Protocol_Router {
                 // non-streaming reply
                 $model = (string) ($j['model'] ?? '');
                 $seen = $this->_accumulate_usage($j['usage'], $u);
+                if (!empty($j['usage']['cache_creation']) && is_array($j['usage']['cache_creation'])) $cc = $j['usage']['cache_creation'];
             } elseif (strpos($body, 'message_start') !== false) {
                 // buffered SSE: message_start carries input + cache tokens, message_delta the output
                 foreach (preg_split('/\r?\n/', $body) as $line) {
@@ -945,6 +947,7 @@ class SWML_Protocol_Router {
                     if (isset($ev['message']['model']) && $model === '') $model = (string) $ev['message']['model'];
                     if (!empty($ev['message']['usage'])) $seen = $this->_accumulate_usage($ev['message']['usage'], $u) || $seen;
                     if (!empty($ev['usage']))            $seen = $this->_accumulate_usage($ev['usage'], $u) || $seen;
+                    if (!empty($ev['message']['usage']['cache_creation']) && is_array($ev['message']['usage']['cache_creation'])) $cc = $ev['message']['usage']['cache_creation'];
                 }
             }
         }
@@ -991,7 +994,46 @@ class SWML_Protocol_Router {
         if (count($store) > 60) { ksort($store); $store = array_slice($store, -60, null, true); }
         update_option('swml_api_usage_daily', $store, false);
 
+        $this->record_usage_ledger_row($args, $model, $act, $u, $cc, $seen);
         return $response;
+    }
+
+    /**
+     * v7.20.917 (Neil, 16 Oct: "our biggest cost is cache writes, 43% of the bill… let's look at that"). The daily totals
+     * cannot say WHY ~74% of cache writes re-write text already sent once — session start, a gap past the cache's life, the
+     * stepped history window sliding, or the instructions changing between turns. One row per request answers all four:
+     * when, who, which lesson, how many messages, a fingerprint of the instructions, and the write split by TTL. Capped at
+     * 1,000 rows (~a month at today's volume), not autoloaded, and it can never break a reply. Read it with
+     * `wp option get swml_api_usage_ledger --format=json`. Logging only — nothing a student sees changes.
+     */
+    const USAGE_LEDGER_CAP = 1000;
+    private function record_usage_ledger_row($args, $model, $act, $u, $cc, $seen) {
+        try {
+            global $swml_request_context;
+            $req = (is_array($args) && isset($args['body']) && is_string($args['body'])) ? json_decode($args['body'], true) : null;
+            $ctx = is_array($swml_request_context) ? $swml_request_context : [];
+            $row = [
+                't'    => time(),
+                'u'    => get_current_user_id(),
+                'act'  => $act,
+                'key'  => implode('|', [(string) ($ctx['board'] ?? ''), (string) ($ctx['text'] ?? ''), (string) ($ctx['topic_number'] ?? ''), (string) ($ctx['suffix'] ?? ''), (string) ($ctx['step'] ?? '')]),
+                'm'    => $model,
+                'msgs' => is_array($req) && isset($req['messages']) && is_array($req['messages']) ? count($req['messages']) : -1,
+                'sys'  => is_array($req) && isset($req['system']) ? substr(md5(wp_json_encode($req['system'])), 0, 10) : '',
+                'in'   => (int) $u['input'],
+                'out'  => (int) $u['output'],
+                'r'    => (int) $u['cache_read'],
+                'w'    => (int) $u['cache_write'],
+                'w5m'  => (int) ($cc['ephemeral_5m_input_tokens'] ?? 0),
+                'w1h'  => (int) ($cc['ephemeral_1h_input_tokens'] ?? 0),
+                'seen' => $seen ? 1 : 0,
+            ];
+            $led = get_option('swml_api_usage_ledger', []);
+            if (!is_array($led)) $led = [];
+            $led[] = $row;
+            if (count($led) > self::USAGE_LEDGER_CAP) $led = array_slice($led, -self::USAGE_LEDGER_CAP);
+            update_option('swml_api_usage_ledger', $led, false);
+        } catch (\Throwable $e) { /* logging must never cost a reply */ }
     }
 
     /** Add one Anthropic `usage` object into the accumulator. Returns true if it carried anything. */
@@ -3759,14 +3801,15 @@ TEMPLATE;
         ];
 
         $manifest = null;
+        $manifest_dir = '';
         foreach ($paths as $path) {
             if (file_exists($path)) {
                 $manifest = json_decode(file_get_contents($path), true);
-                if ($manifest) break;
+                if ($manifest) { $manifest_dir = dirname($path); break; }
             }
         }
 
-        if (!$manifest || empty($manifest[$task]['steps'])) return ['steps' => [], 'groups' => null];
+        if (!$manifest || empty($manifest[$task]['steps'])) return ['steps' => [], 'groups' => null, 'doc_filed' => false];
 
         $steps = [];
         foreach ($manifest[$task]['steps'] as $num => $step_data) {
@@ -3776,7 +3819,28 @@ TEMPLATE;
         // v7.15.1: Return manifest-defined groups for accordion sidebar display
         $groups = $manifest[$task]['groups'] ?? null;
 
-        return ['steps' => $steps, 'groups' => $groups];
+        return ['steps' => $steps, 'groups' => $groups, 'doc_filed' => $task === 'planning' && self::manifest_files_body_elements($manifest[$task], $manifest_dir)];
+    }
+
+    /**
+     * v7.20.917 (Neil, 16 Oct, reviewing Mehrish 1287's Macbeth planning: "Is it correct or is it not meant to be a little bit
+     * more granular?"). Does THIS paper's planning protocol file each body-paragraph element into the document
+     * (@FIELD_COMMIT into outline-body-N-*)? Read from the protocol files the manifest loads — never a hand-kept list of
+     * boards — so a paper that starts filing switches to the document-derived sidebar and router step by itself.
+     * Measured 16 Oct: AQA Literature, AQA Unseen and Eduqas Literature file; the other sliced Literature papers do not.
+     * Marker spellings vary (`@FIELD_COMMIT`, `@FIELD\_COMMIT`), so backslashes are dropped before the test.
+     */
+    public static function manifest_files_body_elements($task_cfg, $manifest_dir) {
+        if (!is_array($task_cfg) || $manifest_dir === '') return false;
+        $files = (array) ($task_cfg['always'] ?? []);
+        foreach ((array) ($task_cfg['steps'] ?? []) as $sd) $files = array_merge($files, (array) ($sd['files'] ?? []));
+        foreach (array_unique($files) as $f) {
+            $p = $manifest_dir . '/' . $f;
+            if (!is_string($f) || !file_exists($p)) continue;
+            $c = str_replace('\\', '', (string) file_get_contents($p));
+            if (strpos($c, '@FIELD_COMMIT') !== false && preg_match('/"field"\s*:\s*"outline-body-/', $c)) return true;
+        }
+        return false;
     }
 
     /**

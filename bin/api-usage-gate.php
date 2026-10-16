@@ -25,6 +25,7 @@ if (!function_exists('add_filter'))    { function add_filter() { return true; } 
 if (!function_exists('add_action'))    { function add_action() { return true; } }
 if (!function_exists('is_wp_error'))   { function is_wp_error($t) { return false; } }
 if (!function_exists('wp_json_encode')) { function wp_json_encode($v) { return json_encode($v); } }
+if (!function_exists('get_current_user_id')) { function get_current_user_id() { return 1355; } }   // v7.20.917: the ledger row's user
 
 $file = __DIR__ . '/../includes/class-protocol-router.php';
 $src  = file_get_contents($file);
@@ -49,7 +50,9 @@ $code = "class SWML_Protocol_Router {\n    public \$is_wml_outbound = true;\n"
       . slice_method($src, 'extend_anthropic_cache_ttl') . "\n"
       . slice_method($src, 'register_claude_5_5_models') . "\n"
       . slice_method($src, '_accumulate_usage') . "\n"
-      . slice_method($src, 'token_prices') . "\n}";
+      . slice_method($src, 'token_prices') . "\n"
+      . (preg_match('/\n    const USAGE_LEDGER_CAP = \d+;/', $src, $_cap) ? $_cap[0] . "\n" : '')   // v7.20.917
+      . slice_method($src, 'record_usage_ledger_row') . "\n}";
 eval($code);
 
 $r = new SWML_Protocol_Router();
@@ -229,6 +232,29 @@ ok($got && (fileperms($out . '/' . $got[0]) & 0777) === 0600, 'the file is priva
 foreach (array_merge($files($out), $files($inWeb)) as $f) { @unlink($out . '/' . $f); @unlink($inWeb . '/' . $f); }
 @rmdir($inWeb); @rmdir($web); @rmdir($out); @rmdir($tmp);
 unset($GLOBALS['__opts']['swml_capture_anthropic']);
+
+// v7.20.917: THE PER-REQUEST LEDGER (Neil, 16 Oct: "our biggest cost is cache writes… let's look at that") — one row per
+// request with the write split by TTL, so WHY writes repeat is read, not inferred. Capped; a malformed request never throws.
+echo "\n8. the per-request ledger (v7.20.917)\n";
+unset($GLOBALS['__opts']['swml_api_usage_ledger']);
+$GLOBALS['swml_request_context'] = ['task' => 'planning', 'subject' => 'shakespeare', 'board' => 'aqa', 'text' => 'macbeth', 'topic_number' => 1, 'suffix' => '_planning', 'step' => 4];
+$lreq = ['body' => json_encode(['model' => 'claude-sonnet-5-5', 'system' => [['type' => 'text', 'text' => 'SYS']], 'messages' => [['role' => 'user', 'content' => 'a'], ['role' => 'assistant', 'content' => 'b'], ['role' => 'user', 'content' => 'c']]])];
+$lresp = ['body' => json_encode(['model' => 'claude-sonnet-5-5', 'usage' => ['input_tokens' => 11, 'output_tokens' => 22, 'cache_read_input_tokens' => 333, 'cache_creation_input_tokens' => 444, 'cache_creation' => ['ephemeral_5m_input_tokens' => 44, 'ephemeral_1h_input_tokens' => 400]]])];
+$r->record_anthropic_usage($lresp, $lreq, $URL);
+$L = $GLOBALS['__opts']['swml_api_usage_ledger'] ?? [];
+$lr = end($L);
+ok(count($L) === 1 && $lr['act'] === 'planning|shakespeare' && $lr['key'] === 'aqa|macbeth|1|_planning|4' && $lr['u'] === 1355, 'one row per request: who, which activity, which lesson and step');
+ok($lr['msgs'] === 3 && strlen($lr['sys']) === 10 && $lr['r'] === 333 && $lr['w'] === 444 && $lr['w5m'] === 44 && $lr['w1h'] === 400 && $lr['in'] === 11 && $lr['out'] === 22, 'message count, an instructions fingerprint, reads, and writes split 5m / 1h');
+$sys1 = $lr['sys'];
+$lreq2 = $lreq; $j2 = json_decode($lreq2['body'], true); $j2['system'][0]['text'] = 'SYS CHANGED'; $lreq2['body'] = json_encode($j2);
+$r->record_anthropic_usage($lresp, $lreq2, $URL);
+$L = $GLOBALS['__opts']['swml_api_usage_ledger']; $lr2 = end($L);
+ok($lr2['sys'] !== $sys1, 'changed instructions give a different fingerprint (that is how a cache-busting change shows up)');
+$GLOBALS['__opts']['swml_api_usage_ledger'] = array_fill(0, 1000, ['t' => 0]);
+$r->record_anthropic_usage($lresp, ['body' => 'not json'], $URL);
+$L = $GLOBALS['__opts']['swml_api_usage_ledger'];
+ok(count($L) === 1000 && end($L)['msgs'] === -1, 'capped at 1,000 rows (oldest dropped) and a malformed request still logs, never throws');
+unset($GLOBALS['__opts']['swml_api_usage_ledger'], $GLOBALS['swml_request_context']);
 
 echo "\n";
 if ($fail) { fwrite(STDERR, "❌ api-usage-gate: $fail failed, $pass passed\n"); exit(1); }
