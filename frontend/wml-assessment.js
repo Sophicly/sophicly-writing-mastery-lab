@@ -433,6 +433,9 @@
                     }
                 }));
                 document.body.appendChild(menu);
+                // v7.20.917: above every open pad (measured: Library pad 100010 vs this menu's 99995 — it opened UNDER the pad).
+                const _padZ = Array.from(document.querySelectorAll('.swml-extract-panel')).reduce((z, el) => Math.max(z, parseInt(getComputedStyle(el).zIndex, 10) || 0), 0);
+                if (_padZ >= 99995) menu.style.zIndex = String(_padZ + 1);
                 const mw = menu.offsetWidth, mh = menu.offsetHeight;
                 let top = rect.top - mh - 8;
                 if (top < 8) top = rect.bottom + 8;
