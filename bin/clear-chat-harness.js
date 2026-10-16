@@ -23,7 +23,12 @@ if (m) {
     ['planning', 'assessment', 'redraft_assessment', 'polishing', 'outlining', 'cw_step_3', 'conceptual_notes', 'exam_crib', '']
         .forEach(t => ok(f(t, {}) === false, 'a STUDENT on "' + (t || 'diagnostic') + '" gets no Clear Chat'));
     ['foundational_quiz', 'mark_scheme_unit', 'mark_scheme'].forEach(t => ok(f(t, {}) === true, 'a student on the banked quiz "' + t + '" keeps it'));
-    ok(f('planning', { canSignOff: true }) === true && f('planning', { isAdmin: true }) === true, 'staff (canSignOff / isAdmin) keep it everywhere');
+    ok(f('planning', { canClearChat: true }) === true, 'the named account (canClearChat — Neil) keeps it everywhere');
+    ok(f('planning', { canSignOff: true }) === false && f('planning', { isAdmin: true }) === false, 'tutors, specialists and other admins do NOT (Neil: "me only")');
+    {
+        const PHP = fs.readFileSync(path.join(__dirname, '..', 'sophicly-writing-mastery-lab.php'), 'utf8');
+        ok(/get_option\('swml_clear_chat_users', \[1\]\)/.test(PHP) && (PHP.match(/'canClearChat'\s*=> self::can_clear_chat\(\)/g) || []).length === 2, 'the server sends canClearChat on both config paths, from swml_clear_chat_users (default Neil)');
+    }
     ok(f('planning', undefined) === false, 'no config → student rule (never shown by accident)');
 }
 const buttons = (JS.match(/className: 'swml-clear-chat-btn'/g) || []).length;

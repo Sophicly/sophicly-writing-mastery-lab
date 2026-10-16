@@ -19902,13 +19902,14 @@
 
     /* v7.20.914 (Neil, 16 Oct — "do we actually need that button? It might be a bit too destructive… it's probably just going
        to increase our costs… if the student gets it wrong, they'll just have to finish the essay, get their feedback, and do
-       another one." Agreed, with two exceptions he approved): Clear Chat is shown only to STAFF (admin · tutor · specialist ·
-       SSS = swmlConfig.canSignOff, the one staff flag the page already has — they test and reset lessons) and on the BANKED
-       quizzes (a restart costs no Sophia call, and clearing there records the attempt, so it cannot farm a score).
+       another one." Agreed, with two exceptions he approved): Clear Chat was shown only to STAFF (admin · tutor · specialist ·
+       SSS) and on the BANKED quizzes (a restart costs no Sophia call, and clearing there records the attempt, so it cannot
+       farm a score). Same day, narrowed (Neil: "keep it just for me. Me only… tutors… might not realize how much it costs
+       us"): staff → swmlConfig.canClearChat (server can_clear_chat(): wp option swml_clear_chat_users, default Neil only).
        Measured: on planning it also wiped every plan box; clears are logged nowhere. ONE predicate, every Clear Chat site. */
     function clearChatAllowed(task, cfg) {
         const c = cfg || {};
-        if (c.isAdmin || c.canSignOff) return true;
+        if (c.canClearChat === true) return true;
         return task === 'foundational_quiz' || task === 'mark_scheme_unit' || task === 'mark_scheme';
     }
     const _clearChatAllowed = () => clearChatAllowed(state.task, window.swmlConfig);

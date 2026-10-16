@@ -353,6 +353,18 @@ class Sophicly_Writing_Mastery_Lab {
      * v7.20.912: files a lesson fetches only when a feature first needs them (WML.ensureAsset in wml-core.js).
      * ?ver= is the cache key, exactly as an enqueue would add it.
      */
+    /**
+     * v7.20.914 (Neil, 16 Oct: "keep it just for me. Me only… tutors, because they're not paying for the API, they might not
+     * realize how much it costs us"): who sees Clear Chat on a Sophia lesson. NOT the admin capability — five other accounts
+     * hold it (service logins + a contractor). wp option swml_clear_chat_users (user ids; default [1] = Neil on prod and
+     * staging). Change it with WP-CLI, no deploy: `wp option update swml_clear_chat_users '[1,42]' --format=json`.
+     */
+    public static function can_clear_chat() {
+        $ids = get_option('swml_clear_chat_users', [1]);
+        $ids = is_array($ids) ? $ids : (array) json_decode((string) $ids, true);
+        return in_array(get_current_user_id(), array_map('intval', $ids), true);
+    }
+
     public static function lazy_assets() {
         $v = '?ver=' . rawurlencode(SWML_VERSION);
         return [
@@ -1001,6 +1013,7 @@ class Sophicly_Writing_Mastery_Lab {
             'libraryUrl'       => home_url('/library/'),
             'library'          => self::library_config(),   // v7.20.861: the Library rail button (null = no button)
             'lazyAssets'       => self::lazy_assets(),      // v7.20.912: fetched on first use (WML.ensureAsset)
+            'canClearChat'   => self::can_clear_chat(),   // v7.20.914: Neil only (swml_clear_chat_users)
             'pageUrl'          => home_url('/writing-mastery-lab/'),
             'iconsUrl'         => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
             'iconBaseUrl'      => plugin_dir_url(__FILE__) . 'frontend/icons/', // v7.20.362: brand marks (phoenix) — NOT the emoji pack
@@ -1624,6 +1637,7 @@ class Sophicly_Writing_Mastery_Lab {
                 'libraryUrl'     => home_url('/library/'),
                 'library'        => self::library_config(),   // v7.20.861: same helper as the standalone site — never two
                 'lazyAssets'     => self::lazy_assets(),      // v7.20.912: same helper on both paths
+                'canClearChat'   => self::can_clear_chat(),   // v7.20.914: Neil only (swml_clear_chat_users)
                 'pageUrl'        => home_url('/writing-mastery-lab/'),
                 'iconsUrl'       => plugin_dir_url(__FILE__) . 'frontend/icons/emoji/', // v7.19.916: svgifyEmojis base
                 'iconBaseUrl'    => plugin_dir_url(__FILE__) . 'frontend/icons/', // v7.20.362: brand marks (phoenix) — NOT the emoji pack
