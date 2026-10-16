@@ -46770,6 +46770,49 @@
         let _libPanel = null, _libBodyWrap = null, _libCtl = null;
         const _libEsc = (s) => String(s).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
         function _libApi(path) { return apiGet(_lib.restUrl + path); }
+        // v7.20.915 (Neil, 16 Oct: "if a student were to like a resource… show the liked ones… a two-way sync"): the student's
+        // likes are the Library's own list (server library_favs(): user meta _sophicly_fav_resources), written through the
+        // Library's own AJAX action — one store, so the pad and the Library can never disagree. Hidden in review (the
+        // viewer's likes are not the student's) and when the site has no Library likes handler (never a dead control).
+        const _libFavs = (_lib && _lib.favs && !state.reviewMode) ? _lib.favs : null;
+        const _libFavIds = new Set(_libFavs ? (_libFavs.ids || []).map(Number) : []);
+        const _libFavRes = new Map(_libFavs ? (_libFavs.resources || []).map(r => [Number(r.id), r]) : []);
+        let _libSavedBody = null;
+        const SVG_HEART = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+        function _libIsFav(id) { return _libFavIds.has(Number(id)); }
+        function _libFillSaved() {
+            if (!_libSavedBody) return;
+            _libSavedBody.innerHTML = '';
+            const list = Array.from(_libFavIds).map(id => _libFavRes.get(id)).filter(Boolean);
+            if (!list.length) {
+                _libSavedBody.appendChild(el('p', { className: 'swml-prior-empty', textContent: 'Tap the heart on any Library page to save it here.' }));
+                return;
+            }
+            list.forEach(r => _libSavedBody.appendChild(_libResourceRow(r, false)));
+        }
+        // Optimistic, then the server's own list wins. A failure puts the heart back and SAYS so (§4d).
+        async function _libToggleFav(r, btn) {
+            const id = Number(r.id);
+            const was = _libIsFav(id);
+            const paint = (on) => { if (btn) { btn.classList.toggle('is-on', on); btn.setAttribute('aria-pressed', on ? 'true' : 'false'); btn.setAttribute('aria-label', on ? 'Remove from Saved' : 'Save this page'); } };
+            if (was) _libFavIds.delete(id); else { _libFavIds.add(id); _libFavRes.set(id, r); }
+            paint(!was);
+            try {
+                const fd = new FormData();
+                fd.append('action', 'sophicly_toggle_fav_resource'); fd.append('resource_id', String(id)); fd.append('nonce', _libFavs.nonce);
+                const res = await fetch(_libFavs.ajaxUrl, { method: 'POST', body: fd, credentials: 'same-origin' });
+                const j = await res.json();
+                if (!j || !j.success || !j.data || !Array.isArray(j.data.favorites)) throw new Error('bad reply');
+                _libFavIds.clear(); j.data.favorites.forEach(x => _libFavIds.add(Number(x)));
+                paint(_libIsFav(id));
+            } catch (e) {
+                if (was) _libFavIds.add(id); else _libFavIds.delete(id);
+                paint(was);
+                try { showToast('That didn\u2019t save \u2014 try the heart again.', 4000, true); } catch (_) {}
+            }
+            _libFillSaved();
+            document.querySelectorAll('.swml-library-panel .swml-prior-row[data-lib-id="' + id + '"]').forEach(n => n.classList.toggle('is-fav', _libIsFav(id)));
+        }
         // §4d: every failure leaves the student a message AND a way forward, never an empty panel.
         function _libRetry(msg, again) {
             const wrap = el('div', { className: 'swml-library-retry' });
@@ -46792,6 +46835,8 @@
         }
         function _libResourceRow(r, otherBoard) {
             const rowEl = el('button', { className: 'swml-prior-row', type: 'button', onClick: () => spawnLibraryPad(r) });
+            rowEl.setAttribute('data-lib-id', String(r.id));
+            if (_libFavs && _libIsFav(r.id)) rowEl.classList.add('is-fav');   // v7.20.915: a liked page carries a small heart
             const main = el('div', { className: 'swml-prior-row-main' });
             main.appendChild(el('span', { className: 'swml-prior-row-label', textContent: r.title || 'Untitled' }));
             rowEl.appendChild(main);
@@ -46824,6 +46869,12 @@
         function _libRender() {
             _libBodyWrap.innerHTML = '';
             const list = el('div', { className: 'swml-prior-list' });
+            if (_libFavs) {   // v7.20.915: the student's saved pages, first — open when there are any
+                const sg = _libGroup('Saved', _libFavIds.size > 0);
+                _libSavedBody = sg.body;
+                list.appendChild(sg.wrap);
+                _libFillSaved();
+            }
             const cur = libTextFor(state.text, _lib);
             if (cur) {
                 const g = _libGroup(cur.title, true);
@@ -46967,9 +47018,11 @@
             const heads = Array.from(body.querySelectorAll('.swml-library-row h1, .swml-library-row h2, .swml-library-row h3'));
             if (items.length < 2 && heads.length < 3) return;
             const openPart = (n) => { const it = n.closest('.swml-notes-item'); if (it) it.classList.remove('swml-notes-collapsed'); };
+            // v7.20.915 (Neil: "scrolls to rather than just pops into place"): the house scroll-to, WML.smoothScrollTo.
             const reveal = (n) => {
                 openPart(n);
-                body.scrollTop += n.getBoundingClientRect().top - body.getBoundingClientRect().top - 12;
+                const top = body.scrollTop + n.getBoundingClientRect().top - body.getBoundingClientRect().top - 12;
+                if (WML.smoothScrollTo) WML.smoothScrollTo(body, top); else body.scrollTop = top;
             };
             const tools = el('div', { className: 'swml-lib-tools' });
             const tocBtn = el('button', { className: 'swml-lib-tools-btn', type: 'button', textContent: 'Contents' });
@@ -47070,6 +47123,15 @@
             const panel = el('div', { className: 'swml-extract-panel swml-prior-pad swml-library-pad' });
             const header = el('div', { className: 'swml-extract-panel-header' });
             header.appendChild(el('span', { className: 'swml-prior-pad-title', textContent: r.title || 'Library' }));
+            if (_libFavs) {   // v7.20.915: like / unlike this page — the same list the Library uses
+                const heart = el('button', { className: 'swml-lib-heart', type: 'button', innerHTML: SVG_HEART });
+                heart.classList.toggle('is-on', _libIsFav(r.id));
+                heart.setAttribute('aria-pressed', _libIsFav(r.id) ? 'true' : 'false');
+                heart.setAttribute('aria-label', _libIsFav(r.id) ? 'Remove from Saved' : 'Save this page');
+                heart.addEventListener('mousedown', (e) => e.stopPropagation());
+                heart.addEventListener('click', (e) => { e.stopPropagation(); _libToggleFav(r, heart); });
+                header.appendChild(heart);
+            }
             header.appendChild(el('button', {
                 className: 'swml-extract-panel-close', textContent: '✕',
                 onClick: () => { panel.remove(); delete _libPads[padKey]; }

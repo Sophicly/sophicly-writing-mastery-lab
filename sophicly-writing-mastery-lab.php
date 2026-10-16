@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.914
+ * Version: 7.20.915
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.914');
+define('SWML_VERSION', '7.20.915');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -403,6 +403,35 @@ class Sophicly_Writing_Mastery_Lab {
             'texts'   => $texts,
             'map'     => $map,
             'boards'  => self::LIBRARY_BOARD_TERMS,
+            'favs'    => self::library_favs(),   // v7.20.915: the student's liked resources (null = no likes on this site)
+        ];
+    }
+
+    /**
+     * v7.20.915 (Neil, 16 Oct: "if a student were to like a resource… show the liked ones… a two-way sync between the library
+     * scratchpad and the actual library"). ONE store, so nothing ever needs syncing: the Library's own user meta
+     * `_sophicly_fav_resources` (resource post ids), toggled by the Library's own AJAX action `sophicly_toggle_fav_resource`
+     * (FluentSnippet 11, nonce `sophicly_library_nonce`). The pad writes through that same action — never a second key.
+     * Each liked resource comes in the Library API's own shape (sophicly_format_resource_for_api) so a Saved row opens the
+     * pad exactly as a row under a text does. Logged-out or no Library handler → null (no hearts, never a dead control).
+     */
+    public static function library_favs() {
+        if (!is_user_logged_in() || !function_exists('sophicly_toggle_fav_resource')) return null;
+        $ids = get_user_meta(get_current_user_id(), '_sophicly_fav_resources', true);
+        $ids = is_array($ids) ? array_values(array_unique(array_map('intval', $ids))) : [];
+        $out = [];
+        foreach ($ids as $id) {
+            $p = get_post($id);
+            if (!$p || $p->post_status !== 'publish') continue;
+            $out[] = function_exists('sophicly_format_resource_for_api')
+                ? sophicly_format_resource_for_api($p)
+                : ['id' => (int) $p->ID, 'title' => wp_strip_all_tags($p->post_title)];
+        }
+        return [
+            'ajaxUrl'   => admin_url('admin-ajax.php'),
+            'nonce'     => wp_create_nonce('sophicly_library_nonce'),
+            'ids'       => $ids,
+            'resources' => $out,
         ];
     }
 

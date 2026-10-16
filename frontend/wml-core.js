@@ -11,7 +11,7 @@
 // so "is the client running stale JS?" is answerable by a console screenshot — if this prints an
 // OLD version, the browser/CDN is serving a cached bundle and no server-side fix can reach that tab.
 // Pre-ship (bin/pre-ship-check.sh) asserts this string === SWML_VERSION so it can never drift.
-var WML_BUILD = '7.20.914';
+var WML_BUILD = '7.20.915';
 try { console.log('%cWML build ' + WML_BUILD, 'color:#5333ed;font-weight:bold'); } catch (_) {}
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -6142,6 +6142,40 @@ window.WML = (function() {
     // first. They are left alone (changing a live chip's arg is a needless risk), but every id added
     // from here on is the REAL section id, so it resolves on the first attempt and survives any
     // change to that prefix fallback.
+    // ⭐ v7.20.915 — THE HOUSE SCROLL-TO (Neil, 16 Oct: "use the same scroll to effect… the navigation at the bottom… make that
+    // the standard for any scroll to"). Read off the live desktop landing page (etch-script-66a1c.js, floating nav back-to-top):
+    //   gsap.to(window, { scrollTo: { y: 0, autoKill: false }, duration: NAV_CONFIG.duration.smoothScroll /* 1.5 */, ease: "power2.inOut" })
+    // Same curve and duration, without needing GSAP on a lesson page. power2.inOut = 2t² up to half-way, then 1 − (−2t+2)²/2.
+    // autoKill false (a wheel nudge does not cancel it); a NEW scroll of the same element replaces the old one; reduced motion
+    // jumps at once. Resolves when it lands. BRAND.md §SCROLL-TO records it as the standard.
+    const SCROLL_TO_MS = 1500;
+    const easePower2InOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+    const _scrollAnims = new WeakMap();
+    function smoothScrollTo(el, top) {
+        return new Promise(resolve => {
+            const target = el || document.scrollingElement || document.documentElement;
+            const isWin = target === window || target === document.scrollingElement || target === document.documentElement;
+            const get = () => (isWin ? window.scrollY : target.scrollTop);
+            const set = (y) => { if (isWin) window.scrollTo(0, y); else target.scrollTop = y; };
+            const max = isWin ? (document.documentElement.scrollHeight - window.innerHeight) : (target.scrollHeight - target.clientHeight);
+            const to = Math.max(0, Math.min(max, Math.round(top)));
+            const from = get();
+            const key = isWin ? document.documentElement : target;
+            const prev = _scrollAnims.get(key); if (prev) cancelAnimationFrame(prev);
+            let reduce = false;
+            try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+            if (reduce || Math.abs(to - from) < 2) { set(to); _scrollAnims.delete(key); resolve(); return; }
+            const t0 = performance.now();
+            const step = (now) => {
+                const t = Math.min(1, (now - t0) / SCROLL_TO_MS);
+                set(from + (to - from) * easePower2InOut(t));
+                if (t < 1) _scrollAnims.set(key, requestAnimationFrame(step));
+                else { _scrollAnims.delete(key); resolve(); }
+            };
+            _scrollAnims.set(key, requestAnimationFrame(step));
+        });
+    }
+
     // v7.20.912 (Neil, 16 Oct: "things don't load unless they need to"): fetch a file the first time a feature needs it,
     // from swmlConfig.lazyAssets (the server's lazy_assets()). Never enqueue-by-task instead: a Focus SPA move keeps the
     // first page's scripts, so a file left off one lesson would be missing on the next. Resolves true once loaded, false on
@@ -7020,6 +7054,7 @@ window.WML = (function() {
         // v7.20.615: the element → reference map, and the ONE producer of the link line.
         ELEMENT_TOOLKIT_MAP, elementToolkitLines, RESOURCE_TOOLKIT_IDS,
         ensureAsset,     // v7.20.912: load-on-use files (swmlConfig.lazyAssets)
+        smoothScrollTo, easePower2InOut, SCROLL_TO_MS,   // v7.20.915: THE house scroll-to (landing page floating nav)
         learnChipHtml,   // v7.20.797 (#847): a quick comment's stored link → the house learn chip
         // v7.19.x Commit 1: canonical task-caps lookup (dormant — no call site wired yet)
         caps, cap, isMarkingFlow, steppedHistory, hasAssessmentSections, isLiveModelling,

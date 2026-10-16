@@ -103,7 +103,9 @@ ok(/if\s*\(\s*_lib\s*&&\s*!_paTestingTask\s*\)\s*btnColumn\.appendChild\(library
 ok(JS.indexOf('const _paTestingTask') > -1 && JS.indexOf('const _paTestingTask') < JS.indexOf('if (_lib && !_paTestingTask)'),
     'the test predicate is declared before the Library button uses it');
 ok(/function _libApi\(path\)\s*\{\s*return apiGet\(_lib\.restUrl \+ path\);\s*\}/.test(BLK), 'every Library call goes through apiGet (X-WP-Nonce)');
-ok(!/\bfetch\(/.test(BLK), 'no raw fetch() in the Library block (it would drop the nonce)');
+// v7.20.915: ONE named exception — the likes toggle posts to the Library's admin-ajax action with its own nonce in the
+// form body (not a REST call, so apiGet's X-WP-Nonce does not apply). Every other fetch is still refused.
+ok(!/\bfetch\(/.test(BLK.replace("await fetch(_libFavs.ajaxUrl, { method: 'POST', body: fd, credentials: 'same-origin' })", '')), 'no raw fetch() in the Library block (it would drop the nonce) — except the likes toggle, which carries the Library nonce in its body');
 ok((BLK.match(/_libRetry\(/g) || []).length >= 3, 'both loaders end a failure on a message + Try again (§4d)', (BLK.match(/_libRetry\(/g) || []).length);
 ok(/_wireRailPanel\(panel, \{ header: hdr, anchorTrigger: anchorBtn \}\)/.test(BLK) && /swml-outline-panel swml-resources-panel swml-prior-panel swml-library-panel/.test(BLK),
     'the panel is the shared rail shell (one default — v7.20.318/.319)');
@@ -148,6 +150,22 @@ console.log('\n4. reading + navigation (v7.20.910 — Neil 16 Oct: spacing, cont
     ok(/const tk = libToolkitTarget\(a\.getAttribute\('href'\)\);[\s\S]{0,300}if \(!\(window\.SophiclyToolkit && window\.SophiclyToolkit\.open\)\) return;[\s\S]{0,80}e\.preventDefault\(\);\s*window\.SophiclyToolkit\.open\(tk\);/.test(BLK), 'a Toolkit link opens in place ONLY when the Toolkit is on the page — otherwise the new tab, as before');
     ok(/hits\.length < 500/.test(tools), 'search caps its highlights (a one-letter page cannot freeze the pad)');
     ok(/\['mousedown', 'pointerdown', 'keydown'\]\.forEach\(t => search\.addEventListener/.test(tools), 'typing in the search box never drags the pad or reaches the document');
+}
+
+console.log('\n5. likes — ONE store with the Library (v7.20.915, Neil 16 Oct) + the house scroll-to');
+{
+    const fv = PHP.slice(PHP.indexOf('public static function library_favs()'), PHP.indexOf('public static function library_favs()') + 1600);
+    ok(/get_user_meta\(get_current_user_id\(\), '_sophicly_fav_resources', true\)/.test(fv), "the pad reads the Library's own list (_sophicly_fav_resources) — never a second key");
+    ok(/wp_create_nonce\('sophicly_library_nonce'\)/.test(fv) && /function_exists\('sophicly_toggle_fav_resource'\)/.test(fv), "it writes through the Library's own action + nonce, and offers no hearts where that action is missing");
+    ok(/'favs'\s*=> self::library_favs\(\)/.test(PHP), 'library_config carries the likes');
+    ok(/const _libFavs = \(_lib && _lib\.favs && !state\.reviewMode\)/.test(BLK), 'no hearts in review (the viewer\'s likes are not the student\'s)');
+    ok(/fd\.append\('action', 'sophicly_toggle_fav_resource'\)/.test(BLK) && /credentials: 'same-origin'/.test(BLK), 'a tap posts the Library\'s own toggle');
+    ok(/catch \(e\) \{\s*if \(was\) _libFavIds\.add\(id\); else _libFavIds\.delete\(id\);\s*paint\(was\);[\s\S]{0,120}showToast/.test(BLK), 'a failed save puts the heart back AND says so (§4d)');
+    ok(/_libFavIds\.clear\(\); j\.data\.favorites\.forEach/.test(BLK), "the server's list wins after every save");
+    ok(BLK.indexOf("_libGroup('Saved'") > -1 && BLK.indexOf("_libGroup('Saved'") < BLK.indexOf('const cur = libTextFor(state.text, _lib);'), 'Saved is the first group in the panel');
+    ok(/WML\.smoothScrollTo\(body, top\)/.test(BLK), 'contents + search jumps use the house scroll-to (BRAND §SCROLL-TO)');
+    const CORE = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
+    ok(/const SCROLL_TO_MS = 1500;/.test(CORE) && /t < 0\.5 \? 2 \* t \* t : 1 - Math\.pow\(-2 \* t \+ 2, 2\) \/ 2/.test(CORE), 'the house scroll-to is 1.5 s power2.inOut (the landing page floating nav)');
 }
 
 console.log(`\n${fail ? '✗' : '✓'} library-panel-harness: ${pass} passed, ${fail} failed`);
