@@ -42465,11 +42465,11 @@
         // task='assessment' + phase='redraft' = the collapsed reassessment; resolve to
         // 'reassessment' for the stage class so it's distinct from Phase 1 assessment.
         const _stageTask = (state.task === 'assessment' && state.phase === 'redraft') ? 'reassessment' : state.task;
-        // v7.20.917 (Neil, reviewing Mehrish 1287: "I can't see anything in her document"): a planning lesson files each
-        // element into its OUTLINE box and fills the plan box only at the paragraph's approval, so a reviewer saw empty plan
-        // boxes over 30 turns of filed work. In review only, the outline shows (the canvas is read-only there anyway).
+        // v7.20.920 (Neil, 16 Oct, reviewing 857 + 1237: "there should be no outlines in the planning. The planning should
+        // just have the planning sections"): the .917 review-only outline reveal is gone — a planning lesson shows the plan,
+        // in review too. The outline belongs to the Outline lesson. Gate: lit-plan-step-harness.
         const _stageCls = (_stageTask && ['planning','outlining','polishing','reassessment'].includes(_stageTask))
-            ? ' swml-stage-' + _stageTask + (_stageTask === 'planning' && state.reviewMode ? ' swml-review-outline' : '')
+            ? ' swml-stage-' + _stageTask
             : '';
         const docWrap = el('div', { className: 'swml-canvas-doc' + (_isCodexDoc ? ' swml-codex-doc' : '') + _stageCls });
         const editorEl = el('div', { id: 'swml-tiptap-editor' });

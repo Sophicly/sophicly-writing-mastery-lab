@@ -14513,14 +14513,8 @@ body[data-swml-theme="light"] .swml-coach-actions { border-top-color: rgba(0, 0,
     display: none !important;
 }
 
-/* v7.20.917: a REVIEWER of a planning lesson also sees the outline — that is where each element is filed live; the plan
- * box fills only at the paragraph's approval (Neil, reviewing Mehrish 1287). Higher specificity than the hide rule above. */
-.swml-stage-planning.swml-review-outline [data-section-type="outline"] {
-    display: block !important;
-}
-.swml-stage-planning.swml-review-outline [data-section-type="divider"][data-section-label*="OUTLINE"] {
-    display: flex !important;
-}
+/* v7.20.920 (Neil, 16 Oct): NO outline in a planning lesson, for a reviewer either — "The planning should just have the
+ * planning sections." (The .917 review-only reveal was removed; never add a reveal back without his ruling.) */
 
 /* Outlining + Polishing: hide assessment-stage sections + their dividers */
 .swml-stage-outlining [data-section-type="feedback"],
