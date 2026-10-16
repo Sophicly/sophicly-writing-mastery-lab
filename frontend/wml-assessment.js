@@ -46794,7 +46794,14 @@
         async function _libToggleFav(r, btn) {
             const id = Number(r.id);
             const was = _libIsFav(id);
-            const paint = (on) => { if (btn) { btn.classList.toggle('is-on', on); btn.setAttribute('aria-pressed', on ? 'true' : 'false'); btn.setAttribute('aria-label', on ? 'Remove from Saved' : 'Save this page'); } };
+            // v7.20.916: the Saved group and the row hearts move WITH the pad heart, not after the reply — staging's first
+            // reply took 5.9 s (measured), so a list that waited for it sat stale beside a heart that had already changed.
+            const paint = (on) => {
+                if (btn) { btn.classList.toggle('is-on', on); btn.setAttribute('aria-pressed', on ? 'true' : 'false'); btn.setAttribute('aria-label', on ? 'Remove from Saved' : 'Save this page'); }
+                _libFillSaved();
+                if (on && _libSavedBody && _libSavedBody.parentElement) _libSavedBody.parentElement.classList.remove('swml-prior-collapsed');
+                document.querySelectorAll('.swml-library-panel .swml-prior-row[data-lib-id="' + id + '"]').forEach(n => n.classList.toggle('is-fav', on));
+            };
             if (was) _libFavIds.delete(id); else { _libFavIds.add(id); _libFavRes.set(id, r); }
             paint(!was);
             try {
@@ -46810,8 +46817,6 @@
                 paint(was);
                 try { showToast('That didn\u2019t save \u2014 try the heart again.', 4000, true); } catch (_) {}
             }
-            _libFillSaved();
-            document.querySelectorAll('.swml-library-panel .swml-prior-row[data-lib-id="' + id + '"]').forEach(n => n.classList.toggle('is-fav', _libIsFav(id)));
         }
         // §4d: every failure leaves the student a message AND a way forward, never an empty panel.
         function _libRetry(msg, again) {

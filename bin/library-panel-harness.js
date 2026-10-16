@@ -162,6 +162,12 @@ console.log('\n5. likes — ONE store with the Library (v7.20.915, Neil 16 Oct) 
     ok(/fd\.append\('action', 'sophicly_toggle_fav_resource'\)/.test(BLK) && /credentials: 'same-origin'/.test(BLK), 'a tap posts the Library\'s own toggle');
     ok(/catch \(e\) \{\s*if \(was\) _libFavIds\.add\(id\); else _libFavIds\.delete\(id\);\s*paint\(was\);[\s\S]{0,120}showToast/.test(BLK), 'a failed save puts the heart back AND says so (§4d)');
     ok(/_libFavIds\.clear\(\); j\.data\.favorites\.forEach/.test(BLK), "the server's list wins after every save");
+    {   // v7.20.916: measured on staging, the first reply took 5.9 s — the list must move with the heart, not wait for the reply
+        const tf = BLK.slice(BLK.indexOf('async function _libToggleFav('), BLK.indexOf('function _libRetry('));
+        const pt = tf.slice(tf.indexOf('const paint = '), tf.indexOf('paint(!was);'));
+        ok(/_libFillSaved\(\)/.test(pt) && /is-fav/.test(pt) && /swml-prior-collapsed/.test(pt), 'the Saved group, its opening and the row hearts update inside paint() — before the reply (v7.20.916)');
+        ok(tf.indexOf('paint(!was);') > -1 && tf.indexOf('paint(!was);') < tf.indexOf('await fetch('), 'the optimistic paint runs before the request is sent');
+    }
     ok(BLK.indexOf("_libGroup('Saved'") > -1 && BLK.indexOf("_libGroup('Saved'") < BLK.indexOf('const cur = libTextFor(state.text, _lib);'), 'Saved is the first group in the panel');
     ok(/WML\.smoothScrollTo\(body, top\)/.test(BLK), 'contents + search jumps use the house scroll-to (BRAND §SCROLL-TO)');
     const CORE = fs.readFileSync(path.join(ROOT, 'frontend', 'wml-core.js'), 'utf8');
