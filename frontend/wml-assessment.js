@@ -46452,6 +46452,9 @@
                 // on mousedown suppresses a native <select> opening (Neil: the pad's
                 // "Jump to section…" dropdown wouldn't open).
                 if (e.target.closest('.swml-extract-rh, button, select, input, textarea, a, label, [contenteditable="true"]')) return;
+                // v7.20.917: the Library pad's reading area selects text (highlight → Add to notes) — a press there
+                // started a drag and preventDefault cancelled every selection (measured). The pad drags by its header.
+                if (e.target.closest('.swml-library-pad .swml-extract-panel-body')) return;
                 dg = true;
                 const origin = typeof getFixedOriginOffset === 'function' ? getFixedOriginOffset(panel) : { x: 0, y: 0 };
                 const rect = panel.getBoundingClientRect();
