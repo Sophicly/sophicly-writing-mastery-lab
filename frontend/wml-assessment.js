@@ -75350,7 +75350,9 @@
         return out.join('|');
     }
     function healLangP1SelfAssessment() {
-        if (!canvasEditor || state.reviewMode) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor) return;
         if (!WML.hasAssessmentSections(state.task)) return;
         const subj = String(state.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         // v7.19.854: P2 added — buildSelfAssessmentSection is subject-aware, so the heal
@@ -75436,7 +75438,9 @@
     // that spot it returns before any mutation, so already-correct docs never re-save (the v817
     // mutate-every-load wipe lesson). Runs after migrateDividers so the FEEDBACK anchor exists.
     function healSelfAssessmentAboveFeedback() {
-        if (!canvasEditor || state.reviewMode) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor) return;
         if (!WML.hasAssessmentSections(state.task)) return;
         let saPos = null, saNode = null;
         canvasEditor.state.doc.descendants((n, p) => {
@@ -75486,7 +75490,9 @@
     // law: never setContent from a heal) and MOVES a misplaced one (a node move — filled rows
     // intact, never a rebuild). Idempotent: a document already in order returns before any change.
     function healLadderSectionsUnderSelfAssessment() {
-        if (!canvasEditor || state.reviewMode) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor) return;
         if (!WML.hasAssessmentSections(state.task)) return;
         if (!_ladderSchemeKeysFor().length) return;
         const find = (label) => {
@@ -75535,7 +75541,9 @@
     // Same dispatch as healLadderSaWording — under _migrationActive, out of undo — or the Section
     // Guard reverts the removal (measured on .677).
     function healCalibGoal() {
-        if (!canvasEditor || state.reviewMode) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor) return;
         let field = null;
         canvasEditor.state.doc.descendants((n, p) => {
             if (field) return false;
@@ -75567,7 +75575,9 @@
     // the old strings (a box with any other prompt is left alone); attributes only, never a box's text.
     // Idempotent, out of undo, under _migrationActive — the healLadderSaWording dispatch.
     function healCmpPlanPrompts() {
-        if (!canvasEditor || state.reviewMode || !_cmpPlanAnalyticalOnly()) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor || !_cmpPlanAnalyticalOnly()) return;
         const rows = [];
         canvasEditor.state.doc.descendants((n, p) => {
             if (n.type.name !== 'inputField' || !n.attrs) return true;
@@ -75597,7 +75607,9 @@
     // only (no whole-document rewrite — the PM law), rows edited back to front so no position shifts under a later
     // edit, idempotent: a document already on the new wording makes no transaction and no save.
     function healLadderSaWording() {
-        if (!canvasEditor || state.reviewMode) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor) return;
         let sec = null;
         canvasEditor.state.doc.descendants((n, p) => {
             if (sec) return false;
@@ -75667,7 +75679,9 @@
     // exactly as it is: no student is pulled back and no empty box appears in a finished document;
     // _ladderPointExempt reads it as "not self-marked". Idempotent; a migration transaction, out of undo.
     function healLadderPointRows() {
-        if (!canvasEditor || canvasEditor.isDestroyed || state.reviewMode) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor || canvasEditor.isDestroyed) return;
         const pts = _ladderSchemeKeysFor().filter(k => k.points && !_ladderRowExists(_ladderFids(k.key).mark));
         if (!pts.length) return;
         if (_ladderRowText('sa-ms-confidence') || _ladderMarksInHistory()) return;   // finished walk — leave it
@@ -75736,7 +75750,9 @@
     }
     // ── @DUP-FIELD-PURE-END ──
     function healDuplicateInputFields() {
-        if (!canvasEditor || canvasEditor.isDestroyed || state.reviewMode) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor || canvasEditor.isDestroyed) return;
         try {
             const runs = _dupFieldRuns(canvasEditor.state.doc);
             if (!runs.length) return;
@@ -77128,7 +77144,9 @@
     // question section. Rewrite it to the marking target (idempotent; untouched when it already
     // matches or the paper has no canonical table). Never from a tutor's review view.
     function _healWordTargetHints() {
-        if (!canvasEditor || state.reviewMode) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor) return;
         if (typeof _multiqTargetKey !== 'function' || !_multiqTargetKey()) return;
         const html = canvasEditor.getHTML();
         if (html.indexOf('Aim for ') === -1) return;
@@ -77158,7 +77176,9 @@
     }
 
     function _healDiagnosticPlanScaffold() {
-        if (!canvasEditor || state.reviewMode) return;
+        // v7.20.927 (Neil, 17 Oct): a layout upgrade runs in the tutor view too — display only (saveCanvasContent refuses in
+        // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
+        if (!canvasEditor) return;
         const redraft = state.phase === 'redraft' || (state.draftType && state.draftType.includes('redraft'));
         if (!redraft) return;
         if (state.task === 'mark_scheme' || (state.task && state.task.startsWith('cw_')) || state.subject === 'creative_writing') return;

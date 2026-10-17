@@ -180,6 +180,12 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
      | grep -qE 'wml-assessment\.js|chain-autofill-harness\.js'; then
   node bin/chain-autofill-harness.js || fail=1
 fi
+# v7.20.927 (Neil, 17 Oct, Qamar 857's one-box plan in the tutor view): every load-time upgrade step runs in the tutor view
+# too (display only — review never saves); a step may skip review only when listed with its reason.
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|review-layout-gate\.js'; then
+  node bin/review-layout-gate.js || fail=1
+fi
 
 # v7.20.917 (Neil, 16 Oct, reviewing Mehrish 1287): a Literature plan's step comes from the plan (filed boxes + Sophia's
 # 📌 pins), never from reply words, and survives a reload; doc-filing papers get one sidebar row per element; a reviewer

@@ -507,6 +507,29 @@ Gate: `bin/structure-lock-harness.js` (pre-ship). Real-browser proof (staging, t
 
 ---
 
+## ⭐⭐ THE STUDENT'S WRITING IS NEVER REPLACED BY A FILL, AND THE TUTOR SEES WHAT THE STUDENT WILL SEE (Neil, 17 Oct — *"Can you make a rule or something for this so it doesn't happen again? Maybe a gate or something?"*)
+
+Three defects found on 17 Oct through two real students. All three were **silent**: no error, no log line a person would see.
+
+1. **An automatic fill never replaces a student's writing in a later lesson** (Mishel 1237). Sophia's fills (field
+   commits, field sets, plan→outline fan-out) stamp `fillTs`; the student's own typing stamps `editTs`. One rule decides
+   every carry between lessons, `_chainArbitrate`: a student edit upstream that is newer flows forward (the July
+   STAGE-RECORD law); a newer FILL over a copy the student has written in since only fills that copy's EMPTY boxes
+   ("Keep what she wrote"); an untouched mirror takes the fill. ⛔ Never write into the document from code without going
+   through `applyFieldCommits` / `_applyFieldValueSets` (they set `_autoFillDepth`), or your write is stamped as the
+   student's. Gate: `bin/chain-autofill-harness.js`.
+2. **Only a marked lesson freezes.** The freeze ("if it's already marked, you shouldn't be able to edit it from the previous
+   lesson") applies in the assessment, reassessment and discussion lessons only. Plan / outline / polish documents can
+   carry the Phase-1 Feedback boxes as reference, marks included; those marks froze EVERY question in Mishel's outline,
+   so a finished plan could never reach it. Gate: `bin/per-question-freeze-gate.js`.
+3. **Every layout upgrade runs in the tutor view too** (Qamar 857). Neil saw one plan box per question; the lesson had
+   built one per paragraph for weeks, but only when the STUDENT opens it — ten upgrade steps returned at once in review.
+   A reviewer page can never save (`saveCanvasContent` returns in review), so running them there only changes what the
+   tutor sees. ⛔ Do not add `|| state.reviewMode` to an upgrade step. If one genuinely must skip review, list it in
+   `MAY_SKIP_REVIEW` with the reason. Gate: `bin/review-layout-gate.js`.
+
+---
+
 ## TEXT-SLUG REGISTRY — one canonical layer (v7.19.823+)
 
 `$SLUG_ALIASES` in `includes/class-rest-api.php` is THE text-slug registry. Every inbound slug
