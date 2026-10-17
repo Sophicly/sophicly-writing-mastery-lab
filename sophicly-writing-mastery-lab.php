@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.922
+ * Version: 7.20.923
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.922');
+define('SWML_VERSION', '7.20.923');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -725,8 +725,10 @@ class Sophicly_Writing_Mastery_Lab {
         ob_start(); ?>
 <div class="swml-order-lock" role="region" aria-label="Lesson locked">
 <style>
-.swml-order-lock{--ol-bg:#fff;--ol-ink:#1d1b26;--ol-muted:#55526a;--ol-edge:rgba(83,51,237,.14);max-width:560px;margin:48px auto;padding:32px 28px;border-radius:20px;background:var(--ol-bg);color:var(--ol-ink);box-shadow:0 1px 2px rgba(20,10,60,.06),0 12px 32px rgba(20,10,60,.08);border:1px solid var(--ol-edge);text-align:center;font-family:inherit;box-sizing:border-box}
-html[data-theme="dark"] .swml-order-lock{--ol-bg:#24222e;--ol-ink:#f3f1fa;--ol-muted:#b9b5cc;--ol-edge:rgba(255,255,255,.08);box-shadow:0 12px 32px rgba(0,0,0,.35)}
+/* v7.20.923 (Neil, 17 Oct: "is that one of our dark theme colours… I really hate strokes"): no outline — the card is
+   separated by surface + shadow (BRAND §0). Dark = the Canvas Surface ladder's raised rung on Focus's #232427 base. */
+.swml-order-lock{--ol-bg:#fff;--ol-ink:#1d1b26;--ol-muted:#55526a;max-width:560px;margin:48px auto;padding:32px 28px;border-radius:20px;background:var(--ol-bg);color:var(--ol-ink);box-shadow:0 1px 2px rgba(20,10,60,.06),0 12px 32px rgba(20,10,60,.08);text-align:center;font-family:inherit;box-sizing:border-box}
+html[data-theme="dark"] .swml-order-lock{--ol-bg:#2b2c2f;--ol-ink:#e0e0ee;--ol-muted:#9da5b4;box-shadow:0 12px 32px rgba(0,0,0,.35)}
 .swml-order-lock h2{margin:0 0 12px;font-size:1.35rem;line-height:1.3;color:var(--ol-ink)}
 .swml-order-lock p{margin:0 0 24px;font-size:1rem;line-height:1.55;color:var(--ol-muted)}
 .swml-order-lock a.swml-btn-main{display:inline-flex;text-decoration:none;color:var(--swml-bm-ink)}

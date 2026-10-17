@@ -89,6 +89,10 @@ ok(strpos($obb, "'sfwd-topic'") !== false && strpos($obb, "'sfwd-lessons'") !== 
 ok(strpos($obb, "has_shortcode(\$p->post_content, 'writing_mastery_lab')") !== false && strpos($obb, "post_status === 'publish'") !== false, 'a Writing Mastery lesson = a published lesson with the shortcode');
 ok(strpos($main, 'html[data-theme="dark"] .swml-order-lock') !== false, 'the card follows the SITE\'s theme marker (WML\'s own is set by a script that does not run here)');
 ok(strpos($main, 'class="swml-btn-main swml-order-lock-go"') !== false, 'the card uses the house button, not a copy');
+$cs = strpos($main, '.swml-order-lock{--ol-bg'); $ce = $cs !== false ? strpos($main, '</style>', $cs) : false;
+$css = ($cs !== false && $ce !== false) ? substr($main, $cs, $ce - $cs) : '';
+ok($css !== '' && !preg_match('/(^|[;{])\s*(border|outline)\s*:/', $css), 'v7.20.923: the card carries no outline stroke (Neil: "I really hate strokes")');
+ok(strpos($css, '--ol-bg:#2b2c2f') !== false && strpos($css, '--ol-ink:#e0e0ee') !== false, 'v7.20.923: dark card = the Canvas Surface ladder (raised #2b2c2f, text #e0e0ee), never an invented shade');
 
 echo "\n" . ($fail ? "FAILED" : "PASSED") . " — $pass passed, $fail failed\n";
 exit($fail ? 1 : 0);
