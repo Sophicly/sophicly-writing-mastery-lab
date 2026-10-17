@@ -76698,7 +76698,12 @@
             // v7.20.92 (STAGE-RECORD LAW): a doc holding ANY mark label is a frozen
             // record — nothing mirrors INTO it (the feedback family keeps its own
             // phase-completion gate below).
-            const _docMarked = /data-section-label="[^"]*\(\s*\d[^"]*\/\s*\d+\s*\)/.test(canvasEditor.getHTML());
+            // v7.20.926 (measured 17 Oct, Mishel 1237): only a lesson that IS marked freezes — the assessment, the
+            // reassessment and the discussion. Plan / outline / polish documents can carry the Phase-1 Feedback boxes as
+            // reference (marks and all), and those marks froze EVERY question there, so a finished plan never reached the
+            // outline (prod: 6 of 27 outline/polish documents, 4 students).
+            const _freezeStage = ['assessment', 'redraft_assessment', 'feedback_discussion'].indexOf(state.task) !== -1;
+            const _docMarked = _freezeStage && /data-section-label="[^"]*\(\s*\d[^"]*\/\s*\d+\s*\)/.test(canvasEditor.getHTML());
             /* ⭐⭐ v7.20.588 (FIXLIST #461) — THE FREEZE IS PER QUESTION, NOT PER DOCUMENT.
                Neil, relaying a student: he wrote his answers in the PLAN boxes, the assessment
                could not read them, he went back to the diagnostic and transferred plan→response,
@@ -76716,6 +76721,7 @@
                So: a question is frozen iff ITS OWN feedback label carries a numeric mark. */
             const _markedQs = (() => {
                 const out = new Set();
+                if (!_freezeStage) return out;   // v7.20.926: carried Phase-1 marks never freeze an unmarked lesson
                 const re = /data-section-label="([^"]*)"/g;
                 let m;
                 while ((m = re.exec(canvasEditor.getHTML())) !== null) {

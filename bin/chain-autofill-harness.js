@@ -66,6 +66,9 @@ ok(/_migrationActive = true;[\s\S]*finally \{ _migrationActive = false; \}/.test
     'the fill runs as a migration (structure lock passes it), is never stamped as an edit, and is not undoable');
 ok(/fillTs: cand\.fts \|\| 0 \}\);/.test(feb), 'it records the fill time so the next load does nothing');
 ok(!/CSS\.escape/.test(feb), 'no CSS.escape in attribute lookups (WML rule)');
+ok(/const _freezeStage = \['assessment', 'redraft_assessment', 'feedback_discussion'\]\.indexOf\(state\.task\) !== -1;\s*const _docMarked = _freezeStage && /.test(js)
+    && /const out = new Set\(\);\s*if \(!_freezeStage\) return out;/.test(js),
+    '⭐ only a MARKED lesson freezes — carried Phase-1 marks in a plan/outline/polish document never block the plan reaching the outline (Mishel\'s outline was frozen)');
 
 console.log('\n' + (fail ? 'FAILED' : 'PASSED') + ' — ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

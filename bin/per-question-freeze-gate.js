@@ -53,7 +53,7 @@ const DWIJ = [
     'data-section-label="Q5 Response"',
 ].join('');
 
-const build = (html) => {
+const build = (html, freezeStage = true) => {   // v7.20.926: the freeze applies only in a MARKED lesson
     let mk = markedBlock[0], fz = frozenBlock[0];
     if (INJECT) {
         // The defect: fall back to the document-wide flag for every section.
@@ -61,12 +61,20 @@ const build = (html) => {
     }
     const code = `
         const canvasEditor = { getHTML: () => ${JSON.stringify(html)} };
-        const _docMarked = /data-section-label="[^"]*\\(\\s*\\d[^"]*\\/\\s*\\d+\\s*\\)/.test(canvasEditor.getHTML());
+        const _freezeStage = ${freezeStage ? 'true' : 'false'};
+        const _docMarked = _freezeStage && /data-section-label="[^"]*\\(\\s*\\d[^"]*\\/\\s*\\d+\\s*\\)/.test(canvasEditor.getHTML());
         ${mk}
         ${fz}
         return { docMarked: _docMarked, marked: [..._markedQs].sort(), frozen: _sectionFrozen };`;
     return new Function(code)();
 };
+
+console.log('\nv7.20.926 — an OUTLINE/PLAN/POLISH lesson carrying Phase-1 marks as reference (Mishel 1237, measured 17 Oct):');
+{
+    const r = build(DWIJ, false);
+    ok('nothing reads as marked in an unmarked lesson', r.docMarked === false && JSON.stringify(r.marked) === '[]', r.marked);
+    ok('Q1 Response flows there too — the carried mark is reference, not this lesson\'s marking', r.frozen('Q1 Response') === false);
+}
 
 console.log('\nHis real paper — Q1 marked 4/4, Q2-Q5 still (— / N):');
 {
