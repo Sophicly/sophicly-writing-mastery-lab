@@ -9559,6 +9559,9 @@
     // v7.20.839 (FIXLIST #899): an answer row's "Pop out feedback ↗" — the Feedback pad for ONE question (the pads live in
     // the canvas closure, which sets this; the answer rows are filled from renderControlRows).
     let _openFeedbackPadHook = null;
+    // v7.20.928 (FIXLIST plan-extract-pad): a plan box's "pop out" — same hook shape (the plan rows are filled outside the
+    // canvas closure's pad code).
+    let _openPlanPadHook = null;
     // ⭐ v7.20.558 (#430) — the marking LEVELS pad. Same hook shape; a close hook too, because
     // the pad is ephemeral: it exists only while an element is being judged.
     let _openLadderPadHook = null;
@@ -45812,8 +45815,13 @@
             const _fbOnly = (typeof sourceIdx === 'string' && sourceIdx.indexOf('feedback|') === 0) ? sourceIdx.slice(9) : null;
             const isFeedbackMode = sourceIdx === 'feedback' || _fbOnly !== null; // v7.19.829 (Neil): every question's filed feedback in its own pad
             const isNotesMode = sourceIdx === 'notes'; // v7.19.974 (Neil): notes docs — all filled note sections in one pad
+            // ⭐ v7.20.928 (FIXLIST plan-extract-pad — Neil, 17 Oct, Live Modelling: "it would be nice if I could pull the plan out
+            // in an extract pad so that I can follow it as I'm writing my answer"): 'plan|<section label>' = ONE plan box, read-only,
+            // live-updating like the essay pad, opened from that plan box's own row (the ↗ beside its ↓).
+            const _planOnly = (typeof sourceIdx === 'string' && sourceIdx.indexOf('plan|') === 0) ? sourceIdx.slice(5) : null;
+            const isPlanMode = _planOnly !== null;
             const _workPad = _isAnyLanguagePaper() ? 'My Response' : 'My Essay'; // v7.19.829: language papers aren't essays
-            const label = isNotesMode ? 'My Notes' : (isFeedbackMode ? (_fbOnly || 'Feedback') : (isEssayMode ? _workPad : (isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract')))));
+            const label = isPlanMode ? _planOnly : (isNotesMode ? 'My Notes' : (isFeedbackMode ? (_fbOnly || 'Feedback') : (isEssayMode ? _workPad : (isTabsMode ? 'Extract' : (srcEl ? (srcEl.getAttribute('data-section-label') || ('Source ' + (sourceIdx + 1))) : (sourceEls.length > 0 ? 'Source Material' : 'Extract'))))));
             header.appendChild(el('span', { textContent: label }));
             header.appendChild(el('button', {
                 className: 'swml-extract-panel-close', textContent: '✕',
@@ -45965,8 +45973,25 @@
                     body.appendChild(el('p', { textContent: 'Nothing written yet — your ' + (_isAnyLanguagePaper() ? 'response' : 'essay') + ' will appear here once you write it.' }));
                 }
             };
-            if (isFeedbackMode || isEssayMode) {
-                const _renderPad = isFeedbackMode ? _renderFeedbackPad : _renderEssayPad;
+            const _renderPlanPad = () => {
+                // v7.20.928: the plan box, cloned read-only on every change — one source of the plan on the page, never a copy
+                // that can drift. Matched by its label each render, so a box rebuilt by a heal is still found.
+                body.innerHTML = '';
+                const sec = findSectionByLabel(editorEl, _planOnly);
+                const txt = sec ? (_sectionContentOf(sec).textContent || '').trim() : '';
+                if (!sec || !txt) {
+                    body.appendChild(el('p', { textContent: 'Nothing in this plan yet — it will appear here as it is written.' }));
+                    return;
+                }
+                const cloned = _stripChipsFromClone(sec.cloneNode(true));
+                cloned.removeAttribute('contenteditable');
+                cloned.classList.remove('swml-fb-collapsed');   // the pad is for reading — a collapsed plan in the doc still shows here
+                cloned.querySelectorAll('[contenteditable]').forEach(n => n.setAttribute('contenteditable', 'false'));
+                cloned.querySelectorAll('select, textarea, input, button').forEach(n => { n.disabled = true; });
+                body.appendChild(cloned);
+            };
+            if (isFeedbackMode || isEssayMode || isPlanMode) {
+                const _renderPad = isPlanMode ? _renderPlanPad : (isFeedbackMode ? _renderFeedbackPad : _renderEssayPad);
                 // v7.19.854 (Neil): make the cloned collapse chevrons WORK in the pad. One
                 // delegated listener on the pad body (survives every re-render — the clones
                 // themselves are disposable); toggles the clone's class and records the choice
@@ -46280,6 +46305,11 @@
         _openFeedbackPadHook = (base) => {
             const n = Object.keys(extractPanels).filter(k => String(k).indexOf('feedback|') === 0).length;
             spawnExtractPanel([], base ? 'feedback|' + base : 'feedback', { top: (140 + n * 28) + 'px', right: (76 + n * 28) + 'px' });
+        };
+        // ⭐ v7.20.928 (FIXLIST plan-extract-pad): a plan box's ↗ — that plan in its own pad, toggled like every pad, cascading.
+        _openPlanPadHook = (label) => {
+            const n = Object.keys(extractPanels).filter(k => String(k).indexOf('plan|') === 0).length;
+            spawnExtractPanel([], 'plan|' + label, { top: (80 + n * 28) + 'px', right: (40 + n * 28) + 'px' });
         };
 
         // ⭐ v7.20.556 (#426) — THE TRIAL DRAFT PAD. Neil, 2026-08-23: *"like in the literature
@@ -59870,6 +59900,7 @@
         // transfer buttons now render in-flow into each section's PM-firewalled ctlRow via
         // _renderControlRows (no absolute overlay, no positioning pass, storm-immune).
         const SVG_TRANSFER = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>';
+        const SVG_POPOUT = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 
         /** Find a sectionBlock by its label (loop-based, no CSS.escape) */
         function findSectionByLabel(editorEl, label) {
@@ -60672,6 +60703,24 @@
                         // the ↓ (same one-shot sig), toggled by _refreshMisfiledNotices. Lives in
                         // the PM-firewalled ctl-row, so showing it is never a foreign mutation.
                         if (sectionType === 'plan') r.appendChild(_mkMisfiledNote(label));
+                        // ⭐ v7.20.928 (FIXLIST plan-extract-pad — Neil, 17 Oct): ↗ pops this plan out into a pad to follow while
+                        // writing. It wears the ↓'s classes, so it shows exactly when the ↓ does (the box holds a plan).
+                        if (sectionType === 'plan') {
+                            const pop = document.createElement('button');
+                            pop.type = 'button';
+                            pop.className = 'swml-transfer-btn swml-ctl-transfer swml-ctl-popout';
+                            pop.setAttribute('contenteditable', 'false');
+                            pop.innerHTML = SVG_POPOUT;
+                            pop.title = 'Pop out this plan, to follow while you write';
+                            pop.setAttribute('aria-label', pop.title);
+                            pop.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+                            pop.addEventListener('click', (e) => {
+                                e.preventDefault(); e.stopPropagation();
+                                if (typeof _openPlanPadHook === 'function') _openPlanPadHook(label);
+                                else console.warn('WML plan row: the pad system is not mounted — pop-out ignored');
+                            });
+                            r.appendChild(pop);
+                        }
                         r.appendChild(_mkTransferBtn(label, sectionType));
                     });
                 });

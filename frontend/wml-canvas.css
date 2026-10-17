@@ -6904,6 +6904,8 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
 .swml-section-block.swml-collapsible .swml-ctl-row.swml-ctl-row-transfer {
     right: 74px;
 }
+/* v7.20.928 (plan-extract-pad): the plan's pop-out ↗ sits just left of its ↓ — a pair, not two loose buttons (row gap is 16px). */
+.swml-ctl-row-transfer .swml-ctl-popout + .swml-ctl-transfer { margin-left: -10px; }
 /* PLAN/OUTLINE divider (marker class from the NodeView; scoped so structural/other dividers
    are untouched): REUSE the existing three-part flex (::before line · label · ::after line).
    The label wrapper keeps its natural width (like the old bare <p>) and the Transfer-All ctlRow
