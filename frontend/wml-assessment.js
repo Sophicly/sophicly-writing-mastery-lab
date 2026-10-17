@@ -77180,11 +77180,7 @@
         // review), so a reviewer sees the layout the student will see. Gate: bin/review-layout-gate.js.
         if (!canvasEditor) return;
         const redraft = state.phase === 'redraft' || (state.draftType && state.draftType.includes('redraft'));
-        // v7.20.928 (Neil, 17 Oct, Live Modelling AQA P2 June 2023: "it only singular planning spaces… it should give me the
-        // right amount of planning spaces per paragraph or per section"): a live-modelling lesson is set up as a diagnostic
-        // but models the full plan, so it takes the redraft plan layout too — through this ONE builder, never a copy.
-        const liveModel = !!(WML.isLiveModelling && WML.isLiveModelling());
-        if (!redraft && !liveModel) return;
+        if (!redraft) return;
         if (state.task === 'mark_scheme' || (state.task && state.task.startsWith('cw_')) || state.subject === 'creative_writing') return;
         const html = canvasEditor.getHTML();
         if (html.indexOf('data-section-type="plan"') === -1) return;
