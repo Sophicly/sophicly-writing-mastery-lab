@@ -51,7 +51,9 @@ ok($f($weekend, 4) === 3, 'the Weekend Story: lesson 4 now checks lesson 3 (it d
 
 echo "\nA2 · units done in any order (Neil, 17 Oct)\n";
 $u = 'swml_order_lock_unit_is_free_t';
-ok($u('BONUS: Exam Preparation') && $u('Bonus - Exam Prep') && $u('BONUS: Exam Preparation &#8211; Paper 2'), '⭐ "BONUS: Exam Preparation" (the emergency exam unit) opens in any order');
+ok($u('BONUS: Exam Preparation') && $u('Bonus - Exam Prep') && $u('BONUS: Exam Preparation &#8211; Paper 2'), '⭐ "BONUS: Exam Preparation" (the emergency exam unit, prod name) opens in any order');
+ok($u('BONUS: Emergency Grade 9 Exam Preparation'), '⭐ …and under its staging name, "BONUS: Emergency Grade 9 Exam Preparation" (measured 17 Oct — the first rule missed it)');
+ok(!$u('BONUS LIVE LESSONS: AQA Language Paper 1 Exam Strategy') && !$u('BONUS - QUIZZES') && !$u('Exam Prep'), 'other BONUS units, and a plain "Exam Prep" unit, stay in order');
 ok(!$u('BONUS: Weekend Story'), '⭐ the Weekend Story stays in order ("The weekend story needs to be done in order")');
 ok(!$u('4. TOPIC 1: REDRAFT') && !$u('4. Exam Prep') && !$u('EXAM PREPARATION') && !$u('SESSION 4: EXAM PREPARATION FUNDAMENTALS'), 'every other unit stays in order (only the BONUS unit was ruled)');
 $ob2 = strpos($main, 'public static function order_lock_blocker(');

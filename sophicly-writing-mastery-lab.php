@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.924
+ * Version: 7.20.925
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.924');
+define('SWML_VERSION', '7.20.925');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -127,7 +127,9 @@ function swml_order_lock_pick(array $chain, $current_id) {
  */
 function swml_order_lock_unit_is_free($unit_title) {
     $t = html_entity_decode((string) $unit_title, ENT_QUOTES, 'UTF-8');
-    return (bool) preg_match('/^\s*bonus\b[\s:\-–—]*exam\s+prep(?:aration)?\b/i', $t);
+    // v7.20.925: staging names it "BONUS: Emergency Grade 9 Exam Preparation", prod "BONUS: Exam Preparation" — so any
+    // BONUS unit whose title names Exam Prep(aration). Non-BONUS exam-prep units stay in order (not ruled).
+    return (bool) preg_match('/^\s*bonus\b.*\bexam\s+prep(?:aration)?\b/i', $t);
 }
 // @ORDER-LOCK-PURE-END
 
