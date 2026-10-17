@@ -133,6 +133,14 @@ ok(/const _saveStep = state\.task === 'planning' \? _planRouterStep\(history\)/.
 ok(/\$plan_step = absint\(\$params\['step'\] \?\? 0\);\s*if \(\$plan_step > 0\) \$data\['step'\] = \$plan_step;/.test(rest), 'the server stores it with the chat');
 ok((js.match(/state\.task === 'planning' && !_planPreChainActive\(\) && !_poetryPlanActive\(\) && savedChat\) \{\s*const _ss = parseInt\(savedChat\.step, 10\) \|\| 0;/g) || []).length === 2, 'BOTH pipelines restore the saved step on load (dual pipeline)');
 ok(!/swml-review-outline/.test(js) && !/swml-review-outline/.test(css) && /\.swml-stage-planning \[data-section-type="outline"\],/.test(css), 'NO outline in a planning lesson, reviewer included (Neil 16 Oct: "there should be no outlines in the planning")');
+{   // v7.20.924 (Neil tag, 17 Oct): "the transfer button should not be visible in planning only in outlining"
+    const f0 = js.indexOf('function _renderTransferButtons(editor) {');
+    const body = f0 >= 0 ? js.slice(f0, js.indexOf("['plan', 'outline'].forEach", f0)) : '';
+    ok(/if \(state\.task === 'planning'\) return;/.test(body) && body.indexOf("state.task === 'planning'") < body.indexOf('const _mkTransferBtn'),
+        'NO Transfer button in a planning lesson (per-box ↓, Transfer All and the floating one all return here)');
+    ok(js.indexOf('_ensureOutlineTransferFloat(editor);', f0) > f0 && js.indexOf('_ensureOutlineTransferFloat(editor);', f0) < js.indexOf('\n        }\n', js.indexOf("['plan', 'outline'].forEach", f0)) + 400,
+        'the floating Transfer All is built inside that same function (so the one return covers it)');
+}
 ok(/if \(e\.target\.closest\('\.swml-library-pad \.swml-extract-panel-body'\)\) return;\s*dg = true;/.test(js), 'a press in the Library pad\'s reading area selects text instead of dragging the pad (it cancelled every selection)');
 ok(/if \(_padZ >= 99995\) menu\.style\.zIndex = String\(_padZ \+ 1\);/.test(js), 'the notes menu opens ABOVE every open pad (it opened under the Library pad: 99995 vs 100010)');
 ok(/if \(!state\.reviewMode\) \{\s*const _up = _notesSelUpHandler\(body\);/.test(js) && /const onUp = _notesSelUpHandler\(article\);/.test(js), "the Library pad's highlight uses the guide's one notes menu (not in review)");

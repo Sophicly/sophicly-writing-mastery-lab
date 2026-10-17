@@ -3677,4 +3677,19 @@ course lets a student walk past an unfinished lesson without ever pressing its M
   logged `order_blocked`; ticking lesson 1 opens lesson 2 at once (no cached card) and lesson 3 then names lesson 2; an
   in-page (Focus SPA) move Plan → Outline shows the card with no error; a tutor on `?view_as=1938` is never locked.
 
+**TWO UNITS ARE EXCEPTIONS — ruled 17 Oct (WML 365 A).** His words (voice): *"there is an exception to the rule about
+finishing the previous lesson first… the weekend story unit basically is designed for students who are in the last three
+months before the exam. The same would apply for the bonus emergency exam unit."* Asked which unit and whether order still
+holds INSIDE them: the emergency unit is **"BONUS: Exam Preparation"**, and *"The weekend story needs to be done in order,
+not necessarily the exam preparation units; document this."* So:
+- **Both units can be started without finishing the units before them.** A student near the exam goes straight in.
+  (WML's order lock only ever works inside a unit, so it never stopped this. The theme's sidebar label *"Finish previous
+  unit first"*, which the deadline engine feeds, still shows on these units. That label belongs to web-design + dashboard:
+  handoff filed 17 Oct.)
+- **Inside the Weekend Story, the lessons are done in order** — the 16 Oct scope ruling stands.
+- **Inside BONUS: Exam Preparation, any order.** Code: `swml_order_lock_unit_is_free()` (the unit's TITLE, because post
+  ids differ between staging and prod), v7.20.924. MEASURED on prod: it removes 21 of the 92 locks — the lock now
+  closes **71 started lessons for 31 students** (biggest: Mark Scheme Quiz 15, Plan Your Redraft 14, Write Your
+  Diagnostic Assessment 12).
+
 **MEASURED for the Weekend Story (16 Oct, before its first real use):** lessons 2, 3 and 5 already send a student back ("go back to Lesson 1 and complete it first"); lesson 4 does not check lesson 3. Write Draft 1 reaches 100% (gate 0/1 → 1/1); lesson 5's weekend walk is the one guarded lesson not yet measured at 100% in weekend mode.

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Sophicly Writing Mastery Lab
  * Description: AI-powered GCSE English tutoring interface with adaptive layouts for essay planning, assessment, and polishing.
- * Version: 7.20.923
+ * Version: 7.20.924
  * Author: Sophicly
  * Text Domain: sophicly-wml
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('SWML_VERSION', '7.20.923');
+define('SWML_VERSION', '7.20.924');
 
 define('SWML_PATH', plugin_dir_path(__FILE__));
 define('SWML_URL', plugin_dir_url(__FILE__));
@@ -119,6 +119,15 @@ function swml_order_lock_pick(array $chain, $current_id) {
         if (!empty($r['wml']) && empty($r['tutor']) && empty($r['complete'])) return (int) ($r['id'] ?? 0);
     }
     return 0;
+}
+/**
+ * v7.20.924 (Neil, 17 Oct): a unit whose lessons may be done in ANY order. "BONUS: Exam Preparation" (the "bonus emergency
+ * exam unit", for students in the last three months before the exam): *"The weekend story needs to be done in order, not
+ * necessarily the exam preparation units."* Matched by the unit's title — the post ids differ between staging and prod.
+ */
+function swml_order_lock_unit_is_free($unit_title) {
+    $t = html_entity_decode((string) $unit_title, ENT_QUOTES, 'UTF-8');
+    return (bool) preg_match('/^\s*bonus\b[\s:\-–—]*exam\s+prep(?:aration)?\b/i', $t);
 }
 // @ORDER-LOCK-PURE-END
 
@@ -685,6 +694,7 @@ class Sophicly_Writing_Mastery_Lab {
                 || !function_exists('learndash_is_item_complete')) return null;
             $unit = (int) learndash_course_get_single_parent_step($course_id, $post_id, 'sfwd-lessons');
             if ($unit < 1) return null;
+            if (swml_order_lock_unit_is_free(get_the_title($unit))) return null;   // v7.20.924: Exam Preparation — any order
             $chain = [];
             foreach ((array) learndash_course_get_children_of_step($course_id, $unit, 'sfwd-topic') as $tid) {
                 $p = get_post((int) $tid);

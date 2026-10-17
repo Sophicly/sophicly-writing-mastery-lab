@@ -60569,6 +60569,9 @@
             // there is nothing downstream to transfer INTO. Hides per-section ↓, Transfer All, and
             // the floating Transfer All. (PEDAGOGY §6b — Neil 2026-07-18.)
             if (_docDisplayLocked()) return;
+            // v7.20.924 (Neil, tag 17 Oct, AQA P2 Plan Your Redraft: "the transfer button should not be visible in planning
+            // only in outlining"): a planning lesson works the PLAN only — no ↓, no Transfer All, no floating Transfer All.
+            if (state.task === 'planning') return;
             const _ctlRowOf = (section) => {
                 for (let i = 0; i < section.children.length; i++) {
                     const c = section.children[i];

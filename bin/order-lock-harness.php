@@ -25,7 +25,7 @@ $b = strpos($main, '// @ORDER-LOCK-PURE-START'); $e = strpos($main, '// @ORDER-L
 if ($b === false || $e === false || $e < $b) { echo "✗ the @ORDER-LOCK-PURE block is missing\n"; exit(1); }
 $block = substr($main, $b + strlen('// @ORDER-LOCK-PURE-START'), $e - $b - strlen('// @ORDER-LOCK-PURE-START'));
 if (strpos($block, 'function swml_order_lock_pick(') === false) { echo "✗ swml_order_lock_pick not in the block\n"; exit(1); }
-eval(str_replace('function swml_order_lock_pick(', 'function swml_order_lock_pick_t(', $block));
+eval(str_replace(['function swml_order_lock_pick(', 'function swml_order_lock_unit_is_free('], ['function swml_order_lock_pick_t(', 'function swml_order_lock_unit_is_free_t('], $block));
 $f = 'swml_order_lock_pick_t';
 $L = function ($id, $wml = true, $complete = false, $tutor = false) { return ['id' => $id, 'wml' => $wml, 'tutor' => $tutor, 'complete' => $complete]; };
 
@@ -48,6 +48,16 @@ ok($f([], 10) === 0, 'an empty chain is open');
 ok($f([5 => $L(10), 9 => $L(11)], 11) === 10, 'keys need not be 0..n (the chain is re-indexed)');
 $weekend = [$L(1, true, true), $L(2, true, true), $L(3, true, false), $L(4)];
 ok($f($weekend, 4) === 3, 'the Weekend Story: lesson 4 now checks lesson 3 (it did not, measured 16 Oct)');
+
+echo "\nA2 · units done in any order (Neil, 17 Oct)\n";
+$u = 'swml_order_lock_unit_is_free_t';
+ok($u('BONUS: Exam Preparation') && $u('Bonus - Exam Prep') && $u('BONUS: Exam Preparation &#8211; Paper 2'), '⭐ "BONUS: Exam Preparation" (the emergency exam unit) opens in any order');
+ok(!$u('BONUS: Weekend Story'), '⭐ the Weekend Story stays in order ("The weekend story needs to be done in order")');
+ok(!$u('4. TOPIC 1: REDRAFT') && !$u('4. Exam Prep') && !$u('EXAM PREPARATION') && !$u('SESSION 4: EXAM PREPARATION FUNDAMENTALS'), 'every other unit stays in order (only the BONUS unit was ruled)');
+$ob2 = strpos($main, 'public static function order_lock_blocker(');
+$ob2b = $ob2 !== false ? substr($main, $ob2, 1800) : '';
+$p1 = strpos($ob2b, "if (swml_order_lock_unit_is_free(get_the_title(\$unit))) return null;"); $p2 = strpos($ob2b, '$chain = [];');
+ok($p1 !== false && $p2 !== false && $p1 < $p2, 'the blocker asks the unit rule before it builds the chain');
 
 echo "\nB · the wiring\n";
 ok(substr_count($main, 'swml_order_lock_pick($chain, $post_id)') === 1, 'one caller of the rule: order_lock_blocker()');
