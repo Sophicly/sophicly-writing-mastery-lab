@@ -3859,6 +3859,11 @@ body[data-swml-theme="light"] .swml-sel-sophia-wrap .particle-pen .particle path
     padding: 0 0 0 4px; line-height: 1;
 }
 .swml-wc-widget-close:hover { color: #ff6b6b; opacity: 1; }
+/* v7.20.930 (FIXLIST lm-wordcount-pill-brand — Neil: "It needs to be our brand colors"): the live-modelling count (no target,
+   so no ladder colour) wears the brand chip. Dark: BRAND.md Dark Action-Chip #4F378B + white (9.33:1) — not #5333ed, which
+   means grade 8. Light: a lighter shade of the same purple, never white; ink Brand Deep Purple. */
+.swml-wc-widget.swml-wc-brand { background: #4F378B; color: #fff; backdrop-filter: none; }
+.swml-canvas-light .swml-wc-widget.swml-wc-brand { background: #EDE8FF; color: #2c003e; box-shadow: 0 2px 12px rgba(83,51,237,0.18); }
 
 /* v7.14.65: Hide Meow Apps AI Engine chatbot when canvas is open */
 .mwai-trigger { display: none !important; }

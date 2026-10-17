@@ -63952,6 +63952,10 @@
     function applyWcWidgetColour(wc) {
         var w = document.getElementById('swml-wc-widget');
         if (!w) return;
+        // v7.20.930 (FIXLIST lm-wordcount-pill-brand — Neil, 17 Oct: "the word count widget at the bottom has got an ugly
+        // color… It needs to be our brand colors"): the live-modelling pill wears the brand chip (CSS .swml-wc-brand).
+        const _brand = _noWordTarget();
+        if (w.classList.contains('swml-wc-brand') !== _brand) w.classList.toggle('swml-wc-brand', _brand);
         if (state.task === 'planning' || _noWordTarget()) { w.style.background = ''; w.style.color = ''; return; }   // v7.20.807 (#861): no target → no colour against one
         var bg = getWordCountColour(wc);
         var darkText = (bg === '#1CD991' || bg === '#F1C40F' || bg === '#f5a623');
