@@ -173,6 +173,14 @@ if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/
   node bin/mc-gate-harness.js || fail=1
 fi
 
+# v7.20.926 (Neil, 17 Oct, Mishel 1237 — "Keep what she wrote"): an automatic fill (field commit / field set / plan→outline
+# fan-out) never replaces a student's writing in a later lesson; it fills empty boxes only. A student's own later edit
+# upstream still flows forward (July STAGE-RECORD law). Mutation-proven at .926 (4 defects, all caught).
+if [ "${1:-}" = "--all" ] || git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+     | grep -qE 'wml-assessment\.js|chain-autofill-harness\.js'; then
+  node bin/chain-autofill-harness.js || fail=1
+fi
+
 # v7.20.917 (Neil, 16 Oct, reviewing Mehrish 1287): a Literature plan's step comes from the plan (filed boxes + Sophia's
 # 📌 pins), never from reply words, and survives a reload; doc-filing papers get one sidebar row per element; a reviewer
 # sees the outline; the Library pad highlight → Add to notes; the per-request cost ledger. Mutation-proven at .917.

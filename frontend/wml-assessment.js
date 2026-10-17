@@ -7440,6 +7440,10 @@
     }
 
     function applyFieldCommits(aiReply, studentMsg, history) {
+        _autoFillDepth++;
+        try { return _applyFieldCommitsInner(aiReply, studentMsg, history); } finally { _autoFillDepth--; }
+    }
+    function _applyFieldCommitsInner(aiReply, studentMsg, history) {
         try {
             if (!aiReply || !canvasEditor) return;
             const verbatim = (studentMsg || '').trim();
@@ -9093,6 +9097,10 @@
     // same idempotence, same auto-fill provenance (student edits always win) —
     // without round-tripping through a synthetic @FIELD_SET string.
     function _applyFieldValueSets(sets, opts) {
+        _autoFillDepth++;
+        try { return _applyFieldValueSetsInner(sets, opts); } finally { _autoFillDepth--; }
+    }
+    function _applyFieldValueSetsInner(sets, opts) {
         try {
             if (!sets || !sets.length || !canvasEditor) return;
             const _live = !(opts && opts.replay);   // v7.20.221: replay = load-time transcript re-fire
@@ -20470,6 +20478,24 @@
     let _currentUpdateCommentGutter = null; // v7.15.30: Module-level ref
     let _currentResetCanvasChat = null; // v7.17.38: CW project switch chat flush
     let _migrationActive = false; // v7.15.21: allows migrations to remove sections (module-scope for guard access)
+    // v7.20.926: >0 while Sophia's fills write into the document (field commits, field sets, plan→outline fan-out).
+    // The edit-time collector then stamps fillTs, never editTs — see the fillTs attr.
+    let _autoFillDepth = 0;
+    /* @CHAIN-ARBITRATE-PURE-START — extracted and unit-tested by bin/chain-autofill-harness.js.
+       v7.20.926 (Neil, 17 Oct, Mishel 1237: "she's got information in the outline already… how's that going to work when
+       she transfers from her planning to her outlining?" → "Keep what she wrote"). An earlier lesson's copy (up) against
+       this lesson's NON-EMPTY copy (loc). E = the student's own last edit, F = Sophia's last fill.
+       'replace' — the student edited upstream more recently (the July STAGE-RECORD law: "sky is green" flows forward), or
+                   Sophia refilled upstream and this copy is an untouched mirror of it (same student-edit time).
+       'protect' — Sophia refilled upstream but the student has written here since: keep her writing; fill empty boxes only.
+       'keep'    — nothing newer upstream. */
+    function _chainArbitrate(upE, upF, locE, locF) {
+        upE = upE || 0; upF = upF || 0; locE = locE || 0; locF = locF || 0;
+        if (upE > locE) return 'replace';
+        if (upF > Math.max(locE, locF)) return locE > upE ? 'protect' : 'replace';
+        return 'keep';
+    }
+    /* @CHAIN-ARBITRATE-PURE-END */
     // ⭐ v7.20.905 (FIXLIST structure-lock-refused-heal — MEASURED on staging, test student 1938, a Lang P1 planning doc
     // seeded fresh from its diagnostic): the structure lock refused `_healDiagnosticPlanScaffold`'s rebuild ("refused a
     // code change to the document's boxes (109 → 127)" — 4 plan sections + 4 boxes became 10 + 16, and the one-per-question
@@ -52969,6 +52995,14 @@
                         parseHTML: el => parseInt(el.getAttribute('data-edit-ts') || '0', 10) || 0,
                         renderHTML: attrs => attrs.editTs ? { 'data-edit-ts': String(attrs.editTs) } : {},
                     },
+                    // v7.20.926 (Neil, 17 Oct — FIXLIST autofill-never-replaces-outline-writing): when SOPHIA last filled
+                    // this (a field commit / field set / plan→outline fan-out). Kept apart from editTs (the STUDENT's own
+                    // edits) so the chain can tell them apart: an automatic fill never replaces what a student wrote.
+                    fillTs: {
+                        default: 0,
+                        parseHTML: el => parseInt(el.getAttribute('data-fill-ts') || '0', 10) || 0,
+                        renderHTML: attrs => attrs.fillTs ? { 'data-fill-ts': String(attrs.fillTs) } : {},
+                    },
                     // v7.20.505 (#366): "this section is the student's own composition."
                     // ⚠️ IT MUST BE A SCHEMA ATTR OR IT DOES NOT EXIST. The template emits
                     // data-student-composition="true", but section attrs are an ALLOW-LIST — an
@@ -53101,6 +53135,14 @@
                         parseHTML: el => parseInt(el.getAttribute('data-edit-ts') || '0', 10) || 0,
                         renderHTML: attrs => attrs.editTs ? { 'data-edit-ts': String(attrs.editTs) } : {},
                     },
+                    // v7.20.926 (Neil, 17 Oct — FIXLIST autofill-never-replaces-outline-writing): when SOPHIA last filled
+                    // this (a field commit / field set / plan→outline fan-out). Kept apart from editTs (the STUDENT's own
+                    // edits) so the chain can tell them apart: an automatic fill never replaces what a student wrote.
+                    fillTs: {
+                        default: 0,
+                        parseHTML: el => parseInt(el.getAttribute('data-fill-ts') || '0', 10) || 0,
+                        renderHTML: attrs => attrs.fillTs ? { 'data-fill-ts': String(attrs.fillTs) } : {},
+                    },
                     // v7.20.505 (#366): "this section is the student's own composition."
                     // ⚠️ IT MUST BE A SCHEMA ATTR OR IT DOES NOT EXIST. The template emits
                     // data-student-composition="true", but section attrs are an ALLOW-LIST — an
@@ -53167,6 +53209,7 @@
                             'data-prompt': a.prompt || '',
                             'data-field-id': a.fieldId ? String(a.fieldId) : null,
                             'data-edit-ts': a.editTs ? String(a.editTs) : null,
+                            'data-fill-ts': a.fillTs ? String(a.fillTs) : null,
                         };
                         for (const k in want) {
                             if (want[k] === null) { if (dom.hasAttribute(k)) dom.removeAttribute(k); }
@@ -56453,6 +56496,7 @@
         // A missed skip only FALSE-FRESHENS a local node (arbitration then keeps the
         // local copy) — the safe direction; it can never delete student work.
         let _editTsPendingIds = null;
+        let _fillTsPendingIds = null;   // v7.20.926: keys Sophia's fills touched → stamped fillTs
         let _editTsFlushQueued = false;
         function _collectEditTsTargets(transaction) {
             try {
@@ -56496,7 +56540,10 @@
                     console.log('WML editTs: bulk txn skipped (' + _secCount + ' sections — programmatic, not stamped)');
                     return;
                 }
-                const ids = _editTsPendingIds || (_editTsPendingIds = new Set());
+                // v7.20.926: Sophia's fills stamp fillTs (their own set); the student's edits stamp editTs.
+                const ids = _autoFillDepth > 0
+                    ? (_fillTsPendingIds || (_fillTsPendingIds = new Set()))
+                    : (_editTsPendingIds || (_editTsPendingIds = new Set()));
                 txnIds.forEach((id) => ids.add(id));
                 if (ids.size && !_editTsFlushQueued) {
                     _editTsFlushQueued = true;
@@ -56505,9 +56552,11 @@
             } catch (_) { /* stamping is best-effort — never break the edit */ }
         }
         function _flushEditTsStamps(force) {
-            const ids = _editTsPendingIds;
+            const ids = _editTsPendingIds || new Set();
+            const fillIds = _fillTsPendingIds || new Set();
             _editTsPendingIds = null;
-            if (!ids || !ids.size || !canvasEditor || !canvasEditor.view || canvasEditor.view.isDestroyed) return;
+            _fillTsPendingIds = null;
+            if ((!ids.size && !fillIds.size) || !canvasEditor || !canvasEditor.view || canvasEditor.view.isDestroyed) return;
             // v7.20.179 (plan-box typing flicker ROOT): never setNodeMarkup the inputField the
             // CARET is sitting in. The mid-type stamp node-replaced the focused textblock — the
             // ONE per-typing operation that targets the plan box directly (outline inputs never
@@ -56544,15 +56593,18 @@
                         // next keystroke flush or the save force-flush picks it up.
                         (_editTsPendingIds || (_editTsPendingIds = new Set())).add(key);
                     } else {
-                        updates.push({ pos, attrs: node.attrs });
+                        updates.push({ pos, attrs: node.attrs, k: 'editTs' });
                     }
+                } else if (key && fillIds.has(key) && !ids.has(key) && now - (node.attrs.fillTs || 0) > 3000) {
+                    if (key === skipKey) (_fillTsPendingIds || (_fillTsPendingIds = new Set())).add(key);
+                    else updates.push({ pos, attrs: node.attrs, k: 'fillTs' });
                 }
                 return true;
             });
             if (!updates.length) return;
             try {
                 const tr = canvasEditor.state.tr;
-                updates.forEach(u => tr.setNodeMarkup(u.pos, null, { ...u.attrs, editTs: now }));
+                updates.forEach(u => tr.setNodeMarkup(u.pos, null, { ...u.attrs, [u.k]: now }));
                 tr.setMeta('addToHistory', false);
                 tr.setMeta('swmlEditTs', 1);
                 // Force-flush runs synchronously inside saveCanvasContent — preventUpdate keeps
@@ -76684,11 +76736,12 @@
             };
             // Upstream node's edit ts: its own data-edit-ts, else its enclosing
             // section's (root-level pre-write fields have no section), else 0 (legacy).
-            const _upTs = (el) => {
-                const own = parseInt(el.getAttribute('data-edit-ts') || '0', 10) || 0;
+            const _upTs = (el, attr) => {
+                const a = attr || 'data-edit-ts';
+                const own = parseInt(el.getAttribute(a) || '0', 10) || 0;
                 if (own) return own;
                 const sec = el.closest ? el.closest('[data-section-type]') : null;
-                return sec ? (parseInt(sec.getAttribute('data-edit-ts') || '0', 10) || 0) : 0;
+                return sec ? (parseInt(sec.getAttribute(a) || '0', 10) || 0) : 0;
             };
             // v7.20.92: field source = EVERY earlier stage doc (was: one owner head).
             // Winner per fieldId = newest editTs; tie → latest stage (forward flow's
@@ -76705,9 +76758,11 @@
                     const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
                     if (!t) return;
                     const ts = _upTs(el);
+                    const fts = _upTs(el, 'data-fill-ts');   // v7.20.926: Sophia's last fill, apart from the student's edit
+                    const eff = Math.max(ts, fts);
                     const cur = upFields[id];
-                    if (!cur || ts > cur.ts || (ts === cur.ts && src.idx >= cur.idx)) {
-                        upFields[id] = { text: t, el: el, ts: ts, idx: src.idx };
+                    if (!cur || eff > cur.eff || (eff === cur.eff && src.idx >= cur.idx)) {
+                        upFields[id] = { text: t, el: el, ts: ts, fts: fts, eff: eff, idx: src.idx };
                     }
                 });
             });
@@ -76736,8 +76791,9 @@
                 // (marked) docs accept nothing.
                 if (_docMarked) return;
                 if (cur) {
-                    const _localFieldTs = (targetNode.attrs && targetNode.attrs.editTs) || 0;
-                    if (upFields[fid].ts <= _localFieldTs) return; // local newer/equal — keep
+                    // v7.20.926: the student's writing here is never replaced by a newer automatic fill ('protect').
+                    const _ta = targetNode.attrs || {};
+                    if (_chainArbitrate(upFields[fid].ts, upFields[fid].fts, _ta.editTs, _ta.fillTs) !== 'replace') return;
                 }
                 try {
                     canvasEditor.chain().command(({ tr, state: pmState }) => {
@@ -76763,7 +76819,7 @@
                         // v7.20.92: CARRY the origin edit's ts (never re-stamp — a mirrored
                         // copy keeps the time of the edit that authored it) + tag the txn
                         // so the editTs collector ignores this programmatic write.
-                        tr.setNodeMarkup(targetPos, null, { ...targetNode.attrs, editTs: upFields[fid].ts });
+                        tr.setNodeMarkup(targetPos, null, { ...targetNode.attrs, editTs: upFields[fid].ts, fillTs: upFields[fid].fts || 0 });
                         tr.setMeta('swmlEditTs', 1);
                         tr.setMeta('addToHistory', false);
                         return true;
@@ -76840,6 +76896,40 @@
             // onlyIfEmpty). Idempotent (normalized-text compare), updateSelection:false
             // (v7.20.78 — a load-time write must never move the cursor/scroll), writes
             // carry the ORIGIN edit's ts, fail-loud per section.
+            // v7.20.926: fill ONLY the empty boxes (outline rows / fields, by fieldId) of a section the student has written
+            // in, from the newer upstream copy; then record that fill's time so the next load is a no-op. True if it wrote.
+            const _fillEmptyBoxes = (tPos, tNode, cand) => {
+                const upText = {};
+                cand.el.querySelectorAll('[data-field-id]').forEach((el) => {
+                    const id = el.getAttribute('data-field-id') || '';
+                    const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+                    if (id && t) upText[id] = t;
+                });
+                const writes = [];
+                tNode.descendants((c, rel) => {
+                    if ((c.type.name === 'outlineRow' || c.type.name === 'inputField') && c.attrs && c.attrs.fieldId) {
+                        const id = String(c.attrs.fieldId);
+                        if (!(c.textContent || '').trim() && upText[id]) writes.push({ at: tPos + 1 + rel, size: c.nodeSize, text: upText[id] });
+                        return false;
+                    }
+                    return true;
+                });
+                if (!writes.length) return false;
+                _migrationActive = true;
+                try {
+                    canvasEditor.chain().command(({ tr, state: pmState }) => {
+                        tr.setMeta('swmlEditTs', 1); tr.setMeta('addToHistory', false);
+                        writes.sort((a, b) => b.at - a.at).forEach((w) => {
+                            tr.replaceWith(w.at + 1, w.at + w.size - 1, pmState.schema.text(w.text));
+                        });
+                        const nd = tr.doc.nodeAt(tPos);
+                        if (nd && nd.type.name === 'sectionBlock') tr.setNodeMarkup(tPos, null, { ...nd.attrs, fillTs: cand.fts || 0 });
+                        return true;
+                    }).run();
+                } catch (e4) { console.warn('WML chain: empty-box fill failed', e4 && e4.message); return false; }
+                finally { _migrationActive = false; }
+                return true;
+            };
             const _mirrorSections = (sources, sectionType, labelFilter, what, mOpts) => {
                 if (!sources || !sources.length) return 0;
                 const _cands = {};
@@ -76861,13 +76951,15 @@
                         // nothing to say — never a candidate (§9.21).
                         if (_WC_PLACEHOLDERS.indexOf(upText.toLowerCase()) !== -1) return;
                         const ts = parseInt(up.getAttribute('data-edit-ts') || '0', 10) || 0;
+                        const fts = parseInt(up.getAttribute('data-fill-ts') || '0', 10) || 0;   // v7.20.926
+                        const eff = Math.max(ts, fts);
                         const cur = _cands[upLabel];
-                        if (!cur || ts > cur.ts || (ts === cur.ts && src.idx >= cur.idx)) {
-                            _cands[upLabel] = { el: up, text: upText, ts: ts, idx: src.idx };
+                        if (!cur || eff > cur.eff || (eff === cur.eff && src.idx >= cur.idx)) {
+                            _cands[upLabel] = { el: up, text: upText, ts: ts, fts: fts, eff: eff, idx: src.idx };
                         }
                     });
                 });
-                let n = 0, kept = 0, frozen = 0;
+                let n = 0, kept = 0, frozen = 0, guarded = 0;
                 Object.keys(_cands).forEach((upLabel) => {
                     const cand = _cands[upLabel];
                     let tPos = null, tNode = null;
@@ -76894,7 +76986,13 @@
                     const _localEmpty = !curText || _WC_PLACEHOLDERS.indexOf(curText.toLowerCase()) !== -1;
                     // v7.20.92 NEWEST-EDIT-WINS: local non-empty copy survives unless the
                     // candidate is strictly newer.
-                    if (!_localEmpty && cand.ts <= ((tNode.attrs && tNode.attrs.editTs) || 0)) { kept++; return; }
+                    // v7.20.926: …and a newer AUTOMATIC fill never replaces the student's writing here — it only fills
+                    // this section's empty boxes (Neil, 17 Oct: "Keep what she wrote").
+                    if (!_localEmpty) {
+                        const _v = _chainArbitrate(cand.ts, cand.fts, tNode.attrs && tNode.attrs.editTs, tNode.attrs && tNode.attrs.fillTs);
+                        if (_v === 'keep') { kept++; return; }
+                        if (_v === 'protect') { if (_fillEmptyBoxes(tPos, tNode, cand)) n++; guarded++; return; }
+                    }
                     // v7.20.88: checkbox states don't change textContent — outline sections
                     // compare the data-checked census too, so upstream ticks flow forward.
                     let same = (curText === cand.text);
@@ -76923,7 +77021,7 @@
                                     const p = tr.mapping.map(tPos, -1);
                                     const nd = tr.doc.nodeAt(p);
                                     if (nd && nd.type.name === 'sectionBlock') {
-                                        tr.setNodeMarkup(p, null, { ...nd.attrs, editTs: cand.ts });
+                                        tr.setNodeMarkup(p, null, { ...nd.attrs, editTs: cand.ts, fillTs: cand.fts || 0 });
                                     }
                                     return true;
                                 })
@@ -76938,6 +77036,7 @@
                 }
                 // v7.20.93 diagnosability: a kept-local is a DECISION, not a silence.
                 if (kept) console.log('WML chain: ' + what + ' — ' + kept + ' section(s) kept (local edit newer)');
+                if (guarded) console.log('WML chain: ' + what + ' — ' + guarded + ' section(s) kept the student\'s writing (only empty boxes filled from the newer automatic fill)');
                 if (frozen) console.log('WML chain: ' + what + ' — ' + frozen + ' section(s) FROZEN (already marked, so nothing flows in)');
                 return n;
             };

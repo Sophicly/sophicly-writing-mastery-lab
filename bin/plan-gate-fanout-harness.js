@@ -89,13 +89,19 @@ function makeDoc(spec) {
     };
     return { editor, get: (fid) => nodes.find(n => n.attrs.fieldId === fid).text };
 }
-const live = /if \(isPlan\) _planFanoutToOutline\(s\.field, s\.value, _live\);/.test(slice('_applyFieldValueSets'));
+// v7.20.926: the body moved behind a wrapper that marks it as an automatic fill — the wrapper must call it, and it runs the fan-out.
+const live = /if \(isPlan\) _planFanoutToOutline\(s\.field, s\.value, _live\);/.test(slice('_applyFieldValueSetsInner'))
+    && /return _applyFieldValueSetsInner\(sets, opts\);/.test(slice('_applyFieldValueSets'));
 ok(live, 'drift guard: the shipped _applyFieldValueSets still runs the plan fan-out on every plan @FIELD_SET');
 function engine(doc) {
     const hasRecord = SRC.indexOf('let _planFanoutRefined') !== -1;
+    // v7.20.926: applyFieldCommits is a wrapper (marks the automatic fill) around _applyFieldCommitsInner.
+    const hasInner = SRC.indexOf('function _applyFieldCommitsInner(') !== -1;
     const body = (hasRecord ? 'let _planFanoutRefined = { reply: null, ids: new Set() };' : '')
+        + (hasInner ? 'let _autoFillDepth = 0;' : '')
         + ['_fsNorm', '_planFieldSegments', '_planLinesContent', '_planRowExists', '_planOutlineTargets', '_planLabelElement',
-           '_planFanoutToOutline', 'applyFieldSets', '_writeOutlineRowField', '_pushCycleEarlierFor', '_outlineBoxText', 'applyFieldCommits'].map(slice).join('\n')
+           '_planFanoutToOutline', 'applyFieldSets', '_writeOutlineRowField', '_pushCycleEarlierFor', '_outlineBoxText', 'applyFieldCommits']
+           .concat(hasInner ? ['_applyFieldCommitsInner'] : []).map(slice).join('\n')
         + 'function _applyFieldValueSets(sets, opts) { const _live = !(opts && opts.replay); sets.forEach(s => { const isPlan = /^plan-/.test(s.field); if (isPlan) _planFanoutToOutline(s.field, s.value, _live); }); }'
         + 'return { applyFieldSets, applyFieldCommits };';
     const mem = new Map();
