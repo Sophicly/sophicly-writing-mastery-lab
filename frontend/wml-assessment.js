@@ -20498,6 +20498,17 @@
         if (upF > Math.max(locE, locF)) return locE > upE ? 'protect' : 'replace';
         return 'keep';
     }
+    // v7.20.929 (Neil, 17 Oct, Mishel 1237: "Sophia's automatic fill needs to go underneath it… she's quite a weak writer. So
+    // if her writing takes precedence… she's going to have an inferior answer"). What a 'protect' does to ONE box:
+    // 'fill' an empty box · 'append' the fill on a new line under the student's writing · null when there is nothing to add
+    // (no fill text, or her box already holds it — so a repeat load never stacks a second copy).
+    function _protectedBoxWrite(cur, up) {
+        const norm = (s) => String(s == null ? '' : s).replace(/\s+/g, ' ').trim().toLowerCase();
+        const u = norm(up), c = norm(cur);
+        if (!u) return null;
+        if (!c) return 'fill';
+        return c.indexOf(u) !== -1 ? null : 'append';
+    }
     /* @CHAIN-ARBITRATE-PURE-END */
     // ⭐ v7.20.905 (FIXLIST structure-lock-refused-heal — MEASURED on staging, test student 1938, a Lang P1 planning doc
     // seeded fresh from its diagnostic): the structure lock refused `_healDiagnosticPlanScaffold`'s rebuild ("refused a
@@ -46594,8 +46605,9 @@
                 // v7.20.859 (Neil, 13 Oct: Previous Assessments was hidden whenever he viewed as a student): a reviewer
                 // reads the STUDENT's earlier document through the review loader (same {doc:{html}} shape).
                 const _paQs = `board=${encodeURIComponent(row.board)}&text=${encodeURIComponent(row.text)}${row.topic ? '&topicNumber=' + row.topic : ''}&suffix=${encodeURIComponent(row.suffix || '')}&attempt=${row.attempt || 1}`;
-                const url = (state.reviewMode && state.reviewStudentId)
-                    ? `${API.reviewCanvas}?student_id=${encodeURIComponent(state.reviewStudentId)}&${_paQs}`
+                const _sid = _paStudentId();   // v7.20.929: a live-modelling viewer opens their OWN earlier document
+                const url = _sid
+                    ? `${API.reviewCanvas}?student_id=${encodeURIComponent(_sid)}&${_paQs}`
                     : `${API.canvasLoad}?${_paQs}`;
                 const res = await apiGet(url);
                 docHtml = (res && res.doc && res.doc.html) ? res.doc.html : '';
@@ -46746,8 +46758,16 @@
         }
         let _paPanel = null;
         // v7.20.859: the attempt list to show — the reviewed student's when viewing as a student, else the viewer's own.
+        // ⭐ v7.20.929 (FIXLIST live-modelling-rail-buttons): whose earlier work the panel reads. A tutor reviewing a student
+        // reads THAT student's; a student watching a live-modelling lesson is shown the AUTHOR's document through the review
+        // loader, but their Previous Assessments are their OWN (never the teacher's), so they read as themselves.
+        function _paStudentId() {
+            if (state.reviewRole === 'live_modelling') return 0;
+            return (state.reviewMode && state.reviewStudentId) ? state.reviewStudentId : 0;
+        }
         function _paAttemptsUrl() {
-            return `${config.restUrl}student/attempts-all` + ((state.reviewMode && state.reviewStudentId) ? `?student_id=${encodeURIComponent(state.reviewStudentId)}` : '');
+            const sid = _paStudentId();
+            return `${config.restUrl}student/attempts-all` + (sid ? `?student_id=${encodeURIComponent(sid)}` : '');
         }
         function _paBuildList(rows) {
             const list = el('div', { className: 'swml-prior-list' });
@@ -46910,9 +46930,12 @@
         // the diagnostic-derived env but carry their own task strings, so they KEEP it
         // (Neil explicit). Keyed on state.task directly — never reverse-derived from the
         // suffix (the task_by_suffix trap).
-        const _paTestingTask = state.task === '' || state.task === 'diagnostic'
+        // ⭐ v7.20.929 (Neil, 17 Oct: "in the live modeling course, the rail on the left side, I'd like to have in there the
+        // previous feedback button and the library button as well"): a live-modelling lesson is a diagnostic in task only —
+        // nobody is being tested there — so both buttons show, for the author and every viewer.
+        const _paTestingTask = (state.task === '' || state.task === 'diagnostic'
             || state.task === 'foundational_quiz' || state.task === 'mark_scheme_unit'
-            || state.task === 'mark_scheme';
+            || state.task === 'mark_scheme') && !(WML.isLiveModelling && WML.isLiveModelling());
         // v7.20.859: shown in review mode too — the list is the STUDENT's (the server lets staff read it with
         // student_id; anyone else gets a 403 and the button simply stays hidden).
         if (!_paTestingTask) {
@@ -60705,7 +60728,9 @@
                         if (sectionType === 'plan') r.appendChild(_mkMisfiledNote(label));
                         // ⭐ v7.20.928 (FIXLIST plan-extract-pad — Neil, 17 Oct): ↗ pops this plan out into a pad to follow while
                         // writing. It wears the ↓'s classes, so it shows exactly when the ↓ does (the box holds a plan).
-                        if (sectionType === 'plan') {
+                        // v7.20.929 (Neil, 17 Oct: "outlining doesn't need it"): every lesson with a plan box except outlining
+                        // (planning already returned above) — diagnostic "definitely", polishing "you can have it there".
+                        if (sectionType === 'plan' && state.task !== 'outlining') {
                             const pop = document.createElement('button');
                             pop.type = 'button';
                             pop.className = 'swml-transfer-btn swml-ctl-transfer swml-ctl-popout';
@@ -76861,10 +76886,44 @@
                 // might be a student edit). Empty local always accepts the seed. Frozen
                 // (marked) docs accept nothing.
                 if (_docMarked) return;
+                let _appendUnder = false;
                 if (cur) {
                     // v7.20.926: the student's writing here is never replaced by a newer automatic fill ('protect').
                     const _ta = targetNode.attrs || {};
-                    if (_chainArbitrate(upFields[fid].ts, upFields[fid].fts, _ta.editTs, _ta.fillTs) !== 'replace') return;
+                    const _fv = _chainArbitrate(upFields[fid].ts, upFields[fid].fts, _ta.editTs, _ta.fillTs);
+                    if (_fv === 'keep') return;
+                    // v7.20.929 (Neil: "Sophia's automatic fill needs to go underneath it"): protect = her writing stays and
+                    // the fill goes on a new line under it, once (_protectedBoxWrite).
+                    if (_fv === 'protect') {
+                        if (_protectedBoxWrite(cur, upFields[fid].text) !== 'append') return;
+                        _appendUnder = true;
+                    }
+                }
+                if (_appendUnder) {
+                    try {
+                        canvasEditor.chain().command(({ tr, state: pmState }) => {
+                            const _hb = pmState.schema.nodes.hardBreak;
+                            // the upstream box's own lines (text + hard breaks — the same rebuild as the replace below)
+                            const add = _hb ? [_hb.create()] : [pmState.schema.text(' ')];
+                            const _kids = Array.from(upFields[fid].el.childNodes);
+                            _kids.forEach((n, i) => {
+                                if (n.nodeName === 'BR') { if (_hb) add.push(_hb.create()); return; }
+                                const t = n.textContent || '';
+                                if (t) add.push(pmState.schema.text(t));
+                                const isBlock = n.nodeType === 1 && /^(P|DIV)$/.test(n.nodeName);
+                                if (isBlock && _hb && i < _kids.length - 1) add.push(_hb.create());
+                            });
+                            if (add.length < 2) return false;
+                            tr.insert(targetPos + targetNode.nodeSize - 1, add);
+                            // her edit time stays hers; the fill time is recorded so the next load is a no-op
+                            tr.setNodeMarkup(targetPos, null, { ...targetNode.attrs, fillTs: upFields[fid].fts || 0 });
+                            tr.setMeta('swmlEditTs', 1);
+                            tr.setMeta('addToHistory', false);
+                            return true;
+                        }).run();
+                        synced++;
+                    } catch (eU) { console.warn('WML chain: fill-under failed for ' + fid, eU && eU.message); }
+                    return;
                 }
                 try {
                     canvasEditor.chain().command(({ tr, state: pmState }) => {
@@ -76969,6 +77028,7 @@
             // carry the ORIGIN edit's ts, fail-loud per section.
             // v7.20.926: fill ONLY the empty boxes (outline rows / fields, by fieldId) of a section the student has written
             // in, from the newer upstream copy; then record that fill's time so the next load is a no-op. True if it wrote.
+            // v7.20.929: a box holding her writing keeps it and gets the fill on a new line UNDERNEATH (_protectedBoxWrite).
             const _fillEmptyBoxes = (tPos, tNode, cand) => {
                 const upText = {};
                 cand.el.querySelectorAll('[data-field-id]').forEach((el) => {
@@ -76980,7 +77040,8 @@
                 tNode.descendants((c, rel) => {
                     if ((c.type.name === 'outlineRow' || c.type.name === 'inputField') && c.attrs && c.attrs.fieldId) {
                         const id = String(c.attrs.fieldId);
-                        if (!(c.textContent || '').trim() && upText[id]) writes.push({ at: tPos + 1 + rel, size: c.nodeSize, text: upText[id] });
+                        const how = _protectedBoxWrite(c.textContent || '', upText[id]);
+                        if (how) writes.push({ at: tPos + 1 + rel, size: c.nodeSize, text: upText[id], how: how });
                         return false;
                     }
                     return true;
@@ -76990,8 +77051,15 @@
                 try {
                     canvasEditor.chain().command(({ tr, state: pmState }) => {
                         tr.setMeta('swmlEditTs', 1); tr.setMeta('addToHistory', false);
+                        const _hb = pmState.schema.nodes.hardBreak;
                         writes.sort((a, b) => b.at - a.at).forEach((w) => {
-                            tr.replaceWith(w.at + 1, w.at + w.size - 1, pmState.schema.text(w.text));
+                            if (w.how === 'append') {
+                                // under her writing, on its own line (boxes are inline* — a hard break, never a paragraph)
+                                const add = _hb ? [_hb.create(), pmState.schema.text(w.text)] : [pmState.schema.text(' ' + w.text)];
+                                tr.insert(w.at + w.size - 1, add);
+                            } else {
+                                tr.replaceWith(w.at + 1, w.at + w.size - 1, pmState.schema.text(w.text));
+                            }
                         });
                         const nd = tr.doc.nodeAt(tPos);
                         if (nd && nd.type.name === 'sectionBlock') tr.setNodeMarkup(tPos, null, { ...nd.attrs, fillTs: cand.fts || 0 });
